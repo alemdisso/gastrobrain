@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'models/recipe.dart';
 import 'models/meal.dart';
 import 'database/database_helper.dart';
+import 'screens/add_recipe_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,15 +49,15 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Future<void> _addTestRecipe() async {
-    final recipe = Recipe(
-      id: DateTime.now().toString(), // Simple way to generate unique ID
-      name: 'Test Recipe ${recipes.length + 1}',
-      createdAt: DateTime.now(),
+  Future<void> _addRecipe() async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (context) => const AddRecipeScreen()),
     );
 
-    await _dbHelper.insertRecipe(recipe);
-    _loadRecipes(); // Reload the list
+    if (result == true) {
+      _loadRecipes(); // Reload the list if a recipe was added
+    }
   }
 
   @override
@@ -76,8 +77,8 @@ class _HomePageState extends State<HomePage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _addTestRecipe,
-        tooltip: 'Add Test Recipe',
+        onPressed: _addRecipe,
+        tooltip: 'Add Recipe',
         child: const Icon(Icons.add),
       ),
     );
