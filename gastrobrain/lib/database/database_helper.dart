@@ -21,7 +21,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'gastrobrain.db');
     return await openDatabase(
       path,
-      version: 2, // Increment version number
+      version: 3, // Increment version number
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );

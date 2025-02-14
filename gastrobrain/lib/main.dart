@@ -5,6 +5,7 @@ import 'database/database_helper.dart';
 import 'screens/add_recipe_screen.dart';
 import 'screens/edit_recipe_screen.dart';
 import 'screens/cook_meal_screen.dart';
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const GastrobrainApp());
@@ -379,55 +380,57 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
               trailing: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        IconButton(
-          icon: const Icon(Icons.restaurant),
-          onPressed: () {
-            Navigator.push<bool>(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CookMealScreen(recipe: recipe),
-              ),
-            ).then((value) {
-              if (value == true) {
-                _loadRecipes();
-              }
-            });
-          },
-          tooltip: 'Cook Now',
-        ),
-        PopupMenuButton<String>(
-                onSelected: (value) {
-                  switch (value) {
-                    case 'edit':
-                      _editRecipe(recipe);
-                      break;
-                    case 'delete':
-                      _deleteRecipe(recipe);
-                      break;
-                  }
-                },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'edit',
-                    child: Row(
-                      children: [
-                        Icon(Icons.edit),
-                        SizedBox(width: 8),
-                        Text('Edit'),
-                      ],
-                    ),
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.restaurant),
+                    onPressed: () {
+                      Navigator.push<bool>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CookMealScreen(recipe: recipe),
+                        ),
+                      ).then((value) {
+                        if (value == true) {
+                          _loadRecipes();
+                        }
+                      });
+                    },
+                    tooltip: 'Cook Now',
                   ),
-                  const PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete),
-                        SizedBox(width: 8),
-                        Text('Delete'),
-                      ],
-                    ),
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      switch (value) {
+                        case 'edit':
+                          _editRecipe(recipe);
+                          break;
+                        case 'delete':
+                          _deleteRecipe(recipe);
+                          break;
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit),
+                            SizedBox(width: 8),
+                            Text('Edit'),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete),
+                            SizedBox(width: 8),
+                            Text('Delete'),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
