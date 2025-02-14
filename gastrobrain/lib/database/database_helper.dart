@@ -66,6 +66,15 @@ class DatabaseHelper {
       await db
           .execute('ALTER TABLE recipes ADD COLUMN rating INTEGER DEFAULT 0');
     }
+    if (oldVersion < 3) {
+      // Add new columns to meals table
+      await db.execute(
+          'ALTER TABLE meals ADD COLUMN was_successful INTEGER DEFAULT 1');
+      await db.execute(
+          'ALTER TABLE meals ADD COLUMN actual_prep_time REAL DEFAULT 0');
+      await db.execute(
+          'ALTER TABLE meals ADD COLUMN actual_cook_time REAL DEFAULT 0');
+    }
   }
 
   // Recipe CRUD operations
@@ -164,6 +173,16 @@ class DatabaseHelper {
   }
 
   // Helper methods
+  Future<List<Meal>> getRecentMeals({int limit = 10}) async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'meals',
+      orderBy: 'cooked_at DESC',
+      limit: limit,
+    );
+    return List.generate(maps.length, (i) => Meal.fromMap(maps[i]));
+  }
+
   Future<DateTime?> getLastCookedDate(String recipeId) async {
     final Database db = await database;
     final List<Map<String, dynamic>> result = await db.query(
@@ -190,7 +209,40 @@ class DatabaseHelper {
     return Sqflite.firstIntValue(result) ?? 0;
   }
 
-// Add these methods to your DatabaseHelper class
+  Future<Map<String, DateTime>> getAllLastCooked() async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> results = await db.rawQuery('''
+    SELECT recipe_id, MAX(cooked_at) as last_cooked
+    FROM meals
+    GROUP BY recipe_id
+  ''');
+
+    Future<List<Map<String, dynamic>>> getRecipeCookingStats() async {
+      final Database db = await database;
+      final List<Map<String, dynamic>> results = await db.rawQuery('''
+      SELECT 
+        r.id,
+        r.name,
+        r.desired_frequency,
+        MAX(m.cooked_at) as last_cooked,
+        COUNT(m.id) as times_cooked,
+        AVG(m.actual_prep_time) as avg_prep_time,
+        AVG(m.actual_cook_time) as avg_cook_time
+      FROM recipes r
+      LEFT JOIN meals m ON r.id = m.recipe_id
+      GROUP BY r.id
+    ''');
+
+      return results;
+    }
+
+    return Map.fromEntries(
+      results.map((row) => MapEntry(
+            row['recipe_id'] as String,
+            DateTime.parse(row['last_cooked'] as String),
+          )),
+    );
+  }
 
   Future<List<Recipe>> getRecipesWithSortAndFilter({
     String? sortBy,

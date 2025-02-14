@@ -4,6 +4,9 @@ class Meal {
   DateTime cookedAt;
   int servings;
   String notes;
+  bool wasSuccessful; // Track if the recipe worked well this time
+  double actualPrepTime; // Track real prep time for future reference
+  double actualCookTime; // Track real cook time for future reference
 
   Meal({
     required this.id,
@@ -11,6 +14,9 @@ class Meal {
     required this.cookedAt,
     this.servings = 1,
     this.notes = '',
+    this.wasSuccessful = true,
+    this.actualPrepTime = 0,
+    this.actualCookTime = 0,
   });
 
   // Convert a Meal into a Map
@@ -21,6 +27,9 @@ class Meal {
       'cooked_at': cookedAt.toIso8601String(),
       'servings': servings,
       'notes': notes,
+      'was_successful': wasSuccessful ? 1 : 0,
+      'actual_prep_time': actualPrepTime,
+      'actual_cook_time': actualCookTime,
     };
   }
 
@@ -32,6 +41,9 @@ class Meal {
       cookedAt: DateTime.parse(map['cooked_at']),
       servings: map['servings'],
       notes: map['notes'],
+      wasSuccessful: map['was_successful'] == 1,
+      actualPrepTime: map['actual_prep_time'] ?? 0,
+      actualCookTime: map['actual_cook_time'] ?? 0,
     );
   }
 }
