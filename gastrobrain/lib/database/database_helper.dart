@@ -189,4 +189,55 @@ class DatabaseHelper {
     );
     return Sqflite.firstIntValue(result) ?? 0;
   }
+
+// Add these methods to your DatabaseHelper class
+
+  Future<List<Recipe>> getRecipesWithSortAndFilter({
+    String? sortBy,
+    String? sortOrder,
+    Map<String, dynamic>? filters,
+  }) async {
+    final Database db = await database;
+
+    // Start building the query
+    String query = 'SELECT * FROM recipes';
+    List<dynamic> arguments = [];
+
+    // Add filters if any
+    if (filters != null && filters.isNotEmpty) {
+      List<String> whereConditions = [];
+
+      if (filters.containsKey('difficulty')) {
+        whereConditions.add('difficulty = ?');
+        arguments.add(filters['difficulty']);
+      }
+
+      if (filters.containsKey('rating')) {
+        whereConditions.add('rating >= ?');
+        arguments.add(filters['rating']);
+      }
+
+      if (filters.containsKey('desired_frequency')) {
+        whereConditions.add('desired_frequency = ?');
+        arguments.add(filters['desired_frequency']);
+      }
+
+      if (whereConditions.isNotEmpty) {
+        query += ' WHERE ${whereConditions.join(' AND ')}';
+      }
+    }
+
+    // Add sorting
+    if (sortBy != null) {
+      query += ' ORDER BY $sortBy';
+      if (sortOrder != null) {
+        query += ' $sortOrder';
+      }
+    } else {
+      query += ' ORDER BY created_at DESC'; // Default sorting
+    }
+
+    final List<Map<String, dynamic>> maps = await db.rawQuery(query, arguments);
+    return List.generate(maps.length, (i) => Recipe.fromMap(maps[i]));
+  }
 }
