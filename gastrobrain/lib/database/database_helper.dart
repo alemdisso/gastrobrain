@@ -21,24 +21,27 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'gastrobrain.db');
     return await openDatabase(
       path,
-      version: 1,
+      version: 2, // Increment version number
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
   }
 
   Future<void> _onCreate(Database db, int version) async {
-    // Create recipes table
     await db.execute('''
       CREATE TABLE recipes(
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         desired_frequency TEXT NOT NULL,
         notes TEXT,
-        created_at TEXT NOT NULL
+        created_at TEXT NOT NULL,
+        difficulty INTEGER DEFAULT 1,
+        prep_time_minutes INTEGER DEFAULT 0,
+        cook_time_minutes INTEGER DEFAULT 0,
+        rating INTEGER DEFAULT 0
       )
     ''');
 
-    // Create meals table
     await db.execute('''
       CREATE TABLE meals(
         id TEXT PRIMARY KEY,
@@ -49,6 +52,20 @@ class DatabaseHelper {
         FOREIGN KEY (recipe_id) REFERENCES recipes (id)
       )
     ''');
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Add new columns to existing table
+      await db.execute(
+          'ALTER TABLE recipes ADD COLUMN difficulty INTEGER DEFAULT 1');
+      await db.execute(
+          'ALTER TABLE recipes ADD COLUMN prep_time_minutes INTEGER DEFAULT 0');
+      await db.execute(
+          'ALTER TABLE recipes ADD COLUMN cook_time_minutes INTEGER DEFAULT 0');
+      await db
+          .execute('ALTER TABLE recipes ADD COLUMN rating INTEGER DEFAULT 0');
+    }
   }
 
   // Recipe CRUD operations

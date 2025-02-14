@@ -23,6 +23,48 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     'rarely'
   ];
 
+  Widget _buildRatingField(String label, int value, Function(int) onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 16)),
+        const SizedBox(height: 8),
+        Row(
+          children: List.generate(5, (index) {
+            return IconButton(
+              icon: Icon(
+                index < value ? Icons.star : Icons.star_border,
+                color: index < value ? Colors.amber : Colors.grey,
+              ),
+              onPressed: () => onChanged(index + 1),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimeField(String label, TextEditingController controller) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+        suffixText: 'minutes',
+      ),
+      keyboardType: TextInputType.number,
+      validator: (value) {
+        if (value != null && value.isNotEmpty) {
+          final minutes = int.tryParse(value);
+          if (minutes == null || minutes < 0) {
+            return 'Please enter a valid time';
+          }
+        }
+        return null;
+      },
+    );
+  }
+
   void _saveRecipe() async {
     if (_formKey.currentState!.validate()) {
       final recipe = Recipe(
@@ -46,6 +88,8 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   void dispose() {
     _nameController.dispose();
     _notesController.dispose();
+    _prepTimeController.dispose();
+    _cookTimeController.dispose();
     super.dispose();
   }
 
@@ -97,6 +141,18 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   }
                 },
               ),
+              const SizedBox(height: 16),
+              _buildRatingField('Difficulty Level', _difficulty, (value) {
+                setState(() => _difficulty = value);
+              }),
+              const SizedBox(height: 16),
+              _buildTimeField('Preparation Time', _prepTimeController),
+              const SizedBox(height: 16),
+              _buildTimeField('Cooking Time', _cookTimeController),
+              const SizedBox(height: 16),
+              _buildRatingField('Rating', _rating, (value) {
+                setState(() => _rating = value);
+              }),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _notesController,
