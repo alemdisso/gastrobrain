@@ -43,15 +43,18 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
-      CREATE TABLE meals(
-        id TEXT PRIMARY KEY,
-        recipe_id TEXT NOT NULL,
-        cooked_at TEXT NOT NULL,
-        servings INTEGER NOT NULL,
-        notes TEXT,
-        FOREIGN KEY (recipe_id) REFERENCES recipes (id)
-      )
-    ''');
+    CREATE TABLE meals(
+      id TEXT PRIMARY KEY,
+      recipe_id TEXT NOT NULL,
+      cooked_at TEXT NOT NULL,
+      servings INTEGER NOT NULL,
+      notes TEXT,
+      was_successful INTEGER DEFAULT 1,
+      actual_prep_time REAL DEFAULT 0,
+      actual_cook_time REAL DEFAULT 0,
+      FOREIGN KEY (recipe_id) REFERENCES recipes (id)
+    )
+  ''');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
