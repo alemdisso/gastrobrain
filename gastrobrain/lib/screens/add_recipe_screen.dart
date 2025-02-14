@@ -13,7 +13,11 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _notesController = TextEditingController();
+  final _prepTimeController = TextEditingController();
+  final _cookTimeController = TextEditingController();
   String _selectedFrequency = 'monthly';
+  int _difficulty = 1;
+  int _rating = 0;
 
   final List<String> _frequencies = [
     'daily',
