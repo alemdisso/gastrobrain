@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'models/recipe.dart';
-import 'models/meal.dart';
+//import 'models/meal.dart';
 import 'database/database_helper.dart';
 import 'screens/add_recipe_screen.dart';
+import 'screens/edit_recipe_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,6 +61,44 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _editRecipe(Recipe recipe) async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditRecipeScreen(recipe: recipe),
+      ),
+    );
+
+    if (result == true) {
+      _loadRecipes();
+    }
+  }
+
+  Future<void> _deleteRecipe(Recipe recipe) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Recipe'),
+        content: Text('Are you sure you want to delete "${recipe.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await _dbHelper.deleteRecipe(recipe.id);
+      _loadRecipes();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,9 +109,56 @@ class _HomePageState extends State<HomePage> {
         itemCount: recipes.length,
         itemBuilder: (context, index) {
           final recipe = recipes[index];
-          return ListTile(
-            title: Text(recipe.name),
-            subtitle: Text('Created: ${recipe.createdAt.toString()}'),
+          return Card(
+            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: ListTile(
+              title: Text(
+                recipe.name,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 4),
+                  Text('Frequency: ${recipe.desiredFrequency}'),
+                  if (recipe.notes.isNotEmpty) Text('Notes: ${recipe.notes}'),
+                ],
+              ),
+              trailing: PopupMenuButton<String>(
+                onSelected: (value) {
+                  switch (value) {
+                    case 'edit':
+                      _editRecipe(recipe);
+                      break;
+                    case 'delete':
+                      _deleteRecipe(recipe);
+                      break;
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit),
+                        SizedBox(width: 8),
+                        Text('Edit'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete),
+                        SizedBox(width: 8),
+                        Text('Delete'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           );
         },
       ),
