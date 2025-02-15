@@ -2,6 +2,8 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/recipe.dart';
 import '../models/meal.dart';
+import '../models/ingredient.dart';
+import '../models/recipe_ingredient.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -21,7 +23,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'gastrobrain.db');
     return await openDatabase(
       path,
-      version: 3, // Increment version number
+      version: 4, // Increment version number
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -55,6 +57,31 @@ class DatabaseHelper {
       FOREIGN KEY (recipe_id) REFERENCES recipes (id)
     )
   ''');
+
+// Create ingredients table
+    await db.execute('''
+      CREATE TABLE ingredients(
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        category TEXT NOT NULL,
+        unit TEXT,
+        protein_type TEXT,
+        notes TEXT
+      )
+    ''');
+
+    // Create recipe_ingredients table
+    await db.execute('''
+      CREATE TABLE recipe_ingredients(
+        id TEXT PRIMARY KEY,
+        recipe_id TEXT NOT NULL,
+        ingredient_id TEXT NOT NULL,
+        quantity REAL NOT NULL,
+        notes TEXT,
+        FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE,
+        FOREIGN KEY (ingredient_id) REFERENCES ingredients (id)
+      )
+    ''');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -78,6 +105,76 @@ class DatabaseHelper {
       await db.execute(
           'ALTER TABLE meals ADD COLUMN actual_cook_time REAL DEFAULT 0');
     }
+
+    if (oldVersion < 4) {
+      // Add ingredient tables
+      await db.execute('''
+        CREATE TABLE ingredients(
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          category TEXT NOT NULL,
+          unit TEXT,
+          protein_type TEXT,
+          notes TEXT
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE recipe_ingredients(
+          id TEXT PRIMARY KEY,
+          recipe_id TEXT NOT NULL,
+          ingredient_id TEXT NOT NULL,
+          quantity REAL NOT NULL,
+          notes TEXT,
+          FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE,
+          FOREIGN KEY (ingredient_id) REFERENCES ingredients (id)
+        )
+      ''');
+    }
+  }
+
+  // Ingredient operations
+  Future<String> insertIngredient(Ingredient ingredient) async {
+    final Database db = await database;
+    await db.insert('ingredients', ingredient.toMap());
+    return ingredient.id;
+  }
+
+  Future<List<Ingredient>> getAllIngredients() async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('ingredients');
+    return List.generate(maps.length, (i) => Ingredient.fromMap(maps[i]));
+  }
+
+  Future<List<Ingredient>> getProteinIngredients({String? proteinType}) async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'ingredients',
+      where:
+          proteinType != null ? 'protein_type = ?' : 'protein_type IS NOT NULL',
+      whereArgs: proteinType != null ? [proteinType] : null,
+    );
+    return List.generate(maps.length, (i) => Ingredient.fromMap(maps[i]));
+  }
+
+  // Recipe ingredients operations
+  Future<void> addIngredientToRecipe(RecipeIngredient recipeIngredient) async {
+    final Database db = await database;
+    await db.insert('recipe_ingredients', recipeIngredient.toMap());
+  }
+
+  Future<List<Map<String, dynamic>>> getRecipeIngredients(
+      String recipeId) async {
+    final Database db = await database;
+    return await db.rawQuery('''
+      SELECT 
+        ri.quantity,
+        ri.notes as preparation_notes,
+        i.*
+      FROM recipe_ingredients ri
+      JOIN ingredients i ON ri.ingredient_id = i.id
+      WHERE ri.recipe_id = ?
+    ''', [recipeId]);
   }
 
   // Recipe CRUD operations
