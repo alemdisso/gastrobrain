@@ -4,6 +4,7 @@ import '../models/meal.dart';
 import '../database/database_helper.dart';
 import '../utils/id_generator.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
+import '../core/validators/entity_validator.dart';
 
 class CookMealScreen extends StatefulWidget {
   final Recipe recipe;
@@ -51,15 +52,24 @@ class _CookMealScreenState extends State<CookMealScreen> {
         recipeIds: [widget.recipe.id],
       );
 
+      final servings = int.parse(_servingsController.text);
+      EntityValidator.validateServings(servings);
+
+      final prepTime = double.tryParse(_prepTimeController.text);
+      final cookTime = double.tryParse(_cookTimeController.text);
+
+      EntityValidator.validateTime(prepTime, 'Preparation');
+      EntityValidator.validateTime(cookTime, 'Cooking');
+
       final meal = Meal(
         id: IdGenerator.generateId(),
         recipeId: widget.recipe.id,
         cookedAt: _cookedAt,
-        servings: int.parse(_servingsController.text),
+        servings: servings,
         notes: _notesController.text,
         wasSuccessful: _wasSuccessful,
-        actualPrepTime: double.tryParse(_prepTimeController.text) ?? 0,
-        actualCookTime: double.tryParse(_cookTimeController.text) ?? 0,
+        actualPrepTime: prepTime ?? 0,
+        actualCookTime: cookTime ?? 0,
       );
 
       final dbHelper = DatabaseHelper();

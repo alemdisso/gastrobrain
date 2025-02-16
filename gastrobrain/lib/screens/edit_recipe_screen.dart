@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../database/database_helper.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
+import '../core/validators/entity_validator.dart';
 
 class EditRecipeScreen extends StatefulWidget {
   final Recipe recipe;
@@ -111,9 +112,15 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
       // Validate recipe data
       EntityValidator.validateRecipe(
         name: _nameController.text,
-        ingredients: [], // TODO: Add ingredients list
-        instructions: [], // TODO: Add instructions list
+        ingredients: [],
+        instructions: [],
       );
+
+      final prepTime = int.tryParse(_prepTimeController.text);
+      final cookTime = int.tryParse(_cookTimeController.text);
+
+      EntityValidator.validateTime(prepTime?.toDouble(), 'Preparation');
+      EntityValidator.validateTime(cookTime?.toDouble(), 'Cooking');
 
       final updatedRecipe = Recipe(
         id: widget.recipe.id,
@@ -122,8 +129,8 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         notes: _notesController.text,
         createdAt: widget.recipe.createdAt,
         difficulty: _difficulty,
-        prepTimeMinutes: int.tryParse(_prepTimeController.text) ?? 0,
-        cookTimeMinutes: int.tryParse(_cookTimeController.text) ?? 0,
+        prepTimeMinutes: prepTime ?? 0,
+        cookTimeMinutes: cookTime ?? 0,
         rating: _rating,
       );
 
