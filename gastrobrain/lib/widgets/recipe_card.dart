@@ -24,9 +24,11 @@ class RecipeCard extends StatefulWidget {
 }
 
 class _RecipeCardState extends State<RecipeCard> {
-  bool isExpanded = false;
   DateTime? lastCooked;
   int totalMeals = 0;
+  static final Set<String> _expandedIds = {};
+
+  bool get isExpanded => _expandedIds.contains(widget.recipe.id);
 
   @override
   void initState() {
@@ -50,6 +52,16 @@ class _RecipeCardState extends State<RecipeCard> {
   String _formatDateTime(DateTime? dateTime) {
     if (dateTime == null) return 'Never';
     return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+  }
+
+  void _toggleExpanded() {
+    setState(() {
+      if (isExpanded) {
+        _expandedIds.remove(widget.recipe.id);
+      } else {
+        _expandedIds.add(widget.recipe.id);
+      }
+    });
   }
 
   @override
@@ -123,11 +135,7 @@ class _RecipeCardState extends State<RecipeCard> {
                 IconButton(
                   icon:
                       Icon(isExpanded ? Icons.expand_less : Icons.expand_more),
-                  onPressed: () {
-                    setState(() {
-                      isExpanded = !isExpanded;
-                    });
-                  },
+                  onPressed: _toggleExpanded, // Use the new toggle method
                   tooltip: isExpanded ? 'Show Less' : 'Show More',
                 ),
               ],
