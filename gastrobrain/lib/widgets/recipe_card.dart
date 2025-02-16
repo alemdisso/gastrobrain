@@ -159,11 +159,11 @@ class _RecipeCardState extends State<RecipeCard> {
                           Text('Times cooked: $totalMeals'),
                         ],
                       ),
-                      Row(
+                      Wrap(
+                        spacing: 4, // horizontal space between buttons
                         children: [
-                          TextButton.icon(
-                            icon: const Icon(Icons.food_bank),
-                            label: const Text('Ingredients'),
+                          IconButton.outlined(
+                            icon: const Icon(Icons.food_bank, size: 20),
                             onPressed: () {
                               Navigator.push(
                                 context,
@@ -173,10 +173,10 @@ class _RecipeCardState extends State<RecipeCard> {
                                 ),
                               );
                             },
+                            tooltip: 'Ingredients',
                           ),
-                          TextButton.icon(
-                            icon: const Icon(Icons.history),
-                            label: const Text('History'),
+                          IconButton.outlined(
+                            icon: const Icon(Icons.history, size: 20),
                             onPressed: () {
                               Navigator.push(
                                 context,
@@ -186,8 +186,10 @@ class _RecipeCardState extends State<RecipeCard> {
                                 ),
                               );
                             },
+                            tooltip: 'History',
                           ),
                           PopupMenuButton<String>(
+                            icon: const Icon(Icons.more_vert, size: 20),
                             onSelected: (value) {
                               switch (value) {
                                 case 'edit':
