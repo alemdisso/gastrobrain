@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../database/database_helper.dart';
-import '../utils/id_generator.dart';
+import '../core/errors/gastrobrain_exceptions.dart';
 
 class AddRecipeScreen extends StatefulWidget {
   const AddRecipeScreen({super.key});
@@ -19,6 +19,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   String _selectedFrequency = 'monthly';
   int _difficulty = 1;
   int _rating = 0;
+  bool _isSaving = false;
 
   final List<String> _frequencies = [
     'daily',
@@ -70,21 +71,64 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     );
   }
 
-  void _saveRecipe() async {
-    if (_formKey.currentState!.validate()) {
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  Future<void> _saveRecipe() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      // Validate recipe data
+      EntityValidator.validateRecipe(
+        name: _nameController.text,
+        ingredients: [], // TODO: Add ingredients list
+        instructions: [], // TODO: Add instructions list
+      );
+
       final recipe = Recipe(
-        id: IdGenerator.generateId(),
+        id: DateTime.now().toString(), // We'll improve ID generation later
         name: _nameController.text,
         desiredFrequency: _selectedFrequency,
         notes: _notesController.text,
         createdAt: DateTime.now(),
+        difficulty: _difficulty,
+        prepTimeMinutes: int.tryParse(_prepTimeController.text) ?? 0,
+        cookTimeMinutes: int.tryParse(_cookTimeController.text) ?? 0,
+        rating: _rating,
       );
 
       final dbHelper = DatabaseHelper();
       await dbHelper.insertRecipe(recipe);
 
       if (mounted) {
-        Navigator.pop(context, true); // Return true to indicate success
+        Navigator.pop(context, true);
+      }
+    } on ValidationException catch (e) {
+      _showErrorSnackBar(e.message);
+    } on DuplicateException catch (e) {
+      _showErrorSnackBar(e.message);
+    } on GastrobrainException catch (e) {
+      _showErrorSnackBar('Error saving recipe: ${e.message}');
+    } catch (e) {
+      _showErrorSnackBar('An unexpected error occurred');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
       }
     }
   }
@@ -171,10 +215,12 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _saveRecipe,
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text('Save Recipe'),
+                  onPressed: _isSaving ? null : _saveRecipe,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: _isSaving
+                        ? const CircularProgressIndicator()
+                        : const Text('Save Recipe'),
                   ),
                 ),
               ),

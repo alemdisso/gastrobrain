@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../database/database_helper.dart';
+import '../core/errors/gastrobrain_exceptions.dart';
 
 class EditRecipeScreen extends StatefulWidget {
   final Recipe recipe;
@@ -20,6 +21,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   late String _selectedFrequency;
   late int _difficulty;
   late int _rating;
+  bool _isSaving = false;
 
   final List<String> _frequencies = [
     'daily',
@@ -86,14 +88,39 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     );
   }
 
-  void _saveRecipe() async {
-    if (_formKey.currentState!.validate()) {
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  Future<void> _saveRecipe() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      // Validate recipe data
+      EntityValidator.validateRecipe(
+        name: _nameController.text,
+        ingredients: [], // TODO: Add ingredients list
+        instructions: [], // TODO: Add instructions list
+      );
+
       final updatedRecipe = Recipe(
-        id: widget.recipe.id, // Keep the same ID
+        id: widget.recipe.id,
         name: _nameController.text,
         desiredFrequency: _selectedFrequency,
         notes: _notesController.text,
-        createdAt: widget.recipe.createdAt, // Keep original creation date
+        createdAt: widget.recipe.createdAt,
         difficulty: _difficulty,
         prepTimeMinutes: int.tryParse(_prepTimeController.text) ?? 0,
         cookTimeMinutes: int.tryParse(_cookTimeController.text) ?? 0,
@@ -105,6 +132,22 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
 
       if (mounted) {
         Navigator.pop(context, true);
+      }
+    } on ValidationException catch (e) {
+      _showErrorSnackBar(e.message);
+    } on DuplicateException catch (e) {
+      _showErrorSnackBar(e.message);
+    } on NotFoundException catch (e) {
+      _showErrorSnackBar(e.message);
+    } on GastrobrainException catch (e) {
+      _showErrorSnackBar('Error updating recipe: ${e.message}');
+    } catch (e) {
+      _showErrorSnackBar('An unexpected error occurred');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
       }
     }
   }
@@ -192,10 +235,12 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _saveRecipe,
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      child: Text('Save Changes'),
+                    onPressed: _isSaving ? null : _saveRecipe,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: _isSaving
+                          ? const CircularProgressIndicator()
+                          : const Text('Save Changes'),
                     ),
                   ),
                 ),
