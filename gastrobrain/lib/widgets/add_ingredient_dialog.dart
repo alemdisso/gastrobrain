@@ -4,6 +4,7 @@ import '../models/ingredient.dart';
 import '../models/recipe_ingredient.dart';
 //import '../models/protein_type.dart';
 import '../database/database_helper.dart';
+import 'add_new_ingredient_dialog.dart';
 
 class AddIngredientDialog extends StatefulWidget {
   final Recipe recipe;
@@ -58,6 +59,20 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
     }
   }
 
+  Future<void> _createNewIngredient() async {
+    final newIngredient = await showDialog<Ingredient>(
+      context: context,
+      builder: (context) => const AddNewIngredientDialog(),
+    );
+
+    if (newIngredient != null) {
+      setState(() {
+        _availableIngredients.add(newIngredient);
+        _selectedIngredient = newIngredient;
+      });
+    }
+  }
+
   @override
   void dispose() {
     _quantityController.dispose();
@@ -101,6 +116,12 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                         }
                         return null;
                       },
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton.icon(
+                      icon: const Icon(Icons.add),
+                      label: const Text('Create New Ingredient'),
+                      onPressed: _createNewIngredient,
                     ),
                     const SizedBox(height: 16),
 
