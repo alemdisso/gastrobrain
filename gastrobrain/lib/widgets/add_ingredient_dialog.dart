@@ -5,6 +5,7 @@ import '../models/recipe_ingredient.dart';
 //import '../models/protein_type.dart';
 import '../database/database_helper.dart';
 import 'add_new_ingredient_dialog.dart';
+import '../utils/id_generator.dart';
 
 class AddIngredientDialog extends StatefulWidget {
   final Recipe recipe;
@@ -46,7 +47,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
     }
 
     final recipeIngredient = RecipeIngredient(
-      id: DateTime.now().toString(), // We'll improve ID generation later
+      id: IdGenerator.generateId(),
       recipeId: widget.recipe.id,
       ingredientId: _selectedIngredient!.id,
       quantity: double.parse(_quantityController.text),

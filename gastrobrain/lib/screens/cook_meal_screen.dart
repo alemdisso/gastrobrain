@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../models/meal.dart';
 import '../database/database_helper.dart';
+import '../utils/id_generator.dart';
 
 class CookMealScreen extends StatefulWidget {
   final Recipe recipe;
@@ -24,7 +25,7 @@ class _CookMealScreenState extends State<CookMealScreen> {
   void _saveMeal() async {
     if (_formKey.currentState!.validate()) {
       final meal = Meal(
-        id: DateTime.now().toString(), // We can improve ID generation later
+        id: IdGenerator.generateId(),
         recipeId: widget.recipe.id,
         cookedAt: _cookedAt,
         servings: int.parse(_servingsController.text),

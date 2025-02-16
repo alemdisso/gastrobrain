@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/ingredient.dart';
 import '../models/protein_type.dart';
 import '../database/database_helper.dart';
+import '../utils/id_generator.dart';
 
 class AddNewIngredientDialog extends StatefulWidget {
   const AddNewIngredientDialog({super.key});
@@ -48,7 +49,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
     }
 
     final ingredient = Ingredient(
-      id: DateTime.now().toString(), // We'll improve ID generation later
+      id: IdGenerator.generateId(),
       name: _nameController.text,
       category: _selectedCategory,
       unit: _selectedUnit,

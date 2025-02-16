@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../database/database_helper.dart';
+import '../utils/id_generator.dart';
 
 class AddRecipeScreen extends StatefulWidget {
   const AddRecipeScreen({super.key});
@@ -72,7 +73,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   void _saveRecipe() async {
     if (_formKey.currentState!.validate()) {
       final recipe = Recipe(
-        id: DateTime.now().toString(), // We'll improve ID generation later
+        id: IdGenerator.generateId(),
         name: _nameController.text,
         desiredFrequency: _selectedFrequency,
         notes: _notesController.text,
