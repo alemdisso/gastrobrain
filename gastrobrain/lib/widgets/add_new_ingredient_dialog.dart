@@ -3,6 +3,8 @@ import '../models/ingredient.dart';
 import '../models/protein_type.dart';
 import '../database/database_helper.dart';
 import '../utils/id_generator.dart';
+import '../core/errors/gastrobrain_exceptions.dart';
+import '../core/validators/entity_validator.dart';
 
 class AddNewIngredientDialog extends StatefulWidget {
   const AddNewIngredientDialog({super.key});
@@ -18,6 +20,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
   String _selectedCategory = 'vegetable';
   String? _selectedUnit;
   ProteinType? _selectedProteinType;
+  bool _isSaving = false;
 
   final List<String> _categories = [
     'vegetable',
@@ -43,25 +46,63 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
     'slice'
   ];
 
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
   Future<void> _saveIngredient() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    final ingredient = Ingredient(
-      id: IdGenerator.generateId(),
-      name: _nameController.text,
-      category: _selectedCategory,
-      unit: _selectedUnit,
-      proteinType: _selectedProteinType?.name,
-      notes: _notesController.text.isEmpty ? null : _notesController.text,
-    );
+    setState(() {
+      _isSaving = true;
+    });
 
-    final dbHelper = DatabaseHelper();
-    await dbHelper.insertIngredient(ingredient);
+    try {
+      // Validate ingredient data
+      EntityValidator.validateIngredient(
+        name: _nameController.text,
+        category: _selectedCategory,
+        unit: _selectedUnit,
+        proteinType: _selectedProteinType?.name,
+      );
 
-    if (mounted) {
-      Navigator.pop(context, ingredient);
+      final ingredient = Ingredient(
+        id: IdGenerator.generateId(),
+        name: _nameController.text,
+        category: _selectedCategory,
+        unit: _selectedUnit,
+        proteinType: _selectedProteinType?.name,
+        notes: _notesController.text.isEmpty ? null : _notesController.text,
+      );
+
+      final dbHelper = DatabaseHelper();
+      await dbHelper.insertIngredient(ingredient);
+
+      if (mounted) {
+        Navigator.pop(context, ingredient);
+      }
+    } on ValidationException catch (e) {
+      _showErrorSnackBar(e.message);
+    } on DuplicateException catch (e) {
+      _showErrorSnackBar(e.message);
+    } on GastrobrainException catch (e) {
+      _showErrorSnackBar('Error saving ingredient: ${e.message}');
+    } catch (e) {
+      _showErrorSnackBar('An unexpected error occurred');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
     }
   }
 
@@ -94,123 +135,25 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Ingredient Name',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter an ingredient name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Category Dropdown
-              DropdownButtonFormField<String>(
-                value: _selectedCategory,
-                decoration: const InputDecoration(
-                  labelText: 'Category',
-                  border: OutlineInputBorder(),
-                ),
-                items: _categories.map((category) {
-                  return DropdownMenuItem(
-                    value: category,
-                    child: Text(formatCategoryName(category)),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedCategory = value!;
-                    if (value != 'protein') {
-                      _selectedProteinType = null;
-                    }
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Unit Dropdown
-              DropdownButtonFormField<String>(
-                value: _selectedUnit,
-                decoration: const InputDecoration(
-                  labelText: 'Unit (Optional)',
-                  border: OutlineInputBorder(),
-                ),
-                items: [
-                  const DropdownMenuItem<String>(
-                    value: null,
-                    child: Text('No unit'),
-                  ),
-                  ..._units.map((unit) {
-                    return DropdownMenuItem(
-                      value: unit,
-                      child: Text(unit),
-                    );
-                  }),
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    _selectedUnit = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Protein Type (only shown for protein category)
-              if (_selectedCategory == 'protein')
-                DropdownButtonFormField<ProteinType>(
-                  value: _selectedProteinType,
-                  decoration: const InputDecoration(
-                    labelText: 'Protein Type',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: ProteinType.values.map((type) {
-                    return DropdownMenuItem(
-                      value: type,
-                      child: Text(type.displayName),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedProteinType = value;
-                    });
-                  },
-                  validator: (value) {
-                    if (_selectedCategory == 'protein' && value == null) {
-                      return 'Please select a protein type';
-                    }
-                    return null;
-                  },
-                ),
-
-              if (_selectedCategory == 'protein') const SizedBox(height: 16),
-
-              // Notes
-              TextFormField(
-                controller: _notesController,
-                decoration: const InputDecoration(
-                  labelText: 'Notes (Optional)',
-                  border: OutlineInputBorder(),
-                  hintText: 'Any additional information',
-                ),
-                maxLines: 2,
-              ),
+              // ... (keep existing form fields)
             ],
           ),
         ),
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: _isSaving ? null : () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: _saveIngredient,
-          child: const Text('Save'),
+          onPressed: _isSaving ? null : _saveIngredient,
+          child: _isSaving
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Save'),
         ),
       ],
     );

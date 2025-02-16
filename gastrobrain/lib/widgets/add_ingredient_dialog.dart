@@ -6,6 +6,8 @@ import '../models/recipe_ingredient.dart';
 import '../database/database_helper.dart';
 import 'add_new_ingredient_dialog.dart';
 import '../utils/id_generator.dart';
+import '../core/errors/gastrobrain_exceptions.dart';
+import '../core/validators/entity_validator.dart';
 
 class AddIngredientDialog extends StatefulWidget {
   final Recipe recipe;
@@ -25,6 +27,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
   List<Ingredient> _availableIngredients = [];
   Ingredient? _selectedIngredient;
   bool _isLoading = true;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -32,13 +35,42 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
     _loadIngredients();
   }
 
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
   Future<void> _loadIngredients() async {
     setState(() => _isLoading = true);
-    final ingredients = await _dbHelper.getAllIngredients();
-    setState(() {
-      _availableIngredients = ingredients;
-      _isLoading = false;
-    });
+    try {
+      final ingredients = await _dbHelper.getAllIngredients();
+      if (mounted) {
+        setState(() {
+          _availableIngredients = ingredients;
+          _isLoading = false;
+        });
+      }
+    } on GastrobrainException catch (e) {
+      _showErrorSnackBar('Error loading ingredients: ${e.message}');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      _showErrorSnackBar(
+          'An unexpected error occurred while loading ingredients');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   Future<void> _addIngredientToRecipe() async {
@@ -46,17 +78,44 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
       return;
     }
 
-    final recipeIngredient = RecipeIngredient(
-      id: IdGenerator.generateId(),
-      recipeId: widget.recipe.id,
-      ingredientId: _selectedIngredient!.id,
-      quantity: double.parse(_quantityController.text),
-      notes: _notesController.text.isEmpty ? null : _notesController.text,
-    );
+    setState(() {
+      _isSaving = true;
+    });
 
-    await _dbHelper.addIngredientToRecipe(recipeIngredient);
-    if (mounted) {
-      Navigator.pop(context, true);
+    try {
+      EntityValidator.validateRecipeIngredient(
+        ingredientId: _selectedIngredient!.id,
+        recipeId: widget.recipe.id,
+        quantity: double.parse(_quantityController.text),
+      );
+
+      final recipeIngredient = RecipeIngredient(
+        id: IdGenerator.generateId(),
+        recipeId: widget.recipe.id,
+        ingredientId: _selectedIngredient!.id,
+        quantity: double.parse(_quantityController.text),
+        notes: _notesController.text.isEmpty ? null : _notesController.text,
+      );
+
+      await _dbHelper.addIngredientToRecipe(recipeIngredient);
+
+      if (mounted) {
+        Navigator.pop(context, true);
+      }
+    } on ValidationException catch (e) {
+      _showErrorSnackBar(e.message);
+    } on DuplicateException catch (e) {
+      _showErrorSnackBar(e.message);
+    } on GastrobrainException catch (e) {
+      _showErrorSnackBar('Error adding ingredient: ${e.message}');
+    } catch (e) {
+      _showErrorSnackBar('An unexpected error occurred');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
     }
   }
 
@@ -194,12 +253,18 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
             ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: _isSaving ? null : () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: _addIngredientToRecipe,
-          child: const Text('Add'),
+          onPressed: _isSaving ? null : _addIngredientToRecipe,
+          child: _isSaving
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Add'),
         ),
       ],
     );

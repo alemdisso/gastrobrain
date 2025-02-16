@@ -47,4 +47,38 @@ class EntityValidator {
       throw ValidationException('$field time cannot be negative');
     }
   }
+
+  static void validateIngredient({
+    required String name,
+    required String category,
+    String? unit,
+    String? proteinType,
+  }) {
+    if (name.isEmpty) {
+      throw ValidationException('Ingredient name cannot be empty');
+    }
+    if (category.isEmpty) {
+      throw ValidationException('Category must be selected');
+    }
+    if (category == 'protein' && proteinType == null) {
+      throw ValidationException(
+          'Protein type must be selected for protein ingredients');
+    }
+  }
+
+  static void validateRecipeIngredient({
+    required String ingredientId,
+    required String recipeId,
+    required double quantity,
+  }) {
+    if (ingredientId.isEmpty) {
+      throw ValidationException('Ingredient must be selected');
+    }
+    if (recipeId.isEmpty) {
+      throw ValidationException('Recipe ID cannot be empty');
+    }
+    if (quantity <= 0) {
+      throw ValidationException('Quantity must be greater than zero');
+    }
+  }
 }
