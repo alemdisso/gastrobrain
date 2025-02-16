@@ -16,6 +16,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final DatabaseHelper _dbHelper = DatabaseHelper();
   List<Recipe> recipes = [];
+  Map<String, int> recipeMealCounts = {}; // New map to store meal counts
+  Map<String, DateTime?> lastCookedDates =
+      {}; // New map to store last cooked dates
+
   String? _currentSortBy;
   String? _currentSortOrder = 'ASC';
   Map<String, dynamic> _filters = {};
@@ -32,8 +36,15 @@ class _HomePageState extends State<HomePage> {
       sortOrder: _currentSortOrder,
       filters: _filters.isEmpty ? null : _filters,
     );
+
+    // Load all meal statistics at once
+    final allMealCounts = await _dbHelper.getAllMealCounts();
+    final allLastCooked = await _dbHelper.getAllLastCooked();
+
     setState(() {
       recipes = loadedRecipes;
+      recipeMealCounts = allMealCounts;
+      lastCookedDates = allLastCooked;
     });
   }
 
@@ -318,6 +329,8 @@ class _HomePageState extends State<HomePage> {
                 }
               });
             },
+            mealCount: recipeMealCounts[recipe.id] ?? 0,
+            lastCooked: lastCookedDates[recipe.id],
           );
         },
       ),

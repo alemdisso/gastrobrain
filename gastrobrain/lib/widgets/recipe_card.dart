@@ -10,6 +10,8 @@ class RecipeCard extends StatefulWidget {
   final Function() onEdit;
   final Function() onDelete;
   final Function() onCooked;
+  final int mealCount; // New parameter
+  final DateTime? lastCooked; // New parameter
 
   const RecipeCard({
     super.key,
@@ -17,6 +19,8 @@ class RecipeCard extends StatefulWidget {
     required this.onEdit,
     required this.onDelete,
     required this.onCooked,
+    required this.mealCount,
+    required this.lastCooked,
   });
 
   @override
@@ -33,20 +37,7 @@ class _RecipeCardState extends State<RecipeCard> {
   @override
   void initState() {
     super.initState();
-    _loadMealStats();
-  }
-
-  Future<void> _loadMealStats() async {
-    final dbHelper = DatabaseHelper();
-    final lastCookedDate = await dbHelper.getLastCookedDate(widget.recipe.id);
-    final mealsCount = await dbHelper.getTimesCookedCount(widget.recipe.id);
-
-    if (mounted) {
-      setState(() {
-        lastCooked = lastCookedDate;
-        totalMeals = mealsCount;
-      });
-    }
+    //_loadMealStats();
   }
 
   String _formatDateTime(DateTime? dateTime) {
@@ -163,8 +154,9 @@ class _RecipeCardState extends State<RecipeCard> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Last cooked: ${_formatDateTime(lastCooked)}'),
-                          Text('Times cooked: $totalMeals'),
+                          Text('Times cooked: ${widget.mealCount}'),
+                          Text(
+                              'Last cooked: ${_formatDateTime(widget.lastCooked)}'),
                         ],
                       ),
                       Wrap(

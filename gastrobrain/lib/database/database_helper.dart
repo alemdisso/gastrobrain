@@ -309,6 +309,22 @@ class DatabaseHelper {
     return Sqflite.firstIntValue(result) ?? 0;
   }
 
+  Future<Map<String, int>> getAllMealCounts() async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> results = await db.rawQuery('''
+      SELECT recipe_id, COUNT(*) as count
+      FROM meals
+      GROUP BY recipe_id
+    ''');
+
+    return Map.fromEntries(
+      results.map((row) => MapEntry(
+            row['recipe_id'] as String,
+            row['count'] as int,
+          )),
+    );
+  }
+
   Future<Map<String, DateTime>> getAllLastCooked() async {
     final Database db = await database;
     final List<Map<String, dynamic>> results = await db.rawQuery('''
