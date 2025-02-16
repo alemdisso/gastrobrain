@@ -3,6 +3,7 @@ import '../models/recipe.dart';
 import '../models/meal.dart';
 import '../database/database_helper.dart';
 import '../utils/id_generator.dart';
+import '../core/errors/gastrobrain_exceptions.dart';
 
 class CookMealScreen extends StatefulWidget {
   final Recipe recipe;
@@ -21,9 +22,35 @@ class _CookMealScreenState extends State<CookMealScreen> {
   final _cookTimeController = TextEditingController();
   bool _wasSuccessful = true;
   DateTime _cookedAt = DateTime.now();
+  bool _isSaving = false;
 
-  void _saveMeal() async {
-    if (_formKey.currentState!.validate()) {
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  Future<void> _saveMeal() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      // Validate meal data
+      EntityValidator.validateMeal(
+        name: widget.recipe.name,
+        date: _cookedAt,
+        recipeIds: [widget.recipe.id],
+      );
+
       final meal = Meal(
         id: IdGenerator.generateId(),
         recipeId: widget.recipe.id,
@@ -41,26 +68,42 @@ class _CookMealScreenState extends State<CookMealScreen> {
       if (mounted) {
         Navigator.pop(context, true);
       }
+    } on ValidationException catch (e) {
+      _showErrorSnackBar(e.message);
+    } on GastrobrainException catch (e) {
+      _showErrorSnackBar('Error saving meal: ${e.message}');
+    } catch (e) {
+      _showErrorSnackBar('An unexpected error occurred while saving the meal');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
     }
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _cookedAt,
-      firstDate: DateTime(2000),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null && picked != _cookedAt) {
-      setState(() {
-        _cookedAt = DateTime(
-          picked.year,
-          picked.month,
-          picked.day,
-          _cookedAt.hour,
-          _cookedAt.minute,
-        );
-      });
+    try {
+      final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: _cookedAt,
+        firstDate: DateTime(2000),
+        lastDate: DateTime.now(),
+      );
+      if (picked != null && picked != _cookedAt) {
+        setState(() {
+          _cookedAt = DateTime(
+            picked.year,
+            picked.month,
+            picked.day,
+            _cookedAt.hour,
+            _cookedAt.minute,
+          );
+        });
+      }
+    } catch (e) {
+      _showErrorSnackBar('Error selecting date');
     }
   }
 
@@ -143,6 +186,15 @@ class _CookMealScreenState extends State<CookMealScreen> {
                           prefixIcon: Icon(Icons.timer),
                         ),
                         keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value != null && value.isNotEmpty) {
+                            final time = double.tryParse(value);
+                            if (time == null || time < 0) {
+                              return 'Enter a valid time';
+                            }
+                          }
+                          return null;
+                        },
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -155,6 +207,15 @@ class _CookMealScreenState extends State<CookMealScreen> {
                           prefixIcon: Icon(Icons.timer),
                         ),
                         keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value != null && value.isNotEmpty) {
+                            final time = double.tryParse(value);
+                            if (time == null || time < 0) {
+                              return 'Enter a valid time';
+                            }
+                          }
+                          return null;
+                        },
                       ),
                     ),
                   ],
@@ -199,11 +260,17 @@ class _CookMealScreenState extends State<CookMealScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: _saveMeal,
-                    icon: const Icon(Icons.save),
-                    label: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      child: Text('Save Meal'),
+                    onPressed: _isSaving ? null : _saveMeal,
+                    icon: _isSaving
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(),
+                          )
+                        : const Icon(Icons.save),
+                    label: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Text(_isSaving ? 'Saving...' : 'Save Meal'),
                     ),
                   ),
                 ),
