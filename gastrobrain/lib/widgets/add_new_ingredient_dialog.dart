@@ -17,7 +17,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _notesController = TextEditingController();
-  String _selectedCategory = 'vegetable';
+  final String _selectedCategory = 'vegetable';
   String? _selectedUnit;
   ProteinType? _selectedProteinType;
   bool _isSaving = false;
