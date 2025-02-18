@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import '../widgets/add_ingredient_dialog.dart';
 import '../models/recipe.dart';
+import '../models/ingredient.dart';
+import '../models/recipe_ingredient.dart';
 import '../database/database_helper.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
+import '../utils/id_generator.dart';
 
 class AddRecipeScreen extends StatefulWidget {
   const AddRecipeScreen({super.key});
@@ -21,6 +25,10 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   int _difficulty = 1;
   int _rating = 0;
   bool _isSaving = false;
+  final String _tempRecipeId = IdGenerator.generateId();
+  final List<RecipeIngredient> _pendingIngredients = [];
+  final Map<String, Ingredient> _ingredientDetails =
+      {}; // Cache for ingredient details
 
   final List<String> _frequencies = [
     'daily',
@@ -82,6 +90,39 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     );
   }
 
+  Future<void> _addIngredient() async {
+    // Create a temporary recipe for the dialog
+    final tempRecipe = Recipe(
+      id: _tempRecipeId, // Use consistent temporary ID
+      name: _nameController.text,
+      desiredFrequency: _selectedFrequency,
+      notes: _notesController.text,
+      createdAt: DateTime.now(),
+      difficulty: _difficulty,
+      prepTimeMinutes: int.tryParse(_prepTimeController.text) ?? 0,
+      cookTimeMinutes: int.tryParse(_cookTimeController.text) ?? 0,
+      rating: _rating,
+    );
+
+    final result = await showDialog<RecipeIngredient>(
+      // Change return type
+      context: context,
+      builder: (context) => AddIngredientDialog(
+        recipe: tempRecipe,
+        onSave: (ingredient) {
+          // Instead of saving to DB, return the ingredient
+          Navigator.pop(context, ingredient);
+        },
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _pendingIngredients.add(result);
+      });
+    }
+  }
+
   Future<void> _saveRecipe() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -95,7 +136,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       // Validate recipe data
       EntityValidator.validateRecipe(
         name: _nameController.text,
-        ingredients: [],
+        ingredients: _pendingIngredients.map((i) => i.toMap()).toList(),
         instructions: [],
       );
 
@@ -106,7 +147,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       EntityValidator.validateTime(cookTime?.toDouble(), 'Cooking');
 
       final recipe = Recipe(
-        id: DateTime.now().toString(), // We'll improve ID generation later
+        id: _tempRecipeId, // Use the same ID we've been using
         name: _nameController.text,
         desiredFrequency: _selectedFrequency,
         notes: _notesController.text,
@@ -119,6 +160,11 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
 
       final dbHelper = DatabaseHelper();
       await dbHelper.insertRecipe(recipe);
+
+      // Then save all pending ingredients
+      for (final ingredient in _pendingIngredients) {
+        await dbHelper.addIngredientToRecipe(ingredient);
+      }
 
       if (mounted) {
         Navigator.pop(context, true);

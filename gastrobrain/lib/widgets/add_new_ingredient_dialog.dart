@@ -135,7 +135,111 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // ... (keep existing form fields)
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Ingredient Name',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter an ingredient name';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // Category Dropdown
+              DropdownButtonFormField<String>(
+                value: _selectedCategory,
+                decoration: const InputDecoration(
+                  labelText: 'Category',
+                  border: OutlineInputBorder(),
+                ),
+                items: _categories.map((category) {
+                  return DropdownMenuItem(
+                    value: category,
+                    child: Text(formatCategoryName(category)),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCategory = value!;
+                    if (value != 'protein') {
+                      _selectedProteinType = null;
+                    }
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // Unit Dropdown
+              DropdownButtonFormField<String>(
+                value: _selectedUnit,
+                decoration: const InputDecoration(
+                  labelText: 'Unit (Optional)',
+                  border: OutlineInputBorder(),
+                ),
+                items: [
+                  const DropdownMenuItem<String>(
+                    value: null,
+                    child: Text('No unit'),
+                  ),
+                  ..._units.map((unit) {
+                    return DropdownMenuItem(
+                      value: unit,
+                      child: Text(unit),
+                    );
+                  }),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _selectedUnit = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // Protein Type (only shown for protein category)
+              if (_selectedCategory == 'protein')
+                DropdownButtonFormField<ProteinType>(
+                  value: _selectedProteinType,
+                  decoration: const InputDecoration(
+                    labelText: 'Protein Type',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: ProteinType.values.map((type) {
+                    return DropdownMenuItem(
+                      value: type,
+                      child: Text(type.displayName),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedProteinType = value;
+                    });
+                  },
+                  validator: (value) {
+                    if (_selectedCategory == 'protein' && value == null) {
+                      return 'Please select a protein type';
+                    }
+                    return null;
+                  },
+                ),
+
+              if (_selectedCategory == 'protein') const SizedBox(height: 16),
+
+              // Notes
+              TextFormField(
+                controller: _notesController,
+                decoration: const InputDecoration(
+                  labelText: 'Notes (Optional)',
+                  border: OutlineInputBorder(),
+                  hintText: 'Any additional information',
+                ),
+                maxLines: 2,
+              ),
             ],
           ),
         ),
