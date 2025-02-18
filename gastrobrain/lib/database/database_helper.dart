@@ -333,24 +333,24 @@ class DatabaseHelper {
     GROUP BY recipe_id
   ''');
 
-    Future<List<Map<String, dynamic>>> getRecipeCookingStats() async {
-      final Database db = await database;
-      final List<Map<String, dynamic>> results = await db.rawQuery('''
-      SELECT 
-        r.id,
-        r.name,
-        r.desired_frequency,
-        MAX(m.cooked_at) as last_cooked,
-        COUNT(m.id) as times_cooked,
-        AVG(m.actual_prep_time) as avg_prep_time,
-        AVG(m.actual_cook_time) as avg_cook_time
-      FROM recipes r
-      LEFT JOIN meals m ON r.id = m.recipe_id
-      GROUP BY r.id
-    ''');
+    // Future<List<Map<String, dynamic>>> getRecipeCookingStats() async {
+    //   final Database db = await database;
+    //   final List<Map<String, dynamic>> results = await db.rawQuery('''
+    //   SELECT
+    //     r.id,
+    //     r.name,
+    //     r.desired_frequency,
+    //     MAX(m.cooked_at) as last_cooked,
+    //     COUNT(m.id) as times_cooked,
+    //     AVG(m.actual_prep_time) as avg_prep_time,
+    //     AVG(m.actual_cook_time) as avg_cook_time
+    //   FROM recipes r
+    //   LEFT JOIN meals m ON r.id = m.recipe_id
+    //   GROUP BY r.id
+    // ''');
 
-      return results;
-    }
+    //   return results;
+    // }
 
     return Map.fromEntries(
       results.map((row) => MapEntry(

@@ -3,7 +3,7 @@ import '../models/recipe.dart';
 import '../screens/recipe_ingredients_screen.dart';
 //import '../screens/cook_meal_screen.dart';
 import '../screens/meal_history_screen.dart';
-import '../database/database_helper.dart';
+//import '../database/database_helper.dart';
 
 class RecipeCard extends StatefulWidget {
   final Recipe recipe;
