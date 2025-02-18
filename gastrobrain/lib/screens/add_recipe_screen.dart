@@ -80,6 +80,33 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     );
   }
 
+  Future<Ingredient?> _getIngredientDetails(String ingredientId) async {
+    // Check if we already have the ingredient details cached
+    if (_ingredientDetails.containsKey(ingredientId)) {
+      return _ingredientDetails[ingredientId];
+    }
+
+    final dbHelper = DatabaseHelper();
+    try {
+      // Load all ingredients at once and cache them
+      final ingredients = await dbHelper.getAllIngredients();
+      for (final ingredient in ingredients) {
+        _ingredientDetails[ingredient.id] = ingredient;
+      }
+
+      final ingredient = _ingredientDetails[ingredientId];
+      if (ingredient == null) {
+        throw NotFoundException('Ingredient not found');
+      }
+
+      return ingredient;
+    } on GastrobrainException {
+      rethrow; // Re-throw GastrobrainException types as they are
+    } catch (e) {
+      throw GastrobrainException('Error loading ingredient details: $e');
+    }
+  }
+
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -201,83 +228,164 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       appBar: AppBar(
         title: const Text('Add New Recipe'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Recipe Name',
-                  border: OutlineInputBorder(),
+      body: SingleChildScrollView(
+        // Added ScrollView
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Recipe Name',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a recipe name';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a recipe name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _selectedFrequency,
-                decoration: const InputDecoration(
-                  labelText: 'Desired Frequency',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: _selectedFrequency,
+                  decoration: const InputDecoration(
+                    labelText: 'Desired Frequency',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: _frequencies.map((String frequency) {
+                    return DropdownMenuItem<String>(
+                      value: frequency,
+                      child: Text(
+                          frequency[0].toUpperCase() + frequency.substring(1)),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        _selectedFrequency = newValue;
+                      });
+                    }
+                  },
                 ),
-                items: _frequencies.map((String frequency) {
-                  return DropdownMenuItem<String>(
-                    value: frequency,
-                    child: Text(
-                        frequency[0].toUpperCase() + frequency.substring(1)),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  if (newValue != null) {
-                    setState(() {
-                      _selectedFrequency = newValue;
-                    });
-                  }
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildRatingField('Difficulty Level', _difficulty, (value) {
-                setState(() => _difficulty = value);
-              }),
-              const SizedBox(height: 16),
-              _buildTimeField('Preparation Time', _prepTimeController),
-              const SizedBox(height: 16),
-              _buildTimeField('Cooking Time', _cookTimeController),
-              const SizedBox(height: 16),
-              _buildRatingField('Rating', _rating, (value) {
-                setState(() => _rating = value);
-              }),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _notesController,
-                decoration: const InputDecoration(
-                  labelText: 'Notes',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 16),
+                _buildRatingField('Difficulty Level', _difficulty, (value) {
+                  setState(() => _difficulty = value);
+                }),
+                const SizedBox(height: 16),
+                _buildTimeField('Preparation Time', _prepTimeController),
+                const SizedBox(height: 16),
+                _buildTimeField('Cooking Time', _cookTimeController),
+                const SizedBox(height: 16),
+                _buildRatingField('Rating', _rating, (value) {
+                  setState(() => _rating = value);
+                }),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _notesController,
+                  decoration: const InputDecoration(
+                    labelText: 'Notes',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 3,
                 ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isSaving ? null : _saveRecipe,
+                const SizedBox(height: 16),
+                // Ingredients Section
+                Card(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: _isSaving
-                        ? const CircularProgressIndicator()
-                        : const Text('Save Recipe'),
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Ingredients',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            TextButton.icon(
+                              icon: const Icon(Icons.add),
+                              label: const Text('Add'),
+                              onPressed: _addIngredient,
+                            ),
+                          ],
+                        ),
+                        if (_pendingIngredients.isEmpty)
+                          const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Text(
+                                'No ingredients added yet',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ),
+                          )
+                        else
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: _pendingIngredients.length,
+                            itemBuilder: (context, index) {
+                              final ingredient = _pendingIngredients[index];
+                              return ListTile(
+                                title: FutureBuilder<Ingredient?>(
+                                  future: _getIngredientDetails(
+                                      ingredient.ingredientId),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasData) {
+                                      final ingredientName =
+                                          snapshot.data?.name ?? 'Unknown';
+                                      final unit = snapshot.data?.unit ?? '';
+                                      return Text(
+                                          '$ingredientName: ${ingredient.quantity} $unit');
+                                    }
+                                    return const Text('Loading...');
+                                  },
+                                ),
+                                subtitle: ingredient.notes != null
+                                    ? Text(ingredient.notes!)
+                                    : null,
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () {
+                                    setState(() {
+                                      _pendingIngredients.removeAt(index);
+                                    });
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isSaving ? null : _saveRecipe,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: _isSaving
+                          ? const CircularProgressIndicator()
+                          : const Text('Save Recipe'),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
