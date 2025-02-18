@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import '../widgets/add_ingredient_dialog.dart';
 import '../models/recipe.dart';
+import '../models/ingredient.dart';
+import '../models/recipe_ingredient.dart';
 import '../database/database_helper.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
@@ -23,7 +26,10 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   int _difficulty = 1;
   int _rating = 0;
   bool _isSaving = false;
-  final List<Map<String, dynamic>> _ingredients = [];
+  final String _tempRecipeId = IdGenerator.generateId();
+  final List<RecipeIngredient> _pendingIngredients = [];
+  final Map<String, Ingredient> _ingredientDetails =
+      {}; // Cache for ingredient details
 
   final List<String> _frequencies = [
     'daily',
@@ -75,6 +81,33 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     );
   }
 
+  Future<Ingredient?> _getIngredientDetails(String ingredientId) async {
+    // Check if we already have the ingredient details cached
+    if (_ingredientDetails.containsKey(ingredientId)) {
+      return _ingredientDetails[ingredientId];
+    }
+
+    final dbHelper = DatabaseHelper();
+    try {
+      // Load all ingredients at once and cache them
+      final ingredients = await dbHelper.getAllIngredients();
+      for (final ingredient in ingredients) {
+        _ingredientDetails[ingredient.id] = ingredient;
+      }
+
+      final ingredient = _ingredientDetails[ingredientId];
+      if (ingredient == null) {
+        throw NotFoundException('Ingredient not found');
+      }
+
+      return ingredient;
+    } on GastrobrainException {
+      rethrow; // Re-throw GastrobrainException types as they are
+    } catch (e) {
+      throw GastrobrainException('Error loading ingredient details: $e');
+    }
+  }
+
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -83,6 +116,39 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         duration: const Duration(seconds: 3),
       ),
     );
+  }
+
+  Future<void> _addIngredient() async {
+    // Create a temporary recipe for the dialog
+    final tempRecipe = Recipe(
+      id: _tempRecipeId, // Use consistent temporary ID
+      name: _nameController.text,
+      desiredFrequency: _selectedFrequency,
+      notes: _notesController.text,
+      createdAt: DateTime.now(),
+      difficulty: _difficulty,
+      prepTimeMinutes: int.tryParse(_prepTimeController.text) ?? 0,
+      cookTimeMinutes: int.tryParse(_cookTimeController.text) ?? 0,
+      rating: _rating,
+    );
+
+    final result = await showDialog<RecipeIngredient>(
+      // Change return type
+      context: context,
+      builder: (context) => AddIngredientDialog(
+        recipe: tempRecipe,
+        onSave: (ingredient) {
+          // Instead of saving to DB, return the ingredient
+          Navigator.pop(context, ingredient);
+        },
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _pendingIngredients.add(result);
+      });
+    }
   }
 
   Future<void> _saveRecipe() async {
@@ -98,7 +164,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       // Validate recipe data
       EntityValidator.validateRecipe(
         name: _nameController.text,
-        ingredients: [],
+        ingredients: _pendingIngredients.map((i) => i.toMap()).toList(),
         instructions: [],
       );
 
@@ -109,7 +175,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       EntityValidator.validateTime(cookTime?.toDouble(), 'Cooking');
 
       final recipe = Recipe(
-        id: IdGenerator.generateId(),
+        id: _tempRecipeId, // Use the same ID we've been using
         name: _nameController.text,
         desiredFrequency: _selectedFrequency,
         notes: _notesController.text,
@@ -122,6 +188,11 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
 
       final dbHelper = DatabaseHelper();
       await dbHelper.insertRecipe(recipe);
+
+      // Then save all pending ingredients
+      for (final ingredient in _pendingIngredients) {
+        await dbHelper.addIngredientToRecipe(ingredient);
+      }
 
       if (mounted) {
         Navigator.pop(context, true);
@@ -189,6 +260,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         title: const Text('Add New Recipe'),
       ),
       body: SingleChildScrollView(
+        // Added ScrollView
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Form(
@@ -252,7 +324,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   ),
                   maxLines: 3,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
                 // Ingredients Section
                 Card(
                   child: Padding(
@@ -277,19 +349,60 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                             ),
                           ],
                         ),
-                        const Center(
-                          child: Text(
-                            'No ingredients added yet',
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontStyle: FontStyle.italic,
+                        if (_pendingIngredients.isEmpty)
+                          const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Text(
+                                'No ingredients added yet',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
                             ),
+                          )
+                        else
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: _pendingIngredients.length,
+                            itemBuilder: (context, index) {
+                              final ingredient = _pendingIngredients[index];
+                              return ListTile(
+                                title: FutureBuilder<Ingredient?>(
+                                  future: _getIngredientDetails(
+                                      ingredient.ingredientId),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasData) {
+                                      final ingredientName =
+                                          snapshot.data?.name ?? 'Unknown';
+                                      final unit = snapshot.data?.unit ?? '';
+                                      return Text(
+                                          '$ingredientName: ${ingredient.quantity} $unit');
+                                    }
+                                    return const Text('Loading...');
+                                  },
+                                ),
+                                subtitle: ingredient.notes != null
+                                    ? Text(ingredient.notes!)
+                                    : null,
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () {
+                                    setState(() {
+                                      _pendingIngredients.removeAt(index);
+                                    });
+                                  },
+                                ),
+                              );
+                            },
                           ),
-                        ),
                       ],
                     ),
                   ),
                 ),
+                const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(

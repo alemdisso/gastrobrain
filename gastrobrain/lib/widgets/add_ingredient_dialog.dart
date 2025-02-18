@@ -11,8 +11,13 @@ import '../core/validators/entity_validator.dart';
 
 class AddIngredientDialog extends StatefulWidget {
   final Recipe recipe;
+  final Function(RecipeIngredient)? onSave; // Add this
 
-  const AddIngredientDialog({super.key, required this.recipe});
+  const AddIngredientDialog({
+    super.key,
+    required this.recipe,
+    this.onSave,
+  }) : super();
 
   @override
   State<AddIngredientDialog> createState() => _AddIngredientDialogState();
@@ -97,10 +102,15 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
         notes: _notesController.text.isEmpty ? null : _notesController.text,
       );
 
-      await _dbHelper.addIngredientToRecipe(recipeIngredient);
-
-      if (mounted) {
-        Navigator.pop(context, true);
+      if (widget.onSave != null) {
+        // If onSave is provided, use it instead of saving to DB
+        widget.onSave!(recipeIngredient);
+      } else {
+        // Otherwise save directly to DB (for edit mode)
+        await _dbHelper.addIngredientToRecipe(recipeIngredient);
+        if (mounted) {
+          Navigator.pop(context, true);
+        }
       }
     } on ValidationException catch (e) {
       _showErrorSnackBar(e.message);
