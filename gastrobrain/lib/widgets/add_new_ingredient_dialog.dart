@@ -166,10 +166,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
                 }).toList(),
                 onChanged: (value) {
                   setState(() {
-<<<<<<< HEAD
-=======
                     _selectedCategory = value!;
->>>>>>> fix/ingredients-temporary-recipe
                     if (value != 'protein') {
                       _selectedProteinType = null;
                     }

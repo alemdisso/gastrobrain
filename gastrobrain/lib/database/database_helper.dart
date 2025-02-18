@@ -408,4 +408,13 @@ class DatabaseHelper {
     final List<Map<String, dynamic>> maps = await db.rawQuery(query, arguments);
     return List.generate(maps.length, (i) => Recipe.fromMap(maps[i]));
   }
+
+  Future<int> deleteRecipeIngredient(String id) async {
+    final Database db = await database;
+    return await db.delete(
+      'recipe_ingredients',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
 }

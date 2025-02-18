@@ -7,7 +7,6 @@ import '../database/database_helper.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
 import '../utils/id_generator.dart';
-import '../widgets/add_ingredient_dialog.dart';
 
 class AddRecipeScreen extends StatefulWidget {
   const AddRecipeScreen({super.key});
@@ -211,36 +210,6 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
           _isSaving = false;
         });
       }
-    }
-  }
-
-  Future<void> _addIngredient() async {
-    // Create a temporary recipe for the dialog
-    final tempRecipe = Recipe(
-      id: DateTime.now().toString(),
-      name: _nameController.text,
-      createdAt: DateTime.now(),
-      desiredFrequency: _selectedFrequency,
-      notes: _notesController.text,
-      difficulty: _difficulty,
-      prepTimeMinutes: int.tryParse(_prepTimeController.text) ?? 0,
-      cookTimeMinutes: int.tryParse(_cookTimeController.text) ?? 0,
-      rating: _rating,
-    );
-
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AddIngredientDialog(recipe: tempRecipe),
-    );
-
-    if (result == true) {
-      // Reload ingredients list
-      final dbHelper = DatabaseHelper();
-      final ingredients = await dbHelper.getRecipeIngredients(tempRecipe.id);
-      setState(() {
-        _ingredients.clear();
-        _ingredients.addAll(ingredients);
-      });
     }
   }
 

@@ -6,6 +6,7 @@ import '../models/protein_type.dart';
 import '../database/database_helper.dart';
 import '../widgets/add_ingredient_dialog.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
+import '../core/services/snackbar_service.dart';
 
 class RecipeIngredientsScreen extends StatefulWidget {
   final Recipe recipe;
@@ -71,6 +72,53 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
 
     if (result == true) {
       _loadIngredients();
+    }
+  }
+
+  Future<void> _deleteIngredient(Map<String, dynamic> ingredient) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Ingredient'),
+          content: Text(
+              'Are you sure you want to remove ${ingredient['name']} from this recipe?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.error,
+              ),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      try {
+        await _dbHelper.deleteRecipeIngredient(ingredient['id']);
+        if (mounted) {
+          SnackbarService.showSuccess(
+              context, 'Ingredient deleted successfully');
+          _loadIngredients();
+        }
+        _loadIngredients(); // Reload the ingredients list
+      } on GastrobrainException catch (e) {
+        if (mounted) {
+          SnackbarService.showError(context, e.message);
+        }
+      } catch (e) {
+        if (mounted) {
+          SnackbarService.showError(context,
+              'An unexpected error occurred while deleting the ingredient');
+        }
+      }
     }
   }
 
@@ -178,7 +226,14 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
                             ),
                             trailing: PopupMenuButton<String>(
                               onSelected: (value) {
-                                // We'll implement edit/delete next
+                                switch (value) {
+                                  case 'delete':
+                                    _deleteIngredient(ingredient);
+                                    break;
+                                  case 'edit':
+                                    // We'll implement edit next
+                                    break;
+                                }
                               },
                               itemBuilder: (context) => [
                                 const PopupMenuItem(
