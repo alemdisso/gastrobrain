@@ -123,6 +123,21 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
     }
   }
 
+  Future<void> _editIngredient(Map<String, dynamic> ingredient) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AddIngredientDialog(
+        recipe: widget.recipe,
+        existingIngredient: ingredient, // We'll need to add this parameter
+        recipeIngredientId: ingredient['recipe_ingredient_id'], // And this one
+      ),
+    );
+
+    if (result == true) {
+      _loadIngredients();
+    }
+  }
+
   Widget _buildErrorView() {
     return Center(
       child: Column(
@@ -232,7 +247,7 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
                                     _deleteIngredient(ingredient);
                                     break;
                                   case 'edit':
-                                    // We'll implement edit next
+                                    _editIngredient(ingredient);
                                     break;
                                 }
                               },

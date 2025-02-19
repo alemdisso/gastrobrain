@@ -11,12 +11,16 @@ import '../core/validators/entity_validator.dart';
 
 class AddIngredientDialog extends StatefulWidget {
   final Recipe recipe;
-  final Function(RecipeIngredient)? onSave; // Add this
+  final Function(RecipeIngredient)? onSave;
+  final Map<String, dynamic>? existingIngredient;
+  final String? recipeIngredientId;
 
   const AddIngredientDialog({
     super.key,
     required this.recipe,
     this.onSave,
+    this.existingIngredient,
+    this.recipeIngredientId,
   }) : super();
 
   @override
@@ -37,7 +41,91 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
   @override
   void initState() {
     super.initState();
-    _loadIngredients();
+    if (widget.existingIngredient != null) {
+      // Pre-fill the form with existing values
+      _quantityController.text =
+          widget.existingIngredient!['quantity'].toString();
+      _notesController.text =
+          widget.existingIngredient!['preparation_notes'] ?? '';
+
+      // We'll need to set the selected ingredient after loading the ingredients list
+      _loadIngredients().then((_) {
+        if (mounted) {
+          setState(() {
+            _selectedIngredient = _availableIngredients.firstWhere(
+              (i) => i.id == widget.existingIngredient!['id'],
+              orElse: () => _availableIngredients.first,
+            );
+          });
+        }
+      });
+    } else {
+      _loadIngredients();
+    }
+  }
+
+  Future<void> _addIngredientToRecipe() async {
+    if (!_formKey.currentState!.validate() || _selectedIngredient == null) {
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      EntityValidator.validateRecipeIngredient(
+        ingredientId: _selectedIngredient!.id,
+        recipeId: widget.recipe.id,
+        quantity: double.parse(_quantityController.text),
+      );
+
+      if (widget.recipeIngredientId != null) {
+        // Update existing recipe ingredient
+        final updatedRecipeIngredient = RecipeIngredient(
+          id: widget.recipeIngredientId!,
+          recipeId: widget.recipe.id,
+          ingredientId: _selectedIngredient!.id,
+          quantity: double.parse(_quantityController.text),
+          notes: _notesController.text.isEmpty ? null : _notesController.text,
+        );
+
+        await _dbHelper.updateRecipeIngredient(updatedRecipeIngredient);
+      } else {
+        // Create new recipe ingredient
+        final recipeIngredient = RecipeIngredient(
+          id: IdGenerator.generateId(),
+          recipeId: widget.recipe.id,
+          ingredientId: _selectedIngredient!.id,
+          quantity: double.parse(_quantityController.text),
+          notes: _notesController.text.isEmpty ? null : _notesController.text,
+        );
+
+        if (widget.onSave != null) {
+          widget.onSave!(recipeIngredient);
+        } else {
+          await _dbHelper.addIngredientToRecipe(recipeIngredient);
+        }
+      }
+
+      if (mounted) {
+        Navigator.pop(context, true);
+      }
+    } on ValidationException catch (e) {
+      _showErrorSnackBar(e.message);
+    } on DuplicateException catch (e) {
+      _showErrorSnackBar(e.message);
+    } on GastrobrainException catch (e) {
+      _showErrorSnackBar('Error adding ingredient: ${e.message}');
+    } catch (e) {
+      _showErrorSnackBar('An unexpected error occurred');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
   }
 
   void _showErrorSnackBar(String message) {
@@ -78,57 +166,6 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
     }
   }
 
-  Future<void> _addIngredientToRecipe() async {
-    if (!_formKey.currentState!.validate() || _selectedIngredient == null) {
-      return;
-    }
-
-    setState(() {
-      _isSaving = true;
-    });
-
-    try {
-      EntityValidator.validateRecipeIngredient(
-        ingredientId: _selectedIngredient!.id,
-        recipeId: widget.recipe.id,
-        quantity: double.parse(_quantityController.text),
-      );
-
-      final recipeIngredient = RecipeIngredient(
-        id: IdGenerator.generateId(),
-        recipeId: widget.recipe.id,
-        ingredientId: _selectedIngredient!.id,
-        quantity: double.parse(_quantityController.text),
-        notes: _notesController.text.isEmpty ? null : _notesController.text,
-      );
-
-      if (widget.onSave != null) {
-        // If onSave is provided, use it instead of saving to DB
-        widget.onSave!(recipeIngredient);
-      } else {
-        // Otherwise save directly to DB (for edit mode)
-        await _dbHelper.addIngredientToRecipe(recipeIngredient);
-        if (mounted) {
-          Navigator.pop(context, true);
-        }
-      }
-    } on ValidationException catch (e) {
-      _showErrorSnackBar(e.message);
-    } on DuplicateException catch (e) {
-      _showErrorSnackBar(e.message);
-    } on GastrobrainException catch (e) {
-      _showErrorSnackBar('Error adding ingredient: ${e.message}');
-    } catch (e) {
-      _showErrorSnackBar('An unexpected error occurred');
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSaving = false;
-        });
-      }
-    }
-  }
-
   Future<void> _createNewIngredient() async {
     final newIngredient = await showDialog<Ingredient>(
       context: context,
@@ -153,7 +190,9 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Add Ingredient'),
+      title: Text(widget.existingIngredient != null
+          ? 'Edit Ingredient'
+          : 'Add Ingredient'),
       content: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Form(
@@ -274,7 +313,8 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Add'),
+              : Text(
+                  widget.existingIngredient != null ? 'Save Changes' : 'Add'),
         ),
       ],
     );

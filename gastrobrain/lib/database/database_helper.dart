@@ -178,6 +178,16 @@ class DatabaseHelper {
     ''', [recipeId]);
   }
 
+  Future<int> updateRecipeIngredient(RecipeIngredient recipeIngredient) async {
+    final Database db = await database;
+    return await db.update(
+      'recipe_ingredients',
+      recipeIngredient.toMap(),
+      where: 'id = ?',
+      whereArgs: [recipeIngredient.id],
+    );
+  }
+
   // Recipe CRUD operations
   Future<int> insertRecipe(Recipe recipe) async {
     final Database db = await database;
