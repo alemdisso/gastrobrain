@@ -5,6 +5,7 @@ import '../database/database_helper.dart';
 import '../utils/id_generator.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
+import '../core/services/snackbar_service.dart';
 
 class CookMealScreen extends StatefulWidget {
   final Recipe recipe;
@@ -24,16 +25,6 @@ class _CookMealScreenState extends State<CookMealScreen> {
   bool _wasSuccessful = true;
   DateTime _cookedAt = DateTime.now();
   bool _isSaving = false;
-
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
 
   Future<void> _saveMeal() async {
     if (!_formKey.currentState!.validate()) {
@@ -79,11 +70,18 @@ class _CookMealScreenState extends State<CookMealScreen> {
         Navigator.pop(context, true);
       }
     } on ValidationException catch (e) {
-      _showErrorSnackBar(e.message);
+      if (mounted) {
+        SnackbarService.showError(context, e.message);
+      }
     } on GastrobrainException catch (e) {
-      _showErrorSnackBar('Error saving meal: ${e.message}');
+      if (mounted) {
+        SnackbarService.showError(context, e.message);
+      }
     } catch (e) {
-      _showErrorSnackBar('An unexpected error occurred while saving the meal');
+      if (mounted) {
+        SnackbarService.showError(
+            context, 'An unexpected error occurred while saving the meal');
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -93,7 +91,7 @@ class _CookMealScreenState extends State<CookMealScreen> {
     }
   }
 
-  Future<void> _selectDate(BuildContext context) async {
+  Future<void> _selectDate() async {
     try {
       final DateTime? picked = await showDatePicker(
         context: context,
@@ -101,7 +99,7 @@ class _CookMealScreenState extends State<CookMealScreen> {
         firstDate: DateTime(2000),
         lastDate: DateTime.now(),
       );
-      if (picked != null && picked != _cookedAt) {
+      if (picked != null && picked != _cookedAt && mounted) {
         setState(() {
           _cookedAt = DateTime(
             picked.year,
@@ -113,7 +111,9 @@ class _CookMealScreenState extends State<CookMealScreen> {
         });
       }
     } catch (e) {
-      _showErrorSnackBar('Error selecting date');
+      if (mounted) {
+        SnackbarService.showError(context, 'Error selecting date');
+      }
     }
   }
 
@@ -157,7 +157,7 @@ class _CookMealScreenState extends State<CookMealScreen> {
                       title: Text(
                         'Cooked on: ${_cookedAt.toString().split('.')[0]}',
                       ),
-                      onTap: () => _selectDate(context),
+                      onTap: () => _selectDate(),
                     ),
                   ),
                 ),

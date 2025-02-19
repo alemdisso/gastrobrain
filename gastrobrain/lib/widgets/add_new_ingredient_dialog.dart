@@ -5,6 +5,7 @@ import '../database/database_helper.dart';
 import '../utils/id_generator.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
+import '../core/services/snackbar_service.dart';
 
 class AddNewIngredientDialog extends StatefulWidget {
   const AddNewIngredientDialog({super.key});
@@ -47,16 +48,6 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
     'slice'
   ];
 
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
-
   Future<void> _saveIngredient() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -91,13 +82,22 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
         Navigator.pop(context, ingredient);
       }
     } on ValidationException catch (e) {
-      _showErrorSnackBar(e.message);
+      if (mounted) {
+        SnackbarService.showError(context, e.message);
+      }
     } on DuplicateException catch (e) {
-      _showErrorSnackBar(e.message);
+      if (mounted) {
+        SnackbarService.showError(context, e.message);
+      }
     } on GastrobrainException catch (e) {
-      _showErrorSnackBar('Error saving ingredient: ${e.message}');
+      if (mounted) {
+        SnackbarService.showError(
+            context, 'Error saving ingredient: ${e.message}');
+      }
     } catch (e) {
-      _showErrorSnackBar('An unexpected error occurred');
+      if (mounted) {
+        SnackbarService.showError(context, 'An unexpected error occurred');
+      }
     } finally {
       if (mounted) {
         setState(() {

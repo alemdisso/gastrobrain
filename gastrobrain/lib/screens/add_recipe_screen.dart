@@ -7,6 +7,7 @@ import '../database/database_helper.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
 import '../utils/id_generator.dart';
+import '../core/services/snackbar_service.dart';
 
 class AddRecipeScreen extends StatefulWidget {
   const AddRecipeScreen({super.key});
@@ -107,16 +108,6 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     }
   }
 
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
-
   Future<void> _addIngredient() async {
     // Create a temporary recipe for the dialog
     final tempRecipe = Recipe(
@@ -197,13 +188,21 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         Navigator.pop(context, true);
       }
     } on ValidationException catch (e) {
-      _showErrorSnackBar(e.message);
+      if (mounted) {
+        SnackbarService.showError(context, e.message);
+      }
     } on DuplicateException catch (e) {
-      _showErrorSnackBar(e.message);
+      if (mounted) {
+        SnackbarService.showError(context, e.message);
+      }
     } on GastrobrainException catch (e) {
-      _showErrorSnackBar('Error saving recipe: ${e.message}');
+      if (mounted) {
+        SnackbarService.showError(context, 'Error saving recipe: ${e.message}');
+      }
     } catch (e) {
-      _showErrorSnackBar('An unexpected error occurred');
+      if (mounted) {
+        SnackbarService.showError(context, 'An unexpected error occurred');
+      }
     } finally {
       if (mounted) {
         setState(() {

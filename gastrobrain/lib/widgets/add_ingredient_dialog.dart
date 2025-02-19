@@ -8,6 +8,7 @@ import 'add_new_ingredient_dialog.dart';
 import '../utils/id_generator.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
+import '../core/services/snackbar_service.dart';
 
 class AddIngredientDialog extends StatefulWidget {
   final Recipe recipe;
@@ -112,13 +113,22 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
         Navigator.pop(context, true);
       }
     } on ValidationException catch (e) {
-      _showErrorSnackBar(e.message);
+      if (mounted) {
+        SnackbarService.showError(context, e.message);
+      }
     } on DuplicateException catch (e) {
-      _showErrorSnackBar(e.message);
+      if (mounted) {
+        SnackbarService.showError(context, e.message);
+      }
     } on GastrobrainException catch (e) {
-      _showErrorSnackBar('Error adding ingredient: ${e.message}');
+      if (mounted) {
+        SnackbarService.showError(
+            context, 'Error adding ingredient: ${e.message}');
+      }
     } catch (e) {
-      _showErrorSnackBar('An unexpected error occurred');
+      if (mounted) {
+        SnackbarService.showError(context, 'An unexpected error occurred');
+      }
     } finally {
       if (mounted) {
         setState(() {
