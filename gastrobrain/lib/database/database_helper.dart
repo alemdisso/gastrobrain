@@ -23,13 +23,14 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'gastrobrain.db');
     return await openDatabase(
       path,
-      version: 4, // Increment version number
+      version: 5, // Increment version number
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
   }
 
   Future<void> _onCreate(Database db, int version) async {
+    // Create recipes table with all columns that were added in upgrades
     await db.execute('''
       CREATE TABLE recipes(
         id TEXT PRIMARY KEY,
@@ -44,21 +45,22 @@ class DatabaseHelper {
       )
     ''');
 
+    // Create meals table with all columns that were added in upgrades
     await db.execute('''
-    CREATE TABLE meals(
-      id TEXT PRIMARY KEY,
-      recipe_id TEXT NOT NULL,
-      cooked_at TEXT NOT NULL,
-      servings INTEGER NOT NULL,
-      notes TEXT,
-      was_successful INTEGER DEFAULT 1,
-      actual_prep_time REAL DEFAULT 0,
-      actual_cook_time REAL DEFAULT 0,
-      FOREIGN KEY (recipe_id) REFERENCES recipes (id)
-    )
-  ''');
+      CREATE TABLE meals(
+        id TEXT PRIMARY KEY,
+        recipe_id TEXT NOT NULL,
+        cooked_at TEXT NOT NULL,
+        servings INTEGER NOT NULL,
+        notes TEXT,
+        was_successful INTEGER DEFAULT 1,
+        actual_prep_time REAL DEFAULT 0,
+        actual_cook_time REAL DEFAULT 0,
+        FOREIGN KEY (recipe_id) REFERENCES recipes (id)
+      )
+    ''');
 
-// Create ingredients table
+    // Create ingredients table
     await db.execute('''
       CREATE TABLE ingredients(
         id TEXT PRIMARY KEY,
@@ -70,7 +72,7 @@ class DatabaseHelper {
       )
     ''');
 
-    // Create recipe_ingredients table
+    // Create recipe_ingredients table with the new unit_override column
     await db.execute('''
       CREATE TABLE recipe_ingredients(
         id TEXT PRIMARY KEY,
@@ -78,6 +80,7 @@ class DatabaseHelper {
         ingredient_id TEXT NOT NULL,
         quantity REAL NOT NULL,
         notes TEXT,
+        unit_override TEXT,
         FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE,
         FOREIGN KEY (ingredient_id) REFERENCES ingredients (id)
       )
@@ -131,6 +134,14 @@ class DatabaseHelper {
         )
       ''');
     }
+
+    if (oldVersion < 5) {
+      // Add unit_override column to recipe_ingredients
+      await db.execute('''
+        ALTER TABLE recipe_ingredients 
+        ADD COLUMN unit_override TEXT
+      ''');
+    }
   }
 
   // Ingredient operations
@@ -171,6 +182,7 @@ class DatabaseHelper {
         ri.id as recipe_ingredient_id,
         ri.quantity,
         ri.notes as preparation_notes,
+        ri.unit_override,
         i.*
       FROM recipe_ingredients ri
       JOIN ingredients i ON ri.ingredient_id = i.id

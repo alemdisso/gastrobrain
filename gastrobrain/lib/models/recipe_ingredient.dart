@@ -1,9 +1,10 @@
 class RecipeIngredient {
   String id;
   String recipeId;
-  String ingredientId;
-  double quantity;
+  String ingredientId; // ID of the ingredient in the ingredients table
+  double quantity; // Quantity of the ingredient, like 1.5 or 0.5
   String? notes; // Optional preparation notes, like "diced" or "minced"
+  String? unitOverride; // Optional override for the ingredient's unit
 
   RecipeIngredient({
     required this.id,
@@ -11,6 +12,7 @@ class RecipeIngredient {
     required this.ingredientId,
     required this.quantity,
     this.notes,
+    this.unitOverride,
   });
 
   Map<String, dynamic> toMap() {
@@ -20,6 +22,7 @@ class RecipeIngredient {
       'ingredient_id': ingredientId,
       'quantity': quantity,
       'notes': notes,
+      'unit_override': unitOverride,
     };
   }
 
@@ -30,6 +33,7 @@ class RecipeIngredient {
       ingredientId: map['ingredient_id'],
       quantity: map['quantity'],
       notes: map['notes'],
+      unitOverride: map['unit_override'], // Add to factory constructor
     );
   }
 }

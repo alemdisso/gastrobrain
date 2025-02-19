@@ -211,6 +211,11 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
                                 (e) => e.name == ingredient['protein_type'])
                             : null;
 
+                        // Get the effective unit (override or default)
+                        final effectiveUnit = ingredient['unit_override'] ??
+                            ingredient['unit'] ??
+                            '';
+
                         return Card(
                           margin: const EdgeInsets.symmetric(
                             horizontal: 8,
@@ -229,8 +234,22 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  '${ingredient['quantity']} ${ingredient['unit'] ?? ''}',
+                                Row(
+                                  children: [
+                                    Text(
+                                      '${ingredient['quantity']} $effectiveUnit',
+                                    ),
+                                    if (ingredient['unit_override'] != null)
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 4),
+                                        child: Tooltip(
+                                          message:
+                                              'Unit overridden (default: ${ingredient['unit'] ?? 'none'})',
+                                          child: const Icon(Icons.edit_note,
+                                              size: 16),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                                 if (ingredient['preparation_notes'] != null)
                                   Text(

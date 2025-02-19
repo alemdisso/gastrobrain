@@ -32,6 +32,20 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
   final _formKey = GlobalKey<FormState>();
   final _quantityController = TextEditingController();
   final _notesController = TextEditingController();
+  String? _selectedUnitOverride;
+  bool _useCustomUnit = false;
+
+  final List<String> _units = [
+    'g',
+    'kg',
+    'ml',
+    'l',
+    'cup',
+    'tbsp',
+    'tsp',
+    'piece',
+    'slice'
+  ];
 
   final DatabaseHelper _dbHelper = DatabaseHelper();
   List<Ingredient> _availableIngredients = [];
@@ -48,6 +62,12 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
           widget.existingIngredient!['quantity'].toString();
       _notesController.text =
           widget.existingIngredient!['preparation_notes'] ?? '';
+
+      // Initialize unit override if it exists
+      if (widget.existingIngredient!['unit_override'] != null) {
+        _useCustomUnit = true;
+        _selectedUnitOverride = widget.existingIngredient!['unit_override'];
+      }
 
       // We'll need to set the selected ingredient after loading the ingredients list
       _loadIngredients().then((_) {
@@ -89,6 +109,9 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
           ingredientId: _selectedIngredient!.id,
           quantity: double.parse(_quantityController.text),
           notes: _notesController.text.isEmpty ? null : _notesController.text,
+          unitOverride: _useCustomUnit
+              ? _selectedUnitOverride
+              : null, // Include unit override
         );
 
         await _dbHelper.updateRecipeIngredient(updatedRecipeIngredient);
@@ -243,29 +266,116 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                       onPressed: _createNewIngredient,
                     ),
                     const SizedBox(height: 16),
-
-                    // Quantity
-                    TextFormField(
-                      controller: _quantityController,
-                      decoration: InputDecoration(
-                        labelText: 'Quantity',
-                        border: const OutlineInputBorder(),
-                        suffixText: _selectedIngredient?.unit,
+                    // Quantity and Unit Section
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Quantity Field
+                        Expanded(
+                          child: TextFormField(
+                            controller: _quantityController,
+                            decoration: const InputDecoration(
+                              labelText: 'Quantity',
+                              border: OutlineInputBorder(),
+                            ),
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter a quantity';
+                              }
+                              if (double.tryParse(value) == null) {
+                                return 'Please enter a valid number';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        // Unit Section
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (_useCustomUnit)
+                                DropdownButtonFormField<String>(
+                                  value: _selectedUnitOverride,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Unit',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  items: _units.map((unit) {
+                                    return DropdownMenuItem(
+                                      value: unit,
+                                      child: Text(unit),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _selectedUnitOverride = value;
+                                    });
+                                  },
+                                  validator: (value) {
+                                    if (value == null) {
+                                      return 'Select a unit';
+                                    }
+                                    return null;
+                                  },
+                                )
+                              else if (_selectedIngredient != null)
+                                SizedBox(
+                                  height: 56, // Match TextFormField height
+                                  child: InputDecorator(
+                                    decoration: const InputDecoration(
+                                      labelText: 'Unit',
+                                      border: OutlineInputBorder(),
+                                    ),
+                                    child: Text(
+                                      _selectedIngredient?.unit ?? 'N/A',
+                                      style:
+                                          Theme.of(context).textTheme.bodyLarge,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    // Unit Override Checkbox
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Row(
+                        children: [
+                          Checkbox(
+                            value: _useCustomUnit,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                _useCustomUnit = value ?? false;
+                                if (!_useCustomUnit) {
+                                  _selectedUnitOverride = null;
+                                } else if (_selectedIngredient?.unit != null) {
+                                  // Initialize with current unit if available
+                                  _selectedUnitOverride =
+                                      _selectedIngredient?.unit;
+                                }
+                              });
+                            },
+                          ),
+                          const Text('Override default unit'),
+                          if (!_useCustomUnit &&
+                              _selectedIngredient?.unit != null)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: Text(
+                                '(current: ${_selectedIngredient!.unit})',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ),
+                        ],
                       ),
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a quantity';
-                        }
-                        if (double.tryParse(value) == null) {
-                          return 'Please enter a valid number';
-                        }
-                        return null;
-                      },
                     ),
                     const SizedBox(height: 16),
-
                     // Preparation Notes
                     TextFormField(
                       controller: _notesController,
