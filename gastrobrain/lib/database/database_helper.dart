@@ -23,7 +23,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'gastrobrain.db');
     return await openDatabase(
       path,
-      version: 5, // Increment version number
+      version: 6, // Increment version number
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -81,6 +81,9 @@ class DatabaseHelper {
         quantity REAL NOT NULL,
         notes TEXT,
         unit_override TEXT,
+        custom_name TEXT,
+        custom_category TEXT,
+        custom_unit TEXT,
         FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE,
         FOREIGN KEY (ingredient_id) REFERENCES ingredients (id)
       )
@@ -142,6 +145,45 @@ class DatabaseHelper {
         ADD COLUMN unit_override TEXT
       ''');
     }
+    if (oldVersion < 6) {
+      // Add custom ingredient columns
+      await db.execute(
+          'ALTER TABLE recipe_ingredients ADD COLUMN custom_name TEXT');
+      await db.execute(
+          'ALTER TABLE recipe_ingredients ADD COLUMN custom_category TEXT');
+      await db.execute(
+          'ALTER TABLE recipe_ingredients ADD COLUMN custom_unit TEXT');
+
+      // Make ingredient_id nullable by recreating the table
+      await db.execute('''
+        CREATE TABLE recipe_ingredients_new(
+          id TEXT PRIMARY KEY,
+          recipe_id TEXT NOT NULL,
+          ingredient_id TEXT,
+          quantity REAL NOT NULL,
+          notes TEXT,
+          unit_override TEXT,
+          custom_name TEXT,
+          custom_category TEXT,
+          custom_unit TEXT,
+          FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE,
+          FOREIGN KEY (ingredient_id) REFERENCES ingredients (id)
+        )
+      ''');
+
+      // Copy data from old table to new table
+      await db.execute('''
+        INSERT INTO recipe_ingredients_new
+        SELECT id, recipe_id, ingredient_id, quantity, notes, unit_override, 
+               NULL as custom_name, NULL as custom_category, NULL as custom_unit
+        FROM recipe_ingredients
+      ''');
+
+      // Drop old table and rename new table
+      await db.execute('DROP TABLE recipe_ingredients');
+      await db.execute(
+          'ALTER TABLE recipe_ingredients_new RENAME TO recipe_ingredients');
+    }
   }
 
   // Ingredient operations
@@ -183,7 +225,15 @@ class DatabaseHelper {
         ri.quantity,
         ri.notes as preparation_notes,
         ri.unit_override,
-        i.*
+        ri.custom_name,
+        ri.custom_category,
+        ri.custom_unit,
+        ri.ingredient_id,
+        COALESCE(ri.custom_name, i.name) as name,
+        COALESCE(ri.custom_category, i.category) as category,
+        COALESCE(ri.custom_unit, i.unit) as original_unit,
+        i.protein_type,
+        i.notes as ingredient_notes
       FROM recipe_ingredients ri
       JOIN ingredients i ON ri.ingredient_id = i.id
       WHERE ri.recipe_id = ?

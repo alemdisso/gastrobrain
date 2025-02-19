@@ -81,6 +81,44 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     );
   }
 
+  Widget _buildIngredientList() {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _pendingIngredients.length,
+      itemBuilder: (context, index) {
+        final ingredient = _pendingIngredients[index];
+        return ListTile(
+          title: ingredient.ingredientId != null
+              ? FutureBuilder<Ingredient?>(
+                  future: _getIngredientDetails(ingredient.ingredientId!),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      final ingredientName = snapshot.data?.name ?? 'Unknown';
+                      final unit =
+                          ingredient.unitOverride ?? snapshot.data?.unit ?? '';
+                      return Text(
+                          '$ingredientName: ${ingredient.quantity} $unit');
+                    }
+                    return const Text('Loading...');
+                  },
+                )
+              : Text(
+                  '${ingredient.customName}: ${ingredient.quantity} ${ingredient.customUnit ?? ''}'),
+          subtitle: ingredient.notes != null ? Text(ingredient.notes!) : null,
+          trailing: IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () {
+              setState(() {
+                _pendingIngredients.removeAt(index);
+              });
+            },
+          ),
+        );
+      },
+    );
+  }
+
   Future<Ingredient?> _getIngredientDetails(String ingredientId) async {
     // Check if we already have the ingredient details cached
     if (_ingredientDetails.containsKey(ingredientId)) {
@@ -293,7 +331,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   maxLines: 3,
                 ),
                 const SizedBox(height: 16),
-                // Ingredients Section
+// Ingredients Section
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -331,41 +369,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                             ),
                           )
                         else
-                          ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _pendingIngredients.length,
-                            itemBuilder: (context, index) {
-                              final ingredient = _pendingIngredients[index];
-                              return ListTile(
-                                title: FutureBuilder<Ingredient?>(
-                                  future: _getIngredientDetails(
-                                      ingredient.ingredientId),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.hasData) {
-                                      final ingredientName =
-                                          snapshot.data?.name ?? 'Unknown';
-                                      final unit = snapshot.data?.unit ?? '';
-                                      return Text(
-                                          '$ingredientName: ${ingredient.quantity} $unit');
-                                    }
-                                    return const Text('Loading...');
-                                  },
-                                ),
-                                subtitle: ingredient.notes != null
-                                    ? Text(ingredient.notes!)
-                                    : null,
-                                trailing: IconButton(
-                                  icon: const Icon(Icons.delete),
-                                  onPressed: () {
-                                    setState(() {
-                                      _pendingIngredients.removeAt(index);
-                                    });
-                                  },
-                                ),
-                              );
-                            },
-                          ),
+                          _buildIngredientList(),
                       ],
                     ),
                   ),
