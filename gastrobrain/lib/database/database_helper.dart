@@ -168,6 +168,7 @@ class DatabaseHelper {
     final Database db = await database;
     return await db.rawQuery('''
       SELECT 
+        ri.id as recipe_ingredient_id,
         ri.quantity,
         ri.notes as preparation_notes,
         i.*

@@ -102,7 +102,8 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
 
     if (confirm == true) {
       try {
-        await _dbHelper.deleteRecipeIngredient(ingredient['id']);
+        await _dbHelper
+            .deleteRecipeIngredient(ingredient['recipe_ingredient_id']);
         if (mounted) {
           SnackbarService.showSuccess(
               context, 'Ingredient deleted successfully');
