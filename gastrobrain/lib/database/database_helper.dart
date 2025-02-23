@@ -221,22 +221,22 @@ class DatabaseHelper {
     final Database db = await database;
     return await db.rawQuery('''
       SELECT 
-        ri.id as recipe_ingredient_id,
-        ri.quantity,
-        ri.notes as preparation_notes,
-        ri.unit_override,
-        ri.custom_name,
-        ri.custom_category,
-        ri.custom_unit,
-        ri.ingredient_id,
-        COALESCE(ri.custom_name, i.name) as name,
-        COALESCE(ri.custom_category, i.category) as category,
-        COALESCE(ri.custom_unit, i.unit) as original_unit,
-        i.protein_type,
-        i.notes as ingredient_notes
-      FROM recipe_ingredients ri
-      JOIN ingredients i ON ri.ingredient_id = i.id
-      WHERE ri.recipe_id = ?
+      ri.id as recipe_ingredient_id,
+      ri.quantity,
+      ri.notes as preparation_notes,
+      ri.unit_override,
+      ri.custom_name,
+      ri.custom_category,
+      ri.custom_unit,
+      ri.ingredient_id,
+      COALESCE(ri.custom_name, i.name) as name,
+      COALESCE(ri.custom_category, i.category) as category,
+      COALESCE(ri.custom_unit, COALESCE(ri.unit_override, i.unit)) as unit,
+      i.protein_type,
+      i.notes as ingredient_notes
+    FROM recipe_ingredients ri
+    LEFT JOIN ingredients i ON ri.ingredient_id = i.id
+    WHERE ri.recipe_id = ?
     ''', [recipeId]);
   }
 
