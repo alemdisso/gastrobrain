@@ -34,6 +34,10 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
   final _notesController = TextEditingController();
   String? _selectedUnitOverride;
   bool _useCustomUnit = false;
+  List<Ingredient> _availableIngredients = [];
+  Ingredient? _selectedIngredient;
+  bool _isLoading = true;
+  bool _isSaving = false;
 
   final List<String> _units = [
     'g',
@@ -47,12 +51,26 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
     'slice'
   ];
 
-  final DatabaseHelper _dbHelper = DatabaseHelper();
-  List<Ingredient> _availableIngredients = [];
-  Ingredient? _selectedIngredient;
-  bool _isLoading = true;
-  bool _isSaving = false;
+  final List<String> _categories = [
+    'vegetable',
+    'fruit',
+    'protein',
+    'dairy',
+    'grain',
+    'pulse',
+    'nuts_and_seeds',
+    'seasoning',
+    'sugar products',
+    'other'
+  ];
 
+  // New controller for custom ingredients
+  final _customNameController = TextEditingController();
+
+  bool _isCustomIngredient = false;
+  String _selectedCategory = 'vegetable';
+
+  final DatabaseHelper _dbHelper = DatabaseHelper();
   @override
   void initState() {
     super.initState();
@@ -63,30 +81,53 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
       _notesController.text =
           widget.existingIngredient!['preparation_notes'] ?? '';
 
-      // Initialize unit override if it exists
-      if (widget.existingIngredient!['unit_override'] != null) {
-        _useCustomUnit = true;
-        _selectedUnitOverride = widget.existingIngredient!['unit_override'];
-      }
-
-      // We'll need to set the selected ingredient after loading the ingredients list
-      _loadIngredients().then((_) {
-        if (mounted) {
-          setState(() {
-            _selectedIngredient = _availableIngredients.firstWhere(
-              (i) => i.id == widget.existingIngredient!['id'],
-              orElse: () => _availableIngredients.first,
-            );
-          });
+      // Check if this is a custom ingredient
+      if (widget.existingIngredient!['custom_name'] != null) {
+        _isCustomIngredient = true;
+        _customNameController.text = widget.existingIngredient!['custom_name'];
+        _selectedCategory = widget.existingIngredient!['custom_category'];
+        if (widget.existingIngredient!['custom_unit'] != null) {
+          _selectedUnitOverride = widget.existingIngredient!['custom_unit'];
         }
-      });
+      } else {
+        // Initialize unit override if it exists
+        if (widget.existingIngredient!['unit_override'] != null) {
+          _useCustomUnit = true;
+          _selectedUnitOverride = widget.existingIngredient!['unit_override'];
+        }
+
+        // We'll need to set the selected ingredient after loading the ingredients list
+        _loadIngredients().then((_) {
+          if (mounted) {
+            setState(() {
+              _selectedIngredient = _availableIngredients.firstWhere(
+                (i) => i.id == widget.existingIngredient!['id'],
+                orElse: () => _availableIngredients.first,
+              );
+            });
+          }
+        });
+      }
     } else {
       _loadIngredients();
     }
   }
 
+  String _formatCategoryName(String category) {
+    // Convert snake_case to Title Case
+    if (category.contains('_')) {
+      return category
+          .split('_')
+          .map((word) => word[0].toUpperCase() + word.substring(1))
+          .join(' ');
+    }
+    // Simple capitalization for single words
+    return category[0].toUpperCase() + category.substring(1);
+  }
+
   Future<void> _addIngredientToRecipe() async {
-    if (!_formKey.currentState!.validate() || _selectedIngredient == null) {
+    if (!_formKey.currentState!.validate() ||
+        (!_isCustomIngredient && _selectedIngredient == null)) {
       return;
     }
 
@@ -95,39 +136,50 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
     });
 
     try {
-      EntityValidator.validateRecipeIngredient(
-        ingredientId: _selectedIngredient!.id,
-        recipeId: widget.recipe.id,
-        quantity: double.parse(_quantityController.text),
-      );
+      RecipeIngredient recipeIngredient;
 
-      if (widget.recipeIngredientId != null) {
-        // Update existing recipe ingredient
-        final updatedRecipeIngredient = RecipeIngredient(
-          id: widget.recipeIngredientId!,
+      if (_isCustomIngredient) {
+        // Create custom ingredient
+        recipeIngredient = RecipeIngredient(
+          id: widget.recipeIngredientId ?? IdGenerator.generateId(),
           recipeId: widget.recipe.id,
-          ingredientId: _selectedIngredient!.id,
+          ingredientId: null, // No reference to ingredients table
           quantity: double.parse(_quantityController.text),
           notes: _notesController.text.isEmpty ? null : _notesController.text,
-          unitOverride: _useCustomUnit
-              ? _selectedUnitOverride
-              : null, // Include unit override
+          customName: _customNameController.text,
+          customCategory: _selectedCategory,
+          customUnit: _selectedUnitOverride,
         );
-
-        await _dbHelper.updateRecipeIngredient(updatedRecipeIngredient);
       } else {
-        // Create new recipe ingredient
-        final recipeIngredient = RecipeIngredient(
-          id: IdGenerator.generateId(),
+        // Create regular ingredient with optional unit override
+        if (_selectedIngredient == null) {
+          throw ValidationException('Please select an ingredient');
+        }
+
+        EntityValidator.validateRecipeIngredient(
+          ingredientId: _selectedIngredient!.id,
+          recipeId: widget.recipe.id,
+          quantity: double.parse(_quantityController.text),
+        );
+
+        recipeIngredient = RecipeIngredient(
+          id: widget.recipeIngredientId ?? IdGenerator.generateId(),
           recipeId: widget.recipe.id,
           ingredientId: _selectedIngredient!.id,
           quantity: double.parse(_quantityController.text),
           notes: _notesController.text.isEmpty ? null : _notesController.text,
+          unitOverride: _useCustomUnit ? _selectedUnitOverride : null,
         );
+      }
 
-        if (widget.onSave != null) {
-          widget.onSave!(recipeIngredient);
+      if (widget.onSave != null) {
+        widget.onSave!(recipeIngredient);
+      } else {
+        if (widget.recipeIngredientId != null) {
+          // Update existing recipe ingredient
+          await _dbHelper.updateRecipeIngredient(recipeIngredient);
         } else {
+          // Add new recipe ingredient
           await _dbHelper.addIngredientToRecipe(recipeIngredient);
         }
       }
@@ -217,6 +269,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
   void dispose() {
     _quantityController.dispose();
     _notesController.dispose();
+    _customNameController.dispose(); // Dispose new controller
     super.dispose();
   }
 
@@ -234,38 +287,106 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Ingredient Selection
-                    DropdownButtonFormField<Ingredient>(
-                      value: _selectedIngredient,
-                      decoration: const InputDecoration(
-                        labelText: 'Select Ingredient',
-                        border: OutlineInputBorder(),
-                      ),
-                      items: _availableIngredients.map((ingredient) {
-                        return DropdownMenuItem(
-                          value: ingredient,
-                          child: Text(ingredient.name),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedIngredient = value;
-                        });
-                      },
-                      validator: (value) {
-                        if (value == null) {
-                          return 'Please select an ingredient';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    TextButton.icon(
-                      icon: const Icon(Icons.add),
-                      label: const Text('Create New Ingredient'),
-                      onPressed: _createNewIngredient,
+                    // Toggle between regular and custom ingredient
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SegmentedButton<bool>(
+                            segments: const [
+                              ButtonSegment(
+                                value: false,
+                                label: Text('From Database'),
+                              ),
+                              ButtonSegment(
+                                value: true,
+                                label: Text('Custom'),
+                              ),
+                            ],
+                            selected: {_isCustomIngredient},
+                            onSelectionChanged: (Set<bool> selected) {
+                              setState(() {
+                                _isCustomIngredient = selected.first;
+                              });
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 16),
+
+                    // Show either custom ingredient form or regular ingredient selector
+                    if (_isCustomIngredient) ...[
+                      // Custom Ingredient Name
+                      TextFormField(
+                        controller: _customNameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Ingredient Name',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter an ingredient name';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      // Custom Ingredient Category
+                      DropdownButtonFormField<String>(
+                        value: _selectedCategory,
+                        decoration: const InputDecoration(
+                          labelText: 'Category',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: _categories.map((category) {
+                          return DropdownMenuItem(
+                            value: category,
+                            child: Text(_formatCategoryName(category)),
+                          );
+                        }).toList(),
+                        onChanged: (String? value) {
+                          if (value != null) {
+                            setState(() {
+                              _selectedCategory = value;
+                            });
+                          }
+                        },
+                      ),
+                    ] else ...[
+                      // Regular Ingredient Selection
+                      DropdownButtonFormField<Ingredient>(
+                        value: _selectedIngredient,
+                        decoration: const InputDecoration(
+                          labelText: 'Select Ingredient',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: _availableIngredients.map((ingredient) {
+                          return DropdownMenuItem(
+                            value: ingredient,
+                            child: Text(ingredient.name),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedIngredient = value;
+                          });
+                        },
+                        validator: (value) {
+                          if (!_isCustomIngredient && value == null) {
+                            return 'Please select an ingredient';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      TextButton.icon(
+                        icon: const Icon(Icons.add),
+                        label: const Text('Create New Ingredient'),
+                        onPressed: _createNewIngredient,
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+
                     // Quantity and Unit Section
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,89 +415,101 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                         const SizedBox(width: 16),
                         // Unit Section
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (_useCustomUnit)
-                                DropdownButtonFormField<String>(
+                          child: _isCustomIngredient
+                              // Custom ingredient unit selection
+                              ? DropdownButtonFormField<String>(
                                   value: _selectedUnitOverride,
                                   decoration: const InputDecoration(
-                                    labelText: 'Unit',
+                                    labelText: 'Unit (Optional)',
                                     border: OutlineInputBorder(),
                                   ),
-                                  items: _units.map((unit) {
-                                    return DropdownMenuItem(
-                                      value: unit,
-                                      child: Text(unit),
-                                    );
-                                  }).toList(),
+                                  items: [
+                                    const DropdownMenuItem(
+                                      value: null,
+                                      child: Text('No unit'),
+                                    ),
+                                    ..._units.map((unit) {
+                                      return DropdownMenuItem(
+                                        value: unit,
+                                        child: Text(unit),
+                                      );
+                                    }),
+                                  ],
                                   onChanged: (value) {
                                     setState(() {
                                       _selectedUnitOverride = value;
                                     });
                                   },
-                                  validator: (value) {
-                                    if (value == null) {
-                                      return 'Select a unit';
-                                    }
-                                    return null;
-                                  },
                                 )
-                              else if (_selectedIngredient != null)
-                                SizedBox(
-                                  height: 56, // Match TextFormField height
-                                  child: InputDecorator(
-                                    decoration: const InputDecoration(
-                                      labelText: 'Unit',
-                                      border: OutlineInputBorder(),
-                                    ),
-                                    child: Text(
-                                      _selectedIngredient?.unit ?? 'N/A',
-                                      style:
-                                          Theme.of(context).textTheme.bodyLarge,
-                                    ),
-                                  ),
+                              // Regular ingredient unit with override option
+                              : Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (_useCustomUnit)
+                                      DropdownButtonFormField<String>(
+                                        value: _selectedUnitOverride,
+                                        decoration: const InputDecoration(
+                                          labelText: 'Unit',
+                                          border: OutlineInputBorder(),
+                                        ),
+                                        items: _units.map((unit) {
+                                          return DropdownMenuItem(
+                                            value: unit,
+                                            child: Text(unit),
+                                          );
+                                        }).toList(),
+                                        onChanged: (value) {
+                                          setState(() {
+                                            _selectedUnitOverride = value;
+                                          });
+                                        },
+                                      )
+                                    else if (_selectedIngredient != null)
+                                      SizedBox(
+                                        height: 56,
+                                        child: InputDecorator(
+                                          decoration: const InputDecoration(
+                                            labelText: 'Unit',
+                                            border: OutlineInputBorder(),
+                                          ),
+                                          child: Text(
+                                            _selectedIngredient?.unit ?? 'N/A',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyLarge,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
-                            ],
-                          ),
                         ),
                       ],
                     ),
-                    // Unit Override Checkbox
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Row(
-                        children: [
-                          Checkbox(
-                            value: _useCustomUnit,
-                            onChanged: (bool? value) {
-                              setState(() {
-                                _useCustomUnit = value ?? false;
-                                if (!_useCustomUnit) {
-                                  _selectedUnitOverride = null;
-                                } else if (_selectedIngredient?.unit != null) {
-                                  // Initialize with current unit if available
-                                  _selectedUnitOverride =
-                                      _selectedIngredient?.unit;
-                                }
-                              });
-                            },
-                          ),
-                          const Text('Override default unit'),
-                          if (!_useCustomUnit &&
-                              _selectedIngredient?.unit != null)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8.0),
-                              child: Text(
-                                '(current: ${_selectedIngredient!.unit})',
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
+
+                    // Unit Override Option (only for regular ingredients)
+                    if (!_isCustomIngredient)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Row(
+                          children: [
+                            Checkbox(
+                              value: _useCustomUnit,
+                              onChanged: (bool? value) {
+                                setState(() {
+                                  _useCustomUnit = value ?? false;
+                                  if (!_useCustomUnit) {
+                                    _selectedUnitOverride = null;
+                                  }
+                                });
+                              },
                             ),
-                        ],
+                            const Text('Override default unit'),
+                          ],
+                        ),
                       ),
-                    ),
+
                     const SizedBox(height: 16),
-                    // Preparation Notes
+                    // Notes Field
                     TextFormField(
                       controller: _notesController,
                       decoration: const InputDecoration(
@@ -386,36 +519,6 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                       ),
                       maxLines: 2,
                     ),
-
-                    if (_selectedIngredient != null) ...[
-                      const SizedBox(height: 16),
-                      // Ingredient Info Card
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Category: ${_selectedIngredient!.category}',
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                              if (_selectedIngredient!.proteinType != null)
-                                Text(
-                                  'Protein Type: ${_selectedIngredient!.proteinType}',
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                ),
-                              if (_selectedIngredient!.notes?.isNotEmpty ==
-                                  true)
-                                Text(
-                                  'Notes: ${_selectedIngredient!.notes}',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),
