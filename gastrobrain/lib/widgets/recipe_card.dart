@@ -110,7 +110,7 @@ class _RecipeCardState extends State<RecipeCard> {
                     const SizedBox(width: 16),
                     Icon(Icons.repeat, size: 16),
                     const SizedBox(width: 4),
-                    Text(widget.recipe.desiredFrequency),
+                    Text(widget.recipe.desiredFrequency.displayName),
                   ],
                 ),
               ],

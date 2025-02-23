@@ -3,6 +3,7 @@ import '../widgets/add_ingredient_dialog.dart';
 import '../models/recipe.dart';
 import '../models/ingredient.dart';
 import '../models/recipe_ingredient.dart';
+import '../models/frequency_type.dart';
 import '../database/database_helper.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
@@ -22,7 +23,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   final _notesController = TextEditingController();
   final _prepTimeController = TextEditingController();
   final _cookTimeController = TextEditingController();
-  String _selectedFrequency = 'monthly';
+  FrequencyType _selectedFrequency = FrequencyType.monthly;
   int _difficulty = 1;
   int _rating = 0;
   bool _isSaving = false;
@@ -31,13 +32,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   final Map<String, Ingredient> _ingredientDetails =
       {}; // Cache for ingredient details
 
-  final List<String> _frequencies = [
-    'daily',
-    'weekly',
-    'biweekly',
-    'monthly',
-    'rarely'
-  ];
+  final frequencies = FrequencyType.values;
 
   Widget _buildRatingField(String label, int value, Function(int) onChanged) {
     return Column(
@@ -288,20 +283,19 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
+                DropdownButtonFormField<FrequencyType>(
                   value: _selectedFrequency,
                   decoration: const InputDecoration(
                     labelText: 'Desired Frequency',
                     border: OutlineInputBorder(),
                   ),
-                  items: _frequencies.map((String frequency) {
-                    return DropdownMenuItem<String>(
+                  items: frequencies.map((frequency) {
+                    return DropdownMenuItem<FrequencyType>(
                       value: frequency,
-                      child: Text(
-                          frequency[0].toUpperCase() + frequency.substring(1)),
+                      child: Text(frequency.displayName),
                     );
                   }).toList(),
-                  onChanged: (String? newValue) {
+                  onChanged: (FrequencyType? newValue) {
                     if (newValue != null) {
                       setState(() {
                         _selectedFrequency = newValue;

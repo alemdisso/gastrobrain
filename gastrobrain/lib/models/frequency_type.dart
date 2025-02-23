@@ -1,0 +1,20 @@
+enum FrequencyType {
+  daily('daily'),
+  weekly('weekly'),
+  biweekly('biweekly'),
+  monthly('monthly'),
+  bimonthly('bimonthly'),
+  rarely('rarely');
+
+  final String value;
+  const FrequencyType(this.value);
+
+  static FrequencyType fromString(String value) {
+    return FrequencyType.values.firstWhere(
+      (type) => type.value == value,
+      orElse: () => FrequencyType.monthly,
+    );
+  }
+
+  String get displayName => value[0].toUpperCase() + value.substring(1);
+}

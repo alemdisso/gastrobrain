@@ -1,10 +1,11 @@
+import 'frequency_type.dart';
+
 class Recipe {
   String id;
   String name;
-  String desiredFrequency;
+  FrequencyType desiredFrequency;
   String notes;
   DateTime createdAt;
-  // New fields
   int difficulty; // 1-5 scale
   int prepTimeMinutes; // Preparation time in minutes
   int cookTimeMinutes; // Cooking time in minutes
@@ -13,20 +14,20 @@ class Recipe {
   Recipe({
     required this.id,
     required this.name,
-    this.desiredFrequency = 'monthly',
+    FrequencyType? desiredFrequency,
     this.notes = '',
     required this.createdAt,
     this.difficulty = 1,
     this.prepTimeMinutes = 0,
     this.cookTimeMinutes = 0,
     this.rating = 0,
-  });
+  }) : desiredFrequency = desiredFrequency ?? FrequencyType.monthly;
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'name': name,
-      'desired_frequency': desiredFrequency,
+      'desired_frequency': desiredFrequency.value,
       'notes': notes,
       'created_at': createdAt.toIso8601String(),
       'difficulty': difficulty,
@@ -40,7 +41,7 @@ class Recipe {
     return Recipe(
       id: map['id'],
       name: map['name'],
-      desiredFrequency: map['desired_frequency'],
+      desiredFrequency: FrequencyType.fromString(map['desired_frequency']),
       notes: map['notes'],
       createdAt: DateTime.parse(map['created_at']),
       difficulty: map['difficulty'] ?? 1,

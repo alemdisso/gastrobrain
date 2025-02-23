@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
+import '../models/frequency_type.dart'; // Add this import
 import '../database/database_helper.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
@@ -20,18 +21,10 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   late TextEditingController _notesController;
   late TextEditingController _prepTimeController;
   late TextEditingController _cookTimeController;
-  late String _selectedFrequency;
+  late FrequencyType _selectedFrequency; // Change type here
   late int _difficulty;
   late int _rating;
   bool _isSaving = false;
-
-  final List<String> _frequencies = [
-    'daily',
-    'weekly',
-    'biweekly',
-    'monthly',
-    'rarely'
-  ];
 
   @override
   void initState() {
@@ -197,20 +190,19 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
+                DropdownButtonFormField<FrequencyType>(
                   value: _selectedFrequency,
                   decoration: const InputDecoration(
                     labelText: 'Desired Frequency',
                     border: OutlineInputBorder(),
                   ),
-                  items: _frequencies.map((String frequency) {
-                    return DropdownMenuItem<String>(
+                  items: FrequencyType.values.map((frequency) {
+                    return DropdownMenuItem<FrequencyType>(
                       value: frequency,
-                      child: Text(
-                          frequency[0].toUpperCase() + frequency.substring(1)),
+                      child: Text(frequency.displayName),
                     );
                   }).toList(),
-                  onChanged: (String? newValue) {
+                  onChanged: (FrequencyType? newValue) {
                     if (newValue != null) {
                       setState(() {
                         _selectedFrequency = newValue;
