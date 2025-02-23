@@ -71,6 +71,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
   String _selectedCategory = 'vegetable';
 
   final DatabaseHelper _dbHelper = DatabaseHelper();
+
   @override
   void initState() {
     super.initState();
@@ -83,12 +84,14 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
 
       // Check if this is a custom ingredient
       if (widget.existingIngredient!['custom_name'] != null) {
-        _isCustomIngredient = true;
-        _customNameController.text = widget.existingIngredient!['custom_name'];
-        _selectedCategory = widget.existingIngredient!['custom_category'];
-        if (widget.existingIngredient!['custom_unit'] != null) {
+        setState(() {
+          _isCustomIngredient = true;
+          _customNameController.text =
+              widget.existingIngredient!['custom_name'];
+          _selectedCategory = widget.existingIngredient!['custom_category'];
           _selectedUnitOverride = widget.existingIngredient!['custom_unit'];
-        }
+          _isLoading = false; // Set loading to false for custom ingredients
+        });
       } else {
         // Initialize unit override if it exists
         if (widget.existingIngredient!['unit_override'] != null) {
