@@ -41,8 +41,9 @@ class Recipe {
     return Recipe(
       id: map['id'],
       name: map['name'],
-      desiredFrequency: FrequencyType.fromString(map['desired_frequency']),
-      notes: map['notes'],
+      desiredFrequency:
+          FrequencyType.fromString(map['desired_frequency'] ?? 'monthly'),
+      notes: map['notes'] ?? '',
       createdAt: DateTime.parse(map['created_at']),
       difficulty: map['difficulty'] ?? 1,
       prepTimeMinutes: map['prep_time_minutes'] ?? 0,
