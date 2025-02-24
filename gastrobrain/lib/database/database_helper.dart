@@ -1,9 +1,13 @@
+// Update in database_helper.dart
+
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/recipe.dart';
 import '../models/meal.dart';
 import '../models/ingredient.dart';
 import '../models/recipe_ingredient.dart';
+import '../models/meal_plan.dart'; // Add this import
+import '../models/meal_plan_item.dart'; // Add this import
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -23,7 +27,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'gastrobrain.db');
     return await openDatabase(
       path,
-      version: 6, // Increment version number
+      version: 7, // Increment version number for new tables
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -86,6 +90,31 @@ class DatabaseHelper {
         custom_unit TEXT,
         FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE,
         FOREIGN KEY (ingredient_id) REFERENCES ingredients (id)
+      )
+    ''');
+
+    // Create meal_plans table
+    await db.execute('''
+      CREATE TABLE meal_plans(
+        id TEXT PRIMARY KEY,
+        week_start_date TEXT NOT NULL,
+        notes TEXT,
+        created_at TEXT NOT NULL,
+        modified_at TEXT NOT NULL
+      )
+    ''');
+
+    // Create meal_plan_items table
+    await db.execute('''
+      CREATE TABLE meal_plan_items(
+        id TEXT PRIMARY KEY,
+        meal_plan_id TEXT NOT NULL,
+        recipe_id TEXT NOT NULL,
+        planned_date TEXT NOT NULL,
+        meal_type TEXT NOT NULL,
+        notes TEXT,
+        FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (id) ON DELETE CASCADE,
+        FOREIGN KEY (recipe_id) REFERENCES recipes (id)
       )
     ''');
   }
@@ -184,6 +213,224 @@ class DatabaseHelper {
       await db.execute(
           'ALTER TABLE recipe_ingredients_new RENAME TO recipe_ingredients');
     }
+
+    // Add new tables for meal planning in version 7
+    if (oldVersion < 7) {
+      // Create meal_plans table
+      await db.execute('''
+        CREATE TABLE meal_plans(
+          id TEXT PRIMARY KEY,
+          week_start_date TEXT NOT NULL,
+          notes TEXT,
+          created_at TEXT NOT NULL,
+          modified_at TEXT NOT NULL
+        )
+      ''');
+
+      // Create meal_plan_items table
+      await db.execute('''
+        CREATE TABLE meal_plan_items(
+          id TEXT PRIMARY KEY,
+          meal_plan_id TEXT NOT NULL,
+          recipe_id TEXT NOT NULL,
+          planned_date TEXT NOT NULL,
+          meal_type TEXT NOT NULL,
+          notes TEXT,
+          FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (id) ON DELETE CASCADE,
+          FOREIGN KEY (recipe_id) REFERENCES recipes (id)
+        )
+      ''');
+    }
+  }
+
+  // Meal Plan operations
+
+  Future<String> insertMealPlan(MealPlan mealPlan) async {
+    final Database db = await database;
+    await db.insert('meal_plans', mealPlan.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
+    return mealPlan.id;
+  }
+
+  Future<MealPlan?> getMealPlan(String id) async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'meal_plans',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (maps.isEmpty) {
+      return null;
+    }
+
+    // Get the meal plan items for this plan
+    final List<Map<String, dynamic>> itemMaps = await db.query(
+      'meal_plan_items',
+      where: 'meal_plan_id = ?',
+      whereArgs: [id],
+    );
+
+    final List<MealPlanItem> items = List.generate(
+        itemMaps.length, (i) => MealPlanItem.fromMap(itemMaps[i]));
+
+    return MealPlan.fromMap(maps.first, items);
+  }
+
+  Future<List<MealPlan>> getMealPlansByDateRange(
+      DateTime start, DateTime end) async {
+    final Database db = await database;
+
+    // Convert dates to ISO format for SQL query
+    final startStr = start.toIso8601String();
+    final endStr = end.toIso8601String();
+
+    // Query for meal plans that might fall within the specified range
+    final List<Map<String, dynamic>> planMaps = await db.rawQuery('''
+      SELECT * FROM meal_plans 
+      WHERE week_start_date <= ? AND 
+            date(week_start_date, '+7 days') >= ?
+      ORDER BY week_start_date ASC
+    ''', [endStr, startStr]);
+
+    // Build the list of meal plans
+    List<MealPlan> mealPlans = [];
+
+    for (var planMap in planMaps) {
+      final String planId = planMap['id'];
+
+      // Get all items for this plan
+      final List<Map<String, dynamic>> itemMaps = await db.query(
+        'meal_plan_items',
+        where: 'meal_plan_id = ?',
+        whereArgs: [planId],
+      );
+
+      final List<MealPlanItem> items = List.generate(
+          itemMaps.length, (i) => MealPlanItem.fromMap(itemMaps[i]));
+
+      mealPlans.add(MealPlan.fromMap(planMap, items));
+    }
+
+    return mealPlans;
+  }
+
+  Future<MealPlan?> getMealPlanForWeek(DateTime weekStart) async {
+    final Database db = await database;
+
+    // Normalize the date to start of day
+    final normalizedStart =
+        DateTime(weekStart.year, weekStart.month, weekStart.day);
+    final startStr = normalizedStart.toIso8601String();
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      'meal_plans',
+      where: 'week_start_date = ?',
+      whereArgs: [startStr],
+    );
+
+    if (maps.isEmpty) {
+      return null;
+    }
+
+    // Get the meal plan items for this plan
+    final String planId = maps.first['id'];
+    final List<Map<String, dynamic>> itemMaps = await db.query(
+      'meal_plan_items',
+      where: 'meal_plan_id = ?',
+      whereArgs: [planId],
+    );
+
+    final List<MealPlanItem> items = List.generate(
+        itemMaps.length, (i) => MealPlanItem.fromMap(itemMaps[i]));
+
+    return MealPlan.fromMap(maps.first, items);
+  }
+
+  Future<int> updateMealPlan(MealPlan mealPlan) async {
+    final Database db = await database;
+
+    // Begin a transaction to update the meal plan and its items
+    return await db.transaction((txn) async {
+      // Update the meal plan
+      await txn.update(
+        'meal_plans',
+        mealPlan.toMap(),
+        where: 'id = ?',
+        whereArgs: [mealPlan.id],
+      );
+
+      // Delete all existing items for this plan
+      await txn.delete(
+        'meal_plan_items',
+        where: 'meal_plan_id = ?',
+        whereArgs: [mealPlan.id],
+      );
+
+      // Insert all items
+      for (var item in mealPlan.items) {
+        await txn.insert(
+          'meal_plan_items',
+          item.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+
+      return 1; // Return success
+    });
+  }
+
+  Future<int> deleteMealPlan(String id) async {
+    final Database db = await database;
+
+    // The meal_plan_items will be automatically deleted due to ON DELETE CASCADE
+    return await db.delete(
+      'meal_plans',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  // Meal Plan Item operations
+
+  Future<String> insertMealPlanItem(MealPlanItem item) async {
+    final Database db = await database;
+    await db.insert('meal_plan_items', item.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
+    return item.id;
+  }
+
+  Future<int> updateMealPlanItem(MealPlanItem item) async {
+    final Database db = await database;
+    return await db.update(
+      'meal_plan_items',
+      item.toMap(),
+      where: 'id = ?',
+      whereArgs: [item.id],
+    );
+  }
+
+  Future<int> deleteMealPlanItem(String id) async {
+    final Database db = await database;
+    return await db.delete(
+      'meal_plan_items',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<List<MealPlanItem>> getMealPlanItemsForDate(DateTime date) async {
+    final Database db = await database;
+    final dateStr =
+        date.toIso8601String().split('T')[0]; // Get just the date part
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      'meal_plan_items',
+      where: 'planned_date = ?',
+      whereArgs: [dateStr],
+    );
+
+    return List.generate(maps.length, (i) => MealPlanItem.fromMap(maps[i]));
   }
 
   // Ingredient operations
