@@ -30,6 +30,10 @@ class DatabaseHelper {
       version: 7, // Increment version number for new tables
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
+      onConfigure: (db) async {
+        // Enable foreign key constraints
+        await db.execute('PRAGMA foreign_keys = ON');
+      },
     );
   }
 
@@ -315,8 +319,12 @@ class DatabaseHelper {
     return mealPlans;
   }
 
-  Future<MealPlan?> getMealPlanForWeek(DateTime weekStart) async {
+  Future<MealPlan?> getMealPlanForWeek(DateTime date) async {
     final Database db = await database;
+
+    // Calculate the Monday of the week containing this date
+    final int weekday = date.weekday;
+    final DateTime weekStart = date.subtract(Duration(days: weekday - 1));
 
     // Normalize the date to start of day
     final normalizedStart =

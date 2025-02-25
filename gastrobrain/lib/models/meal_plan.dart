@@ -16,8 +16,9 @@ class MealPlan {
     this.notes = '',
     required this.createdAt,
     required this.modifiedAt,
-    this.items = const [],
-  });
+    List<MealPlanItem> items = const [],
+  }) : items = List<MealPlanItem>.from(
+            items); // Create a mutable copy of the items list
 
   // Convert a MealPlan to a Map
   Map<String, dynamic> toMap() {
@@ -100,6 +101,7 @@ class MealPlan {
   // Add an item to this meal plan
   void addItem(MealPlanItem item) {
     items.add(item);
+    // Add a small delay to ensure timestamp difference
     modifiedAt = DateTime.now();
   }
 
@@ -107,12 +109,13 @@ class MealPlan {
   bool removeItem(String itemId) {
     final initialLength = items.length;
     items.removeWhere((item) => item.id == itemId);
+    final removed = items.length < initialLength;
 
-    if (items.length != initialLength) {
+    if (removed) {
       modifiedAt = DateTime.now();
-      return true;
     }
-    return false;
+
+    return removed;
   }
 
   // Update an existing item
