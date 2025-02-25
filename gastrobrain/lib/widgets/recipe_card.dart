@@ -103,12 +103,12 @@ class _RecipeCardState extends State<RecipeCard> {
                 ),
                 Row(
                   children: [
-                    Icon(Icons.timer, size: 16),
+                    const Icon(Icons.timer, size: 16),
                     const SizedBox(width: 4),
                     Text(
                         '${widget.recipe.prepTimeMinutes}/${widget.recipe.cookTimeMinutes}min'),
                     const SizedBox(width: 16),
-                    Icon(Icons.repeat, size: 16),
+                    const Icon(Icons.repeat, size: 16),
                     const SizedBox(width: 4),
                     Text(widget.recipe.desiredFrequency.displayName),
                   ],

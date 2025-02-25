@@ -1,6 +1,7 @@
 // lib/core/validators/entity_validator.dart
 
 import '../errors/gastrobrain_exceptions.dart';
+import '../../models/meal_plan_item.dart';
 
 class EntityValidator {
   static void validateRecipe({
@@ -79,6 +80,51 @@ class EntityValidator {
     }
     if (quantity <= 0) {
       throw ValidationException('Quantity must be greater than zero');
+    }
+  }
+
+  // Add to entity_validator.dart
+  static void validateMealPlan({
+    required String id,
+    required DateTime weekStartDate,
+  }) {
+    if (id.isEmpty) {
+      throw ValidationException('Meal plan ID cannot be empty');
+    }
+
+    // Validate week start date is a Monday
+    if (weekStartDate.weekday != DateTime.monday) {
+      throw ValidationException('Week start date must be a Monday');
+    }
+
+    // Validate week start date is not in the future
+    if (weekStartDate.isAfter(DateTime.now())) {
+      throw ValidationException('Week start date cannot be in the future');
+    }
+  }
+
+  static void validateMealPlanItem({
+    required String mealPlanId,
+    required String recipeId,
+    required String plannedDate,
+    required String mealType,
+  }) {
+    if (mealPlanId.isEmpty) {
+      throw ValidationException('Meal plan ID cannot be empty');
+    }
+    if (recipeId.isEmpty) {
+      throw ValidationException('Recipe ID cannot be empty');
+    }
+
+    // Validate planned date format (YYYY-MM-DD)
+    final datePattern = RegExp(r'^\d{4}-\d{2}-\d{2}$');
+    if (!datePattern.hasMatch(plannedDate)) {
+      throw ValidationException('Planned date must be in YYYY-MM-DD format');
+    }
+
+    // Validate meal type
+    if (mealType != MealPlanItem.lunch && mealType != MealPlanItem.dinner) {
+      throw ValidationException('Meal type must be either "lunch" or "dinner"');
     }
   }
 }

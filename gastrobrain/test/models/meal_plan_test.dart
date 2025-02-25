@@ -65,7 +65,7 @@ void main() {
           mealPlanId: 'test_id',
           recipeId: 'recipe1',
           plannedDate: '2023-06-05',
-          mealType: MealPlanItem.LUNCH,
+          mealType: MealPlanItem.lunch,
         ),
       ];
 
@@ -96,8 +96,8 @@ void main() {
 
     test('filters items by date', () {
       final weekStart = DateTime(2023, 6, 5); // A Monday
-      final mondayDate = '2023-06-05';
-      final tuesdayDate = '2023-06-06';
+      const mondayDate = '2023-06-05';
+      const tuesdayDate = '2023-06-06';
 
       final items = [
         MealPlanItem(
@@ -105,14 +105,14 @@ void main() {
           mealPlanId: 'test_id',
           recipeId: 'recipe1',
           plannedDate: mondayDate,
-          mealType: MealPlanItem.LUNCH,
+          mealType: MealPlanItem.lunch,
         ),
         MealPlanItem(
           id: 'item2',
           mealPlanId: 'test_id',
           recipeId: 'recipe2',
           plannedDate: tuesdayDate,
-          mealType: MealPlanItem.DINNER,
+          mealType: MealPlanItem.dinner,
         ),
       ];
 
@@ -143,14 +143,14 @@ void main() {
           mealPlanId: 'test_id',
           recipeId: 'recipe1',
           plannedDate: '2023-06-05',
-          mealType: MealPlanItem.LUNCH,
+          mealType: MealPlanItem.lunch,
         ),
         MealPlanItem(
           id: 'item2',
           mealPlanId: 'test_id',
           recipeId: 'recipe2',
           plannedDate: '2023-06-05',
-          mealType: MealPlanItem.DINNER,
+          mealType: MealPlanItem.dinner,
         ),
       ];
 
@@ -162,19 +162,19 @@ void main() {
         items: items,
       );
 
-      final lunchItems = mealPlan.getItemsForMealType(MealPlanItem.LUNCH);
+      final lunchItems = mealPlan.getItemsForMealType(MealPlanItem.lunch);
       expect(lunchItems.length, 1);
       expect(lunchItems[0].id, 'item1');
 
-      final dinnerItems = mealPlan.getItemsForMealType(MealPlanItem.DINNER);
+      final dinnerItems = mealPlan.getItemsForMealType(MealPlanItem.dinner);
       expect(dinnerItems.length, 1);
       expect(dinnerItems[0].id, 'item2');
     });
 
     test('filters items by date and meal type', () {
       final weekStart = DateTime(2023, 6, 5); // A Monday
-      final mondayDate = '2023-06-05';
-      final tuesdayDate = '2023-06-06';
+      const mondayDate = '2023-06-05';
+      const tuesdayDate = '2023-06-06';
 
       final items = [
         MealPlanItem(
@@ -182,21 +182,21 @@ void main() {
           mealPlanId: 'test_id',
           recipeId: 'recipe1',
           plannedDate: mondayDate,
-          mealType: MealPlanItem.LUNCH,
+          mealType: MealPlanItem.lunch,
         ),
         MealPlanItem(
           id: 'item2',
           mealPlanId: 'test_id',
           recipeId: 'recipe2',
           plannedDate: mondayDate,
-          mealType: MealPlanItem.DINNER,
+          mealType: MealPlanItem.dinner,
         ),
         MealPlanItem(
           id: 'item3',
           mealPlanId: 'test_id',
           recipeId: 'recipe3',
           plannedDate: tuesdayDate,
-          mealType: MealPlanItem.LUNCH,
+          mealType: MealPlanItem.lunch,
         ),
       ];
 
@@ -209,17 +209,17 @@ void main() {
       );
 
       final mondayLunchItems = mealPlan.getItemsForDateAndMealType(
-          DateTime.parse(mondayDate), MealPlanItem.LUNCH);
+          DateTime.parse(mondayDate), MealPlanItem.lunch);
       expect(mondayLunchItems.length, 1);
       expect(mondayLunchItems[0].id, 'item1');
 
       final tuesdayLunchItems = mealPlan.getItemsForDateAndMealType(
-          DateTime.parse(tuesdayDate), MealPlanItem.LUNCH);
+          DateTime.parse(tuesdayDate), MealPlanItem.lunch);
       expect(tuesdayLunchItems.length, 1);
       expect(tuesdayLunchItems[0].id, 'item3');
 
       final tuesdayDinnerItems = mealPlan.getItemsForDateAndMealType(
-          DateTime.parse(tuesdayDate), MealPlanItem.DINNER);
+          DateTime.parse(tuesdayDate), MealPlanItem.dinner);
       expect(tuesdayDinnerItems, isEmpty);
     });
 
@@ -254,7 +254,7 @@ void main() {
 
       final initialModifiedAt = mealPlan.modifiedAt;
       // Add a small delay to ensure timestamps can be different
-      await Future.delayed(Duration(milliseconds: 1));
+      await Future.delayed(const Duration(milliseconds: 1));
 
       // Add a new item
       final newItem = MealPlanItem(
@@ -262,7 +262,7 @@ void main() {
         mealPlanId: 'test_id',
         recipeId: 'recipe1',
         plannedDate: '2023-06-05',
-        mealType: MealPlanItem.LUNCH,
+        mealType: MealPlanItem.lunch,
       );
 
       mealPlan.addItem(newItem);
@@ -280,14 +280,14 @@ void main() {
           mealPlanId: 'test_id',
           recipeId: 'recipe1',
           plannedDate: '2023-06-05',
-          mealType: MealPlanItem.LUNCH,
+          mealType: MealPlanItem.lunch,
         ),
         MealPlanItem(
           id: 'item2',
           mealPlanId: 'test_id',
           recipeId: 'recipe2',
           plannedDate: '2023-06-05',
-          mealType: MealPlanItem.DINNER,
+          mealType: MealPlanItem.dinner,
         ),
       ];
 
@@ -303,7 +303,7 @@ void main() {
       final initialModifiedAt = mealPlan.modifiedAt;
 
       // Add a small delay to ensure timestamps can be different
-      await Future.delayed(Duration(milliseconds: 1));
+      await Future.delayed(const Duration(milliseconds: 1));
 
       // Remove an item
       final result = mealPlan.removeItem('item1');
@@ -328,7 +328,7 @@ void main() {
           mealPlanId: 'test_id',
           recipeId: 'recipe1',
           plannedDate: '2023-06-05',
-          mealType: MealPlanItem.LUNCH,
+          mealType: MealPlanItem.lunch,
         ),
       ];
 
@@ -343,7 +343,7 @@ void main() {
       final initialModifiedAt = mealPlan.modifiedAt;
 
       // Add a small delay to ensure timestamps can be different
-      await Future.delayed(Duration(milliseconds: 1));
+      await Future.delayed(const Duration(milliseconds: 1));
 
       // Update an item
       final updatedItem = MealPlanItem(
@@ -351,7 +351,7 @@ void main() {
         mealPlanId: 'test_id',
         recipeId: 'recipe2', // Changed recipe
         plannedDate: '2023-06-05',
-        mealType: MealPlanItem.LUNCH,
+        mealType: MealPlanItem.lunch,
       );
 
       final result = mealPlan.updateItem(updatedItem);
@@ -367,7 +367,7 @@ void main() {
         mealPlanId: 'test_id',
         recipeId: 'recipe3',
         plannedDate: '2023-06-05',
-        mealType: MealPlanItem.LUNCH,
+        mealType: MealPlanItem.lunch,
       );
 
       final result2 = mealPlan.updateItem(nonExistentItem);

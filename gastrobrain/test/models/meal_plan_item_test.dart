@@ -11,14 +11,14 @@ void main() {
         mealPlanId: 'plan_id',
         recipeId: 'recipe_id',
         plannedDate: '2023-06-05',
-        mealType: MealPlanItem.LUNCH,
+        mealType: MealPlanItem.lunch,
       );
 
       expect(item.id, 'test_id');
       expect(item.mealPlanId, 'plan_id');
       expect(item.recipeId, 'recipe_id');
       expect(item.plannedDate, '2023-06-05');
-      expect(item.mealType, MealPlanItem.LUNCH);
+      expect(item.mealType, MealPlanItem.lunch);
       expect(item.notes, '');
     });
 
@@ -40,7 +40,7 @@ void main() {
         mealPlanId: 'plan_id',
         recipeId: 'recipe_id',
         plannedDate: '2023-06-05',
-        mealType: MealPlanItem.DINNER,
+        mealType: MealPlanItem.dinner,
         notes: 'Test notes',
       );
 
@@ -49,7 +49,7 @@ void main() {
       expect(map['meal_plan_id'], 'plan_id');
       expect(map['recipe_id'], 'recipe_id');
       expect(map['planned_date'], '2023-06-05');
-      expect(map['meal_type'], MealPlanItem.DINNER);
+      expect(map['meal_type'], MealPlanItem.dinner);
       expect(map['notes'], 'Test notes');
     });
 
@@ -59,7 +59,7 @@ void main() {
         'meal_plan_id': 'plan_id',
         'recipe_id': 'recipe_id',
         'planned_date': '2023-06-05',
-        'meal_type': MealPlanItem.DINNER,
+        'meal_type': MealPlanItem.dinner,
         'notes': 'Test notes',
       };
 
@@ -68,7 +68,7 @@ void main() {
       expect(item.mealPlanId, 'plan_id');
       expect(item.recipeId, 'recipe_id');
       expect(item.plannedDate, '2023-06-05');
-      expect(item.mealType, MealPlanItem.DINNER);
+      expect(item.mealType, MealPlanItem.dinner);
       expect(item.notes, 'Test notes');
     });
 
@@ -78,7 +78,7 @@ void main() {
         'meal_plan_id': 'plan_id',
         'recipe_id': 'recipe_id',
         'planned_date': '2023-06-05',
-        'meal_type': MealPlanItem.LUNCH,
+        'meal_type': MealPlanItem.lunch,
         'notes': null,
       };
 
@@ -92,7 +92,7 @@ void main() {
         mealPlanId: 'plan_id',
         recipeId: 'recipe_id',
         plannedDate: '2023-06-05',
-        mealType: MealPlanItem.LUNCH,
+        mealType: MealPlanItem.lunch,
         notes: 'Original notes',
       );
 
@@ -112,14 +112,14 @@ void main() {
       // Change planned date and meal type
       final copy2 = original.copyWith(
         plannedDate: '2023-06-06',
-        mealType: MealPlanItem.DINNER,
+        mealType: MealPlanItem.dinner,
       );
 
       expect(copy2.id, original.id);
       expect(copy2.mealPlanId, original.mealPlanId);
       expect(copy2.recipeId, original.recipeId);
       expect(copy2.plannedDate, '2023-06-06');
-      expect(copy2.mealType, MealPlanItem.DINNER);
+      expect(copy2.mealType, MealPlanItem.dinner);
       expect(copy2.notes, original.notes);
     });
 

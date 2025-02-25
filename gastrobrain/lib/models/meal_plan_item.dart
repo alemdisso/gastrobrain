@@ -8,8 +8,8 @@ class MealPlanItem {
   String mealType; // 'lunch' or 'dinner'
   String notes;
 
-  static const String LUNCH = 'lunch';
-  static const String DINNER = 'dinner';
+  static const String lunch = 'lunch';
+  static const String dinner = 'dinner';
 
   MealPlanItem({
     required this.id,
@@ -20,7 +20,7 @@ class MealPlanItem {
     this.notes = '',
   }) {
     // Validate meal type
-    if (mealType != LUNCH && mealType != DINNER) {
+    if (mealType != lunch && mealType != dinner) {
       throw ArgumentError('mealType must be either "lunch" or "dinner"');
     }
   }

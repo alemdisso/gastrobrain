@@ -135,14 +135,14 @@ void main() {
           mealPlanId: mealPlanId,
           recipeId: testRecipeIds[0],
           plannedDate: '2023-06-12',
-          mealType: MealPlanItem.LUNCH,
+          mealType: MealPlanItem.lunch,
         ),
         MealPlanItem(
           id: IdGenerator.generateId(),
           mealPlanId: mealPlanId,
           recipeId: testRecipeIds[1],
           plannedDate: '2023-06-12',
-          mealType: MealPlanItem.DINNER,
+          mealType: MealPlanItem.dinner,
         ),
       ];
 
@@ -160,13 +160,13 @@ void main() {
       expect(
           retrievedPlan.items.any((item) =>
               item.recipeId == testRecipeIds[0] &&
-              item.mealType == MealPlanItem.LUNCH),
+              item.mealType == MealPlanItem.lunch),
           isTrue);
 
       expect(
           retrievedPlan.items.any((item) =>
               item.recipeId == testRecipeIds[1] &&
-              item.mealType == MealPlanItem.DINNER),
+              item.mealType == MealPlanItem.dinner),
           isTrue);
     });
 
@@ -191,7 +191,7 @@ void main() {
         mealPlanId: mealPlanId,
         recipeId: testRecipeIds[0],
         plannedDate: '2023-06-19',
-        mealType: MealPlanItem.LUNCH,
+        mealType: MealPlanItem.lunch,
       );
 
       await dbHelper.insertMealPlanItem(item);
@@ -214,7 +214,7 @@ void main() {
             mealPlanId: mealPlanId,
             recipeId: testRecipeIds[2],
             plannedDate: '2023-06-20',
-            mealType: MealPlanItem.DINNER,
+            mealType: MealPlanItem.dinner,
           ),
         ],
       );
@@ -230,7 +230,7 @@ void main() {
       expect(updatedRetrievedPlan.items.length, 1);
       expect(updatedRetrievedPlan.items[0].recipeId, testRecipeIds[2]);
       expect(updatedRetrievedPlan.items[0].plannedDate, '2023-06-20');
-      expect(updatedRetrievedPlan.items[0].mealType, MealPlanItem.DINNER);
+      expect(updatedRetrievedPlan.items[0].mealType, MealPlanItem.dinner);
     });
 
     test('can delete a meal plan with cascade to items', () async {
@@ -254,7 +254,7 @@ void main() {
         mealPlanId: mealPlanId,
         recipeId: testRecipeIds[0],
         plannedDate: '2023-06-26',
-        mealType: MealPlanItem.LUNCH,
+        mealType: MealPlanItem.lunch,
       );
 
       await dbHelper.insertMealPlanItem(item);
@@ -349,21 +349,21 @@ void main() {
           mealPlanId: mealPlanId,
           recipeId: testRecipeIds[0],
           plannedDate: '2023-07-24', // Monday
-          mealType: MealPlanItem.LUNCH,
+          mealType: MealPlanItem.lunch,
         ),
         MealPlanItem(
           id: IdGenerator.generateId(),
           mealPlanId: mealPlanId,
           recipeId: testRecipeIds[1],
           plannedDate: '2023-07-24', // Monday
-          mealType: MealPlanItem.DINNER,
+          mealType: MealPlanItem.dinner,
         ),
         MealPlanItem(
           id: IdGenerator.generateId(),
           mealPlanId: mealPlanId,
           recipeId: testRecipeIds[2],
           plannedDate: '2023-07-25', // Tuesday
-          mealType: MealPlanItem.LUNCH,
+          mealType: MealPlanItem.lunch,
         ),
       ];
 
@@ -381,7 +381,7 @@ void main() {
       final tuesdayItems =
           await dbHelper.getMealPlanItemsForDate(DateTime(2023, 7, 25));
       expect(tuesdayItems.length, 1);
-      expect(tuesdayItems[0].mealType, MealPlanItem.LUNCH);
+      expect(tuesdayItems[0].mealType, MealPlanItem.lunch);
 
       // Query for Wednesday (should be empty)
       final wednesdayItems =

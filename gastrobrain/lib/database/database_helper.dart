@@ -6,8 +6,10 @@ import '../models/recipe.dart';
 import '../models/meal.dart';
 import '../models/ingredient.dart';
 import '../models/recipe_ingredient.dart';
-import '../models/meal_plan.dart'; // Add this import
-import '../models/meal_plan_item.dart'; // Add this import
+import '../models/meal_plan.dart';
+import '../models/meal_plan_item.dart';
+import '../core/validators/entity_validator.dart';
+import '../core/errors/gastrobrain_exceptions.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -251,34 +253,51 @@ class DatabaseHelper {
 
   Future<String> insertMealPlan(MealPlan mealPlan) async {
     final Database db = await database;
-    await db.insert('meal_plans', mealPlan.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
-    return mealPlan.id;
+    try {
+      // Validate meal plan before inserting
+      EntityValidator.validateMealPlan(
+        id: mealPlan.id,
+        weekStartDate: mealPlan.weekStartDate,
+      );
+
+      await db.insert('meal_plans', mealPlan.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.replace);
+      return mealPlan.id;
+    } on ValidationException {
+      // Re-throw validation exceptions
+      rethrow;
+    } catch (e) {
+      throw GastrobrainException('Failed to insert meal plan: ${e.toString()}');
+    }
   }
 
   Future<MealPlan?> getMealPlan(String id) async {
     final Database db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'meal_plans',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    try {
+      final List<Map<String, dynamic>> maps = await db.query(
+        'meal_plans',
+        where: 'id = ?',
+        whereArgs: [id],
+      );
 
-    if (maps.isEmpty) {
-      return null;
+      if (maps.isEmpty) {
+        return null;
+      }
+
+      // Get the meal plan items for this plan
+      final List<Map<String, dynamic>> itemMaps = await db.query(
+        'meal_plan_items',
+        where: 'meal_plan_id = ?',
+        whereArgs: [id],
+      );
+
+      final List<MealPlanItem> items = List.generate(
+          itemMaps.length, (i) => MealPlanItem.fromMap(itemMaps[i]));
+
+      return MealPlan.fromMap(maps.first, items);
+    } catch (e) {
+      throw GastrobrainException('Failed to get meal plan: ${e.toString()}');
     }
-
-    // Get the meal plan items for this plan
-    final List<Map<String, dynamic>> itemMaps = await db.query(
-      'meal_plan_items',
-      where: 'meal_plan_id = ?',
-      whereArgs: [id],
-    );
-
-    final List<MealPlanItem> items = List.generate(
-        itemMaps.length, (i) => MealPlanItem.fromMap(itemMaps[i]));
-
-    return MealPlan.fromMap(maps.first, items);
   }
 
   Future<List<MealPlan>> getMealPlansByDateRange(
@@ -357,35 +376,63 @@ class DatabaseHelper {
 
   Future<int> updateMealPlan(MealPlan mealPlan) async {
     final Database db = await database;
-
-    // Begin a transaction to update the meal plan and its items
-    return await db.transaction((txn) async {
-      // Update the meal plan
-      await txn.update(
-        'meal_plans',
-        mealPlan.toMap(),
-        where: 'id = ?',
-        whereArgs: [mealPlan.id],
+    try {
+      // Validate meal plan before updating
+      EntityValidator.validateMealPlan(
+        id: mealPlan.id,
+        weekStartDate: mealPlan.weekStartDate,
       );
 
-      // Delete all existing items for this plan
-      await txn.delete(
-        'meal_plan_items',
-        where: 'meal_plan_id = ?',
-        whereArgs: [mealPlan.id],
-      );
-
-      // Insert all items
-      for (var item in mealPlan.items) {
-        await txn.insert(
-          'meal_plan_items',
-          item.toMap(),
-          conflictAlgorithm: ConflictAlgorithm.replace,
+      // Begin a transaction to update the meal plan and its items
+      return await db.transaction((txn) async {
+        // Update the meal plan
+        final updateCount = await txn.update(
+          'meal_plans',
+          mealPlan.toMap(),
+          where: 'id = ?',
+          whereArgs: [mealPlan.id],
         );
-      }
 
-      return 1; // Return success
-    });
+        if (updateCount == 0) {
+          throw NotFoundException(
+              'Meal plan not found with id: ${mealPlan.id}');
+        }
+
+        // Delete all existing items for this plan
+        await txn.delete(
+          'meal_plan_items',
+          where: 'meal_plan_id = ?',
+          whereArgs: [mealPlan.id],
+        );
+
+        // Insert all items
+        for (var item in mealPlan.items) {
+          // Validate each item before inserting
+          EntityValidator.validateMealPlanItem(
+            mealPlanId: item.mealPlanId,
+            recipeId: item.recipeId,
+            plannedDate: item.plannedDate,
+            mealType: item.mealType,
+          );
+
+          await txn.insert(
+            'meal_plan_items',
+            item.toMap(),
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+        }
+
+        return 1; // Return success
+      });
+    } on ValidationException {
+      // Re-throw validation exceptions
+      rethrow;
+    } on NotFoundException {
+      // Re-throw not found exceptions
+      rethrow;
+    } catch (e) {
+      throw GastrobrainException('Failed to update meal plan: ${e.toString()}');
+    }
   }
 
   Future<int> deleteMealPlan(String id) async {
@@ -403,9 +450,25 @@ class DatabaseHelper {
 
   Future<String> insertMealPlanItem(MealPlanItem item) async {
     final Database db = await database;
-    await db.insert('meal_plan_items', item.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
-    return item.id;
+    try {
+      // Validate item before inserting
+      EntityValidator.validateMealPlanItem(
+        mealPlanId: item.mealPlanId,
+        recipeId: item.recipeId,
+        plannedDate: item.plannedDate,
+        mealType: item.mealType,
+      );
+
+      await db.insert('meal_plan_items', item.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.replace);
+      return item.id;
+    } on ValidationException {
+      // Re-throw validation exceptions
+      rethrow;
+    } catch (e) {
+      throw GastrobrainException(
+          'Failed to insert meal plan item: ${e.toString()}');
+    }
   }
 
   Future<int> updateMealPlanItem(MealPlanItem item) async {

@@ -104,8 +104,8 @@ class _HomePageState extends State<HomePage> {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              title: const Text('Sort Options'),
+            const ListTile(
+              title: Text('Sort Options'),
               dense: true,
             ),
             ListTile(

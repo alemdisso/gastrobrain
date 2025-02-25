@@ -87,13 +87,13 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
   }
 
   Widget _buildEmptyView() {
-    return Center(
+    return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.history, size: 64, color: Colors.grey),
-          const SizedBox(height: 16),
-          const Text(
+          Icon(Icons.history, size: 64, color: Colors.grey),
+          SizedBox(height: 16),
+          Text(
             'No meals recorded yet',
             style: TextStyle(fontSize: 18, color: Colors.grey),
           ),
