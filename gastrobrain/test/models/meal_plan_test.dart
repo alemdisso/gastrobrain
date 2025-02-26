@@ -8,7 +8,7 @@ void main() {
   group('MealPlan', () {
     test('creates with required fields', () {
       final now = DateTime.now();
-      final weekStart = DateTime(2023, 6, 5); // A Monday
+      final weekStart = DateTime(2023, 6, 2); // A Friday
 
       final mealPlan = MealPlan(
         id: 'test_id',
@@ -27,7 +27,7 @@ void main() {
 
     test('converts to map correctly', () {
       final now = DateTime.now();
-      final weekStart = DateTime(2023, 6, 5); // A Monday
+      final weekStart = DateTime(2023, 6, 2); // A Friday
 
       final mealPlan = MealPlan(
         id: 'test_id',
@@ -49,7 +49,7 @@ void main() {
 
     test('creates from map correctly', () {
       final now = DateTime.now();
-      final weekStart = DateTime(2023, 6, 5); // A Monday
+      final weekStart = DateTime(2023, 6, 2); // A Friday
 
       final map = {
         'id': 'test_id',
@@ -64,7 +64,7 @@ void main() {
           id: 'item1',
           mealPlanId: 'test_id',
           recipeId: 'recipe1',
-          plannedDate: '2023-06-05',
+          plannedDate: '2023-06-02',
           mealType: MealPlanItem.lunch,
         ),
       ];
@@ -81,8 +81,8 @@ void main() {
     });
 
     test('calculates week end date correctly', () {
-      final weekStart = DateTime(2023, 6, 5); // A Monday
-      final expectedWeekEnd = DateTime(2023, 6, 11); // Sunday
+      final weekStart = DateTime(2023, 6, 2); // A Friday
+      final expectedWeekEnd = DateTime(2023, 6, 8); // Thursday
 
       final mealPlan = MealPlan(
         id: 'test_id',
@@ -95,23 +95,23 @@ void main() {
     });
 
     test('filters items by date', () {
-      final weekStart = DateTime(2023, 6, 5); // A Monday
-      const mondayDate = '2023-06-05';
-      const tuesdayDate = '2023-06-06';
+      final weekStart = DateTime(2023, 6, 2); // A Friday
+      const fridayDate = '2023-06-02';
+      const saturdayDate = '2023-06-03';
 
       final items = [
         MealPlanItem(
           id: 'item1',
           mealPlanId: 'test_id',
           recipeId: 'recipe1',
-          plannedDate: mondayDate,
+          plannedDate: fridayDate,
           mealType: MealPlanItem.lunch,
         ),
         MealPlanItem(
           id: 'item2',
           mealPlanId: 'test_id',
           recipeId: 'recipe2',
-          plannedDate: tuesdayDate,
+          plannedDate: saturdayDate,
           mealType: MealPlanItem.dinner,
         ),
       ];
@@ -124,32 +124,32 @@ void main() {
         items: items,
       );
 
-      final mondayItems = mealPlan.getItemsForDate(DateTime.parse(mondayDate));
-      expect(mondayItems.length, 1);
-      expect(mondayItems[0].id, 'item1');
+      final fridayItems = mealPlan.getItemsForDate(DateTime.parse(fridayDate));
+      expect(fridayItems.length, 1);
+      expect(fridayItems[0].id, 'item1');
 
-      final tuesdayItems =
-          mealPlan.getItemsForDate(DateTime.parse(tuesdayDate));
-      expect(tuesdayItems.length, 1);
-      expect(tuesdayItems[0].id, 'item2');
+      final saturdayItems =
+          mealPlan.getItemsForDate(DateTime.parse(saturdayDate));
+      expect(saturdayItems.length, 1);
+      expect(saturdayItems[0].id, 'item2');
     });
 
     test('filters items by meal type', () {
-      final weekStart = DateTime(2023, 6, 5); // A Monday
+      final weekStart = DateTime(2023, 6, 2); // A Friday
 
       final items = [
         MealPlanItem(
           id: 'item1',
           mealPlanId: 'test_id',
           recipeId: 'recipe1',
-          plannedDate: '2023-06-05',
+          plannedDate: '2023-06-02',
           mealType: MealPlanItem.lunch,
         ),
         MealPlanItem(
           id: 'item2',
           mealPlanId: 'test_id',
           recipeId: 'recipe2',
-          plannedDate: '2023-06-05',
+          plannedDate: '2023-06-02',
           mealType: MealPlanItem.dinner,
         ),
       ];
@@ -172,30 +172,30 @@ void main() {
     });
 
     test('filters items by date and meal type', () {
-      final weekStart = DateTime(2023, 6, 5); // A Monday
-      const mondayDate = '2023-06-05';
-      const tuesdayDate = '2023-06-06';
+      final weekStart = DateTime(2023, 6, 2); // A Friday
+      const fridayDate = '2023-06-02';
+      const saturdayDate = '2023-06-03';
 
       final items = [
         MealPlanItem(
           id: 'item1',
           mealPlanId: 'test_id',
           recipeId: 'recipe1',
-          plannedDate: mondayDate,
+          plannedDate: fridayDate,
           mealType: MealPlanItem.lunch,
         ),
         MealPlanItem(
           id: 'item2',
           mealPlanId: 'test_id',
           recipeId: 'recipe2',
-          plannedDate: mondayDate,
+          plannedDate: fridayDate,
           mealType: MealPlanItem.dinner,
         ),
         MealPlanItem(
           id: 'item3',
           mealPlanId: 'test_id',
           recipeId: 'recipe3',
-          plannedDate: tuesdayDate,
+          plannedDate: saturdayDate,
           mealType: MealPlanItem.lunch,
         ),
       ];
@@ -208,42 +208,42 @@ void main() {
         items: items,
       );
 
-      final mondayLunchItems = mealPlan.getItemsForDateAndMealType(
-          DateTime.parse(mondayDate), MealPlanItem.lunch);
-      expect(mondayLunchItems.length, 1);
-      expect(mondayLunchItems[0].id, 'item1');
+      final fridayLunchItems = mealPlan.getItemsForDateAndMealType(
+          DateTime.parse(fridayDate), MealPlanItem.lunch);
+      expect(fridayLunchItems.length, 1);
+      expect(fridayLunchItems[0].id, 'item1');
 
-      final tuesdayLunchItems = mealPlan.getItemsForDateAndMealType(
-          DateTime.parse(tuesdayDate), MealPlanItem.lunch);
-      expect(tuesdayLunchItems.length, 1);
-      expect(tuesdayLunchItems[0].id, 'item3');
+      final saturdayLunchItems = mealPlan.getItemsForDateAndMealType(
+          DateTime.parse(saturdayDate), MealPlanItem.lunch);
+      expect(saturdayLunchItems.length, 1);
+      expect(saturdayLunchItems[0].id, 'item3');
 
-      final tuesdayDinnerItems = mealPlan.getItemsForDateAndMealType(
-          DateTime.parse(tuesdayDate), MealPlanItem.dinner);
-      expect(tuesdayDinnerItems, isEmpty);
+      final saturdayDinnerItems = mealPlan.getItemsForDateAndMealType(
+          DateTime.parse(saturdayDate), MealPlanItem.dinner);
+      expect(saturdayDinnerItems, isEmpty);
     });
 
     test('creates for a specific week correctly', () {
-      // Test with a Wednesday
-      final wednesday = DateTime(2023, 6, 7);
-      final expectedMonday = DateTime(2023, 6, 5);
+      // Test with a Sunday
+      final sunday = DateTime(2023, 6, 4);
+      final expectedFriday = DateTime(2023, 6, 2);
 
-      final mealPlan = MealPlan.forWeek('test_id', wednesday);
+      final mealPlan = MealPlan.forWeek('test_id', sunday);
 
       expect(mealPlan.id, 'test_id');
-      expect(mealPlan.weekStartDate, expectedMonday);
+      expect(mealPlan.weekStartDate, expectedFriday);
       expect(mealPlan.items, isEmpty);
 
-      // Test with a Monday
-      final monday = DateTime(2023, 6, 12);
-      final mealPlan2 = MealPlan.forWeek('test_id2', monday);
+      // Test with a Friday
+      final friday = DateTime(2023, 6, 9);
+      final mealPlan2 = MealPlan.forWeek('test_id2', friday);
 
       expect(mealPlan2.id, 'test_id2');
-      expect(mealPlan2.weekStartDate, monday);
+      expect(mealPlan2.weekStartDate, friday);
     });
 
     test('adds items correctly', () async {
-      final weekStart = DateTime(2023, 6, 5);
+      final weekStart = DateTime(2023, 6, 2); // A Friday
       final mealPlan = MealPlan(
         id: 'test_id',
         weekStartDate: weekStart,
@@ -261,7 +261,7 @@ void main() {
         id: 'item1',
         mealPlanId: 'test_id',
         recipeId: 'recipe1',
-        plannedDate: '2023-06-05',
+        plannedDate: '2023-06-02',
         mealType: MealPlanItem.lunch,
       );
 
@@ -273,20 +273,20 @@ void main() {
     });
 
     test('removes items correctly', () async {
-      final weekStart = DateTime(2023, 6, 5);
+      final weekStart = DateTime(2023, 6, 2); // A Friday
       final items = [
         MealPlanItem(
           id: 'item1',
           mealPlanId: 'test_id',
           recipeId: 'recipe1',
-          plannedDate: '2023-06-05',
+          plannedDate: '2023-06-02',
           mealType: MealPlanItem.lunch,
         ),
         MealPlanItem(
           id: 'item2',
           mealPlanId: 'test_id',
           recipeId: 'recipe2',
-          plannedDate: '2023-06-05',
+          plannedDate: '2023-06-02',
           mealType: MealPlanItem.dinner,
         ),
       ];
@@ -321,13 +321,13 @@ void main() {
     });
 
     test('updates items correctly', () async {
-      final weekStart = DateTime(2023, 6, 5);
+      final weekStart = DateTime(2023, 6, 2); // A Friday
       final items = [
         MealPlanItem(
           id: 'item1',
           mealPlanId: 'test_id',
           recipeId: 'recipe1',
-          plannedDate: '2023-06-05',
+          plannedDate: '2023-06-02',
           mealType: MealPlanItem.lunch,
         ),
       ];
@@ -350,7 +350,7 @@ void main() {
         id: 'item1',
         mealPlanId: 'test_id',
         recipeId: 'recipe2', // Changed recipe
-        plannedDate: '2023-06-05',
+        plannedDate: '2023-06-02',
         mealType: MealPlanItem.lunch,
       );
 
@@ -366,7 +366,7 @@ void main() {
         id: 'non-existent',
         mealPlanId: 'test_id',
         recipeId: 'recipe3',
-        plannedDate: '2023-06-05',
+        plannedDate: '2023-06-02',
         mealType: MealPlanItem.lunch,
       );
 

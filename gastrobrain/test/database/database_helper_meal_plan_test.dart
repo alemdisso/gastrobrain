@@ -87,7 +87,7 @@ void main() {
     });
 
     test('can insert and retrieve a meal plan', () async {
-      final weekStart = DateTime(2023, 6, 5);
+      final weekStart = DateTime(2023, 6, 2); // A Friday
       final mealPlanId = IdGenerator.generateId();
 
       final mealPlan = MealPlan(
@@ -114,7 +114,7 @@ void main() {
     });
 
     test('can add items to a meal plan', () async {
-      final weekStart = DateTime(2023, 6, 12);
+      final weekStart = DateTime(2023, 6, 9); // A Friday
       final mealPlanId = IdGenerator.generateId();
 
       final mealPlan = MealPlan(
@@ -134,14 +134,14 @@ void main() {
           id: IdGenerator.generateId(),
           mealPlanId: mealPlanId,
           recipeId: testRecipeIds[0],
-          plannedDate: '2023-06-12',
+          plannedDate: '2023-06-09',
           mealType: MealPlanItem.lunch,
         ),
         MealPlanItem(
           id: IdGenerator.generateId(),
           mealPlanId: mealPlanId,
           recipeId: testRecipeIds[1],
-          plannedDate: '2023-06-12',
+          plannedDate: '2023-06-09',
           mealType: MealPlanItem.dinner,
         ),
       ];
@@ -171,7 +171,7 @@ void main() {
     });
 
     test('can update a meal plan', () async {
-      final weekStart = DateTime(2023, 6, 19);
+      final weekStart = DateTime(2023, 6, 16); // A Friday
       final mealPlanId = IdGenerator.generateId();
 
       final mealPlan = MealPlan(
@@ -190,7 +190,7 @@ void main() {
         id: IdGenerator.generateId(),
         mealPlanId: mealPlanId,
         recipeId: testRecipeIds[0],
-        plannedDate: '2023-06-19',
+        plannedDate: '2023-06-16',
         mealType: MealPlanItem.lunch,
       );
 
@@ -213,7 +213,7 @@ void main() {
             id: IdGenerator.generateId(),
             mealPlanId: mealPlanId,
             recipeId: testRecipeIds[2],
-            plannedDate: '2023-06-20',
+            plannedDate: '2023-06-17',
             mealType: MealPlanItem.dinner,
           ),
         ],
@@ -229,12 +229,12 @@ void main() {
       expect(updatedRetrievedPlan!.notes, 'Updated notes');
       expect(updatedRetrievedPlan.items.length, 1);
       expect(updatedRetrievedPlan.items[0].recipeId, testRecipeIds[2]);
-      expect(updatedRetrievedPlan.items[0].plannedDate, '2023-06-20');
+      expect(updatedRetrievedPlan.items[0].plannedDate, '2023-06-17');
       expect(updatedRetrievedPlan.items[0].mealType, MealPlanItem.dinner);
     });
 
     test('can delete a meal plan with cascade to items', () async {
-      final weekStart = DateTime(2023, 6, 26);
+      final weekStart = DateTime(2023, 6, 23); // A Friday
       final mealPlanId = IdGenerator.generateId();
 
       final mealPlan = MealPlan(
@@ -253,7 +253,7 @@ void main() {
         id: IdGenerator.generateId(),
         mealPlanId: mealPlanId,
         recipeId: testRecipeIds[0],
-        plannedDate: '2023-06-26',
+        plannedDate: '2023-06-23',
         mealType: MealPlanItem.lunch,
       );
 
@@ -287,21 +287,21 @@ void main() {
       final plans = [
         MealPlan(
           id: IdGenerator.generateId(),
-          weekStartDate: DateTime(2023, 7, 3),
+          weekStartDate: DateTime(2023, 7, 7), // Friday
           notes: 'Week 1',
           createdAt: DateTime.now(),
           modifiedAt: DateTime.now(),
         ),
         MealPlan(
           id: IdGenerator.generateId(),
-          weekStartDate: DateTime(2023, 7, 10),
+          weekStartDate: DateTime(2023, 7, 14), // Friday
           notes: 'Week 2',
           createdAt: DateTime.now(),
           modifiedAt: DateTime.now(),
         ),
         MealPlan(
           id: IdGenerator.generateId(),
-          weekStartDate: DateTime(2023, 7, 17),
+          weekStartDate: DateTime(2023, 7, 21), // Friday
           notes: 'Week 3',
           createdAt: DateTime.now(),
           modifiedAt: DateTime.now(),
@@ -314,8 +314,8 @@ void main() {
       }
 
       // Query for a specific date range
-      final rangeStart = DateTime(2023, 7, 8); // Saturday of week 1
-      final rangeEnd = DateTime(2023, 7, 15); // Saturday of week 2
+      final rangeStart = DateTime(2023, 7, 12); // Wednesday of week 1
+      final rangeEnd = DateTime(2023, 7, 19); // Wednesday of week 2
 
       final plansInRange =
           await dbHelper.getMealPlansByDateRange(rangeStart, rangeEnd);
@@ -329,7 +329,7 @@ void main() {
 
     test('can get meal plan items for a specific date', () async {
       final mealPlanId = IdGenerator.generateId();
-      final weekStart = DateTime(2023, 7, 24);
+      final weekStart = DateTime(2023, 7, 28); // Friday
 
       final mealPlan = MealPlan(
         id: mealPlanId,
@@ -348,21 +348,21 @@ void main() {
           id: IdGenerator.generateId(),
           mealPlanId: mealPlanId,
           recipeId: testRecipeIds[0],
-          plannedDate: '2023-07-24', // Monday
+          plannedDate: '2023-07-28', // Friday
           mealType: MealPlanItem.lunch,
         ),
         MealPlanItem(
           id: IdGenerator.generateId(),
           mealPlanId: mealPlanId,
           recipeId: testRecipeIds[1],
-          plannedDate: '2023-07-24', // Monday
+          plannedDate: '2023-07-28', // Friday
           mealType: MealPlanItem.dinner,
         ),
         MealPlanItem(
           id: IdGenerator.generateId(),
           mealPlanId: mealPlanId,
           recipeId: testRecipeIds[2],
-          plannedDate: '2023-07-25', // Tuesday
+          plannedDate: '2023-07-29', // Saturday
           mealType: MealPlanItem.lunch,
         ),
       ];
@@ -372,25 +372,25 @@ void main() {
         await dbHelper.insertMealPlanItem(item);
       }
 
-      // Query for Monday's items
-      final mondayItems =
-          await dbHelper.getMealPlanItemsForDate(DateTime(2023, 7, 24));
-      expect(mondayItems.length, 2);
+      // Query for Friday's items
+      final fridayItems =
+          await dbHelper.getMealPlanItemsForDate(DateTime(2023, 7, 28));
+      expect(fridayItems.length, 2);
 
-      // Query for Tuesday's items
-      final tuesdayItems =
-          await dbHelper.getMealPlanItemsForDate(DateTime(2023, 7, 25));
-      expect(tuesdayItems.length, 1);
-      expect(tuesdayItems[0].mealType, MealPlanItem.lunch);
+      // Query for Saturday's items
+      final saturdayItems =
+          await dbHelper.getMealPlanItemsForDate(DateTime(2023, 7, 29));
+      expect(saturdayItems.length, 1);
+      expect(saturdayItems[0].mealType, MealPlanItem.lunch);
 
-      // Query for Wednesday (should be empty)
-      final wednesdayItems =
-          await dbHelper.getMealPlanItemsForDate(DateTime(2023, 7, 26));
-      expect(wednesdayItems.length, 0);
+      // Query for Sunday (should be empty)
+      final sundayItems =
+          await dbHelper.getMealPlanItemsForDate(DateTime(2023, 7, 30));
+      expect(sundayItems.length, 0);
     });
 
     test('can get a meal plan for a specific week', () async {
-      final weekStart = DateTime(2023, 7, 31); // Monday
+      final weekStart = DateTime(2023, 8, 4); // Friday
       final mealPlanId = IdGenerator.generateId();
 
       final mealPlan = MealPlan(
@@ -404,20 +404,20 @@ void main() {
       // Insert meal plan
       await dbHelper.insertMealPlan(mealPlan);
 
-      // Query using Monday date
-      final mondayPlan = await dbHelper.getMealPlanForWeek(weekStart);
-      expect(mondayPlan, isNotNull);
-      expect(mondayPlan!.id, mealPlanId);
+      // Query using Friday date
+      final fridayPlan = await dbHelper.getMealPlanForWeek(weekStart);
+      expect(fridayPlan, isNotNull);
+      expect(fridayPlan!.id, mealPlanId);
 
-      // Query using Wednesday date (should return the same plan)
-      final wednesday = DateTime(2023, 8, 2);
-      final wednesdayPlan = await dbHelper.getMealPlanForWeek(wednesday);
-      expect(wednesdayPlan, isNotNull);
-      expect(wednesdayPlan!.id, mealPlanId);
+      // Query using Sunday date (should return the same plan)
+      final sunday = DateTime(2023, 8, 6);
+      final sundayPlan = await dbHelper.getMealPlanForWeek(sunday);
+      expect(sundayPlan, isNotNull);
+      expect(sundayPlan!.id, mealPlanId);
 
-      // Query using next Monday (should return null)
-      final nextMonday = DateTime(2023, 8, 7);
-      final nextWeekPlan = await dbHelper.getMealPlanForWeek(nextMonday);
+      // Query using next Friday (should return null)
+      final nextFriday = DateTime(2023, 8, 11);
+      final nextWeekPlan = await dbHelper.getMealPlanForWeek(nextFriday);
       expect(nextWeekPlan, isNull);
     });
   });

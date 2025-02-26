@@ -92,9 +92,9 @@ class EntityValidator {
       throw ValidationException('Meal plan ID cannot be empty');
     }
 
-    // Validate week start date is a Monday
-    if (weekStartDate.weekday != DateTime.monday) {
-      throw ValidationException('Week start date must be a Monday');
+    // Validate week start date is a Friday
+    if (weekStartDate.weekday != DateTime.friday) {
+      throw ValidationException('Week start date must be a Friday');
     }
 
     // Validate week start date is not in the future

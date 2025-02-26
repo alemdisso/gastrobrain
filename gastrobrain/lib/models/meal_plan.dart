@@ -81,9 +81,14 @@ class MealPlan {
 
   // Create a new MealPlan for the week containing the given date
   factory MealPlan.forWeek(String id, DateTime date) {
-    // Calculate the previous Monday (or today if it's already Monday)
+    // Calculate the previous Friday (or today if it's already Friday)
     final int weekday = date.weekday;
-    final DateTime weekStart = date.subtract(Duration(days: weekday - 1));
+    // If today is Friday (weekday 5), subtract 0; otherwise calculate offset
+    final daysToSubtract = weekday < 5
+        ? weekday + 2 // Go back to previous Friday
+        : weekday - 5; // Friday is day 5
+
+    final DateTime weekStart = date.subtract(Duration(days: daysToSubtract));
     // Normalize to start of day
     final DateTime normalizedWeekStart =
         DateTime(weekStart.year, weekStart.month, weekStart.day);

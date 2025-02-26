@@ -5,6 +5,7 @@ import '../widgets/recipe_card.dart';
 import 'add_recipe_screen.dart';
 import 'edit_recipe_screen.dart';
 import 'cook_meal_screen.dart';
+import 'weekly_plan_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,6 +15,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0;
   final DatabaseHelper _dbHelper = DatabaseHelper();
   List<Recipe> recipes = [];
   Map<String, int> recipeMealCounts = {}; // New map to store meal counts
@@ -291,54 +293,85 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildRecipesScreen() {
+    return ListView.builder(
+      itemCount: recipes.length,
+      itemBuilder: (context, index) {
+        final recipe = recipes[index];
+        return RecipeCard(
+          recipe: recipe,
+          onEdit: () => _editRecipe(recipe),
+          onDelete: () => _deleteRecipe(recipe),
+          onCooked: () {
+            Navigator.push<bool>(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CookMealScreen(recipe: recipe),
+              ),
+            ).then((value) {
+              if (value == true) {
+                _loadRecipes();
+              }
+            });
+          },
+          mealCount: recipeMealCounts[recipe.id] ?? 0,
+          lastCooked: lastCookedDates[recipe.id],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final List<Widget> screens = [
+      _buildRecipesScreen(),
+      const WeeklyPlanScreen(),
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gastrobrain'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.sort),
-            onPressed: _showSortingMenu,
-            tooltip: 'Sort recipes',
+        actions: _selectedIndex == 0
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.sort),
+                  onPressed: _showSortingMenu,
+                  tooltip: 'Sort recipes',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.filter_list),
+                  onPressed: _showFilterDialog,
+                  tooltip: 'Filter recipes',
+                ),
+              ]
+            : null,
+      ),
+      body: screens[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.menu_book),
+            label: 'Recipes',
           ),
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: _showFilterDialog,
-            tooltip: 'Filter recipes',
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today),
+            label: 'Meal Plan',
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: recipes.length,
-        itemBuilder: (context, index) {
-          final recipe = recipes[index];
-          return RecipeCard(
-            recipe: recipe,
-            onEdit: () => _editRecipe(recipe),
-            onDelete: () => _deleteRecipe(recipe),
-            onCooked: () {
-              Navigator.push<bool>(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CookMealScreen(recipe: recipe),
-                ),
-              ).then((value) {
-                if (value == true) {
-                  _loadRecipes();
-                }
-              });
-            },
-            mealCount: recipeMealCounts[recipe.id] ?? 0,
-            lastCooked: lastCookedDates[recipe.id],
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addRecipe,
-        tooltip: 'Add Recipe',
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: _selectedIndex == 0
+          ? FloatingActionButton(
+              onPressed: _addRecipe,
+              tooltip: 'Add Recipe',
+              child: const Icon(Icons.add),
+            )
+          : null,
     );
   }
 }

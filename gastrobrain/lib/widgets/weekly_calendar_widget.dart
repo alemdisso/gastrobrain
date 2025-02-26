@@ -26,13 +26,13 @@ class WeeklyCalendarWidget extends StatefulWidget {
 
 class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
   final List<String> _weekdayNames = [
-    'Mon',
-    'Tue',
-    'Wed',
-    'Thu',
-    'Fri',
-    'Sat',
-    'Sun'
+    'Friday',
+    'Saturday',
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday'
   ];
   late List<DateTime> _weekDates;
   final DatabaseHelper _dbHelper = DatabaseHelper();
@@ -58,16 +58,22 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
   }
 
   void _initializeWeekDates() {
-    // Ensure we start with a Monday
-    final monday = DateTime(
+    // Ensure we start with a Friday
+    // Calculate days to subtract to get to the previous Friday
+    // If today is Friday (weekday 5), subtract 0; otherwise calculate offset
+    final daysToSubtract = widget.weekStartDate.weekday < 5
+        ? widget.weekStartDate.weekday + 2 // Go back to previous Friday
+        : widget.weekStartDate.weekday - 5; // Friday is day 5
+
+    final friday = DateTime(
       widget.weekStartDate.year,
       widget.weekStartDate.month,
-      widget.weekStartDate.day - (widget.weekStartDate.weekday - 1),
+      widget.weekStartDate.day - daysToSubtract,
     );
 
     _weekDates = List.generate(
       7,
-      (index) => monday.add(Duration(days: index)),
+      (index) => friday.add(Duration(days: index)),
     );
   }
 
@@ -94,111 +100,94 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
   }
 
   String _formatDate(DateTime date) {
-    return '${date.day}';
+    return '${date.day}/${date.month}/${date.year}';
   }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Determine if we're in landscape or portrait
-        final isLandscape = constraints.maxWidth > constraints.maxHeight;
-
-        return Column(
-          children: [
-            // Header row with weekday names
-            _buildHeaderRow(),
-
-            // Calendar grid with meal slots
-            Expanded(
-              child: _buildCalendarGrid(isLandscape),
-            ),
-          ],
-        );
+    return ListView.builder(
+      itemCount: 7,
+      itemBuilder: (context, index) {
+        final date = _weekDates[index];
+        return _buildDaySection(date, index);
       },
     );
   }
 
-  Widget _buildHeaderRow() {
+  Widget _buildDaySection(DateTime date, int dayIndex) {
     final today = DateTime.now();
+    final isToday = date.year == today.year &&
+        date.month == today.month &&
+        date.day == today.day;
 
-    return Row(
-      children: List.generate(
-        7,
-        (index) {
-          final date = _weekDates[index];
-          final isToday = date.year == today.year &&
-              date.month == today.month &&
-              date.day == today.day;
-
-          return Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: isToday
-                    ? Theme.of(context).colorScheme.primaryContainer
-                    : null,
-                borderRadius: isToday ? BorderRadius.circular(8) : null,
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    _weekdayNames[index],
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: isToday
-                          ? Theme.of(context).colorScheme.onPrimaryContainer
-                          : null,
-                    ),
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      color: isToday
+          ? Theme.of(context).colorScheme.primaryContainer.withAlpha(64)
+          : null,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Day header
+            Row(
+              children: [
+                Text(
+                  _weekdayNames[dayIndex],
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color:
+                        isToday ? Theme.of(context).colorScheme.primary : null,
                   ),
-                  Text(
-                    _formatDate(_weekDates[index]),
-                    style: TextStyle(
-                      color: isToday
-                          ? Theme.of(context).colorScheme.onPrimaryContainer
-                          : null,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  _formatDate(date),
+                  style: TextStyle(
+                    color: isToday
+                        ? Theme.of(context).colorScheme.primary
+                        : Colors.grey,
+                  ),
+                ),
+                if (isToday) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'Today',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildCalendarGrid(bool isLandscape) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: List.generate(
-        7,
-        (dayIndex) {
-          final date = _weekDates[dayIndex];
-          return Expanded(
-            child: Column(
-              children: [
-                // Lunch slot
-                Expanded(
-                  child: _buildMealSlot(date, MealPlanItem.lunch, isLandscape),
-                ),
-
-                // Small divider
-                const Divider(height: 1),
-
-                // Dinner slot
-                Expanded(
-                  child: _buildMealSlot(date, MealPlanItem.dinner, isLandscape),
-                ),
               ],
             ),
-          );
-        },
+
+            const Divider(),
+
+            // Lunch section
+            _buildMealSection(date, MealPlanItem.lunch),
+
+            const SizedBox(height: 8),
+
+            // Dinner section
+            _buildMealSection(date, MealPlanItem.dinner),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildMealSlot(DateTime date, String mealType, bool isLandscape) {
+  Widget _buildMealSection(DateTime date, String mealType) {
     // Find if there's a meal planned for this slot
     final MealPlanItem? plannedMeal = widget.mealPlan
         ?.getItemsForDateAndMealType(
@@ -211,9 +200,8 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
     final Recipe? recipe =
         plannedMeal != null ? _recipes[plannedMeal.recipeId] : null;
 
-    final bool hasPlannedMeal = plannedMeal != null;
+    final bool hasPlannedMeal = plannedMeal != null && recipe != null;
 
-    // Create the slot with appropriate styling
     return InkWell(
       onTap: () {
         if (hasPlannedMeal && widget.onMealTap != null) {
@@ -222,9 +210,9 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
           widget.onSlotTap!(date, mealType);
         }
       },
+      borderRadius: BorderRadius.circular(8),
       child: Container(
-        margin: const EdgeInsets.all(2),
-        padding: const EdgeInsets.all(4),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: hasPlannedMeal
               ? Theme.of(context).colorScheme.secondaryContainer.withAlpha(128)
@@ -236,57 +224,85 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
           ),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Row(
           children: [
             // Meal type indicator
-            Text(
-              mealType == MealPlanItem.lunch ? 'Lunch' : 'Dinner',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.secondary,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.secondary.withAlpha(40),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                mealType == MealPlanItem.lunch ? 'Lunch' : 'Dinner',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
               ),
             ),
 
-            if (hasPlannedMeal && recipe != null) ...[
-              const SizedBox(height: 4),
-              // Recipe name
-              Expanded(
-                child: Center(
-                  child: Text(
-                    recipe.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: isLandscape ? 3 : 2,
-                  ),
-                ),
-              ),
-              // Optional rating display
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  5,
-                  (index) => Icon(
-                    index < recipe.difficulty ? Icons.star : Icons.star_border,
-                    size: 12,
-                    color:
-                        index < recipe.difficulty ? Colors.amber : Colors.grey,
-                  ),
-                ),
-              ),
-            ] else ...[
-              // Empty slot display
-              Expanded(
-                child: Center(
-                  child: Icon(
-                    Icons.add,
-                    color: Theme.of(context).colorScheme.outline.withAlpha(128),
-                  ),
-                ),
-              ),
-            ],
+            const SizedBox(width: 16),
+
+            // Recipe info or placeholder
+            Expanded(
+              child: hasPlannedMeal
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          recipe.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            // Difficulty
+                            Row(
+                              children: List.generate(
+                                5,
+                                (index) => Icon(
+                                  index < recipe.difficulty
+                                      ? Icons.star
+                                      : Icons.star_border,
+                                  size: 16,
+                                  color: index < recipe.difficulty
+                                      ? Colors.amber
+                                      : Colors.grey,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            // Time
+                            Row(
+                              children: [
+                                const Icon(Icons.timer, size: 16),
+                                const SizedBox(width: 4),
+                                Text(
+                                    '${recipe.prepTimeMinutes + recipe.cookTimeMinutes} min'),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    )
+                  : const Row(
+                      children: [
+                        Icon(Icons.add),
+                        SizedBox(width: 8),
+                        Text(
+                          'Add meal',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
           ],
         ),
       ),

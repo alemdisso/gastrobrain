@@ -16,7 +16,7 @@ class WeeklyPlanScreen extends StatefulWidget {
 }
 
 class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
-  DateTime _currentWeekStart = _getMonday(DateTime.now());
+  DateTime _currentWeekStart = _getFriday(DateTime.now());
   MealPlan? _currentMealPlan;
   bool _isLoading = true;
   final DatabaseHelper _dbHelper = DatabaseHelper();
@@ -28,9 +28,14 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     _loadData();
   }
 
-  static DateTime _getMonday(DateTime date) {
+  static DateTime _getFriday(DateTime date) {
     final int weekday = date.weekday;
-    return date.subtract(Duration(days: weekday - 1));
+    // If today is Friday (weekday 5), subtract 0; otherwise calculate offset
+    final daysToSubtract = weekday < 5
+        ? weekday + 2 // Go back to previous Friday
+        : weekday - 5; // Friday is day 5
+
+    return date.subtract(Duration(days: daysToSubtract));
   }
 
   Future<void> _loadData() async {

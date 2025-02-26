@@ -309,6 +309,7 @@ class DatabaseHelper {
     final endStr = end.toIso8601String();
 
     // Query for meal plans that might fall within the specified range
+    // A week now starts on Friday and ends on Thursday (7 days later)
     final List<Map<String, dynamic>> planMaps = await db.rawQuery('''
       SELECT * FROM meal_plans 
       WHERE week_start_date <= ? AND 
@@ -341,13 +342,19 @@ class DatabaseHelper {
   Future<MealPlan?> getMealPlanForWeek(DateTime date) async {
     final Database db = await database;
 
-    // Calculate the Monday of the week containing this date
+    // Calculate the Friday of the week containing this date
     final int weekday = date.weekday;
-    final DateTime weekStart = date.subtract(Duration(days: weekday - 1));
+    // If today is Friday (weekday 5), subtract 0; otherwise calculate offset
+    final daysToSubtract = weekday < 5
+        ? weekday + 2 // Go back to previous Friday
+        : weekday - 5; // Friday is day 5
 
     // Normalize the date to start of day
-    final normalizedStart =
-        DateTime(weekStart.year, weekStart.month, weekStart.day);
+    final normalizedStart = DateTime(
+      date.subtract(Duration(days: daysToSubtract)).year,
+      date.subtract(Duration(days: daysToSubtract)).month,
+      date.subtract(Duration(days: daysToSubtract)).day,
+    );
     final startStr = normalizedStart.toIso8601String();
 
     final List<Map<String, dynamic>> maps = await db.query(
