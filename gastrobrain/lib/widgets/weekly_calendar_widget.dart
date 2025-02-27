@@ -202,6 +202,19 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
 
     final bool hasPlannedMeal = plannedMeal != null && recipe != null;
 
+    // Define meal-specific colors
+    final Color backgroundColor = hasPlannedMeal
+        ? mealType == MealPlanItem.lunch
+            ? Theme.of(context).colorScheme.primaryContainer.withAlpha(128)
+            : Theme.of(context).colorScheme.secondaryContainer.withAlpha(128)
+        : Theme.of(context).colorScheme.surface;
+
+    final Color borderColor = hasPlannedMeal
+        ? mealType == MealPlanItem.lunch
+            ? Theme.of(context).colorScheme.primary
+            : Theme.of(context).colorScheme.secondary
+        : Theme.of(context).colorScheme.outline.withAlpha(76);
+
     return InkWell(
       onTap: () {
         if (hasPlannedMeal && widget.onMealTap != null) {
@@ -214,14 +227,8 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: hasPlannedMeal
-              ? Theme.of(context).colorScheme.secondaryContainer.withAlpha(128)
-              : Theme.of(context).colorScheme.surface,
-          border: Border.all(
-            color: hasPlannedMeal
-                ? Theme.of(context).colorScheme.secondary
-                : Theme.of(context).colorScheme.outline.withAlpha(76),
-          ),
+          color: backgroundColor,
+          border: Border.all(color: borderColor),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
@@ -230,15 +237,43 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.secondary.withAlpha(40),
+                color: mealType == MealPlanItem.lunch
+                    ? Theme.of(context).colorScheme.primary.withAlpha(40)
+                    : Theme.of(context).colorScheme.secondary.withAlpha(40),
                 borderRadius: BorderRadius.circular(4),
+                // Optional: add a subtle shadow for more dimension
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(13),
+                    blurRadius: 2,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
               ),
-              child: Text(
-                mealType == MealPlanItem.lunch ? 'Lunch' : 'Dinner',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.secondary,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Add a relevant icon
+                  Icon(
+                    mealType == MealPlanItem.lunch
+                        ? Icons.wb_sunny_outlined // Sun icon for lunch
+                        : Icons.nightlight_outlined, // Moon icon for dinner
+                    size: 16,
+                    color: mealType == MealPlanItem.lunch
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.secondary,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    mealType == MealPlanItem.lunch ? 'Lunch' : 'Dinner',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: mealType == MealPlanItem.lunch
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
+                ],
               ),
             ),
 
