@@ -149,7 +149,10 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         await _dbHelper.insertMealPlanItem(planItem);
         await _dbHelper.updateMealPlan(_currentMealPlan!);
 
-        setState(() {});
+        setState(() {
+          // Force a reload to ensure the calendar widget refreshes
+          _loadData();
+        });
       }
     }
   }
@@ -207,7 +210,10 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         }
 
         await _dbHelper.updateMealPlan(_currentMealPlan!);
-        setState(() {});
+        setState(() {
+          // Force a reload to ensure the calendar widget refreshes
+          _loadData();
+        });
       }
     }
   }

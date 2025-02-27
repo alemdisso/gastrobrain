@@ -96,11 +96,6 @@ class EntityValidator {
     if (weekStartDate.weekday != DateTime.friday) {
       throw ValidationException('Week start date must be a Friday');
     }
-
-    // Validate week start date is not in the future
-    if (weekStartDate.isAfter(DateTime.now())) {
-      throw ValidationException('Week start date cannot be in the future');
-    }
   }
 
   static void validateMealPlanItem({
