@@ -21,6 +21,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   bool _isLoading = true;
   final DatabaseHelper _dbHelper = DatabaseHelper();
   List<Recipe> _availableRecipes = [];
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -218,6 +219,20 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     }
   }
 
+// LOCATE: Add the _handleDaySelected method to WeeklyPlanScreen
+  void _handleDaySelected(DateTime selectedDate, int selectedDayIndex) {
+    // You can use this to update UI elements, scroll to specific sections,
+    // or perform any other actions needed when a day is selected
+
+    // For example, you might want to show a summary of meals for this day
+    // or highlight it in another part of your UI
+
+    // You can also store the selected date in state if needed
+    setState(() {
+      // _selectedDate = selectedDate;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final formattedDate =
@@ -269,6 +284,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                     mealPlan: _currentMealPlan,
                     onSlotTap: _handleSlotTap,
                     onMealTap: _handleMealTap,
+                    onDaySelected: _handleDaySelected,
+                    scrollController: _scrollController, // Pass the controller
                   ),
           ),
         ],

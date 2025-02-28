@@ -11,6 +11,8 @@ class WeeklyCalendarWidget extends StatefulWidget {
   final MealPlan? mealPlan;
   final Function(DateTime date, String mealType)? onSlotTap;
   final Function(DateTime date, String mealType, String recipeId)? onMealTap;
+  final Function(DateTime selectedDate, int selectedDayIndex)? onDaySelected;
+  final ScrollController? scrollController;
 
   const WeeklyCalendarWidget({
     super.key,
@@ -18,6 +20,8 @@ class WeeklyCalendarWidget extends StatefulWidget {
     this.mealPlan,
     this.onSlotTap,
     this.onMealTap,
+    this.onDaySelected,
+    this.scrollController,
   });
 
   @override
@@ -39,6 +43,8 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
 
   // Cache for recipe details
   final Map<String, Recipe> _recipes = {};
+
+  int _selectedDayIndex = 0; // Default to first day (Friday)
 
   @override
   void initState() {
@@ -105,12 +111,179 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: 7,
-      itemBuilder: (context, index) {
-        final date = _weekDates[index];
-        return _buildDaySection(date, index);
-      },
+    // Check screen width to determine layout
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
+    // If in landscape on a smaller device, use a more compact layout
+    if (isLandscape && screenWidth < 960) {
+      // Use a more horizontal layout with smaller meal cards
+      return GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2, // Two columns
+          childAspectRatio: 2.5, // Wider than tall
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+        ),
+        itemCount: 14, // 7 days * 2 meal types
+        itemBuilder: (context, index) {
+          final dayIndex = index ~/ 2; // Integer division
+          final isLunch = index % 2 == 0;
+          final date = _weekDates[dayIndex];
+
+          return _buildCompactMealTile(date,
+              isLunch ? MealPlanItem.lunch : MealPlanItem.dinner, dayIndex);
+        },
+        padding: const EdgeInsets.all(8),
+      );
+    }
+
+    // For wider screens (tablets/desktop), use a side-by-side layout
+    if (screenWidth > 600) {
+      return Row(
+        children: [
+          // Left side: weekday selection
+          SizedBox(
+            width: 120, // Fixed width for day selector
+            child: ListView.builder(
+              controller: widget.scrollController, // Use it here
+              itemCount: 7,
+              itemBuilder: (context, index) {
+                final date = _weekDates[index];
+                return _buildDaySelector(date, index);
+              },
+            ),
+          ),
+
+          // Right side: selected day's meals
+          Expanded(
+            child: _buildDaySection(
+                _weekDates[_selectedDayIndex], _selectedDayIndex),
+          ),
+        ],
+      );
+    }
+    // For narrower screens (phones), keep the current vertical layout
+    else {
+      return ListView.builder(
+        controller: widget.scrollController, // Use it here
+        itemCount: 7,
+        itemBuilder: (context, index) {
+          final date = _weekDates[index];
+          return _buildDaySection(date, index);
+        },
+      );
+    }
+  }
+
+  Widget _buildCompactMealTile(DateTime date, String mealType, int dayIndex) {
+    // Find if there's a meal planned for this slot
+    final MealPlanItem? plannedMeal =
+        widget.mealPlan?.getItemsForDateAndMealType(date, mealType).firstOrNull;
+
+    final Recipe? recipe =
+        plannedMeal != null ? _recipes[plannedMeal.recipeId] : null;
+
+    final bool hasPlannedMeal = plannedMeal != null && recipe != null;
+
+    return Card(
+      child: InkWell(
+        onTap: () {
+          if (hasPlannedMeal && widget.onMealTap != null) {
+            widget.onMealTap!(date, mealType, plannedMeal.recipeId);
+          } else if (widget.onSlotTap != null) {
+            widget.onSlotTap!(date, mealType);
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Day + meal
+              Text(
+                '${_weekdayNames[dayIndex]} ${mealType == MealPlanItem.lunch ? 'Lunch' : 'Dinner'}',
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              ),
+
+              // Recipe or placeholder
+              hasPlannedMeal
+                  ? Text(
+                      recipe.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 14),
+                    )
+                  : const Text(
+                      'Add meal',
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey,
+                        fontSize: 14,
+                      ),
+                    ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDaySelector(DateTime date, int dayIndex) {
+    final today = DateTime.now();
+    final isToday = date.year == today.year &&
+        date.month == today.month &&
+        date.day == today.day;
+    final isSelected = dayIndex == _selectedDayIndex;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      color: isSelected
+          ? Theme.of(context).colorScheme.primary.withAlpha(64)
+          : (isToday
+              ? Theme.of(context).colorScheme.primaryContainer.withAlpha(64)
+              : null),
+      child: InkWell(
+        onTap: () {
+          // Update selected day when tapped
+          setState(() {
+            _selectedDayIndex = dayIndex;
+          });
+
+          // Notify parent about the day selection
+          if (widget.onDaySelected != null) {
+            widget.onDaySelected!(_weekDates[dayIndex], dayIndex);
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            children: [
+              Text(
+                _weekdayNames[dayIndex],
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.primary
+                      : (isToday
+                          ? Theme.of(context).colorScheme.primary
+                          : null),
+                ),
+              ),
+              Text(
+                date.day.toString(),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -215,6 +388,11 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
             : Theme.of(context).colorScheme.secondary
         : Theme.of(context).colorScheme.outline.withAlpha(76);
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final EdgeInsets contentPadding = screenWidth < 360
+        ? const EdgeInsets.all(8) // Small screens get tighter padding
+        : const EdgeInsets.all(12); // Larger screens get more space
+
     return InkWell(
       onTap: () {
         if (hasPlannedMeal && widget.onMealTap != null) {
@@ -225,7 +403,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
       },
       borderRadius: BorderRadius.circular(8),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: contentPadding,
         decoration: BoxDecoration(
           color: backgroundColor,
           border: Border.all(color: borderColor),
