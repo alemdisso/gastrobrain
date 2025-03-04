@@ -26,7 +26,12 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    String path = join(await getDatabasesPath(), 'gastrobrain.db');
+    // Use a different database name for tests
+    bool isTest =
+        const bool.fromEnvironment('FLUTTER_TEST', defaultValue: false);
+    String filename = isTest ? 'gastrobrain_test.db' : 'gastrobrain.db';
+
+    String path = join(await getDatabasesPath(), filename);
     return await openDatabase(
       path,
       version: 7, // Increment version number for new tables

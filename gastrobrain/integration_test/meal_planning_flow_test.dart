@@ -24,6 +24,20 @@ void main() {
       // Initialize database helper
       dbHelper = DatabaseHelper();
 
+      // Clean up the database before each test
+      final db = await dbHelper.database;
+      await db.execute('PRAGMA foreign_keys = OFF');
+
+      // Clear all tables
+      await db.delete('meal_plan_items');
+      await db.delete('meal_plans');
+      await db.delete('meals');
+      await db.delete('recipe_ingredients');
+      await db.delete('recipes');
+      await db.delete('ingredients');
+
+      await db.execute('PRAGMA foreign_keys = ON');
+
       // Create test recipes directly in the database
       final recipe1 = Recipe(
         id: testRecipe1Id,
