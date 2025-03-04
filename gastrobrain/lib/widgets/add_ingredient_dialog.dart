@@ -177,6 +177,10 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
 
       if (widget.onSave != null) {
         widget.onSave!(recipeIngredient);
+        if (mounted) {
+          // Return the RecipeIngredient object, not just true
+          Navigator.pop(context, recipeIngredient);
+        }
       } else {
         if (widget.recipeIngredientId != null) {
           // Update existing recipe ingredient
@@ -185,10 +189,9 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
           // Add new recipe ingredient
           await _dbHelper.addIngredientToRecipe(recipeIngredient);
         }
-      }
-
-      if (mounted) {
-        Navigator.pop(context, true);
+        if (mounted) {
+          Navigator.pop(context, true);
+        }
       }
     } on ValidationException catch (e) {
       if (mounted) {

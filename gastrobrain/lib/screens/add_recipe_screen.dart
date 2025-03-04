@@ -155,14 +155,14 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       rating: _rating,
     );
 
+    // The AddIngredientDialog will now properly return a RecipeIngredient object
     final result = await showDialog<RecipeIngredient>(
-      // Change return type
       context: context,
       builder: (context) => AddIngredientDialog(
         recipe: tempRecipe,
         onSave: (ingredient) {
-          // Instead of saving to DB, return the ingredient
-          Navigator.pop(context, ingredient);
+          // We don't need to explicitly call Navigator.pop here anymore
+          // as the dialog will handle it and return the ingredient
         },
       ),
     );

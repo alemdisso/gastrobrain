@@ -62,6 +62,7 @@ dev_dependencies:
   # was flutter_lints: ^5.0.0
   flutter_lints: ^2.0.2
   sqflite_common_ffi: ^2.3.0  # Added for database testing
+  mocktail: ^1.0.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
