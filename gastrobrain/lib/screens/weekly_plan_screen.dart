@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../widgets/weekly_calendar_widget.dart';
 import '../models/meal_plan.dart';
 import '../models/meal_plan_item.dart';
+import '../models/meal_plan_item_recipe.dart';
 import '../database/database_helper.dart';
 import '../models/recipe.dart';
 import '../utils/id_generator.dart';
@@ -99,25 +100,39 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       // Create or update meal plan
       if (_currentMealPlan == null) {
         // Create new meal plan for this week
+        final newPlanId = IdGenerator.generateId();
         final newPlan = MealPlan.forWeek(
-          IdGenerator.generateId(),
+          newPlanId,
           _currentWeekStart,
         );
 
         // Add the selected recipe to the plan
+        final planItemId = IdGenerator.generateId();
         final planItem = MealPlanItem(
-          id: IdGenerator.generateId(),
+          id: planItemId,
           mealPlanId: newPlan.id,
-          recipeId: selectedRecipe.id,
           plannedDate: MealPlanItem.formatPlannedDate(date),
           mealType: mealType,
         );
+
+        // Create junction record for the recipe
+        final junction = MealPlanItemRecipe(
+          mealPlanItemId: planItemId,
+          recipeId: selectedRecipe.id,
+          isPrimaryDish: true,
+        );
+
+        // Set the recipes list for the item
+        planItem.mealPlanItemRecipes = [junction];
 
         newPlan.addItem(planItem);
 
         // Save to database
         await _dbHelper.insertMealPlan(newPlan);
         await _dbHelper.insertMealPlanItem(planItem);
+
+        // Save the junction record
+        await _dbHelper.insertMealPlanItemRecipe(junction);
 
         setState(() {
           _currentMealPlan = newPlan;
@@ -136,18 +151,32 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         }
 
         // Add the new meal to the plan
+        final planItemId = IdGenerator.generateId();
         final planItem = MealPlanItem(
-          id: IdGenerator.generateId(),
+          id: planItemId,
           mealPlanId: _currentMealPlan!.id,
-          recipeId: selectedRecipe.id,
           plannedDate: MealPlanItem.formatPlannedDate(date),
           mealType: mealType,
         );
+
+        // Create junction record for the recipe
+        final junction = MealPlanItemRecipe(
+          mealPlanItemId: planItemId,
+          recipeId: selectedRecipe.id,
+          isPrimaryDish: true,
+        );
+
+        // Set the recipes list for the item
+        planItem.mealPlanItemRecipes = [junction];
 
         _currentMealPlan!.addItem(planItem);
 
         // Save to database
         await _dbHelper.insertMealPlanItem(planItem);
+
+        // Save the junction record
+        await _dbHelper.insertMealPlanItemRecipe(junction);
+
         await _dbHelper.updateMealPlan(_currentMealPlan!);
 
         setState(() {
@@ -219,7 +248,6 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     }
   }
 
-// LOCATE: Add the _handleDaySelected method to WeeklyPlanScreen
   void _handleDaySelected(DateTime selectedDate, int selectedDayIndex) {
     // You can use this to update UI elements, scroll to specific sections,
     // or perform any other actions needed when a day is selected

@@ -1,5 +1,5 @@
 // Update in database_helper.dart
-
+import 'package:uuid/uuid.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/recipe.dart';
@@ -9,6 +9,7 @@ import '../models/ingredient.dart';
 import '../models/recipe_ingredient.dart';
 import '../models/meal_plan.dart';
 import '../models/meal_plan_item.dart';
+import '../models/meal_plan_item_recipe.dart';
 import '../core/validators/entity_validator.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 
@@ -35,7 +36,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), filename);
     return await openDatabase(
       path,
-      version: 8, // Increment version number for new tables
+      version: 9, // Increment version number for new tables
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: (db) async {
@@ -116,19 +117,30 @@ class DatabaseHelper {
       )
     ''');
 
-    // Create meal_plan_items table
+// Create meal_plan_items table
     await db.execute('''
-      CREATE TABLE meal_plan_items(
-        id TEXT PRIMARY KEY,
-        meal_plan_id TEXT NOT NULL,
-        recipe_id TEXT NOT NULL,
-        planned_date TEXT NOT NULL,
-        meal_type TEXT NOT NULL,
-        notes TEXT,
-        FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (id) ON DELETE CASCADE,
-        FOREIGN KEY (recipe_id) REFERENCES recipes (id)
-      )
-    ''');
+  CREATE TABLE meal_plan_items(
+    id TEXT PRIMARY KEY,
+    meal_plan_id TEXT NOT NULL,
+    planned_date TEXT NOT NULL,
+    meal_type TEXT NOT NULL,
+    notes TEXT,
+    FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (id) ON DELETE CASCADE
+  )
+''');
+
+// Create meal_plan_item_recipes junction table
+    await db.execute('''
+  CREATE TABLE meal_plan_item_recipes(
+    id TEXT PRIMARY KEY,
+    meal_plan_item_id TEXT NOT NULL,
+    recipe_id TEXT NOT NULL,
+    is_primary_dish INTEGER DEFAULT 0,
+    notes TEXT,
+    FOREIGN KEY (meal_plan_item_id) REFERENCES meal_plan_items (id) ON DELETE CASCADE,
+    FOREIGN KEY (recipe_id) REFERENCES recipes (id)
+  )
+''');
 
     // Create meal_recipes table
     await db.execute('''
@@ -239,7 +251,6 @@ class DatabaseHelper {
           'ALTER TABLE recipe_ingredients_new RENAME TO recipe_ingredients');
     }
 
-    // Add new tables for meal planning in version 7
     if (oldVersion < 7) {
       // Create meal_plans table
       await db.execute('''
@@ -267,7 +278,6 @@ class DatabaseHelper {
       ''');
     }
 
-    // Add new tables for multi-recipe meals in version 8
     if (oldVersion < 8) {
       // Create meal_recipes table
       await db.execute('''
@@ -282,6 +292,63 @@ class DatabaseHelper {
         )
       ''');
     }
+
+    if (oldVersion < 9) {
+      // Create meal_plan_item_recipes junction table if it doesn't exist
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS meal_plan_item_recipes(
+          id TEXT PRIMARY KEY,
+          meal_plan_item_id TEXT NOT NULL,
+          recipe_id TEXT NOT NULL,
+          is_primary_dish INTEGER DEFAULT 0,
+          notes TEXT,
+          FOREIGN KEY (meal_plan_item_id) REFERENCES meal_plan_items (id) ON DELETE CASCADE,
+          FOREIGN KEY (recipe_id) REFERENCES recipes (id)
+        )
+      ''');
+
+      // Migrate existing meal_plan_items data to use junction table
+      final List<Map<String, dynamic>> mealPlanItems =
+          await db.query('meal_plan_items');
+
+      // For each meal plan item with a recipe_id, create a junction record
+      for (final item in mealPlanItems) {
+        if (item['recipe_id'] != null) {
+          final junctionId = const Uuid().v4();
+          await db.insert('meal_plan_item_recipes', {
+            'id': junctionId,
+            'meal_plan_item_id': item['id'],
+            'recipe_id': item['recipe_id'],
+            'is_primary_dish': 1, // Mark as primary dish
+            'notes': null,
+          });
+        }
+      }
+    }
+
+    // Alter meal_plan_items table to make recipe_id nullable (transition step)
+    await db
+        .execute('ALTER TABLE meal_plan_items RENAME TO meal_plan_items_old');
+    await db.execute('''
+      CREATE TABLE meal_plan_items(
+        id TEXT PRIMARY KEY,
+        meal_plan_id TEXT NOT NULL,
+        planned_date TEXT NOT NULL,
+        meal_type TEXT NOT NULL,
+        notes TEXT,
+        FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (id) ON DELETE CASCADE
+      )
+    ''');
+
+    // Copy data to new table
+    await db.execute('''
+      INSERT INTO meal_plan_items(id, meal_plan_id, planned_date, meal_type, notes)
+      SELECT id, meal_plan_id, planned_date, meal_type, notes
+      FROM meal_plan_items_old
+    ''');
+
+    // Drop old table
+    await db.execute('DROP TABLE meal_plan_items_old');
   }
 
   // Meal Plan operations
@@ -326,8 +393,26 @@ class DatabaseHelper {
         whereArgs: [id],
       );
 
-      final List<MealPlanItem> items = List.generate(
-          itemMaps.length, (i) => MealPlanItem.fromMap(itemMaps[i]));
+      // Create MealPlanItem objects from the maps
+      final List<MealPlanItem> items = [];
+
+      for (final itemMap in itemMaps) {
+        final item = MealPlanItem.fromMap(itemMap);
+
+        // Fetch associated recipes from the junction table
+        final List<Map<String, dynamic>> recipeMaps = await db.query(
+          'meal_plan_item_recipes',
+          where: 'meal_plan_item_id = ?',
+          whereArgs: [item.id],
+        );
+
+        if (recipeMaps.isNotEmpty) {
+          item.mealPlanItemRecipes = List.generate(recipeMaps.length,
+              (i) => MealPlanItemRecipe.fromMap(recipeMaps[i]));
+        }
+
+        items.add(item);
+      }
 
       return MealPlan.fromMap(maps.first, items);
     } catch (e) {
@@ -410,8 +495,26 @@ class DatabaseHelper {
       whereArgs: [planId],
     );
 
-    final List<MealPlanItem> items = List.generate(
-        itemMaps.length, (i) => MealPlanItem.fromMap(itemMaps[i]));
+    // Create MealPlanItem objects with their associated recipes
+    final List<MealPlanItem> items = [];
+
+    for (final itemMap in itemMaps) {
+      final item = MealPlanItem.fromMap(itemMap);
+
+      // Fetch associated recipes from the junction table
+      final List<Map<String, dynamic>> recipeMaps = await db.query(
+        'meal_plan_item_recipes',
+        where: 'meal_plan_item_id = ?',
+        whereArgs: [item.id],
+      );
+
+      if (recipeMaps.isNotEmpty) {
+        item.mealPlanItemRecipes = List.generate(recipeMaps.length,
+            (i) => MealPlanItemRecipe.fromMap(recipeMaps[i]));
+      }
+
+      items.add(item);
+    }
 
     return MealPlan.fromMap(maps.first, items);
   }
@@ -446,22 +549,35 @@ class DatabaseHelper {
           where: 'meal_plan_id = ?',
           whereArgs: [mealPlan.id],
         );
+        // Note: junction table records will be deleted by ON DELETE CASCADE
 
         // Insert all items
         for (var item in mealPlan.items) {
           // Validate each item before inserting
           EntityValidator.validateMealPlanItem(
             mealPlanId: item.mealPlanId,
-            recipeId: item.recipeId,
             plannedDate: item.plannedDate,
             mealType: item.mealType,
           );
 
+          // Insert the meal plan item
           await txn.insert(
             'meal_plan_items',
             item.toMap(),
             conflictAlgorithm: ConflictAlgorithm.replace,
           );
+
+          // Insert the recipe associations if any
+          if (item.mealPlanItemRecipes != null &&
+              item.mealPlanItemRecipes!.isNotEmpty) {
+            for (var recipe in item.mealPlanItemRecipes!) {
+              await txn.insert(
+                'meal_plan_item_recipes',
+                recipe.toMap(),
+                conflictAlgorithm: ConflictAlgorithm.replace,
+              );
+            }
+          }
         }
 
         return 1; // Return success
@@ -496,7 +612,6 @@ class DatabaseHelper {
       // Validate item before inserting
       EntityValidator.validateMealPlanItem(
         mealPlanId: item.mealPlanId,
-        recipeId: item.recipeId,
         plannedDate: item.plannedDate,
         mealType: item.mealType,
       );
@@ -544,6 +659,19 @@ class DatabaseHelper {
     );
 
     return List.generate(maps.length, (i) => MealPlanItem.fromMap(maps[i]));
+  }
+
+  Future<String> insertMealPlanItemRecipe(
+      MealPlanItemRecipe mealPlanItemRecipe) async {
+    final Database db = await database;
+    try {
+      await db.insert('meal_plan_item_recipes', mealPlanItemRecipe.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.replace);
+      return mealPlanItemRecipe.id;
+    } catch (e) {
+      throw GastrobrainException(
+          'Failed to insert meal plan item recipe: ${e.toString()}');
+    }
   }
 
   // Ingredient operations

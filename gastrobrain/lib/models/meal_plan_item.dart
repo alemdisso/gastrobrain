@@ -9,16 +9,12 @@ class MealPlanItem {
   List<MealPlanItemRecipe>?
       mealPlanItemRecipes; // List of recipes in this planned meal
 
-  // For backward compatibility
-  String? recipeId;
-
   static const String lunch = 'lunch';
   static const String dinner = 'dinner';
 
   MealPlanItem({
     required this.id,
     required this.mealPlanId,
-    required this.recipeId,
     required this.plannedDate,
     required this.mealType,
     this.notes = '',
@@ -35,7 +31,6 @@ class MealPlanItem {
     return {
       'id': id,
       'meal_plan_id': mealPlanId,
-      'recipe_id': recipeId, // Keep for backward compatibility
       'planned_date': plannedDate,
       'meal_type': mealType,
       'notes': notes,
@@ -48,7 +43,6 @@ class MealPlanItem {
     return MealPlanItem(
       id: map['id'],
       mealPlanId: map['meal_plan_id'],
-      recipeId: map['recipe_id'],
       plannedDate: map['planned_date'],
       mealType: map['meal_type'],
       notes: map['notes'] ?? '',
@@ -69,7 +63,6 @@ class MealPlanItem {
     return MealPlanItem(
       id: id ?? this.id,
       mealPlanId: mealPlanId ?? this.mealPlanId,
-      recipeId: recipeId ?? this.recipeId,
       plannedDate: plannedDate ?? this.plannedDate,
       mealType: mealType ?? this.mealType,
       notes: notes ?? this.notes,

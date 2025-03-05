@@ -88,23 +88,54 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
       return;
     }
 
-    // Get unique recipe IDs from meal plan
-    final recipeIds =
-        widget.mealPlan!.items.map((item) => item.recipeId).toSet().toList();
+    // Get unique recipe IDs from all mealPlanItemRecipes across all items
+    final recipeIds = <String>{};
+
+    for (final item in widget.mealPlan!.items) {
+      if (item.mealPlanItemRecipes != null) {
+        for (final recipe in item.mealPlanItemRecipes!) {
+          recipeIds.add(recipe.recipeId);
+        }
+      }
+    }
 
     // Fetch recipe details for each ID
     for (final id in recipeIds) {
       if (!_recipes.containsKey(id)) {
-        // Ensure id is not null before calling getRecipe
-        if (id != null) {
-          final recipe = await _dbHelper.getRecipe(id);
-          if (recipe != null && mounted) {
-            setState(() {
-              _recipes[id] = recipe;
-            });
-          }
+        final recipe = await _dbHelper.getRecipe(id);
+        if (recipe != null && mounted) {
+          setState(() {
+            _recipes[id] = recipe;
+          });
         }
       }
+    }
+  }
+
+  bool _hasPrimaryRecipe(MealPlanItem? plannedMeal) {
+    return plannedMeal != null &&
+        plannedMeal.mealPlanItemRecipes != null &&
+        plannedMeal.mealPlanItemRecipes!.isNotEmpty;
+  }
+
+  String? _getPrimaryRecipeId(MealPlanItem? plannedMeal) {
+    if (_hasPrimaryRecipe(plannedMeal)) {
+      return plannedMeal!.mealPlanItemRecipes!.first.recipeId;
+    }
+    return null;
+  }
+
+  void _handleTap(DateTime date, String mealType, MealPlanItem? plannedMeal,
+      bool hasPlannedMeal) {
+    final hasPrimaryRecipe = _hasPrimaryRecipe(plannedMeal);
+
+    if (hasPlannedMeal && widget.onMealTap != null && hasPrimaryRecipe) {
+      // Call onMealTap with the primary recipe ID
+      final primaryRecipeId = _getPrimaryRecipeId(plannedMeal);
+      widget.onMealTap!(date, mealType, primaryRecipeId!);
+    } else if (widget.onSlotTap != null) {
+      // No meal or no recipes, call onSlotTap to add a meal
+      widget.onSlotTap!(date, mealType);
     }
   }
 
@@ -185,22 +216,16 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
     final MealPlanItem? plannedMeal =
         widget.mealPlan?.getItemsForDateAndMealType(date, mealType).firstOrNull;
 
+    // Get the first recipe (primary dish) if any recipes are associated
+    final primaryRecipeId = _getPrimaryRecipeId(plannedMeal);
     final Recipe? recipe =
-        plannedMeal != null ? _recipes[plannedMeal.recipeId] : null;
+        primaryRecipeId != null ? _recipes[primaryRecipeId] : null;
 
     final bool hasPlannedMeal = plannedMeal != null && recipe != null;
 
     return Card(
       child: InkWell(
-        onTap: () {
-          if (hasPlannedMeal &&
-              widget.onMealTap != null &&
-              plannedMeal.recipeId != null) {
-            widget.onMealTap!(date, mealType, plannedMeal.recipeId!);
-          } else if (widget.onSlotTap != null) {
-            widget.onSlotTap!(date, mealType);
-          }
-        },
+        onTap: () => _handleTap(date, mealType, plannedMeal, hasPlannedMeal),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
@@ -374,9 +399,10 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
         )
         .firstOrNull;
 
-    // Get recipe details if available
+    // Get the first recipe (primary dish) if any recipes are associated
+    final primaryRecipeId = _getPrimaryRecipeId(plannedMeal);
     final Recipe? recipe =
-        plannedMeal != null ? _recipes[plannedMeal.recipeId] : null;
+        primaryRecipeId != null ? _recipes[primaryRecipeId] : null;
 
     final bool hasPlannedMeal = plannedMeal != null && recipe != null;
 
@@ -399,15 +425,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
         : const EdgeInsets.all(12); // Larger screens get more space
 
     return InkWell(
-      onTap: () {
-        if (hasPlannedMeal &&
-            widget.onMealTap != null &&
-            plannedMeal.recipeId != null) {
-          widget.onMealTap!(date, mealType, plannedMeal.recipeId!);
-        } else if (widget.onSlotTap != null) {
-          widget.onSlotTap!(date, mealType);
-        }
-      },
+      onTap: () => _handleTap(date, mealType, plannedMeal, hasPlannedMeal),
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: contentPadding,
