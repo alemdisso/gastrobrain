@@ -4,6 +4,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/recipe.dart';
 import '../models/meal.dart';
+import '../models/meal_recipe.dart';
 import '../models/ingredient.dart';
 import '../models/recipe_ingredient.dart';
 import '../models/meal_plan.dart';
@@ -34,7 +35,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), filename);
     return await openDatabase(
       path,
-      version: 7, // Increment version number for new tables
+      version: 8, // Increment version number for new tables
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: (db) async {
@@ -125,6 +126,19 @@ class DatabaseHelper {
         meal_type TEXT NOT NULL,
         notes TEXT,
         FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (id) ON DELETE CASCADE,
+        FOREIGN KEY (recipe_id) REFERENCES recipes (id)
+      )
+    ''');
+
+    // Create meal_recipes table
+    await db.execute('''
+      CREATE TABLE meal_recipes(
+        id TEXT PRIMARY KEY,
+        meal_id TEXT NOT NULL,
+        recipe_id TEXT NOT NULL,
+        is_primary_dish INTEGER DEFAULT 0,
+        notes TEXT,
+        FOREIGN KEY (meal_id) REFERENCES meals (id) ON DELETE CASCADE,
         FOREIGN KEY (recipe_id) REFERENCES recipes (id)
       )
     ''');
@@ -248,6 +262,22 @@ class DatabaseHelper {
           meal_type TEXT NOT NULL,
           notes TEXT,
           FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (id) ON DELETE CASCADE,
+          FOREIGN KEY (recipe_id) REFERENCES recipes (id)
+        )
+      ''');
+    }
+
+    // Add new tables for multi-recipe meals in version 8
+    if (oldVersion < 8) {
+      // Create meal_recipes table
+      await db.execute('''
+        CREATE TABLE meal_recipes(
+          id TEXT PRIMARY KEY,
+          meal_id TEXT NOT NULL,
+          recipe_id TEXT NOT NULL,
+          is_primary_dish INTEGER DEFAULT 0,
+          notes TEXT,
+          FOREIGN KEY (meal_id) REFERENCES meals (id) ON DELETE CASCADE,
           FOREIGN KEY (recipe_id) REFERENCES recipes (id)
         )
       ''');
@@ -670,6 +700,53 @@ class DatabaseHelper {
     final Database db = await database;
     return await db.delete(
       'meals',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  // MealRecipe operations
+  Future<String> insertMealRecipe(MealRecipe mealRecipe) async {
+    final Database db = await database;
+    try {
+      await db.insert('meal_recipes', mealRecipe.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.replace);
+      return mealRecipe.id;
+    } catch (e) {
+      throw GastrobrainException(
+          'Failed to insert meal recipe: ${e.toString()}');
+    }
+  }
+
+  Future<List<MealRecipe>> getMealRecipesForMeal(String mealId) async {
+    final Database db = await database;
+    try {
+      final List<Map<String, dynamic>> maps = await db.query(
+        'meal_recipes',
+        where: 'meal_id = ?',
+        whereArgs: [mealId],
+      );
+
+      return List.generate(maps.length, (i) => MealRecipe.fromMap(maps[i]));
+    } catch (e) {
+      throw GastrobrainException('Failed to get meal recipes: ${e.toString()}');
+    }
+  }
+
+  Future<int> updateMealRecipe(MealRecipe mealRecipe) async {
+    final Database db = await database;
+    return await db.update(
+      'meal_recipes',
+      mealRecipe.toMap(),
+      where: 'id = ?',
+      whereArgs: [mealRecipe.id],
+    );
+  }
+
+  Future<int> deleteMealRecipe(String id) async {
+    final Database db = await database;
+    return await db.delete(
+      'meal_recipes',
       where: 'id = ?',
       whereArgs: [id],
     );

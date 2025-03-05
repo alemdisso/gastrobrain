@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../models/meal.dart';
+import '../models/meal_recipe.dart';
 import '../database/database_helper.dart';
 import '../utils/id_generator.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
@@ -52,9 +53,10 @@ class _CookMealScreenState extends State<CookMealScreen> {
       EntityValidator.validateTime(prepTime, 'Preparation');
       EntityValidator.validateTime(cookTime, 'Cooking');
 
+      // Create the meal with a new ID
+      final mealId = IdGenerator.generateId();
       final meal = Meal(
-        id: IdGenerator.generateId(),
-        recipeId: widget.recipe.id,
+        id: mealId,
         cookedAt: _cookedAt,
         servings: servings,
         notes: _notesController.text,
@@ -63,8 +65,19 @@ class _CookMealScreenState extends State<CookMealScreen> {
         actualCookTime: cookTime ?? 0,
       );
 
+      // Create a meal recipe association for the primary recipe
+      final mealRecipe = MealRecipe(
+        mealId: mealId,
+        recipeId: widget.recipe.id,
+        isPrimaryDish: true, // Mark as primary dish
+      );
+
       final dbHelper = DatabaseHelper();
+      // First insert the meal
       await dbHelper.insertMeal(meal);
+
+      // Then insert the meal-recipe association
+      await dbHelper.insertMealRecipe(mealRecipe);
 
       if (mounted) {
         Navigator.pop(context, true);
