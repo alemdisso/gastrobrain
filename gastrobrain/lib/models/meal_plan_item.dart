@@ -1,12 +1,16 @@
-// lib/models/meal_plan_item.dart
+import 'meal_plan_item_recipe.dart';
 
 class MealPlanItem {
   String id;
   String mealPlanId;
-  String recipeId;
   String plannedDate; // ISO 8601 date string (YYYY-MM-DD)
   String mealType; // 'lunch' or 'dinner'
   String notes;
+  List<MealPlanItemRecipe>?
+      mealPlanItemRecipes; // List of recipes in this planned meal
+
+  // For backward compatibility
+  String? recipeId;
 
   static const String lunch = 'lunch';
   static const String dinner = 'dinner';
@@ -18,6 +22,7 @@ class MealPlanItem {
     required this.plannedDate,
     required this.mealType,
     this.notes = '',
+    this.mealPlanItemRecipes,
   }) {
     // Validate meal type
     if (mealType != lunch && mealType != dinner) {
@@ -30,10 +35,11 @@ class MealPlanItem {
     return {
       'id': id,
       'meal_plan_id': mealPlanId,
-      'recipe_id': recipeId,
+      'recipe_id': recipeId, // Keep for backward compatibility
       'planned_date': plannedDate,
       'meal_type': mealType,
       'notes': notes,
+      // Note: mealPlanItemRecipes must be saved separately
     };
   }
 
@@ -46,6 +52,7 @@ class MealPlanItem {
       plannedDate: map['planned_date'],
       mealType: map['meal_type'],
       notes: map['notes'] ?? '',
+      // Note: mealPlanItemRecipes must be loaded separately
     );
   }
 
@@ -57,6 +64,7 @@ class MealPlanItem {
     String? plannedDate,
     String? mealType,
     String? notes,
+    List<MealPlanItemRecipe>? mealPlanItemRecipes,
   }) {
     return MealPlanItem(
       id: id ?? this.id,
@@ -65,6 +73,7 @@ class MealPlanItem {
       plannedDate: plannedDate ?? this.plannedDate,
       mealType: mealType ?? this.mealType,
       notes: notes ?? this.notes,
+      mealPlanItemRecipes: mealPlanItemRecipes ?? this.mealPlanItemRecipes,
     );
   }
 

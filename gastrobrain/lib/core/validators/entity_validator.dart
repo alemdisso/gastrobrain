@@ -100,15 +100,17 @@ class EntityValidator {
 
   static void validateMealPlanItem({
     required String mealPlanId,
-    required String recipeId,
+    required String? recipeId,
     required String plannedDate,
     required String mealType,
   }) {
     if (mealPlanId.isEmpty) {
       throw ValidationException('Meal plan ID cannot be empty');
     }
-    if (recipeId.isEmpty) {
-      throw ValidationException('Recipe ID cannot be empty');
+    // Only validate recipeId if it's provided (for backward compatibility)
+    // ignore: unnecessary_null_comparison
+    if (recipeId != null && recipeId.isEmpty) {
+      throw ValidationException('Recipe ID cannot be empty if provided');
     }
 
     // Validate planned date format (YYYY-MM-DD)

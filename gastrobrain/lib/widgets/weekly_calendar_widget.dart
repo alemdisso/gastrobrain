@@ -95,11 +95,14 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
     // Fetch recipe details for each ID
     for (final id in recipeIds) {
       if (!_recipes.containsKey(id)) {
-        final recipe = await _dbHelper.getRecipe(id);
-        if (recipe != null && mounted) {
-          setState(() {
-            _recipes[id] = recipe;
-          });
+        // Ensure id is not null before calling getRecipe
+        if (id != null) {
+          final recipe = await _dbHelper.getRecipe(id);
+          if (recipe != null && mounted) {
+            setState(() {
+              _recipes[id] = recipe;
+            });
+          }
         }
       }
     }
@@ -190,8 +193,10 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
     return Card(
       child: InkWell(
         onTap: () {
-          if (hasPlannedMeal && widget.onMealTap != null) {
-            widget.onMealTap!(date, mealType, plannedMeal.recipeId);
+          if (hasPlannedMeal &&
+              widget.onMealTap != null &&
+              plannedMeal.recipeId != null) {
+            widget.onMealTap!(date, mealType, plannedMeal.recipeId!);
           } else if (widget.onSlotTap != null) {
             widget.onSlotTap!(date, mealType);
           }
@@ -395,8 +400,10 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
 
     return InkWell(
       onTap: () {
-        if (hasPlannedMeal && widget.onMealTap != null) {
-          widget.onMealTap!(date, mealType, plannedMeal.recipeId);
+        if (hasPlannedMeal &&
+            widget.onMealTap != null &&
+            plannedMeal.recipeId != null) {
+          widget.onMealTap!(date, mealType, plannedMeal.recipeId!);
         } else if (widget.onSlotTap != null) {
           widget.onSlotTap!(date, mealType);
         }
