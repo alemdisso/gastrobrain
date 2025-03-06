@@ -86,6 +86,9 @@ class DatabaseHelper {
   }
 
   Future<void> _onCreate(Database db, int version) async {
+    // Enable foreign keys
+    await db.execute('PRAGMA foreign_keys = ON;');
+
     // Create recipes table with all columns that were added in upgrades
     await db.execute('''
       CREATE TABLE recipes(
@@ -156,30 +159,30 @@ class DatabaseHelper {
       )
     ''');
 
-// Create meal_plan_items table
+    // Create meal_plan_items table - Without recipe_id field
     await db.execute('''
-  CREATE TABLE meal_plan_items(
-    id TEXT PRIMARY KEY,
-    meal_plan_id TEXT NOT NULL,
-    planned_date TEXT NOT NULL,
-    meal_type TEXT NOT NULL,
-    notes TEXT,
-    FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (id) ON DELETE CASCADE
-  )
-''');
+      CREATE TABLE meal_plan_items(
+        id TEXT PRIMARY KEY,
+        meal_plan_id TEXT NOT NULL,
+        planned_date TEXT NOT NULL,
+        meal_type TEXT NOT NULL,
+        notes TEXT,
+        FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (id) ON DELETE CASCADE
+      )
+    ''');
 
-// Create meal_plan_item_recipes junction table
+    // Create meal_plan_item_recipes junction table
     await db.execute('''
-  CREATE TABLE meal_plan_item_recipes(
-    id TEXT PRIMARY KEY,
-    meal_plan_item_id TEXT NOT NULL,
-    recipe_id TEXT NOT NULL,
-    is_primary_dish INTEGER DEFAULT 0,
-    notes TEXT,
-    FOREIGN KEY (meal_plan_item_id) REFERENCES meal_plan_items (id) ON DELETE CASCADE,
-    FOREIGN KEY (recipe_id) REFERENCES recipes (id)
-  )
-''');
+      CREATE TABLE meal_plan_item_recipes(
+        id TEXT PRIMARY KEY,
+        meal_plan_item_id TEXT NOT NULL,
+        recipe_id TEXT NOT NULL,
+        is_primary_dish INTEGER DEFAULT 0,
+        notes TEXT,
+        FOREIGN KEY (meal_plan_item_id) REFERENCES meal_plan_items (id) ON DELETE CASCADE,
+        FOREIGN KEY (recipe_id) REFERENCES recipes (id)
+      )
+    ''');
 
     // Create meal_recipes table
     await db.execute('''
@@ -193,6 +196,35 @@ class DatabaseHelper {
         FOREIGN KEY (recipe_id) REFERENCES recipes (id)
       )
     ''');
+
+    // Double-check the junction table's foreign key reference
+    final List<Map<String, dynamic>> fkList =
+        await db.rawQuery("PRAGMA foreign_key_list('meal_plan_item_recipes')");
+
+    // If foreign keys are incorrect, recreate the table
+    bool needsFix = false;
+    for (var fk in fkList) {
+      if (fk['table'] != 'meal_plan_items' && fk['table'] != 'recipes') {
+        needsFix = true;
+        break;
+      }
+    }
+
+    if (needsFix) {
+      // Drop and recreate the junction table with correct foreign keys
+      await db.execute('DROP TABLE meal_plan_item_recipes');
+      await db.execute('''
+        CREATE TABLE meal_plan_item_recipes(
+          id TEXT PRIMARY KEY,
+          meal_plan_item_id TEXT NOT NULL,
+          recipe_id TEXT NOT NULL,
+          is_primary_dish INTEGER DEFAULT 0,
+          notes TEXT,
+          FOREIGN KEY (meal_plan_item_id) REFERENCES meal_plan_items (id) ON DELETE CASCADE,
+          FOREIGN KEY (recipe_id) REFERENCES recipes (id)
+        )
+      ''');
+    }
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -346,46 +378,50 @@ class DatabaseHelper {
         )
       ''');
 
-      // Migrate existing meal_plan_items data to use junction table
+      // Create a temporary variable to hold existing meal plan items
       final List<Map<String, dynamic>> mealPlanItems =
           await db.query('meal_plan_items');
 
-      // For each meal plan item with a recipe_id, create a junction record
-      for (final item in mealPlanItems) {
-        if (item['recipe_id'] != null) {
-          final junctionId = const Uuid().v4();
-          await db.insert('meal_plan_item_recipes', {
-            'id': junctionId,
-            'meal_plan_item_id': item['id'],
-            'recipe_id': item['recipe_id'],
-            'is_primary_dish': 1, // Mark as primary dish
-            'notes': null,
-          });
+      // Start a transaction to ensure data consistency
+      await db.transaction((txn) async {
+        // First create a new table with the updated schema
+        await txn.execute('''
+          CREATE TABLE meal_plan_items_new(
+            id TEXT PRIMARY KEY,
+            meal_plan_id TEXT NOT NULL,
+            planned_date TEXT NOT NULL,
+            meal_type TEXT NOT NULL,
+            notes TEXT,
+            FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (id) ON DELETE CASCADE
+          )
+        ''');
+
+        // Copy data from old table to new table
+        await txn.execute('''
+          INSERT INTO meal_plan_items_new(id, meal_plan_id, planned_date, meal_type, notes)
+          SELECT id, meal_plan_id, planned_date, meal_type, notes
+          FROM meal_plan_items
+        ''');
+
+        // For each meal plan item with a recipe_id, create a junction record
+        for (final item in mealPlanItems) {
+          if (item['recipe_id'] != null) {
+            final junctionId = const Uuid().v4();
+            await txn.insert('meal_plan_item_recipes', {
+              'id': junctionId,
+              'meal_plan_item_id': item['id'],
+              'recipe_id': item['recipe_id'],
+              'is_primary_dish': 1, // Mark as primary dish
+              'notes': null,
+            });
+          }
         }
-      }
-      // Alter meal_plan_items table to make recipe_id nullable (transition step)
-      await db
-          .execute('ALTER TABLE meal_plan_items RENAME TO meal_plan_items_old');
-      await db.execute('''
-        CREATE TABLE meal_plan_items(
-          id TEXT PRIMARY KEY,
-          meal_plan_id TEXT NOT NULL,
-          planned_date TEXT NOT NULL,
-          meal_type TEXT NOT NULL,
-          notes TEXT,
-          FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (id) ON DELETE CASCADE
-        )
-      ''');
 
-      // Copy data to new table
-      await db.execute('''
-        INSERT INTO meal_plan_items(id, meal_plan_id, planned_date, meal_type, notes)
-        SELECT id, meal_plan_id, planned_date, meal_type, notes
-        FROM meal_plan_items_old
-      ''');
-
-      // Drop old table
-      await db.execute('DROP TABLE meal_plan_items_old');
+        // Replace the old table with the new one
+        await txn.execute('DROP TABLE meal_plan_items');
+        await txn.execute(
+            'ALTER TABLE meal_plan_items_new RENAME TO meal_plan_items');
+      });
     }
   }
 
@@ -703,6 +739,19 @@ class DatabaseHelper {
       MealPlanItemRecipe mealPlanItemRecipe) async {
     final Database db = await database;
     try {
+      // Verify the meal plan item exists before inserting the junction record
+      final mealPlanItem = await db.query(
+        'meal_plan_items',
+        where: 'id = ?',
+        whereArgs: [mealPlanItemRecipe.mealPlanItemId],
+      );
+
+      if (mealPlanItem.isEmpty) {
+        throw NotFoundException(
+            'Meal plan item not found with id: ${mealPlanItemRecipe.mealPlanItemId}');
+      }
+
+      // Insert the junction record
       await db.insert('meal_plan_item_recipes', mealPlanItemRecipe.toMap(),
           conflictAlgorithm: ConflictAlgorithm.replace);
       return mealPlanItemRecipe.id;
