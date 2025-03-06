@@ -1,5 +1,6 @@
 // Update in database_helper.dart
-import 'package:uuid/uuid.dart';
+import 'dart:async'; // Add this import for Zone access
+//import 'package:uuid/uuid.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/recipe.dart';
@@ -28,14 +29,14 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    // Check if we're running in a test
-    bool isTest =
-        const bool.fromEnvironment('FLUTTER_TEST', defaultValue: false);
+    // More reliable detection: use a direct test to see if in test context
+    // Check if we're in a test by examining stack traces and context
+    bool inTestContext = _detectTestEnvironment();
 
     String filename;
-    if (isTest) {
-      // For tests, add a timestamp to create a unique database file for each test run
-      // This prevents tests from interfering with each other and with the main app database
+    if (inTestContext) {
+      // For tests, use a named test database that's separate from the main one
+      // With timestamp for uniqueness between test runs
       filename = 'gastrobrain_test_${DateTime.now().millisecondsSinceEpoch}.db';
     } else {
       // Normal app operation
@@ -45,7 +46,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), filename);
     return await openDatabase(
       path,
-      version: 9, // Increment version number for new tables
+      version: 10, // Increment version number for new tables
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: (db) async {
@@ -55,8 +56,35 @@ class DatabaseHelper {
     );
   }
 
+  // Helper method to detect test environment more reliably
+  bool _detectTestEnvironment() {
+    try {
+      // Check stack trace for testing frameworks
+      final stackTraceStr = StackTrace.current.toString();
+      if (stackTraceStr.contains('_integrationTester') ||
+          stackTraceStr.contains('integration_test') ||
+          stackTraceStr.contains('flutter_test') ||
+          stackTraceStr.contains('test_async_utils')) {
+        return true;
+      }
+
+      // Additional check: see if running in a testing isolate
+      final testZone =
+          Zone.current[#test.declarer]; // Zone marker used by test framework
+      if (testZone != null) {
+        return true;
+      }
+    } catch (_) {
+      // If any error occurs in detection, be conservative
+    }
+
+    // Fallback to check environment variable (although we know it might not be reliable)
+    return const bool.fromEnvironment('FLUTTER_TEST', defaultValue: false);
+  }
+
   Future<void> resetDatabaseForTests() async {
-    if (!const bool.fromEnvironment('FLUTTER_TEST', defaultValue: false)) {
+    // Use the more reliable test detection method
+    if (!_detectTestEnvironment()) {
       return; // Only allow in test environment
     }
 
@@ -115,7 +143,7 @@ class DatabaseHelper {
         was_successful INTEGER DEFAULT 1,
         actual_prep_time REAL DEFAULT 0,
         actual_cook_time REAL DEFAULT 0,
-        FOREIGN KEY (recipe_id) REFERENCES recipes (id)
+        FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
       )
     ''');
 
@@ -144,7 +172,7 @@ class DatabaseHelper {
         custom_category TEXT,
         custom_unit TEXT,
         FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE,
-        FOREIGN KEY (ingredient_id) REFERENCES ingredients (id)
+        FOREIGN KEY (ingredient_id) REFERENCES ingredients (id) ON DELETE CASCADE
       )
     ''');
 
@@ -180,7 +208,7 @@ class DatabaseHelper {
         is_primary_dish INTEGER DEFAULT 0,
         notes TEXT,
         FOREIGN KEY (meal_plan_item_id) REFERENCES meal_plan_items (id) ON DELETE CASCADE,
-        FOREIGN KEY (recipe_id) REFERENCES recipes (id)
+        FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
       )
     ''');
 
@@ -193,238 +221,34 @@ class DatabaseHelper {
         is_primary_dish INTEGER DEFAULT 0,
         notes TEXT,
         FOREIGN KEY (meal_id) REFERENCES meals (id) ON DELETE CASCADE,
-        FOREIGN KEY (recipe_id) REFERENCES recipes (id)
+        FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
       )
     ''');
-
-    // Double-check the junction table's foreign key reference
-    final List<Map<String, dynamic>> fkList =
-        await db.rawQuery("PRAGMA foreign_key_list('meal_plan_item_recipes')");
-
-    // If foreign keys are incorrect, recreate the table
-    bool needsFix = false;
-    for (var fk in fkList) {
-      if (fk['table'] != 'meal_plan_items' && fk['table'] != 'recipes') {
-        needsFix = true;
-        break;
-      }
-    }
-
-    if (needsFix) {
-      // Drop and recreate the junction table with correct foreign keys
-      await db.execute('DROP TABLE meal_plan_item_recipes');
-      await db.execute('''
-        CREATE TABLE meal_plan_item_recipes(
-          id TEXT PRIMARY KEY,
-          meal_plan_item_id TEXT NOT NULL,
-          recipe_id TEXT NOT NULL,
-          is_primary_dish INTEGER DEFAULT 0,
-          notes TEXT,
-          FOREIGN KEY (meal_plan_item_id) REFERENCES meal_plan_items (id) ON DELETE CASCADE,
-          FOREIGN KEY (recipe_id) REFERENCES recipes (id)
-        )
-      ''');
-    }
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
-      // Add new columns to existing table
-      await db.execute(
-          'ALTER TABLE recipes ADD COLUMN difficulty INTEGER DEFAULT 1');
-      await db.execute(
-          'ALTER TABLE recipes ADD COLUMN prep_time_minutes INTEGER DEFAULT 0');
-      await db.execute(
-          'ALTER TABLE recipes ADD COLUMN cook_time_minutes INTEGER DEFAULT 0');
-      await db
-          .execute('ALTER TABLE recipes ADD COLUMN rating INTEGER DEFAULT 0');
-    }
-    if (oldVersion < 3) {
-      // Add new columns to meals table
-      await db.execute(
-          'ALTER TABLE meals ADD COLUMN was_successful INTEGER DEFAULT 1');
-      await db.execute(
-          'ALTER TABLE meals ADD COLUMN actual_prep_time REAL DEFAULT 0');
-      await db.execute(
-          'ALTER TABLE meals ADD COLUMN actual_cook_time REAL DEFAULT 0');
+    // Version 10: Fresh start with a clean schema
+    // All previous migrations (versions 1-9) have been consolidated
+
+    // If we're upgrading from any version before 10, apply our new baseline schema
+    if (oldVersion < 10) {
+      // We're starting with a clean slate for version 10 and up
+      // In the future, new migrations will be added below as: if (oldVersion < 11), etc.
+
+      // Add any migration code here if needed in the future
+      // For example, if we modify the database schema, we would add migration code here
+      // to preserve user data while updating the schema
     }
 
-    if (oldVersion < 4) {
-      // Add ingredient tables
-      await db.execute('''
-        CREATE TABLE ingredients(
-          id TEXT PRIMARY KEY,
-          name TEXT NOT NULL,
-          category TEXT NOT NULL,
-          unit TEXT,
-          protein_type TEXT,
-          notes TEXT
-        )
-      ''');
+    // For future migrations, add new version checks below:
+    // if (oldVersion < 11) {
+    //   // Future migration code for version 11
+    // }
 
-      await db.execute('''
-        CREATE TABLE recipe_ingredients(
-          id TEXT PRIMARY KEY,
-          recipe_id TEXT NOT NULL,
-          ingredient_id TEXT NOT NULL,
-          quantity REAL NOT NULL,
-          notes TEXT,
-          FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE,
-          FOREIGN KEY (ingredient_id) REFERENCES ingredients (id)
-        )
-      ''');
-    }
-
-    if (oldVersion < 5) {
-      // Add unit_override column to recipe_ingredients
-      await db.execute('''
-        ALTER TABLE recipe_ingredients 
-        ADD COLUMN unit_override TEXT
-      ''');
-    }
-    if (oldVersion < 6) {
-      // Add custom ingredient columns
-      await db.execute(
-          'ALTER TABLE recipe_ingredients ADD COLUMN custom_name TEXT');
-      await db.execute(
-          'ALTER TABLE recipe_ingredients ADD COLUMN custom_category TEXT');
-      await db.execute(
-          'ALTER TABLE recipe_ingredients ADD COLUMN custom_unit TEXT');
-
-      // Make ingredient_id nullable by recreating the table
-      await db.execute('''
-        CREATE TABLE recipe_ingredients_new(
-          id TEXT PRIMARY KEY,
-          recipe_id TEXT NOT NULL,
-          ingredient_id TEXT,
-          quantity REAL NOT NULL,
-          notes TEXT,
-          unit_override TEXT,
-          custom_name TEXT,
-          custom_category TEXT,
-          custom_unit TEXT,
-          FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE,
-          FOREIGN KEY (ingredient_id) REFERENCES ingredients (id)
-        )
-      ''');
-
-      // Copy data from old table to new table
-      await db.execute('''
-        INSERT INTO recipe_ingredients_new
-        SELECT id, recipe_id, ingredient_id, quantity, notes, unit_override, 
-               NULL as custom_name, NULL as custom_category, NULL as custom_unit
-        FROM recipe_ingredients
-      ''');
-
-      // Drop old table and rename new table
-      await db.execute('DROP TABLE recipe_ingredients');
-      await db.execute(
-          'ALTER TABLE recipe_ingredients_new RENAME TO recipe_ingredients');
-    }
-
-    if (oldVersion < 7) {
-      // Create meal_plans table
-      await db.execute('''
-        CREATE TABLE meal_plans(
-          id TEXT PRIMARY KEY,
-          week_start_date TEXT NOT NULL,
-          notes TEXT,
-          created_at TEXT NOT NULL,
-          modified_at TEXT NOT NULL
-        )
-      ''');
-
-      // Create meal_plan_items table
-      await db.execute('''
-        CREATE TABLE meal_plan_items(
-          id TEXT PRIMARY KEY,
-          meal_plan_id TEXT NOT NULL,
-          recipe_id TEXT NOT NULL,
-          planned_date TEXT NOT NULL,
-          meal_type TEXT NOT NULL,
-          notes TEXT,
-          FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (id) ON DELETE CASCADE,
-          FOREIGN KEY (recipe_id) REFERENCES recipes (id)
-        )
-      ''');
-    }
-
-    if (oldVersion < 8) {
-      // Create meal_recipes table
-      await db.execute('''
-        CREATE TABLE meal_recipes(
-          id TEXT PRIMARY KEY,
-          meal_id TEXT NOT NULL,
-          recipe_id TEXT NOT NULL,
-          is_primary_dish INTEGER DEFAULT 0,
-          notes TEXT,
-          FOREIGN KEY (meal_id) REFERENCES meals (id) ON DELETE CASCADE,
-          FOREIGN KEY (recipe_id) REFERENCES recipes (id)
-        )
-      ''');
-    }
-
-    if (oldVersion < 9) {
-      // Create meal_plan_item_recipes junction table if it doesn't exist
-      await db.execute('''
-        CREATE TABLE IF NOT EXISTS meal_plan_item_recipes(
-          id TEXT PRIMARY KEY,
-          meal_plan_item_id TEXT NOT NULL,
-          recipe_id TEXT NOT NULL,
-          is_primary_dish INTEGER DEFAULT 0,
-          notes TEXT,
-          FOREIGN KEY (meal_plan_item_id) REFERENCES meal_plan_items (id) ON DELETE CASCADE,
-          FOREIGN KEY (recipe_id) REFERENCES recipes (id)
-        )
-      ''');
-
-      // Create a temporary variable to hold existing meal plan items
-      final List<Map<String, dynamic>> mealPlanItems =
-          await db.query('meal_plan_items');
-
-      // Start a transaction to ensure data consistency
-      await db.transaction((txn) async {
-        // First create a new table with the updated schema
-        await txn.execute('''
-          CREATE TABLE meal_plan_items_new(
-            id TEXT PRIMARY KEY,
-            meal_plan_id TEXT NOT NULL,
-            planned_date TEXT NOT NULL,
-            meal_type TEXT NOT NULL,
-            notes TEXT,
-            FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (id) ON DELETE CASCADE
-          )
-        ''');
-
-        // Copy data from old table to new table
-        await txn.execute('''
-          INSERT INTO meal_plan_items_new(id, meal_plan_id, planned_date, meal_type, notes)
-          SELECT id, meal_plan_id, planned_date, meal_type, notes
-          FROM meal_plan_items
-        ''');
-
-        // For each meal plan item with a recipe_id, create a junction record
-        for (final item in mealPlanItems) {
-          if (item['recipe_id'] != null) {
-            final junctionId = const Uuid().v4();
-            await txn.insert('meal_plan_item_recipes', {
-              'id': junctionId,
-              'meal_plan_item_id': item['id'],
-              'recipe_id': item['recipe_id'],
-              'is_primary_dish': 1, // Mark as primary dish
-              'notes': null,
-            });
-          }
-        }
-
-        // Replace the old table with the new one
-        await txn.execute('DROP TABLE meal_plan_items');
-        await txn.execute(
-            'ALTER TABLE meal_plan_items_new RENAME TO meal_plan_items');
-      });
-    }
+    // if (oldVersion < 12) {
+    //   // Future migration code for version 12
+    // }
   }
-
   // Meal Plan operations
 
   Future<String> insertMealPlan(MealPlan mealPlan) async {

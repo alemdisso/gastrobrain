@@ -70,25 +70,12 @@ void main() {
 
     tearDown(() async {
       try {
-        // 1. First, get all meal plans in the database
-        final now = DateTime.now();
-        final startDate =
-            now.subtract(const Duration(days: 30)); // Look back a month
-        final endDate = now.add(const Duration(days: 30)); // Look ahead a month
-
-        final mealPlans =
-            await dbHelper.getMealPlansByDateRange(startDate, endDate);
-
-        // 2. Delete each meal plan (this will cascade delete meal plan items due to the foreign key constraints)
-        for (final plan in mealPlans) {
-          await dbHelper.deleteMealPlan(plan.id);
-        }
-
-        // 3. Only after meal plans are deleted, delete the test recipes
+        // Only delete the specific test data we created in this test
         await dbHelper.deleteRecipe(testRecipe1Id);
         await dbHelper.deleteRecipe(testRecipe2Id);
       } catch (e) {
-        // Continue with teardown even if there's an error
+        // Log the error but continue with teardown
+        print('Error during teardown: $e');
       }
     });
     testWidgets('test flow from creating plan to assigning meals',
