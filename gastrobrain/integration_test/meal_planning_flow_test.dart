@@ -218,8 +218,12 @@ void main() {
 
       final mealPlan = await dbHelper.getMealPlanForWeek(weekStart);
       expect(mealPlan, isNotNull);
+
       expect(mealPlan!.items.length, 1);
-      expect(mealPlan.items[0].recipeId, testRecipe2Id);
+      // Check the recipe through the junction relationship
+      expect(mealPlan.items[0].mealPlanItemRecipes, isNotNull);
+      expect(mealPlan.items[0].mealPlanItemRecipes!.length, 1);
+      expect(mealPlan.items[0].mealPlanItemRecipes![0].recipeId, testRecipe2Id);
     });
 
     testWidgets('verify saving and loading of meal plans',
@@ -243,27 +247,42 @@ void main() {
       );
 
       // Add meal items to the plan
+      final fridayLunchId = IdGenerator.generateId();
       final fridayLunch = MealPlanItem(
-        id: IdGenerator.generateId(),
+        id: fridayLunchId,
         mealPlanId: mealPlanId,
-        recipeId: testRecipe1Id,
         plannedDate: MealPlanItem.formatPlannedDate(weekStart), // Friday
         mealType: MealPlanItem.lunch,
       );
 
+      final saturdayDinnerId = IdGenerator.generateId();
       final saturdayDinner = MealPlanItem(
-        id: IdGenerator.generateId(),
+        id: saturdayDinnerId,
         mealPlanId: mealPlanId,
-        recipeId: testRecipe2Id,
         plannedDate: MealPlanItem.formatPlannedDate(
             weekStart.add(const Duration(days: 1))), // Saturday
         mealType: MealPlanItem.dinner,
+      );
+
+      // Create meal plan item recipe junctions
+      final fridayLunchRecipe = MealPlanItemRecipe(
+        mealPlanItemId: fridayLunchId,
+        recipeId: testRecipe1Id,
+        isPrimaryDish: true,
+      );
+
+      final saturdayDinnerRecipe = MealPlanItemRecipe(
+        mealPlanItemId: saturdayDinnerId,
+        recipeId: testRecipe2Id,
+        isPrimaryDish: true,
       );
 
       // Save to database
       await dbHelper.insertMealPlan(mealPlan);
       await dbHelper.insertMealPlanItem(fridayLunch);
       await dbHelper.insertMealPlanItem(saturdayDinner);
+      await dbHelper.insertMealPlanItemRecipe(fridayLunchRecipe);
+      await dbHelper.insertMealPlanItemRecipe(saturdayDinnerRecipe);
 
       // Launch the app
       app.main();
@@ -310,10 +329,24 @@ void main() {
       expect(loadedPlan, isNotNull);
       expect(loadedPlan!.items.length, 2);
 
-      // Check that the meal plan items contain our expected recipes
-      final recipeIds = loadedPlan.items.map((item) => item.recipeId).toSet();
-      expect(recipeIds.contains(testRecipe1Id), isTrue);
-      expect(recipeIds.contains(testRecipe2Id), isTrue);
+      // Check that the meal plan items contain our expected recipes through junction table
+      bool foundTestRecipe1 = false;
+      bool foundTestRecipe2 = false;
+
+      for (final item in loadedPlan.items) {
+        expect(item.mealPlanItemRecipes, isNotNull);
+        expect(item.mealPlanItemRecipes!.isNotEmpty, isTrue);
+
+        for (final recipe in item.mealPlanItemRecipes!) {
+          if (recipe.recipeId == testRecipe1Id) foundTestRecipe1 = true;
+          if (recipe.recipeId == testRecipe2Id) foundTestRecipe2 = true;
+        }
+      }
+
+      expect(foundTestRecipe1, isTrue,
+          reason: "Test recipe 1 not found in meal plan");
+      expect(foundTestRecipe2, isTrue,
+          reason: "Test recipe 2 not found in meal plan");
     });
 
     testWidgets('test edge cases - empty recipe list',
@@ -410,28 +443,44 @@ void main() {
       );
 
       // Add meals to current week plan
+      final currentWeekMealId = IdGenerator.generateId();
       final currentWeekMeal = MealPlanItem(
-        id: IdGenerator.generateId(),
+        id: currentWeekMealId,
         mealPlanId: currentWeekPlanId,
-        recipeId: testRecipe1Id,
         plannedDate: MealPlanItem.formatPlannedDate(currentWeekStart),
         mealType: MealPlanItem.lunch,
       );
 
+      // Create junction for current week meal
+      final currentWeekMealRecipe = MealPlanItemRecipe(
+        mealPlanItemId: currentWeekMealId,
+        recipeId: testRecipe1Id,
+        isPrimaryDish: true,
+      );
+
       // Add meals to next week plan
+      final nextWeekMealId = IdGenerator.generateId();
       final nextWeekMeal = MealPlanItem(
-        id: IdGenerator.generateId(),
+        id: nextWeekMealId,
         mealPlanId: nextWeekPlanId,
-        recipeId: testRecipe2Id,
         plannedDate: MealPlanItem.formatPlannedDate(nextWeekStart),
         mealType: MealPlanItem.dinner,
+      );
+
+      // Create junction for next week meal
+      final nextWeekMealRecipe = MealPlanItemRecipe(
+        mealPlanItemId: nextWeekMealId,
+        recipeId: testRecipe2Id,
+        isPrimaryDish: true,
       );
 
       // Save both meal plans to database
       await dbHelper.insertMealPlan(currentWeekPlan);
       await dbHelper.insertMealPlanItem(currentWeekMeal);
+      await dbHelper.insertMealPlanItemRecipe(currentWeekMealRecipe);
       await dbHelper.insertMealPlan(nextWeekPlan);
       await dbHelper.insertMealPlanItem(nextWeekMeal);
+      await dbHelper.insertMealPlanItemRecipe(nextWeekMealRecipe);
 
       // Launch the app
       app.main();
@@ -688,15 +737,23 @@ void main() {
                   ? testRecipe2Id
                   : testRecipe1Id);
 
+          final mealItemId = IdGenerator.generateId();
           final mealItem = MealPlanItem(
-            id: IdGenerator.generateId(),
+            id: mealItemId,
             mealPlanId: fullWeekPlanId,
-            recipeId: recipeId,
             plannedDate: formattedDate,
             mealType: mealType,
           );
 
+          // Create junction for recipe
+          final mealItemRecipe = MealPlanItemRecipe(
+            mealPlanItemId: mealItemId,
+            recipeId: recipeId,
+            isPrimaryDish: true,
+          );
+
           await dbHelper.insertMealPlanItem(mealItem);
+          await dbHelper.insertMealPlanItemRecipe(mealItemRecipe);
         }
       }
 
@@ -752,19 +809,23 @@ void main() {
       expect(updatedPlan, isNotNull);
       expect(updatedPlan!.items.length, 14); // All slots should still be filled
 
-      // The number of meals with recipe1 should be less than before
-      final recipe1Items = updatedPlan.items
-          .where((item) => item.recipeId == testRecipe1Id)
-          .length;
-      final recipe2Items = updatedPlan.items
-          .where((item) => item.recipeId == testRecipe2Id)
-          .length;
+      // Count recipes through junction table
+      int recipe1Count = 0;
+      int recipe2Count = 0;
+
+      for (final item in updatedPlan.items) {
+        expect(item.mealPlanItemRecipes, isNotNull);
+        expect(item.mealPlanItemRecipes!.isNotEmpty, isTrue);
+
+        for (final recipe in item.mealPlanItemRecipes!) {
+          if (recipe.recipeId == testRecipe1Id) recipe1Count++;
+          if (recipe.recipeId == testRecipe2Id) recipe2Count++;
+        }
+      }
 
       // Since we converted one recipe1 to recipe2, recipe2 count should be higher
-      expect(recipe2Items, greaterThan(recipe1Items));
+      expect(recipe2Count, greaterThan(recipe1Count));
     });
-
-// LOCATE: In group('Complete Meal Planning Flow Tests', () { - after the other testWidgets cases
 
     testWidgets('validate user feedback during operations',
         (WidgetTester tester) async {
@@ -897,10 +958,6 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-// LOCATE: In group('Complete Meal Planning Flow Tests', () { - after the other testWidgets cases
-
-// LOCATE: Replace the entire 'ensure consistent state across workflow' test
-
     testWidgets('ensure consistent state across workflow',
         (WidgetTester tester) async {
       // Launch the app
@@ -986,6 +1043,11 @@ void main() {
       expect(finalDbPlan, isNotNull);
       // Just verify the plan exists with same meal count as when we started
       expect(finalDbPlan!.items.length, equals(initialDbPlan.items.length));
+      // Also verify recipes are properly linked through the junction table
+      for (final item in finalDbPlan.items) {
+        expect(item.mealPlanItemRecipes, isNotNull);
+        expect(item.mealPlanItemRecipes!.isNotEmpty, isTrue);
+      }
     });
   });
 }
