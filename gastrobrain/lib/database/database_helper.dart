@@ -28,10 +28,19 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    // Use a different database name for tests
+    // Check if we're running in a test
     bool isTest =
         const bool.fromEnvironment('FLUTTER_TEST', defaultValue: false);
-    String filename = isTest ? 'gastrobrain_test.db' : 'gastrobrain.db';
+
+    String filename;
+    if (isTest) {
+      // For tests, add a timestamp to create a unique database file for each test run
+      // This prevents tests from interfering with each other and with the main app database
+      filename = 'gastrobrain_test_${DateTime.now().millisecondsSinceEpoch}.db';
+    } else {
+      // Normal app operation
+      filename = 'gastrobrain.db';
+    }
 
     String path = join(await getDatabasesPath(), filename);
     return await openDatabase(
@@ -44,6 +53,36 @@ class DatabaseHelper {
         await db.execute('PRAGMA foreign_keys = ON');
       },
     );
+  }
+
+  Future<void> resetDatabaseForTests() async {
+    if (!const bool.fromEnvironment('FLUTTER_TEST', defaultValue: false)) {
+      return; // Only allow in test environment
+    }
+
+    final Database db = await database;
+
+    // Disable foreign keys to allow for clean deletion
+    await db.execute('PRAGMA foreign_keys = OFF');
+
+    try {
+      // Get all tables in the database
+      final List<Map<String, dynamic>> tables = await db.rawQuery(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'android_%'",
+      );
+
+      // Drop all tables
+      for (final table in tables) {
+        final tableName = table['name'] as String;
+        await db.execute('DROP TABLE IF EXISTS $tableName');
+      }
+
+      // Re-create the tables
+      await _onCreate(db, 9); // Use your current db version
+    } finally {
+      // Re-enable foreign keys
+      await db.execute('PRAGMA foreign_keys = ON');
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -324,31 +363,30 @@ class DatabaseHelper {
           });
         }
       }
+      // Alter meal_plan_items table to make recipe_id nullable (transition step)
+      await db
+          .execute('ALTER TABLE meal_plan_items RENAME TO meal_plan_items_old');
+      await db.execute('''
+        CREATE TABLE meal_plan_items(
+          id TEXT PRIMARY KEY,
+          meal_plan_id TEXT NOT NULL,
+          planned_date TEXT NOT NULL,
+          meal_type TEXT NOT NULL,
+          notes TEXT,
+          FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (id) ON DELETE CASCADE
+        )
+      ''');
+
+      // Copy data to new table
+      await db.execute('''
+        INSERT INTO meal_plan_items(id, meal_plan_id, planned_date, meal_type, notes)
+        SELECT id, meal_plan_id, planned_date, meal_type, notes
+        FROM meal_plan_items_old
+      ''');
+
+      // Drop old table
+      await db.execute('DROP TABLE meal_plan_items_old');
     }
-
-    // Alter meal_plan_items table to make recipe_id nullable (transition step)
-    await db
-        .execute('ALTER TABLE meal_plan_items RENAME TO meal_plan_items_old');
-    await db.execute('''
-      CREATE TABLE meal_plan_items(
-        id TEXT PRIMARY KEY,
-        meal_plan_id TEXT NOT NULL,
-        planned_date TEXT NOT NULL,
-        meal_type TEXT NOT NULL,
-        notes TEXT,
-        FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (id) ON DELETE CASCADE
-      )
-    ''');
-
-    // Copy data to new table
-    await db.execute('''
-      INSERT INTO meal_plan_items(id, meal_plan_id, planned_date, meal_type, notes)
-      SELECT id, meal_plan_id, planned_date, meal_type, notes
-      FROM meal_plan_items_old
-    ''');
-
-    // Drop old table
-    await db.execute('DROP TABLE meal_plan_items_old');
   }
 
   // Meal Plan operations

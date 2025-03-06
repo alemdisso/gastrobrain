@@ -14,6 +14,8 @@ import 'package:gastrobrain/utils/id_generator.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  // Set test environment flag for database
+  const bool.fromEnvironment('FLUTTER_TEST', defaultValue: true);
 
   group('Complete Meal Planning Flow Tests', () {
     // Setup test data
