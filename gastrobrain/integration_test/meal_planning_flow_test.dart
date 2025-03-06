@@ -9,6 +9,7 @@ import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/models/meal_plan.dart';
 import 'package:gastrobrain/models/meal_plan_item.dart';
+import 'package:gastrobrain/models/meal_plan_item_recipe.dart';
 import 'package:gastrobrain/utils/id_generator.dart';
 
 void main() {

@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:gastrobrain/models/meal_plan.dart';
 import 'package:gastrobrain/models/meal_plan_item.dart';
+import 'package:gastrobrain/models/meal_plan_item_recipe.dart';
 import 'package:gastrobrain/widgets/weekly_calendar_widget.dart';
 import 'package:mockito/annotations.dart';
 
@@ -19,35 +20,61 @@ void main() {
     // Set up a Friday as the week start date
     testWeekStart = DateTime(2024, 3, 1); // March 1, 2024 is a Friday
 
-    // Create a test meal plan with sample items
+    // Create a test meal plan with sample items, now with junction records
+    final fridayLunch = MealPlanItem(
+      id: 'test-item-1',
+      mealPlanId: 'test-meal-plan',
+      plannedDate: '2024-03-01', // Friday
+      mealType: MealPlanItem.lunch,
+    );
+
+    // Add recipe association
+    fridayLunch.mealPlanItemRecipes = [
+      MealPlanItemRecipe(
+        mealPlanItemId: 'test-item-1',
+        recipeId: 'recipe-1',
+        isPrimaryDish: true,
+      )
+    ];
+
+    final fridayDinner = MealPlanItem(
+      id: 'test-item-2',
+      mealPlanId: 'test-meal-plan',
+      plannedDate: '2024-03-01', // Friday
+      mealType: MealPlanItem.dinner,
+    );
+
+    // Add recipe association
+    fridayDinner.mealPlanItemRecipes = [
+      MealPlanItemRecipe(
+        mealPlanItemId: 'test-item-2',
+        recipeId: 'recipe-2',
+        isPrimaryDish: true,
+      )
+    ];
+
+    final mondayLunch = MealPlanItem(
+      id: 'test-item-3',
+      mealPlanId: 'test-meal-plan',
+      plannedDate: '2024-03-04', // Monday
+      mealType: MealPlanItem.lunch,
+    );
+
+    // Add recipe association
+    mondayLunch.mealPlanItemRecipes = [
+      MealPlanItemRecipe(
+        mealPlanItemId: 'test-item-3',
+        recipeId: 'recipe-3',
+        isPrimaryDish: true,
+      )
+    ];
+
     testMealPlan = MealPlan(
       id: 'test-meal-plan',
       weekStartDate: testWeekStart,
       createdAt: DateTime.now(),
       modifiedAt: DateTime.now(),
-      items: [
-        MealPlanItem(
-          id: 'test-item-1',
-          mealPlanId: 'test-meal-plan',
-          recipeId: 'recipe-1',
-          plannedDate: '2024-03-01', // Friday
-          mealType: MealPlanItem.lunch,
-        ),
-        MealPlanItem(
-          id: 'test-item-2',
-          mealPlanId: 'test-meal-plan',
-          recipeId: 'recipe-2',
-          plannedDate: '2024-03-01', // Friday
-          mealType: MealPlanItem.dinner,
-        ),
-        MealPlanItem(
-          id: 'test-item-3',
-          mealPlanId: 'test-meal-plan',
-          recipeId: 'recipe-3',
-          plannedDate: '2024-03-04', // Monday
-          mealType: MealPlanItem.lunch,
-        ),
-      ],
+      items: [fridayLunch, fridayDinner, mondayLunch],
     );
   });
 
@@ -169,20 +196,28 @@ void main() {
 
     // For this test, we'll create a very simplified meal plan with just one item
     // to minimize database interactions
+    final simpleMealItem = MealPlanItem(
+      id: 'simple-item-1',
+      mealPlanId: 'simple-test-plan',
+      plannedDate: '2024-03-01', // Friday
+      mealType: MealPlanItem.lunch,
+    );
+
+    // Add recipe association - note how we use the junction table approach
+    simpleMealItem.mealPlanItemRecipes = [
+      MealPlanItemRecipe(
+        mealPlanItemId: 'simple-item-1',
+        recipeId: 'simple-recipe-1',
+        isPrimaryDish: true,
+      )
+    ];
+
     final simpleMealPlan = MealPlan(
       id: 'simple-test-plan',
       weekStartDate: testWeekStart,
       createdAt: DateTime.now(),
       modifiedAt: DateTime.now(),
-      items: [
-        MealPlanItem(
-          id: 'simple-item-1',
-          mealPlanId: 'simple-test-plan',
-          recipeId: 'simple-recipe-1',
-          plannedDate: '2024-03-01', // Friday
-          mealType: MealPlanItem.lunch,
-        )
-      ],
+      items: [simpleMealItem],
     );
 
     // Build the widget with a meal tap callback
@@ -264,13 +299,19 @@ void main() {
 
   testWidgets('WeeklyCalendarWidget handles day selection',
       (WidgetTester tester) async {
+    DateTime? selectedDate;
+    int? selectedIndex;
+
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
           body: WeeklyCalendarWidget(
             weekStartDate: testWeekStart,
             mealPlan: null,
-            onDaySelected: (date, index) {},
+            onDaySelected: (date, index) {
+              selectedDate = date;
+              selectedIndex = index;
+            },
           ),
         ),
       ),
