@@ -625,6 +625,20 @@ void main() {
       // Verify the recipe selection dialog appears
       expect(find.text('Select Recipe'), findsOneWidget);
 
+      // Check if the recipe is visible in the dialog
+      final recipeFinder = find.text('Test Recipe 1 - Chicken');
+      if (recipeFinder.evaluate().isEmpty) {
+        // If the recipe isn't visible directly, try scrolling to find it
+        await tester.dragUntilVisible(
+          find.text('Test Recipe 1 - Chicken'),
+          find.byType(ListView),
+          const Offset(0, -100),
+        );
+      }
+
+      // Now verify the recipe is visible
+      expect(find.text('Test Recipe 1 - Chicken'), findsWidgets);
+
       // Dismiss the dialog without selecting a recipe (simulating user cancellation)
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
@@ -686,8 +700,6 @@ void main() {
       expect(mealPlan, isNotNull);
       expect(mealPlan!.items.length, greaterThan(0));
     });
-
-// LOCATE: In group('Complete Meal Planning Flow Tests', () { - after the other testWidgets cases
 
     testWidgets('test full calendar edge case', (WidgetTester tester) async {
       // Get the current week's start date (Friday)
