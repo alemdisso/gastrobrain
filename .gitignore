@@ -27,3 +27,8 @@ doc/api/
 .flutter-plugins-dependencies
 gastrobrain/lib/screens/_temp.dart
 .idea/caches/deviceStreaming.xml
+gastrobrain/frequency_analysis.json
+gastrobrain/normalized_ingredients.json
+gastrobrain/sample.json
+gastrobrain/test.json
+gastrobrain/ingredients_sql.txt
