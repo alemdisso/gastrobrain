@@ -75,7 +75,7 @@ void main() {
         await dbHelper.deleteRecipe(testRecipe2Id);
       } catch (e) {
         // Log the error but continue with teardown
-        print('Error during teardown: $e');
+        //print('Error during teardown: $e');
       }
     });
     testWidgets('test flow from creating plan to assigning meals',

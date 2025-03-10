@@ -1,8 +1,10 @@
-// Update in database_helper.dart
-import 'dart:async'; // Add this import for Zone access
+import 'dart:convert';
+import 'dart:async';
 //import 'package:uuid/uuid.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import '../utils/id_generator.dart';
 import '../models/recipe.dart';
 import '../models/meal.dart';
 import '../models/meal_recipe.dart';
@@ -68,12 +70,8 @@ class DatabaseHelper {
         return true;
       }
 
-      // Additional check: see if running in a testing isolate
-      final testZone =
-          Zone.current[#test.declarer]; // Zone marker used by test framework
-      if (testZone != null) {
-        return true;
-      }
+      // Basic check if we're in a test Zone
+      return Zone.current['test.declarer'] != null;
     } catch (_) {
       // If any error occurs in detection, be conservative
     }
@@ -647,6 +645,49 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [recipeIngredient.id],
     );
+  }
+
+  // Add this to your DatabaseHelper class
+  Future<int> getIngredientsCount() async {
+    final Database db = await database;
+    final result =
+        await db.rawQuery('SELECT COUNT(*) as count FROM ingredients');
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  // Fix your importIngredientsFromJson method:
+  Future<void> importIngredientsFromJson(String assetPath) async {
+    try {
+      // Load the file content from assets - this is the key part
+      final String jsonString = await rootBundle.loadString(assetPath);
+
+      // Parse the JSON with error handling
+      final List<dynamic> ingredientsJson =
+          json.decode(jsonString) as List<dynamic>;
+
+      // Process each ingredient
+      for (final ingredientJson in ingredientsJson) {
+        try {
+          final ingredient = Ingredient(
+            id: IdGenerator.generateId(),
+            name: ingredientJson['name'] as String,
+            category: ingredientJson['category'] as String,
+            unit: ingredientJson['unit'] as String?,
+            proteinType: ingredientJson['protein_type'] as String?,
+          );
+
+          await insertIngredient(ingredient);
+        } catch (e) {
+          //print(
+          //    'Error creating ingredient: ${ingredientJson['name']}, Error: $e');
+        }
+      }
+
+      //print('Successfully imported ingredients');
+    } catch (e) {
+      //print('Error importing ingredients: $e');
+      rethrow;
+    }
   }
 
   // Recipe CRUD operations
