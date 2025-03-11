@@ -234,6 +234,10 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
     try {
       final ingredients = await _dbHelper.getAllIngredients();
       if (mounted) {
+        // Sort ingredients alphabetically by name
+        ingredients.sort(
+            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
         setState(() {
           _availableIngredients = ingredients;
           _isLoading = false;
