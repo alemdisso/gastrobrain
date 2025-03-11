@@ -32,6 +32,8 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
   final _formKey = GlobalKey<FormState>();
   final _quantityController = TextEditingController();
   final _notesController = TextEditingController();
+  final _searchController = TextEditingController();
+  List<Ingredient> _filteredIngredients = [];
   String? _selectedUnitOverride;
   bool _useCustomUnit = false;
   List<Ingredient> _availableIngredients = [];
@@ -229,6 +231,21 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
     );
   }
 
+  void _filterIngredients(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        // If search is empty, show all ingredients (but maintain sorting)
+        _filteredIngredients = List.from(_availableIngredients);
+      } else {
+        // Filter ingredients that contain the query (case insensitive)
+        _filteredIngredients = _availableIngredients
+            .where((ingredient) =>
+                ingredient.name.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+      }
+    });
+  }
+
   Future<void> _loadIngredients() async {
     setState(() => _isLoading = true);
     try {
@@ -279,7 +296,8 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
   void dispose() {
     _quantityController.dispose();
     _notesController.dispose();
-    _customNameController.dispose(); // Dispose new controller
+    _customNameController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -363,30 +381,46 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                         },
                       ),
                     ] else ...[
-                      // Regular Ingredient Selection
-                      DropdownButtonFormField<Ingredient>(
-                        value: _selectedIngredient,
-                        decoration: const InputDecoration(
-                          labelText: 'Select Ingredient',
-                          border: OutlineInputBorder(),
-                        ),
-                        items: _availableIngredients.map((ingredient) {
-                          return DropdownMenuItem(
-                            value: ingredient,
-                            child: Text(ingredient.name),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedIngredient = value;
-                          });
-                        },
-                        validator: (value) {
-                          if (!_isCustomIngredient && value == null) {
-                            return 'Please select an ingredient';
-                          }
-                          return null;
-                        },
+                      Column(
+                        children: [
+                          // Search field
+                          TextField(
+                            controller: _searchController,
+                            decoration: const InputDecoration(
+                              labelText: 'Search Ingredients',
+                              border: OutlineInputBorder(),
+                              prefixIcon: Icon(Icons.search),
+                              hintText: 'Type to search...',
+                            ),
+                            onChanged: _filterIngredients,
+                          ),
+                          const SizedBox(height: 16),
+                          // Dropdown with filtered ingredients
+                          DropdownButtonFormField<Ingredient>(
+                            value: _selectedIngredient,
+                            decoration: const InputDecoration(
+                              labelText: 'Select Ingredient',
+                              border: OutlineInputBorder(),
+                            ),
+                            items: _filteredIngredients.map((ingredient) {
+                              return DropdownMenuItem(
+                                value: ingredient,
+                                child: Text(ingredient.name),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedIngredient = value;
+                              });
+                            },
+                            validator: (value) {
+                              if (!_isCustomIngredient && value == null) {
+                                return 'Please select an ingredient';
+                              }
+                              return null;
+                            },
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 8),
                       TextButton.icon(
