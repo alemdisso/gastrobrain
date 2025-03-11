@@ -2,6 +2,7 @@
 
 import '../errors/gastrobrain_exceptions.dart';
 import '../../models/meal_plan_item.dart';
+import '../../models/meal_plan_item_recipe.dart';
 
 class EntityValidator {
   static void validateRecipe({
@@ -102,6 +103,7 @@ class EntityValidator {
     required String mealPlanId,
     required String plannedDate,
     required String mealType,
+    List<MealPlanItemRecipe>? mealPlanItemRecipes,
   }) {
     if (mealPlanId.isEmpty) {
       throw ValidationException('Meal plan ID cannot be empty');
@@ -117,5 +119,13 @@ class EntityValidator {
     if (mealType != MealPlanItem.lunch && mealType != MealPlanItem.dinner) {
       throw ValidationException('Meal type must be either "lunch" or "dinner"');
     }
+
+    // Optional validation for meal plan item recipes
+    // Note: We make this optional since recipes may be added after initial item creation
+    // But we can uncomment this if we want to enforce at least one recipe per meal plan item
+    //
+    // if (mealPlanItemRecipes != null && mealPlanItemRecipes.isEmpty) {
+    //   throw ValidationException('Meal plan item must include at least one recipe');
+    // }
   }
 }

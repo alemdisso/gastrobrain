@@ -299,7 +299,10 @@ void main() {
 
   testWidgets('WeeklyCalendarWidget handles day selection',
       (WidgetTester tester) async {
+  // These variables will be used when the test is fully implemented
+  // ignore: unused_local_variable
     DateTime? selectedDate;
+  // ignore: unused_local_variable
     int? selectedIndex;
 
     await tester.pumpWidget(
