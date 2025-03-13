@@ -7,6 +7,7 @@ import '../../models/recipe.dart';
 import '../../models/protein_type.dart';
 import '../errors/gastrobrain_exceptions.dart';
 import 'recommendation_database_queries.dart';
+import 'recommendation_factors/frequency_factor.dart';
 
 /// A class representing a scored recipe recommendation.
 class RecipeRecommendation {
@@ -76,8 +77,26 @@ class RecommendationService {
   final Map<String, RecommendationFactor> _factors = {};
 
   /// Default constructor with DatabaseHelper injection
-  RecommendationService({required DatabaseHelper dbHelper})
-      : _dbQueries = RecommendationDatabaseQueries(dbHelper: dbHelper);
+  RecommendationService({
+    required DatabaseHelper dbHelper,
+    bool registerDefaultFactors = false,
+  }) : _dbQueries = RecommendationDatabaseQueries(dbHelper: dbHelper) {
+    if (registerDefaultFactors) {
+      registerStandardFactors();
+    }
+  }
+
+  /// Register all standard recommendation factors with their default weights
+  void registerStandardFactors() {
+    // Register the frequency factor (40% weight)
+    registerFactor(FrequencyFactor());
+
+    // Additional factors will be added here as they are implemented
+    // Example:
+    // registerFactor(ProteinRotationFactor());
+    // registerFactor(RatingFactor());
+    // etc.
+  }
 
   /// Register a scoring factor
   void registerFactor(RecommendationFactor factor) {
