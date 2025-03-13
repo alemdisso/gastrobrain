@@ -8,6 +8,7 @@ import '../../models/protein_type.dart';
 import '../errors/gastrobrain_exceptions.dart';
 import 'recommendation_database_queries.dart';
 import 'recommendation_factors/frequency_factor.dart';
+import 'recommendation_factors/protein_rotation_factor.dart';
 
 /// A class representing a scored recipe recommendation.
 class RecipeRecommendation {
@@ -91,9 +92,11 @@ class RecommendationService {
     // Register the frequency factor (40% weight)
     registerFactor(FrequencyFactor());
 
+    // Register the protein rotation factor (30% weight)
+    registerFactor(ProteinRotationFactor());
+
     // Additional factors will be added here as they are implemented
     // Example:
-    // registerFactor(ProteinRotationFactor());
     // registerFactor(RatingFactor());
     // etc.
   }
