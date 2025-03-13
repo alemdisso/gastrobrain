@@ -1,8 +1,8 @@
 // test/integration/meal_planning_flow_test.dart
-import 'package:flutter/material.dart';
+//import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:gastrobrain/main.dart' as app;
+//import 'package:gastrobrain/main.dart' as app;
 import 'package:gastrobrain/database/database_helper.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/meal_plan.dart';
