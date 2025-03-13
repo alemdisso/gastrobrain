@@ -1,10 +1,12 @@
-// lib/services/recommendation_service.dart
+// lib/core/services/recommendation_service.dart
 
 import 'dart:math';
+
 import '../../database/database_helper.dart';
 import '../../models/recipe.dart';
 import '../../models/protein_type.dart';
 import '../errors/gastrobrain_exceptions.dart';
+import 'recommendation_database_queries.dart';
 
 /// A class representing a scored recipe recommendation.
 class RecipeRecommendation {
@@ -67,7 +69,7 @@ abstract class RecommendationFactor {
 
 /// Service for generating recipe recommendations based on various factors
 class RecommendationService {
-  final DatabaseHelper _dbHelper;
+  final RecommendationDatabaseQueries _dbQueries;
   final Random _random = Random();
 
   /// Map of registered recommendation factors
@@ -75,7 +77,7 @@ class RecommendationService {
 
   /// Default constructor with DatabaseHelper injection
   RecommendationService({required DatabaseHelper dbHelper})
-      : _dbHelper = dbHelper;
+      : _dbQueries = RecommendationDatabaseQueries(dbHelper: dbHelper);
 
   /// Register a scoring factor
   void registerFactor(RecommendationFactor factor) {
@@ -248,25 +250,55 @@ class RecommendationService {
 
     // Load meal history data if required
     if (requiredData.contains('mealCounts')) {
-      context['mealCounts'] = await _dbHelper.getAllMealCounts();
+      context['mealCounts'] = await _dbQueries.getMealCounts();
     }
 
     // Load last cooked dates if required
     if (requiredData.contains('lastCooked')) {
-      context['lastCooked'] = await _dbHelper.getAllLastCooked();
+      context['lastCooked'] = await _dbQueries.getLastCookedDates();
     }
 
-    // More data can be loaded here as needed for future factors
+    // Load protein types if required
+    final needsProteinInfo =
+        requiredData.contains('proteinTypes') || avoidProteinTypes != null;
+
+    if (needsProteinInfo) {
+      // Get recipes first to get their IDs
+      final recipes =
+          await _dbQueries.getCandidateRecipes(excludeIds: excludeIds);
+      final recipeIds = recipes.map((r) => r.id).toList();
+
+      context['proteinTypes'] =
+          await _dbQueries.getRecipeProteinTypes(recipeIds: recipeIds);
+    }
+
+    // If needed, get detailed recipe stats in a single optimized query
+    final needsDetailedStats = requiredData.contains('lastCooked') &&
+        requiredData.contains('mealCounts') &&
+        requiredData.contains('proteinTypes');
+
+    if (needsDetailedStats) {
+      final recipeStats = await _dbQueries.getRecipesWithStats(
+          excludeIds: excludeIds, includeProteinInfo: true);
+
+      context['recipeStats'] = recipeStats;
+    }
+
+    // For more advanced recommendations, load recent meals for context
+    if (requiredData.contains('recentMeals')) {
+      final recentMeals = await _dbQueries.getRecentMeals(
+          startDate: DateTime.now().subtract(const Duration(days: 14)),
+          limit: 20);
+
+      context['recentMeals'] = recentMeals;
+    }
 
     return context;
   }
 
   /// Get candidate recipes that meet basic filtering criteria
   Future<List<Recipe>> _getCandidateRecipes(List<String> excludeIds) async {
-    // Implementation will be added in Issue #54: Integrate Database Queries
-    // For now, we'll just get all recipes and filter out excluded ones
-    final recipes = await _dbHelper.getAllRecipes();
-    return recipes.where((recipe) => !excludeIds.contains(recipe.id)).toList();
+    return await _dbQueries.getCandidateRecipes(excludeIds: excludeIds);
   }
 
   /// Score recipes using all registered factors
