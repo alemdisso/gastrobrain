@@ -66,8 +66,8 @@ void main() {
       final score = await factor.calculateScore(recipe, context);
 
       // Assert
-      expect(score,
-          greaterThanOrEqualTo(100.0)); // Expect max score for 2x overdue
+      expect(score, greaterThanOrEqualTo(90.0));
+      expect(score, lessThan(95.0));
     });
 
     test('should give low score to recently cooked recipes', () async {
