@@ -55,29 +55,37 @@ class _CookMealScreenState extends State<CookMealScreen> {
 
       // Create the meal with a new ID
       final mealId = IdGenerator.generateId();
-      final meal = Meal(
-        id: mealId,
-        cookedAt: _cookedAt,
-        servings: servings,
-        notes: _notesController.text,
-        wasSuccessful: _wasSuccessful,
-        actualPrepTime: prepTime ?? 0,
-        actualCookTime: cookTime ?? 0,
-      );
-
-      // Create a meal recipe association for the primary recipe
-      final mealRecipe = MealRecipe(
-        mealId: mealId,
-        recipeId: widget.recipe.id,
-        isPrimaryDish: true, // Mark as primary dish
-      );
-
       final dbHelper = DatabaseHelper();
-      // First insert the meal
-      await dbHelper.insertMeal(meal);
 
-      // Then insert the meal-recipe association
-      await dbHelper.insertMealRecipe(mealRecipe);
+      // Begin a transaction to ensure both operations succeed or fail together
+      await dbHelper.database.then((db) async {
+        return await db.transaction((txn) async {
+          // Create meal object with non-null mealRecipes list AND required recipe_id field
+          final mealMap = {
+            'id': mealId,
+            'recipe_id': widget.recipe.id, // Required by database schema
+            'cooked_at': _cookedAt.toIso8601String(),
+            'servings': servings,
+            'notes': _notesController.text,
+            'was_successful': _wasSuccessful ? 1 : 0,
+            'actual_prep_time': prepTime ?? 0,
+            'actual_cook_time': cookTime ?? 0,
+          };
+
+          // Insert the meal map directly - use transaction object
+          await txn.insert('meals', mealMap);
+
+          // Create and insert meal recipe association
+          final mealRecipe = MealRecipe(
+            mealId: mealId,
+            recipeId: widget.recipe.id,
+            isPrimaryDish: true,
+          );
+
+          // Insert the junction record - use transaction object
+          await txn.insert('meal_recipes', mealRecipe.toMap());
+        });
+      });
 
       if (mounted) {
         Navigator.pop(context, true);
@@ -92,8 +100,8 @@ class _CookMealScreenState extends State<CookMealScreen> {
       }
     } catch (e) {
       if (mounted) {
-        SnackbarService.showError(
-            context, 'An unexpected error occurred while saving the meal');
+        SnackbarService.showError(context,
+            'An unexpected error occurred while saving the meal: ${e.toString()}');
       }
     } finally {
       if (mounted) {
@@ -112,14 +120,16 @@ class _CookMealScreenState extends State<CookMealScreen> {
         firstDate: DateTime(2000),
         lastDate: DateTime.now(),
       );
-      if (picked != null && picked != _cookedAt && mounted) {
+      if (picked != null && mounted) {
         setState(() {
+          // Preserve the current time but use the selected date
+          final now = DateTime.now();
           _cookedAt = DateTime(
             picked.year,
             picked.month,
             picked.day,
-            _cookedAt.hour,
-            _cookedAt.minute,
+            now.hour,
+            now.minute,
           );
         });
       }
