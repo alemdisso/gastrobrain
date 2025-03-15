@@ -32,3 +32,5 @@ gastrobrain/normalized_ingredients.json
 gastrobrain/sample.json
 gastrobrain/test.json
 gastrobrain/ingredients_sql.txt
+.idea/caches/deviceStreaming.xml
+.idea/misc.xml

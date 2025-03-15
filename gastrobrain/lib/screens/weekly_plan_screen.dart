@@ -7,7 +7,6 @@ import '../models/meal_plan_item_recipe.dart';
 import '../models/recipe.dart';
 import '../database/database_helper.dart';
 import '../core/services/recommendation_service.dart';
-// ignore: unused_import
 import '../core/services/recommendation_service_extension.dart';
 import '../widgets/weekly_calendar_widget.dart';
 import '../utils/id_generator.dart';
@@ -38,6 +37,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   @override
   void initState() {
     super.initState();
+    // Initialize the recommendation service
+    _recommendationService = _dbHelper.createRecommendationService();
     _loadData();
   }
 
