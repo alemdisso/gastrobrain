@@ -1,12 +1,15 @@
 // lib/screens/weekly_plan_screen.dart
 
 import 'package:flutter/material.dart';
-import '../widgets/weekly_calendar_widget.dart';
 import '../models/meal_plan.dart';
 import '../models/meal_plan_item.dart';
 import '../models/meal_plan_item_recipe.dart';
-import '../database/database_helper.dart';
 import '../models/recipe.dart';
+import '../database/database_helper.dart';
+import '../core/services/recommendation_service.dart';
+// ignore: unused_import
+import '../core/services/recommendation_service_extension.dart';
+import '../widgets/weekly_calendar_widget.dart';
 import '../utils/id_generator.dart';
 
 class WeeklyPlanScreen extends StatefulWidget {
@@ -23,6 +26,14 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   final DatabaseHelper _dbHelper = DatabaseHelper();
   List<Recipe> _availableRecipes = [];
   final ScrollController _scrollController = ScrollController();
+  late RecommendationService _recommendationService;
+  // Cache for recommendations to improve performance
+  final Map<String, List<Recipe>> _recommendationCache = {};
+
+  // Helper method to create cache key
+  String _getRecommendationCacheKey(DateTime date, String mealType) {
+    return '${date.toIso8601String()}-$mealType';
+  }
 
   @override
   void initState() {
@@ -58,6 +69,9 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           _availableRecipes = recipes;
           _isLoading = false;
         });
+
+        // Clear the recommendation cache when meal plan changes
+        _recommendationCache.clear();
       }
     } catch (e) {
       if (mounted) {
@@ -80,9 +94,82 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     _loadData();
   }
 
+  /// Build context for recipe recommendations based on the current meal plan
+  Future<Map<String, dynamic>> _buildRecommendationContext({
+    DateTime? forDate,
+    String? mealType,
+  }) async {
+    final context = <String, dynamic>{
+      'forDate': forDate,
+      'mealType': mealType,
+    };
+
+    // If we have a meal plan, analyze it for context
+    if (_currentMealPlan != null) {
+      // Get recipes already used in the current plan
+      final List<String> usedRecipeIds = [];
+
+      // Get protein types already used in this week's plan
+      // ignore: unused_local_variable
+      final List<String> usedProteinIds = [];
+
+      // Collect recipes from meal plan
+      for (final item in _currentMealPlan!.items) {
+        if (item.mealPlanItemRecipes != null) {
+          for (final mealRecipe in item.mealPlanItemRecipes!) {
+            usedRecipeIds.add(mealRecipe.recipeId);
+
+            // Get recipe details to check protein types
+            final recipe = await _dbHelper.getRecipe(mealRecipe.recipeId);
+            if (recipe != null) {
+              // This is a simple approach - for a more comprehensive solution,
+              // we would analyze the recipe's ingredients for protein types
+              // For now, we'll just collect the recipe IDs
+            }
+          }
+        }
+      }
+
+      context['excludeIds'] = usedRecipeIds;
+    }
+
+    return context;
+  }
+
+  /// Get recommendations for a specific meal slot (with caching)
+  Future<List<Recipe>> getSlotRecommendations(DateTime date, String mealType,
+      {int count = 5}) async {
+    final cacheKey = _getRecommendationCacheKey(date, mealType);
+
+    // Check if we have cached recommendations
+    if (_recommendationCache.containsKey(cacheKey)) {
+      return _recommendationCache[cacheKey]!;
+    }
+
+    // Build context for recommendations
+    final context = await _buildRecommendationContext(
+      forDate: date,
+      mealType: mealType,
+    );
+
+    // Get recommendations
+    final recommendations = await _recommendationService.getRecommendations(
+      count: count,
+      excludeIds: context['excludeIds'] ?? [],
+      forDate: date,
+      mealType: mealType,
+    );
+
+    // Cache the recommendations
+    _recommendationCache[cacheKey] = recommendations;
+
+    return recommendations;
+  }
+
   Future<void> _handleSlotTap(DateTime date, String mealType) async {
     final recipes = _availableRecipes;
     if (recipes.isEmpty) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text('No recipes available. Add some recipes first.')),
@@ -90,10 +177,19 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       return;
     }
 
-    // Show recipe selection dialog
+    // Get recommendations for this slot
+    final recommendations = await getSlotRecommendations(date, mealType);
+
+    // Check if widget is still mounted before showing dialog
+    if (!mounted) return;
+
+    // Show recipe selection dialog with recommendations
     final selectedRecipe = await showDialog<Recipe>(
       context: context,
-      builder: (context) => _RecipeSelectionDialog(recipes: recipes),
+      builder: (context) => _RecipeSelectionDialog(
+        recipes: recipes,
+        recommendations: recommendations,
+      ),
     );
 
     if (selectedRecipe != null) {
@@ -320,20 +416,53 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    // Clear any resources used by the recommendation service if needed
+    _recommendationCache.clear();
+    super.dispose();
+  }
 }
 
 // Helper dialog for recipe selection
 class _RecipeSelectionDialog extends StatefulWidget {
   final List<Recipe> recipes;
+  final List<Recipe> recommendations;
 
-  const _RecipeSelectionDialog({required this.recipes});
+  const _RecipeSelectionDialog({
+    required this.recipes,
+    this.recommendations = const [],
+  });
 
   @override
   _RecipeSelectionDialogState createState() => _RecipeSelectionDialogState();
 }
 
-class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog> {
+class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
+    with SingleTickerProviderStateMixin {
   String _searchQuery = '';
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize tab controller for the two tabs
+    _tabController = TabController(length: 2, vsync: this);
+    // Start on the Recommended tab if we have recommendations
+    if (widget.recommendations.isNotEmpty) {
+      _tabController.index = 0;
+    } else {
+      _tabController.index = 1; // Default to All Recipes if no recommendations
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -353,51 +482,68 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog> {
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
-            TextField(
-              decoration: const InputDecoration(
-                hintText: 'Search recipes...',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
+
+            // Tab bar for switching between Recommended and All Recipes
+            TabBar(
+              controller: _tabController,
+              tabs: const [
+                Tab(text: 'Recommended'),
+                Tab(text: 'All Recipes'),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // Only show search on All Recipes tab - with AnimatedBuilder to respond to tab changes
+            AnimatedBuilder(
+              animation: _tabController,
+              builder: (context, child) {
+                return _tabController.index == 1
+                    ? TextField(
+                        decoration: const InputDecoration(
+                          hintText: 'Search recipes...',
+                          prefixIcon: Icon(Icons.search),
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            _searchQuery = value;
+                          });
+                        },
+                      )
+                    : const SizedBox.shrink();
               },
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: ListView.builder(
-                itemCount: filteredRecipes.length,
-                itemBuilder: (context, index) {
-                  final recipe = filteredRecipes[index];
-                  return ListTile(
-                    title: Text(recipe.name),
-                    subtitle: Row(
-                      children: [
-                        // Display difficulty rating
-                        ...List.generate(
-                          5,
-                          (i) => Icon(
-                            i < recipe.difficulty
-                                ? Icons.star
-                                : Icons.star_border,
-                            size: 14,
-                            color: i < recipe.difficulty
-                                ? Colors.amber
-                                : Colors.grey,
-                          ),
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  // Recommended tab
+                  widget.recommendations.isEmpty
+                      ? const Center(
+                          child: Text('No recommendations available'),
+                        )
+                      : ListView.builder(
+                          itemCount: widget.recommendations.length,
+                          itemBuilder: (context, index) {
+                            final recipe = widget.recommendations[index];
+                            return _buildRecipeListTile(recipe);
+                          },
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                            '${recipe.prepTimeMinutes + recipe.cookTimeMinutes} min'),
-                      ],
-                    ),
-                    onTap: () => Navigator.pop(context, recipe),
-                  );
-                },
+
+                  // All Recipes tab
+                  ListView.builder(
+                    itemCount: filteredRecipes.length,
+                    itemBuilder: (context, index) {
+                      final recipe = filteredRecipes[index];
+                      return _buildRecipeListTile(recipe);
+                    },
+                  ),
+                ],
               ),
             ),
+
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
@@ -405,6 +551,29 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog> {
           ],
         ),
       ),
+    );
+  }
+
+  // Helper method to build consistent recipe list tiles
+  Widget _buildRecipeListTile(Recipe recipe) {
+    return ListTile(
+      title: Text(recipe.name),
+      subtitle: Row(
+        children: [
+          // Display difficulty rating
+          ...List.generate(
+            5,
+            (i) => Icon(
+              i < recipe.difficulty ? Icons.star : Icons.star_border,
+              size: 14,
+              color: i < recipe.difficulty ? Colors.amber : Colors.grey,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text('${recipe.prepTimeMinutes + recipe.cookTimeMinutes} min'),
+        ],
+      ),
+      onTap: () => Navigator.pop(context, recipe),
     );
   }
 }

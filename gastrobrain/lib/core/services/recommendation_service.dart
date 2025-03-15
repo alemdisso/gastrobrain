@@ -142,7 +142,8 @@ class RecommendationService {
       }
 
       if (_factors.isEmpty) {
-        throw GastrobrainException('No recommendation factors registered');
+        throw const GastrobrainException(
+            'No recommendation factors registered');
       }
 
       // Build context data needed by factors
@@ -196,7 +197,8 @@ class RecommendationService {
       }
 
       if (_factors.isEmpty) {
-        throw GastrobrainException('No recommendation factors registered');
+        throw const GastrobrainException(
+            'No recommendation factors registered');
       }
 
       // Build context data needed by factors
