@@ -397,7 +397,10 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                           const SizedBox(height: 16),
                           // Dropdown with filtered ingredients
                           DropdownButtonFormField<Ingredient>(
-                            value: _selectedIngredient,
+                            value: _filteredIngredients
+                                    .contains(_selectedIngredient)
+                                ? _selectedIngredient
+                                : null,
                             decoration: const InputDecoration(
                               labelText: 'Select Ingredient',
                               border: OutlineInputBorder(),
