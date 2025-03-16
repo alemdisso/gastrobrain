@@ -25,12 +25,13 @@ class EntityValidator {
   static void validateMeal({
     required String name,
     required DateTime date,
-    required List<String> recipeIds,
+    List<String>? recipeIds,
   }) {
     if (name.isEmpty) {
       throw ValidationException('Meal name cannot be empty');
     }
-    if (recipeIds.isEmpty) {
+    // Allow empty recipeIds when using junction table approach
+    if (recipeIds != null && recipeIds.isEmpty) {
       throw ValidationException('Meal must include at least one recipe');
     }
     if (date.isAfter(DateTime.now())) {

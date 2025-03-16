@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
-import '../models/meal.dart';
 import '../models/meal_recipe.dart';
 import '../database/database_helper.dart';
 import '../utils/id_generator.dart';
@@ -60,10 +59,10 @@ class _CookMealScreenState extends State<CookMealScreen> {
       // Begin a transaction to ensure both operations succeed or fail together
       await dbHelper.database.then((db) async {
         return await db.transaction((txn) async {
-          // Create meal object with non-null mealRecipes list AND required recipe_id field
+          // Create meal object WITHOUT direct recipe_id (using null)
           final mealMap = {
             'id': mealId,
-            'recipe_id': widget.recipe.id, // Required by database schema
+            'recipe_id': null, // Now nullable, use junction table instead
             'cooked_at': _cookedAt.toIso8601String(),
             'servings': servings,
             'notes': _notesController.text,

@@ -48,7 +48,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), filename);
     return await openDatabase(
       path,
-      version: 10, // Increment version number for new tables
+      version: 12, // Increment version number for new tables
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: (db) async {
@@ -86,29 +86,18 @@ class DatabaseHelper {
       return; // Only allow in test environment
     }
 
-    final Database db = await database;
-
-    // Disable foreign keys to allow for clean deletion
-    await db.execute('PRAGMA foreign_keys = OFF');
-
-    try {
-      // Get all tables in the database
-      final List<Map<String, dynamic>> tables = await db.rawQuery(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'android_%'",
-      );
-
-      // Drop all tables
-      for (final table in tables) {
-        final tableName = table['name'] as String;
-        await db.execute('DROP TABLE IF EXISTS $tableName');
-      }
-
-      // Re-create the tables
-      await _onCreate(db, 9); // Use your current db version
-    } finally {
-      // Re-enable foreign keys
-      await db.execute('PRAGMA foreign_keys = ON');
+    // Close any existing database connection
+    if (_database != null) {
+      await _database!.close();
     }
+
+    // Since we're using a new database file for each test run with the timestamp,
+    // we don't need to delete anything - just set _database to null
+    // so that the next call to database getter will create a fresh one
+    _database = null;
+
+    // Force initialization of a new database
+    await database;
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -134,7 +123,7 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE meals(
         id TEXT PRIMARY KEY,
-        recipe_id TEXT NOT NULL,
+        recipe_id TEXT,
         cooked_at TEXT NOT NULL,
         servings INTEGER NOT NULL,
         notes TEXT,
@@ -225,27 +214,45 @@ class DatabaseHelper {
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Version 10: Fresh start with a clean schema
-    // All previous migrations (versions 1-9) have been consolidated
+    if (oldVersion < 12) {
+      // Since we don't need to preserve data, simply drop and recreate the meals table
+      // Force recreation of the tables with foreign keys disabled temporarily
+      await db.execute('PRAGMA foreign_keys = OFF');
 
-    // If we're upgrading from any version before 10, apply our new baseline schema
-    if (oldVersion < 10) {
-      // We're starting with a clean slate for version 10 and up
-      // In the future, new migrations will be added below as: if (oldVersion < 11), etc.
+      // Drop related tables first to avoid foreign key constraint issues
+      await db.execute('DROP TABLE IF EXISTS meal_recipes');
 
-      // Add any migration code here if needed in the future
-      // For example, if we modify the database schema, we would add migration code here
-      // to preserve user data while updating the schema
+      // Drop the meals table
+      await db.execute('DROP TABLE IF EXISTS meals');
+
+      // Recreate the meals table with nullable recipe_id
+      await db.execute('''
+        CREATE TABLE meals(
+          id TEXT PRIMARY KEY,
+          recipe_id TEXT, 
+          cooked_at TEXT NOT NULL,
+          servings INTEGER NOT NULL,
+          notes TEXT,
+          was_successful INTEGER DEFAULT 1,
+          actual_prep_time REAL DEFAULT 0,
+          actual_cook_time REAL DEFAULT 0,
+          FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
+        )
+      ''');
+
+      // Recreate the meal_recipes junction table
+      await db.execute('''
+        CREATE TABLE meal_recipes(
+          id TEXT PRIMARY KEY,
+          meal_id TEXT NOT NULL,
+          recipe_id TEXT NOT NULL,
+          is_primary_dish INTEGER DEFAULT 0,
+          notes TEXT,
+          FOREIGN KEY (meal_id) REFERENCES meals (id) ON DELETE CASCADE,
+          FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
+        )
+      ''');
     }
-
-    // For future migrations, add new version checks below:
-    // if (oldVersion < 11) {
-    //   // Future migration code for version 11
-    // }
-
-    // if (oldVersion < 12) {
-    //   // Future migration code for version 12
-    // }
   }
   // Meal Plan operations
 
@@ -744,12 +751,16 @@ class DatabaseHelper {
 
   Future<List<Meal>> getMealsForRecipe(String recipeId) async {
     final Database db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'meals',
-      where: 'recipe_id = ?',
-      whereArgs: [recipeId],
-      orderBy: 'cooked_at DESC',
-    );
+
+    // Use a join with the junction table to find all meals with this recipe
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+      SELECT m.* 
+      FROM meals m
+      LEFT JOIN meal_recipes mr ON m.id = mr.meal_id
+      WHERE mr.recipe_id = ? OR m.recipe_id = ?
+      ORDER BY m.cooked_at DESC
+    ''', [recipeId, recipeId]);
+
     return List.generate(maps.length, (i) => Meal.fromMap(maps[i]));
   }
 

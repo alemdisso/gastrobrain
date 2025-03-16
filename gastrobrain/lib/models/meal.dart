@@ -2,6 +2,7 @@ import 'meal_recipe.dart';
 
 class Meal {
   String id;
+  String? recipeId; // Make recipeId nullable
   DateTime cookedAt;
   int servings;
   String notes;
@@ -12,6 +13,7 @@ class Meal {
 
   Meal({
     required this.id,
+    this.recipeId, // Change to optional parameter
     required this.cookedAt,
     this.servings = 1,
     this.notes = '',
@@ -25,6 +27,8 @@ class Meal {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'recipe_id':
+          recipeId, // This will be null when not using direct association
       'cooked_at': cookedAt.toIso8601String(),
       'servings': servings,
       'notes': notes,
@@ -39,6 +43,7 @@ class Meal {
   factory Meal.fromMap(Map<String, dynamic> map) {
     return Meal(
       id: map['id'],
+      recipeId: map['recipe_id'], // This can now be null
       cookedAt: DateTime.parse(map['cooked_at']),
       servings: map['servings'],
       notes: map['notes'],
