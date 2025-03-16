@@ -290,6 +290,14 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
 
   Future<void> _handleMealTap(
       DateTime date, String mealType, String recipeId) async {
+    // First check if the meal has been cooked
+    bool mealCooked = false;
+    if (_currentMealPlan != null) {
+      final items =
+          _currentMealPlan!.getItemsForDateAndMealType(date, mealType);
+      mealCooked = items.isNotEmpty && items[0].hasBeenCooked;
+    }
+
     // Show options for the existing meal
     final action = await showDialog<String>(
       context: context,
@@ -304,10 +312,22 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
             onPressed: () => Navigator.pop(context, 'change'),
             child: const Text('Change Recipe'),
           ),
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(context, 'cooked'),
-            child: const Text('Mark as Cooked'),
-          ),
+          if (!mealCooked) // Only show if not cooked
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, 'cooked'),
+              child: const Text('Mark as Cooked'),
+            )
+          else
+            const SimpleDialogOption(
+              onPressed: null, // Disabled option
+              child: Row(
+                children: [
+                  Icon(Icons.check, color: Colors.green),
+                  SizedBox(width: 8),
+                  Text('Already Cooked', style: TextStyle(color: Colors.green))
+                ],
+              ),
+            ),
           SimpleDialogOption(
             onPressed: () => Navigator.pop(context, 'remove'),
             child: const Text('Remove from Plan'),
@@ -424,6 +444,17 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           await txn.insert('meal_recipes', mealRecipe.toMap());
         });
       });
+
+      // Update the meal plan item to mark it as cooked
+      for (final item in items) {
+        item.hasBeenCooked = true;
+        await _dbHelper.updateMealPlanItem(item);
+      }
+
+      // Make sure the meal plan is refreshed
+      if (_currentMealPlan != null) {
+        await _dbHelper.updateMealPlan(_currentMealPlan!);
+      }
 
       if (mounted) {
         SnackbarService.showSuccess(context, 'Meal marked as cooked');

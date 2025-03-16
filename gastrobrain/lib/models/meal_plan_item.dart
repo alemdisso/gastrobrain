@@ -6,6 +6,7 @@ class MealPlanItem {
   String plannedDate; // ISO 8601 date string (YYYY-MM-DD)
   String mealType; // 'lunch' or 'dinner'
   String notes;
+  bool hasBeenCooked; // True if this meal has been cooked
   List<MealPlanItemRecipe>?
       mealPlanItemRecipes; // List of recipes in this planned meal
 
@@ -19,6 +20,7 @@ class MealPlanItem {
     required this.mealType,
     this.notes = '',
     this.mealPlanItemRecipes,
+    this.hasBeenCooked = false,
   }) {
     // Validate meal type
     if (mealType != lunch && mealType != dinner) {
@@ -34,6 +36,7 @@ class MealPlanItem {
       'planned_date': plannedDate,
       'meal_type': mealType,
       'notes': notes,
+      'has_been_cooked': hasBeenCooked ? 1 : 0,
       // Note: mealPlanItemRecipes must be saved separately
     };
   }
@@ -46,6 +49,7 @@ class MealPlanItem {
       plannedDate: map['planned_date'],
       mealType: map['meal_type'],
       notes: map['notes'] ?? '',
+      hasBeenCooked: map['has_been_cooked'] == 1,
       // Note: mealPlanItemRecipes must be loaded separately
     );
   }

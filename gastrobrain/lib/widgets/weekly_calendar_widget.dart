@@ -407,11 +407,20 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
     final bool hasPlannedMeal = plannedMeal != null && recipe != null;
 
     // Define meal-specific colors
-    final Color backgroundColor = hasPlannedMeal
-        ? mealType == MealPlanItem.lunch
-            ? Theme.of(context).colorScheme.primaryContainer.withAlpha(128)
-            : Theme.of(context).colorScheme.secondaryContainer.withAlpha(128)
-        : Theme.of(context).colorScheme.surface;
+    // Check if this meal has been cooked using the mealPlanItem's info
+    final bool hasBeenCooked =
+        plannedMeal != null ? plannedMeal.hasBeenCooked : false;
+
+    final Color backgroundColor = !hasPlannedMeal
+        ? Theme.of(context).colorScheme.surface
+        : hasBeenCooked
+            ? Colors.green.withAlpha(64) // Light green for cooked meals
+            : mealType == MealPlanItem.lunch
+                ? Theme.of(context).colorScheme.primaryContainer.withAlpha(128)
+                : Theme.of(context)
+                    .colorScheme
+                    .secondaryContainer
+                    .withAlpha(128);
 
     final Color borderColor = hasPlannedMeal
         ? mealType == MealPlanItem.lunch
@@ -488,12 +497,28 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          recipe.name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                recipe.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                            // Add check mark icon for cooked meals
+                            if (hasBeenCooked)
+                              const Tooltip(
+                                message: 'Cooked',
+                                child: Icon(
+                                  Icons.check_circle,
+                                  color: Colors.green,
+                                  size: 20,
+                                ),
+                              ),
+                          ],
                         ),
                         const SizedBox(height: 4),
                         Row(

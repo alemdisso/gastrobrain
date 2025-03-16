@@ -48,7 +48,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), filename);
     return await openDatabase(
       path,
-      version: 12, // Increment version number for new tables
+      version: 13, // Increment version number for new tables
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: (db) async {
@@ -182,6 +182,7 @@ class DatabaseHelper {
         planned_date TEXT NOT NULL,
         meal_type TEXT NOT NULL,
         notes TEXT,
+        has_been_cooked INTEGER DEFAULT 0,
         FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (id) ON DELETE CASCADE
       )
     ''');
@@ -252,6 +253,10 @@ class DatabaseHelper {
           FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
         )
       ''');
+    }
+    if (oldVersion < 13) {
+      await db.execute(
+          'ALTER TABLE meal_plan_items ADD COLUMN has_been_cooked INTEGER DEFAULT 0');
     }
   }
   // Meal Plan operations
@@ -881,10 +886,16 @@ class DatabaseHelper {
   }
 
   Future<Map<String, int>> getAllMealCounts() async {
-    final Database db = await database;
+    final db = await database;
     final List<Map<String, dynamic>> results = await db.rawQuery('''
       SELECT recipe_id, COUNT(*) as count
-      FROM meals
+      FROM (
+        -- Get counts from direct recipe_id references (legacy approach)
+        SELECT recipe_id FROM meals WHERE recipe_id IS NOT NULL
+        UNION ALL
+        -- Get counts from junction table records
+        SELECT recipe_id FROM meal_recipes
+      )
       GROUP BY recipe_id
     ''');
 
@@ -897,31 +908,24 @@ class DatabaseHelper {
   }
 
   Future<Map<String, DateTime>> getAllLastCooked() async {
-    final Database db = await database;
+    final db = await database;
     final List<Map<String, dynamic>> results = await db.rawQuery('''
-    SELECT recipe_id, MAX(cooked_at) as last_cooked
-    FROM meals
-    GROUP BY recipe_id
-  ''');
-
-    // Future<List<Map<String, dynamic>>> getRecipeCookingStats() async {
-    //   final Database db = await database;
-    //   final List<Map<String, dynamic>> results = await db.rawQuery('''
-    //   SELECT
-    //     r.id,
-    //     r.name,
-    //     r.desired_frequency,
-    //     MAX(m.cooked_at) as last_cooked,
-    //     COUNT(m.id) as times_cooked,
-    //     AVG(m.actual_prep_time) as avg_prep_time,
-    //     AVG(m.actual_cook_time) as avg_cook_time
-    //   FROM recipes r
-    //   LEFT JOIN meals m ON r.id = m.recipe_id
-    //   GROUP BY r.id
-    // ''');
-
-    //   return results;
-    // }
+      SELECT recipe_id, MAX(cooked_at) as last_cooked
+      FROM (
+        -- Get last cooked dates from direct recipe_id references (legacy approach)
+        SELECT m.recipe_id, m.cooked_at 
+        FROM meals m 
+        WHERE m.recipe_id IS NOT NULL
+        
+        UNION ALL
+        
+        -- Get last cooked dates from junction table records
+        SELECT mr.recipe_id, m.cooked_at 
+        FROM meal_recipes mr
+        JOIN meals m ON mr.meal_id = m.id
+      )
+      GROUP BY recipe_id
+    ''');
 
     return Map.fromEntries(
       results.map((row) => MapEntry(
