@@ -1,6 +1,8 @@
 // lib/screens/weekly_plan_screen.dart
 
 import 'package:flutter/material.dart';
+import '../models/meal.dart';
+import '../models/meal_recipe.dart';
 import '../models/meal_plan.dart';
 import '../models/meal_plan_item.dart';
 import '../models/meal_plan_item_recipe.dart';
@@ -8,7 +10,9 @@ import '../models/recipe.dart';
 import '../database/database_helper.dart';
 import '../core/services/recommendation_service.dart';
 import '../core/services/recommendation_service_extension.dart';
+import '../core/services/snackbar_service.dart';
 import '../widgets/weekly_calendar_widget.dart';
+import '../widgets/meal_cooked_dialog.dart';
 import '../utils/id_generator.dart';
 
 class WeeklyPlanScreen extends StatefulWidget {
@@ -301,6 +305,10 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
             child: const Text('Change Recipe'),
           ),
           SimpleDialogOption(
+            onPressed: () => Navigator.pop(context, 'cooked'),
+            child: const Text('Mark as Cooked'),
+          ),
+          SimpleDialogOption(
             onPressed: () => Navigator.pop(context, 'remove'),
             child: const Text('Remove from Plan'),
           ),
@@ -325,6 +333,9 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     } else if (action == 'change') {
       // Reuse the slot tap handler to change the recipe
       await _handleSlotTap(date, mealType);
+    } else if (action == 'cooked') {
+      // Mark the meal as cooked
+      await _handleMarkAsCooked(date, mealType, recipeId);
     } else if (action == 'remove') {
       // Remove the meal from the plan
       if (_currentMealPlan != null) {
@@ -341,6 +352,87 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           // Force a reload to ensure the calendar widget refreshes
           _loadData();
         });
+      }
+    }
+  }
+
+  Future<void> _handleMarkAsCooked(
+      DateTime date, String mealType, String recipeId) async {
+    try {
+      // Get the recipe details
+      final recipe = await _dbHelper.getRecipe(recipeId);
+      if (recipe == null) {
+        if (mounted) {
+          SnackbarService.showError(context, 'Recipe not found');
+        }
+        return;
+      }
+
+      // Find the planned meal item
+      final items =
+          _currentMealPlan?.getItemsForDateAndMealType(date, mealType) ?? [];
+      if (items.isEmpty) {
+        if (mounted) {
+          SnackbarService.showError(context, 'Planned meal not found');
+        }
+        return;
+      }
+
+      // Show dialog to get cooking details
+      Map<String, dynamic>? result;
+      if (mounted) {
+        result = await showDialog<Map<String, dynamic>>(
+          context: context,
+          builder: (context) => MealCookedDialog(
+            recipe: recipe,
+            plannedDate: date,
+          ),
+        );
+      }
+
+      if (result == null) return; // User cancelled
+
+      // Create and save the meal
+      final mealId = IdGenerator.generateId();
+
+      // Create meal with null recipeId (using junction table approach)
+      final meal = Meal(
+        id: mealId,
+        recipeId: null, // Use junction table instead
+        cookedAt: result['cookedAt'] as DateTime,
+        servings: result['servings'] as int,
+        notes: result['notes'] as String,
+        wasSuccessful: result['wasSuccessful'] as bool,
+        actualPrepTime: result['actualPrepTime'] as double,
+        actualCookTime: result['actualCookTime'] as double,
+      );
+
+      // Begin a transaction to ensure both operations succeed or fail together
+      await _dbHelper.database.then((db) async {
+        return await db.transaction((txn) async {
+          // Insert the meal
+          await txn.insert('meals', meal.toMap());
+
+          // Create and insert meal recipe association
+          final mealRecipe = MealRecipe(
+            mealId: mealId,
+            recipeId: recipeId,
+            isPrimaryDish: true,
+          );
+
+          // Insert the junction record
+          await txn.insert('meal_recipes', mealRecipe.toMap());
+        });
+      });
+
+      if (mounted) {
+        SnackbarService.showSuccess(context, 'Meal marked as cooked');
+        // Refresh data to show updated meal history
+        _loadData();
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackbarService.showError(context, 'Error marking meal as cooked: $e');
       }
     }
   }
