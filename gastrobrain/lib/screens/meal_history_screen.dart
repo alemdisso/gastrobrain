@@ -33,7 +33,17 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
     });
 
     try {
+      // Get meals that include this recipe (using junction table approach)
       final loadedMeals = await _dbHelper.getMealsForRecipe(widget.recipe.id);
+
+      // For each meal, load its associated recipes
+      for (final meal in loadedMeals) {
+        if (meal.mealRecipes == null) {
+          // Load associated recipes if not already loaded
+          final mealRecipes = await _dbHelper.getMealRecipesForMeal(meal.id);
+          meal.mealRecipes = mealRecipes;
+        }
+      }
 
       if (!mounted) return;
 
@@ -153,11 +163,126 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                       ),
                                     ),
                                     const Spacer(),
+                                    // Show recipe count if more than one
+                                    if (meal.mealRecipes != null &&
+                                        meal.mealRecipes!.length > 1) ...[
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primaryContainer,
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        child: Text(
+                                          '${meal.mealRecipes!.length} recipes',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onPrimaryContainer,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                    ],
                                     const Icon(Icons.people, size: 16),
                                     const SizedBox(width: 4),
                                     Text('${meal.servings}'),
                                   ],
                                 ),
+
+                                // Display recipes using junction table information
+                                if (meal.mealRecipes != null &&
+                                    meal.mealRecipes!.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children:
+                                        meal.mealRecipes!.map((mealRecipe) {
+                                      return FutureBuilder<Recipe?>(
+                                        future: _dbHelper
+                                            .getRecipe(mealRecipe.recipeId),
+                                        builder: (context, snapshot) {
+                                          if (!snapshot.hasData) {
+                                            return const SizedBox.shrink();
+                                          }
+                                          final recipe = snapshot.data!;
+                                          return Padding(
+                                            padding: const EdgeInsets.only(
+                                                bottom: 4),
+                                            child: Row(
+                                              children: [
+                                                if (mealRecipe.isPrimaryDish)
+                                                  const Icon(Icons.restaurant,
+                                                      size: 16,
+                                                      color: Colors.green)
+                                                else
+                                                  const Icon(
+                                                      Icons.restaurant_menu,
+                                                      size: 16,
+                                                      color: Colors.grey),
+                                                const SizedBox(width: 4),
+                                                Expanded(
+                                                  child: Text(
+                                                    recipe.name,
+                                                    style: TextStyle(
+                                                      fontWeight: mealRecipe
+                                                              .isPrimaryDish
+                                                          ? FontWeight.bold
+                                                          : FontWeight.normal,
+                                                    ),
+                                                  ),
+                                                ),
+                                                // Add note if this was from a plan
+                                                if (mealRecipe.notes?.contains(
+                                                        'From planned meal') ==
+                                                    true)
+                                                  Tooltip(
+                                                    message: 'From meal plan',
+                                                    child: Icon(
+                                                        Icons.event_available,
+                                                        size: 16,
+                                                        color: Theme.of(context)
+                                                            .colorScheme
+                                                            .primary),
+                                                  ),
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    }).toList(),
+                                  ),
+                                ]
+                                // For backward compatibility, also show direct recipe reference if junction is empty
+                                else if (meal.recipeId != null) ...[
+                                  const SizedBox(height: 8),
+                                  FutureBuilder<Recipe?>(
+                                    future: _dbHelper.getRecipe(meal.recipeId!),
+                                    builder: (context, snapshot) {
+                                      if (!snapshot.hasData) {
+                                        return const SizedBox.shrink();
+                                      }
+                                      return Row(
+                                        children: [
+                                          const Icon(Icons.restaurant,
+                                              size: 16, color: Colors.green),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            snapshot.data!.name,
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                ],
+
                                 if (meal.actualPrepTime > 0 ||
                                     meal.actualCookTime > 0) ...[
                                   const SizedBox(height: 8),

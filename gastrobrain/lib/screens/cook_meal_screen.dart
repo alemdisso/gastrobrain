@@ -3,90 +3,112 @@ import '../models/recipe.dart';
 import '../models/meal_recipe.dart';
 import '../database/database_helper.dart';
 import '../utils/id_generator.dart';
+import '../widgets/meal_recording_dialog.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
-import '../core/validators/entity_validator.dart';
 import '../core/services/snackbar_service.dart';
 
 class CookMealScreen extends StatefulWidget {
   final Recipe recipe;
+  final List<Recipe>? additionalRecipes;
 
-  const CookMealScreen({super.key, required this.recipe});
+  const CookMealScreen({
+    super.key,
+    required this.recipe,
+    this.additionalRecipes,
+  });
 
   @override
   State<CookMealScreen> createState() => _CookMealScreenState();
 }
 
 class _CookMealScreenState extends State<CookMealScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _notesController = TextEditingController();
-  final _servingsController = TextEditingController(text: '1');
-  final _prepTimeController = TextEditingController();
-  final _cookTimeController = TextEditingController();
-  bool _wasSuccessful = true;
-  DateTime _cookedAt = DateTime.now();
+  final DatabaseHelper _dbHelper = DatabaseHelper();
   bool _isSaving = false;
 
-  Future<void> _saveMeal() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
+  Future<void> _showMealRecordingDialog() async {
+    Map<String, dynamic>? result;
+
+    if (mounted) {
+      result = await showDialog<Map<String, dynamic>>(
+        context: context,
+        builder: (context) => MealRecordingDialog(
+          primaryRecipe: widget.recipe,
+          additionalRecipes: widget.additionalRecipes,
+        ),
+      );
     }
 
+    // If dialog was cancelled or widget unmounted
+    if (result == null || !mounted) return;
+
+    // Process and save the meal
+    await _saveMeal(result);
+  }
+
+  Future<void> _saveMeal(Map<String, dynamic> mealData) async {
     setState(() {
       _isSaving = true;
     });
 
     try {
-      // Validate meal data
-      EntityValidator.validateMeal(
-        name: widget.recipe.name,
-        date: _cookedAt,
-        recipeIds: [widget.recipe.id],
-      );
-
-      final servings = int.parse(_servingsController.text);
-      EntityValidator.validateServings(servings);
-
-      final prepTime = double.tryParse(_prepTimeController.text);
-      final cookTime = double.tryParse(_cookTimeController.text);
-
-      EntityValidator.validateTime(prepTime, 'Preparation');
-      EntityValidator.validateTime(cookTime, 'Cooking');
+      // Extract data from result
+      final DateTime cookedAt = mealData['cookedAt'];
+      final int servings = mealData['servings'];
+      final String notes = mealData['notes'];
+      final bool wasSuccessful = mealData['wasSuccessful'];
+      final double actualPrepTime = mealData['actualPrepTime'];
+      final double actualCookTime = mealData['actualCookTime'];
+      final Recipe primaryRecipe = mealData['primaryRecipe'];
+      final List<Recipe> additionalRecipes = mealData['additionalRecipes'];
 
       // Create the meal with a new ID
       final mealId = IdGenerator.generateId();
-      final dbHelper = DatabaseHelper();
 
-      // Begin a transaction to ensure both operations succeed or fail together
-      await dbHelper.database.then((db) async {
+      // Begin a transaction to ensure all operations succeed or fail together
+      await _dbHelper.database.then((db) async {
         return await db.transaction((txn) async {
           // Create meal object WITHOUT direct recipe_id (using null)
           final mealMap = {
             'id': mealId,
-            'recipe_id': null, // Now nullable, use junction table instead
-            'cooked_at': _cookedAt.toIso8601String(),
+            'recipe_id': null, // Use junction table instead
+            'cooked_at': cookedAt.toIso8601String(),
             'servings': servings,
-            'notes': _notesController.text,
-            'was_successful': _wasSuccessful ? 1 : 0,
-            'actual_prep_time': prepTime ?? 0,
-            'actual_cook_time': cookTime ?? 0,
+            'notes': notes,
+            'was_successful': wasSuccessful ? 1 : 0,
+            'actual_prep_time': actualPrepTime,
+            'actual_cook_time': actualCookTime,
           };
 
-          // Insert the meal map directly - use transaction object
+          // Insert the meal map
           await txn.insert('meals', mealMap);
 
-          // Create and insert meal recipe association
-          final mealRecipe = MealRecipe(
+          // Create and insert primary recipe association
+          final primaryMealRecipe = MealRecipe(
             mealId: mealId,
-            recipeId: widget.recipe.id,
+            recipeId: primaryRecipe.id,
             isPrimaryDish: true,
+            notes: 'Main dish',
           );
 
-          // Insert the junction record - use transaction object
-          await txn.insert('meal_recipes', mealRecipe.toMap());
+          // Insert the primary junction record
+          await txn.insert('meal_recipes', primaryMealRecipe.toMap());
+
+          // Insert all additional recipes as side dishes
+          for (final recipe in additionalRecipes) {
+            final sideDishMealRecipe = MealRecipe(
+              mealId: mealId,
+              recipeId: recipe.id,
+              isPrimaryDish: false,
+              notes: 'Side dish',
+            );
+
+            await txn.insert('meal_recipes', sideDishMealRecipe.toMap());
+          }
         });
       });
 
       if (mounted) {
+        SnackbarService.showSuccess(context, 'Meal recorded successfully');
         Navigator.pop(context, true);
       }
     } on ValidationException catch (e) {
@@ -111,206 +133,41 @@ class _CookMealScreenState extends State<CookMealScreen> {
     }
   }
 
-  Future<void> _selectDate() async {
-    try {
-      final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: _cookedAt,
-        firstDate: DateTime(2000),
-        lastDate: DateTime.now(),
-      );
-      if (picked != null && mounted) {
-        setState(() {
-          // Preserve the current time but use the selected date
-          final now = DateTime.now();
-          _cookedAt = DateTime(
-            picked.year,
-            picked.month,
-            picked.day,
-            now.hour,
-            now.minute,
-          );
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        SnackbarService.showError(context, 'Error selecting date');
-      }
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // Pre-fill with recipe's expected times
-    _prepTimeController.text = widget.recipe.prepTimeMinutes.toString();
-    _cookTimeController.text = widget.recipe.cookTimeMinutes.toString();
-  }
-
-  @override
-  void dispose() {
-    _notesController.dispose();
-    _servingsController.dispose();
-    _prepTimeController.dispose();
-    _cookTimeController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Cook ${widget.recipe.name}'),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Date and Time section
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ListTile(
-                      leading: const Icon(Icons.calendar_today),
-                      title: Text(
-                        'Cooked on: ${_cookedAt.toString().split('.')[0]}',
-                      ),
-                      onTap: () => _selectDate(),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Servings
-                TextFormField(
-                  controller: _servingsController,
-                  decoration: const InputDecoration(
-                    labelText: 'Number of Servings',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.people),
-                  ),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter number of servings';
-                    }
-                    if (int.tryParse(value) == null || int.parse(value) < 1) {
-                      return 'Please enter a valid number';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                // Actual times
-                Row(
+      body: _isSaving
+          ? const Center(child: CircularProgressIndicator())
+          : Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _prepTimeController,
-                        decoration: const InputDecoration(
-                          labelText: 'Actual Prep Time (min)',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.timer),
-                        ),
-                        keyboardType: TextInputType.number,
-                        validator: (value) {
-                          if (value != null && value.isNotEmpty) {
-                            final time = double.tryParse(value);
-                            if (time == null || time < 0) {
-                              return 'Enter a valid time';
-                            }
-                          }
-                          return null;
-                        },
-                      ),
+                    Text(
+                      'Record cooking details for ${widget.recipe.name}',
+                      style: Theme.of(context).textTheme.titleLarge,
+                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _cookTimeController,
-                        decoration: const InputDecoration(
-                          labelText: 'Actual Cook Time (min)',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.timer),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: _showMealRecordingDialog,
+                      icon: const Icon(Icons.restaurant),
+                      label: const Text('Record Meal Details'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
                         ),
-                        keyboardType: TextInputType.number,
-                        validator: (value) {
-                          if (value != null && value.isNotEmpty) {
-                            final time = double.tryParse(value);
-                            if (time == null || time < 0) {
-                              return 'Enter a valid time';
-                            }
-                          }
-                          return null;
-                        },
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-
-                // Success rating
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      children: [
-                        const Text('Was it successful?'),
-                        const Spacer(),
-                        Switch(
-                          value: _wasSuccessful,
-                          onChanged: (bool value) {
-                            setState(() {
-                              _wasSuccessful = value;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Notes
-                TextFormField(
-                  controller: _notesController,
-                  decoration: const InputDecoration(
-                    labelText: 'Notes (optional)',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.note),
-                  ),
-                  maxLines: 3,
-                ),
-                const SizedBox(height: 24),
-
-                // Save button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _isSaving ? null : _saveMeal,
-                    icon: _isSaving
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(),
-                          )
-                        : const Icon(Icons.save),
-                    label: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Text(_isSaving ? 'Saving...' : 'Save Meal'),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }

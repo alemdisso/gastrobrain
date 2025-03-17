@@ -1,7 +1,6 @@
 // lib/screens/weekly_plan_screen.dart
 
 import 'package:flutter/material.dart';
-import '../models/meal.dart';
 import '../models/meal_recipe.dart';
 import '../models/meal_plan.dart';
 import '../models/meal_plan_item.dart';
@@ -12,7 +11,7 @@ import '../core/services/recommendation_service.dart';
 import '../core/services/recommendation_service_extension.dart';
 import '../core/services/snackbar_service.dart';
 import '../widgets/weekly_calendar_widget.dart';
-import '../widgets/meal_cooked_dialog.dart';
+import '../widgets/meal_recording_dialog.dart';
 import '../utils/id_generator.dart';
 
 class WeeklyPlanScreen extends StatefulWidget {
@@ -368,16 +367,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   Future<void> _handleMarkAsCooked(
       DateTime date, String mealType, String recipeId) async {
     try {
-      // Get the recipe details
-      final recipe = await _dbHelper.getRecipe(recipeId);
-      if (recipe == null) {
-        if (mounted) {
-          SnackbarService.showError(context, 'Recipe not found');
-        }
-        return;
-      }
-
-      // Find the planned meal item
+      // First, get details of the meal plan item
       final items =
           _currentMealPlan?.getItemsForDateAndMealType(date, mealType) ?? [];
       if (items.isEmpty) {
@@ -387,50 +377,107 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         return;
       }
 
-      // Show dialog to get cooking details
+      // Get the primary recipe
+      final recipe = await _dbHelper.getRecipe(recipeId);
+      if (recipe == null) {
+        if (mounted) {
+          SnackbarService.showError(context, 'Recipe not found');
+        }
+        return;
+      }
+
+      // Get any additional recipes already in the plan
+      List<Recipe> additionalRecipes = [];
+      if (items[0].mealPlanItemRecipes != null) {
+        for (final mealRecipe in items[0].mealPlanItemRecipes!) {
+          if (mealRecipe.recipeId != recipeId) {
+            // Skip the primary recipe
+            final additionalRecipe =
+                await _dbHelper.getRecipe(mealRecipe.recipeId);
+            if (additionalRecipe != null) {
+              additionalRecipes.add(additionalRecipe);
+            }
+          }
+        }
+      }
+
+      // Show the meal recording dialog
       Map<String, dynamic>? result;
       if (mounted) {
         result = await showDialog<Map<String, dynamic>>(
           context: context,
-          builder: (context) => MealCookedDialog(
-            recipe: recipe,
+          builder: (context) => MealRecordingDialog(
+            primaryRecipe: recipe,
+            additionalRecipes: additionalRecipes,
             plannedDate: date,
+            notes: items[0].notes,
           ),
         );
       }
 
-      if (result == null) return; // User cancelled
+      if (result == null) return; // User cancelled or widget unmounted
 
-      // Create and save the meal
+      // Extract the data from the result
+      final DateTime cookedAt = result['cookedAt'];
+      final int servings = result['servings'];
+      final String notes = result['notes'];
+      final bool wasSuccessful = result['wasSuccessful'];
+      final double actualPrepTime = result['actualPrepTime'];
+      final double actualCookTime = result['actualCookTime'];
+      final Recipe primaryRecipe = result['primaryRecipe'];
+      final List<Recipe> finalAdditionalRecipes = result['additionalRecipes'];
+
+      // Create the meal with a new ID
       final mealId = IdGenerator.generateId();
 
-      // Create meal with null recipeId (using junction table approach)
-      final meal = Meal(
-        id: mealId,
-        recipeId: null, // Use junction table instead
-        cookedAt: result['cookedAt'] as DateTime,
-        servings: result['servings'] as int,
-        notes: result['notes'] as String,
-        wasSuccessful: result['wasSuccessful'] as bool,
-        actualPrepTime: result['actualPrepTime'] as double,
-        actualCookTime: result['actualCookTime'] as double,
-      );
-
-      // Begin a transaction to ensure both operations succeed or fail together
+      // Begin a transaction
       await _dbHelper.database.then((db) async {
         return await db.transaction((txn) async {
-          // Insert the meal
-          await txn.insert('meals', meal.toMap());
+          // Create meal object WITHOUT direct recipe_id (using null)
+          final mealMap = {
+            'id': mealId,
+            'recipe_id': null, // Use junction table approach
+            'cooked_at': cookedAt.toIso8601String(),
+            'servings': servings,
+            'notes': notes,
+            'was_successful': wasSuccessful ? 1 : 0,
+            'actual_prep_time': actualPrepTime,
+            'actual_cook_time': actualCookTime,
+          };
 
-          // Create and insert meal recipe association
-          final mealRecipe = MealRecipe(
+          // Insert the meal
+          await txn.insert('meals', mealMap);
+
+          // Create and insert primary recipe association
+          final primaryMealRecipe = MealRecipe(
             mealId: mealId,
-            recipeId: recipeId,
+            recipeId: primaryRecipe.id,
             isPrimaryDish: true,
+            notes: 'Main dish',
           );
 
-          // Insert the junction record
-          await txn.insert('meal_recipes', mealRecipe.toMap());
+          // Insert the primary junction record
+          await txn.insert('meal_recipes', primaryMealRecipe.toMap());
+
+          // Insert all additional recipes as side dishes
+          for (final recipe in finalAdditionalRecipes) {
+            final sideDishMealRecipe = MealRecipe(
+              mealId: mealId,
+              recipeId: recipe.id,
+              isPrimaryDish: false,
+              notes: 'Side dish',
+            );
+
+            await txn.insert('meal_recipes', sideDishMealRecipe.toMap());
+          }
+
+          // Update the meal plan item to mark it as cooked
+          await txn.update(
+            'meal_plan_items',
+            {'has_been_cooked': 1},
+            where: 'id = ?',
+            whereArgs: [items[0].id],
+          );
         });
       });
 
