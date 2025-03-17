@@ -759,14 +759,22 @@ class DatabaseHelper {
 
     // Use a join with the junction table to find all meals with this recipe
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
-      SELECT m.* 
+      SELECT DISTINCT m.* 
       FROM meals m
       LEFT JOIN meal_recipes mr ON m.id = mr.meal_id
       WHERE mr.recipe_id = ? OR m.recipe_id = ?
       ORDER BY m.cooked_at DESC
     ''', [recipeId, recipeId]);
 
-    return List.generate(maps.length, (i) => Meal.fromMap(maps[i]));
+    final meals = List.generate(maps.length, (i) => Meal.fromMap(maps[i]));
+
+    // Load meal recipes for each meal
+    for (final meal in meals) {
+      final recipes = await getMealRecipesForMeal(meal.id);
+      meal.mealRecipes = recipes;
+    }
+
+    return meals;
   }
 
   Future<Meal?> getMeal(String id) async {
@@ -776,10 +784,18 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [id],
     );
-    if (maps.isNotEmpty) {
-      return Meal.fromMap(maps.first);
+
+    if (maps.isEmpty) {
+      return null;
     }
-    return null;
+
+    final meal = Meal.fromMap(maps.first);
+
+    // Load associated recipes
+    final recipes = await getMealRecipesForMeal(id);
+    meal.mealRecipes = recipes;
+
+    return meal;
   }
 
   Future<int> updateMeal(Meal meal) async {
@@ -857,6 +873,152 @@ class DatabaseHelper {
       limit: limit,
     );
     return List.generate(maps.length, (i) => Meal.fromMap(maps[i]));
+  }
+
+  /// Add a recipe to an existing meal
+  Future<String> addRecipeToMeal(String mealId, String recipeId,
+      {bool isPrimaryDish = false}) async {
+    final Database db = await database;
+    try {
+      // Check if meal exists
+      final mealExists = await db.query(
+        'meals',
+        where: 'id = ?',
+        whereArgs: [mealId],
+        limit: 1,
+      );
+
+      if (mealExists.isEmpty) {
+        throw NotFoundException('Meal not found with id: $mealId');
+      }
+
+      // Check if recipe exists
+      final recipeExists = await db.query(
+        'recipes',
+        where: 'id = ?',
+        whereArgs: [recipeId],
+        limit: 1,
+      );
+
+      if (recipeExists.isEmpty) {
+        throw NotFoundException('Recipe not found with id: $recipeId');
+      }
+
+      // Check if the junction already exists
+      final existing = await db.query(
+        'meal_recipes',
+        where: 'meal_id = ? AND recipe_id = ?',
+        whereArgs: [mealId, recipeId],
+        limit: 1,
+      );
+
+      if (existing.isNotEmpty) {
+        // If it exists and we're trying to set it as primary, update it
+        if (isPrimaryDish) {
+          // First remove primary status from any other recipes
+          await db.update(
+            'meal_recipes',
+            {'is_primary_dish': 0},
+            where: 'meal_id = ?',
+            whereArgs: [mealId],
+          );
+
+          // Then set this one as primary
+          await db.update(
+            'meal_recipes',
+            {'is_primary_dish': 1},
+            where: 'meal_id = ? AND recipe_id = ?',
+            whereArgs: [mealId, recipeId],
+          );
+        }
+
+        return existing.first['id'] as String;
+      }
+
+      // If setting as primary, first remove primary status from others
+      if (isPrimaryDish) {
+        await db.update(
+          'meal_recipes',
+          {'is_primary_dish': 0},
+          where: 'meal_id = ?',
+          whereArgs: [mealId],
+        );
+      }
+
+      // Create new junction record
+      final mealRecipe = MealRecipe(
+        mealId: mealId,
+        recipeId: recipeId,
+        isPrimaryDish: isPrimaryDish,
+      );
+
+      await db.insert('meal_recipes', mealRecipe.toMap());
+      return mealRecipe.id;
+    } catch (e) {
+      if (e is NotFoundException) {
+        rethrow;
+      }
+      throw GastrobrainException(
+          'Failed to add recipe to meal: ${e.toString()}');
+    }
+  }
+
+  /// Remove a recipe from a meal
+  Future<bool> removeRecipeFromMeal(String mealId, String recipeId) async {
+    final Database db = await database;
+    try {
+      final deleted = await db.delete(
+        'meal_recipes',
+        where: 'meal_id = ? AND recipe_id = ?',
+        whereArgs: [mealId, recipeId],
+      );
+
+      return deleted > 0;
+    } catch (e) {
+      throw GastrobrainException(
+          'Failed to remove recipe from meal: ${e.toString()}');
+    }
+  }
+
+  /// Set a recipe as the primary dish for a meal
+  Future<bool> setPrimaryRecipeForMeal(String mealId, String recipeId) async {
+    final Database db = await database;
+    try {
+      await db.transaction((txn) async {
+        // First reset all recipes for this meal to non-primary
+        await txn.update(
+          'meal_recipes',
+          {'is_primary_dish': 0},
+          where: 'meal_id = ?',
+          whereArgs: [mealId],
+        );
+
+        // Then set the specified recipe as primary
+        final updated = await txn.update(
+          'meal_recipes',
+          {'is_primary_dish': 1},
+          where: 'meal_id = ? AND recipe_id = ?',
+          whereArgs: [mealId, recipeId],
+        );
+
+        if (updated == 0) {
+          // Recipe wasn't found in this meal
+          // Add it as the primary recipe
+          final mealRecipe = MealRecipe(
+            mealId: mealId,
+            recipeId: recipeId,
+            isPrimaryDish: true,
+          );
+
+          await txn.insert('meal_recipes', mealRecipe.toMap());
+        }
+      });
+
+      return true;
+    } catch (e) {
+      throw GastrobrainException(
+          'Failed to set primary recipe: ${e.toString()}');
+    }
   }
 
   Future<DateTime?> getLastCookedDate(String recipeId) async {

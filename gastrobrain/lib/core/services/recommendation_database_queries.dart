@@ -231,16 +231,33 @@ class RecommendationDatabaseQueries {
         return [];
       }
 
-      // For each meal, get the associated recipe
+      // For each meal, get the associated recipes
       final result = <Map<String, dynamic>>[];
 
       for (final meal in meals) {
-        final recipe = await _dbHelper.getRecipe(meal.id);
+        // First try to get recipes from junction table
+        final mealRecipes = await _dbHelper.getMealRecipesForMeal(meal.id);
 
-        if (recipe != null) {
+        Recipe? primaryRecipe;
+
+        if (mealRecipes.isNotEmpty) {
+          // Find the primary recipe if one is marked as primary
+          final primaryMealRecipe = mealRecipes.firstWhere(
+            (mr) => mr.isPrimaryDish,
+            orElse: () => mealRecipes.first,
+          );
+
+          primaryRecipe = await _dbHelper.getRecipe(primaryMealRecipe.recipeId);
+        }
+        // Fallback to direct recipe_id if available and no recipes found in junction
+        else if (meal.recipeId != null) {
+          primaryRecipe = await _dbHelper.getRecipe(meal.recipeId!);
+        }
+
+        if (primaryRecipe != null) {
           result.add({
             'meal': meal,
-            'recipe': recipe,
+            'recipe': primaryRecipe,
             'cookedAt': meal.cookedAt,
           });
         }

@@ -312,10 +312,11 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
             onPressed: () => Navigator.pop(context, 'change'),
             child: const Text('Change Recipe'),
           ),
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(context, 'cooked'),
-            child: const Text('Mark as Cooked'),
-          ),
+          if (!mealCooked)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, 'cooked'),
+              child: const Text('Mark as Cooked'),
+            ),
           SimpleDialogOption(
             onPressed: () => Navigator.pop(context, 'remove'),
             child: const Text('Remove from Plan'),
