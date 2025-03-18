@@ -6,15 +6,22 @@ import '../utils/id_generator.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
 import '../core/services/snackbar_service.dart';
+import '../core/di/service_provider.dart';
 
 class AddNewIngredientDialog extends StatefulWidget {
-  const AddNewIngredientDialog({super.key});
+  final DatabaseHelper? databaseHelper;
+
+  const AddNewIngredientDialog({
+    super.key,
+    this.databaseHelper,
+  });
 
   @override
   State<AddNewIngredientDialog> createState() => _AddNewIngredientDialogState();
 }
 
 class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
+  late DatabaseHelper _dbHelper;
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _notesController = TextEditingController();
@@ -48,6 +55,13 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
     'slice'
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    // Use the injected database helper or get one from ServiceProvider
+    _dbHelper = widget.databaseHelper ?? ServiceProvider.database.dbHelper;
+  }
+
   Future<void> _saveIngredient() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -75,8 +89,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
         notes: _notesController.text.isEmpty ? null : _notesController.text,
       );
 
-      final dbHelper = DatabaseHelper();
-      await dbHelper.insertIngredient(ingredient);
+      await _dbHelper.insertIngredient(ingredient);
 
       if (mounted) {
         Navigator.pop(context, ingredient);

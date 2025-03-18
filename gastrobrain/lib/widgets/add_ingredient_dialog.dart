@@ -2,19 +2,20 @@ import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../models/ingredient.dart';
 import '../models/recipe_ingredient.dart';
-//import '../models/protein_type.dart';
 import '../database/database_helper.dart';
 import 'add_new_ingredient_dialog.dart';
 import '../utils/id_generator.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
 import '../core/services/snackbar_service.dart';
+import '../core/di/service_provider.dart';
 
 class AddIngredientDialog extends StatefulWidget {
   final Recipe recipe;
   final Function(RecipeIngredient)? onSave;
   final Map<String, dynamic>? existingIngredient;
   final String? recipeIngredientId;
+  final DatabaseHelper? databaseHelper;
 
   const AddIngredientDialog({
     super.key,
@@ -22,6 +23,7 @@ class AddIngredientDialog extends StatefulWidget {
     this.onSave,
     this.existingIngredient,
     this.recipeIngredientId,
+    this.databaseHelper,
   }) : super();
 
   @override
@@ -29,6 +31,7 @@ class AddIngredientDialog extends StatefulWidget {
 }
 
 class _AddIngredientDialogState extends State<AddIngredientDialog> {
+  late DatabaseHelper _dbHelper;
   final _formKey = GlobalKey<FormState>();
   final _quantityController = TextEditingController();
   final _notesController = TextEditingController();
@@ -72,11 +75,10 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
   bool _isCustomIngredient = false;
   String _selectedCategory = 'vegetable';
 
-  final DatabaseHelper _dbHelper = DatabaseHelper();
-
   @override
   void initState() {
     super.initState();
+    _dbHelper = widget.databaseHelper ?? ServiceProvider.database.dbHelper;
     if (widget.existingIngredient != null) {
       // Pre-fill the form with existing values
       _quantityController.text =
@@ -281,7 +283,9 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
   Future<void> _createNewIngredient() async {
     final newIngredient = await showDialog<Ingredient>(
       context: context,
-      builder: (context) => const AddNewIngredientDialog(),
+      builder: (context) => AddNewIngredientDialog(
+        databaseHelper: _dbHelper, // Pass the database helper
+      ),
     );
 
     if (newIngredient != null) {

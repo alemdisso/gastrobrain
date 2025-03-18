@@ -7,17 +7,24 @@ import '../models/frequency_type.dart';
 import '../database/database_helper.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
+import '../core/di/service_provider.dart';
 import '../utils/id_generator.dart';
 import '../core/services/snackbar_service.dart';
 
 class AddRecipeScreen extends StatefulWidget {
-  const AddRecipeScreen({super.key});
+  final DatabaseHelper? databaseHelper;
+
+  const AddRecipeScreen({
+    super.key,
+    this.databaseHelper,
+  });
 
   @override
   State<AddRecipeScreen> createState() => _AddRecipeScreenState();
 }
 
 class _AddRecipeScreenState extends State<AddRecipeScreen> {
+  late DatabaseHelper _dbHelper;
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _notesController = TextEditingController();
@@ -33,6 +40,13 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       {}; // Cache for ingredient details
 
   final frequencies = FrequencyType.values;
+
+  @override
+  void initState() {
+    super.initState();
+    // Use the injected database helper or get one from ServiceProvider
+    _dbHelper = widget.databaseHelper ?? ServiceProvider.database.dbHelper;
+  }
 
   Widget _buildRatingField(String label, int value, Function(int) onChanged) {
     return Column(
@@ -120,10 +134,9 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       return _ingredientDetails[ingredientId];
     }
 
-    final dbHelper = DatabaseHelper();
     try {
       // Load all ingredients at once and cache them
-      final ingredients = await dbHelper.getAllIngredients();
+      final ingredients = await _dbHelper.getAllIngredients();
       for (final ingredient in ingredients) {
         _ingredientDetails[ingredient.id] = ingredient;
       }
@@ -160,6 +173,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       context: context,
       builder: (context) => AddIngredientDialog(
         recipe: tempRecipe,
+        databaseHelper: _dbHelper,
         onSave: (ingredient) {
           // We don't need to explicitly call Navigator.pop here anymore
           // as the dialog will handle it and return the ingredient
@@ -209,12 +223,11 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         rating: _rating,
       );
 
-      final dbHelper = DatabaseHelper();
-      await dbHelper.insertRecipe(recipe);
+      await _dbHelper.insertRecipe(recipe);
 
       // Then save all pending ingredients
       for (final ingredient in _pendingIngredients) {
-        await dbHelper.addIngredientToRecipe(ingredient);
+        await _dbHelper.addIngredientToRecipe(ingredient);
       }
 
       if (mounted) {
