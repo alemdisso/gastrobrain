@@ -13,6 +13,7 @@ class WeeklyCalendarWidget extends StatefulWidget {
   final Function(DateTime date, String mealType, String recipeId)? onMealTap;
   final Function(DateTime selectedDate, int selectedDayIndex)? onDaySelected;
   final ScrollController? scrollController;
+  final DatabaseHelper? dbHelper;
 
   const WeeklyCalendarWidget({
     super.key,
@@ -22,6 +23,7 @@ class WeeklyCalendarWidget extends StatefulWidget {
     this.onMealTap,
     this.onDaySelected,
     this.scrollController,
+    this.dbHelper,
   });
 
   @override
@@ -39,7 +41,16 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
     'Thursday'
   ];
   late List<DateTime> _weekDates;
-  final DatabaseHelper _dbHelper = DatabaseHelper();
+  late final DatabaseHelper _dbHelper;
+
+  @override
+  void initState() {
+    super.initState();
+    // Use the provided DatabaseHelper or create a new one if not provided
+    _dbHelper = widget.dbHelper ?? DatabaseHelper();
+    _initializeWeekDates();
+    _prefetchRecipes();
+  }
 
   // Cache for recipe details
   final Map<String, Recipe> _recipes = {};
