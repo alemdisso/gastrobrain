@@ -7,28 +7,33 @@ import '../models/meal_plan_item.dart';
 import '../models/meal_plan_item_recipe.dart';
 import '../models/recipe.dart';
 import '../database/database_helper.dart';
+import '../core/di/service_provider.dart';
 import '../core/services/recommendation_service.dart';
-import '../core/services/recommendation_service_extension.dart';
+//import '../core/services/recommendation_service_extension.dart';
 import '../core/services/snackbar_service.dart';
 import '../widgets/weekly_calendar_widget.dart';
 import '../widgets/meal_recording_dialog.dart';
 import '../utils/id_generator.dart';
 
 class WeeklyPlanScreen extends StatefulWidget {
-  const WeeklyPlanScreen({super.key});
+  final DatabaseHelper? databaseHelper;
+  const WeeklyPlanScreen({
+    Key? key,
+    this.databaseHelper,
+  }) : super(key: key);
 
   @override
   State<WeeklyPlanScreen> createState() => _WeeklyPlanScreenState();
 }
 
 class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
+  late DatabaseHelper _dbHelper;
+  late RecommendationService _recommendationService;
   DateTime _currentWeekStart = _getFriday(DateTime.now());
   MealPlan? _currentMealPlan;
   bool _isLoading = true;
-  final DatabaseHelper _dbHelper = DatabaseHelper();
   List<Recipe> _availableRecipes = [];
   final ScrollController _scrollController = ScrollController();
-  late RecommendationService _recommendationService;
   // Cache for recommendations to improve performance
   final Map<String, List<Recipe>> _recommendationCache = {};
 
@@ -40,8 +45,9 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize the recommendation service
-    _recommendationService = _dbHelper.createRecommendationService();
+    _dbHelper = widget.databaseHelper ?? ServiceProvider.database.dbHelper;
+    _recommendationService =
+        ServiceProvider.recommendations.recommendationService;
     _loadData();
   }
 
@@ -558,7 +564,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                     onSlotTap: _handleSlotTap,
                     onMealTap: _handleMealTap,
                     onDaySelected: _handleDaySelected,
-                    scrollController: _scrollController, // Pass the controller
+                    scrollController: _scrollController,
+                    databaseHelper: _dbHelper, // Pass the controller
                   ),
           ),
         ],

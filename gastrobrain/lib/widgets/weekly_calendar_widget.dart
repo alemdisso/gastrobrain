@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../models/meal_plan.dart';
 import '../models/meal_plan_item.dart';
 import '../models/recipe.dart';
+import '../core/di/service_provider.dart';
 import '../database/database_helper.dart';
 
 class WeeklyCalendarWidget extends StatefulWidget {
@@ -13,7 +14,7 @@ class WeeklyCalendarWidget extends StatefulWidget {
   final Function(DateTime date, String mealType, String recipeId)? onMealTap;
   final Function(DateTime selectedDate, int selectedDayIndex)? onDaySelected;
   final ScrollController? scrollController;
-  final DatabaseHelper? dbHelper;
+  final DatabaseHelper? databaseHelper;
 
   const WeeklyCalendarWidget({
     super.key,
@@ -23,7 +24,7 @@ class WeeklyCalendarWidget extends StatefulWidget {
     this.onMealTap,
     this.onDaySelected,
     this.scrollController,
-    this.dbHelper,
+    this.databaseHelper,
   });
 
   @override
@@ -41,16 +42,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
     'Thursday'
   ];
   late List<DateTime> _weekDates;
-  late final DatabaseHelper _dbHelper;
-
-  @override
-  void initState() {
-    super.initState();
-    // Use the provided DatabaseHelper or create a new one if not provided
-    _dbHelper = widget.dbHelper ?? DatabaseHelper();
-    _initializeWeekDates();
-    _prefetchRecipes();
-  }
+  late DatabaseHelper _dbHelper;
 
   // Cache for recipe details
   final Map<String, Recipe> _recipes = {};
@@ -60,6 +52,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
   @override
   void initState() {
     super.initState();
+    _dbHelper = widget.databaseHelper ?? ServiceProvider.database.dbHelper;
     _initializeWeekDates();
     _prefetchRecipes();
   }
