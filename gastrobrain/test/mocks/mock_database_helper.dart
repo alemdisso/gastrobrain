@@ -23,27 +23,60 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<MealPlan?> getMealPlan(String id) async {
-    throw UnimplementedError('Method not implemented for tests');
+    return _mealPlans[id];
   }
 
   @override
-  Future<MealPlan> getMealPlanForWeek(DateTime startDate) async {
-    throw UnimplementedError('Method not implemented for tests');
+  Future<MealPlan?> getMealPlanForWeek(DateTime startDate) async {
+    final normalizedStartDate =
+        DateTime(startDate.year, startDate.month, startDate.day);
+
+    // Find a plan that starts on the given date
+    try {
+      return _mealPlans.values.firstWhere(
+        (plan) => DateTime(plan.weekStartDate.year, plan.weekStartDate.month,
+                plan.weekStartDate.day)
+            .isAtSameMomentAs(normalizedStartDate),
+      );
+    } catch (e) {
+      // No matching plan found
+      return null;
+    }
   }
 
   @override
   Future<List<MealPlanItem>> getMealPlanItemsForDate(DateTime date) async {
-    throw UnimplementedError('Method not implemented for tests');
+    final dateString = MealPlanItem.formatPlannedDate(date);
+
+    List<MealPlanItem> result = [];
+
+    // Search through all meal plans
+    for (final plan in _mealPlans.values) {
+      // Find items for this date
+      final items =
+          plan.items.where((item) => item.plannedDate == dateString).toList();
+
+      result.addAll(items);
+    }
+
+    return result;
   }
 
   @override
   Future<String> insertMealPlan(MealPlan mealPlan) async {
-    throw UnimplementedError('Method not implemented for tests');
+    _mealPlans[mealPlan.id] = mealPlan;
+    return mealPlan.id;
   }
 
   @override
   Future<String> insertMealPlanItem(MealPlanItem item) async {
-    throw UnimplementedError('Method not implemented for tests');
+    // Find the meal plan this item belongs to
+    final plan = _mealPlans[item.mealPlanId];
+    if (plan != null) {
+      // Add the item to the plan
+      plan.items.add(item);
+    }
+    return item.id;
   }
 
   @override
@@ -333,17 +366,34 @@ class MockDatabaseHelper implements DatabaseHelper {
   }
 
   @override
-  Future<List<MealPlan>> getMealPlansByDateRange(DateTime start, DateTime end) {
-    // TODO: implement getMealPlansByDateRange
-    throw UnimplementedError();
+  Future<List<MealPlan>> getMealPlansByDateRange(
+      DateTime start, DateTime end) async {
+    final normalizedStart = DateTime(start.year, start.month, start.day);
+    final normalizedEnd = DateTime(end.year, end.month, end.day);
+
+    return _mealPlans.values.where((plan) {
+      final planEndDate = plan.weekEndDate;
+      return !normalizedStart.isAfter(planEndDate) &&
+          !normalizedEnd.isBefore(plan.weekStartDate);
+    }).toList();
   }
 
   @override
   Future<String> insertMealPlanItemRecipe(
-      MealPlanItemRecipe mealPlanItemRecipe) {
-    // TODO: implement insertMealPlanItemRecipe
-    throw UnimplementedError();
-  }
+      MealPlanItemRecipe mealPlanItemRecipe) async {
+    // Find the item this recipe belongs to
+    for (final plan in _mealPlans.values) {
+      for (final item in plan.items) {
+        if (item.id == mealPlanItemRecipe.mealPlanItemId) {
+          // Found the item, add the recipe to it
+          item.mealPlanItemRecipes ??= [];
+          item.mealPlanItemRecipes!.add(mealPlanItemRecipe);
+          return mealPlanItemRecipe.id;
+        }
+      }
+    }
 
-  // Any additional missing methods would need to be added here
+    // Item not found
+    return mealPlanItemRecipe.id;
+  }
 }
