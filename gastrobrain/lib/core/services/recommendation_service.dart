@@ -9,6 +9,7 @@ import '../errors/gastrobrain_exceptions.dart';
 import 'recommendation_database_queries.dart';
 import 'recommendation_factors/frequency_factor.dart';
 import 'recommendation_factors/protein_rotation_factor.dart';
+import 'recommendation_factors/rating_factor.dart';
 
 /// A class representing a scored recipe recommendation.
 class RecipeRecommendation {
@@ -94,6 +95,9 @@ class RecommendationService {
 
     // Register the protein rotation factor (30% weight)
     registerFactor(ProteinRotationFactor());
+
+    // Register the rating factor (15% weight)
+    registerFactor(RatingFactor());
 
     // Additional factors will be added here as they are implemented
     // Example:
