@@ -1,6 +1,8 @@
 // recipe_converter.dart
 // Convert CSV recipe data to JSON for Gastrobrain app
 
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -55,8 +57,8 @@ final Map<String, String> categoryMap = {
 /// Main function to process data
 void main() async {
   // Define file paths
-  final inputFile = 'recipes.csv';
-  final outputFile = 'recipes.json';
+  const inputFile = 'recipes.csv';
+  const outputFile = 'recipes.json';
 
   try {
     // Read the input file
