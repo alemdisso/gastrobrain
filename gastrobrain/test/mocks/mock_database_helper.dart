@@ -1,6 +1,7 @@
 // test/mocks/mock_database_helper.dart
 
 import 'package:gastrobrain/database/database_helper.dart';
+import 'package:gastrobrain/models/protein_type.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/meal.dart';
 import 'package:gastrobrain/models/meal_recipe.dart';
@@ -144,26 +145,19 @@ class MockDatabaseHelper implements DatabaseHelper {
     return _recipes[id];
   }
 
-  @override
-  Future<Map<String, List<String>>> getRecipeProteinTypes(
-      List<String> recipeIds) async {
+  Future<Map<String, List<ProteinType>>> getRecipeProteinTypes(
+      {required List<String> recipeIds}) async {
     // Create a result map - recipeId -> list of protein types
-    final Map<String, List<String>> result = {};
+    final Map<String, List<ProteinType>> result = {};
 
-    // For each recipe ID, add an entry to the result map
-    for (final recipeId in recipeIds) {
-      // In a real implementation, this would query the database
-      // For testing, we'll return some mock data
-      result[recipeId] = ['chicken']; // Default mock protein
+    // Initialize with empty lists
+    for (final id in recipeIds) {
+      result[id] = [];
+    }
 
-      // You can add specific test cases here if needed
-      if (recipeId == 'beef_recipe') {
-        result[recipeId] = ['beef'];
-      } else if (recipeId == 'vegetarian_recipe') {
-        result[recipeId] = ['plant_based'];
-      } else if (recipeId == 'mixed_recipe') {
-        result[recipeId] = ['chicken', 'pork'];
-      }
+    // For testing purposes, assign a default protein type to all recipes
+    for (final id in recipeIds) {
+      result[id] = [ProteinType.chicken];
     }
 
     return result;
@@ -390,8 +384,11 @@ class MockDatabaseHelper implements DatabaseHelper {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getRecipeIngredients(String recipeId) {
-    throw UnimplementedError('Method not implemented for tests');
+  Future<List<Map<String, dynamic>>> getRecipeIngredients(
+      String recipeId) async {
+    // Return a minimal mock response with no ingredients for simplicity
+    // This should prevent the error in the rating recommendation tests
+    return [];
   }
 
   @override
