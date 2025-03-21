@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:async';
 //import 'package:uuid/uuid.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../utils/id_generator.dart';
@@ -702,6 +703,99 @@ class DatabaseHelper {
     }
   }
 
+  /// Imports recipes from a JSON file in the assets folder
+  Future<void> importRecipesFromJson(String assetPath) async {
+    try {
+      // Load the file content from assets
+      final String jsonString = await rootBundle.loadString(assetPath);
+
+      // Parse the JSON data
+      final List<dynamic> recipesJson =
+          json.decode(jsonString) as List<dynamic>;
+
+      // Track counters for logging
+      int successCount = 0;
+      int errorCount = 0;
+      int ingredientCount = 0;
+
+      // Process each recipe
+      for (final recipeJson in recipesJson) {
+        try {
+          // Create Recipe object
+          final recipe = Recipe(
+            id: IdGenerator.generateId(),
+            name: (recipeJson['name'] as String).toLowerCase(),
+            desiredFrequency: FrequencyType.fromString(
+                recipeJson['desired_frequency'] as String? ?? 'monthly'),
+            notes: recipeJson['notes'] as String? ?? '',
+            createdAt: DateTime.parse(recipeJson['created_at'] as String),
+            difficulty: recipeJson['difficulty'] as int? ?? 1,
+            prepTimeMinutes: recipeJson['prep_time_minutes'] as int? ?? 0,
+            cookTimeMinutes: recipeJson['cook_time_minutes'] as int? ?? 0,
+            rating: recipeJson['rating'] as int? ?? 0,
+          );
+
+          // Insert the recipe
+          await insertRecipe(recipe);
+          successCount++;
+
+          // Handle main_ingredient if present
+          if (recipeJson.containsKey('main_ingredient') &&
+              recipeJson['main_ingredient'] != null &&
+              recipeJson['main_ingredient'].toString().isNotEmpty) {
+            final ingredientName =
+                (recipeJson['main_ingredient'] as String).toLowerCase();
+
+            // Check if ingredient exists
+            final db = await database;
+            final existingIngredient = await db.query(
+              'ingredients',
+              where: 'name = ?',
+              whereArgs: [ingredientName],
+              limit: 1,
+            );
+
+            String ingredientId;
+            if (existingIngredient.isNotEmpty) {
+              // Use existing ingredient
+              ingredientId = existingIngredient.first['id'] as String;
+            } else {
+              // Create new ingredient
+              final ingredient = Ingredient(
+                id: IdGenerator.generateId(),
+                name: ingredientName,
+                category: 'other',
+                proteinType: null,
+              );
+              ingredientId = await insertIngredient(ingredient);
+              ingredientCount++;
+            }
+
+            // Create recipe_ingredient relationship
+            final recipeIngredient = RecipeIngredient(
+              id: IdGenerator.generateId(),
+              recipeId: recipe.id,
+              ingredientId: ingredientId,
+              quantity: 1.0,
+            );
+
+            await addIngredientToRecipe(recipeIngredient);
+          }
+        } catch (e) {
+          print('Error creating recipe: ${recipeJson['name']}, Error: $e');
+          errorCount++;
+        }
+      }
+
+      print(
+          'Recipe import summary: $successCount recipes imported successfully, $errorCount errors.');
+      print('Created $ingredientCount new ingredients.');
+    } catch (e) {
+      print('Error importing recipes: $e');
+      rethrow;
+    }
+  }
+
   // Recipe CRUD operations
   Future<int> insertRecipe(Recipe recipe) async {
     final Database db = await database;
@@ -745,6 +839,12 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  Future<int> getRecipesCount() async {
+    final Database db = await database;
+    final result = await db.rawQuery('SELECT COUNT(*) as count FROM recipes');
+    return Sqflite.firstIntValue(result) ?? 0;
   }
 
   // Meal CRUD operations

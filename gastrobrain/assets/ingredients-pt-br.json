@@ -2,13 +2,13 @@
     {
       "name": "sal",
       "category": "seasoning",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
       "name": "alho",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -20,25 +20,25 @@
     {
       "name": "pimenta do reino",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "ovos",
       "category": "protein",
-      "unit": null,
+      "unit": "piece",
       "protein_type": "other"
     },
     {
       "name": "açúcar",
       "category": "sugar products",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
       "name": "tomates",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -50,7 +50,7 @@
     {
       "name": "pimenta",
       "category": "seasoning",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
@@ -62,7 +62,7 @@
     {
       "name": "gengibre",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -74,13 +74,13 @@
     {
       "name": "coentro",
       "category": "seasoning",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
       "name": "cominho",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
@@ -92,13 +92,13 @@
     {
       "name": "cebolinha",
       "category": "vegetable",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
       "name": "sal kosher",
       "category": "seasoning",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
@@ -110,7 +110,7 @@
     {
       "name": "cenouras",
       "category": "vegetable",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
@@ -140,13 +140,13 @@
     {
       "name": "orégano",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "salsa",
       "category": "seasoning",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
@@ -156,15 +156,9 @@
       "protein_type": null
     },
     {
-      "name": "peitos de frango",
-      "category": "protein",
-      "unit": null,
-      "protein_type": "chicken"
-    },
-    {
       "name": "tomilho",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
@@ -176,43 +170,37 @@
     {
       "name": "pó de chili",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "canela",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "camarão",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
       "protein_type": "seafood"
     },
     {
       "name": "pimentão vermelho",
       "category": "vegetable",
-      "unit": null,
-      "protein_type": null
-    },
-    {
-      "name": "cebolinha verde",
-      "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "pimenta vermelha",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "cebola roxa",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -224,7 +212,7 @@
     {
       "name": "manjericão",
       "category": "seasoning",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
@@ -236,7 +224,7 @@
     {
       "name": "cebola",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -248,7 +236,7 @@
     {
       "name": "pimentas jalapeño",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -260,13 +248,7 @@
     {
       "name": "pimenta caiena",
       "category": "seasoning",
-      "unit": null,
-      "protein_type": null
-    },
-    {
-      "name": "coentro em pó",
-      "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
@@ -278,19 +260,19 @@
     {
       "name": "frango",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
       "protein_type": "chicken"
     },
     {
       "name": "limão",
       "category": "fruit",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "chalotas",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -302,31 +284,31 @@
     {
       "name": "salsão",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "pimentão verde",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "alho em pó",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "páprica",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "limão siciliano",
       "category": "fruit",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -344,7 +326,7 @@
     {
       "name": "flocos de pimenta vermelha",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
@@ -380,13 +362,7 @@
     {
       "name": "cebola amarela",
       "category": "vegetable",
-      "unit": null,
-      "protein_type": null
-    },
-    {
-      "name": "folhas de louro",
-      "category": "seasoning",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -398,19 +374,13 @@
     {
       "name": "gemas de ovo",
       "category": "protein",
-      "unit": null,
+      "unit": "piece",
       "protein_type": "other"
-    },
-    {
-      "name": "molho",
-      "category": "other",
-      "unit": null,
-      "protein_type": null
     },
     {
       "name": "abacate",
       "category": "fruit",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -420,15 +390,9 @@
       "protein_type": null
     },
     {
-      "name": "folhas de coentro",
-      "category": "seasoning",
-      "unit": null,
-      "protein_type": null
-    },
-    {
       "name": "cogumelos",
       "category": "vegetable",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
@@ -446,7 +410,7 @@
     {
       "name": "sementes de gergelim",
       "category": "nuts_and_seeds",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
@@ -458,79 +422,73 @@
     {
       "name": "hortelã",
       "category": "seasoning",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
       "name": "salsa italiana",
       "category": "seasoning",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
       "name": "noz-moscada",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "batatas",
       "category": "vegetable",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
       "name": "tortilhas de milho",
       "category": "grain",
-      "unit": null,
-      "protein_type": null
-    },
-    {
-      "name": "salsa mexicana",
-      "category": "other",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "feijão preto",
       "category": "pulse",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
       "name": "garam masala",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tbsp",
       "protein_type": null
     },
     {
       "name": "semente de cominho",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "cúrcuma",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "carne bovina",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
       "protein_type": "beef"
     },
     {
       "name": "claras de ovo",
       "category": "protein",
-      "unit": null,
+      "unit": "piece",
       "protein_type": "other"
     },
     {
       "name": "pimentas verdes",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -548,31 +506,31 @@
     {
       "name": "folha de louro",
       "category": "seasoning",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "sal marinho",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "tortilhas de farinha",
       "category": "grain",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "pepino",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "abobrinha",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -596,7 +554,7 @@
     {
       "name": "cebola branca",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -608,7 +566,7 @@
     {
       "name": "espinafre",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -618,51 +576,39 @@
       "protein_type": null
     },
     {
-      "name": "cúrcuma",
-      "category": "seasoning",
-      "unit": null,
-      "protein_type": null
-    },
-    {
       "name": "peito de frango",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
       "protein_type": "chicken"
     },
     {
       "name": "curry em pó",
       "category": "seasoning",
-      "unit": null,
-      "protein_type": null
-    },
-    {
-      "name": "folhas de manjericão",
-      "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "carne de porco",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
       "protein_type": "pork"
     },
     {
       "name": "tomates ameixa",
       "category": "vegetable",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
-      "name": "pimenta branca",
+      "name": "pimenta-do-reino branca",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "pimentas vermelhas",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -674,13 +620,13 @@
     {
       "name": "cravo",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "bacon",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
       "protein_type": "pork"
     },
     {
@@ -704,7 +650,7 @@
     {
       "name": "ervilhas",
       "category": "vegetable",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
@@ -714,21 +660,15 @@
       "protein_type": null
     },
     {
-      "name": "talos de salsão",
-      "category": "vegetable",
-      "unit": null,
-      "protein_type": null
-    },
-    {
       "name": "raspas de limão siciliano",
       "category": "fruit",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "paus de canela",
       "category": "seasoning",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -740,7 +680,7 @@
     {
       "name": "alecrim",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
@@ -752,37 +692,37 @@
     {
       "name": "amendoim",
       "category": "nuts_and_seeds",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
       "name": "sal grosso",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "tofu",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
       "protein_type": "plantBased"
     },
     {
       "name": "amêndoas",
       "category": "nuts_and_seeds",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
       "name": "milho",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "uvas passas",
       "category": "fruit",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
@@ -794,31 +734,25 @@
     {
       "name": "pimenta caiena",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "brotos de feijão",
       "category": "vegetable",
-      "unit": null,
-      "protein_type": null
-    },
-    {
-      "name": "fatias de limão",
-      "category": "fruit",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
       "name": "cebolinha francesa",
       "category": "seasoning",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
       "name": "alcaparras",
       "category": "other",
-      "unit": null,
+      "unit": "tbsp",
       "protein_type": null
     },
     {
@@ -830,7 +764,7 @@
     {
       "name": "berinjela",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -842,7 +776,7 @@
     {
       "name": "tomates cereja",
       "category": "vegetable",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
@@ -852,9 +786,9 @@
       "protein_type": null
     },
     {
-      "name": "raiz de gengibre",
-      "category": "vegetable",
-      "unit": null,
+      "name": "gengibre em pó",
+      "category": "seasoning",
+      "unit": "tsp",
       "protein_type": null
     },
     {
@@ -872,13 +806,7 @@
     {
       "name": "alho-poró",
       "category": "vegetable",
-      "unit": null,
-      "protein_type": null
-    },
-    {
-      "name": "pimentão",
-      "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -890,29 +818,29 @@
     {
       "name": "laranja",
       "category": "fruit",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "cebola em pó",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "grãos de pimenta-do-reino",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "repolho",
       "category": "vegetable",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
-      "name": "caldo de galinha, baixo teor de sódio",
+      "name": "caldo de galinha",
       "category": "other",
       "unit": "cup",
       "protein_type": null
@@ -932,31 +860,25 @@
     {
       "name": "batata doce",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "pimenta da jamaica",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "cardamomo",
       "category": "seasoning",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
-    },
-    {
-      "name": "carne bovina magra",
-      "category": "protein",
-      "unit": null,
-      "protein_type": "beef"
     },
     {
       "name": "nozes pecan",
       "category": "nuts_and_seeds",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
@@ -966,21 +888,9 @@
       "protein_type": null
     },
     {
-      "name": "pimentão verde",
-      "category": "vegetable",
-      "unit": null,
-      "protein_type": null
-    },
-    {
       "name": "molho de soja com baixo teor de sódio",
       "category": "seasoning",
       "unit": "tbsp",
-      "protein_type": null
-    },
-    {
-      "name": "cravos-da-índia",
-      "category": "seasoning",
-      "unit": null,
       "protein_type": null
     },
     {
@@ -998,25 +908,19 @@
     {
       "name": "sementes de coentro",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "grão-de-bico",
       "category": "pulse",
-      "unit": null,
-      "protein_type": null
-    },
-    {
-      "name": "cebolinha verde",
-      "category": "vegetable",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
       "name": "coxas de frango",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
       "protein_type": "chicken"
     },
     {
@@ -1034,13 +938,13 @@
     {
       "name": "sementes de mostarda",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
-      "name": "pimenta-do-reino moída grossa",
+      "name": "pimenta-do-reino moída",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
@@ -1064,13 +968,13 @@
     {
       "name": "presunto",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
       "protein_type": "pork"
     },
     {
       "name": "grãos de milho",
       "category": "vegetable",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
@@ -1094,19 +998,19 @@
     {
       "name": "molho de pimenta",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "endro",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "azeitonas",
       "category": "vegetable",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
@@ -1124,7 +1028,7 @@
     {
       "name": "massa",
       "category": "grain",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
@@ -1136,49 +1040,49 @@
     {
       "name": "tempero italiano",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "tempero cajun",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "pinhões",
       "category": "nuts_and_seeds",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
       "name": "espaguete",
       "category": "grain",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
       "name": "cebola doce",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "vagem",
       "category": "vegetable",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
       "name": "capim-limão",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "páprica defumada",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
@@ -1196,7 +1100,7 @@
     {
       "name": "sementes de erva-doce",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
@@ -1214,25 +1118,25 @@
     {
       "name": "macarrão de arroz",
       "category": "grain",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
       "name": "sal marinho fino",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "pasta de alho",
-      "category": "vegetable",
-      "unit": null,
+      "category": "seasoning",
+      "unit": "tbsp",
       "protein_type": null
     },
     {
       "name": "alface",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -1244,7 +1148,7 @@
     {
       "name": "quiabo",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -1262,7 +1166,7 @@
     {
       "name": "fios de açafrão",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
@@ -1274,19 +1178,19 @@
     {
       "name": "pêssegos",
       "category": "fruit",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "rabanetes",
       "category": "vegetable",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
       "name": "manga",
       "category": "fruit",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -1298,7 +1202,7 @@
     {
       "name": "espinafre baby",
       "category": "vegetable",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
@@ -1310,7 +1214,7 @@
     {
       "name": "couve-flor",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -1322,7 +1226,7 @@
     {
       "name": "castanha de caju",
       "category": "nuts_and_seeds",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
@@ -1334,7 +1238,7 @@
     {
       "name": "folhas de hortelã",
       "category": "seasoning",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
@@ -1346,20 +1250,14 @@
     {
       "name": "baguete",
       "category": "grain",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "paleta de porco",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
       "protein_type": "pork"
-    },
-    {
-      "name": "spray de óleo vegetal",
-      "category": "other",
-      "unit": null,
-      "protein_type": null
     },
     {
       "name": "arroz arbóreo",
@@ -1374,28 +1272,16 @@
       "protein_type": null
     },
     {
-      "name": "suco",
-      "category": "other",
-      "unit": null,
-      "protein_type": null
-    },
-    {
       "name": "fatias de bacon",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
       "protein_type": "pork"
     },
     {
       "name": "presunto cru",
       "category": "protein",
-      "unit": null,
+      "unit":  "g",
       "protein_type": "pork"
-    },
-    {
-      "name": "tortilhas",
-      "category": "grain",
-      "unit": null,
-      "protein_type": null
     },
     {
       "name": "arroz branco de grão longo",
@@ -1406,19 +1292,7 @@
     {
       "name": "cogumelo shiitake",
       "category": "vegetable",
-      "unit": null,
-      "protein_type": null
-    },
-    {
-      "name": "peru",
-      "category": "protein",
-      "unit": null,
-      "protein_type": "chicken"
-    },
-    {
-      "name": "vinho tinto seco",
-      "category": "other",
-      "unit": "cup",
+      "unit": "g",
       "protein_type": null
     },
     {
@@ -1430,31 +1304,19 @@
     {
       "name": "folhas de curry",
       "category": "seasoning",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "sálvia",
       "category": "seasoning",
-      "unit": null,
-      "protein_type": null
-    },
-    {
-      "name": "azeitonas kalamata",
-      "category": "vegetable",
-      "unit": null,
-      "protein_type": null
-    },
-    {
-      "name": "tempero creole",
-      "category": "seasoning",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
       "name": "anis estrelado",
       "category": "seasoning",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -1470,27 +1332,15 @@
       "protein_type": null
     },
     {
-      "name": "ramos de coentro",
-      "category": "seasoning",
-      "unit": null,
-      "protein_type": null
-    },
-    {
       "name": "tempero para taco",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "arroz integral",
       "category": "grain",
       "unit": "cup",
-      "protein_type": null
-    },
-    {
-      "name": "molho para massa",
-      "category": "other",
-      "unit": null,
       "protein_type": null
     },
     {
@@ -1502,13 +1352,13 @@
     {
       "name": "feijão carioca",
       "category": "pulse",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
       "name": "abacaxi",
       "category": "fruit",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -1518,9 +1368,9 @@
       "protein_type": null
     },
     {
-      "name": "repolho verde",
+      "name": "repolho roxo",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -1532,25 +1382,19 @@
     {
       "name": "fraldinha",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
       "protein_type": "beef"
     },
     {
       "name": "ervilhas verdes",
       "category": "vegetable",
-      "unit": null,
-      "protein_type": null
-    },
-    {
-      "name": "sal de alho",
-      "category": "seasoning",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
       "name": "cerveja",
       "category": "other",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
@@ -1560,21 +1404,9 @@
       "protein_type": null
     },
     {
-      "name": "batatas russet",
+      "name": "batata asterix",
       "category": "vegetable",
-      "unit": null,
-      "protein_type": null
-    },
-    {
-      "name": "pimentões vermelhos",
-      "category": "vegetable",
-      "unit": null,
-      "protein_type": null
-    },
-    {
-      "name": "batata vermelha",
-      "category": "vegetable",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
@@ -1586,25 +1418,25 @@
     {
       "name": "bananas",
       "category": "fruit",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "aspargos",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "pó de pimenta vermelha",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
       "name": "floretes de brócolis",
       "category": "vegetable",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
@@ -1614,51 +1446,33 @@
       "protein_type": null
     },
     {
-      "name": "fatia de limão",
-      "category": "fruit",
-      "unit": null,
-      "protein_type": null
-    },
-    {
       "name": "bulbo de erva-doce",
       "category": "vegetable",
-      "unit": null,
-      "protein_type": null
-    },
-    {
-      "name": "feijão refogado",
-      "category": "pulse",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "linguiças",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
       "protein_type": "pork"
     },
     {
-      "name": "pepino inglês",
+      "name": "pepino japonês",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "pimentão amarelo",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "coentro em pó",
       "category": "seasoning",
-      "unit": null,
-      "protein_type": null
-    },
-    {
-      "name": "sal e pimenta-do-reino",
-      "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
@@ -1670,19 +1484,19 @@
     {
       "name": "pimenta chipotle",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "linguine",
       "category": "grain",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
       "name": "linguiça defumada",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
       "protein_type": "pork"
     },
     {
@@ -1700,31 +1514,25 @@
     {
       "name": "folhas de salsa",
       "category": "seasoning",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
       "name": "amêndoas laminadas",
       "category": "nuts_and_seeds",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
       "name": "mexilhões",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
       "protein_type": "seafood"
-    },
-    {
-      "name": "pimenta tailandesa",
-      "category": "vegetable",
-      "unit": null,
-      "protein_type": null
     },
     {
       "name": "folhas de tomilho",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
@@ -1742,19 +1550,38 @@
     {
       "name": "filetes de anchova",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
       "protein_type": "fish"
     },
     {
       "name": "lombo de porco",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
+      "protein_type": "pork"
+    },
+    {
+      "name": "filé mignon bovino",
+      "category": "protein",
+      "unit": "g",
+      "protein_type": "pork"
+    },
+    {
+      "name": "filé mignon suíno",
+      "category": "protein",
+      "unit": "g",
+      "protein_type": "pork"
+    },
+
+    {
+      "name": "copa lombo",
+      "category": "protein",
+      "unit": "g",
       "protein_type": "pork"
     },
     {
       "name": "pimenta",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -1766,19 +1593,19 @@
     {
       "name": "brócolis",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "uvas passas douradas",
       "category": "fruit",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
       "name": "molho de pimenta tabasco",
       "category": "seasoning",
-      "unit": null,
+      "unit": "tsp",
       "protein_type": null
     },
     {
@@ -1790,13 +1617,7 @@
     {
       "name": "molho marinara",
       "category": "other",
-      "unit": null,
-      "protein_type": null
-    },
-    {
-      "name": "pimentas chipotle em adobo",
-      "category": "vegetable",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
@@ -1808,43 +1629,43 @@
     {
       "name": "azeitonas verdes",
       "category": "vegetable",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
       "name": "macarrão",
       "category": "grain",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
       "name": "alface americana",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "feijão branco",
       "category": "pulse",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
       "name": "rúcula",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
       "name": "cordeiro",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
       "protein_type": "beef"
     },
     {
       "name": "tomates uva",
       "category": "vegetable",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
@@ -1856,19 +1677,19 @@
     {
       "name": "feijão-fradinho",
       "category": "pulse",
-      "unit": null,
+      "unit": "cup",
+      "protein_type": null
+    },
+    {
+      "name": "feijão de corda",
+      "category": "pulse",
+      "unit": "cup",
       "protein_type": null
     },
     {
       "name": "molho de peixe",
       "category": "seasoning",
       "unit": "tbsp",
-      "protein_type": null
-    },
-    {
-      "name": "tempero cinco especiarias chinês",
-      "category": "seasoning",
-      "unit": null,
       "protein_type": null
     },
     {
@@ -1880,11 +1701,11 @@
     {
       "name": "tomates roma",
       "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
-      "name": "leite de coco sem açúcar",
+      "name": "coco ralado",
       "category": "other",
       "unit": "cup",
       "protein_type": null
@@ -1892,25 +1713,25 @@
     {
       "name": "salmão",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
       "protein_type": "fish"
     },
     {
       "name": "tilápia",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
       "protein_type": "fish"
     },
     {
       "name": "bacalhau",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
       "protein_type": "fish"
     },
     {
       "name": "couve de bruxelas",
       "category": "vegetable",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
@@ -1922,19 +1743,19 @@
     {
       "name": "nozes",
       "category": "nuts_and_seeds",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
       "name": "lentilhas",
       "category": "pulse",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
       "name": "feijão vermelho",
       "category": "pulse",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
@@ -1952,13 +1773,7 @@
     {
       "name": "coco",
       "category": "fruit",
-      "unit": null,
-      "protein_type": null
-    },
-    {
-      "name": "purê de abóbora",
-      "category": "vegetable",
-      "unit": null,
+      "unit": "piece",
       "protein_type": null
     },
     {
@@ -1970,25 +1785,25 @@
     {
       "name": "gotas de chocolate",
       "category": "other",
-      "unit": null,
+      "unit": "g",
       "protein_type": null
     },
     {
       "name": "pistaches",
       "category": "nuts_and_seeds",
-      "unit": null,
+      "unit": "cup",
       "protein_type": null
     },
     {
       "name": "carne moída de peru",
       "category": "protein",
-      "unit": null,
+      "unit": "g",
       "protein_type": "chicken"
     },
     {
       "name": "sementes de chia",
       "category": "nuts_and_seeds",
-      "unit": null,
+      "unit": "tbsp",
       "protein_type": null
     },
     {

@@ -128,4 +128,129 @@ void main() {
       expect(meal.recipeId, isNull);
     });
   });
+
+  test('handles missing values in fromMap with defaults', () {
+    final now = DateTime.now();
+    final map = {
+      'id': 'test_id',
+      'recipe_id': 'recipe_id',
+      'cooked_at': now.toIso8601String(),
+      'servings': 2,
+      'notes': 'Test notes',
+      'was_successful': 1,
+      // Missing actual_prep_time and actual_cook_time
+    };
+
+    final meal = Meal.fromMap(map);
+
+    expect(meal.id, 'test_id');
+    expect(meal.actualPrepTime, 0); // Should default to 0
+    expect(meal.actualCookTime, 0); // Should default to 0
+  });
+
+  test('creates with all fields specified', () {
+    final now = DateTime.now();
+    final mealRecipes = [
+      MealRecipe(
+        mealId: 'test_id',
+        recipeId: 'recipe_1',
+        isPrimaryDish: true,
+      )
+    ];
+
+    final meal = Meal(
+      id: 'test_id',
+      recipeId: 'recipe_main',
+      cookedAt: now,
+      servings: 4,
+      notes: 'Special meal',
+      wasSuccessful: false,
+      actualPrepTime: 30.5,
+      actualCookTime: 45.0,
+      mealRecipes: mealRecipes,
+    );
+
+    expect(meal.id, 'test_id');
+    expect(meal.recipeId, 'recipe_main');
+    expect(meal.cookedAt, now);
+    expect(meal.servings, 4);
+    expect(meal.notes, 'Special meal');
+    expect(meal.wasSuccessful, false);
+    expect(meal.actualPrepTime, 30.5);
+    expect(meal.actualCookTime, 45.0);
+    expect(meal.mealRecipes, mealRecipes);
+    expect(meal.mealRecipes!.length, 1);
+  });
+
+  test('correctly handles boolean to integer conversion', () {
+    final now = DateTime.now();
+
+    // Test true → 1
+    final successfulMeal = Meal(
+      id: 'test_success',
+      cookedAt: now,
+      wasSuccessful: true,
+    );
+    expect(successfulMeal.toMap()['was_successful'], 1);
+
+    // Test false → 0
+    final failedMeal = Meal(
+      id: 'test_fail',
+      cookedAt: now,
+      wasSuccessful: false,
+    );
+    expect(failedMeal.toMap()['was_successful'], 0);
+
+    // Test 1 → true
+    final map1 = {
+      'id': 'test_1',
+      'cooked_at': now.toIso8601String(),
+      'was_successful': 1,
+      'servings': 2,
+      'notes': '',
+    };
+    expect(Meal.fromMap(map1).wasSuccessful, true);
+
+    // Test 0 → false
+    final map0 = {
+      'id': 'test_0',
+      'cooked_at': now.toIso8601String(),
+      'was_successful': 0,
+      'servings': 2,
+      'notes': '',
+    };
+    expect(Meal.fromMap(map0).wasSuccessful, false);
+  });
+
+  test('handles edge cases in data', () {
+    final now = DateTime.now();
+
+    // Test with very large values
+    final largeMeal = Meal(
+      id: 'large_test',
+      cookedAt: now,
+      servings: 1000,
+      actualPrepTime: 9999.99,
+      actualCookTime: 9999.99,
+    );
+
+    final largeMap = largeMeal.toMap();
+    final recoveredLargeMeal = Meal.fromMap(largeMap);
+
+    expect(recoveredLargeMeal.servings, 1000);
+    expect(recoveredLargeMeal.actualPrepTime, 9999.99);
+    expect(recoveredLargeMeal.actualCookTime, 9999.99);
+
+    // Test with empty notes
+    final emptyNotesMeal = Meal(
+      id: 'empty_notes',
+      cookedAt: now,
+      notes: '',
+    );
+
+    final emptyMap = emptyNotesMeal.toMap();
+    final recoveredEmptyMeal = Meal.fromMap(emptyMap);
+
+    expect(recoveredEmptyMeal.notes, '');
+  });
 }

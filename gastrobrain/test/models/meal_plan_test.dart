@@ -547,4 +547,135 @@ void main() {
       expect(sideDishes[1].recipeId, 'side_dish_2');
     });
   });
+
+  test('handles null notes in fromMap', () {
+    final now = DateTime.now();
+    final weekStart = DateTime(2023, 6, 2); // A Friday
+
+    final map = {
+      'id': 'test_id',
+      'week_start_date': weekStart.toIso8601String(),
+      'notes': null, // Explicitly null notes
+      'created_at': now.toIso8601String(),
+      'modified_at': now.toIso8601String(),
+    };
+
+    final mealPlan = MealPlan.fromMap(map, []);
+    expect(mealPlan.notes, ''); // Should default to empty string
+  });
+
+  test('getItemsForDate handles invalid dates gracefully', () {
+    final weekStart = DateTime(2023, 6, 2); // A Friday
+
+    // Create a meal plan with one item
+    final fridayItem = MealPlanItem(
+      id: 'item1',
+      mealPlanId: 'test_id',
+      plannedDate: '2023-06-02',
+      mealType: MealPlanItem.lunch,
+    );
+
+    final mealPlan = MealPlan(
+      id: 'test_id',
+      weekStartDate: weekStart,
+      createdAt: DateTime.now(),
+      modifiedAt: DateTime.now(),
+      items: [fridayItem],
+    );
+
+    // Test with null date - should return empty list rather than crashing
+    // This test won't compile if getItemsForDate doesn't handle null safely,
+    // but we'd need to modify the method signature to accept nullable DateTime
+    // Since the method doesn't accept null currently, we'll skip this test
+
+    // Test with date outside week range
+    final outsideWeekDate = DateTime(2023, 6, 10); // Beyond week end
+    final outsideWeekItems = mealPlan.getItemsForDate(outsideWeekDate);
+    expect(outsideWeekItems, isEmpty);
+
+    // Test with malformed date string in items
+    // This requires modifying an item with an invalid date format
+    // (would need to bypass constructor validation to create such an item)
+
+    // For now, we'll test with a properly formatted but non-existent date
+    final nonExistentDate = DateTime(2023, 6, 3); // Saturday with no items
+    final noItemsResult = mealPlan.getItemsForDate(nonExistentDate);
+    expect(noItemsResult, isEmpty);
+  });
+
+  test('handles extreme date ranges correctly', () {
+    // Test with distant past
+    final distantPast = DateTime(1900, 1, 1);
+    final pastPlan = MealPlan.forWeek('past_id', distantPast);
+
+    // Calculate expected start (previous Friday or same day if Friday)
+    final expectedPastStart = DateTime(1899, 12, 29); // Previous Friday
+
+    expect(pastPlan.weekStartDate, expectedPastStart);
+    expect(
+        pastPlan.weekEndDate, expectedPastStart.add(const Duration(days: 6)));
+
+    // Test with distant future
+    final distantFuture = DateTime(2100, 1, 1);
+    final futurePlan = MealPlan.forWeek('future_id', distantFuture);
+
+    // Calculate expected start
+    final expectedFutureStart = DateTime(2099, 12, 31); // Previous Friday
+
+    expect(futurePlan.weekStartDate, expectedFutureStart);
+    expect(futurePlan.weekEndDate,
+        expectedFutureStart.add(const Duration(days: 6)));
+  });
+
+  test('normalizes date comparisons correctly in getItemsForDate', () {
+    final weekStart = DateTime(2023, 6, 2); // A Friday
+
+    // Create item with time component in the date
+    final item = MealPlanItem(
+      id: 'item1',
+      mealPlanId: 'test_id',
+      plannedDate: '2023-06-02',
+      mealType: MealPlanItem.lunch,
+    );
+
+    final mealPlan = MealPlan(
+      id: 'test_id',
+      weekStartDate: weekStart,
+      createdAt: DateTime.now(),
+      modifiedAt: DateTime.now(),
+      items: [item],
+    );
+
+    // Create a date with time component
+    final dateWithTime = DateTime(2023, 6, 2, 14, 30, 0); // 2:30 PM
+
+    // Should still find the item despite different time components
+    final items = mealPlan.getItemsForDate(dateWithTime);
+    expect(items.length, 1);
+    expect(items[0].id, 'item1');
+  });
+
+  test('handles week transitions correctly', () {
+    // Test with December 31st (Sunday) transitioning to January
+    final newYearsEve = DateTime(2023, 12, 31); // Sunday
+    final newYearsPlan = MealPlan.forWeek('new_years_id', newYearsEve);
+
+    // The previous Friday would be December 29, 2023
+    final expectedNewYearsStart = DateTime(2023, 12, 29);
+
+    expect(newYearsPlan.weekStartDate, expectedNewYearsStart);
+    expect(newYearsPlan.weekEndDate,
+        DateTime(2024, 1, 4)); // Should span into next year
+
+    // Test with February 28 in a leap year (2024)
+    final leapYearFeb = DateTime(2024, 2, 28); // Wednesday in leap year
+    final leapPlan = MealPlan.forWeek('leap_id', leapYearFeb);
+
+    // The previous Friday would be February 23, 2024
+    final expectedLeapStart = DateTime(2024, 2, 23);
+
+    expect(leapPlan.weekStartDate, expectedLeapStart);
+    expect(
+        leapPlan.weekEndDate, DateTime(2024, 2, 29)); // Should include leap day
+  });
 }

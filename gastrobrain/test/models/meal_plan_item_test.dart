@@ -180,4 +180,81 @@ void main() {
       expect(item.mealPlanItemRecipes![1].isPrimaryDish, isFalse);
     });
   });
+
+  test('handles hasBeenCooked boolean to integer conversion', () {
+    // Test with hasBeenCooked = true
+    final cookedItem = MealPlanItem(
+      id: 'test_id',
+      mealPlanId: 'plan_id',
+      plannedDate: '2023-06-05',
+      mealType: MealPlanItem.lunch,
+      hasBeenCooked: true,
+    );
+
+    // Verify toMap conversion (true -> 1)
+    final cookedMap = cookedItem.toMap();
+    expect(cookedMap['has_been_cooked'], 1);
+
+    // Test with hasBeenCooked = false
+    final uncookedItem = MealPlanItem(
+      id: 'test_id',
+      mealPlanId: 'plan_id',
+      plannedDate: '2023-06-05',
+      mealType: MealPlanItem.dinner,
+      hasBeenCooked: false,
+    );
+
+    // Verify toMap conversion (false -> 0)
+    final uncookedMap = uncookedItem.toMap();
+    expect(uncookedMap['has_been_cooked'], 0);
+
+    // Test fromMap conversion (1 -> true)
+    final mapWithHasBeenCooked = {
+      'id': 'test_id',
+      'meal_plan_id': 'plan_id',
+      'planned_date': '2023-06-05',
+      'meal_type': MealPlanItem.lunch,
+      'has_been_cooked': 1,
+    };
+
+    final fromMapCooked = MealPlanItem.fromMap(mapWithHasBeenCooked);
+    expect(fromMapCooked.hasBeenCooked, true);
+
+    // Test fromMap conversion (0 -> false)
+    final mapWithHasNotBeenCooked = {
+      'id': 'test_id',
+      'meal_plan_id': 'plan_id',
+      'planned_date': '2023-06-05',
+      'meal_type': MealPlanItem.lunch,
+      'has_been_cooked': 0,
+    };
+
+    final fromMapNotCooked = MealPlanItem.fromMap(mapWithHasNotBeenCooked);
+    expect(fromMapNotCooked.hasBeenCooked, false);
+  });
+
+  test('formatPlannedDate handles date edge cases correctly', () {
+    // Test with leap year day
+    final leapYearDay = DateTime(2024, 2, 29);
+    final leapFormatted = MealPlanItem.formatPlannedDate(leapYearDay);
+    expect(leapFormatted, '2024-02-29');
+
+    // Test with month/year transition
+    final yearEnd = DateTime(2023, 12, 31);
+    final yearEndFormatted = MealPlanItem.formatPlannedDate(yearEnd);
+    expect(yearEndFormatted, '2023-12-31');
+
+    final yearStart = DateTime(2024, 1, 1);
+    final yearStartFormatted = MealPlanItem.formatPlannedDate(yearStart);
+    expect(yearStartFormatted, '2024-01-01');
+
+    // Test with extreme dates
+    final oldDate = DateTime(1900, 1, 1);
+    final oldDateFormatted = MealPlanItem.formatPlannedDate(oldDate);
+    expect(oldDateFormatted, '1900-01-01');
+
+    final futureDate = DateTime(2100, 12, 31);
+    final futureDateFormatted = MealPlanItem.formatPlannedDate(futureDate);
+    expect(futureDateFormatted, '2100-12-31');
+  });
 }

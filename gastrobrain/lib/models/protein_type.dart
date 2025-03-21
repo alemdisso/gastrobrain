@@ -1,5 +1,3 @@
-// models/protein_type.dart
-
 enum ProteinType {
   // Main proteins (for rotation)
   beef(isMainProtein: true),
@@ -11,7 +9,8 @@ enum ProteinType {
   // Special categories (not for rotation)
   charcuterie(isMainProtein: false),
   offal(isMainProtein: false),
-  plantBased(isMainProtein: false);
+  plantBased(isMainProtein: false),
+  other(isMainProtein: false);
 
   final bool isMainProtein;
 
@@ -35,6 +34,8 @@ enum ProteinType {
         return 'Offal';
       case ProteinType.plantBased:
         return 'Plant Based';
+      case ProteinType.other:
+        return 'Other';
     }
   }
 }

@@ -145,6 +145,31 @@ class MockDatabaseHelper implements DatabaseHelper {
   }
 
   @override
+  Future<Map<String, List<String>>> getRecipeProteinTypes(
+      List<String> recipeIds) async {
+    // Create a result map - recipeId -> list of protein types
+    final Map<String, List<String>> result = {};
+
+    // For each recipe ID, add an entry to the result map
+    for (final recipeId in recipeIds) {
+      // In a real implementation, this would query the database
+      // For testing, we'll return some mock data
+      result[recipeId] = ['chicken']; // Default mock protein
+
+      // You can add specific test cases here if needed
+      if (recipeId == 'beef_recipe') {
+        result[recipeId] = ['beef'];
+      } else if (recipeId == 'vegetarian_recipe') {
+        result[recipeId] = ['plant_based'];
+      } else if (recipeId == 'mixed_recipe') {
+        result[recipeId] = ['chicken', 'pork'];
+      }
+    }
+
+    return result;
+  }
+
+  @override
   Future<int> updateRecipe(Recipe recipe) async {
     if (!_recipes.containsKey(recipe.id)) return 0;
     _recipes[recipe.id] = recipe;
@@ -301,12 +326,40 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<String> addRecipeToMeal(String mealId, String recipeId,
-      {bool isPrimaryDish = false}) {
-    throw UnimplementedError('Method not implemented for tests');
+      {bool isPrimaryDish = false}) async {
+    if (!_meals.containsKey(mealId)) {
+      throw Exception('Meal not found');
+    }
+
+    final mealRecipe = MealRecipe(
+      mealId: mealId,
+      recipeId: recipeId,
+      isPrimaryDish: isPrimaryDish,
+    );
+
+    _mealRecipes[mealRecipe.id] = mealRecipe;
+
+    // Update meal's recipe list if it exists
+    final meal = _meals[mealId];
+    if (meal != null) {
+      meal.mealRecipes ??= [];
+      meal.mealRecipes!.add(mealRecipe);
+
+      // Update last cooked date
+      _lastCookedDates[recipeId] = meal.cookedAt;
+      _mealCounts[recipeId] = (_mealCounts[recipeId] ?? 0) + 1;
+    }
+
+    return mealRecipe.id;
   }
 
   @override
   Future<void> importIngredientsFromJson(String assetPath) {
+    throw UnimplementedError('Method not implemented for tests');
+  }
+
+  @override
+  Future<void> importRecipesFromJson(String assetPath) {
     throw UnimplementedError('Method not implemented for tests');
   }
 
@@ -316,8 +369,19 @@ class MockDatabaseHelper implements DatabaseHelper {
   }
 
   @override
-  Future<int> deleteMealRecipe(String id) {
-    throw UnimplementedError('Method not implemented for tests');
+  Future<int> deleteMealRecipe(String id) async {
+    if (!_mealRecipes.containsKey(id)) return 0;
+
+    final mealRecipe = _mealRecipes[id]!;
+
+    // Update meal's recipe list if it exists
+    final meal = _meals[mealRecipe.mealId];
+    if (meal != null && meal.mealRecipes != null) {
+      meal.mealRecipes!.removeWhere((mr) => mr.id == id);
+    }
+
+    _mealRecipes.remove(id);
+    return 1;
   }
 
   @override
@@ -327,6 +391,11 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<List<Map<String, dynamic>>> getRecipeIngredients(String recipeId) {
+    throw UnimplementedError('Method not implemented for tests');
+  }
+
+  @override
+  Future<int> getRecipesCount() {
     throw UnimplementedError('Method not implemented for tests');
   }
 
@@ -341,23 +410,124 @@ class MockDatabaseHelper implements DatabaseHelper {
   }
 
   @override
-  Future<bool> removeRecipeFromMeal(String mealId, String recipeId) {
-    throw UnimplementedError('Method not implemented for tests');
+  Future<bool> removeRecipeFromMeal(String mealId, String recipeId) async {
+    if (!_meals.containsKey(mealId)) return false;
+
+    // Find and remove all MealRecipe entries matching this mealId and recipeId
+    final toRemove = _mealRecipes.values
+        .where((mr) => mr.mealId == mealId && mr.recipeId == recipeId)
+        .map((mr) => mr.id)
+        .toList();
+
+    if (toRemove.isEmpty) return false;
+
+    // Remove each matching MealRecipe
+    for (final id in toRemove) {
+      await deleteMealRecipe(id);
+    }
+
+    return true;
   }
 
   @override
-  Future<bool> setPrimaryRecipeForMeal(String mealId, String recipeId) {
-    throw UnimplementedError('Method not implemented for tests');
+  Future<bool> setPrimaryRecipeForMeal(String mealId, String recipeId) async {
+    if (!_meals.containsKey(mealId)) return false;
+
+    // Find if there's already a MealRecipe for this recipe
+    final mealRecipeEntries = _mealRecipes.values
+        .where((mr) => mr.mealId == mealId && mr.recipeId == recipeId)
+        .toList();
+
+    if (mealRecipeEntries.isEmpty) {
+      // Recipe not associated with this meal
+      return false;
+    }
+
+    // Clear primary status from all recipes in this meal
+    for (final entry
+        in _mealRecipes.values.where((mr) => mr.mealId == mealId)) {
+      if (entry.isPrimaryDish) {
+        final updated = entry.copyWith(isPrimaryDish: false);
+        _mealRecipes[entry.id] = updated;
+
+        // Update in the meal's recipe list if it exists
+        final meal = _meals[mealId];
+        if (meal != null && meal.mealRecipes != null) {
+          final index = meal.mealRecipes!.indexWhere((mr) => mr.id == entry.id);
+          if (index >= 0) {
+            meal.mealRecipes![index] = updated;
+          }
+        }
+      }
+    }
+
+    // Set the specified recipe as primary
+    final mealRecipe = mealRecipeEntries.first;
+    final updatedMealRecipe = mealRecipe.copyWith(isPrimaryDish: true);
+    _mealRecipes[mealRecipe.id] = updatedMealRecipe;
+
+    // Update in the meal's recipe list if it exists
+    final meal = _meals[mealId];
+    if (meal != null && meal.mealRecipes != null) {
+      final index =
+          meal.mealRecipes!.indexWhere((mr) => mr.id == mealRecipe.id);
+      if (index >= 0) {
+        meal.mealRecipes![index] = updatedMealRecipe;
+      }
+    }
+
+    return true;
   }
 
   @override
-  Future<int> updateMeal(Meal meal) {
-    throw UnimplementedError('Method not implemented for tests');
+  Future<int> updateMeal(Meal meal) async {
+    // Check if the meal exists
+    if (!_meals.containsKey(meal.id)) return 0;
+
+    // Store the original meal to handle recipeId changes
+    final originalMeal = _meals[meal.id];
+
+    // Update the meal
+    _meals[meal.id] = meal;
+
+    // Update last cooked dates if the recipeId has changed
+    // First, remove the old recipeId's association if it existed
+    if (originalMeal!.recipeId != null &&
+        originalMeal.recipeId != meal.recipeId) {
+      // This is a simplification - in a real implementation you might
+      // need to recalculate the last cooked date based on all meals
+      // We're just removing this meal's contribution
+      _lastCookedDates.remove(originalMeal.recipeId);
+      _mealCounts[originalMeal.recipeId!] =
+          (_mealCounts[originalMeal.recipeId!] ?? 1) - 1;
+    }
+
+    // Then add the new recipeId's association if it exists
+    if (meal.recipeId != null && meal.recipeId != originalMeal.recipeId) {
+      _lastCookedDates[meal.recipeId!] = meal.cookedAt;
+      _mealCounts[meal.recipeId!] = (_mealCounts[meal.recipeId!] ?? 0) + 1;
+    }
+
+    return 1; // Return 1 to indicate success
   }
 
   @override
-  Future<int> updateMealRecipe(MealRecipe mealRecipe) {
-    throw UnimplementedError('Method not implemented for tests');
+  Future<int> updateMealRecipe(MealRecipe mealRecipe) async {
+    if (!_mealRecipes.containsKey(mealRecipe.id)) return 0;
+
+    _mealRecipes[mealRecipe.id] = mealRecipe;
+
+    // Update in the meal's recipe list if it exists
+    final meal = _meals[mealRecipe.mealId];
+    if (meal != null && meal.mealRecipes != null) {
+      final index =
+          meal.mealRecipes!.indexWhere((mr) => mr.id == mealRecipe.id);
+      if (index >= 0) {
+        meal.mealRecipes![index] = mealRecipe;
+      }
+    }
+
+    return 1;
   }
 
   @override
