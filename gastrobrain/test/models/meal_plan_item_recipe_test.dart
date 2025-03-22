@@ -186,5 +186,38 @@ void main() {
       expect(updatedRecipe.notes, 'Updated notes');
       expect(recipe2.notes, isNull);
     });
+    test('handles edge cases in data correctly', () {
+      // Test with empty strings (these should be allowed but preserved)
+      final emptyStringRecipe = MealPlanItemRecipe(
+        id: '',
+        mealPlanItemId: '',
+        recipeId: '',
+        notes: '',
+      );
+
+      // Verify empty strings are preserved in toMap and fromMap
+      final emptyMap = emptyStringRecipe.toMap();
+      final recreatedRecipe = MealPlanItemRecipe.fromMap(emptyMap);
+
+      expect(recreatedRecipe.id, '');
+      expect(recreatedRecipe.mealPlanItemId, '');
+      expect(recreatedRecipe.recipeId, '');
+      expect(recreatedRecipe.notes, '');
+
+      // Test with very long strings
+      final longString = 'a' * 1000;
+      final longStringRecipe = MealPlanItemRecipe(
+        mealPlanItemId: 'item-1',
+        recipeId: 'recipe-1',
+        notes: longString,
+      );
+
+      final longStringMap = longStringRecipe.toMap();
+      final recreatedLongStringRecipe =
+          MealPlanItemRecipe.fromMap(longStringMap);
+
+      expect(recreatedLongStringRecipe.notes, longString);
+      expect(recreatedLongStringRecipe.notes?.length, 1000);
+    });
   });
 }
