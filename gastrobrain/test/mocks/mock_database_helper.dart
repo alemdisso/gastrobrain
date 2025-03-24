@@ -17,6 +17,8 @@ import 'package:sqflite/sqflite.dart';
 /// This class implements a subset of the DatabaseHelper methods needed for
 /// testing the recommendation algorithm. Other methods throw UnimplementedError.
 class MockDatabaseHelper implements DatabaseHelper {
+  Map<String, List<ProteinType>> recipeProteinTypes = {};
+
   @override
   Future<int> deleteMealPlan(String id) async {
     throw UnimplementedError('Method not implemented for tests');
@@ -145,8 +147,9 @@ class MockDatabaseHelper implements DatabaseHelper {
     return _recipes[id];
   }
 
-  Future<Map<String, List<ProteinType>>> getRecipeProteinTypes(
-      {required List<String> recipeIds}) async {
+  Future<Map<String, List<ProteinType>>> getRecipeProteinTypes({
+    required List<String> recipeIds,
+  }) async {
     // Create a result map - recipeId -> list of protein types
     final Map<String, List<ProteinType>> result = {};
 
@@ -155,9 +158,14 @@ class MockDatabaseHelper implements DatabaseHelper {
       result[id] = [];
     }
 
-    // For testing purposes, assign a default protein type to all recipes
+    // If we have protein types defined in our map, use those
     for (final id in recipeIds) {
-      result[id] = [ProteinType.chicken];
+      if (recipeProteinTypes.containsKey(id)) {
+        result[id] = recipeProteinTypes[id]!;
+      } else {
+        // Fall back to default behavior for recipes without defined types
+        result[id] = [ProteinType.chicken];
+      }
     }
 
     return result;
@@ -242,10 +250,11 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<List<Meal>> getRecentMeals({int limit = 10}) async {
-    // Sort meals by cookedAt and return the most recent ones
+    // Sort meals by cooked date (most recent first)
     final sortedMeals = _meals.values.toList()
       ..sort((a, b) => b.cookedAt.compareTo(a.cookedAt));
 
+    // Take the most recent meals, up to the limit
     return sortedMeals.take(limit).toList();
   }
 
