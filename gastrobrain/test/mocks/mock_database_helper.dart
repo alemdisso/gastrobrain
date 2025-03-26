@@ -18,6 +18,7 @@ import 'package:sqflite/sqflite.dart';
 /// testing the recommendation algorithm. Other methods throw UnimplementedError.
 class MockDatabaseHelper implements DatabaseHelper {
   Map<String, List<ProteinType>> recipeProteinTypes = {};
+  List<Map<String, dynamic>>? returnCustomMealsForRecommendations;
 
   @override
   Future<int> deleteMealPlan(String id) async {
@@ -256,6 +257,41 @@ class MockDatabaseHelper implements DatabaseHelper {
 
     // Take the most recent meals, up to the limit
     return sortedMeals.take(limit).toList();
+  }
+
+// Add this to your MockDatabaseHelper class
+  Future<List<Map<String, dynamic>>> getRecentMealsForRecommendations({
+    required DateTime startDate,
+    DateTime? endDate,
+    int limit = 10,
+  }) async {
+    if (returnCustomMealsForRecommendations != null) {
+      return returnCustomMealsForRecommendations!;
+    }
+
+    // Get recent meals
+    final meals = await getRecentMeals(limit: limit);
+
+    final result = <Map<String, dynamic>>[];
+
+    for (final meal in meals) {
+      Recipe? recipe;
+
+      // Try to get recipe from recipeId
+      if (meal.recipeId != null && _recipes.containsKey(meal.recipeId)) {
+        recipe = _recipes[meal.recipeId];
+
+        if (recipe != null) {
+          result.add({
+            'meal': meal,
+            'recipe': recipe,
+            'cookedAt': meal.cookedAt,
+          });
+        }
+      }
+    }
+
+    return result;
   }
 
   // MEAL RECIPE OPERATIONS

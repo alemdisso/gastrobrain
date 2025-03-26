@@ -74,6 +74,7 @@ abstract class RecommendationFactor {
 class RecommendationService {
   final RecommendationDatabaseQueries _dbQueries;
   final Random _random = Random();
+  Map<String, dynamic>? overrideTestContext;
 
   /// Map of registered recommendation factors
   final Map<String, RecommendationFactor> _factors = {};
@@ -264,6 +265,18 @@ class RecommendationService {
     DateTime? forDate,
     String? mealType,
   }) async {
+    // For testing, override the context if provided
+    if (overrideTestContext != null) {
+      final testContext = Map<String, dynamic>.from(overrideTestContext!);
+      // Add standard context values that tests might not provide
+      testContext['excludeIds'] = excludeIds;
+      testContext['avoidProteinTypes'] = avoidProteinTypes;
+      testContext['forDate'] = forDate;
+      testContext['mealType'] = mealType;
+      testContext['randomSeed'] = _random.nextInt(1000);
+      return testContext;
+    }
+
     // Collect required data from all registered factors
     final requiredData =
         _factors.values.expand((factor) => factor.requiredData).toSet();

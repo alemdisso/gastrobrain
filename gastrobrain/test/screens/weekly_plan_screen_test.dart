@@ -272,7 +272,8 @@ void main() {
 /// A simple mock of RecommendationService for testing
 class MockRecommendationService implements RecommendationService {
   final List<Recipe> _mockRecommendations = [];
-
+  @override
+  Map<String, dynamic>? overrideTestContext;
   void addMockRecommendation(Recipe recipe) {
     _mockRecommendations.add(recipe);
   }
