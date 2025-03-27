@@ -179,7 +179,6 @@ void main() {
       for (var i = 0; i < contexts.length; i++) {
         final score =
             await proteinFactor.calculateScore(beefRecipe, contexts[i]);
-        print('Beef protein score with meal from ${i + 1} days ago: $score');
         expect(score, closeTo(expectedScores[i], 0.1),
             reason:
                 "Beef used ${i + 1} days ago should have a score of ${expectedScores[i]}");
