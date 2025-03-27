@@ -2,6 +2,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gastrobrain/core/services/recommendation_service.dart';
+import 'package:gastrobrain/core/services/recommendation_factors/protein_rotation_factor.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/meal.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
@@ -210,6 +211,97 @@ void main() {
       expect(
           proteinScores[beefRecipe.id]! < proteinScores[fishRecipe.id]!, isTrue,
           reason: "Beef should have lower protein score than fish");
+    });
+
+    test('applies graduated penalties based on how recently proteins were used',
+        () async {
+      final now = DateTime.now();
+
+      // Create one test recipe with beef
+      final beefRecipe = Recipe(
+        id: 'beef-recipe-id',
+        name: 'Beef Stew',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: now,
+      );
+
+      // Set up protein type for beef recipe
+      mockDbHelper.recipeProteinTypes = {
+        'beef-recipe-id': [ProteinType.beef],
+      };
+
+      // Create an array of contexts, each with beef used a different number of days ago
+      final contexts = <Map<String, dynamic>>[];
+      final mealDates = <DateTime>[];
+      final expectedScores = <double>[];
+
+      // Set up expectations based on penalty table in ProteinRotationFactor:
+      // 1 day ago: 100% penalty -> score of 0
+      // 2 days ago: 75% penalty -> score of 25
+      // 3 days ago: 50% penalty -> score of 50
+      // 4 days ago: 25% penalty -> score of 75
+      // 5+ days ago: 0% penalty -> score of 100
+
+      // Day 1 (yesterday) - 100% penalty
+      mealDates.add(now.subtract(const Duration(days: 1)));
+      expectedScores.add(0.0); // 100% penalty = 0.0 score
+
+      // Day 2 - 75% penalty
+      mealDates.add(now.subtract(const Duration(days: 2)));
+      expectedScores.add(25.0); // 75% penalty = 25.0 score
+
+      // Day 3 - 50% penalty
+      mealDates.add(now.subtract(const Duration(days: 3)));
+      expectedScores.add(50.0); // 50% penalty = 50.0 score
+
+      // Day 4 - 25% penalty
+      mealDates.add(now.subtract(const Duration(days: 4)));
+      expectedScores.add(75.0); // 25% penalty = 75.0 score
+
+      // Day 5 - no penalty
+      mealDates.add(now.subtract(const Duration(days: 5)));
+      expectedScores.add(100.0); // 0% penalty = 100.0 score
+
+      // Create contexts for each day
+      for (var i = 0; i < mealDates.length; i++) {
+        contexts.add({
+          'proteinTypes': {
+            'beef-recipe-id': [ProteinType.beef],
+          },
+          'recentMeals': [
+            {
+              'recipe': beefRecipe,
+              'cookedAt': mealDates[i],
+            }
+          ]
+        });
+      }
+
+      // Create the factor
+      final proteinFactor = ProteinRotationFactor();
+
+      // Calculate and verify scores for each scenario
+      for (var i = 0; i < contexts.length; i++) {
+        final score =
+            await proteinFactor.calculateScore(beefRecipe, contexts[i]);
+        print('Beef protein score with meal from ${i + 1} days ago: $score');
+        expect(score, closeTo(expectedScores[i], 0.1),
+            reason:
+                "Beef used ${i + 1} days ago should have a score of ${expectedScores[i]}");
+      }
+
+      // Verify the trend: scores should increase as days ago increases
+      final allScores = <double>[];
+      for (var i = 0; i < contexts.length; i++) {
+        allScores
+            .add(await proteinFactor.calculateScore(beefRecipe, contexts[i]));
+      }
+
+      for (var i = 0; i < allScores.length - 1; i++) {
+        expect(allScores[i] < allScores[i + 1], isTrue,
+            reason:
+                "Score for ${i + 1} days ago (${allScores[i]}) should be less than score for ${i + 2} days ago (${allScores[i + 1]})");
+      }
     });
   });
 }
