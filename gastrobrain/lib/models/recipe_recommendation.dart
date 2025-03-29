@@ -20,4 +20,14 @@ class RecipeRecommendation {
     required this.factorScores,
     this.metadata = const {},
   });
+
+  /// Convert recommendation to JSON-compatible Map
+  Map<String, dynamic> toJson() {
+    return {
+      'recipe_id': recipe.id,
+      'total_score': totalScore,
+      'factor_scores': factorScores,
+      'metadata': metadata,
+    };
+  }
 }
