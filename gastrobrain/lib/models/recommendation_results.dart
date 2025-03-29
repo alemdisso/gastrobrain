@@ -20,4 +20,15 @@ class RecommendationResults {
     required this.queryParameters,
     DateTime? generatedAt,
   }) : generatedAt = generatedAt ?? DateTime.now();
+
+  /// Convert recommendation results to JSON-compatible Map
+  Map<String, dynamic> toJson() {
+    return {
+      'recommendations': recommendations.map((r) => r.toJson()).toList(),
+      'total_evaluated': totalEvaluated,
+      'query_parameters': queryParameters,
+      'generated_at': generatedAt.toIso8601String(),
+      'schema_version': 1, // Add version for forward compatibility
+    };
+  }
 }

@@ -87,5 +87,27 @@ void main() {
       expect(results.recommendations, isEmpty);
       expect(results.totalEvaluated, equals(0));
     });
+
+    test('converts to JSON correctly', () {
+      final specificTime = DateTime(2024, 1, 1, 12, 0);
+
+      final results = RecommendationResults(
+        recommendations: testRecommendations,
+        totalEvaluated: 10,
+        queryParameters: testQueryParameters,
+        generatedAt: specificTime,
+      );
+
+      final json = results.toJson();
+
+      // Verify JSON structure
+      expect(json['recommendations'].length, equals(2));
+      expect(json['recommendations'][0]['recipe_id'], equals('recipe-1'));
+      expect(json['recommendations'][1]['recipe_id'], equals('recipe-2'));
+      expect(json['total_evaluated'], equals(10));
+      expect(json['query_parameters'], equals(testQueryParameters));
+      expect(json['generated_at'], equals(specificTime.toIso8601String()));
+      expect(json['schema_version'], equals(1));
+    });
   });
 }
