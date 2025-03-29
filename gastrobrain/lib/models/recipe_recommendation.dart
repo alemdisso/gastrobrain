@@ -2,6 +2,9 @@ import '../database/database_helper.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../../models/recipe.dart';
 
+/// User responses to recommendations
+enum UserResponse { accepted, rejected, saved, ignored }
+
 /// A class representing a scored recipe recommendation.
 class RecipeRecommendation {
   /// The Recipe being recommended
@@ -16,11 +19,19 @@ class RecipeRecommendation {
   /// Additional context data that might be useful for UI or debugging
   final Map<String, dynamic> metadata;
 
+  /// User response to the recommendation (null if no response yet)
+  final UserResponse? userResponse;
+
+  /// When the user responded (null if no response yet)
+  final DateTime? respondedAt;
+
   RecipeRecommendation({
     required this.recipe,
     required this.totalScore,
     required this.factorScores,
     this.metadata = const {},
+    this.userResponse,
+    this.respondedAt,
   });
 
   /// Convert recommendation to JSON-compatible Map
@@ -30,6 +41,8 @@ class RecipeRecommendation {
       'total_score': totalScore,
       'factor_scores': factorScores,
       'metadata': metadata,
+      'user_response': userResponse?.name,
+      'responded_at': respondedAt?.toIso8601String(),
     };
   }
 
@@ -53,6 +66,12 @@ class RecipeRecommendation {
       metadata: json['metadata'] != null
           ? Map<String, dynamic>.from(json['metadata'] as Map)
           : {},
+      userResponse: json['user_response'] != null
+          ? UserResponse.values.byName(json['user_response'])
+          : null,
+      respondedAt: json['responded_at'] != null
+          ? DateTime.parse(json['responded_at'])
+          : null,
     );
   }
 }
