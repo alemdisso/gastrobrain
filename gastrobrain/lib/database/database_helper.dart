@@ -16,6 +16,8 @@ import '../models/recipe_ingredient.dart';
 import '../models/meal_plan.dart';
 import '../models/meal_plan_item.dart';
 import '../models/meal_plan_item_recipe.dart';
+import '../models/recipe_recommendation.dart';
+import '../models/recommendation_results.dart';
 import '../core/validators/entity_validator.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 
@@ -51,7 +53,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), filename);
     return await openDatabase(
       path,
-      version: 13, // Increment version number for new tables
+      version: 14, // Increment version number for new tables
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: (db) async {
@@ -215,6 +217,18 @@ class DatabaseHelper {
         FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
       )
     ''');
+    // Create recommendation_history table
+    await db.execute('''
+      CREATE TABLE recommendation_history(
+        id TEXT PRIMARY KEY,
+        result_data TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        context_type TEXT NOT NULL,
+        target_date TEXT,
+        meal_type TEXT,
+        user_id TEXT
+      );
+    ''');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -260,6 +274,20 @@ class DatabaseHelper {
     if (oldVersion < 13) {
       await db.execute(
           'ALTER TABLE meal_plan_items ADD COLUMN has_been_cooked INTEGER DEFAULT 0');
+    }
+    if (oldVersion < 14) {
+      // Add recommendation_history table
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS recommendation_history(
+          id TEXT PRIMARY KEY,
+          result_data TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          context_type TEXT NOT NULL,
+          target_date TEXT,
+          meal_type TEXT,
+          user_id TEXT
+        );
+      ''');
     }
   }
   // Meal Plan operations
@@ -1254,6 +1282,152 @@ class DatabaseHelper {
       'recipe_ingredients',
       where: 'id = ?',
       whereArgs: [id],
+    );
+  }
+
+  /// Save recommendation results to history
+  Future<String> saveRecommendationHistory(
+      RecommendationResults results, String contextType,
+      {DateTime? targetDate, String? mealType}) async {
+    final id = IdGenerator.generateId();
+    final now = DateTime.now();
+
+    final db = await database;
+    await db.insert('recommendation_history', {
+      'id': id,
+      'result_data': jsonEncode(results.toJson()),
+      'created_at': now.toIso8601String(),
+      'context_type': contextType,
+      'target_date': targetDate?.toIso8601String(),
+      'meal_type': mealType,
+      'user_id': null, // For future multi-user support
+    });
+
+    return id;
+  }
+
+  /// Get recommendation history entries
+  Future<List<Map<String, dynamic>>> getRecommendationHistory({
+    int limit = 10,
+    String? contextType,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    final db = await database;
+
+    // Build query
+    String query = 'SELECT * FROM recommendation_history';
+    List<dynamic> args = [];
+
+    List<String> conditions = [];
+    if (contextType != null) {
+      conditions.add('context_type = ?');
+      args.add(contextType);
+    }
+
+    if (startDate != null) {
+      conditions.add('created_at >= ?');
+      args.add(startDate.toIso8601String());
+    }
+
+    if (endDate != null) {
+      conditions.add('created_at <= ?');
+      args.add(endDate.toIso8601String());
+    }
+
+    if (conditions.isNotEmpty) {
+      query += ' WHERE ${conditions.join(' AND ')}';
+    }
+
+    query += ' ORDER BY created_at DESC LIMIT ?';
+    args.add(limit);
+
+    return await db.rawQuery(query, args);
+  }
+
+  /// Get a specific recommendation history entry
+  Future<RecommendationResults?> getRecommendationById(String id) async {
+    final db = await database;
+    final maps = await db.query(
+      'recommendation_history',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (maps.isEmpty) return null;
+
+    final resultData = maps.first['result_data'] as String;
+    final json = jsonDecode(resultData) as Map<String, dynamic>;
+
+    return await RecommendationResults.fromJson(json, this);
+  }
+
+  /// Update user response for a recommendation
+  Future<bool> updateRecommendationResponse(
+    String historyId,
+    String recipeId,
+    UserResponse response,
+  ) async {
+    final db = await database;
+
+    // Load the existing results
+    final results = await getRecommendationById(historyId);
+    if (results == null) return false;
+
+    // Create a new list of recommendations with the updated response
+    final updatedRecommendations = <RecipeRecommendation>[];
+    bool found = false;
+
+    for (final rec in results.recommendations) {
+      if (rec.recipe.id == recipeId) {
+        // Create a new recommendation with the updated response
+        updatedRecommendations.add(RecipeRecommendation(
+          recipe: rec.recipe,
+          totalScore: rec.totalScore,
+          factorScores: rec.factorScores,
+          metadata: rec.metadata,
+          userResponse: response,
+          respondedAt: DateTime.now(),
+        ));
+        found = true;
+      } else {
+        // Keep the original recommendation
+        updatedRecommendations.add(rec);
+      }
+    }
+
+    if (!found) return false;
+
+    // Create new results with the updated recommendations
+    final updatedResults = RecommendationResults(
+      recommendations: updatedRecommendations,
+      totalEvaluated: results.totalEvaluated,
+      queryParameters: results.queryParameters,
+      generatedAt: results.generatedAt,
+    );
+
+    // Save the updated results
+    await db.update(
+      'recommendation_history',
+      {
+        'result_data': jsonEncode(updatedResults.toJson()),
+      },
+      where: 'id = ?',
+      whereArgs: [historyId],
+    );
+
+    return true;
+  }
+
+  /// Clear old recommendation history
+  Future<int> cleanupRecommendationHistory({int daysToKeep = 14}) async {
+    final db = await database;
+    final cutoffDate = DateTime.now().subtract(Duration(days: daysToKeep));
+
+    return await db.delete(
+      'recommendation_history',
+      where: 'created_at < ?',
+      whereArgs: [cutoffDate.toIso8601String()],
     );
   }
 }

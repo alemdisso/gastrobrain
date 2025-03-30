@@ -1,6 +1,9 @@
 // test/mocks/mock_database_helper.dart
 
 import 'package:gastrobrain/database/database_helper.dart';
+import 'package:gastrobrain/utils/id_generator.dart';
+import 'package:gastrobrain/models/recipe_recommendation.dart';
+import 'package:gastrobrain/models/recommendation_results.dart';
 import 'package:gastrobrain/models/protein_type.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/meal.dart';
@@ -607,5 +610,154 @@ class MockDatabaseHelper implements DatabaseHelper {
 
     // Item not found
     return mealPlanItemRecipe.id;
+  }
+
+  // In-memory storage for recommendation history
+  final Map<String, Map<String, dynamic>> _recommendationHistory = {};
+
+  @override
+  Future<String> saveRecommendationHistory(
+      RecommendationResults results, String contextType,
+      {DateTime? targetDate, String? mealType}) async {
+    final id = IdGenerator.generateId();
+    final now = DateTime.now();
+
+    _recommendationHistory[id] = {
+      'id': id,
+      'result_data':
+          results, // Store the actual object for simplicity in the mock
+      'created_at': now,
+      'context_type': contextType,
+      'target_date': targetDate,
+      'meal_type': mealType,
+      'user_id': null,
+    };
+
+    return id;
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getRecommendationHistory({
+    int limit = 10,
+    String? contextType,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    final results = _recommendationHistory.values.where((entry) {
+      if (contextType != null && entry['context_type'] != contextType) {
+        return false;
+      }
+
+      final createdAt = entry['created_at'] as DateTime;
+
+      if (startDate != null && createdAt.isBefore(startDate)) {
+        return false;
+      }
+
+      if (endDate != null && createdAt.isAfter(endDate)) {
+        return false;
+      }
+
+      return true;
+    }).toList();
+
+    // Sort by created_at descending
+    results.sort((a, b) =>
+        (b['created_at'] as DateTime).compareTo(a['created_at'] as DateTime));
+
+    // Apply limit
+    final limitedResults = results.take(limit).toList();
+
+    // Convert to maps
+    return limitedResults
+        .map((entry) => {
+              'id': entry['id'],
+              'result_data':
+                  entry['result_data'].toString(), // Simplified for mock
+              'created_at': (entry['created_at'] as DateTime).toIso8601String(),
+              'context_type': entry['context_type'],
+              'target_date': entry['target_date'] != null
+                  ? (entry['target_date'] as DateTime).toIso8601String()
+                  : null,
+              'meal_type': entry['meal_type'],
+              'user_id': entry['user_id'],
+            })
+        .toList();
+  }
+
+  @override
+  Future<RecommendationResults?> getRecommendationById(String id) async {
+    if (!_recommendationHistory.containsKey(id)) {
+      return null;
+    }
+
+    // Return the actual object - in the real implementation, we'd deserialize from JSON
+    return _recommendationHistory[id]?['result_data'] as RecommendationResults?;
+  }
+
+  @override
+  Future<bool> updateRecommendationResponse(
+    String historyId,
+    String recipeId,
+    UserResponse response,
+  ) async {
+    if (!_recommendationHistory.containsKey(historyId)) {
+      return false;
+    }
+
+    final results = _recommendationHistory[historyId]?['result_data']
+        as RecommendationResults?;
+    if (results == null) return false;
+
+    // Create a new list of recommendations with the updated response
+    final updatedRecommendations = <RecipeRecommendation>[];
+    bool found = false;
+
+    for (final rec in results.recommendations) {
+      if (rec.recipe.id == recipeId) {
+        // Create a new recommendation with the updated response
+        updatedRecommendations.add(RecipeRecommendation(
+          recipe: rec.recipe,
+          totalScore: rec.totalScore,
+          factorScores: rec.factorScores,
+          metadata: rec.metadata,
+          userResponse: response,
+          respondedAt: DateTime.now(),
+        ));
+        found = true;
+      } else {
+        // Keep the original recommendation
+        updatedRecommendations.add(rec);
+      }
+    }
+
+    if (!found) return false;
+
+    // Create new results with the updated recommendations
+    final updatedResults = RecommendationResults(
+      recommendations: updatedRecommendations,
+      totalEvaluated: results.totalEvaluated,
+      queryParameters: results.queryParameters,
+      generatedAt: results.generatedAt,
+    );
+
+    // Update the stored results
+    _recommendationHistory[historyId]?['result_data'] = updatedResults;
+
+    return true;
+  }
+
+  @override
+  Future<int> cleanupRecommendationHistory({int daysToKeep = 14}) async {
+    final cutoffDate = DateTime.now().subtract(Duration(days: daysToKeep));
+
+    final initialCount = _recommendationHistory.length;
+
+    _recommendationHistory.removeWhere((_, entry) {
+      final createdAt = entry['created_at'] as DateTime;
+      return createdAt.isBefore(cutoffDate);
+    });
+
+    return initialCount - _recommendationHistory.length;
   }
 }
