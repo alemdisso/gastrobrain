@@ -10,6 +10,7 @@ import 'recommendation_database_queries.dart';
 import 'recommendation_factors/frequency_factor.dart';
 import 'recommendation_factors/protein_rotation_factor.dart';
 import 'recommendation_factors/rating_factor.dart';
+import 'recommendation_factors/variety_encouragement_factor.dart';
 
 /// A class representing a scored recipe recommendation.
 class RecipeRecommendation {
@@ -99,6 +100,9 @@ class RecommendationService {
 
     // Register the rating factor (15% weight)
     registerFactor(RatingFactor());
+
+    // Register the variety encouragement factor (10% weight)
+    registerFactor(VarietyEncouragementFactor());
 
     // Additional factors will be added here as they are implemented
     // Example:
