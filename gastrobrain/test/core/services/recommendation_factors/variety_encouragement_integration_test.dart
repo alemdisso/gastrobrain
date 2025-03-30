@@ -167,5 +167,133 @@ void main() {
       expect(cookedOftenScore!,
           lessThan(cookedOnceScore!)); // Cooked often should have lowest score
     });
+    test('variety factor balances with other factors appropriately', () async {
+      // Arrange: Create test scenario with competing factors
+      final now = DateTime.now();
+
+      // Create two recipes with competing advantages
+
+      // Recipe 1: Never cooked (great for variety) but barely due (bad for frequency)
+      final neverCookedRecipe = Recipe(
+        id: IdGenerator.generateId(),
+        name: 'New Recipe - Recently Due',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: now,
+        rating: 3, // Medium rating
+      );
+
+      // Recipe 2: Frequently cooked (bad for variety) but overdue (great for frequency)
+      final overdueRecipe = Recipe(
+        id: IdGenerator.generateId(),
+        name: 'Overdue Recipe - Cooked Often',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: now,
+        rating: 3, // Same rating to isolate factor effects
+      );
+
+      // Add recipes to mock database
+      await mockDbHelper.insertRecipe(neverCookedRecipe);
+      await mockDbHelper.insertRecipe(overdueRecipe);
+
+      // Set up cooking history
+      // Recipe 1 has never been cooked
+      // Recipe 2 was cooked 10 times but long ago (very overdue)
+      final twoMonthsAgo = now.subtract(const Duration(days: 60));
+
+      // Create meals for the frequently cooked recipe
+      for (int i = 0; i < 10; i++) {
+        final meal = Meal(
+          id: IdGenerator.generateId(),
+          recipeId: overdueRecipe.id,
+          cookedAt: twoMonthsAgo,
+          servings: 2,
+        );
+        await mockDbHelper.insertMeal(meal);
+      }
+
+      // Create test context
+      final mealCounts = <String, int>{
+        neverCookedRecipe.id: 0, // Never cooked (perfect for variety)
+        overdueRecipe.id: 10, // Cooked often (poor for variety)
+      };
+
+      final lastCookedDates = <String, DateTime>{
+        overdueRecipe.id: twoMonthsAgo, // Cooked two months ago (very overdue)
+      };
+
+      // Empty protein types for simplicity
+      final proteinTypes = <String, List<ProteinType>>{
+        neverCookedRecipe.id: [],
+        overdueRecipe.id: [],
+      };
+
+      // Recent meals for protein factor
+      final recentMeals = <Map<String, dynamic>>[
+        // No recent meals
+      ];
+
+      recommendationService.overrideTestContext = {
+        'mealCounts': mealCounts,
+        'lastCooked': lastCookedDates,
+        'proteinTypes': proteinTypes,
+        'recentMeals': recentMeals,
+      };
+
+      // Act: Get detailed recommendations
+      final results = await recommendationService.getDetailedRecommendations();
+
+      // Assert: Verify all recipes were included
+      expect(results.recommendations.length, 2);
+
+      // Get factor scores
+      final Map<String, Map<String, double>> factorScores = {};
+      for (final rec in results.recommendations) {
+        factorScores[rec.recipe.id] = rec.factorScores;
+      }
+
+      // Verify factor scores follow expected patterns
+
+      // Variety factor: neverCookedRecipe should be better
+      final neverCookedVarietyScore =
+          factorScores[neverCookedRecipe.id]!['variety_encouragement']!;
+      final overdueCookedVarietyScore =
+          factorScores[overdueRecipe.id]!['variety_encouragement']!;
+      expect(neverCookedVarietyScore, equals(100.0)); // Perfect variety score
+      expect(overdueCookedVarietyScore, lessThan(50.0)); // Lower variety score
+
+      // Frequency factor: overdueRecipe should be better
+      final neverCookedFrequencyScore =
+          factorScores[neverCookedRecipe.id]!['frequency']!;
+      final overdueCookedFrequencyScore =
+          factorScores[overdueRecipe.id]!['frequency']!;
+      expect(overdueCookedFrequencyScore,
+          greaterThan(85.0)); // High score for overdue
+
+      // Now analyze the total scores
+      final neverCookedRec = results.recommendations
+          .firstWhere((rec) => rec.recipe.id == neverCookedRecipe.id);
+      final overdueRec = results.recommendations
+          .firstWhere((rec) => rec.recipe.id == overdueRecipe.id);
+
+      // Log the total scores for analysis
+      print('Never cooked recipe total score: ${neverCookedRec.totalScore}');
+      print('Overdue recipe total score: ${overdueRec.totalScore}');
+
+      // Verify the contributions from each factor reflect their weights
+      // The frequency factor (40%) should have more influence than variety (10%)
+      // So the overdue recipe (strong frequency advantage) should generally
+      // score higher than the never-cooked recipe (strong variety advantage)
+
+      // The specific assertion depends on the overall weighting
+      // But we can verify the relative contributions are as expected
+      final varietyContribution =
+          (neverCookedVarietyScore - overdueCookedVarietyScore) * 0.10;
+      final frequencyContribution =
+          (overdueCookedFrequencyScore - neverCookedFrequencyScore) * 0.40;
+
+      // The frequency advantage (40% weight) should outweigh the variety advantage (10% weight)
+      expect(
+          frequencyContribution.abs(), greaterThan(varietyContribution.abs()));
+    });
   });
 }

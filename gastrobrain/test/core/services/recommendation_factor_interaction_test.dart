@@ -121,6 +121,11 @@ void main() {
           notDueGoodProteinRecipe.id: now.subtract(const Duration(days: 3)),
           'other-beef-recipe': now.subtract(const Duration(days: 1)),
         },
+        'mealCounts': {
+          overduePoorProteinRecipe.id: 1,
+          notDueGoodProteinRecipe.id: 1,
+          'other-beef-recipe': 1,
+        },
       };
       // Act: Get detailed recommendations with factor scores
       final results = await recommendationService.getDetailedRecommendations();
@@ -261,6 +266,11 @@ void main() {
           overduePoorProteinRecipe.id: now.subtract(const Duration(days: 10)),
           notDueGoodProteinRecipe.id: now.subtract(const Duration(days: 5)),
           'yesterday-beef-recipe': now.subtract(const Duration(days: 1)),
+        },
+        'mealCounts': {
+          overduePoorProteinRecipe.id: 1,
+          notDueGoodProteinRecipe.id: 1,
+          'yesterday-beef-recipe': 1,
         },
       };
 

@@ -45,24 +45,26 @@ void main() {
   group('RecommendationService - Factor Management', () {
     test('registers default factors correctly', () {
       // Verify the service has registered the correct factors
-      expect(recommendationService.factors.length, 3);
+      expect(recommendationService.factors.length, 4);
 
       final factorIds = recommendationService.factors.map((f) => f.id).toList();
       expect(factorIds, contains('frequency'));
       expect(factorIds, contains('protein_rotation'));
       expect(factorIds, contains('rating'));
+      expect(factorIds, contains('variety_encouragement'));
 
       // Verify total weight adds up correctly (40% + 30%)
-      expect(recommendationService.totalWeight, 85);
+      expect(recommendationService.totalWeight, 95);
     });
 
     test('can register and unregister factors', () {
       // Initial factors count (frequency and protein_rotation)
-      expect(recommendationService.factors.length, 3);
+      expect(recommendationService.factors.length, 4);
 
       // Unregister two factors
       recommendationService.unregisterFactor('frequency');
       recommendationService.unregisterFactor('rating');
+      recommendationService.unregisterFactor('variety_encouragement');
       expect(recommendationService.factors.length, 1);
       expect(recommendationService.factors.map((f) => f.id).toList(),
           ['protein_rotation']);
@@ -132,6 +134,10 @@ void main() {
         'lastCooked': {
           'beef-recipe': now.subtract(const Duration(days: 1)),
           'chicken-recipe': now.subtract(const Duration(days: 7)), // A week ago
+        },
+        'mealCounts': {
+          'beef-recipe': 1,
+          'chicken-recipe': 1,
         },
       };
 
@@ -312,6 +318,11 @@ void main() {
           'recent-recipe-1': yesterday,
           'recent-recipe-2': yesterday,
           'recent-recipe-3': dayBeforeYesterday,
+        },
+        'mealCounts': {
+          'recent-recipe-1': 1,
+          'recent-recipe-2': 1,
+          'recent-recipe-3': 1,
         },
       };
 
@@ -507,11 +518,18 @@ void main() {
           });
         }
       }
+      final mealCounts = <String, int>{};
+      for (final recipeId in recipeIds) {
+        // You could use random values or derive from lastCookedDates
+        // For simplicity, let's use 1 for recipes with lastCookedDates and 0 for others
+        mealCounts[recipeId] = lastCookedDates.containsKey(recipeId) ? 1 : 0;
+      }
 
       recommendationService.overrideTestContext = {
         'proteinTypes': proteinTypes,
         'lastCooked': lastCookedDates,
         'recentMeals': recentMeals,
+        'mealCounts': mealCounts,
       };
 
       // Act: Measure performance
