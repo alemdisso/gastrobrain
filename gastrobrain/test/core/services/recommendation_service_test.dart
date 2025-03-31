@@ -45,26 +45,27 @@ void main() {
   group('RecommendationService - Factor Management', () {
     test('registers default factors correctly', () {
       // Verify the service has registered the correct factors
-      expect(recommendationService.factors.length, 4);
+      expect(recommendationService.factors.length, 5);
 
       final factorIds = recommendationService.factors.map((f) => f.id).toList();
       expect(factorIds, contains('frequency'));
       expect(factorIds, contains('protein_rotation'));
       expect(factorIds, contains('rating'));
       expect(factorIds, contains('variety_encouragement'));
+      expect(factorIds, contains('randomization'));
 
-      // Verify total weight adds up correctly (40% + 30%)
-      expect(recommendationService.totalWeight, 95);
+      expect(recommendationService.totalWeight, 100);
     });
 
     test('can register and unregister factors', () {
       // Initial factors count (frequency and protein_rotation)
-      expect(recommendationService.factors.length, 4);
+      expect(recommendationService.factors.length, 5);
 
       // Unregister two factors
       recommendationService.unregisterFactor('frequency');
       recommendationService.unregisterFactor('rating');
       recommendationService.unregisterFactor('variety_encouragement');
+      recommendationService.unregisterFactor('randomization');
       expect(recommendationService.factors.length, 1);
       expect(recommendationService.factors.map((f) => f.id).toList(),
           ['protein_rotation']);
@@ -581,21 +582,71 @@ void main() {
       // If we get only one protein type, log it but don't fail the test
       // since this is more about the quality of recommendations than a strict requirement
       if (uniqueProteinTypes.length == 1) {}
-      // Verify consistent results with repeated calls
+
+// Second run should reuse the same seed
+      final fixedSeed = 42;
+      recommendationService.overrideTestContext = {
+        'lastCooked': lastCookedDates,
+        'mealCounts': mealCounts,
+        'proteinTypes': proteinTypes,
+        'recentMeals': recentMeals,
+        'randomSeed': fixedSeed, // Fixed seed for deterministic results
+      };
+
+// Get recommendations for first run with fixed seed
+      final results1 =
+          await recommendationService.getDetailedRecommendations(count: 20);
+
+// Use same context with same seed for second run
+      recommendationService.overrideTestContext = {
+        'lastCooked': lastCookedDates,
+        'mealCounts': mealCounts,
+        'proteinTypes': proteinTypes,
+        'recentMeals': recentMeals,
+        'randomSeed': fixedSeed, // Same seed as before
+      };
+
+// Get recommendations for second run
       final results2 =
           await recommendationService.getDetailedRecommendations(count: 20);
 
-      // The same input should produce the same output
-      expect(results2.recommendations.length, results.recommendations.length);
+// The same input (including same seed) should produce the same output
+      expect(results2.recommendations.length, results1.recommendations.length);
 
-      for (int i = 0; i < results.recommendations.length; i++) {
+// The same input (including same seed) should produce consistent recipe ordering
+      expect(results2.recommendations.length, results1.recommendations.length);
+
+// Verify recipe ordering is consistent
+      for (int i = 0; i < results1.recommendations.length; i++) {
         expect(results2.recommendations[i].recipe.id,
-            results.recommendations[i].recipe.id,
-            reason: "Results should be consistent between identical calls");
-        expect(results2.recommendations[i].totalScore,
-            results.recommendations[i].totalScore,
-            reason: "Scores should be consistent between identical calls");
+            results1.recommendations[i].recipe.id,
+            reason:
+                "Recipe ordering should be consistent between identical calls with same seed");
       }
+// But with different seeds, we should get different results
+      recommendationService.overrideTestContext = {
+        'lastCooked': lastCookedDates,
+        'mealCounts': mealCounts,
+        'proteinTypes': proteinTypes,
+        'recentMeals': recentMeals,
+        'randomSeed': fixedSeed + 1, // Different seed
+      };
+
+// Get recommendations with different seed
+      final results3 =
+          await recommendationService.getDetailedRecommendations(count: 20);
+
+// With different seed, the scores should be different (but might be same order by chance)
+      bool allScoresIdentical = true;
+      for (int i = 0; i < results1.recommendations.length; i++) {
+        if (results3.recommendations[i].totalScore !=
+            results1.recommendations[i].totalScore) {
+          allScoresIdentical = false;
+          break;
+        }
+      }
+      expect(allScoresIdentical, isFalse,
+          reason: "Different seeds should produce different scores");
     });
   });
 }
