@@ -584,7 +584,7 @@ void main() {
       if (uniqueProteinTypes.length == 1) {}
 
 // Second run should reuse the same seed
-      final fixedSeed = 42;
+      const fixedSeed = 42;
       recommendationService.overrideTestContext = {
         'lastCooked': lastCookedDates,
         'mealCounts': mealCounts,

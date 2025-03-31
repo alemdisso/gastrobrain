@@ -269,16 +269,6 @@ void main() {
       expect(overdueCookedFrequencyScore,
           greaterThan(85.0)); // High score for overdue
 
-      // Now analyze the total scores
-      final neverCookedRec = results.recommendations
-          .firstWhere((rec) => rec.recipe.id == neverCookedRecipe.id);
-      final overdueRec = results.recommendations
-          .firstWhere((rec) => rec.recipe.id == overdueRecipe.id);
-
-      // Log the total scores for analysis
-      print('Never cooked recipe total score: ${neverCookedRec.totalScore}');
-      print('Overdue recipe total score: ${overdueRec.totalScore}');
-
       // Verify the contributions from each factor reflect their weights
       // The frequency factor (40%) should have more influence than variety (10%)
       // So the overdue recipe (strong frequency advantage) should generally
