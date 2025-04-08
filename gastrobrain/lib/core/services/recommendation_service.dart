@@ -10,6 +10,7 @@ import 'recommendation_database_queries.dart';
 import 'recommendation_factors/frequency_factor.dart';
 import 'recommendation_factors/protein_rotation_factor.dart';
 import 'recommendation_factors/rating_factor.dart';
+import 'recommendation_factors/difficulty_factor.dart';
 import 'recommendation_factors/variety_encouragement_factor.dart';
 import 'recommendation_factors/randomization_factor.dart';
 
@@ -101,6 +102,7 @@ class RecommendationService {
     registerFactor(ProteinRotationFactor());
     registerFactor(RatingFactor());
     registerFactor(VarietyEncouragementFactor());
+    registerFactor(DifficultyFactor());
     registerFactor(RandomizationFactor());
 
     // Ensure weights are normalized to sum to 100
