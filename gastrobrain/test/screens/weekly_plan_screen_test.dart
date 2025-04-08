@@ -315,7 +315,25 @@ class MockRecommendationService implements RecommendationService {
 
   // Implement required interface methods
   @override
-  void registerFactor(RecommendationFactor factor) {}
+  void registerFactor(RecommendationFactor factor, {int? weight}) {
+    // Mock implementation doesn't need to do anything
+  }
+
+  @override
+  void setFactorWeight(String factorId, int weight) {
+    // Mock implementation
+  }
+
+  @override
+  int getFactorWeight(String factorId) {
+    // Mock implementation
+    return 0;
+  }
+
+  @override
+  void applyWeightProfile(String profileName) {
+    // Mock implementation
+  }
 
   @override
   void unregisterFactor(String factorId) {}

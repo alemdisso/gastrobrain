@@ -14,7 +14,7 @@ class VarietyEncouragementFactor implements RecommendationFactor {
   String get id => 'variety_encouragement';
 
   @override
-  int get weight => 10; // 10% weight in the total recommendation score
+  int get defaultWeight => 10; // 10% weight in the total recommendation score
 
   @override
   Set<String> get requiredData => {'mealCounts'};

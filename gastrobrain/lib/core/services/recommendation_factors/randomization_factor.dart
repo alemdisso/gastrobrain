@@ -11,7 +11,7 @@ class RandomizationFactor implements RecommendationFactor {
   String get id => 'randomization';
 
   @override
-  int get weight => 5; // 5% weight in the total recommendation score
+  int get defaultWeight => 5; // 5% weight in the total recommendation score
 
   @override
   Set<String> get requiredData => {}; // No additional data required

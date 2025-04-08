@@ -13,7 +13,7 @@ class RatingFactor implements RecommendationFactor {
   String get id => 'rating';
 
   @override
-  int get weight => 15; // 15% weight in the total recommendation score
+  int get defaultWeight => 10; // 10% default weight (reduced from 15%)
 
   @override
   Set<String> get requiredData =>

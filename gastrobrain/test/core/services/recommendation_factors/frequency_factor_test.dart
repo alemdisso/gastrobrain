@@ -19,7 +19,7 @@ void main() {
     });
 
     test('should have weight 40', () {
-      expect(factor.weight, equals(40));
+      expect(factor.defaultWeight, equals(35));
     });
 
     test('should require lastCooked data', () {

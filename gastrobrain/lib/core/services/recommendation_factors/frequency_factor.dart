@@ -16,7 +16,7 @@ class FrequencyFactor implements RecommendationFactor {
   String get id => 'frequency';
 
   @override
-  int get weight => 40; // 40% weight in the total recommendation score
+  int get defaultWeight => 35; // 35% default weight (reduced from 40%)
 
   @override
   Set<String> get requiredData => {'lastCooked'};

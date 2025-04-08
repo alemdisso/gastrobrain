@@ -14,7 +14,7 @@ class ProteinRotationFactor implements RecommendationFactor {
   String get id => 'protein_rotation';
 
   @override
-  int get weight => 30; // 30% weight in the total recommendation score
+  int get defaultWeight => 30; // 30% weight in the total recommendation score
 
   @override
   Set<String> get requiredData => {'proteinTypes', 'recentMeals'};

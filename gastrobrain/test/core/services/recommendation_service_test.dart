@@ -15,7 +15,7 @@ class TestRecommendationFactor implements RecommendationFactor {
   String get id => 'test_factor';
 
   @override
-  int get weight => 10;
+  int get defaultWeight => 10;
 
   @override
   Set<String> get requiredData => {'test_data'};

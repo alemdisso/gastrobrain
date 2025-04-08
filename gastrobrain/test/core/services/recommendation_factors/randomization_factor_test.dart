@@ -16,7 +16,7 @@ void main() {
     });
 
     test('should have weight 5', () {
-      expect(factor.weight, equals(5));
+      expect(factor.defaultWeight, equals(5));
     });
 
     test('should not require additional data', () {

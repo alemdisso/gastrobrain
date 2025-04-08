@@ -17,7 +17,7 @@ void main() {
     });
 
     test('should have weight 10', () {
-      expect(factor.weight, equals(10));
+      expect(factor.defaultWeight, equals(10));
     });
 
     test('should require mealCounts data', () {

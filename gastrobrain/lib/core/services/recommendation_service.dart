@@ -62,8 +62,8 @@ abstract class RecommendationFactor {
   /// Unique identifier for this factor
   String get id;
 
-  /// Weight of this factor in the recommendation (0-100)
-  int get weight;
+  /// Default weight of this factor (for backward compatibility)
+  int get defaultWeight => 0;
 
   /// Calculate a score (0-100) for this recipe based on the factor's criteria
   Future<double> calculateScore(Recipe recipe, Map<String, dynamic> context);
@@ -81,6 +81,9 @@ class RecommendationService {
   /// Map of registered recommendation factors
   final Map<String, RecommendationFactor> _factors = {};
 
+  /// Map of weights for registered factors
+  final Map<String, int> _factorWeights = {};
+
   /// Default constructor with DatabaseHelper injection
   RecommendationService({
     required DatabaseHelper dbHelper,
@@ -93,30 +96,21 @@ class RecommendationService {
 
   /// Register all standard recommendation factors with their default weights
   void registerStandardFactors() {
-    // Register the frequency factor (40% weight)
+    // Register factors with their default weights
     registerFactor(FrequencyFactor());
-
-    // Register the protein rotation factor (30% weight)
     registerFactor(ProteinRotationFactor());
-
-    // Register the rating factor (15% weight)
     registerFactor(RatingFactor());
-
-    // Register the variety encouragement factor (10% weight)
     registerFactor(VarietyEncouragementFactor());
-
-    // Register the randomization factor (5% weight)
     registerFactor(RandomizationFactor());
 
-    // Additional factors will be added here as they are implemented
-    // Example:
-    // registerFactor(RatingFactor());
-    // etc.
+    // The weights will be taken from each factor's defaultWeight
   }
 
   /// Register a scoring factor
-  void registerFactor(RecommendationFactor factor) {
+  void registerFactor(RecommendationFactor factor, {int? weight}) {
     _factors[factor.id] = factor;
+    _factorWeights[factor.id] = weight ?? factor.defaultWeight;
+    _normalizeWeights(); // Ensure weights sum to 100
   }
 
   /// Unregister a scoring factor
@@ -127,9 +121,43 @@ class RecommendationService {
   /// Get all registered factors
   List<RecommendationFactor> get factors => _factors.values.toList();
 
+  /// Set weight for an already registered factor
+  void setFactorWeight(String factorId, int weight) {
+    if (!_factors.containsKey(factorId)) {
+      throw NotFoundException('Factor not found: $factorId');
+    }
+    _factorWeights[factorId] = weight;
+    _normalizeWeights();
+  }
+
+  /// Get current weight for a factor
+  int getFactorWeight(String factorId) {
+    return _factorWeights[factorId] ?? 0;
+  }
+
+  /// Normalize weights to ensure they sum to 100
+  void _normalizeWeights() {
+    final totalWeight =
+        _factorWeights.values.fold(0, (sum, weight) => sum + weight);
+
+    // If sum is 0, set equal weights
+    if (totalWeight == 0 && _factorWeights.isNotEmpty) {
+      final equalWeight = 100 ~/ _factorWeights.length;
+      _factorWeights.updateAll((key, value) => equalWeight);
+      return;
+    }
+
+    // If sum is not 100 and not 0, normalize
+    if (totalWeight != 100 && totalWeight > 0) {
+      _factorWeights.forEach((key, value) {
+        _factorWeights[key] = (value * 100 ~/ totalWeight);
+      });
+    }
+  }
+
   /// Get the total weight of all registered factors
   int get totalWeight =>
-      _factors.values.fold(0, (sum, factor) => sum + factor.weight);
+      _factorWeights.values.fold(0, (sum, weight) => sum + weight);
 
   /// Main method to get recipe recommendations
   ///
@@ -356,7 +384,10 @@ class RecommendationService {
     Map<String, dynamic> context,
   ) async {
     final recommendations = <RecipeRecommendation>[];
-    final factorTotal = totalWeight > 0 ? totalWeight : 100;
+
+    // Calculate total weight from the weight map
+    final factorTotal = totalWeight;
+    final effectiveTotal = factorTotal > 0 ? factorTotal : 100;
 
     for (final recipe in recipes) {
       final factorScores = <String, double>{};
@@ -367,8 +398,9 @@ class RecommendationService {
         final score = await factor.calculateScore(recipe, context);
         factorScores[factor.id] = score;
 
-        // Apply factor weight
-        weightedTotal += (score * factor.weight / factorTotal);
+        // Apply factor weight from the weight map
+        final weight = _factorWeights[factor.id] ?? 0;
+        weightedTotal += (score * weight / effectiveTotal);
       }
 
       // Create recommendation with total score and factor breakdown
@@ -376,9 +408,89 @@ class RecommendationService {
         recipe: recipe,
         totalScore: weightedTotal,
         factorScores: factorScores,
+        // Include weight information in metadata for transparency
+        metadata: {'factorWeights': Map<String, int>.from(_factorWeights)},
       ));
     }
 
     return recommendations;
+  }
+
+  /// Apply a predefined weight profile
+  void applyWeightProfile(String profileName) {
+    switch (profileName.toLowerCase()) {
+      case 'balanced':
+        _setBalancedProfile();
+        break;
+      case 'frequency-focused':
+        _setFrequencyFocusedProfile();
+        break;
+      case 'variety-focused':
+        _setVarietyFocusedProfile();
+        break;
+      case 'weekday':
+        _setWeekdayProfile();
+        break;
+      case 'weekend':
+        _setWeekendProfile();
+        break;
+      default:
+        throw ValidationException('Unknown weight profile: $profileName');
+    }
+  }
+
+  /// Set a balanced recommendation profile
+  void _setBalancedProfile() {
+    _factorWeights['frequency'] = 35;
+    _factorWeights['protein_rotation'] = 25;
+    _factorWeights['rating'] = 10;
+    _factorWeights['variety_encouragement'] = 15;
+    _factorWeights['difficulty'] = 10; // Will be added later
+    _factorWeights['randomization'] = 5;
+    _normalizeWeights();
+  }
+
+  /// Set a frequency-focused profile (emphasizes cooking recipes at their desired interval)
+  void _setFrequencyFocusedProfile() {
+    _factorWeights['frequency'] = 50;
+    _factorWeights['protein_rotation'] = 20;
+    _factorWeights['rating'] = 10;
+    _factorWeights['variety_encouragement'] = 10;
+    _factorWeights['difficulty'] = 5;
+    _factorWeights['randomization'] = 5;
+    _normalizeWeights();
+  }
+
+  /// Set a variety-focused profile (emphasizes trying different recipes)
+  void _setVarietyFocusedProfile() {
+    _factorWeights['frequency'] = 25;
+    _factorWeights['protein_rotation'] = 30;
+    _factorWeights['rating'] = 10;
+    _factorWeights['variety_encouragement'] = 25;
+    _factorWeights['difficulty'] = 5;
+    _factorWeights['randomization'] = 5;
+    _normalizeWeights();
+  }
+
+  /// Set a weekday profile (emphasizes simpler, quicker recipes)
+  void _setWeekdayProfile() {
+    _factorWeights['frequency'] = 30;
+    _factorWeights['protein_rotation'] = 25;
+    _factorWeights['rating'] = 10;
+    _factorWeights['variety_encouragement'] = 10;
+    _factorWeights['difficulty'] = 20; // Higher weight for weekdays
+    _factorWeights['randomization'] = 5;
+    _normalizeWeights();
+  }
+
+  /// Set a weekend profile (more complex, special recipes)
+  void _setWeekendProfile() {
+    _factorWeights['frequency'] = 30;
+    _factorWeights['protein_rotation'] = 25;
+    _factorWeights['rating'] = 20; // Higher weight on weekends
+    _factorWeights['variety_encouragement'] = 15;
+    _factorWeights['difficulty'] = 5; // Lower weight on weekends
+    _factorWeights['randomization'] = 5;
+    _normalizeWeights();
   }
 }

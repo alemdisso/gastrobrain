@@ -19,7 +19,7 @@ void main() {
     });
 
     test('should have weight 30', () {
-      expect(factor.weight, equals(30));
+      expect(factor.defaultWeight, equals(30));
     });
 
     test('should require proteinTypes and recentMeals data', () {
