@@ -42,6 +42,21 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     return '${date.toIso8601String()}-$mealType';
   }
 
+  /// Invalidates the cached recommendations for a specific meal slot
+  void _invalidateRecommendationCache(DateTime date, String mealType) {
+    final cacheKey = _getRecommendationCacheKey(date, mealType);
+
+    // Remove this specific slot from the cache
+    if (_recommendationCache.containsKey(cacheKey)) {
+      _recommendationCache.remove(cacheKey);
+    }
+  }
+
+  /// Clears all cached recommendations
+  void _clearAllRecommendationCache() {
+    _recommendationCache.clear();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -62,6 +77,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   }
 
   Future<void> _loadData() async {
+    _clearAllRecommendationCache();
     setState(() {
       _isLoading = true;
     });
@@ -97,6 +113,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   }
 
   void _changeWeek(int weekOffset) {
+    _clearAllRecommendationCache();
     setState(() {
       _currentWeekStart = _currentWeekStart.add(Duration(days: weekOffset * 7));
       _currentMealPlan = null;
@@ -176,6 +193,15 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     return recommendations;
   }
 
+  Future<List<Recipe>> _refreshRecommendations(
+      DateTime date, String mealType) async {
+    // Clear the cache for this slot
+    _invalidateRecommendationCache(date, mealType);
+
+    // Get fresh recommendations (reuses existing logic)
+    return await getSlotRecommendations(date, mealType);
+  }
+
   Future<void> _handleSlotTap(DateTime date, String mealType) async {
     final recipes = _availableRecipes;
     if (recipes.isEmpty) {
@@ -199,6 +225,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       builder: (context) => _RecipeSelectionDialog(
         recipes: recipes,
         recommendations: recommendations,
+        onRefreshRecommendations: () => _refreshRecommendations(date, mealType),
       ),
     );
 
@@ -586,10 +613,12 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
 class _RecipeSelectionDialog extends StatefulWidget {
   final List<Recipe> recipes;
   final List<Recipe> recommendations;
+  final Future<List<Recipe>> Function()? onRefreshRecommendations;
 
   const _RecipeSelectionDialog({
     required this.recipes,
     this.recommendations = const [],
+    this.onRefreshRecommendations,
   });
 
   @override
@@ -600,6 +629,8 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
     with SingleTickerProviderStateMixin {
   String _searchQuery = '';
   late TabController _tabController;
+  bool _isLoading = false;
+  late List<Recipe> _recommendations;
 
   @override
   void initState() {
@@ -611,6 +642,38 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
       _tabController.index = 0;
     } else {
       _tabController.index = 1; // Default to All Recipes if no recommendations
+    }
+    // Initialize recommendations from widget prop
+    _recommendations = List.from(widget.recommendations);
+  }
+
+  Future<void> _handleRefresh() async {
+    if (widget.onRefreshRecommendations == null) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Get fresh recommendations
+      final freshRecommendations = await widget.onRefreshRecommendations!();
+
+      // Store the recommendations locally in the state instead
+      if (mounted) {
+        setState(() {
+          _recommendations = freshRecommendations;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error refreshing recommendations: $e')),
+        );
+      }
     }
   }
 
@@ -642,9 +705,26 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
             // Tab bar for switching between Recommended and All Recipes
             TabBar(
               controller: _tabController,
-              tabs: const [
-                Tab(text: 'Recommended'),
-                Tab(text: 'All Recipes'),
+              tabs: [
+                Tab(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('Recommended'),
+                      if (widget.onRefreshRecommendations != null)
+                        IconButton(
+                          icon: const Icon(Icons.refresh, size: 18),
+                          onPressed: _isLoading ? null : _handleRefresh,
+                          tooltip: 'Get new recommendations',
+                          padding: const EdgeInsets.only(left: 4),
+                          constraints: const BoxConstraints(),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                    ],
+                  ),
+                ),
+                const Tab(text: 'All Recipes'),
               ],
             ),
 
@@ -676,19 +756,18 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
                 controller: _tabController,
                 children: [
                   // Recommended tab
-                  widget.recommendations.isEmpty
-                      ? const Center(
-                          child: Text('No recommendations available'),
-                        )
-                      : ListView.builder(
-                          itemCount: widget.recommendations.length,
-                          itemBuilder: (context, index) {
-                            final recipe = widget.recommendations[index];
-                            return _buildRecipeListTile(recipe);
-                          },
-                        ),
-
-                  // All Recipes tab
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _recommendations.isEmpty
+                          ? const Center(
+                              child: Text('No recommendations available'))
+                          : ListView.builder(
+                              itemCount: _recommendations.length,
+                              itemBuilder: (context, index) {
+                                final recipe = _recommendations[index];
+                                return _buildRecipeListTile(recipe);
+                              },
+                            ), // All Recipes tab
                   ListView.builder(
                     itemCount: filteredRecipes.length,
                     itemBuilder: (context, index) {
