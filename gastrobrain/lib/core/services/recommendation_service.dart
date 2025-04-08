@@ -103,7 +103,8 @@ class RecommendationService {
     registerFactor(VarietyEncouragementFactor());
     registerFactor(RandomizationFactor());
 
-    // The weights will be taken from each factor's defaultWeight
+    // Ensure weights are normalized to sum to 100
+    _normalizeWeights();
   }
 
   /// Register a scoring factor
@@ -144,14 +145,46 @@ class RecommendationService {
     if (totalWeight == 0 && _factorWeights.isNotEmpty) {
       final equalWeight = 100 ~/ _factorWeights.length;
       _factorWeights.updateAll((key, value) => equalWeight);
+
+      // Distribute any remaining weight to avoid rounding errors
+      int remaining = 100 - _factorWeights.values.fold(0, (sum, w) => sum + w);
+      if (remaining > 0 && _factorWeights.isNotEmpty) {
+        final firstKey = _factorWeights.keys.first;
+        _factorWeights[firstKey] = _factorWeights[firstKey]! + remaining;
+      }
       return;
     }
 
     // If sum is not 100 and not 0, normalize
     if (totalWeight != 100 && totalWeight > 0) {
+      // First pass: Calculate normalized weights
+      final Map<String, int> normalizedWeights = {};
       _factorWeights.forEach((key, value) {
-        _factorWeights[key] = (value * 100 ~/ totalWeight);
+        normalizedWeights[key] = (value * 100 ~/ totalWeight);
       });
+
+      // Calculate the total after normalization
+      final normalizedTotal =
+          normalizedWeights.values.fold(0, (sum, w) => sum + w);
+
+      // Distribute any remaining weight to avoid rounding errors
+      int remaining = 100 - normalizedTotal;
+
+      // Update the weights
+      _factorWeights.clear();
+      _factorWeights.addAll(normalizedWeights);
+
+      // Distribute the remaining weight to the factors proportionally
+      if (remaining > 0 && _factorWeights.isNotEmpty) {
+        // Sort factors by their original weight (descending) to distribute remaining weight
+        final sortedKeys = _factorWeights.keys.toList()
+          ..sort((a, b) => _factorWeights[b]!.compareTo(_factorWeights[a]!));
+
+        // Distribute remaining weight to the highest weighted factors
+        for (int i = 0; i < remaining && i < sortedKeys.length; i++) {
+          _factorWeights[sortedKeys[i]] = _factorWeights[sortedKeys[i]]! + 1;
+        }
+      }
     }
   }
 

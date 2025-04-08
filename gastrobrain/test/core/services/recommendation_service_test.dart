@@ -61,7 +61,7 @@ void main() {
       // Initial factors count (frequency and protein_rotation)
       expect(recommendationService.factors.length, 5);
 
-      // Unregister two factors
+      // Unregister four factors
       recommendationService.unregisterFactor('frequency');
       recommendationService.unregisterFactor('rating');
       recommendationService.unregisterFactor('variety_encouragement');
@@ -80,7 +80,8 @@ void main() {
 
       expect(recommendationService.factors.length, 1);
       expect(recommendationService.factors.first.id, 'test_factor');
-      expect(recommendationService.totalWeight, 10);
+      expect(recommendationService.totalWeight,
+          100); // With normalization, a single factor will always have weight 100
     });
     test('recommendations include protein type information in scoring',
         () async {

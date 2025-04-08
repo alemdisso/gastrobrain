@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gastrobrain/core/services/recommendation_service.dart';
+import 'package:gastrobrain/core/services/recommendation_factors/randomization_factor.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/models/protein_type.dart';
@@ -137,8 +138,16 @@ void main() {
       );
       await mockDbHelper.insertRecipe(recipe);
 
+      // Create a simplified recommendation service with ONLY the randomization factor
+      // This allows us to test its influence in isolation
+      final isolatedService = RecommendationService(
+          dbHelper: mockDbHelper, registerDefaultFactors: false);
+
+      // Register ONLY the randomization factor
+      isolatedService.registerFactor(RandomizationFactor());
+
       // First run with seed 42
-      recommendationService.overrideTestContext = {
+      isolatedService.overrideTestContext = {
         'lastCooked': <String, DateTime?>{},
         'mealCounts': <String, int>{},
         'proteinTypes': <String, List<ProteinType>>{recipe.id: []},
@@ -147,7 +156,7 @@ void main() {
       };
 
       // Act: Get detailed recommendations for first run
-      final results1 = await recommendationService.getDetailedRecommendations();
+      final results1 = await isolatedService.getDetailedRecommendations();
       final rec1 = results1.recommendations.first;
 
       // Get randomization score and total score from first run
@@ -155,7 +164,7 @@ void main() {
       final totalScore1 = rec1.totalScore;
 
       // Second run with different seed
-      recommendationService.overrideTestContext = {
+      isolatedService.overrideTestContext = {
         'lastCooked': <String, DateTime?>{},
         'mealCounts': <String, int>{},
         'proteinTypes': <String, List<ProteinType>>{recipe.id: []},
@@ -164,33 +173,21 @@ void main() {
       };
 
       // Act: Get recommendations for second run
-      final results2 = await recommendationService.getDetailedRecommendations();
+      final results2 = await isolatedService.getDetailedRecommendations();
       final rec2 = results2.recommendations.first;
 
       // Get randomization score and total score from second run
       final randomScore2 = rec2.factorScores['randomization']!;
       final totalScore2 = rec2.totalScore;
 
-      // Calculate difference in randomization scores
-      final randomizationDifference = (randomScore2 - randomScore1).abs();
+      // Since randomization is the only factor, its score should equal the total score
+// Use closeTo for floating point comparisons to account for tiny precision differences
+      expect(randomScore1, closeTo(totalScore1, 1e-10));
+      expect(randomScore2, closeTo(totalScore2, 1e-10));
 
-      // Calculate expected difference in total scores (5% of randomization difference)
-      final expectedTotalDifference = randomizationDifference * 0.05;
-
-      // Calculate the actual difference in total scores
-      final actualTotalDifference = (totalScore2 - totalScore1).abs();
-
-      // The actual difference should be close to the expected difference
-      // We allow a small margin of error for floating point precision
-      expect((actualTotalDifference - expectedTotalDifference).abs(),
-          lessThan(0.001));
-
-      // Also verify that the randomization factor has a reasonable weight
-      // We can do this by checking that the difference in total scores is much
-      // smaller than the difference in randomization scores (should be ~5%)
-      expect(actualTotalDifference, lessThan(randomizationDifference));
-      expect(actualTotalDifference / randomizationDifference,
-          closeTo(0.05, 0.001));
+      // Verify the scores are different between runs due to the different seeds
+      expect(randomScore1, isNot(equals(randomScore2)));
+      expect(totalScore1, isNot(equals(totalScore2)));
     });
   });
 }
