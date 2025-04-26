@@ -283,11 +283,38 @@ class MockRecommendationService implements RecommendationService {
     int count = 5,
     List<String> excludeIds = const [],
     List<ProteinType>? avoidProteinTypes,
+    List<ProteinType>? requiredProteinTypes,
     DateTime? forDate,
     String? mealType,
+    int? maxDifficulty,
+    FrequencyType? preferredFrequency,
+    bool? weekdayMeal,
   }) async {
     // Simply return our mock recommendations regardless of parameters
-    return _mockRecommendations;
+    // In a more sophisticated test, we could filter based on the parameters
+
+    // Create a filtered list for more realistic mocking
+    List<Recipe> filtered = List.from(_mockRecommendations);
+
+    // Apply excludeIds filter
+    if (excludeIds.isNotEmpty) {
+      filtered = filtered.where((r) => !excludeIds.contains(r.id)).toList();
+    }
+
+    // Apply difficulty filter if specified
+    if (maxDifficulty != null) {
+      filtered = filtered.where((r) => r.difficulty <= maxDifficulty).toList();
+    }
+
+    // Apply frequency filter if specified
+    if (preferredFrequency != null) {
+      filtered = filtered
+          .where((r) => r.desiredFrequency == preferredFrequency)
+          .toList();
+    }
+
+    // Return filtered list, limited by count
+    return filtered.take(count).toList();
   }
 
   @override
@@ -295,10 +322,38 @@ class MockRecommendationService implements RecommendationService {
     int count = 5,
     List<String> excludeIds = const [],
     List<ProteinType>? avoidProteinTypes,
+    List<ProteinType>? requiredProteinTypes,
     DateTime? forDate,
     String? mealType,
+    int? maxDifficulty,
+    FrequencyType? preferredFrequency,
+    bool? weekdayMeal,
   }) async {
-    final recommendations = _mockRecommendations
+    // Filter recipes the same way as getRecommendations
+    List<Recipe> filtered = List.from(_mockRecommendations);
+
+    // Apply excludeIds filter
+    if (excludeIds.isNotEmpty) {
+      filtered = filtered.where((r) => !excludeIds.contains(r.id)).toList();
+    }
+
+    // Apply difficulty filter if specified
+    if (maxDifficulty != null) {
+      filtered = filtered.where((r) => r.difficulty <= maxDifficulty).toList();
+    }
+
+    // Apply frequency filter if specified
+    if (preferredFrequency != null) {
+      filtered = filtered
+          .where((r) => r.desiredFrequency == preferredFrequency)
+          .toList();
+    }
+
+    // Take only the requested count
+    filtered = filtered.take(count).toList();
+
+    // Convert to RecipeRecommendation objects
+    final recommendations = filtered
         .map((recipe) => RecipeRecommendation(
               recipe: recipe,
               totalScore: 100.0,
@@ -308,8 +363,19 @@ class MockRecommendationService implements RecommendationService {
 
     return RecommendationResults(
       recommendations: recommendations,
-      totalEvaluated: recommendations.length,
-      queryParameters: {},
+      totalEvaluated: _mockRecommendations.length,
+      queryParameters: {
+        'count': count,
+        'excludeIds': excludeIds,
+        'avoidProteinTypes': avoidProteinTypes?.map((p) => p.name).toList(),
+        'requiredProteinTypes':
+            requiredProteinTypes?.map((p) => p.name).toList(),
+        'forDate': forDate?.toIso8601String(),
+        'mealType': mealType,
+        'maxDifficulty': maxDifficulty,
+        'preferredFrequency': preferredFrequency?.value,
+        'weekdayMeal': weekdayMeal,
+      },
     );
   }
 

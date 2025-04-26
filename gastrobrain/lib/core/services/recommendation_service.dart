@@ -5,6 +5,7 @@ import 'dart:math';
 import '../../database/database_helper.dart';
 import '../../models/recipe.dart';
 import '../../models/protein_type.dart';
+import '../../models/frequency_type.dart';
 import '../errors/gastrobrain_exceptions.dart';
 import 'recommendation_database_queries.dart';
 import 'recommendation_factors/frequency_factor.dart';
@@ -208,8 +209,12 @@ class RecommendationService {
     int count = 5,
     List<String> excludeIds = const [],
     List<ProteinType>? avoidProteinTypes,
+    List<ProteinType>? requiredProteinTypes,
     DateTime? forDate,
     String? mealType,
+    int? maxDifficulty,
+    FrequencyType? preferredFrequency,
+    bool? weekdayMeal,
   }) async {
     try {
       // Validate inputs
@@ -226,28 +231,67 @@ class RecommendationService {
       final context = await _buildContext(
         excludeIds: excludeIds,
         avoidProteinTypes: avoidProteinTypes,
+        requiredProteinTypes: requiredProteinTypes,
         forDate: forDate,
         mealType: mealType,
+        maxDifficulty: maxDifficulty,
+        preferredFrequency: preferredFrequency,
+        weekdayMeal: weekdayMeal,
       );
 
-      // Get candidate recipes
-      final recipes = await _getCandidateRecipes(excludeIds);
+      // Get candidate recipes with filtering applied
+      final recipes = await _getCandidateRecipes(
+        excludeIds,
+        requiredProteinTypes: requiredProteinTypes,
+        avoidProteinTypes: avoidProteinTypes,
+        maxDifficulty: maxDifficulty,
+        preferredFrequency: preferredFrequency,
+      );
 
       if (recipes.isEmpty) {
         return [];
       }
 
-      // Calculate scores for each recipe using all factors
-      final scoredRecipes = await _scoreRecipes(recipes, context);
+      // Apply weekday/weekend profile if specified
+      if (weekdayMeal != null) {
+        // Don't modify original weights, just apply a temporary profile
+        final originalWeights = Map<String, int>.from(_factorWeights);
+        try {
+          if (weekdayMeal) {
+            _setWeekdayProfile();
+          } else {
+            _setWeekendProfile();
+          }
 
-      // Sort by total score (descending) and return top [count]
-      scoredRecipes.sort((a, b) => b.totalScore.compareTo(a.totalScore));
+          // Calculate scores for each recipe using all factors
+          final scoredRecipes = await _scoreRecipes(recipes, context);
 
-      // Return just the recipes (not the full recommendation objects)
-      return scoredRecipes
-          .take(count)
-          .map((recommendation) => recommendation.recipe)
-          .toList();
+          // Sort by total score (descending) and return top [count]
+          scoredRecipes.sort((a, b) => b.totalScore.compareTo(a.totalScore));
+
+          // Return just the recipes (not the full recommendation objects)
+          return scoredRecipes
+              .take(count)
+              .map((recommendation) => recommendation.recipe)
+              .toList();
+        } finally {
+          // Restore original weights
+          _factorWeights.clear();
+          _factorWeights.addAll(originalWeights);
+        }
+      } else {
+        // Calculate scores for each recipe using all factors with current weights
+        final scoredRecipes = await _scoreRecipes(recipes, context);
+
+        // Sort by total score (descending) and return top [count]
+        scoredRecipes.sort((a, b) => b.totalScore.compareTo(a.totalScore));
+
+        // Return just the recipes (not the full recommendation objects)
+        return scoredRecipes
+            .take(count)
+            .map((recommendation) => recommendation.recipe)
+            .toList();
+      }
     } on ValidationException {
       rethrow;
     } on NotFoundException {
@@ -263,8 +307,12 @@ class RecommendationService {
     int count = 5,
     List<String> excludeIds = const [],
     List<ProteinType>? avoidProteinTypes,
+    List<ProteinType>? requiredProteinTypes,
     DateTime? forDate,
     String? mealType,
+    int? maxDifficulty,
+    FrequencyType? preferredFrequency,
+    bool? weekdayMeal,
   }) async {
     try {
       // Validate inputs
@@ -281,44 +329,85 @@ class RecommendationService {
       final context = await _buildContext(
         excludeIds: excludeIds,
         avoidProteinTypes: avoidProteinTypes,
+        requiredProteinTypes: requiredProteinTypes,
         forDate: forDate,
         mealType: mealType,
+        maxDifficulty: maxDifficulty,
+        preferredFrequency: preferredFrequency,
+        weekdayMeal: weekdayMeal,
       );
 
-      // Get candidate recipes
-      final recipes = await _getCandidateRecipes(excludeIds);
+      // Get candidate recipes with filtering applied
+      final recipes = await _getCandidateRecipes(
+        excludeIds,
+        requiredProteinTypes: requiredProteinTypes,
+        avoidProteinTypes: avoidProteinTypes,
+        maxDifficulty: maxDifficulty,
+        preferredFrequency: preferredFrequency,
+      );
+
+      // Create query parameters for result metadata
+      final queryParameters = {
+        'count': count,
+        'excludeIds': excludeIds,
+        'avoidProteinTypes': avoidProteinTypes?.map((p) => p.name).toList(),
+        'requiredProteinTypes':
+            requiredProteinTypes?.map((p) => p.name).toList(),
+        'forDate': forDate?.toIso8601String(),
+        'mealType': mealType,
+        'maxDifficulty': maxDifficulty,
+        'preferredFrequency': preferredFrequency?.value,
+        'weekdayMeal': weekdayMeal,
+      };
 
       if (recipes.isEmpty) {
         return RecommendationResults(
           recommendations: [],
           totalEvaluated: 0,
-          queryParameters: {
-            'count': count,
-            'excludeIds': excludeIds,
-            'avoidProteinTypes': avoidProteinTypes?.map((p) => p.name).toList(),
-            'forDate': forDate?.toIso8601String(),
-            'mealType': mealType,
-          },
+          queryParameters: queryParameters,
         );
       }
 
-      // Calculate scores for each recipe using all factors
-      final scoredRecipes = await _scoreRecipes(recipes, context);
+      // Apply weekday/weekend profile if specified
+      if (weekdayMeal != null) {
+        // Don't modify original weights, just apply a temporary profile
+        final originalWeights = Map<String, int>.from(_factorWeights);
+        try {
+          if (weekdayMeal) {
+            _setWeekdayProfile();
+          } else {
+            _setWeekendProfile();
+          }
 
-      // Sort by total score (descending)
-      scoredRecipes.sort((a, b) => b.totalScore.compareTo(a.totalScore));
+          // Calculate scores for each recipe using all factors
+          final scoredRecipes = await _scoreRecipes(recipes, context);
 
-      return RecommendationResults(
-        recommendations: scoredRecipes.take(count).toList(),
-        totalEvaluated: recipes.length,
-        queryParameters: {
-          'count': count,
-          'excludeIds': excludeIds,
-          'avoidProteinTypes': avoidProteinTypes?.map((p) => p.name).toList(),
-          'forDate': forDate?.toIso8601String(),
-          'mealType': mealType,
-        },
-      );
+          // Sort by total score (descending)
+          scoredRecipes.sort((a, b) => b.totalScore.compareTo(a.totalScore));
+
+          return RecommendationResults(
+            recommendations: scoredRecipes.take(count).toList(),
+            totalEvaluated: recipes.length,
+            queryParameters: queryParameters,
+          );
+        } finally {
+          // Restore original weights
+          _factorWeights.clear();
+          _factorWeights.addAll(originalWeights);
+        }
+      } else {
+        // Calculate scores for each recipe using all factors with current weights
+        final scoredRecipes = await _scoreRecipes(recipes, context);
+
+        // Sort by total score (descending)
+        scoredRecipes.sort((a, b) => b.totalScore.compareTo(a.totalScore));
+
+        return RecommendationResults(
+          recommendations: scoredRecipes.take(count).toList(),
+          totalEvaluated: recipes.length,
+          queryParameters: queryParameters,
+        );
+      }
     } on ValidationException {
       rethrow;
     } on NotFoundException {
@@ -333,8 +422,12 @@ class RecommendationService {
   Future<Map<String, dynamic>> _buildContext({
     required List<String> excludeIds,
     List<ProteinType>? avoidProteinTypes,
+    List<ProteinType>? requiredProteinTypes,
     DateTime? forDate,
     String? mealType,
+    int? maxDifficulty,
+    FrequencyType? preferredFrequency,
+    bool? weekdayMeal,
   }) async {
     // For testing, override the context if provided
     if (overrideTestContext != null) {
@@ -342,8 +435,12 @@ class RecommendationService {
       // Add standard context values that tests might not provide
       testContext['excludeIds'] = excludeIds;
       testContext['avoidProteinTypes'] = avoidProteinTypes;
+      testContext['requiredProteinTypes'] = requiredProteinTypes;
       testContext['forDate'] = forDate;
       testContext['mealType'] = mealType;
+      testContext['maxDifficulty'] = maxDifficulty;
+      testContext['preferredFrequency'] = preferredFrequency;
+      testContext['weekdayMeal'] = weekdayMeal;
       testContext['randomSeed'] = _random.nextInt(1000);
       return testContext;
     }
@@ -355,8 +452,12 @@ class RecommendationService {
     final context = <String, dynamic>{
       'excludeIds': excludeIds,
       'avoidProteinTypes': avoidProteinTypes,
+      'requiredProteinTypes': requiredProteinTypes,
       'forDate': forDate,
       'mealType': mealType,
+      'maxDifficulty': maxDifficulty,
+      'preferredFrequency': preferredFrequency,
+      'weekdayMeal': weekdayMeal,
       'randomSeed': _random.nextInt(1000), // For reproducible randomness
     };
 
@@ -371,8 +472,9 @@ class RecommendationService {
     }
 
     // Load protein types if required
-    final needsProteinInfo =
-        requiredData.contains('proteinTypes') || avoidProteinTypes != null;
+    final needsProteinInfo = requiredData.contains('proteinTypes') ||
+        avoidProteinTypes != null ||
+        requiredProteinTypes != null;
 
     if (needsProteinInfo) {
       // Get recipes first to get their IDs
@@ -409,8 +511,39 @@ class RecommendationService {
   }
 
   /// Get candidate recipes that meet basic filtering criteria
-  Future<List<Recipe>> _getCandidateRecipes(List<String> excludeIds) async {
-    return await _dbQueries.getCandidateRecipes(excludeIds: excludeIds);
+  Future<List<Recipe>> _getCandidateRecipes(
+    List<String> excludeIds, {
+    List<ProteinType>? requiredProteinTypes,
+    List<ProteinType>? avoidProteinTypes,
+    int? maxDifficulty,
+    FrequencyType? preferredFrequency,
+  }) async {
+    // Get candidate recipes with basic exclusions
+    List<Recipe> candidates = await _dbQueries.getCandidateRecipes(
+      excludeIds: excludeIds,
+      requiredProteinTypes: requiredProteinTypes,
+      excludedProteinTypes: avoidProteinTypes,
+    );
+
+    // Apply additional filtering
+    if (maxDifficulty != null || preferredFrequency != null) {
+      candidates = candidates.where((recipe) {
+        // Apply difficulty filter if specified
+        if (maxDifficulty != null && recipe.difficulty > maxDifficulty) {
+          return false;
+        }
+
+        // Apply frequency filter if specified
+        if (preferredFrequency != null &&
+            recipe.desiredFrequency != preferredFrequency) {
+          return false;
+        }
+
+        return true;
+      }).toList();
+    }
+
+    return candidates;
   }
 
   /// Score recipes using all registered factors

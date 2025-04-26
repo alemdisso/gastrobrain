@@ -163,7 +163,6 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     return context;
   }
 
-  /// Get recommendations for a specific meal slot (with caching)
   Future<List<Recipe>> getSlotRecommendations(DateTime date, String mealType,
       {int count = 5}) async {
     final cacheKey = _getRecommendationCacheKey(date, mealType);
@@ -179,12 +178,20 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       mealType: mealType,
     );
 
-    // Get recommendations
+    // Determine if this is a weekday
+    final isWeekday = date.weekday >= 1 && date.weekday <= 5;
+
+    // Get recommendations with enhanced filtering
     final recommendations = await _recommendationService.getRecommendations(
       count: count,
       excludeIds: context['excludeIds'] ?? [],
+      avoidProteinTypes: context['avoidProteinTypes'],
       forDate: date,
       mealType: mealType,
+      // Apply weekday/weekend context
+      weekdayMeal: isWeekday,
+      // For weekdays, suggest slightly simpler recipes
+      maxDifficulty: isWeekday ? 4 : null,
     );
 
     // Cache the recommendations
