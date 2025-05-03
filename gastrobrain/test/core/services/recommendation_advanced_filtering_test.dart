@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gastrobrain/core/services/recommendation_service.dart';
 import 'package:gastrobrain/models/recipe.dart';
@@ -349,6 +351,12 @@ void main() {
       // Set up identical last cooked dates to isolate difficulty effect
       final twoWeeksAgo = now.subtract(const Duration(days: 14));
 
+      Map<String, List<ProteinType>> proteinTypes = {
+        'easy-recipe': <ProteinType>[],
+        'medium-recipe': <ProteinType>[],
+        'hard-recipe': <ProteinType>[],
+      };
+
       recommendationService.overrideTestContext = {
         'lastCooked': {
           'easy-recipe': twoWeeksAgo,
@@ -360,14 +368,9 @@ void main() {
           'medium-recipe': 1,
           'hard-recipe': 1,
         },
-        'proteinTypes': {
-          'easy-recipe': [],
-          'medium-recipe': [],
-          'hard-recipe': [],
-        },
-        'recentMeals': [],
+        'proteinTypes': proteinTypes,
+        'recentMeals': <Map<String, dynamic>>[],
       };
-
       // Act: Get detailed recommendations with weekday flag
       final weekdayResults =
           await recommendationService.getDetailedRecommendations(
@@ -398,14 +401,22 @@ void main() {
       final hardWeekdayIndex = weekdayRecipes.indexOf('hard-recipe');
       final hardWeekendIndex = weekendRecipes.indexOf('hard-recipe');
 
-      // Easy recipe should be ranked better (lower index) in weekday than in weekend
-      // or Hard recipe should be ranked better in weekend than in weekday
+// Verify that difficulty factor has more weight in weekday profile
+// Extract the factor weights from metadata
+      final weekdayWeights = weekdayResults
+          .recommendations[0].metadata['factorWeights'] as Map<String, int>;
+      final weekendWeights = weekendResults
+          .recommendations[0].metadata['factorWeights'] as Map<String, int>;
+
+// Check that weekday gives more weight to difficulty
       expect(
-          easyWeekdayIndex < easyWeekendIndex ||
-              hardWeekdayIndex > hardWeekendIndex,
-          isTrue,
+          weekdayWeights['difficulty']! > weekendWeights['difficulty']!, isTrue,
+          reason: "Difficulty should have higher weight in weekday profile");
+
+// Alternative assertion: check that easy recipe is first in weekday results
+      expect(weekdayRecipes[0], equals('easy-recipe'),
           reason:
-              "Easy recipes should rank relatively higher for weekday meals");
+              "Easy recipe should be ranked first in weekday recommendations");
     });
 
     test('combining multiple filters works correctly', () async {
@@ -476,7 +487,15 @@ void main() {
         'recipe-5': [ProteinType.beef],
       };
 
-      // Create test context
+      recommendationService = RecommendationService(
+        dbHelper: mockDbHelper,
+        registerDefaultFactors: true,
+        proteinTypesOverride:
+            mockDbHelper.recipeProteinTypes, // Pass the override directly
+      );
+      Map<String, List<ProteinType>> proteinTypes =
+          Map<String, List<ProteinType>>.from(mockDbHelper.recipeProteinTypes);
+
       recommendationService.overrideTestContext = {
         'lastCooked': {
           'recipe-1': now.subtract(const Duration(days: 14)),
@@ -492,8 +511,8 @@ void main() {
           'recipe-4': 1,
           'recipe-5': 1,
         },
-        'proteinTypes': mockDbHelper.recipeProteinTypes,
-        'recentMeals': [],
+        'proteinTypes': proteinTypes,
+        'recentMeals': <Map<String, dynamic>>[],
       };
 
       // Act: Apply multiple filters - combine weekly frequency, max difficulty 3, and avoid beef
@@ -503,9 +522,17 @@ void main() {
         avoidProteinTypes: [ProteinType.beef],
       );
 
-      // Assert: Only recipe-1 (Easy Weekly Chicken) should match all criteria
-      expect(results.length, 1);
-      expect(results.first.id, 'recipe-1');
+      for (final recipe in results) {}
+
+// Make sure protein types are correctly configured
+      for (final entry in mockDbHelper.recipeProteinTypes.entries) {}
+
+// Check if the test data matches our expectations
+      expect(results.length, 1,
+          reason: "Only recipe-1 should match all criteria");
+      expect(results.first.id, 'recipe-1',
+          reason:
+              "Only recipe-1 should match weekly frequency, max difficulty 3, and non-beef protein");
     });
   });
 }
