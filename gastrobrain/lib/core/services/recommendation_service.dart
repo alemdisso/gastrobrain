@@ -90,7 +90,11 @@ class RecommendationService {
   RecommendationService({
     required DatabaseHelper dbHelper,
     bool registerDefaultFactors = false,
-  }) : _dbQueries = RecommendationDatabaseQueries(dbHelper: dbHelper) {
+    Map<String, List<ProteinType>>? proteinTypesOverride,
+  }) : _dbQueries = RecommendationDatabaseQueries(
+          dbHelper: dbHelper,
+          proteinTypesOverride: proteinTypesOverride,
+        ) {
     if (registerDefaultFactors) {
       registerStandardFactors();
     }

@@ -11,8 +11,12 @@ import '../errors/gastrobrain_exceptions.dart';
 class RecommendationDatabaseQueries {
   final DatabaseHelper _dbHelper;
 
-  RecommendationDatabaseQueries({required DatabaseHelper dbHelper})
-      : _dbHelper = dbHelper;
+  Map<String, List<ProteinType>>? proteinTypesOverride;
+
+  RecommendationDatabaseQueries({
+    required DatabaseHelper dbHelper,
+    this.proteinTypesOverride,
+  }) : _dbHelper = dbHelper;
 
   /// Get all available recipes filtered by given criteria
   ///
@@ -85,6 +89,20 @@ class RecommendationDatabaseQueries {
     required List<String> recipeIds,
   }) async {
     try {
+      if (proteinTypesOverride != null) {
+        final result = <String, List<ProteinType>>{};
+
+        // Initialize all recipe IDs with empty lists
+        for (final id in recipeIds) {
+          // Use the override if available for this ID, otherwise empty list
+          result[id] = proteinTypesOverride!.containsKey(id)
+              ? List<ProteinType>.from(proteinTypesOverride![id]!)
+              : [];
+        }
+
+        return result;
+      }
+
       final result = <String, List<ProteinType>>{};
 
       // Initialize empty lists for all recipe IDs

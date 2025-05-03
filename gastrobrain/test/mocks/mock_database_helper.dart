@@ -171,7 +171,6 @@ class MockDatabaseHelper implements DatabaseHelper {
         result[id] = [ProteinType.chicken];
       }
     }
-
     return result;
   }
 
@@ -760,4 +759,66 @@ class MockDatabaseHelper implements DatabaseHelper {
 
     return initialCount - _recommendationHistory.length;
   }
+
+  Future<List<Recipe>> getCandidateRecipes({
+    List<String> excludeIds = const [],
+    int? limit,
+    List<ProteinType>? requiredProteinTypes,
+    List<ProteinType>? excludedProteinTypes,
+  }) async {
+    // Use custom implementation if provided
+    if (customGetCandidateRecipes != null) {
+      return customGetCandidateRecipes!(
+        excludeIds: excludeIds,
+        requiredProteinTypes: requiredProteinTypes,
+        excludedProteinTypes: excludedProteinTypes,
+      );
+    }
+
+    // Default implementation
+    var recipes = await getAllRecipes();
+
+    // Filter out excluded recipes
+    if (excludeIds.isNotEmpty) {
+      recipes =
+          recipes.where((recipe) => !excludeIds.contains(recipe.id)).toList();
+    }
+
+    // Apply protein type filters
+    if ((requiredProteinTypes != null && requiredProteinTypes.isNotEmpty) ||
+        (excludedProteinTypes != null && excludedProteinTypes.isNotEmpty)) {
+      recipes = recipes.where((recipe) {
+        final proteinTypes = recipeProteinTypes[recipe.id] ?? [];
+
+        // If required types are specified, recipe must contain at least one
+        if (requiredProteinTypes != null && requiredProteinTypes.isNotEmpty) {
+          if (!proteinTypes
+              .any((type) => requiredProteinTypes.contains(type))) {
+            return false;
+          }
+        }
+
+        // If excluded types are specified, recipe must not contain any
+        if (excludedProteinTypes != null && excludedProteinTypes.isNotEmpty) {
+          if (proteinTypes.any((type) => excludedProteinTypes.contains(type))) {
+            return false;
+          }
+        }
+
+        return true;
+      }).toList();
+    }
+
+    // Apply limit if specified
+    if (limit != null && limit > 0 && limit < recipes.length) {
+      recipes = recipes.sublist(0, limit);
+    }
+
+    return recipes;
+  }
+
+  Future<List<Recipe>> Function(
+      {List<String> excludeIds,
+      List<ProteinType>? requiredProteinTypes,
+      List<ProteinType>? excludedProteinTypes})? customGetCandidateRecipes;
 }
