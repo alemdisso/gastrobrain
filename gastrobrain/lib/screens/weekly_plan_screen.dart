@@ -5,6 +5,7 @@ import '../models/meal_recipe.dart';
 import '../models/meal_plan.dart';
 import '../models/meal_plan_item.dart';
 import '../models/meal_plan_item_recipe.dart';
+import '../models/recipe_recommendation.dart';
 import '../models/recipe.dart';
 import '../database/database_helper.dart';
 import '../core/di/service_provider.dart';
@@ -13,6 +14,7 @@ import '../core/services/recommendation_service.dart';
 import '../core/services/snackbar_service.dart';
 import '../widgets/weekly_calendar_widget.dart';
 import '../widgets/meal_recording_dialog.dart';
+import '../widgets/recipe_recommendation_card.dart';
 import '../utils/id_generator.dart';
 
 class WeeklyPlanScreen extends StatefulWidget {
@@ -220,18 +222,34 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       return;
     }
 
-    // Get recommendations for this slot
-    final recommendations = await getSlotRecommendations(date, mealType);
+    // Get detailed recommendations with scores for this slot
+    final recommendationContext = await _buildRecommendationContext(
+      forDate: date,
+      mealType: mealType,
+    );
+
+    final isWeekday = date.weekday >= 1 && date.weekday <= 5;
+
+    final recommendations =
+        await _recommendationService.getDetailedRecommendations(
+      count: 5,
+      excludeIds: recommendationContext['excludeIds'] ?? [],
+      avoidProteinTypes: recommendationContext['avoidProteinTypes'],
+      forDate: date,
+      mealType: mealType,
+      weekdayMeal: isWeekday,
+      maxDifficulty: isWeekday ? 4 : null,
+    );
 
     // Check if widget is still mounted before showing dialog
     if (!mounted) return;
 
-    // Show recipe selection dialog with recommendations
+    // Show recipe selection dialog with detailed recommendations
     final selectedRecipe = await showDialog<Recipe>(
       context: context,
       builder: (context) => _RecipeSelectionDialog(
         recipes: recipes,
-        recommendations: recommendations,
+        detailedRecommendations: recommendations.recommendations,
         onRefreshRecommendations: () => _refreshRecommendations(date, mealType),
       ),
     );
@@ -619,12 +637,12 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
 // Helper dialog for recipe selection
 class _RecipeSelectionDialog extends StatefulWidget {
   final List<Recipe> recipes;
-  final List<Recipe> recommendations;
+  final List<RecipeRecommendation> detailedRecommendations;
   final Future<List<Recipe>> Function()? onRefreshRecommendations;
 
   const _RecipeSelectionDialog({
     required this.recipes,
-    this.recommendations = const [],
+    this.detailedRecommendations = const [],
     this.onRefreshRecommendations,
   });
 
@@ -637,7 +655,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
   String _searchQuery = '';
   late TabController _tabController;
   bool _isLoading = false;
-  late List<Recipe> _recommendations;
+  late List<RecipeRecommendation> _recommendations;
 
   @override
   void initState() {
@@ -645,13 +663,13 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
     // Initialize tab controller for the two tabs
     _tabController = TabController(length: 2, vsync: this);
     // Start on the Recommended tab if we have recommendations
-    if (widget.recommendations.isNotEmpty) {
+    if (widget.detailedRecommendations.isNotEmpty) {
       _tabController.index = 0;
     } else {
       _tabController.index = 1; // Default to All Recipes if no recommendations
     }
     // Initialize recommendations from widget prop
-    _recommendations = List.from(widget.recommendations);
+    _recommendations = List.from(widget.detailedRecommendations);
   }
 
   Future<void> _handleRefresh() async {
@@ -666,9 +684,18 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
       final freshRecommendations = await widget.onRefreshRecommendations!();
 
       // Store the recommendations locally in the state instead
+      // Note: This method currently returns List<Recipe>, not List<RecipeRecommendation>
+      // We'll need to update this to match our new detailed recommendations approach
       if (mounted) {
         setState(() {
-          _recommendations = freshRecommendations;
+          // For now, create simple RecipeRecommendation objects
+          _recommendations = freshRecommendations
+              .map((recipe) => RecipeRecommendation(
+                    recipe: recipe,
+                    totalScore: 0.0,
+                    factorScores: {},
+                  ))
+              .toList();
           _isLoading = false;
         });
       }
@@ -771,8 +798,12 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
                           : ListView.builder(
                               itemCount: _recommendations.length,
                               itemBuilder: (context, index) {
-                                final recipe = _recommendations[index];
-                                return _buildRecipeListTile(recipe);
+                                final recommendation = _recommendations[index];
+                                return RecipeRecommendationCard(
+                                  recommendation: recommendation,
+                                  onTap: () => Navigator.pop(
+                                      context, recommendation.recipe),
+                                );
                               },
                             ), // All Recipes tab
                   ListView.builder(

@@ -10,6 +10,7 @@ import 'package:gastrobrain/models/meal_plan.dart';
 import 'package:gastrobrain/models/meal_plan_item.dart';
 import 'package:gastrobrain/models/meal_plan_item_recipe.dart';
 import 'package:gastrobrain/models/recipe.dart';
+import 'package:gastrobrain/models/recipe_recommendation.dart';
 import 'package:gastrobrain/models/protein_type.dart';
 import 'package:gastrobrain/screens/weekly_plan_screen.dart';
 import 'package:gastrobrain/utils/id_generator.dart';

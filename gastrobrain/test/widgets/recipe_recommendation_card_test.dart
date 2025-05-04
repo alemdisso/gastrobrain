@@ -205,5 +205,161 @@ void main() {
       // Assert
       expect(wasTapped, isTrue);
     });
+
+    testWidgets('displays factor indicators correctly',
+        (WidgetTester tester) async {
+      // Arrange
+      final recipe = Recipe(
+        id: 'test-recipe',
+        name: 'Test Recipe',
+        createdAt: DateTime.now(),
+        desiredFrequency: null,
+        difficulty: 3, // Explicitly set difficulty
+      );
+
+      final recommendation = RecipeRecommendation(
+        recipe: recipe,
+        totalScore: 75.0,
+        factorScores: {
+          'frequency': 90.0,
+          'protein_rotation': 30.0, // Low score - should show warning
+          'rating': 80.0,
+          'unknown_factor': 50.0, // Should be ignored
+        },
+      );
+
+      // Act
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: RecipeRecommendationCard(recommendation: recommendation),
+          ),
+        ),
+      );
+
+      // First, let's just check for the basic factor icons
+      expect(find.byIcon(Icons.schedule), findsOneWidget); // frequency
+      expect(
+          find.byIcon(Icons.rotate_right), findsOneWidget); // protein_rotation
+      expect(find.byIcon(Icons.star),
+          findsWidgets); // At least one star for rating factor
+      expect(find.byIcon(Icons.warning), findsOneWidget); // protein warning
+    });
+    testWidgets('shows warning icon for low protein rotation score',
+        (WidgetTester tester) async {
+      // Arrange
+      final recipe = Recipe(
+        id: 'test-recipe',
+        name: 'Test Recipe',
+        createdAt: DateTime.now(),
+        desiredFrequency: null,
+      );
+
+      // Test low protein score (< 50)
+      var recommendation = RecipeRecommendation(
+        recipe: recipe,
+        totalScore: 70.0,
+        factorScores: {
+          'protein_rotation': 30.0, // Should show warning
+        },
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: RecipeRecommendationCard(recommendation: recommendation),
+          ),
+        ),
+      );
+
+      expect(find.byIcon(Icons.warning), findsOneWidget);
+
+      // Test high protein score (>= 50) - should not show warning
+      recommendation = RecipeRecommendation(
+        recipe: recipe,
+        totalScore: 70.0,
+        factorScores: {
+          'protein_rotation': 80.0, // Should not show warning
+        },
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: RecipeRecommendationCard(recommendation: recommendation),
+          ),
+        ),
+      );
+
+      expect(find.byIcon(Icons.warning), findsNothing);
+    });
+
+    testWidgets('shows tooltips for factor indicators',
+        (WidgetTester tester) async {
+      // Arrange
+      final recipe = Recipe(
+        id: 'test-recipe',
+        name: 'Test Recipe',
+        createdAt: DateTime.now(),
+        desiredFrequency: null,
+      );
+
+      final recommendation = RecipeRecommendation(
+        recipe: recipe,
+        totalScore: 85.0,
+        factorScores: {
+          'frequency': 90.5,
+        },
+      );
+
+      // Act
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: RecipeRecommendationCard(recommendation: recommendation),
+          ),
+        ),
+      );
+
+      // Find the tooltip widget by finding the Icon first, then getting its parent
+      final tooltipFinder = find.ancestor(
+        of: find.byIcon(Icons.schedule),
+        matching: find.byType(Tooltip),
+      );
+
+      await tester.longPress(tooltipFinder);
+      await tester.pump();
+
+      // Assert
+      expect(find.text('Cooking frequency score: 90.5'), findsOneWidget);
+    });
+
+    testWidgets('handles empty factor scores', (WidgetTester tester) async {
+      // Arrange
+      final recipe = Recipe(
+        id: 'test-recipe',
+        name: 'Test Recipe',
+        createdAt: DateTime.now(),
+        desiredFrequency: null,
+      );
+
+      final recommendation = RecipeRecommendation(
+        recipe: recipe,
+        totalScore: 50.0,
+        factorScores: {}, // Empty factor scores
+      );
+
+      // Act
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: RecipeRecommendationCard(recommendation: recommendation),
+          ),
+        ),
+      );
+
+      // Assert
+      expect(find.text('No factors'), findsOneWidget);
+    });
   });
 }
