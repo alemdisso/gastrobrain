@@ -165,6 +165,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     return context;
   }
 
+  /// Returns simple recipes without scores for caching.
+  /// For recommendations with scores, use _getDetailedSlotRecommendations instead.
   Future<List<Recipe>> getSlotRecommendations(DateTime date, String mealType,
       {int count = 5}) async {
     final cacheKey = _getRecommendationCacheKey(date, mealType);
@@ -202,13 +204,40 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     return recommendations;
   }
 
-  Future<List<Recipe>> _refreshRecommendations(
+  Future<List<RecipeRecommendation>> _getDetailedSlotRecommendations(
+      DateTime date, String mealType,
+      {int count = 5}) async {
+    // Build context for recommendations
+    final context = await _buildRecommendationContext(
+      forDate: date,
+      mealType: mealType,
+    );
+
+    // Determine if this is a weekday
+    final isWeekday = date.weekday >= 1 && date.weekday <= 5;
+
+    // Get detailed recommendations with scores
+    final recommendations =
+        await _recommendationService.getDetailedRecommendations(
+      count: count,
+      excludeIds: context['excludeIds'] ?? [],
+      avoidProteinTypes: context['avoidProteinTypes'],
+      forDate: date,
+      mealType: mealType,
+      weekdayMeal: isWeekday,
+      maxDifficulty: isWeekday ? 4 : null,
+    );
+
+    return recommendations.recommendations;
+  }
+
+  Future<List<RecipeRecommendation>> _refreshDetailedRecommendations(
       DateTime date, String mealType) async {
     // Clear the cache for this slot
     _invalidateRecommendationCache(date, mealType);
 
-    // Get fresh recommendations (reuses existing logic)
-    return await getSlotRecommendations(date, mealType);
+    // Get fresh detailed recommendations
+    return await _getDetailedSlotRecommendations(date, mealType);
   }
 
   Future<void> _handleSlotTap(DateTime date, String mealType) async {
@@ -250,7 +279,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       builder: (context) => _RecipeSelectionDialog(
         recipes: recipes,
         detailedRecommendations: recommendations.recommendations,
-        onRefreshRecommendations: () => _refreshRecommendations(date, mealType),
+        onRefreshDetailedRecommendations: () =>
+            _refreshDetailedRecommendations(date, mealType),
       ),
     );
 
@@ -638,12 +668,13 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
 class _RecipeSelectionDialog extends StatefulWidget {
   final List<Recipe> recipes;
   final List<RecipeRecommendation> detailedRecommendations;
-  final Future<List<Recipe>> Function()? onRefreshRecommendations;
+  final Future<List<RecipeRecommendation>> Function()?
+      onRefreshDetailedRecommendations;
 
   const _RecipeSelectionDialog({
     required this.recipes,
     this.detailedRecommendations = const [],
-    this.onRefreshRecommendations,
+    this.onRefreshDetailedRecommendations,
   });
 
   @override
@@ -673,29 +704,20 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
   }
 
   Future<void> _handleRefresh() async {
-    if (widget.onRefreshRecommendations == null) return;
+    if (widget.onRefreshDetailedRecommendations == null) return;
 
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // Get fresh recommendations
-      final freshRecommendations = await widget.onRefreshRecommendations!();
+      // Get fresh detailed recommendations
+      final freshRecommendations =
+          await widget.onRefreshDetailedRecommendations!();
 
-      // Store the recommendations locally in the state instead
-      // Note: This method currently returns List<Recipe>, not List<RecipeRecommendation>
-      // We'll need to update this to match our new detailed recommendations approach
       if (mounted) {
         setState(() {
-          // For now, create simple RecipeRecommendation objects
-          _recommendations = freshRecommendations
-              .map((recipe) => RecipeRecommendation(
-                    recipe: recipe,
-                    totalScore: 0.0,
-                    factorScores: {},
-                  ))
-              .toList();
+          _recommendations = freshRecommendations;
           _isLoading = false;
         });
       }
@@ -746,7 +768,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text('Recommended'),
-                      if (widget.onRefreshRecommendations != null)
+                      if (widget.onRefreshDetailedRecommendations != null)
                         IconButton(
                           icon: const Icon(Icons.refresh, size: 18),
                           onPressed: _isLoading ? null : _handleRefresh,
