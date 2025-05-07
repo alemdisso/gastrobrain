@@ -87,6 +87,8 @@ class RecipeRecommendationCard extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(color: color, width: 3),
+        // Add a subtle background color matching the score
+        color: color.withValues(alpha: 26), // 0.1 * 255 ≈ 26
       ),
       child: Center(
         child: Text(
