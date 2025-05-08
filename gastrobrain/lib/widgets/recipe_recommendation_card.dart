@@ -140,52 +140,115 @@ class RecipeRecommendationCard extends StatelessWidget {
     recommendation.factorScores.forEach((factorId, score) {
       final icon = _getFactorIcon(factorId, score);
       if (icon != null) {
-        factorIcons.add(Padding(
-          padding: const EdgeInsets.only(right: 8.0),
-          child: Tooltip(
-            message: _getFactorTooltip(factorId, score),
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: _getFactorColor(score),
-                borderRadius: BorderRadius.circular(4),
+        // Determine factor strength label
+        String strengthLabel = '';
+        if (score >= 80) {
+          strengthLabel = 'Strong';
+        } else if (score >= 60) {
+          strengthLabel = 'Good';
+        } else if (score >= 40) {
+          strengthLabel = 'Fair';
+        } else {
+          strengthLabel = 'Weak';
+        }
+
+        factorIcons.add(
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Tooltip(
+              message: _getFactorTooltip(factorId, score),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: _getFactorColor(score),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color: _getFactorBorderColor(score),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    icon,
+                    const SizedBox(width: 4),
+                    Text(
+                      strengthLabel,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                        color: _getFactorTextColor(score),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: icon,
             ),
           ),
-        ));
+        );
       }
     });
 
     // Add protein rotation warning if needed
     final proteinScore = recommendation.factorScores['protein_rotation'];
     if (proteinScore != null && proteinScore < 50) {
-      factorIcons.add(Padding(
-        padding: const EdgeInsets.only(right: 8.0),
-        child: Tooltip(
-          message: 'Warning: Protein type recently used',
-          child: Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: Colors.red.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: const Icon(
-              Icons.warning,
-              size: 16,
-              color: Colors.red,
+      factorIcons.add(
+        Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child: Tooltip(
+            message: 'Warning: Protein type recently used',
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 26),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: Colors.red, width: 1),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.warning,
+                    size: 16,
+                    color: Colors.red,
+                  ),
+                  SizedBox(width: 4),
+                  Text(
+                    'Recent',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.red,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      ));
+      );
     }
 
     return Wrap(
       spacing: 4,
+      runSpacing: 8,
       children: factorIcons.isEmpty
           ? [Text('No factors', style: Theme.of(context).textTheme.bodySmall)]
           : factorIcons,
     );
+  }
+
+// Add helper methods for colors
+  Color _getFactorBorderColor(double score) {
+    if (score >= 75) return Colors.green;
+    if (score >= 50) return Colors.amber;
+    return Colors.red;
+  }
+
+  Color _getFactorTextColor(double score) {
+    if (score >= 75) return Colors.green.shade800;
+    if (score >= 50) return Colors.amber.shade800;
+    return Colors.red.shade800;
   }
 
   Icon? _getFactorIcon(String factorId, double score) {
@@ -229,8 +292,8 @@ class RecipeRecommendationCard extends StatelessWidget {
   }
 
   Color _getFactorColor(double score) {
-    if (score >= 75) return Colors.green.withValues(alpha: 0.1);
-    if (score >= 50) return Colors.amber.withValues(alpha: 0.1);
-    return Colors.red.withValues(alpha: 0.1);
+    if (score >= 75) return Colors.green.withValues(alpha: 0.26);
+    if (score >= 50) return Colors.amber.withValues(alpha: 0.26);
+    return Colors.red.withValues(alpha: 0.26);
   }
 }

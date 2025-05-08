@@ -425,5 +425,54 @@ void main() {
 
       expect(find.text('Weak'), findsOneWidget);
     });
+
+    testWidgets('displays factor badges with strength labels',
+        (WidgetTester tester) async {
+      // Arrange
+      final recipe = Recipe(
+        id: 'test-recipe',
+        name: 'Test Recipe',
+        createdAt: DateTime.now(),
+        desiredFrequency: null,
+      );
+
+      final recommendation = RecipeRecommendation(
+        recipe: recipe,
+        totalScore: 75.0,
+        factorScores: {
+          'frequency': 85.0, // Strong
+          'rating': 65.0, // Good
+          'protein_rotation': 45.0, // Fair
+          'variety_encouragement': 30.0, // Weak
+        },
+      );
+
+      // Act
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: RecipeRecommendationCard(recommendation: recommendation),
+          ),
+        ),
+      );
+
+      // Assert
+      // Find all instances of strength labels
+      expect(find.text('Strong'), findsAtLeastNWidgets(1));
+      expect(find.text('Good'), findsAtLeastNWidgets(1));
+      expect(find.text('Fair'), findsAtLeastNWidgets(1));
+      expect(find.text('Weak'), findsAtLeastNWidgets(1));
+
+      // Should find the "Recent" warning for protein rotation
+      expect(find.text('Recent'), findsOneWidget);
+
+      // Verify that each factor icon is present
+      expect(find.byIcon(Icons.schedule), findsOneWidget); // frequency
+      expect(find.byIcon(Icons.star), findsWidgets); // rating
+      expect(
+          find.byIcon(Icons.rotate_right), findsOneWidget); // protein_rotation
+      expect(
+          find.byIcon(Icons.shuffle), findsOneWidget); // variety_encouragement
+    });
   });
 }
