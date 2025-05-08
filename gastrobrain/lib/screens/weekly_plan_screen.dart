@@ -261,7 +261,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
 
     final recommendations =
         await _recommendationService.getDetailedRecommendations(
-      count: 5,
+      count: 8,
       excludeIds: recommendationContext['excludeIds'] ?? [],
       avoidProteinTypes: recommendationContext['avoidProteinTypes'],
       forDate: date,
@@ -747,6 +747,9 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
         .toList();
 
     return Dialog(
+      // Make dialog use more screen space on small devices
+      insetPadding:
+          const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -756,8 +759,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
               'Select Recipe',
               style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: 16),
-
+            const SizedBox(height: 8),
             // Tab bar for switching between Recommended and All Recipes
             TabBar(
               controller: _tabController,
@@ -767,15 +769,20 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('Recommended'),
+                      const Text('Try this'),
                       if (widget.onRefreshDetailedRecommendations != null)
-                        IconButton(
-                          icon: const Icon(Icons.refresh, size: 18),
-                          onPressed: _isLoading ? null : _handleRefresh,
-                          tooltip: 'Get new recommendations',
-                          padding: const EdgeInsets.only(left: 4),
-                          constraints: const BoxConstraints(),
-                          visualDensity: VisualDensity.compact,
+                        GestureDetector(
+                          onTap: _isLoading ? null : _handleRefresh,
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 4.0),
+                            child: Icon(
+                              Icons.refresh,
+                              size: 18,
+                              color: _isLoading
+                                  ? Colors.grey.withValues(alpha: 128)
+                                  : Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
                         ),
                     ],
                   ),
@@ -783,7 +790,6 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
                 const Tab(text: 'All Recipes'),
               ],
             ),
-
             const SizedBox(height: 16),
 
             // Only show search on All Recipes tab - with AnimatedBuilder to respond to tab changes

@@ -140,18 +140,36 @@ class RecipeRecommendationCard extends StatelessWidget {
     recommendation.factorScores.forEach((factorId, score) {
       final icon = _getFactorIcon(factorId, score);
       if (icon != null) {
-        // Determine factor strength label
-        String strengthLabel = '';
-        if (score >= 80) {
-          strengthLabel = 'Strong';
-        } else if (score >= 60) {
-          strengthLabel = 'Good';
-        } else if (score >= 40) {
-          strengthLabel = 'Fair';
+        // Determine badge properties based on factor type and score
+        String label;
+        Color backgroundColor;
+        Color borderColor;
+        Color textColor;
+
+        if (factorId == 'randomization') {
+          // Special case for randomization factor - show numeric score
+          label = score.toStringAsFixed(0);
+          backgroundColor = Colors.purple.withValues(alpha: 26);
+          borderColor = Colors.purple;
+          textColor = Colors.purple;
         } else {
-          strengthLabel = 'Weak';
+          // For all other factors, use strength labels
+          if (score >= 80) {
+            label = 'Strong';
+          } else if (score >= 60) {
+            label = 'Good';
+          } else if (score >= 40) {
+            label = 'Fair';
+          } else {
+            label = 'Weak';
+          }
+
+          backgroundColor = _getFactorColor(score);
+          borderColor = _getFactorBorderColor(score);
+          textColor = _getFactorTextColor(score);
         }
 
+        // Create the factor badge with the determined properties
         factorIcons.add(
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
@@ -160,10 +178,10 @@ class RecipeRecommendationCard extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: _getFactorColor(score),
+                  color: backgroundColor,
                   borderRadius: BorderRadius.circular(4),
                   border: Border.all(
-                    color: _getFactorBorderColor(score),
+                    color: borderColor,
                     width: 1,
                   ),
                 ),
@@ -173,11 +191,11 @@ class RecipeRecommendationCard extends StatelessWidget {
                     icon,
                     const SizedBox(width: 4),
                     Text(
-                      strengthLabel,
+                      label,
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w500,
-                        color: _getFactorTextColor(score),
+                        color: textColor,
                       ),
                     ),
                   ],
@@ -192,11 +210,18 @@ class RecipeRecommendationCard extends StatelessWidget {
     // Add protein rotation warning if needed
     final proteinScore = recommendation.factorScores['protein_rotation'];
     if (proteinScore != null && proteinScore < 50) {
+      // Determine severity based on score
+      String warningText = 'Recent';
+      if (proteinScore < 25) {
+        warningText = 'Very Recent';
+      }
+
       factorIcons.add(
         Padding(
           padding: const EdgeInsets.only(right: 8.0),
           child: Tooltip(
-            message: 'Warning: Protein type recently used',
+            message:
+                'Warning: This protein type was used recently in your meals.\nConsider choosing a different protein for better variety.',
             child: Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
@@ -204,18 +229,18 @@ class RecipeRecommendationCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
                 border: Border.all(color: Colors.red, width: 1),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.warning,
                     size: 16,
                     color: Colors.red,
                   ),
-                  SizedBox(width: 4),
+                  const SizedBox(width: 4),
                   Text(
-                    'Recent',
-                    style: TextStyle(
+                    warningText,
+                    style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
                       color: Colors.red,
@@ -272,22 +297,46 @@ class RecipeRecommendationCard extends StatelessWidget {
 
   String _getFactorTooltip(String factorId, double score) {
     final scoreText = score.toStringAsFixed(1);
+    String strengthText = '';
+
+    // Add strength text based on score
+    if (score >= 80) {
+      strengthText = ' (Strong)';
+    } else if (score >= 60) {
+      strengthText = ' (Good)';
+    } else if (score >= 40) {
+      strengthText = ' (Fair)';
+    } else {
+      strengthText = ' (Weak)';
+    }
 
     switch (factorId) {
       case 'frequency':
-        return 'Cooking frequency score: $scoreText';
+        return 'Cooking frequency: $scoreText$strengthText\nThis recipe is due to be cooked based on your frequency preferences';
       case 'protein_rotation':
-        return 'Protein variety score: $scoreText';
+        if (score < 50) {
+          return 'Protein variety: $scoreText$strengthText\nThis protein type was used recently. Consider a different protein for variety.';
+        }
+        return 'Protein variety: $scoreText$strengthText\nGood protein rotation - you haven\'t used this protein type recently';
       case 'rating':
-        return 'Recipe rating score: $scoreText';
+        return 'Your rating: $scoreText$strengthText\nThis recipe has a ${score >= 60 ? 'good' : 'lower'} rating';
       case 'variety_encouragement':
-        return 'Variety encouragement score: $scoreText';
+        return 'Recipe variety: $scoreText$strengthText\nThis recipe ${score >= 60 ? 'hasn\'t been cooked often' : 'has been cooked frequently'}';
       case 'difficulty':
-        return 'Difficulty appropriateness: $scoreText';
+        String context = '';
+        DateTime now = DateTime.now();
+        bool isWeekend =
+            now.weekday == DateTime.saturday || now.weekday == DateTime.sunday;
+        if (isWeekend) {
+          context = '\nWeekend meals can be more complex';
+        } else {
+          context = '\nWeekday meals are better when simpler';
+        }
+        return 'Difficulty match: $scoreText$strengthText\nRecipe difficulty: ${recommendation.recipe.difficulty}/5$context';
       case 'randomization':
-        return 'Randomization factor: $scoreText';
+        return 'Variety factor: $scoreText\nAdds a little randomness to keep suggestions fresh';
       default:
-        return '$factorId: $scoreText';
+        return '$factorId: $scoreText$strengthText';
     }
   }
 

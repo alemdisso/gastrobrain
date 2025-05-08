@@ -474,5 +474,50 @@ void main() {
       expect(
           find.byIcon(Icons.shuffle), findsOneWidget); // variety_encouragement
     });
+
+    // Add this test to test/widgets/recipe_recommendation_card_test.dart
+    testWidgets('shows appropriate protein warning based on score',
+        (WidgetTester tester) async {
+      // Arrange
+      final recipe = Recipe(
+        id: 'test-recipe',
+        name: 'Test Recipe',
+        createdAt: DateTime.now(),
+        desiredFrequency: null,
+      );
+
+      // Test very low protein score
+      final recommendation = RecipeRecommendation(
+        recipe: recipe,
+        totalScore: 70.0,
+        factorScores: {
+          'protein_rotation': 20.0, // Very low score
+        },
+      );
+
+      // Act
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: RecipeRecommendationCard(recommendation: recommendation),
+          ),
+        ),
+      );
+
+      // Assert
+      expect(find.text('Very Recent'), findsOneWidget);
+
+      // Check tooltip with long press
+      final tooltipFinder = find.ancestor(
+        of: find.byIcon(Icons.warning),
+        matching: find.byType(Tooltip),
+      );
+
+      await tester.longPress(tooltipFinder);
+      await tester.pump();
+
+      expect(find.textContaining('protein type was used recently'),
+          findsOneWidget);
+    });
   });
 }
