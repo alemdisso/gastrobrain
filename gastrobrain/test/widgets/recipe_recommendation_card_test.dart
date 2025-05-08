@@ -361,5 +361,69 @@ void main() {
       // Assert
       expect(find.text('No factors'), findsOneWidget);
     });
+
+    testWidgets('displays strength label below score indicator',
+        (WidgetTester tester) async {
+      // Arrange
+      final recipe = Recipe(
+        id: 'test-recipe',
+        name: 'Test Recipe',
+        createdAt: DateTime.now(),
+        desiredFrequency: null,
+      );
+
+      // Test high score
+      var recommendation = RecipeRecommendation(
+        recipe: recipe,
+        totalScore: 85.0,
+        factorScores: {},
+      );
+
+      // Act
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: RecipeRecommendationCard(recommendation: recommendation),
+          ),
+        ),
+      );
+
+      // Assert
+      expect(find.text('Strong'), findsOneWidget);
+
+      // Test medium score
+      recommendation = RecipeRecommendation(
+        recipe: recipe,
+        totalScore: 65.0,
+        factorScores: {},
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: RecipeRecommendationCard(recommendation: recommendation),
+          ),
+        ),
+      );
+
+      expect(find.text('Good'), findsOneWidget);
+
+      // Test low score
+      recommendation = RecipeRecommendation(
+        recipe: recipe,
+        totalScore: 35.0,
+        factorScores: {},
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: RecipeRecommendationCard(recommendation: recommendation),
+          ),
+        ),
+      );
+
+      expect(find.text('Weak'), findsOneWidget);
+    });
   });
 }

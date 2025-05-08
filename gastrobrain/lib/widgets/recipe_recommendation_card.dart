@@ -81,25 +81,49 @@ class RecipeRecommendationCard extends StatelessWidget {
     final score = recommendation.totalScore;
     final color = _getScoreColor(score);
 
-    return Container(
-      width: 50,
-      height: 50,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: color, width: 3),
-        // Add a subtle background color matching the score
-        color: color.withValues(alpha: 26), // 0.1 * 255 ≈ 26
-      ),
-      child: Center(
-        child: Text(
-          '${score.toInt()}',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: color,
-            fontSize: 16,
+    // Determine strength label based on score
+    String strengthLabel = 'Fair';
+    if (score >= 80) {
+      strengthLabel = 'Strong';
+    } else if (score >= 60) {
+      strengthLabel = 'Good';
+    } else if (score < 40) {
+      strengthLabel = 'Weak';
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: color, width: 3),
+            // Add a subtle background color matching the score
+            color: color.withValues(alpha: 26), // 0.1 * 255 ≈ 26
+          ),
+          child: Center(
+            child: Text(
+              '${score.toInt()}',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: color,
+                fontSize: 16,
+              ),
+            ),
           ),
         ),
-      ),
+        const SizedBox(height: 2),
+        Text(
+          strengthLabel,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w500,
+            color: color,
+          ),
+        ),
+      ],
     );
   }
 
