@@ -744,7 +744,8 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
     final filteredRecipes = widget.recipes
         .where((recipe) =>
             recipe.name.toLowerCase().contains(_searchQuery.toLowerCase()))
-        .toList();
+        .toList()
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
     return Dialog(
       // Make dialog use more screen space on small devices
