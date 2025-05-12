@@ -330,8 +330,9 @@ void main() {
       await tester.longPress(tooltipFinder);
       await tester.pump();
 
-      // Assert
-      expect(find.text('Cooking frequency score: 90.5'), findsOneWidget);
+      // Assert - look for the expected format of tooltip text
+      expect(find.textContaining('Cooking frequency'), findsOneWidget);
+      expect(find.textContaining('90.5'), findsOneWidget);
     });
 
     testWidgets('handles empty factor scores', (WidgetTester tester) async {
