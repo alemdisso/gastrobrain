@@ -333,8 +333,10 @@ void main() {
       // Print which recipes were found in recommendations
       indices.forEach((name, index) {
         if (index != -1) {
+          // ignore: avoid_print
           print('$name found at position ${index + 1}');
         } else {
+          // ignore: avoid_print
           print(
               '$name not found in top ${recommendations.length} recommendations');
         }
