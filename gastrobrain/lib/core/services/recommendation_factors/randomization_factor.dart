@@ -16,52 +16,61 @@ class RandomizationFactor implements RecommendationFactor {
   @override
   Set<String> get requiredData => {}; // No additional data required
 
+  /// Creates a deterministic seed specific to a recipe
   @override
   Future<double> calculateScore(
       Recipe recipe, Map<String, dynamic> context) async {
     // Check if a random seed is provided for deterministic results (useful for testing)
     final int? baseSeed = context['randomSeed'] as int?;
 
-    // Create a recipe-specific seed by combining the base seed with the recipe ID
-    // This ensures each recipe gets a different but deterministic random score
-    final recipeSpecificSeed = _createRecipeSpecificSeed(recipe.id, baseSeed);
+    // Handle the case where we explicitly want randomness (baseSeed is null)
+    // and the case where we want deterministic results (baseSeed is not null)
+    Random random;
 
-    // Create random number generator with the recipe-specific seed
-    final random = Random(recipeSpecificSeed);
+    if (baseSeed == null) {
+      // For truly random behavior when no seed is provided, use a new Random instance
+      // This will use system entropy and produce different results each time
+      random = Random();
+    } else {
+      // When a seed is provided, create a deterministic random generator
+      // based on the recipe ID and provided seed
+      final recipeSpecificSeed = _createRecipeSpecificSeed(recipe.id, baseSeed);
+      random = Random(recipeSpecificSeed);
+    }
 
     // Generate a random score between 0 and 100
-    // This ensures the randomization factor contributes a value in the same
-    // range as other factors for consistent weighting
     return random.nextDouble() * 100;
   }
 
-  /// Creates a deterministic seed specific to a recipe
-  int _createRecipeSpecificSeed(String recipeId, int? baseSeed) {
-    // Start with the base seed (or 0 if null)
-    int seed = baseSeed ?? 0;
+// Simplify the seed generation to focus only on the deterministic case
+  int _createRecipeSpecificSeed(String recipeId, int baseSeed) {
+    // Generate a deterministic hash for the recipe ID
+    final recipeHash = recipeId.codeUnits
+        .fold<int>(0, (hash, char) => (hash * 31 + char) & 0x7FFFFFFF);
 
-    // Combine with a hash of the recipe ID to make it unique per recipe
-    // Use a simple hash function that converts the recipe ID to a number
-    final recipeHash =
-        recipeId.codeUnits.fold<int>(0, (hash, char) => hash * 31 + char);
-
-    // Combine the two seeds
-    return seed ^ recipeHash;
+    // Combine the seed with the recipe hash using XOR for deterministic results
+    return baseSeed ^ recipeHash;
   }
 
   /// Calculate a random score for a recipe.
   /// This static utility function can be used outside the factor.
   static double calculateRandomScore(String recipeId, {int? seed}) {
-    final recipeSpecificSeed = _createStaticRecipeSpecificSeed(recipeId, seed);
-    final random = Random(recipeSpecificSeed);
-    return random.nextDouble() * 100;
+    if (seed == null) {
+      // Use system entropy for true randomness
+      return Random().nextDouble() * 100;
+    } else {
+      // Use deterministic random for testing
+      final recipeSpecificSeed =
+          _createStaticRecipeSpecificSeed(recipeId, seed);
+      return Random(recipeSpecificSeed).nextDouble() * 100;
+    }
   }
 
   /// Static version of the recipe-specific seed creation for the utility method
-  static int _createStaticRecipeSpecificSeed(String recipeId, int? baseSeed) {
-    int seed = baseSeed ?? 0;
-    final recipeHash =
-        recipeId.codeUnits.fold<int>(0, (hash, char) => hash * 31 + char);
-    return seed ^ recipeHash;
+  static int _createStaticRecipeSpecificSeed(String recipeId, int baseSeed) {
+    final recipeHash = recipeId.codeUnits
+        .fold<int>(0, (hash, char) => (hash * 31 + char) & 0x7FFFFFFF);
+
+    return baseSeed ^ recipeHash;
   }
 }

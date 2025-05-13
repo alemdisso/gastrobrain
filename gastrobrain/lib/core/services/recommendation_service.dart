@@ -424,7 +424,9 @@ class RecommendationService {
       testContext['maxDifficulty'] = maxDifficulty;
       testContext['preferredFrequency'] = preferredFrequency;
       testContext['weekdayMeal'] = weekdayMeal;
-      testContext['randomSeed'] = _random.nextInt(1000);
+      if (!testContext.containsKey('randomSeed')) {
+        testContext['randomSeed'] = _random.nextInt(1000);
+      }
       return testContext;
     }
 

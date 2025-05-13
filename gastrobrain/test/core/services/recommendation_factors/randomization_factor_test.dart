@@ -55,6 +55,8 @@ void main() {
 
       // Act - get multiple scores
       final score1 = await factor.calculateScore(recipe, context);
+      // Add a small delay to ensure timestamp changes
+      await Future.delayed(const Duration(milliseconds: 2));
       final score2 = await factor.calculateScore(recipe, context);
 
       // There's a tiny chance these could be equal by random chance,
@@ -98,6 +100,35 @@ void main() {
 
       // Different seeds should (almost certainly) give different results
       expect(score1, isNot(equals(score2)));
+    });
+
+    test(
+        'produces identical scores for same recipe and seed across multiple instances',
+        () async {
+      // Create a recipe
+      final recipe = Recipe(
+        id: 'consistent-test-recipe', // Fixed ID for deterministic result
+        name: 'Test Recipe',
+        createdAt: DateTime.now(),
+      );
+
+      // Create fixed context with seed
+      final context = <String, dynamic>{
+        'randomSeed': 42, // Fixed seed
+      };
+
+      // Create two separate instances of the factor
+      final factor1 = RandomizationFactor();
+      final factor2 = RandomizationFactor();
+
+      // Get scores from both instances
+      final score1 = await factor1.calculateScore(recipe, context);
+      final score2 = await factor2.calculateScore(recipe, context);
+
+      // Scores should be identical with same recipe ID and same seed
+      expect(score2, equals(score1),
+          reason:
+              "Multiple factor instances should produce identical scores for same recipe and seed");
     });
   });
 }

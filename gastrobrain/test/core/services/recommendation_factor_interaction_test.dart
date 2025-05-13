@@ -253,7 +253,10 @@ void main() {
 
       await mockDbHelper.insertMeal(yesterdayBeefMeal);
 
-      // Set up the context with necessary data
+// Unregister the randomization factor to ensure deterministic results
+      recommendationService.unregisterFactor('randomization');
+
+// Add fixed seed for any remaining randomness
       recommendationService.overrideTestContext = {
         'proteinTypes': mockDbHelper.recipeProteinTypes,
         'recentMeals': [
@@ -272,6 +275,7 @@ void main() {
           notDueGoodProteinRecipe.id: 1,
           'yesterday-beef-recipe': 1,
         },
+        'randomSeed': 42, // Add a fixed seed for deterministic results
       };
 
       // Act: Get detailed recommendations
