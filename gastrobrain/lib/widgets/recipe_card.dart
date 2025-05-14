@@ -73,7 +73,6 @@ class _RecipeCardState extends State<RecipeCard> {
                 Row(
                   children: [
                     // Difficulty stars
-                    const Text('D: '),
                     ...List.generate(
                         5,
                         (index) => Icon(
@@ -87,7 +86,6 @@ class _RecipeCardState extends State<RecipeCard> {
                             )),
                     const SizedBox(width: 16),
                     // Rating stars
-                    const Text('R: '),
                     ...List.generate(
                         5,
                         (index) => Icon(
