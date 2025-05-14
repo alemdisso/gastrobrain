@@ -66,17 +66,17 @@ void main() {
       );
 
       // Assert
-      final starIcons = tester
+      final difficultyIcons = tester
           .widgetList<Icon>(find.byType(Icon))
-          .where((icon) => icon.icon == Icons.star)
+          .where((icon) => icon.icon == Icons.battery_full)
           .length;
-      final emptyStarIcons = tester
+      final emptyDifficultyIcons = tester
           .widgetList<Icon>(find.byType(Icon))
-          .where((icon) => icon.icon == Icons.star_border)
+          .where((icon) => icon.icon == Icons.battery_0_bar)
           .length;
 
-      expect(starIcons, equals(3)); // 3 filled stars
-      expect(emptyStarIcons, equals(2)); // 2 empty stars
+      expect(difficultyIcons, equals(3)); // 3 filled batteries
+      expect(emptyDifficultyIcons, equals(2)); // 2 empty batteries
     });
 
     testWidgets('displays cooking time correctly', (WidgetTester tester) async {
@@ -441,10 +441,10 @@ void main() {
         recipe: recipe,
         totalScore: 75.0,
         factorScores: {
-          'frequency': 85.0, // Strong
+          'frequency': 85.0, // Due
           'rating': 65.0, // Good
-          'protein_rotation': 45.0, // Fair
-          'variety_encouragement': 30.0, // Weak
+          'protein_rotation': 45.0, // Recent
+          'variety_encouragement': 30.0, // Regular
         },
       );
 
@@ -459,10 +459,10 @@ void main() {
 
       // Assert
       // Find all instances of strength labels
-      expect(find.text('Strong'), findsAtLeastNWidgets(1));
+      expect(find.text('Due'), findsAtLeastNWidgets(1));
       expect(find.text('Good'), findsAtLeastNWidgets(1));
-      expect(find.text('Fair'), findsAtLeastNWidgets(1));
-      expect(find.text('Weak'), findsAtLeastNWidgets(1));
+      expect(find.text('Recent'), findsAtLeastNWidgets(1));
+      expect(find.text('Regular'), findsAtLeastNWidgets(1));
 
       // Should find the "Recent" warning for protein rotation
       expect(find.text('Recent'), findsOneWidget);
@@ -506,7 +506,7 @@ void main() {
       );
 
       // Assert
-      expect(find.text('Very Recent'), findsOneWidget);
+      expect(find.text('Recent'), findsOneWidget);
 
       // Check tooltip with long press
       final tooltipFinder = find.ancestor(

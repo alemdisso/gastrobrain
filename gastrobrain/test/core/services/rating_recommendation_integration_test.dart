@@ -107,6 +107,9 @@ void main() {
       expect(mockDbHelper.getAllLastCooked(), completion(isNotEmpty));
       expect(mockDbHelper.getAllMealCounts(), completion(isNotEmpty));
 
+      // Unregister the randomization factor to ensure deterministic results
+      recommendationService.unregisterFactor('randomization');
+
       // Get detailed recommendations to analyze scores
       final results = await recommendationService.getDetailedRecommendations();
 
