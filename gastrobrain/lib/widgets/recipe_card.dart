@@ -78,11 +78,11 @@ class _RecipeCardState extends State<RecipeCard> {
                         5,
                         (index) => Icon(
                               index < widget.recipe.difficulty
-                                  ? Icons.star
-                                  : Icons.star_border,
+                                  ? Icons.battery_full
+                                  : Icons.battery_0_bar,
                               size: 16,
                               color: index < widget.recipe.difficulty
-                                  ? Colors.amber
+                                  ? Colors.green
                                   : Colors.grey,
                             )),
                     const SizedBox(width: 16),

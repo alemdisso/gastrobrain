@@ -48,11 +48,11 @@ class RecipeRecommendationCard extends StatelessWidget {
                     5,
                     (i) => Icon(
                       i < recommendation.recipe.difficulty
-                          ? Icons.star
-                          : Icons.star_border,
+                          ? Icons.battery_full
+                          : Icons.battery_0_bar,
                       size: 14,
                       color: i < recommendation.recipe.difficulty
-                          ? Colors.amber
+                          ? Colors.green
                           : Colors.grey,
                     ),
                   ),
@@ -145,7 +145,6 @@ class RecipeRecommendationCard extends StatelessWidget {
         Color backgroundColor;
         Color borderColor;
         Color textColor;
-
         if (factorId == 'randomization') {
           // Special case for randomization factor - show numeric score
           label = score.toStringAsFixed(0);
@@ -153,22 +152,34 @@ class RecipeRecommendationCard extends StatelessWidget {
           borderColor = Colors.purple;
           textColor = Colors.purple;
         } else {
-          // For all other factors, use strength labels
-          if (score >= 80) {
-            label = 'Strong';
-          } else if (score >= 60) {
-            label = 'Good';
-          } else if (score >= 40) {
-            label = 'Fair';
+          // Use factor-specific labels based on the factor ID
+          if (factorId == 'frequency') {
+            label = score >= 75 ? 'Due' : (score >= 50 ? 'Soon' : 'Recent');
+          } else if (factorId == 'protein_rotation') {
+            label = score >= 75 ? 'Varied' : (score >= 50 ? 'OK' : 'Recent');
+          } else if (factorId == 'rating') {
+            label = score >= 75 ? 'Top' : (score >= 50 ? 'Good' : 'Fair');
+          } else if (factorId == 'variety_encouragement') {
+            label = score >= 75 ? 'Rare' : (score >= 50 ? 'Often' : 'Regular');
+          } else if (factorId == 'difficulty') {
+            label = score >= 75 ? 'Easy' : (score >= 50 ? 'Medium' : 'Hard');
           } else {
-            label = 'Weak';
+            // Default fallback for other factors
+            if (score >= 80) {
+              label = 'Strong';
+            } else if (score >= 60) {
+              label = 'Good';
+            } else if (score >= 40) {
+              label = 'Fair';
+            } else {
+              label = 'Weak';
+            }
           }
 
           backgroundColor = _getFactorColor(score);
           borderColor = _getFactorBorderColor(score);
           textColor = _getFactorTextColor(score);
         }
-
         // Create the factor badge with the determined properties
         factorIcons.add(
           Padding(
@@ -211,9 +222,9 @@ class RecipeRecommendationCard extends StatelessWidget {
     final proteinScore = recommendation.factorScores['protein_rotation'];
     if (proteinScore != null && proteinScore < 50) {
       // Determine severity based on score
-      String warningText = 'Recent';
+      String warningText = 'Repeat';
       if (proteinScore < 25) {
-        warningText = 'Very Recent';
+        warningText = 'Same';
       }
 
       factorIcons.add(
@@ -287,7 +298,8 @@ class RecipeRecommendationCard extends StatelessWidget {
       case 'variety_encouragement':
         return const Icon(Icons.shuffle, size: 16);
       case 'difficulty':
-        return const Icon(Icons.fitness_center, size: 16);
+        return const Icon(Icons.battery_full,
+            size: 16); // Battery icon for difficulty
       case 'randomization':
         return const Icon(Icons.casino, size: 16);
       default:
@@ -297,32 +309,30 @@ class RecipeRecommendationCard extends StatelessWidget {
 
   String _getFactorTooltip(String factorId, double score) {
     final scoreText = score.toStringAsFixed(1);
-    String strengthText = '';
-
-    // Add strength text based on score
-    if (score >= 80) {
-      strengthText = ' (Strong)';
-    } else if (score >= 60) {
-      strengthText = ' (Good)';
-    } else if (score >= 40) {
-      strengthText = ' (Fair)';
-    } else {
-      strengthText = ' (Weak)';
-    }
-
     switch (factorId) {
       case 'frequency':
-        return 'Cooking frequency: $scoreText$strengthText\nThis recipe is due to be cooked based on your frequency preferences';
+        String statusText = score >= 75
+            ? 'due now'
+            : (score >= 50 ? 'due soon' : 'recently cooked');
+        return 'Cooking frequency: $scoreText\nThis recipe is $statusText based on your frequency preferences';
       case 'protein_rotation':
         if (score < 50) {
-          return 'Protein variety: $scoreText$strengthText\nThis protein type was used recently. Consider a different protein for variety.';
+          return 'Protein variety: $scoreText\nThis protein type was used recently. Consider a different protein for variety.';
         }
-        return 'Protein variety: $scoreText$strengthText\nGood protein rotation - you haven\'t used this protein type recently';
+        return 'Protein variety: $scoreText\nGood variety - you haven\'t used this protein type recently';
       case 'rating':
-        return 'Your rating: $scoreText$strengthText\nThis recipe has a ${score >= 60 ? 'good' : 'lower'} rating';
+        String ratingText = score >= 75
+            ? 'top-rated'
+            : (score >= 50 ? 'well-rated' : 'moderately rated');
+        return 'Your rating: $scoreText\nThis recipe is $ratingText based on your preferences';
       case 'variety_encouragement':
-        return 'Recipe variety: $scoreText$strengthText\nThis recipe ${score >= 60 ? 'hasn\'t been cooked often' : 'has been cooked frequently'}';
+        String frequencyText = score >= 75
+            ? 'rarely cooked'
+            : (score >= 50 ? 'rarely  cooked' : 'occasionally cooked');
+        return 'Recipe variety: $scoreText\nThis recipe is $frequencyText  in your meal rotation';
       case 'difficulty':
+        String difficultyText =
+            score >= 75 ? 'easy' : (score >= 50 ? 'medium' : 'more complex');
         String context = '';
         DateTime now = DateTime.now();
         bool isWeekend =
@@ -332,11 +342,11 @@ class RecipeRecommendationCard extends StatelessWidget {
         } else {
           context = '\nWeekday meals are better when simpler';
         }
-        return 'Difficulty match: $scoreText$strengthText\nRecipe difficulty: ${recommendation.recipe.difficulty}/5$context';
+        return 'Difficulty match: $scoreText\nThis recipe is $difficultyText to prepare (${recommendation.recipe.difficulty}/5)$context';
       case 'randomization':
         return 'Variety factor: $scoreText\nAdds a little randomness to keep suggestions fresh';
       default:
-        return '$factorId: $scoreText$strengthText';
+        return '$factorId: $scoreText';
     }
   }
 

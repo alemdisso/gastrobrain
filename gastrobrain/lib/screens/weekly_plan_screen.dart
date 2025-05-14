@@ -237,7 +237,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     _invalidateRecommendationCache(date, mealType);
 
     // Get fresh detailed recommendations
-    return await _getDetailedSlotRecommendations(date, mealType);
+    return await _getDetailedSlotRecommendations(date, mealType, count: 8);
   }
 
   Future<void> _handleSlotTap(DateTime date, String mealType) async {
