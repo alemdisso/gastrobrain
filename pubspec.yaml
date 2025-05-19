@@ -59,7 +59,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   # was flutter_lints: ^5.0.0
-  flutter_lints: ^2.0.2
+  flutter_lints: ^5.0.0
   sqflite_common_ffi: ^2.3.0  # Added for database testing
   mocktail: ^1.0.4
   csv: ^6.0.0
