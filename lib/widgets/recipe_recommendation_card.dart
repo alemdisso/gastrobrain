@@ -6,10 +6,10 @@ class RecipeRecommendationCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const RecipeRecommendationCard({
-    Key? key,
+    super.key,
     required this.recommendation,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

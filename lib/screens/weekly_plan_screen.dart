@@ -20,9 +20,9 @@ import '../utils/id_generator.dart';
 class WeeklyPlanScreen extends StatefulWidget {
   final DatabaseHelper? databaseHelper;
   const WeeklyPlanScreen({
-    Key? key,
+    super.key,
     this.databaseHelper,
-  }) : super(key: key);
+  });
 
   @override
   State<WeeklyPlanScreen> createState() => _WeeklyPlanScreenState();
