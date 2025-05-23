@@ -53,7 +53,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), filename);
     return await openDatabase(
       path,
-      version: 14, // Increment version number for new tables
+      version: 15, // Increment version number for new tables
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: (db) async {
@@ -120,7 +120,8 @@ class DatabaseHelper {
         difficulty INTEGER DEFAULT 1,
         prep_time_minutes INTEGER DEFAULT 0,
         cook_time_minutes INTEGER DEFAULT 0,
-        rating INTEGER DEFAULT 0
+        rating INTEGER DEFAULT 0,
+        category TEXT DEFAULT 'uncategorized'
       )
     ''');
 
@@ -288,6 +289,11 @@ class DatabaseHelper {
           user_id TEXT
         );
       ''');
+    }
+    if (oldVersion < 15) {
+      // Add category column to recipes table
+      await db.execute(
+          'ALTER TABLE recipes ADD COLUMN category TEXT DEFAULT \'uncategorized\'');
     }
   }
   // Meal Plan operations
