@@ -1,4 +1,5 @@
 import 'frequency_type.dart';
+import 'recipe_category.dart';
 
 class Recipe {
   String id;
@@ -10,6 +11,7 @@ class Recipe {
   int prepTimeMinutes; // Preparation time in minutes
   int cookTimeMinutes; // Cooking time in minutes
   int rating; // 1-5 scale
+  RecipeCategory category; // Category of the recipe
 
   Recipe({
     required this.id,
@@ -21,7 +23,9 @@ class Recipe {
     this.prepTimeMinutes = 0,
     this.cookTimeMinutes = 0,
     this.rating = 0,
-  }) : desiredFrequency = desiredFrequency ?? FrequencyType.monthly;
+    RecipeCategory? category,
+  })  : desiredFrequency = desiredFrequency ?? FrequencyType.monthly,
+        category = category ?? RecipeCategory.uncategorized;
 
   Map<String, dynamic> toMap() {
     return {
@@ -34,6 +38,7 @@ class Recipe {
       'prep_time_minutes': prepTimeMinutes,
       'cook_time_minutes': cookTimeMinutes,
       'rating': rating,
+      'category': category.value,
     };
   }
 
@@ -49,6 +54,7 @@ class Recipe {
       prepTimeMinutes: map['prep_time_minutes'] ?? 0,
       cookTimeMinutes: map['cook_time_minutes'] ?? 0,
       rating: map['rating'] ?? 0,
+      category: RecipeCategory.fromString(map['category'] ?? 'uncategorized'),
     );
   }
 }
