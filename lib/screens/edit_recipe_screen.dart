@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
-import '../models/frequency_type.dart'; // Add this import
+import '../models/frequency_type.dart';
+import '../models/recipe_category.dart';
 import '../database/database_helper.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
-//import '../core/services/snackbar_service.dart';
 
 class EditRecipeScreen extends StatefulWidget {
   final Recipe recipe;
@@ -21,7 +21,8 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   late TextEditingController _notesController;
   late TextEditingController _prepTimeController;
   late TextEditingController _cookTimeController;
-  late FrequencyType _selectedFrequency; // Change type here
+  late FrequencyType _selectedFrequency;
+  late RecipeCategory _selectedCategory;
   late int _difficulty;
   late int _rating;
   bool _isSaving = false;
@@ -37,6 +38,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     _cookTimeController =
         TextEditingController(text: widget.recipe.cookTimeMinutes.toString());
     _selectedFrequency = widget.recipe.desiredFrequency;
+    _selectedCategory = widget.recipe.category;
     _difficulty = widget.recipe.difficulty;
     _rating = widget.recipe.rating;
   }
@@ -126,6 +128,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         prepTimeMinutes: prepTime ?? 0,
         cookTimeMinutes: cookTime ?? 0,
         rating: _rating,
+        category: _selectedCategory,
       );
 
       final dbHelper = DatabaseHelper();
@@ -206,6 +209,27 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                     if (newValue != null) {
                       setState(() {
                         _selectedFrequency = newValue;
+                      });
+                    }
+                  },
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<RecipeCategory>(
+                  value: _selectedCategory,
+                  decoration: const InputDecoration(
+                    labelText: 'Category',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: RecipeCategory.values.map((category) {
+                    return DropdownMenuItem<RecipeCategory>(
+                      value: category,
+                      child: Text(category.displayName),
+                    );
+                  }).toList(),
+                  onChanged: (RecipeCategory? newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        _selectedCategory = newValue;
                       });
                     }
                   },

@@ -4,6 +4,7 @@ import '../models/recipe.dart';
 import '../models/ingredient.dart';
 import '../models/recipe_ingredient.dart';
 import '../models/frequency_type.dart';
+import '../models/recipe_category.dart';
 import '../database/database_helper.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
@@ -31,6 +32,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   final _prepTimeController = TextEditingController();
   final _cookTimeController = TextEditingController();
   FrequencyType _selectedFrequency = FrequencyType.monthly;
+  RecipeCategory _selectedCategory = RecipeCategory.uncategorized;
   int _difficulty = 1;
   int _rating = 0;
   bool _isSaving = false;
@@ -166,6 +168,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       prepTimeMinutes: int.tryParse(_prepTimeController.text) ?? 0,
       cookTimeMinutes: int.tryParse(_cookTimeController.text) ?? 0,
       rating: _rating,
+      category: _selectedCategory,
     );
 
     // The AddIngredientDialog will now properly return a RecipeIngredient object
@@ -312,6 +315,27 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                     if (newValue != null) {
                       setState(() {
                         _selectedFrequency = newValue;
+                      });
+                    }
+                  },
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<RecipeCategory>(
+                  value: _selectedCategory,
+                  decoration: const InputDecoration(
+                    labelText: 'Category',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: RecipeCategory.values.map((category) {
+                    return DropdownMenuItem<RecipeCategory>(
+                      value: category,
+                      child: Text(category.displayName),
+                    );
+                  }).toList(),
+                  onChanged: (RecipeCategory? newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        _selectedCategory = newValue;
                       });
                     }
                   },
