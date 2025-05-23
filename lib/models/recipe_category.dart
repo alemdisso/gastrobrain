@@ -7,6 +7,8 @@ enum RecipeCategory {
   desserts('desserts'),
   soupsStews('soups_stews'),
   salads('salads'),
+  sauces('sauces'),
+  dips('dips'),
   snacks('snacks'),
   uncategorized('uncategorized');
 
@@ -38,6 +40,10 @@ enum RecipeCategory {
         return 'Soups/stews';
       case RecipeCategory.salads:
         return 'Salads';
+      case RecipeCategory.sauces:
+        return 'Sauces';
+      case RecipeCategory.dips:
+        return 'Dips';
       case RecipeCategory.snacks:
         return 'Snacks';
       case RecipeCategory.uncategorized:
