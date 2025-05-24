@@ -1263,6 +1263,11 @@ class DatabaseHelper {
         arguments.add(filters['desired_frequency']);
       }
 
+      if (filters.containsKey('category')) {
+        whereConditions.add('category = ?');
+        arguments.add(filters['category']);
+      }
+
       if (whereConditions.isNotEmpty) {
         query += ' WHERE ${whereConditions.join(' AND ')}';
       }
