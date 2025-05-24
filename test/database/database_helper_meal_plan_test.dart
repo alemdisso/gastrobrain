@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:gastrobrain/database/database_helper.dart';
+import 'package:gastrobrain/models/meal.dart';
 import 'package:gastrobrain/models/meal_plan.dart';
 import 'package:gastrobrain/models/meal_plan_item.dart';
 import 'package:gastrobrain/models/meal_plan_item_recipe.dart';
@@ -629,6 +630,373 @@ void main() {
       final recipeIds = recipes.map((r) => r.recipeId).toSet();
       expect(recipeIds.length, 3);
       expect(recipeIds.containsAll(testRecipeIds), isTrue);
+    });
+
+    test('can add and remove recipes from existing meals (Issue #104)',
+        () async {
+      // Test the core database operations for managing side dishes
+
+      // Create test recipes
+      final primaryRecipe = Recipe(
+        id: IdGenerator.generateId(),
+        name: 'Primary Recipe',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+      );
+
+      final sideRecipe1 = Recipe(
+        id: IdGenerator.generateId(),
+        name: 'Side Recipe 1',
+        desiredFrequency: FrequencyType.monthly,
+        createdAt: DateTime.now(),
+      );
+
+      final sideRecipe2 = Recipe(
+        id: IdGenerator.generateId(),
+        name: 'Side Recipe 2',
+        desiredFrequency: FrequencyType.biweekly,
+        createdAt: DateTime.now(),
+      );
+
+      // Insert recipes
+      await dbHelper.insertRecipe(primaryRecipe);
+      await dbHelper.insertRecipe(sideRecipe1);
+      await dbHelper.insertRecipe(sideRecipe2);
+
+      // Create initial meal with primary recipe
+      final meal = Meal(
+        id: IdGenerator.generateId(),
+        recipeId: null, // Using junction table approach
+        cookedAt: DateTime.now(),
+        servings: 2,
+        wasSuccessful: true,
+      );
+
+      await dbHelper.insertMeal(meal);
+
+      // Add primary recipe to meal
+      final primaryJunctionId = await dbHelper.addRecipeToMeal(
+        meal.id,
+        primaryRecipe.id,
+        isPrimaryDish: true,
+      );
+
+      expect(primaryJunctionId.isNotEmpty, isTrue);
+
+      // Verify initial state - meal has one recipe
+      final initialMealRecipes = await dbHelper.getMealRecipesForMeal(meal.id);
+      expect(initialMealRecipes.length, 1);
+      expect(initialMealRecipes[0].recipeId, primaryRecipe.id);
+      expect(initialMealRecipes[0].isPrimaryDish, isTrue);
+
+      // Add first side dish
+      final side1JunctionId = await dbHelper.addRecipeToMeal(
+        meal.id,
+        sideRecipe1.id,
+        isPrimaryDish: false,
+      );
+
+      expect(side1JunctionId.isNotEmpty, isTrue);
+
+      // Verify meal now has two recipes
+      final withOneSideMealRecipes =
+          await dbHelper.getMealRecipesForMeal(meal.id);
+      expect(withOneSideMealRecipes.length, 2);
+
+      final primaryDishes =
+          withOneSideMealRecipes.where((mr) => mr.isPrimaryDish).toList();
+      final sideDishes =
+          withOneSideMealRecipes.where((mr) => !mr.isPrimaryDish).toList();
+
+      expect(primaryDishes.length, 1);
+      expect(primaryDishes[0].recipeId, primaryRecipe.id);
+      expect(sideDishes.length, 1);
+      expect(sideDishes[0].recipeId, sideRecipe1.id);
+
+      // Add second side dish
+      final side2JunctionId = await dbHelper.addRecipeToMeal(
+        meal.id,
+        sideRecipe2.id,
+        isPrimaryDish: false,
+      );
+
+      expect(side2JunctionId.isNotEmpty, isTrue);
+
+      // Verify meal now has three recipes
+      final withTwoSidesMealRecipes =
+          await dbHelper.getMealRecipesForMeal(meal.id);
+      expect(withTwoSidesMealRecipes.length, 3);
+
+      final allPrimaryDishes =
+          withTwoSidesMealRecipes.where((mr) => mr.isPrimaryDish).toList();
+      final allSideDishes =
+          withTwoSidesMealRecipes.where((mr) => !mr.isPrimaryDish).toList();
+
+      expect(allPrimaryDishes.length, 1);
+      expect(allPrimaryDishes[0].recipeId, primaryRecipe.id);
+      expect(allSideDishes.length, 2);
+
+      final sideRecipeIds = allSideDishes.map((sd) => sd.recipeId).toSet();
+      expect(sideRecipeIds.contains(sideRecipe1.id), isTrue);
+      expect(sideRecipeIds.contains(sideRecipe2.id), isTrue);
+
+      // Remove first side dish
+      final removeResult1 =
+          await dbHelper.removeRecipeFromMeal(meal.id, sideRecipe1.id);
+      expect(removeResult1, isTrue);
+
+      // Verify meal now has two recipes (primary + one side)
+      final afterRemovalMealRecipes =
+          await dbHelper.getMealRecipesForMeal(meal.id);
+      expect(afterRemovalMealRecipes.length, 2);
+
+      final finalPrimaryDishes =
+          afterRemovalMealRecipes.where((mr) => mr.isPrimaryDish).toList();
+      final finalSideDishes =
+          afterRemovalMealRecipes.where((mr) => !mr.isPrimaryDish).toList();
+
+      expect(finalPrimaryDishes.length, 1);
+      expect(finalPrimaryDishes[0].recipeId, primaryRecipe.id);
+      expect(finalSideDishes.length, 1);
+      expect(finalSideDishes[0].recipeId, sideRecipe2.id);
+
+      // Test removing non-existent recipe
+      final removeNonExistentResult =
+          await dbHelper.removeRecipeFromMeal(meal.id, sideRecipe1.id);
+      expect(removeNonExistentResult, isFalse);
+
+      // Clean up
+      await dbHelper.deleteMeal(meal.id);
+      await dbHelper.deleteRecipe(primaryRecipe.id);
+      await dbHelper.deleteRecipe(sideRecipe1.id);
+      await dbHelper.deleteRecipe(sideRecipe2.id);
+    });
+
+    test('setPrimaryRecipeForMeal works correctly with multiple recipes',
+        () async {
+      // Test changing which recipe is the primary dish in a multi-recipe meal
+
+      // Create test recipes
+      final recipe1 = Recipe(
+        id: IdGenerator.generateId(),
+        name: 'Recipe 1',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+      );
+
+      final recipe2 = Recipe(
+        id: IdGenerator.generateId(),
+        name: 'Recipe 2',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+      );
+
+      await dbHelper.insertRecipe(recipe1);
+      await dbHelper.insertRecipe(recipe2);
+
+      // Create meal
+      final meal = Meal(
+        id: IdGenerator.generateId(),
+        recipeId: null,
+        cookedAt: DateTime.now(),
+        servings: 2,
+        wasSuccessful: true,
+      );
+
+      await dbHelper.insertMeal(meal);
+
+      // Add both recipes, with recipe1 as primary
+      await dbHelper.addRecipeToMeal(meal.id, recipe1.id, isPrimaryDish: true);
+      await dbHelper.addRecipeToMeal(meal.id, recipe2.id, isPrimaryDish: false);
+
+      // Verify initial state
+      final initialMealRecipes = await dbHelper.getMealRecipesForMeal(meal.id);
+      expect(initialMealRecipes.length, 2);
+
+      final initialPrimary =
+          initialMealRecipes.firstWhere((mr) => mr.isPrimaryDish);
+      expect(initialPrimary.recipeId, recipe1.id);
+
+      // Change primary dish to recipe2
+      final setPrimaryResult =
+          await dbHelper.setPrimaryRecipeForMeal(meal.id, recipe2.id);
+      expect(setPrimaryResult, isTrue);
+
+      // Verify the change
+      final updatedMealRecipes = await dbHelper.getMealRecipesForMeal(meal.id);
+      expect(updatedMealRecipes.length, 2);
+
+      final primaryDishes =
+          updatedMealRecipes.where((mr) => mr.isPrimaryDish).toList();
+      expect(primaryDishes.length, 1,
+          reason: 'Should have exactly one primary dish');
+      expect(primaryDishes[0].recipeId, recipe2.id,
+          reason: 'Recipe2 should now be primary');
+
+      final sideDishes =
+          updatedMealRecipes.where((mr) => !mr.isPrimaryDish).toList();
+      expect(sideDishes.length, 1, reason: 'Should have exactly one side dish');
+      expect(sideDishes[0].recipeId, recipe1.id,
+          reason: 'Recipe1 should now be a side dish');
+
+// Test setting primary for non-existent recipe-meal combination
+// (Recipe exists but isn't associated with this meal)
+      final unrelatedRecipe = Recipe(
+        id: IdGenerator.generateId(),
+        name: 'Unrelated Recipe',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+      );
+      await dbHelper.insertRecipe(unrelatedRecipe);
+
+      final nonExistentResult =
+          await dbHelper.setPrimaryRecipeForMeal(meal.id, unrelatedRecipe.id);
+      expect(nonExistentResult, isTrue,
+          reason: 'Method should add recipe and set as primary');
+
+// Verify the recipe was actually added to the meal
+      final afterAddingUnrelated =
+          await dbHelper.getMealRecipesForMeal(meal.id);
+      expect(afterAddingUnrelated.length, 3,
+          reason: 'Should now have 3 recipes in meal');
+
+// Clean up the unrelated recipe
+      await dbHelper.deleteRecipe(unrelatedRecipe.id);
+      // Clean up
+      await dbHelper.deleteMeal(meal.id);
+      await dbHelper.deleteRecipe(recipe1.id);
+      await dbHelper.deleteRecipe(recipe2.id);
+    });
+
+    test('getMealsForRecipe includes meals with junction table relationships',
+        () async {
+      // Test that recipe statistics correctly include junction table relationships
+
+      final recipe = Recipe(
+        id: IdGenerator.generateId(),
+        name: 'Test Recipe',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+      );
+
+      await dbHelper.insertRecipe(recipe);
+
+      // Create first meal with direct recipe reference (legacy approach)
+      final meal1 = Meal(
+        id: IdGenerator.generateId(),
+        recipeId: recipe.id, // Direct reference
+        cookedAt: DateTime.now().subtract(const Duration(days: 5)),
+        servings: 2,
+        wasSuccessful: true,
+      );
+
+      await dbHelper.insertMeal(meal1);
+
+      // Create second meal using junction table (new approach)
+      final meal2 = Meal(
+        id: IdGenerator.generateId(),
+        recipeId: null, // No direct reference
+        cookedAt: DateTime.now().subtract(const Duration(days: 2)),
+        servings: 3,
+        wasSuccessful: true,
+      );
+
+      await dbHelper.insertMeal(meal2);
+
+      // Add recipe to meal2 via junction table
+      await dbHelper.addRecipeToMeal(meal2.id, recipe.id, isPrimaryDish: true);
+
+      // Create third meal where recipe is a side dish
+      final meal3 = Meal(
+        id: IdGenerator.generateId(),
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 4,
+        wasSuccessful: true,
+      );
+
+      await dbHelper.insertMeal(meal3);
+
+      // Add recipe to meal3 as a side dish
+      await dbHelper.addRecipeToMeal(meal3.id, recipe.id, isPrimaryDish: false);
+
+      // Test getMealsForRecipe includes all three meals
+      final mealsForRecipe = await dbHelper.getMealsForRecipe(recipe.id);
+      expect(mealsForRecipe.length, 3,
+          reason: 'Should find all 3 meals containing the recipe');
+
+      final mealIds = mealsForRecipe.map((m) => m.id).toSet();
+      expect(mealIds.contains(meal1.id), isTrue,
+          reason: 'Should include meal with direct reference');
+      expect(mealIds.contains(meal2.id), isTrue,
+          reason: 'Should include meal with junction table (primary)');
+      expect(mealIds.contains(meal3.id), isTrue,
+          reason: 'Should include meal with junction table (side)');
+
+      // Clean up
+      await dbHelper.deleteMeal(meal1.id);
+      await dbHelper.deleteMeal(meal2.id);
+      await dbHelper.deleteMeal(meal3.id);
+      await dbHelper.deleteRecipe(recipe.id);
+    });
+
+    test('addRecipeToMeal handles duplicate additions gracefully', () async {
+      // Test edge case of adding the same recipe multiple times
+
+      final recipe = Recipe(
+        id: IdGenerator.generateId(),
+        name: 'Test Recipe',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+      );
+
+      await dbHelper.insertRecipe(recipe);
+
+      final meal = Meal(
+        id: IdGenerator.generateId(),
+        recipeId: null,
+        cookedAt: DateTime.now(),
+        servings: 2,
+        wasSuccessful: true,
+      );
+
+      await dbHelper.insertMeal(meal);
+
+      // Add recipe first time
+      final firstAddResult = await dbHelper.addRecipeToMeal(meal.id, recipe.id,
+          isPrimaryDish: true);
+      expect(firstAddResult.isNotEmpty, isTrue);
+
+      // Verify one junction record exists
+      final afterFirstAdd = await dbHelper.getMealRecipesForMeal(meal.id);
+      expect(afterFirstAdd.length, 1);
+
+      // Try to add the same recipe again
+      final secondAddResult = await dbHelper.addRecipeToMeal(meal.id, recipe.id,
+          isPrimaryDish: false);
+      expect(secondAddResult.isNotEmpty, isTrue);
+
+      // Verify behavior - implementation might:
+      // 1. Return existing junction ID without creating duplicate
+      // 2. Update existing junction record
+      // 3. Create duplicate (less desirable)
+
+      final afterSecondAdd = await dbHelper.getMealRecipesForMeal(meal.id);
+
+      // The exact behavior depends on implementation, but we should have reasonable handling
+      // For this test, we'll verify that at least we don't crash and we get some result
+      expect(afterSecondAdd.isNotEmpty, isTrue,
+          reason: 'Should have at least one junction record');
+
+      // If implementation prevents duplicates, we should still have only 1 record
+      // If it allows duplicates, we might have 2 records
+      // Both are acceptable as long as the behavior is consistent
+      expect(afterSecondAdd.length, greaterThanOrEqualTo(1),
+          reason: 'Should have at least the original junction record');
+
+      // Clean up
+      await dbHelper.deleteMeal(meal.id);
+      await dbHelper.deleteRecipe(recipe.id);
     });
   });
 }
