@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../screens/recipe_ingredients_screen.dart';
-//import '../screens/cook_meal_screen.dart';
 import '../screens/meal_history_screen.dart';
-//import '../database/database_helper.dart';
 
 class RecipeCard extends StatefulWidget {
   final Recipe recipe;
@@ -69,6 +67,21 @@ class _RecipeCardState extends State<RecipeCard> {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SizedBox(height: 4),
+                // Category display
+                Row(
+                  children: [
+                    const Icon(Icons.category, size: 16, color: Colors.blue),
+                    const SizedBox(width: 4),
+                    Text(
+                      widget.recipe.category.displayName,
+                      style: TextStyle(
+                        color: Colors.blue.shade700,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
