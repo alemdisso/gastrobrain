@@ -64,6 +64,28 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     );
   }
 
+  Widget _buildDifficultyField(
+      String label, int value, Function(int) onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 16)),
+        const SizedBox(height: 8),
+        Row(
+          children: List.generate(5, (index) {
+            return IconButton(
+              icon: Icon(
+                index < value ? Icons.battery_full : Icons.battery_0_bar,
+                color: index < value ? Colors.green : Colors.grey,
+              ),
+              onPressed: () => onChanged(index + 1),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
   Widget _buildTimeField(String label, TextEditingController controller) {
     return TextFormField(
       controller: controller,
@@ -235,7 +257,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                _buildRatingField('Difficulty Level', _difficulty, (value) {
+                _buildDifficultyField('Difficulty Level', _difficulty, (value) {
                   setState(() => _difficulty = value);
                 }),
                 const SizedBox(height: 16),
