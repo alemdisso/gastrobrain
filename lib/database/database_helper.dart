@@ -1273,9 +1273,14 @@ class DatabaseHelper {
       }
     }
 
-    // Add sorting
+// Add sorting
     if (sortBy != null) {
-      query += ' ORDER BY $sortBy';
+      if (sortBy == 'name') {
+        // Use COLLATE NOCASE for case-insensitive sorting of names
+        query += ' ORDER BY name COLLATE NOCASE';
+      } else {
+        query += ' ORDER BY $sortBy';
+      }
       if (sortOrder != null) {
         query += ' $sortOrder';
       }

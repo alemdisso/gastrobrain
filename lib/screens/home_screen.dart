@@ -23,7 +23,7 @@ class _HomePageState extends State<HomePage> {
   Map<String, DateTime?> lastCookedDates =
       {}; // New map to store last cooked dates
 
-  String? _currentSortBy;
+  String? _currentSortBy = 'name';
   String? _currentSortOrder = 'ASC';
   Map<String, dynamic> _filters = {};
 
@@ -119,6 +119,7 @@ class _HomePageState extends State<HomePage> {
               onTap: () {
                 setState(() {
                   _currentSortBy = 'name';
+                  _currentSortOrder = 'ASC';
                   _loadRecipes();
                 });
                 Navigator.pop(context);
