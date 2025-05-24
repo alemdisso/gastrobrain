@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 import '../models/recipe.dart';
+import '../models/recipe_category.dart';
 import '../widgets/recipe_card.dart';
 import 'add_recipe_screen.dart';
 import 'edit_recipe_screen.dart';
@@ -150,20 +151,6 @@ class _HomePageState extends State<HomePage> {
                 Navigator.pop(context);
               },
             ),
-            ListTile(
-              leading: Icon(_currentSortBy == 'created_at'
-                  ? Icons.radio_button_checked
-                  : Icons.radio_button_unchecked),
-              title: const Text('Date Created'),
-              onTap: () {
-                setState(() {
-                  _currentSortBy = 'created_at';
-                  _currentSortOrder = 'DESC'; // Newest first
-                  _loadRecipes();
-                });
-                Navigator.pop(context);
-              },
-            ),
           ],
         );
       },
@@ -174,6 +161,7 @@ class _HomePageState extends State<HomePage> {
     int? selectedDifficulty = _filters['difficulty'];
     int? selectedRating = _filters['rating'];
     String? selectedFrequency = _filters['desired_frequency'];
+    String? selectedCategory = _filters['category'];
 
     showDialog(
       context: context,
@@ -194,10 +182,10 @@ class _HomePageState extends State<HomePage> {
                         return IconButton(
                           icon: Icon(
                             index < (selectedDifficulty ?? -1)
-                                ? Icons.star
-                                : Icons.star_border,
+                                ? Icons.battery_full
+                                : Icons.battery_0_bar,
                             color: index < (selectedDifficulty ?? -1)
-                                ? Colors.amber
+                                ? Colors.green
                                 : Colors.grey,
                           ),
                           onPressed: () {
@@ -253,6 +241,27 @@ class _HomePageState extends State<HomePage> {
                         });
                       },
                     ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: selectedCategory,
+                      decoration: const InputDecoration(
+                        labelText: 'Category',
+                      ),
+                      items: [
+                        const DropdownMenuItem(value: null, child: Text('Any')),
+                        ...RecipeCategory.values.map(
+                          (category) => DropdownMenuItem(
+                            value: category.value,
+                            child: Text(category.displayName),
+                          ),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          selectedCategory = value;
+                        });
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -263,6 +272,7 @@ class _HomePageState extends State<HomePage> {
                       selectedDifficulty = null;
                       selectedRating = null;
                       selectedFrequency = null;
+                      selectedCategory = null;
                     });
                   },
                   child: const Text('Clear'),
@@ -279,6 +289,8 @@ class _HomePageState extends State<HomePage> {
                       if (selectedRating != null) 'rating': selectedRating,
                       if (selectedFrequency != null)
                         'desired_frequency': selectedFrequency,
+                      if (selectedCategory != null)
+                        'category': selectedCategory,
                     };
                     _loadRecipes();
                     Navigator.pop(context);
