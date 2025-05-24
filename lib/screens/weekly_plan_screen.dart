@@ -408,7 +408,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           if (mealCooked)
             SimpleDialogOption(
               onPressed: () => Navigator.pop(context, 'add_side_dish'),
-              child: const Text('Add Side Dish'),
+              child: const Text('Manage Side Dishes'),
             ),
           SimpleDialogOption(
             onPressed: () => Navigator.pop(context, 'remove'),
