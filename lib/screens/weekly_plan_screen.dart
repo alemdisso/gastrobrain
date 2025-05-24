@@ -1,6 +1,7 @@
 // lib/screens/weekly_plan_screen.dart
 
 import 'package:flutter/material.dart';
+import '../models/meal.dart';
 import '../models/meal_recipe.dart';
 import '../models/meal_plan.dart';
 import '../models/meal_plan_item.dart';
@@ -404,6 +405,11 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
               onPressed: () => Navigator.pop(context, 'cooked'),
               child: const Text('Mark as Cooked'),
             ),
+          if (mealCooked)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, 'add_side_dish'),
+              child: const Text('Add Side Dish'),
+            ),
           SimpleDialogOption(
             onPressed: () => Navigator.pop(context, 'remove'),
             child: const Text('Remove from Plan'),
@@ -415,7 +421,6 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         ],
       ),
     );
-
     if (action == null) return;
 
     if (action == 'view') {
@@ -432,6 +437,9 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     } else if (action == 'cooked') {
       // Mark the meal as cooked
       await _handleMarkAsCooked(date, mealType, recipeId);
+    } else if (action == 'add_side_dish') {
+      // Add side dish to existing cooked meal
+      await _handleAddSideDish(date, mealType, recipeId);
     } else if (action == 'remove') {
       // Remove the meal from the plan
       if (_currentMealPlan != null) {
@@ -579,6 +587,142 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         SnackbarService.showError(context, 'Error marking meal as cooked: $e');
       }
     }
+  }
+
+  Future<void> _handleAddSideDish(
+      DateTime date, String mealType, String recipeId) async {
+    try {
+      // First, find the existing cooked meal
+      // We need to look in the meals table for a meal that was created from this planned meal
+      final items =
+          _currentMealPlan?.getItemsForDateAndMealType(date, mealType) ?? [];
+      if (items.isEmpty || !items[0].hasBeenCooked) {
+        if (mounted) {
+          SnackbarService.showError(
+              context, 'Meal not found or not yet cooked');
+        }
+        return;
+      }
+
+      // Find the actual meal record
+      // We'll search for meals cooked on the same date as the planned date
+      final plannedDateOnly = MealPlanItem.formatPlannedDate(date);
+      final searchDate = DateTime.parse(plannedDateOnly);
+
+      // Get all meals for the primary recipe from that day
+      final allMealsForRecipe = await _dbHelper.getMealsForRecipe(recipeId);
+
+      // Find the meal that was cooked on the planned date (or close to it)
+      Meal? targetMeal;
+      for (final meal in allMealsForRecipe) {
+        final mealDate = DateTime(
+          meal.cookedAt.year,
+          meal.cookedAt.month,
+          meal.cookedAt.day,
+        );
+        final plannedDateNormalized = DateTime(
+          searchDate.year,
+          searchDate.month,
+          searchDate.day,
+        );
+
+        if (mealDate.isAtSameMomentAs(plannedDateNormalized)) {
+          targetMeal = meal;
+          break;
+        }
+      }
+
+      if (targetMeal == null) {
+        if (mounted) {
+          SnackbarService.showError(
+              context, 'Could not find the cooked meal record');
+        }
+        return;
+      }
+
+      // Get the primary recipe
+      final recipe = await _dbHelper.getRecipe(recipeId);
+      if (recipe == null) {
+        if (mounted) {
+          SnackbarService.showError(context, 'Recipe not found');
+        }
+        return;
+      }
+
+      // Get current additional recipes from the meal
+      List<Recipe> currentAdditionalRecipes = [];
+      if (targetMeal.mealRecipes != null) {
+        for (final mealRecipe in targetMeal.mealRecipes!) {
+          if (!mealRecipe.isPrimaryDish) {
+            final additionalRecipe =
+                await _dbHelper.getRecipe(mealRecipe.recipeId);
+            if (additionalRecipe != null) {
+              currentAdditionalRecipes.add(additionalRecipe);
+            }
+          }
+        }
+      }
+
+      // Show the meal recording dialog in "edit mode"
+      Map<String, dynamic>? result;
+      if (mounted) {
+        result = await showDialog<Map<String, dynamic>>(
+          context: context,
+          builder: (context) => MealRecordingDialog(
+            primaryRecipe: recipe,
+            additionalRecipes: currentAdditionalRecipes,
+            plannedDate: date,
+            notes: targetMeal?.notes ?? '',
+          ),
+        );
+      }
+
+      if (result == null) return; // User cancelled
+
+      // Extract the updated additional recipes
+      final List<Recipe> updatedAdditionalRecipes = result['additionalRecipes'];
+
+      // Update the meal's additional recipes
+      await _updateMealRecipes(
+          targetMeal.id, recipe.id, updatedAdditionalRecipes);
+
+      if (mounted) {
+        SnackbarService.showSuccess(
+            context, 'Side dishes updated successfully');
+        // Refresh data to show updated meal history
+        _loadData();
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackbarService.showError(context, 'Error adding side dish: $e');
+      }
+    }
+  }
+
+  Future<void> _updateMealRecipes(String mealId, String primaryRecipeId,
+      List<Recipe> additionalRecipes) async {
+    await _dbHelper.database.then((db) async {
+      return await db.transaction((txn) async {
+        // Remove all existing side dishes (keep only primary)
+        await txn.delete(
+          'meal_recipes',
+          where: 'meal_id = ? AND is_primary_dish = 0',
+          whereArgs: [mealId],
+        );
+
+        // Add all new additional recipes as side dishes
+        for (final recipe in additionalRecipes) {
+          final sideDishMealRecipe = MealRecipe(
+            mealId: mealId,
+            recipeId: recipe.id,
+            isPrimaryDish: false,
+            notes: 'Side dish - added later',
+          );
+
+          await txn.insert('meal_recipes', sideDishMealRecipe.toMap());
+        }
+      });
+    });
   }
 
   void _handleDaySelected(DateTime selectedDate, int selectedDayIndex) {
