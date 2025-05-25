@@ -275,7 +275,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     if (!mounted) return;
 
     // Show recipe selection dialog with detailed recommendations
-    final selectedRecipe = await showDialog<Recipe>(
+    final mealData = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (context) => _RecipeSelectionDialog(
         recipes: recipes,
@@ -285,7 +285,10 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       ),
     );
 
-    if (selectedRecipe != null) {
+    if (mealData != null) {
+      final primaryRecipe = mealData['primaryRecipe'] as Recipe;
+      final additionalRecipes = mealData['additionalRecipes'] as List<Recipe>;
+
       // Create or update meal plan
       if (_currentMealPlan == null) {
         // Create new meal plan for this week
@@ -295,7 +298,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           _currentWeekStart,
         );
 
-        // Add the selected recipe to the plan
+        // Add the meal to the plan
         final planItemId = IdGenerator.generateId();
         final planItem = MealPlanItem(
           id: planItemId,
@@ -304,15 +307,27 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           mealType: mealType,
         );
 
-        // Create junction record for the recipe
-        final junction = MealPlanItemRecipe(
+        // Create junction records for all recipes
+        final List<MealPlanItemRecipe> mealPlanItemRecipes = [];
+
+        // Add primary recipe
+        mealPlanItemRecipes.add(MealPlanItemRecipe(
           mealPlanItemId: planItemId,
-          recipeId: selectedRecipe.id,
+          recipeId: primaryRecipe.id,
           isPrimaryDish: true,
-        );
+        ));
+
+        // Add additional recipes as side dishes
+        for (final additionalRecipe in additionalRecipes) {
+          mealPlanItemRecipes.add(MealPlanItemRecipe(
+            mealPlanItemId: planItemId,
+            recipeId: additionalRecipe.id,
+            isPrimaryDish: false,
+          ));
+        }
 
         // Set the recipes list for the item
-        planItem.mealPlanItemRecipes = [junction];
+        planItem.mealPlanItemRecipes = mealPlanItemRecipes;
 
         newPlan.addItem(planItem);
 
@@ -320,8 +335,10 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         await _dbHelper.insertMealPlan(newPlan);
         await _dbHelper.insertMealPlanItem(planItem);
 
-        // Save the junction record
-        await _dbHelper.insertMealPlanItemRecipe(junction);
+        // Save all junction records
+        for (final junction in mealPlanItemRecipes) {
+          await _dbHelper.insertMealPlanItemRecipe(junction);
+        }
 
         setState(() {
           _currentMealPlan = newPlan;
@@ -348,23 +365,37 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           mealType: mealType,
         );
 
-        // Create junction record for the recipe
-        final junction = MealPlanItemRecipe(
+        // Create junction records for all recipes
+        final List<MealPlanItemRecipe> mealPlanItemRecipes = [];
+
+        // Add primary recipe
+        mealPlanItemRecipes.add(MealPlanItemRecipe(
           mealPlanItemId: planItemId,
-          recipeId: selectedRecipe.id,
+          recipeId: primaryRecipe.id,
           isPrimaryDish: true,
-        );
+        ));
+
+        // Add additional recipes as side dishes
+        for (final additionalRecipe in additionalRecipes) {
+          mealPlanItemRecipes.add(MealPlanItemRecipe(
+            mealPlanItemId: planItemId,
+            recipeId: additionalRecipe.id,
+            isPrimaryDish: false,
+          ));
+        }
 
         // Set the recipes list for the item
-        planItem.mealPlanItemRecipes = [junction];
+        planItem.mealPlanItemRecipes = mealPlanItemRecipes;
 
         _currentMealPlan!.addItem(planItem);
 
         // Save to database
         await _dbHelper.insertMealPlanItem(planItem);
 
-        // Save the junction record
-        await _dbHelper.insertMealPlanItemRecipe(junction);
+        // Save all junction records
+        for (final junction in mealPlanItemRecipes) {
+          await _dbHelper.insertMealPlanItemRecipe(junction);
+        }
 
         await _dbHelper.updateMealPlan(_currentMealPlan!);
 
@@ -831,6 +862,8 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
   late TabController _tabController;
   bool _isLoading = false;
   late List<RecipeRecommendation> _recommendations;
+  Recipe? _selectedRecipe;
+  bool _showingMenu = false;
 
   @override
   void initState() {
@@ -885,12 +918,6 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
 
   @override
   Widget build(BuildContext context) {
-    final filteredRecipes = widget.recipes
-        .where((recipe) =>
-            recipe.name.toLowerCase().contains(_searchQuery.toLowerCase()))
-        .toList()
-      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-
     return Dialog(
       // Make dialog use more screen space on small devices
       insetPadding:
@@ -901,95 +928,13 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Select Recipe',
+              _showingMenu ? 'Meal Options' : 'Select Recipe',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
-            // Tab bar for switching between Recommended and All Recipes
-            TabBar(
-              controller: _tabController,
-              tabs: [
-                Tab(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('Try this'),
-                      if (widget.onRefreshDetailedRecommendations != null)
-                        GestureDetector(
-                          onTap: _isLoading ? null : _handleRefresh,
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 4.0),
-                            child: Icon(
-                              Icons.refresh,
-                              size: 18,
-                              color: _isLoading
-                                  ? Colors.grey.withValues(alpha: 128)
-                                  : Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                const Tab(text: 'All Recipes'),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Only show search on All Recipes tab - with AnimatedBuilder to respond to tab changes
-            AnimatedBuilder(
-              animation: _tabController,
-              builder: (context, child) {
-                return _tabController.index == 1
-                    ? TextField(
-                        decoration: const InputDecoration(
-                          hintText: 'Search recipes...',
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(),
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            _searchQuery = value;
-                          });
-                        },
-                      )
-                    : const SizedBox.shrink();
-              },
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  // Recommended tab
-                  _isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : _recommendations.isEmpty
-                          ? const Center(
-                              child: Text('No recommendations available'))
-                          : ListView.builder(
-                              itemCount: _recommendations.length,
-                              itemBuilder: (context, index) {
-                                final recommendation = _recommendations[index];
-                                return RecipeRecommendationCard(
-                                  recommendation: recommendation,
-                                  onTap: () => Navigator.pop(
-                                      context, recommendation.recipe),
-                                );
-                              },
-                            ), // All Recipes tab
-                  ListView.builder(
-                    itemCount: filteredRecipes.length,
-                    itemBuilder: (context, index) {
-                      final recipe = filteredRecipes[index];
-                      return _buildRecipeListTile(recipe);
-                    },
-                  ),
-                ],
-              ),
-            ),
-
+            _showingMenu
+                ? _buildMenu()
+                : Expanded(child: _buildRecipeSelection()),
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
@@ -997,6 +942,165 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildRecipeSelection() {
+    final filteredRecipes = widget.recipes
+        .where((recipe) =>
+            recipe.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList()
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
+    return Column(
+      children: [
+        // Tab bar for switching between Recommended and All Recipes
+        TabBar(
+          controller: _tabController,
+          tabs: [
+            Tab(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Try this'),
+                  if (widget.onRefreshDetailedRecommendations != null)
+                    GestureDetector(
+                      onTap: _isLoading ? null : _handleRefresh,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 4.0),
+                        child: Icon(
+                          Icons.refresh,
+                          size: 18,
+                          color: _isLoading
+                              ? Colors.grey.withValues(alpha: 128)
+                              : Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const Tab(text: 'All Recipes'),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        // Only show search on All Recipes tab
+        AnimatedBuilder(
+          animation: _tabController,
+          builder: (context, child) {
+            return _tabController.index == 1
+                ? TextField(
+                    decoration: const InputDecoration(
+                      hintText: 'Search recipes...',
+                      prefixIcon: Icon(Icons.search),
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value;
+                      });
+                    },
+                  )
+                : const SizedBox.shrink();
+          },
+        ),
+        const SizedBox(height: 16),
+
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              // Recommended tab
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _recommendations.isEmpty
+                      ? const Center(
+                          child: Text('No recommendations available'))
+                      : ListView.builder(
+                          itemCount: _recommendations.length,
+                          itemBuilder: (context, index) {
+                            final recommendation = _recommendations[index];
+                            return RecipeRecommendationCard(
+                              recommendation: recommendation,
+                              onTap: () =>
+                                  _handleRecipeSelection(recommendation.recipe),
+                            );
+                          },
+                        ),
+              // All Recipes tab
+              ListView.builder(
+                itemCount: filteredRecipes.length,
+                itemBuilder: (context, index) {
+                  final recipe = filteredRecipes[index];
+                  return _buildRecipeListTile(recipe);
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMenu() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Show selected recipe
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.restaurant),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _selectedRecipe!.name,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Menu options
+        ListTile(
+          leading: const Icon(Icons.save),
+          title: const Text('Save'),
+          subtitle: const Text('Add this recipe to meal plan'),
+          onTap: () => Navigator.pop(context, {
+            'primaryRecipe': _selectedRecipe!,
+            'additionalRecipes': <Recipe>[],
+          }),
+        ),
+        ListTile(
+          leading: const Icon(Icons.add),
+          title: const Text('Add Side Dishes'),
+          subtitle: const Text('Add more recipes to this meal'),
+          onTap: () {
+            // TODO: Implement multi-recipe mode in next step
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Multi-recipe mode coming next!')),
+            );
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.arrow_back),
+          title: const Text('Back'),
+          subtitle: const Text('Choose a different recipe'),
+          onTap: () => setState(() {
+            _showingMenu = false;
+            _selectedRecipe = null;
+          }),
+        ),
+      ],
     );
   }
 
@@ -1019,7 +1123,14 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
           Text('${recipe.prepTimeMinutes + recipe.cookTimeMinutes} min'),
         ],
       ),
-      onTap: () => Navigator.pop(context, recipe),
+      onTap: () => _handleRecipeSelection(recipe),
     );
+  }
+
+  void _handleRecipeSelection(Recipe recipe) {
+    setState(() {
+      _selectedRecipe = recipe;
+      _showingMenu = true;
+    });
   }
 }
