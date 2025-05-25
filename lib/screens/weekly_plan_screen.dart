@@ -864,6 +864,8 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
   late List<RecipeRecommendation> _recommendations;
   Recipe? _selectedRecipe;
   bool _showingMenu = false;
+  final List<Recipe> _additionalRecipes = [];
+  bool _showingMultiRecipeMode = false;
 
   @override
   void initState() {
@@ -932,9 +934,11 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
-            _showingMenu
-                ? _buildMenu()
-                : Expanded(child: _buildRecipeSelection()),
+            _showingMultiRecipeMode
+                ? _buildMultiRecipeMode()
+                : (_showingMenu
+                    ? _buildMenu()
+                    : Expanded(child: _buildRecipeSelection())),
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
@@ -1084,12 +1088,9 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
           leading: const Icon(Icons.add),
           title: const Text('Add Side Dishes'),
           subtitle: const Text('Add more recipes to this meal'),
-          onTap: () {
-            // TODO: Implement multi-recipe mode in next step
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Multi-recipe mode coming next!')),
-            );
-          },
+          onTap: () => setState(() {
+            _showingMultiRecipeMode = true;
+          }),
         ),
         ListTile(
           leading: const Icon(Icons.arrow_back),
@@ -1124,6 +1125,120 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
         ],
       ),
       onTap: () => _handleRecipeSelection(recipe),
+    );
+  }
+
+  Widget _buildMultiRecipeMode() {
+    return Column(
+      children: [
+        // Show selected primary recipe (locked)
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.restaurant, color: Colors.green),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '${_selectedRecipe!.name} (Main Dish)',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Show selected additional recipes
+        if (_additionalRecipes.isNotEmpty) ...[
+          const Text('Side Dishes:',
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          ..._additionalRecipes.map((recipe) => ListTile(
+                leading: const Icon(Icons.restaurant_menu, color: Colors.grey),
+                title: Text(recipe.name),
+                trailing: IconButton(
+                  icon: const Icon(Icons.remove_circle_outline),
+                  onPressed: () => setState(() {
+                    _additionalRecipes.remove(recipe);
+                  }),
+                ),
+              )),
+          const SizedBox(height: 16),
+        ],
+
+        // Add recipe button
+        ElevatedButton.icon(
+          onPressed: () => _showAddSideDishDialog(),
+          icon: const Icon(Icons.add),
+          label: const Text('Add Side Dish'),
+        ),
+        const SizedBox(height: 16),
+
+        // Action buttons
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            TextButton(
+              onPressed: () => setState(() {
+                _showingMultiRecipeMode = false;
+              }),
+              child: const Text('Back'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, {
+                'primaryRecipe': _selectedRecipe!,
+                'additionalRecipes': _additionalRecipes,
+              }),
+              child: const Text('Save Meal'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+// ADD this method to show side dish selection:
+  void _showAddSideDishDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Side Dish'),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 300,
+          child: ListView.builder(
+            itemCount: widget.recipes.length,
+            itemBuilder: (context, index) {
+              final recipe = widget.recipes[index];
+              // Don't show recipes already selected
+              if (recipe.id == _selectedRecipe!.id ||
+                  _additionalRecipes.any((r) => r.id == recipe.id)) {
+                return const SizedBox.shrink();
+              }
+              return ListTile(
+                title: Text(recipe.name),
+                onTap: () {
+                  setState(() {
+                    _additionalRecipes.add(recipe);
+                  });
+                  Navigator.pop(context);
+                },
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
     );
   }
 
