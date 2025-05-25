@@ -930,7 +930,9 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              _showingMenu ? 'Meal Options' : 'Select Recipe',
+              _showingMultiRecipeMode
+                  ? 'Add Side Dishes'
+                  : (_showingMenu ? 'Meal Options' : 'Select Recipe'),
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
@@ -1202,7 +1204,6 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
     );
   }
 
-// ADD this method to show side dish selection:
   void _showAddSideDishDialog() {
     showDialog(
       context: context,
