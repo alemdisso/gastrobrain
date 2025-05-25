@@ -512,6 +512,31 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget> {
                                 ),
                               ),
                             ),
+                            // Show recipe count badge if more than one recipe
+                            if (plannedMeal.mealPlanItemRecipes != null &&
+                                plannedMeal.mealPlanItemRecipes!.length >
+                                    1) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primaryContainer,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  '${plannedMeal.mealPlanItemRecipes!.length - 1} recipes',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onPrimaryContainer,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                            ],
                             // Add check mark icon for cooked meals
                             if (hasBeenCooked)
                               const Tooltip(
