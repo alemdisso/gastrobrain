@@ -431,6 +431,10 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
             onPressed: () => Navigator.pop(context, 'change'),
             child: const Text('Change Recipe'),
           ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(context, 'manage_recipes'),
+            child: const Text('Manage Recipes'),
+          ),
           if (!mealCooked)
             SimpleDialogOption(
               onPressed: () => Navigator.pop(context, 'cooked'),
@@ -465,6 +469,9 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     } else if (action == 'change') {
       // Reuse the slot tap handler to change the recipe
       await _handleSlotTap(date, mealType);
+    } else if (action == 'manage_recipes') {
+      // Open multi-recipe management for existing meal
+      await _handleManageRecipes(date, mealType, recipeId);
     } else if (action == 'cooked') {
       // Mark the meal as cooked
       await _handleMarkAsCooked(date, mealType, recipeId);
@@ -730,6 +737,77 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     }
   }
 
+  Future<void> _handleManageRecipes(
+      DateTime date, String mealType, String recipeId) async {
+    try {
+      // Get the existing meal plan item
+      final items =
+          _currentMealPlan?.getItemsForDateAndMealType(date, mealType) ?? [];
+      if (items.isEmpty) {
+        if (mounted) {
+          SnackbarService.showError(context, 'Planned meal not found');
+        }
+        return;
+      }
+
+      final existingItem = items[0];
+
+      // Get current recipes
+      final currentRecipes = <Recipe>[];
+      Recipe? primaryRecipe;
+      final additionalRecipes = <Recipe>[];
+
+      if (existingItem.mealPlanItemRecipes != null) {
+        for (final mealRecipe in existingItem.mealPlanItemRecipes!) {
+          final recipe = await _dbHelper.getRecipe(mealRecipe.recipeId);
+          if (recipe != null) {
+            currentRecipes.add(recipe);
+            if (mealRecipe.isPrimaryDish) {
+              primaryRecipe = recipe;
+            } else {
+              additionalRecipes.add(recipe);
+            }
+          }
+        }
+      }
+
+      if (primaryRecipe == null) {
+        if (mounted) {
+          SnackbarService.showError(context, 'No primary recipe found');
+        }
+        return;
+      }
+
+      // Show recipe management dialog
+      final mealData = !mounted
+          ? null
+          : await showDialog<Map<String, dynamic>>(
+              context: context,
+              builder: (context) => _RecipeSelectionDialog(
+                recipes: _availableRecipes,
+                detailedRecommendations: [], // No recommendations needed for editing
+                initialPrimaryRecipe: primaryRecipe,
+                initialAdditionalRecipes: additionalRecipes,
+              ),
+            );
+
+      if (mealData == null) return; // User cancelled
+
+      // Update the meal plan item with new recipes
+      await _updateMealPlanItemRecipes(existingItem, mealData);
+
+      if (mounted) {
+        SnackbarService.showSuccess(
+            context, 'Meal recipes updated successfully');
+        _loadData(); // Refresh the display
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackbarService.showError(context, 'Error managing recipes: $e');
+      }
+    }
+  }
+
   Future<void> _updateMealRecipes(String mealId, String primaryRecipeId,
       List<Recipe> additionalRecipes) async {
     await _dbHelper.database.then((db) async {
@@ -751,6 +829,47 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           );
 
           await txn.insert('meal_recipes', sideDishMealRecipe.toMap());
+        }
+      });
+    });
+  }
+
+  Future<void> _updateMealPlanItemRecipes(
+      MealPlanItem existingItem, Map<String, dynamic> mealData) async {
+    final primaryRecipe = mealData['primaryRecipe'] as Recipe;
+    final additionalRecipes = mealData['additionalRecipes'] as List<Recipe>;
+
+    await _dbHelper.database.then((db) async {
+      return await db.transaction((txn) async {
+        // Delete existing junction records for this meal plan item
+        await txn.delete(
+          'meal_plan_item_recipes',
+          where: 'meal_plan_item_id = ?',
+          whereArgs: [existingItem.id],
+        );
+
+        // Create new junction records
+        final List<MealPlanItemRecipe> newMealPlanItemRecipes = [];
+
+        // Add primary recipe
+        newMealPlanItemRecipes.add(MealPlanItemRecipe(
+          mealPlanItemId: existingItem.id,
+          recipeId: primaryRecipe.id,
+          isPrimaryDish: true,
+        ));
+
+        // Add additional recipes as side dishes
+        for (final additionalRecipe in additionalRecipes) {
+          newMealPlanItemRecipes.add(MealPlanItemRecipe(
+            mealPlanItemId: existingItem.id,
+            recipeId: additionalRecipe.id,
+            isPrimaryDish: false,
+          ));
+        }
+
+        // Insert all new junction records
+        for (final junction in newMealPlanItemRecipes) {
+          await txn.insert('meal_plan_item_recipes', junction.toMap());
         }
       });
     });
@@ -845,13 +964,16 @@ class _RecipeSelectionDialog extends StatefulWidget {
   final List<RecipeRecommendation> detailedRecommendations;
   final Future<List<RecipeRecommendation>> Function()?
       onRefreshDetailedRecommendations;
+  final Recipe? initialPrimaryRecipe;
+  final List<Recipe>? initialAdditionalRecipes;
 
   const _RecipeSelectionDialog({
     required this.recipes,
     this.detailedRecommendations = const [],
     this.onRefreshDetailedRecommendations,
+    this.initialPrimaryRecipe,
+    this.initialAdditionalRecipes,
   });
-
   @override
   _RecipeSelectionDialogState createState() => _RecipeSelectionDialogState();
 }
@@ -864,7 +986,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
   late List<RecipeRecommendation> _recommendations;
   Recipe? _selectedRecipe;
   bool _showingMenu = false;
-  final List<Recipe> _additionalRecipes = [];
+  List<Recipe> _additionalRecipes = [];
   bool _showingMultiRecipeMode = false;
 
   @override
@@ -872,12 +994,24 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
     super.initState();
     // Initialize tab controller for the two tabs
     _tabController = TabController(length: 2, vsync: this);
-    // Start on the Recommended tab if we have recommendations
-    if (widget.detailedRecommendations.isNotEmpty) {
-      _tabController.index = 0;
+
+    // Check if we're editing an existing meal
+    if (widget.initialPrimaryRecipe != null) {
+      // Pre-populate with existing meal data
+      _selectedRecipe = widget.initialPrimaryRecipe;
+      _additionalRecipes = List.from(widget.initialAdditionalRecipes ?? []);
+      _showingMultiRecipeMode = _additionalRecipes.isNotEmpty;
+      _showingMenu = !_showingMultiRecipeMode;
     } else {
-      _tabController.index = 1; // Default to All Recipes if no recommendations
+      // Start on the Recommended tab if we have recommendations
+      if (widget.detailedRecommendations.isNotEmpty) {
+        _tabController.index = 0;
+      } else {
+        _tabController.index =
+            1; // Default to All Recipes if no recommendations
+      }
     }
+
     // Initialize recommendations from widget prop
     _recommendations = List.from(widget.detailedRecommendations);
   }
