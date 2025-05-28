@@ -1,5 +1,3 @@
-// test/screens/cook_meal_screen_test.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gastrobrain/models/recipe.dart';
