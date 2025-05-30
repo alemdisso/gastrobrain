@@ -11,10 +11,10 @@ import '../models/recipe.dart';
 import '../database/database_helper.dart';
 import '../core/di/service_provider.dart';
 import '../core/services/recommendation_service.dart';
-//import '../core/services/recommendation_service_extension.dart';
 import '../core/services/snackbar_service.dart';
 import '../widgets/weekly_calendar_widget.dart';
 import '../widgets/meal_recording_dialog.dart';
+import '../widgets/edit_meal_recording_dialog.dart';
 import '../widgets/recipe_recommendation_card.dart';
 import '../utils/id_generator.dart';
 
@@ -440,11 +440,16 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
               onPressed: () => Navigator.pop(context, 'cooked'),
               child: const Text('Mark as Cooked'),
             ),
-          if (mealCooked)
+          if (mealCooked) ...[
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, 'edit_cooked'),
+              child: const Text('Edit Cooked Meal'),
+            ),
             SimpleDialogOption(
               onPressed: () => Navigator.pop(context, 'add_side_dish'),
               child: const Text('Manage Side Dishes'),
             ),
+          ],
           SimpleDialogOption(
             onPressed: () => Navigator.pop(context, 'remove'),
             child: const Text('Remove from Plan'),
@@ -475,6 +480,9 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     } else if (action == 'cooked') {
       // Mark the meal as cooked
       await _handleMarkAsCooked(date, mealType, recipeId);
+    } else if (action == 'edit_cooked') {
+      // Edit the cooked meal
+      await _handleEditCookedMeal(date, mealType, recipeId);
     } else if (action == 'add_side_dish') {
       // Add side dish to existing cooked meal
       await _handleAddSideDish(date, mealType, recipeId);
@@ -735,6 +743,148 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         SnackbarService.showError(context, 'Error adding side dish: $e');
       }
     }
+  }
+
+  Future<void> _handleEditCookedMeal(
+      DateTime date, String mealType, String recipeId) async {
+    try {
+      // Find the cooked meal plan item
+      final items =
+          _currentMealPlan?.getItemsForDateAndMealType(date, mealType) ?? [];
+      if (items.isEmpty || !items[0].hasBeenCooked) {
+        if (mounted) {
+          SnackbarService.showError(
+              context, 'Meal not found or not yet cooked');
+        }
+        return;
+      }
+
+      // Find the actual meal record by searching for meals cooked on the planned date
+      final plannedDateOnly = MealPlanItem.formatPlannedDate(date);
+      final searchDate = DateTime.parse(plannedDateOnly);
+
+      final allMealsForRecipe = await _dbHelper.getMealsForRecipe(recipeId);
+
+      Meal? targetMeal;
+      for (final meal in allMealsForRecipe) {
+        final mealDate = DateTime(
+          meal.cookedAt.year,
+          meal.cookedAt.month,
+          meal.cookedAt.day,
+        );
+        final plannedDateNormalized = DateTime(
+          searchDate.year,
+          searchDate.month,
+          searchDate.day,
+        );
+
+        if (mealDate.isAtSameMomentAs(plannedDateNormalized)) {
+          targetMeal = meal;
+          break;
+        }
+      }
+
+      if (targetMeal == null) {
+        if (mounted) {
+          SnackbarService.showError(
+              context, 'Could not find the cooked meal record');
+        }
+        return;
+      }
+
+      // Get the primary recipe
+      final recipe = await _dbHelper.getRecipe(recipeId);
+      if (recipe == null) {
+        if (mounted) {
+          SnackbarService.showError(context, 'Recipe not found');
+        }
+        return;
+      }
+
+      // Get current additional recipes from the meal
+      List<Recipe> currentAdditionalRecipes = [];
+      if (targetMeal.mealRecipes != null) {
+        for (final mealRecipe in targetMeal.mealRecipes!) {
+          if (!mealRecipe.isPrimaryDish) {
+            final additionalRecipe =
+                await _dbHelper.getRecipe(mealRecipe.recipeId);
+            if (additionalRecipe != null) {
+              currentAdditionalRecipes.add(additionalRecipe);
+            }
+          }
+        }
+      }
+
+      // Show the edit dialog
+      Map<String, dynamic>? result;
+      if (mounted) {
+        result = await showDialog<Map<String, dynamic>>(
+          context: context,
+          builder: (context) => EditMealRecordingDialog(
+            meal: targetMeal!,
+            primaryRecipe: recipe,
+            additionalRecipes: currentAdditionalRecipes,
+          ),
+        );
+      }
+
+      if (result == null) return; // User cancelled
+
+      // Extract the updated data
+      final String mealId = result['mealId'];
+      final DateTime cookedAt = result['cookedAt'];
+      final int servings = result['servings'];
+      final String notes = result['notes'];
+      final bool wasSuccessful = result['wasSuccessful'];
+      final double actualPrepTime = result['actualPrepTime'];
+      final double actualCookTime = result['actualCookTime'];
+      final List<Recipe> updatedAdditionalRecipes = result['additionalRecipes'];
+      final DateTime modifiedAt = result['modifiedAt'];
+
+      // Update the meal record
+      await _updateMealRecord(mealId, cookedAt, servings, notes, wasSuccessful,
+          actualPrepTime, actualCookTime, modifiedAt);
+
+      // Update the meal's recipe associations
+      await _updateMealRecipes(mealId, recipe.id, updatedAdditionalRecipes);
+
+      if (mounted) {
+        SnackbarService.showSuccess(context, 'Meal updated successfully');
+        _loadData(); // Refresh the display
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackbarService.showError(context, 'Error editing meal: $e');
+      }
+    }
+  }
+
+  Future<void> _updateMealRecord(
+    String mealId,
+    DateTime cookedAt,
+    int servings,
+    String notes,
+    bool wasSuccessful,
+    double actualPrepTime,
+    double actualCookTime,
+    DateTime modifiedAt,
+  ) async {
+    final db = await _dbHelper.database;
+
+    await db.update(
+      'meals',
+      {
+        'cooked_at': cookedAt.toIso8601String(),
+        'servings': servings,
+        'notes': notes,
+        'was_successful': wasSuccessful ? 1 : 0,
+        'actual_prep_time': actualPrepTime,
+        'actual_cook_time': actualCookTime,
+        'modified_at': modifiedAt.toIso8601String(),
+      },
+      where: 'id = ?',
+      whereArgs: [mealId],
+    );
   }
 
   Future<void> _handleManageRecipes(
