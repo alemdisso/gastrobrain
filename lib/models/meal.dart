@@ -9,17 +9,19 @@ class Meal {
   bool wasSuccessful; // Track if the meal worked well this time
   double actualPrepTime; // Track real prep time for future reference
   double actualCookTime; // Track real cook time for future reference
+  DateTime? modifiedAt; // Track when the meal was last modified
   List<MealRecipe>? mealRecipes; // List of recipes in this meal
 
   Meal({
     required this.id,
-    this.recipeId, // Change to optional parameter
+    this.recipeId,
     required this.cookedAt,
     this.servings = 1,
     this.notes = '',
     this.wasSuccessful = true,
     this.actualPrepTime = 0,
     this.actualCookTime = 0,
+    this.modifiedAt,
     this.mealRecipes,
   });
 
@@ -35,6 +37,7 @@ class Meal {
       'was_successful': wasSuccessful ? 1 : 0,
       'actual_prep_time': actualPrepTime,
       'actual_cook_time': actualCookTime,
+      'modified_at': modifiedAt?.toIso8601String(),
       // Note: mealRecipes must be saved separately
     };
   }
@@ -50,6 +53,9 @@ class Meal {
       wasSuccessful: map['was_successful'] == 1,
       actualPrepTime: map['actual_prep_time'] ?? 0,
       actualCookTime: map['actual_cook_time'] ?? 0,
+      modifiedAt: map['modified_at'] != null
+          ? DateTime.parse(map['modified_at'])
+          : null,
       // Note: mealRecipes must be loaded separately
     );
   }

@@ -53,7 +53,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), filename);
     return await openDatabase(
       path,
-      version: 15, // Increment version number for new tables
+      version: 16, // Increment version number for new tables
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: (db) async {
@@ -136,6 +136,7 @@ class DatabaseHelper {
         was_successful INTEGER DEFAULT 1,
         actual_prep_time REAL DEFAULT 0,
         actual_cook_time REAL DEFAULT 0,
+        modified_at TEXT,
         FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
       )
     ''');
@@ -294,6 +295,16 @@ class DatabaseHelper {
       // Add category column to recipes table
       await db.execute(
           'ALTER TABLE recipes ADD COLUMN category TEXT DEFAULT \'uncategorized\'');
+    }
+
+    if (oldVersion < 16) {
+      // Add modified_at column to meals table
+      await db.execute('ALTER TABLE meals ADD COLUMN modified_at TEXT');
+
+      // Update existing meals to have current timestamp
+      final now = DateTime.now().toIso8601String();
+      await db.execute(
+          'UPDATE meals SET modified_at = ? WHERE modified_at IS NULL', [now]);
     }
   }
   // Meal Plan operations
