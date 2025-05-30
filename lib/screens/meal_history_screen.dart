@@ -7,15 +7,20 @@ import 'cook_meal_screen.dart';
 
 class MealHistoryScreen extends StatefulWidget {
   final Recipe recipe;
+  final DatabaseHelper? databaseHelper;
 
-  const MealHistoryScreen({super.key, required this.recipe});
+  const MealHistoryScreen({
+    super.key,
+    required this.recipe,
+    this.databaseHelper,
+  });
 
   @override
   State<MealHistoryScreen> createState() => _MealHistoryScreenState();
 }
 
 class _MealHistoryScreenState extends State<MealHistoryScreen> {
-  final DatabaseHelper _dbHelper = DatabaseHelper();
+  late DatabaseHelper _dbHelper = DatabaseHelper();
   List<Meal> meals = [];
   bool _isLoading = true;
   String? _errorMessage;
@@ -23,6 +28,7 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
   @override
   void initState() {
     super.initState();
+    _dbHelper = widget.databaseHelper ?? DatabaseHelper();
     _loadMeals();
   }
 
