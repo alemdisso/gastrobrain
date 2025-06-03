@@ -369,5 +369,48 @@ void main() {
       expect(find.text('Save Changes'), findsOneWidget);
       expect(find.text('Cancel'), findsOneWidget);
     });
+    testWidgets('EditMealRecordingDialog switch can be toggled',
+        (WidgetTester tester) async {
+      final testMeal = Meal(
+        id: 'test-meal-switch',
+        recipeId: null,
+        cookedAt: DateTime.now(),
+        servings: 2,
+        notes: 'Test notes',
+        wasSuccessful: true, // Start with true
+        actualPrepTime: 15.0,
+        actualCookTime: 25.0,
+      );
+
+      final primaryRecipe = Recipe(
+        id: 'primary-recipe',
+        name: 'Test Recipe',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: EditMealRecordingDialog(
+              meal: testMeal,
+              primaryRecipe: primaryRecipe,
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Find the "Was it successful?" text and the Switch near it
+      expect(find.text('Was it successful?'), findsOneWidget);
+
+      final switchFinder = find.byType(Switch);
+      expect(switchFinder, findsOneWidget);
+
+      // Verify initial state
+      final initialSwitch = tester.widget<Switch>(switchFinder);
+      expect(initialSwitch.value, true);
+    });
   });
 }

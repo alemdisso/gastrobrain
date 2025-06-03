@@ -354,5 +354,39 @@ void main() {
       expect(find.text('2'), findsOneWidget); // Single meal servings
       expect(find.text('4'), findsOneWidget); // Multi meal servings
     });
+
+    testWidgets('meal history shows edit option for cooked meals',
+        (WidgetTester tester) async {
+      // Create a cooked meal
+      final meal = Meal(
+        id: 'cooked-meal-edit',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 2,
+        notes: 'Cooked meal notes',
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Just verify that an edit icon/button exists
+      expect(find.byIcon(Icons.edit), findsOneWidget);
+    });
   });
 }

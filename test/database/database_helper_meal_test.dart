@@ -348,5 +348,73 @@ void main() {
       expect(retrievedMeal.actualCookTime, 45.0);
       expect(retrievedMeal.modifiedAt, isNotNull);
     });
+
+    test('updateMeal preserves junction table relationships', () async {
+      // Create a meal with multiple recipes
+      final mealId = IdGenerator.generateId();
+      final meal = Meal(
+        id: mealId,
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 2,
+        notes: 'Original notes',
+        wasSuccessful: true,
+        actualPrepTime: 15.0,
+        actualCookTime: 25.0,
+      );
+
+      await dbHelper.insertMeal(meal);
+
+      // Add multiple recipes via junction table
+      final primaryMealRecipe = MealRecipe(
+        mealId: mealId,
+        recipeId: testRecipeId1,
+        isPrimaryDish: true,
+      );
+
+      final sideMealRecipe = MealRecipe(
+        mealId: mealId,
+        recipeId: testRecipeId2,
+        isPrimaryDish: false,
+      );
+
+      await dbHelper.insertMealRecipe(primaryMealRecipe);
+      await dbHelper.insertMealRecipe(sideMealRecipe);
+
+      // Verify initial setup
+      final initialMealRecipes = await dbHelper.getMealRecipesForMeal(mealId);
+      expect(initialMealRecipes.length, 2);
+
+      // Update the meal
+      final updatedMeal = Meal(
+        id: mealId,
+        recipeId: null,
+        cookedAt: meal.cookedAt,
+        servings: 4, // Changed
+        notes: 'Updated notes', // Changed
+        wasSuccessful: false, // Changed
+        actualPrepTime: 20.0,
+        actualCookTime: 30.0,
+        modifiedAt: DateTime.now(),
+      );
+
+      final updateResult = await dbHelper.updateMeal(updatedMeal);
+      expect(updateResult, 1);
+
+      // Verify meal was updated
+      final retrievedMeal = await dbHelper.getMeal(mealId);
+      expect(retrievedMeal!.servings, 4);
+      expect(retrievedMeal.notes, 'Updated notes');
+      expect(retrievedMeal.wasSuccessful, false);
+
+      // Verify junction table relationships are preserved
+      final afterUpdateMealRecipes =
+          await dbHelper.getMealRecipesForMeal(mealId);
+      expect(afterUpdateMealRecipes.length, 2);
+
+      final recipeIds = afterUpdateMealRecipes.map((mr) => mr.recipeId).toSet();
+      expect(recipeIds.contains(testRecipeId1), true);
+      expect(recipeIds.contains(testRecipeId2), true);
+    });
   });
 }
