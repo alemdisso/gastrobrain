@@ -299,5 +299,54 @@ void main() {
       );
       expect(junctionRecords.isEmpty, true);
     });
+
+    test('updateMeal method updates existing meal records', () async {
+      // Create and insert an initial meal
+      final originalMeal = Meal(
+        id: 'test-meal-update',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 2,
+        notes: 'Original notes',
+        wasSuccessful: true,
+        actualPrepTime: 15.0,
+        actualCookTime: 30.0,
+      );
+
+      await dbHelper.insertMeal(originalMeal);
+
+      // Verify the meal was inserted
+      final insertedMeal = await dbHelper.getMeal(originalMeal.id);
+      expect(insertedMeal, isNotNull);
+      expect(insertedMeal!.notes, 'Original notes');
+      expect(insertedMeal.servings, 2);
+
+      // Create an updated version of the meal
+      final updatedMeal = Meal(
+        id: originalMeal.id, // Same ID
+        recipeId: null,
+        cookedAt: originalMeal.cookedAt,
+        servings: 4, // Changed
+        notes: 'Updated notes', // Changed
+        wasSuccessful: false, // Changed
+        actualPrepTime: 20.0, // Changed
+        actualCookTime: 45.0, // Changed
+        modifiedAt: DateTime.now(), // New modification time
+      );
+
+      // Update the meal
+      final updateResult = await dbHelper.updateMeal(updatedMeal);
+      expect(updateResult, 1, reason: 'Update should return 1 for success');
+
+      // Retrieve and verify the changes
+      final retrievedMeal = await dbHelper.getMeal(originalMeal.id);
+      expect(retrievedMeal, isNotNull);
+      expect(retrievedMeal!.servings, 4);
+      expect(retrievedMeal.notes, 'Updated notes');
+      expect(retrievedMeal.wasSuccessful, false);
+      expect(retrievedMeal.actualPrepTime, 20.0);
+      expect(retrievedMeal.actualCookTime, 45.0);
+      expect(retrievedMeal.modifiedAt, isNotNull);
+    });
   });
 }

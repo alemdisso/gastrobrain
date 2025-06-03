@@ -235,9 +235,15 @@ class MockDatabaseHelper implements DatabaseHelper {
         .where((meal) => junctionMealIds.contains(meal.id))
         .toList();
 
-    // Combine both lists
-    directMeals.addAll(junctionMeals);
-    return directMeals;
+    // Combine both lists and deduplicate by meal ID
+    final allMeals = <String, Meal>{};
+    for (final meal in directMeals) {
+      allMeals[meal.id] = meal;
+    }
+    for (final meal in junctionMeals) {
+      allMeals[meal.id] = meal;
+    }
+    return allMeals.values.toList();
   }
 
   @override

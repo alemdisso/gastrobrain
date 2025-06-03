@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../models/meal.dart';
+import '../models/meal_recipe.dart';
 import '../database/database_helper.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
+import '../widgets/edit_meal_recording_dialog.dart';
 import 'cook_meal_screen.dart';
 
 class MealHistoryScreen extends StatefulWidget {
@@ -118,6 +120,131 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
     );
   }
 
+  Future<void> _handleEditMeal(Meal meal) async {
+    try {
+      // Get the primary recipe (the one this screen is showing history for)
+      final primaryRecipe = widget.recipe;
+
+      // Get additional recipes from the meal
+      List<Recipe> additionalRecipes = [];
+      if (meal.mealRecipes != null) {
+        for (final mealRecipe in meal.mealRecipes!) {
+          if (!mealRecipe.isPrimaryDish) {
+            final additionalRecipe =
+                await _dbHelper.getRecipe(mealRecipe.recipeId);
+            if (additionalRecipe != null) {
+              additionalRecipes.add(additionalRecipe);
+            }
+          }
+        }
+      }
+
+      // Show edit dialog
+      Map<String, dynamic>? result;
+      if (mounted) {
+        result = await showDialog<Map<String, dynamic>>(
+          context: context,
+          builder: (context) => EditMealRecordingDialog(
+            meal: meal,
+            primaryRecipe: primaryRecipe,
+            additionalRecipes: additionalRecipes,
+          ),
+        );
+      }
+
+      if (result != null) {
+        // Extract updated data and update the meal
+        final String mealId = result['mealId'];
+        final DateTime cookedAt = result['cookedAt'];
+        final int servings = result['servings'];
+        final String notes = result['notes'];
+        final bool wasSuccessful = result['wasSuccessful'];
+        final double actualPrepTime = result['actualPrepTime'];
+        final double actualCookTime = result['actualCookTime'];
+        final List<Recipe> updatedAdditionalRecipes =
+            result['additionalRecipes'];
+        final DateTime modifiedAt = result['modifiedAt'];
+
+        // Update meal in database
+        await _updateMealInDatabase(mealId, cookedAt, servings, notes,
+            wasSuccessful, actualPrepTime, actualCookTime, modifiedAt);
+
+        // Update recipe associations
+        await _updateMealRecipeAssociations(
+            mealId, primaryRecipe.id, updatedAdditionalRecipes);
+
+        // Refresh the meal list
+        _loadMeals();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Meal updated successfully')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error editing meal: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _updateMealInDatabase(
+    String mealId,
+    DateTime cookedAt,
+    int servings,
+    String notes,
+    bool wasSuccessful,
+    double actualPrepTime,
+    double actualCookTime,
+    DateTime modifiedAt,
+  ) async {
+    final db = await _dbHelper.database;
+
+    await db.update(
+      'meals',
+      {
+        'cooked_at': cookedAt.toIso8601String(),
+        'servings': servings,
+        'notes': notes,
+        'was_successful': wasSuccessful ? 1 : 0,
+        'actual_prep_time': actualPrepTime,
+        'actual_cook_time': actualCookTime,
+        'modified_at': modifiedAt.toIso8601String(),
+      },
+      where: 'id = ?',
+      whereArgs: [mealId],
+    );
+  }
+
+  Future<void> _updateMealRecipeAssociations(String mealId,
+      String primaryRecipeId, List<Recipe> additionalRecipes) async {
+    final db = await _dbHelper.database;
+
+    await db.transaction((txn) async {
+      // Remove all existing side dishes (keep only primary)
+      await txn.delete(
+        'meal_recipes',
+        where: 'meal_id = ? AND is_primary_dish = 0',
+        whereArgs: [mealId],
+      );
+
+      // Add all new additional recipes as side dishes
+      for (final recipe in additionalRecipes) {
+        final sideDishMealRecipe = MealRecipe(
+          mealId: mealId,
+          recipeId: recipe.id,
+          isPrimaryDish: false,
+          notes: 'Side dish - edited',
+        );
+
+        await txn.insert('meal_recipes', sideDishMealRecipe.toMap());
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -197,9 +324,20 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                     const Icon(Icons.people, size: 16),
                                     const SizedBox(width: 4),
                                     Text('${meal.servings}'),
+                                    const SizedBox(width: 8),
+                                    // Add edit button
+                                    IconButton(
+                                      icon: const Icon(Icons.edit, size: 20),
+                                      onPressed: () => _handleEditMeal(meal),
+                                      tooltip: 'Edit meal',
+                                      constraints: const BoxConstraints(
+                                        minWidth: 36,
+                                        minHeight: 36,
+                                      ),
+                                      padding: const EdgeInsets.all(4),
+                                    ),
                                   ],
                                 ),
-
                                 // Display recipes using junction table information
                                 if (meal.mealRecipes != null &&
                                     meal.mealRecipes!.isNotEmpty) ...[
