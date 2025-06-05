@@ -58,87 +58,110 @@ class _RecipeCardState extends State<RecipeCard> {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ListTile(
-            title: Text(
+          // Title Row
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Text(
               widget.recipe.name,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+          // Info and Actions Row
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 8, 12),
+            child: Row(
               children: [
-                const SizedBox(height: 4),
-                // Category display
-                Row(
-                  children: [
-                    const Icon(Icons.category, size: 16, color: Colors.blue),
-                    const SizedBox(width: 4),
-                    Text(
-                      widget.recipe.category.displayName,
-                      style: TextStyle(
-                        color: Colors.blue.shade700,
-                        fontWeight: FontWeight.w500,
+                // Left side - Information
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Category and frequency row
+                      Row(
+                        children: [
+                          const Icon(Icons.category,
+                              size: 16, color: Colors.blue),
+                          const SizedBox(width: 4),
+                          Text(
+                            widget.recipe.category.displayName,
+                            style: TextStyle(
+                              color: Colors.blue.shade700,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          const Icon(Icons.repeat, size: 16),
+                          const SizedBox(width: 4),
+                          Text(widget.recipe.desiredFrequency.displayName),
+                        ],
                       ),
+                      const SizedBox(height: 8),
+                      // Time and rating row
+                      Row(
+                        children: [
+                          Icon(
+                            widget.recipe.difficulty >= 4
+                                ? Icons.warning
+                                : Icons.timer,
+                            size: 16,
+                            color: widget.recipe.difficulty >= 4
+                                ? Colors.orange
+                                : null,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${widget.recipe.prepTimeMinutes + widget.recipe.cookTimeMinutes} min',
+                            style: TextStyle(
+                              color: widget.recipe.difficulty >= 4
+                                  ? Colors.orange
+                                  : null,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          // Rating stars
+                          if (widget.recipe.rating > 0) ...[
+                            ...List.generate(
+                              widget.recipe.rating,
+                              (index) => const Icon(
+                                Icons.star,
+                                size: 16,
+                                color: Colors.amber,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                // Right side - Actions
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.restaurant, size: 20),
+                      onPressed: widget.onCooked,
+                      tooltip: 'Cook Now',
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: Icon(
+                        isExpanded ? Icons.expand_less : Icons.expand_more,
+                        size: 20,
+                      ),
+                      onPressed: _toggleExpanded,
+                      tooltip: isExpanded ? 'Show Less' : 'Show More',
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
                     ),
                   ],
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    // Difficulty stars
-                    ...List.generate(
-                        5,
-                        (index) => Icon(
-                              index < widget.recipe.difficulty
-                                  ? Icons.battery_full
-                                  : Icons.battery_0_bar,
-                              size: 16,
-                              color: index < widget.recipe.difficulty
-                                  ? Colors.green
-                                  : Colors.grey,
-                            )),
-                    const SizedBox(width: 16),
-                    // Rating stars
-                    ...List.generate(
-                        5,
-                        (index) => Icon(
-                              index < widget.recipe.rating
-                                  ? Icons.star
-                                  : Icons.star_border,
-                              size: 16,
-                              color: index < widget.recipe.rating
-                                  ? Colors.amber
-                                  : Colors.grey,
-                            )),
-                  ],
-                ),
-                Row(
-                  children: [
-                    const Icon(Icons.timer, size: 16),
-                    const SizedBox(width: 3),
-                    Text(
-                        '${widget.recipe.prepTimeMinutes}/${widget.recipe.cookTimeMinutes} min'),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.repeat, size: 16),
-                    const SizedBox(width: 3),
-                    Text(widget.recipe.desiredFrequency.displayName),
-                  ],
-                ),
-              ],
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.restaurant),
-                  onPressed: widget.onCooked,
-                  tooltip: 'Cook Now',
-                ),
-                IconButton(
-                  icon:
-                      Icon(isExpanded ? Icons.expand_less : Icons.expand_more),
-                  onPressed: _toggleExpanded, // Use the new toggle method
-                  tooltip: isExpanded ? 'Show Less' : 'Show More',
                 ),
               ],
             ),
@@ -150,28 +173,55 @@ class _RecipeCardState extends State<RecipeCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Detailed time information
+                  Row(
+                    children: [
+                      Icon(Icons.timer_outlined,
+                          size: 16, color: Colors.grey[600]),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Prep: ${widget.recipe.prepTimeMinutes} min',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                      const SizedBox(width: 16),
+                      Icon(Icons.restaurant_outlined,
+                          size: 16, color: Colors.grey[600]),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Cook: ${widget.recipe.cookTimeMinutes} min',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
                   if (widget.recipe.notes.isNotEmpty) ...[
-                    const Text(
-                      'Notes:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    const SizedBox(height: 12),
+                    Text(
+                      widget.recipe.notes,
+                      style: TextStyle(
+                        color: Colors.grey[700],
+                        fontSize: 13,
+                      ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(widget.recipe.notes),
-                    const SizedBox(height: 16),
                   ],
+                  const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Times cooked: ${widget.mealCount}'),
                           Text(
-                              'Last cooked: ${_formatDateTime(widget.lastCooked)}'),
+                            'Times cooked: ${widget.mealCount}',
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                          Text(
+                            'Last cooked: ${_formatDateTime(widget.lastCooked)}',
+                            style: const TextStyle(fontSize: 13),
+                          ),
                         ],
                       ),
                       Wrap(
-                        spacing: 4, // horizontal space between buttons
+                        spacing: 8,
                         children: [
                           IconButton.outlined(
                             icon: const Icon(Icons.food_bank, size: 20),
