@@ -23,20 +23,12 @@ class RecipeRecommendationCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Recipe name and basic info
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      recommendation.recipe.name,
-                      style: Theme.of(context).textTheme.titleMedium,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  // Score indicator
-                  _buildScoreIndicator(context),
-                ],
+              // Recipe name
+              Text(
+                recommendation.recipe.name,
+                style: Theme.of(context).textTheme.titleMedium,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 8),
 
@@ -77,62 +69,6 @@ class RecipeRecommendationCard extends StatelessWidget {
     );
   }
 
-  Widget _buildScoreIndicator(BuildContext context) {
-    final score = recommendation.totalScore;
-    final color = _getScoreColor(score);
-
-    // Determine strength label based on score
-    String strengthLabel = 'Fair';
-    if (score >= 80) {
-      strengthLabel = 'Strong';
-    } else if (score >= 60) {
-      strengthLabel = 'Good';
-    } else if (score < 40) {
-      strengthLabel = 'Weak';
-    }
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: color, width: 3),
-            // Add a subtle background color matching the score
-            color: color.withValues(alpha: 26), // 0.1 * 255 ≈ 26
-          ),
-          child: Center(
-            child: Text(
-              '${score.toInt()}',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: color,
-                fontSize: 16,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          strengthLabel,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w500,
-            color: color,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Color _getScoreColor(double score) {
-    if (score >= 80) return Colors.green;
-    if (score >= 60) return Colors.amber;
-    return Colors.red;
-  }
-
   Widget _buildFactorIndicators(BuildContext context) {
     final factorIcons = <Widget>[];
 
@@ -164,16 +100,13 @@ class RecipeRecommendationCard extends StatelessWidget {
           } else if (factorId == 'difficulty') {
             label = score >= 75 ? 'Easy' : (score >= 50 ? 'Medium' : 'Hard');
           } else {
-            // Default fallback for other factors
-            if (score >= 80) {
-              label = 'Strong';
-            } else if (score >= 60) {
-              label = 'Good';
-            } else if (score >= 40) {
-              label = 'Fair';
-            } else {
-              label = 'Weak';
-            }
+            label = score >= 80
+                ? 'Strong'
+                : (score >= 60
+                    ? 'Good'
+                    : score >= 40
+                        ? 'Fair'
+                        : 'Weak');
           }
 
           backgroundColor = _getFactorColor(score);
@@ -222,10 +155,7 @@ class RecipeRecommendationCard extends StatelessWidget {
     final proteinScore = recommendation.factorScores['protein_rotation'];
     if (proteinScore != null && proteinScore < 50) {
       // Determine severity based on score
-      String warningText = 'Repeat';
-      if (proteinScore < 25) {
-        warningText = 'Same';
-      }
+      String warningText = proteinScore < 25 ? 'Same' : 'Repeat';
 
       factorIcons.add(
         Padding(
@@ -274,7 +204,6 @@ class RecipeRecommendationCard extends StatelessWidget {
     );
   }
 
-// Add helper methods for colors
   Color _getFactorBorderColor(double score) {
     if (score >= 75) return Colors.green;
     if (score >= 50) return Colors.amber;
@@ -298,8 +227,7 @@ class RecipeRecommendationCard extends StatelessWidget {
       case 'variety_encouragement':
         return const Icon(Icons.shuffle, size: 16);
       case 'difficulty':
-        return const Icon(Icons.battery_full,
-            size: 16); // Battery icon for difficulty
+        return const Icon(Icons.battery_full, size: 16);
       case 'randomization':
         return const Icon(Icons.casino, size: 16);
       default:
@@ -329,7 +257,7 @@ class RecipeRecommendationCard extends StatelessWidget {
         String frequencyText = score >= 75
             ? 'rarely cooked'
             : (score >= 50 ? 'rarely  cooked' : 'occasionally cooked');
-        return 'Recipe variety: $scoreText\nThis recipe is $frequencyText  in your meal rotation';
+        return 'Recipe variety: $scoreText\nThis recipe is $frequencyText in your meal rotation';
       case 'difficulty':
         String difficultyText =
             score >= 75 ? 'easy' : (score >= 50 ? 'medium' : 'more complex');
@@ -337,11 +265,9 @@ class RecipeRecommendationCard extends StatelessWidget {
         DateTime now = DateTime.now();
         bool isWeekend =
             now.weekday == DateTime.saturday || now.weekday == DateTime.sunday;
-        if (isWeekend) {
-          context = '\nWeekend meals can be more complex';
-        } else {
-          context = '\nWeekday meals are better when simpler';
-        }
+        context = isWeekend
+            ? '\nWeekend meals can be more complex'
+            : '\nWeekday meals are better when simpler';
         return 'Difficulty match: $scoreText\nThis recipe is $difficultyText to prepare (${recommendation.recipe.difficulty}/5)$context';
       case 'randomization':
         return 'Variety factor: $scoreText\nAdds a little randomness to keep suggestions fresh';
