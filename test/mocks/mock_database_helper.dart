@@ -13,6 +13,7 @@ import 'package:gastrobrain/models/meal_plan_item.dart';
 import 'package:gastrobrain/models/meal_plan_item_recipe.dart';
 import 'package:gastrobrain/models/ingredient.dart';
 import 'package:gastrobrain/models/recipe_ingredient.dart';
+import 'package:gastrobrain/core/validators/entity_validator.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// A partial mock implementation of DatabaseHelper for testing.
@@ -356,6 +357,15 @@ class MockDatabaseHelper implements DatabaseHelper {
   // INGREDIENT OPERATIONS
   @override
   Future<String> insertIngredient(Ingredient ingredient) async {
+    // Validate the ingredient
+    EntityValidator.validateIngredient(
+      name: ingredient.name,
+      category: ingredient.category,
+      unit: ingredient.unit,
+      proteinType: ingredient.proteinType,
+    );
+
+    // Store the ingredient
     _ingredients[ingredient.id] = ingredient;
     return ingredient.id;
   }
@@ -367,8 +377,18 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<int> updateIngredient(Ingredient ingredient) async {
+    // Check if ingredient exists
     if (!_ingredients.containsKey(ingredient.id)) return 0;
 
+    // Validate the ingredient
+    EntityValidator.validateIngredient(
+      name: ingredient.name,
+      category: ingredient.category,
+      unit: ingredient.unit,
+      proteinType: ingredient.proteinType,
+    );
+
+    // Update the ingredient
     _ingredients[ingredient.id] = ingredient;
     return 1;
   }
