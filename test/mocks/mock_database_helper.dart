@@ -365,6 +365,22 @@ class MockDatabaseHelper implements DatabaseHelper {
     return _ingredients.values.toList();
   }
 
+  @override
+  Future<int> updateIngredient(Ingredient ingredient) async {
+    if (!_ingredients.containsKey(ingredient.id)) return 0;
+
+    _ingredients[ingredient.id] = ingredient;
+    return 1;
+  }
+
+  @override
+  Future<int> deleteIngredient(String id) async {
+    if (!_ingredients.containsKey(id)) return 0;
+
+    _ingredients.remove(id);
+    return 1;
+  }
+
   // Not implemented methods - these would need to be added as needed
   @override
   Future<void> addIngredientToRecipe(RecipeIngredient recipeIngredient) {

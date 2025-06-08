@@ -667,6 +667,25 @@ class DatabaseHelper {
     return List.generate(maps.length, (i) => Ingredient.fromMap(maps[i]));
   }
 
+  Future<int> updateIngredient(Ingredient ingredient) async {
+    final Database db = await database;
+    return await db.update(
+      'ingredients',
+      ingredient.toMap(),
+      where: 'id = ?',
+      whereArgs: [ingredient.id],
+    );
+  }
+
+  Future<int> deleteIngredient(String id) async {
+    final Database db = await database;
+    return await db.delete(
+      'ingredients',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   // Recipe ingredients operations
   Future<void> addIngredientToRecipe(RecipeIngredient recipeIngredient) async {
     final Database db = await database;

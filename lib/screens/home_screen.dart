@@ -7,6 +7,7 @@ import 'add_recipe_screen.dart';
 import 'edit_recipe_screen.dart';
 import 'cook_meal_screen.dart';
 import 'weekly_plan_screen.dart';
+import 'ingredients_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -339,6 +340,7 @@ class _HomePageState extends State<HomePage> {
     final List<Widget> screens = [
       _buildRecipesScreen(),
       const WeeklyPlanScreen(),
+      const IngredientsScreen(),
     ];
 
     return Scaffold(
@@ -375,6 +377,10 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today),
             label: 'Meal Plan',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.restaurant_menu),
+            label: 'Ingredients',
           ),
         ],
       ),

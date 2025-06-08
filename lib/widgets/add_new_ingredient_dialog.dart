@@ -10,10 +10,12 @@ import '../core/di/service_provider.dart';
 
 class AddNewIngredientDialog extends StatefulWidget {
   final DatabaseHelper? databaseHelper;
+  final Ingredient? ingredient;
 
   const AddNewIngredientDialog({
     super.key,
     this.databaseHelper,
+    this.ingredient,
   });
 
   @override
@@ -60,6 +62,20 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
     super.initState();
     // Use the injected database helper or get one from ServiceProvider
     _dbHelper = widget.databaseHelper ?? ServiceProvider.database.dbHelper;
+
+    // Pre-fill form if editing an existing ingredient
+    if (widget.ingredient != null) {
+      _nameController.text = widget.ingredient!.name;
+      _notesController.text = widget.ingredient!.notes ?? '';
+      _selectedCategory = widget.ingredient!.category;
+      _selectedUnit = widget.ingredient!.unit;
+      if (widget.ingredient!.proteinType != null) {
+        _selectedProteinType = ProteinType.values.firstWhere(
+          (type) => type.name == widget.ingredient!.proteinType,
+          orElse: () => ProteinType.other,
+        );
+      }
+    }
   }
 
   Future<void> _saveIngredient() async {
@@ -81,7 +97,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
       );
 
       final ingredient = Ingredient(
-        id: IdGenerator.generateId(),
+        id: widget.ingredient?.id ?? IdGenerator.generateId(),
         name: _nameController.text,
         category: _selectedCategory,
         unit: _selectedUnit,
@@ -89,7 +105,11 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
         notes: _notesController.text.isEmpty ? null : _notesController.text,
       );
 
-      await _dbHelper.insertIngredient(ingredient);
+      if (widget.ingredient != null) {
+        await _dbHelper.updateIngredient(ingredient);
+      } else {
+        await _dbHelper.insertIngredient(ingredient);
+      }
 
       if (mounted) {
         Navigator.pop(context, ingredient);
@@ -142,7 +162,8 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('New Ingredient'),
+      title: Text(
+          widget.ingredient != null ? 'Edit Ingredient' : 'New Ingredient'),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -271,7 +292,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Save'),
+              : Text(widget.ingredient != null ? 'Save Changes' : 'Save'),
         ),
       ],
     );
