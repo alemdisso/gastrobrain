@@ -70,124 +70,52 @@ class RecipeRecommendationCard extends StatelessWidget {
   }
 
   Widget _buildFactorIndicators(BuildContext context) {
-    final factorIcons = <Widget>[];
+    final badges = <Widget>[];
 
-    // Process each factor in the recommendation
-    recommendation.factorScores.forEach((factorId, score) {
-      final icon = _getFactorIcon(factorId, score);
-      if (icon != null) {
-        // Determine badge properties based on factor type and score
-        String label;
-        Color backgroundColor;
-        Color borderColor;
-        Color textColor;
-        if (factorId == 'randomization') {
-          // Special case for randomization factor - show numeric score
-          label = score.toStringAsFixed(0);
-          backgroundColor = Colors.purple.withValues(alpha: 26);
-          borderColor = Colors.purple;
-          textColor = Colors.purple;
-        } else {
-          // Use factor-specific labels based on the factor ID
-          if (factorId == 'frequency') {
-            label = score >= 75 ? 'Due' : (score >= 50 ? 'Soon' : 'Recent');
-          } else if (factorId == 'protein_rotation') {
-            label = score >= 75 ? 'Varied' : (score >= 50 ? 'OK' : 'Recent');
-          } else if (factorId == 'rating') {
-            label = score >= 75 ? 'Top' : (score >= 50 ? 'Good' : 'Fair');
-          } else if (factorId == 'variety_encouragement') {
-            label = score >= 75 ? 'Rare' : (score >= 50 ? 'Often' : 'Regular');
-          } else if (factorId == 'difficulty') {
-            label = score >= 75 ? 'Easy' : (score >= 50 ? 'Medium' : 'Hard');
-          } else {
-            label = score >= 80
-                ? 'Strong'
-                : (score >= 60
-                    ? 'Good'
-                    : score >= 40
-                        ? 'Fair'
-                        : 'Weak');
-          }
+    // Combine relevant scores for timing/variety badge
+    final frequencyScore = recommendation.factorScores['frequency'] ?? 0.0;
+    final proteinScore = recommendation.factorScores['protein_rotation'] ?? 0.0;
+    final varietyScore =
+        recommendation.factorScores['variety_encouragement'] ?? 0.0;
 
-          backgroundColor = _getFactorColor(score);
-          borderColor = _getFactorBorderColor(score);
-          textColor = _getFactorTextColor(score);
-        }
-        // Create the factor badge with the determined properties
-        factorIcons.add(
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: Tooltip(
-              message: _getFactorTooltip(factorId, score),
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: backgroundColor,
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color: borderColor,
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    icon,
-                    const SizedBox(width: 4),
-                    Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                        color: textColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      }
-    });
+    // Calculate averages for the three main aspects
+    final timingVarietyScore =
+        (frequencyScore + proteinScore + varietyScore) / 3;
+    final qualityScore = recommendation.factorScores['rating'] ?? 50.0;
+    final effortScore = recommendation.factorScores['difficulty'] ?? 50.0;
 
-    // Add protein rotation warning if needed
-    final proteinScore = recommendation.factorScores['protein_rotation'];
-    if (proteinScore != null && proteinScore < 50) {
-      // Determine severity based on score
-      String warningText = proteinScore < 25 ? 'Same' : 'Repeat';
+    // Create the three main badges
+    final scores = [
+      (score: timingVarietyScore, label: 'Timing'),
+      (score: qualityScore, label: 'Quality'),
+      (score: effortScore, label: 'Effort'),
+    ];
 
-      factorIcons.add(
+    // Add the three badges
+    for (final badgeData in scores) {
+      final backgroundColor = _getFactorColor(badgeData.score);
+      final borderColor = _getFactorBorderColor(badgeData.score);
+      final textColor = _getFactorTextColor(badgeData.score);
+
+      badges.add(
         Padding(
           padding: const EdgeInsets.only(right: 8.0),
-          child: Tooltip(
-            message:
-                'Warning: This protein type was used recently in your meals.\nConsider choosing a different protein for better variety.',
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 26),
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: Colors.red, width: 1),
+          child: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(
+                color: borderColor,
+                width: 1,
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.warning,
-                    size: 16,
-                    color: Colors.red,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    warningText,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.red,
-                    ),
-                  ),
-                ],
+            ),
+            child: Text(
+              badgeData.label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: textColor,
               ),
             ),
           ),
@@ -198,9 +126,9 @@ class RecipeRecommendationCard extends StatelessWidget {
     return Wrap(
       spacing: 4,
       runSpacing: 8,
-      children: factorIcons.isEmpty
-          ? [Text('No factors', style: Theme.of(context).textTheme.bodySmall)]
-          : factorIcons,
+      children: badges.isEmpty
+          ? [Text('No badges', style: Theme.of(context).textTheme.bodySmall)]
+          : badges,
     );
   }
 
@@ -214,66 +142,6 @@ class RecipeRecommendationCard extends StatelessWidget {
     if (score >= 75) return Colors.green.shade800;
     if (score >= 50) return Colors.amber.shade800;
     return Colors.red.shade800;
-  }
-
-  Icon? _getFactorIcon(String factorId, double score) {
-    switch (factorId) {
-      case 'frequency':
-        return const Icon(Icons.schedule, size: 16);
-      case 'protein_rotation':
-        return const Icon(Icons.rotate_right, size: 16);
-      case 'rating':
-        return const Icon(Icons.star, size: 16);
-      case 'variety_encouragement':
-        return const Icon(Icons.shuffle, size: 16);
-      case 'difficulty':
-        return const Icon(Icons.battery_full, size: 16);
-      case 'randomization':
-        return const Icon(Icons.casino, size: 16);
-      default:
-        return null;
-    }
-  }
-
-  String _getFactorTooltip(String factorId, double score) {
-    final scoreText = score.toStringAsFixed(1);
-    switch (factorId) {
-      case 'frequency':
-        String statusText = score >= 75
-            ? 'due now'
-            : (score >= 50 ? 'due soon' : 'recently cooked');
-        return 'Cooking frequency: $scoreText\nThis recipe is $statusText based on your frequency preferences';
-      case 'protein_rotation':
-        if (score < 50) {
-          return 'Protein variety: $scoreText\nThis protein type was used recently. Consider a different protein for variety.';
-        }
-        return 'Protein variety: $scoreText\nGood variety - you haven\'t used this protein type recently';
-      case 'rating':
-        String ratingText = score >= 75
-            ? 'top-rated'
-            : (score >= 50 ? 'well-rated' : 'moderately rated');
-        return 'Your rating: $scoreText\nThis recipe is $ratingText based on your preferences';
-      case 'variety_encouragement':
-        String frequencyText = score >= 75
-            ? 'rarely cooked'
-            : (score >= 50 ? 'rarely  cooked' : 'occasionally cooked');
-        return 'Recipe variety: $scoreText\nThis recipe is $frequencyText in your meal rotation';
-      case 'difficulty':
-        String difficultyText =
-            score >= 75 ? 'easy' : (score >= 50 ? 'medium' : 'more complex');
-        String context = '';
-        DateTime now = DateTime.now();
-        bool isWeekend =
-            now.weekday == DateTime.saturday || now.weekday == DateTime.sunday;
-        context = isWeekend
-            ? '\nWeekend meals can be more complex'
-            : '\nWeekday meals are better when simpler';
-        return 'Difficulty match: $scoreText\nThis recipe is $difficultyText to prepare (${recommendation.recipe.difficulty}/5)$context';
-      case 'randomization':
-        return 'Variety factor: $scoreText\nAdds a little randomness to keep suggestions fresh';
-      default:
-        return '$factorId: $scoreText';
-    }
   }
 
   Color _getFactorColor(double score) {
