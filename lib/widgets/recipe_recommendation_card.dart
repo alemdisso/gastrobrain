@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:gastrobrain/models/recipe_recommendation.dart';
 
+class _BadgeInfo {
+  final double score;
+  final String label;
+
+  const _BadgeInfo({required this.score, required this.label});
+}
+
 class RecipeRecommendationCard extends StatelessWidget {
   final RecipeRecommendation recommendation;
   final VoidCallback? onTap;
@@ -32,34 +39,6 @@ class RecipeRecommendationCard extends StatelessWidget {
               ),
               const SizedBox(height: 8),
 
-              // Recipe details row
-              Row(
-                children: [
-                  // Difficulty stars
-                  ...List.generate(
-                    5,
-                    (i) => Icon(
-                      i < recommendation.recipe.difficulty
-                          ? Icons.battery_full
-                          : Icons.battery_0_bar,
-                      size: 14,
-                      color: i < recommendation.recipe.difficulty
-                          ? Colors.green
-                          : Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  // Cooking time
-                  const Icon(Icons.timer, size: 16),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${recommendation.recipe.prepTimeMinutes + recommendation.recipe.cookTimeMinutes} min',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-
               // Factor indicators
               _buildFactorIndicators(context),
             ],
@@ -67,6 +46,69 @@ class RecipeRecommendationCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  double _calculateEffortScore() {
+    final totalTime = recommendation.recipe.prepTimeMinutes +
+        recommendation.recipe.cookTimeMinutes;
+    final difficulty = recommendation.recipe.difficulty;
+
+    // Base score from difficulty (0-100)
+    double score = (6 - difficulty) * 20; // 5=0, 4=20, 3=40, 2=60, 1=80
+
+    // Adjust score based on time
+    if (totalTime <= 30) {
+      score += 20; // Bonus for quick recipes
+    } else if (totalTime >= 90) {
+      score -= 20; // Penalty for very long recipes
+    } else if (totalTime > 60) {
+      score -= 10; // Small penalty for longer recipes
+    }
+
+    // Clamp final score to 0-100 range
+    return score.clamp(0.0, 100.0);
+  }
+
+  String _getTooltip(_BadgeInfo badge, String type) {
+    switch (type) {
+      case 'timing':
+        final statusText = badge.score >= 75
+            ? 'ready to explore'
+            : badge.score >= 60
+                ? 'good variety'
+                : badge.score >= 40
+                    ? 'recently used'
+                    : 'very recently used';
+        return 'Timing & Variety: ${badge.score.toStringAsFixed(0)}/100\n'
+            'This recipe is $statusText based on:\n'
+            '• When you last cooked it\n'
+            '• Protein type variety\n'
+            '• Recipe rotation';
+
+      case 'quality':
+        final ratingText = badge.score >= 85
+            ? 'one of your favorites'
+            : badge.score >= 70
+                ? 'highly rated by you'
+                : badge.score >= 50
+                    ? 'rated above average'
+                    : badge.score > 0
+                        ? 'rated below average'
+                        : 'not yet rated';
+        return 'Recipe Quality: ${badge.score.toStringAsFixed(0)}/100\n'
+            'This recipe is $ratingText';
+
+      case 'effort':
+        final timeText = recommendation.recipe.prepTimeMinutes +
+            recommendation.recipe.cookTimeMinutes;
+        final difficultyText = recommendation.recipe.difficulty;
+        return 'Recipe Effort: ${badge.score.toStringAsFixed(0)}/100\n'
+            'Total time: $timeText minutes\n'
+            'Difficulty level: $difficultyText/5';
+
+      default:
+        return badge.label;
+    }
   }
 
   Widget _buildFactorIndicators(BuildContext context) {
@@ -82,40 +124,61 @@ class RecipeRecommendationCard extends StatelessWidget {
     final timingVarietyScore =
         (frequencyScore + proteinScore + varietyScore) / 3;
     final qualityScore = recommendation.factorScores['rating'] ?? 50.0;
-    final effortScore = recommendation.factorScores['difficulty'] ?? 50.0;
+    final effortScore = _calculateEffortScore();
 
-    // Create the three main badges
-    final scores = [
-      (score: timingVarietyScore, label: 'Timing'),
-      (score: qualityScore, label: 'Quality'),
-      (score: effortScore, label: 'Effort'),
+    // Create badge data with scores and labels
+    final badgeData = [
+      (
+        info: _BadgeInfo(
+          score: timingVarietyScore,
+          label: _getTimingVarietyLabel(timingVarietyScore),
+        ),
+        type: 'timing'
+      ),
+      (
+        info: _BadgeInfo(
+          score: qualityScore,
+          label: _getQualityLabel(qualityScore),
+        ),
+        type: 'quality'
+      ),
+      (
+        info: _BadgeInfo(
+          score: effortScore,
+          label: _getEffortLabel(),
+        ),
+        type: 'effort'
+      ),
     ];
 
     // Add the three badges
-    for (final badgeData in scores) {
-      final backgroundColor = _getFactorColor(badgeData.score);
-      final borderColor = _getFactorBorderColor(badgeData.score);
-      final textColor = _getFactorTextColor(badgeData.score);
+    for (final badge in badgeData) {
+      final backgroundColor = _getFactorColor(badge.info.score);
+      final borderColor = _getFactorBorderColor(badge.info.score);
+      final textColor = _getFactorTextColor(badge.info.score);
 
       badges.add(
         Padding(
           padding: const EdgeInsets.only(right: 8.0),
-          child: Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(
-                color: borderColor,
-                width: 1,
+          child: Tooltip(
+            message: _getTooltip(badge.info, badge.type),
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(
+                  color: borderColor,
+                  width: 1,
+                ),
               ),
-            ),
-            child: Text(
-              badgeData.label,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-                color: textColor,
+              child: Text(
+                badge.info.label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: textColor,
+                ),
               ),
             ),
           ),
@@ -130,6 +193,45 @@ class RecipeRecommendationCard extends StatelessWidget {
           ? [Text('No badges', style: Theme.of(context).textTheme.bodySmall)]
           : badges,
     );
+  }
+
+  String _getTimingVarietyLabel(double score) {
+    // Maps frequency, protein_rotation, and variety scores
+    if (score >= 75) return 'Explore'; // High variety, good timing
+    if (score >= 60) return 'Varied'; // Good variety, decent timing
+    if (score >= 40) return 'Recent'; // Recently used proteins/recipes
+    return 'Repeat'; // Very recently used
+  }
+
+  String _getQualityLabel(double score) {
+    // Maps rating score to user preference labels
+    if (score >= 85) return 'Loved'; // Consistently high rated
+    if (score >= 70) return 'Great'; // Well rated
+    if (score >= 50) return 'Good'; // Average rating
+    if (score > 0) return 'Fair'; // Below average rating
+    return 'New'; // No rating yet
+  }
+
+  String _getEffortLabel() {
+    // Combines difficulty score with cooking time
+    final totalTime = recommendation.recipe.prepTimeMinutes +
+        recommendation.recipe.cookTimeMinutes;
+    final difficulty = recommendation.recipe.difficulty;
+
+    // Quick: Easy and under 30 minutes
+    if (difficulty <= 2 && totalTime <= 30) return 'Quick';
+
+    // Easy: Low difficulty, any time
+    if (difficulty <= 2) return 'Easy';
+
+    // Complex: High difficulty, over 60 minutes
+    if (difficulty >= 4 && totalTime > 60) return 'Project';
+
+    // Complex: High difficulty
+    if (difficulty >= 4) return 'Complex';
+
+    // Moderate: Everything else
+    return 'Moderate';
   }
 
   Color _getFactorBorderColor(double score) {
