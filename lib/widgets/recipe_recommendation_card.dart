@@ -30,12 +30,23 @@ class RecipeRecommendationCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Recipe name
+              // Recipe name and category
               Text(
                 recommendation.recipe.name,
                 style: Theme.of(context).textTheme.titleMedium,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                recommendation.recipe.category.displayName,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.color
+                          ?.withOpacity(0.8),
+                    ),
               ),
               const SizedBox(height: 8),
 
