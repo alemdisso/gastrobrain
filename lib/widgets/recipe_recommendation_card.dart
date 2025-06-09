@@ -45,7 +45,7 @@ class RecipeRecommendationCard extends StatelessWidget {
                           .textTheme
                           .bodySmall
                           ?.color
-                          ?.withOpacity(0.8),
+                          ?.withValues(alpha: 204), // 0.8 * 255 = 204
                     ),
               ),
               const SizedBox(height: 8),
