@@ -196,8 +196,8 @@ void main() {
 
         for (final category in validCategories) {
           final ingredient = Ingredient(
-            id: 'test-${category}',
-            name: 'Test ${category}',
+            id: 'test-$category',
+            name: 'Test $category',
             category: category,
             // Add protein type for protein category
             proteinType: category == 'protein' ? 'chicken' : null,
@@ -216,8 +216,8 @@ void main() {
 
         for (final type in proteinTypes) {
           final ingredient = Ingredient(
-            id: 'test-${type}',
-            name: 'Test ${type}',
+            id: 'test-$type',
+            name: 'Test $type',
             category: 'protein',
             proteinType: type,
           );
