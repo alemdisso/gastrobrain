@@ -93,3 +93,6 @@ app.*.map.json
 .idea/
 *.iml
 *.iws
+
+# Project specific
+docs/Issue #*.md
