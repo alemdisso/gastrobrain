@@ -15,7 +15,7 @@ import '../core/services/snackbar_service.dart';
 import '../widgets/weekly_calendar_widget.dart';
 import '../widgets/meal_recording_dialog.dart';
 import '../widgets/edit_meal_recording_dialog.dart';
-import '../widgets/recipe_recommendation_card.dart';
+import '../widgets/recipe_selection_card.dart';
 import '../utils/id_generator.dart';
 
 class WeeklyPlanScreen extends StatefulWidget {
@@ -1318,7 +1318,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
                           itemCount: _recommendations.length,
                           itemBuilder: (context, index) {
                             final recommendation = _recommendations[index];
-                            return RecipeRecommendationCard(
+                            return RecipeSelectionCard(
                               recommendation: recommendation,
                               onTap: () =>
                                   _handleRecipeSelection(recommendation.recipe),
@@ -1416,7 +1416,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
           },
         );
 
-    return RecipeRecommendationCard(
+    return RecipeSelectionCard(
       recommendation: recommendation,
       onTap: () => _handleRecipeSelection(recipe),
     );

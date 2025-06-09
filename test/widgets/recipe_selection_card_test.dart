@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/recipe_recommendation.dart';
-import 'package:gastrobrain/widgets/recipe_recommendation_card.dart';
+import 'package:gastrobrain/widgets/recipe_selection_card.dart';
 
 void main() {
-  group('RecipeRecommendationCard', () {
+  group('RecipeSelectionCard', () {
     testWidgets('displays recipe name correctly', (WidgetTester tester) async {
       // Arrange
       final recipe = Recipe(
@@ -28,7 +28,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: RecipeRecommendationCard(recommendation: recommendation),
+            body: RecipeSelectionCard(recommendation: recommendation),
           ),
         ),
       );
@@ -60,7 +60,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: RecipeRecommendationCard(recommendation: recommendation),
+            body: RecipeSelectionCard(recommendation: recommendation),
           ),
         ),
       );
@@ -101,7 +101,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: RecipeRecommendationCard(recommendation: recommendation),
+            body: RecipeSelectionCard(recommendation: recommendation),
           ),
         ),
       );
@@ -129,7 +129,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: RecipeRecommendationCard(recommendation: recommendation),
+            body: RecipeSelectionCard(recommendation: recommendation),
           ),
         ),
       );
@@ -146,7 +146,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: RecipeRecommendationCard(recommendation: recommendation),
+            body: RecipeSelectionCard(recommendation: recommendation),
           ),
         ),
       );
@@ -163,7 +163,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: RecipeRecommendationCard(recommendation: recommendation),
+            body: RecipeSelectionCard(recommendation: recommendation),
           ),
         ),
       );
@@ -191,7 +191,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: RecipeRecommendationCard(
+            body: RecipeSelectionCard(
               recommendation: recommendation,
               onTap: () => wasTapped = true,
             ),
@@ -199,7 +199,7 @@ void main() {
         ),
       );
 
-      await tester.tap(find.byType(RecipeRecommendationCard));
+      await tester.tap(find.byType(RecipeSelectionCard));
       await tester.pump();
 
       // Assert
@@ -232,7 +232,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: RecipeRecommendationCard(recommendation: recommendation),
+            body: RecipeSelectionCard(recommendation: recommendation),
           ),
         ),
       );
@@ -267,7 +267,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: RecipeRecommendationCard(recommendation: recommendation),
+            body: RecipeSelectionCard(recommendation: recommendation),
           ),
         ),
       );
@@ -286,7 +286,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: RecipeRecommendationCard(recommendation: recommendation),
+            body: RecipeSelectionCard(recommendation: recommendation),
           ),
         ),
       );
@@ -316,7 +316,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: RecipeRecommendationCard(recommendation: recommendation),
+            body: RecipeSelectionCard(recommendation: recommendation),
           ),
         ),
       );
@@ -354,7 +354,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: RecipeRecommendationCard(recommendation: recommendation),
+            body: RecipeSelectionCard(recommendation: recommendation),
           ),
         ),
       );
@@ -384,7 +384,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: RecipeRecommendationCard(recommendation: recommendation),
+            body: RecipeSelectionCard(recommendation: recommendation),
           ),
         ),
       );
@@ -402,7 +402,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: RecipeRecommendationCard(recommendation: recommendation),
+            body: RecipeSelectionCard(recommendation: recommendation),
           ),
         ),
       );
@@ -419,7 +419,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: RecipeRecommendationCard(recommendation: recommendation),
+            body: RecipeSelectionCard(recommendation: recommendation),
           ),
         ),
       );
@@ -452,7 +452,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: RecipeRecommendationCard(recommendation: recommendation),
+            body: RecipeSelectionCard(recommendation: recommendation),
           ),
         ),
       );
@@ -500,7 +500,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: RecipeRecommendationCard(recommendation: recommendation),
+            body: RecipeSelectionCard(recommendation: recommendation),
           ),
         ),
       );

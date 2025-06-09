@@ -8,11 +8,11 @@ class _BadgeInfo {
   const _BadgeInfo({required this.score, required this.label});
 }
 
-class RecipeRecommendationCard extends StatelessWidget {
+class RecipeSelectionCard extends StatelessWidget {
   final RecipeRecommendation recommendation;
   final VoidCallback? onTap;
 
-  const RecipeRecommendationCard({
+  const RecipeSelectionCard({
     super.key,
     required this.recommendation,
     this.onTap,
@@ -164,9 +164,10 @@ class RecipeRecommendationCard extends StatelessWidget {
 
     // Add the three badges
     for (final badge in badgeData) {
-      final backgroundColor = _getFactorColor(badge.info.score);
-      final borderColor = _getFactorBorderColor(badge.info.score);
-      final textColor = _getFactorTextColor(badge.info.score);
+      final backgroundColor =
+          _getBadgeBackgroundColor(badge.info.score, badge.type);
+      final borderColor = _getBadgeBorderColor(badge.info.score, badge.type);
+      final textColor = _getBadgeTextColor(badge.info.score, badge.type);
 
       badges.add(
         Padding(
@@ -245,21 +246,81 @@ class RecipeRecommendationCard extends StatelessWidget {
     return 'Moderate';
   }
 
-  Color _getFactorBorderColor(double score) {
-    if (score >= 75) return Colors.green;
-    if (score >= 50) return Colors.amber;
-    return Colors.red;
+  Color _getBadgeBackgroundColor(double score, String badgeType) {
+    switch (badgeType) {
+      case 'quality':
+        // Quality: Green → Amber → Blue-grey → Light grey
+        if (score >= 85) return Colors.green.withValues(alpha: 0.26);
+        if (score >= 70) return Colors.amber.withValues(alpha: 0.26);
+        if (score > 0) return Colors.blueGrey.withValues(alpha: 0.26);
+        return Colors.grey.withValues(alpha: 0.26); // New/unrated
+
+      case 'timing':
+        // Timing/Variety: Green → Amber → Red
+        if (score >= 75) return Colors.green.withValues(alpha: 0.26);
+        if (score >= 50) return Colors.amber.withValues(alpha: 0.26);
+        return Colors.red.withValues(alpha: 0.26);
+
+      case 'effort':
+        // Effort: Green → Amber → Red (based on ease of preparation)
+        if (score >= 75) return Colors.green.withValues(alpha: 0.26);
+        if (score >= 50) return Colors.amber.withValues(alpha: 0.26);
+        return Colors.red.withValues(alpha: 0.26);
+
+      default:
+        return Colors.grey.withValues(alpha: 0.26);
+    }
   }
 
-  Color _getFactorTextColor(double score) {
-    if (score >= 75) return Colors.green.shade800;
-    if (score >= 50) return Colors.amber.shade800;
-    return Colors.red.shade800;
+  Color _getBadgeBorderColor(double score, String badgeType) {
+    switch (badgeType) {
+      case 'quality':
+        // Quality: Green → Amber → Blue-grey → Light grey
+        if (score >= 85) return Colors.green;
+        if (score >= 70) return Colors.amber;
+        if (score > 0) return Colors.blueGrey.shade700;
+        return Colors.grey.shade600; // New/unrated
+
+      case 'timing':
+        // Timing/Variety: Green → Amber → Red
+        if (score >= 75) return Colors.green;
+        if (score >= 50) return Colors.amber;
+        return Colors.red;
+
+      case 'effort':
+        // Effort: Green → Amber → Red (based on ease of preparation)
+        if (score >= 75) return Colors.green;
+        if (score >= 50) return Colors.amber;
+        return Colors.red;
+
+      default:
+        return Colors.grey;
+    }
   }
 
-  Color _getFactorColor(double score) {
-    if (score >= 75) return Colors.green.withValues(alpha: 0.26);
-    if (score >= 50) return Colors.amber.withValues(alpha: 0.26);
-    return Colors.red.withValues(alpha: 0.26);
+  Color _getBadgeTextColor(double score, String badgeType) {
+    switch (badgeType) {
+      case 'quality':
+        // Quality: Green → Amber → Blue-grey → Light grey
+        if (score >= 85) return Colors.green.shade800;
+        if (score >= 70) return Colors.amber.shade800;
+        if (score > 0) return Colors.blueGrey.shade700;
+        return Colors.grey.shade700; // New/unrated
+
+      case 'timing':
+        // Timing/Variety: Green → Amber → Red
+        if (score >= 75) return Colors.green.shade800;
+        if (score >= 50) return Colors.amber.shade800;
+        return Colors.red.shade800;
+
+      case 'effort':
+        // Effort: Green → Amber → Red (based on ease of preparation)
+        if (score >= 75) return Colors.green.shade800;
+        if (score >= 50) return Colors.amber.shade800;
+        return Colors.red.shade800;
+
+      default:
+        return Colors.grey.shade800;
+    }
   }
 }
