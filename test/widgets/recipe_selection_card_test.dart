@@ -2,523 +2,579 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/recipe_recommendation.dart';
+import 'package:gastrobrain/models/recipe_category.dart';
+import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/widgets/recipe_selection_card.dart';
 
 void main() {
-  group('RecipeSelectionCard', () {
-    testWidgets('displays recipe name correctly', (WidgetTester tester) async {
-      // Arrange
-      final recipe = Recipe(
-        id: 'test-recipe',
-        name: 'Test Recipe Name',
-        createdAt: DateTime.now(),
-        desiredFrequency: null,
-        difficulty: 3,
-        prepTimeMinutes: 15,
-        cookTimeMinutes: 30,
-      );
+  late Recipe testRecipe;
+  late RecipeRecommendation testRecommendation;
 
-      final recommendation = RecipeRecommendation(
-        recipe: recipe,
-        totalScore: 75.0,
-        factorScores: {},
-      );
+  setUp(() {
+    testRecipe = Recipe(
+      id: 'test-recipe',
+      name: 'Test Recipe',
+      category: RecipeCategory.mainDishes,
+      desiredFrequency: FrequencyType.weekly,
+      difficulty: 3,
+      prepTimeMinutes: 30,
+      cookTimeMinutes: 45,
+      rating: 4,
+      createdAt: DateTime.now(),
+    );
 
-      // Act
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: RecipeSelectionCard(recommendation: recommendation),
-          ),
-        ),
-      );
+    testRecommendation = RecipeRecommendation(
+      recipe: testRecipe,
+      totalScore: 75.0,
+      factorScores: {
+        'frequency': 80.0,
+        'protein_rotation': 70.0,
+        'variety_encouragement': 75.0,
+        'rating': 85.0,
+      },
+    );
+  });
 
-      // Assert
-      expect(find.text('Test Recipe Name'), findsOneWidget);
-    });
-
-    testWidgets('displays difficulty stars correctly',
+  group('RecipeSelectionCard - Basic Rendering', () {
+    testWidgets('displays recipe name and category',
         (WidgetTester tester) async {
-      // Arrange
-      final recipe = Recipe(
-        id: 'test-recipe',
-        name: 'Test Recipe',
-        createdAt: DateTime.now(),
-        desiredFrequency: null,
-        difficulty: 3, // 3 out of 5 stars
-        prepTimeMinutes: 15,
-        cookTimeMinutes: 30,
-      );
-
-      final recommendation = RecipeRecommendation(
-        recipe: recipe,
-        totalScore: 80.0,
-        factorScores: {},
-      );
-
-      // Act
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: RecipeSelectionCard(recommendation: recommendation),
-          ),
-        ),
-      );
-
-      // Assert
-      final difficultyIcons = tester
-          .widgetList<Icon>(find.byType(Icon))
-          .where((icon) => icon.icon == Icons.battery_full)
-          .length;
-      final emptyDifficultyIcons = tester
-          .widgetList<Icon>(find.byType(Icon))
-          .where((icon) => icon.icon == Icons.battery_0_bar)
-          .length;
-
-      expect(difficultyIcons, equals(3)); // 3 filled batteries
-      expect(emptyDifficultyIcons, equals(2)); // 2 empty batteries
-    });
-
-    testWidgets('displays cooking time correctly', (WidgetTester tester) async {
-      // Arrange
-      final recipe = Recipe(
-        id: 'test-recipe',
-        name: 'Test Recipe',
-        createdAt: DateTime.now(),
-        desiredFrequency: null,
-        difficulty: 1,
-        prepTimeMinutes: 15,
-        cookTimeMinutes: 30,
-      );
-
-      final recommendation = RecipeRecommendation(
-        recipe: recipe,
-        totalScore: 90.0,
-        factorScores: {},
-      );
-
-      // Act
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: RecipeSelectionCard(recommendation: recommendation),
-          ),
-        ),
-      );
-
-      // Assert
-      expect(find.text('45 min'), findsOneWidget); // 15 + 30 = 45
-    });
-
-    testWidgets('displays score indicator with correct color',
-        (WidgetTester tester) async {
-      // Test high score (green)
-      var recipe = Recipe(
-        id: 'test-recipe',
-        name: 'Test Recipe',
-        createdAt: DateTime.now(),
-        desiredFrequency: null,
-      );
-
-      var recommendation = RecipeRecommendation(
-        recipe: recipe,
-        totalScore: 85.0, // Should be green
-        factorScores: {},
-      );
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: RecipeSelectionCard(recommendation: recommendation),
-          ),
-        ),
-      );
-
-      expect(find.text('85'), findsOneWidget);
-
-      // Test medium score (amber)
-      recommendation = RecipeRecommendation(
-        recipe: recipe,
-        totalScore: 65.0, // Should be amber
-        factorScores: {},
-      );
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: RecipeSelectionCard(recommendation: recommendation),
-          ),
-        ),
-      );
-
-      expect(find.text('65'), findsOneWidget);
-
-      // Test low score (red)
-      recommendation = RecipeRecommendation(
-        recipe: recipe,
-        totalScore: 45.0, // Should be red
-        factorScores: {},
-      );
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: RecipeSelectionCard(recommendation: recommendation),
-          ),
-        ),
-      );
-
-      expect(find.text('45'), findsOneWidget);
-    });
-
-    testWidgets('calls onTap when tapped', (WidgetTester tester) async {
-      // Arrange
-      bool wasTapped = false;
-      final recipe = Recipe(
-        id: 'test-recipe',
-        name: 'Test Recipe',
-        createdAt: DateTime.now(),
-        desiredFrequency: null,
-      );
-
-      final recommendation = RecipeRecommendation(
-        recipe: recipe,
-        totalScore: 70.0,
-        factorScores: {},
-      );
-
-      // Act
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: RecipeSelectionCard(
-              recommendation: recommendation,
+              recommendation: testRecommendation,
+            ),
+          ),
+        ),
+      );
+
+      // Verify recipe name is displayed
+      expect(find.text('Test Recipe'), findsOneWidget);
+
+      // Verify category is displayed
+      expect(find.text(RecipeCategory.mainDishes.displayName), findsOneWidget);
+    });
+    testWidgets('displays all three badge types', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: RecipeSelectionCard(
+              recommendation: testRecommendation,
+            ),
+          ),
+        ),
+      );
+
+      // Should show all three badges
+      expect(
+          find.text('Explore'), findsOneWidget); // Timing badge (75% average)
+      expect(find.text('Loved'), findsOneWidget); // Quality badge (85%)
+      expect(find.text('Moderate'),
+          findsOneWidget); // Effort badge (difficulty 3, total time 75min)
+    });
+  });
+
+  group('RecipeSelectionCard - Interactions', () {
+    testWidgets('calls onTap when tapped', (WidgetTester tester) async {
+      bool wasTapped = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: RecipeSelectionCard(
+              recommendation: testRecommendation,
               onTap: () => wasTapped = true,
             ),
           ),
         ),
       );
 
-      await tester.tap(find.byType(RecipeSelectionCard));
+      await tester.tap(find.byType(Card));
       await tester.pump();
 
-      // Assert
       expect(wasTapped, isTrue);
     });
 
-    testWidgets('displays factor indicators correctly',
+    testWidgets('displays tooltips on badge long press',
         (WidgetTester tester) async {
-      // Arrange
-      final recipe = Recipe(
-        id: 'test-recipe',
-        name: 'Test Recipe',
-        createdAt: DateTime.now(),
-        desiredFrequency: null,
-        difficulty: 3, // Explicitly set difficulty
-      );
-
-      final recommendation = RecipeRecommendation(
-        recipe: recipe,
-        totalScore: 75.0,
-        factorScores: {
-          'frequency': 90.0,
-          'protein_rotation': 30.0, // Low score - should show warning
-          'rating': 80.0,
-          'unknown_factor': 50.0, // Should be ignored
-        },
-      );
-
-      // Act
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: RecipeSelectionCard(recommendation: recommendation),
+            body: RecipeSelectionCard(
+              recommendation: testRecommendation,
+            ),
           ),
         ),
       );
 
-      // First, let's just check for the basic factor icons
-      expect(find.byIcon(Icons.schedule), findsOneWidget); // frequency
-      expect(
-          find.byIcon(Icons.rotate_right), findsOneWidget); // protein_rotation
-      expect(find.byIcon(Icons.star),
-          findsWidgets); // At least one star for rating factor
-      expect(find.byIcon(Icons.warning), findsOneWidget); // protein warning
-    });
-    testWidgets('shows warning icon for low protein rotation score',
-        (WidgetTester tester) async {
-      // Arrange
-      final recipe = Recipe(
-        id: 'test-recipe',
-        name: 'Test Recipe',
-        createdAt: DateTime.now(),
-        desiredFrequency: null,
-      );
-
-      // Test low protein score (< 50)
-      var recommendation = RecipeRecommendation(
-        recipe: recipe,
-        totalScore: 70.0,
-        factorScores: {
-          'protein_rotation': 30.0, // Should show warning
-        },
-      );
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: RecipeSelectionCard(recommendation: recommendation),
-          ),
-        ),
-      );
-
-      expect(find.byIcon(Icons.warning), findsOneWidget);
-
-      // Test high protein score (>= 50) - should not show warning
-      recommendation = RecipeRecommendation(
-        recipe: recipe,
-        totalScore: 70.0,
-        factorScores: {
-          'protein_rotation': 80.0, // Should not show warning
-        },
-      );
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: RecipeSelectionCard(recommendation: recommendation),
-          ),
-        ),
-      );
-
-      expect(find.byIcon(Icons.warning), findsNothing);
-    });
-
-    testWidgets('shows tooltips for factor indicators',
-        (WidgetTester tester) async {
-      // Arrange
-      final recipe = Recipe(
-        id: 'test-recipe',
-        name: 'Test Recipe',
-        createdAt: DateTime.now(),
-        desiredFrequency: null,
-      );
-
-      final recommendation = RecipeRecommendation(
-        recipe: recipe,
-        totalScore: 85.0,
-        factorScores: {
-          'frequency': 90.5,
-        },
-      );
-
-      // Act
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: RecipeSelectionCard(recommendation: recommendation),
-          ),
-        ),
-      );
-
-      // Find the tooltip widget by finding the Icon first, then getting its parent
-      final tooltipFinder = find.ancestor(
-        of: find.byIcon(Icons.schedule),
-        matching: find.byType(Tooltip),
-      );
-
-      await tester.longPress(tooltipFinder);
+      // Find and verify quality badge tooltip
+      final qualityBadge = find.text('Loved');
+      await tester.longPress(qualityBadge);
       await tester.pump();
 
-      // Assert - look for the expected format of tooltip text
-      expect(find.textContaining('Cooking frequency'), findsOneWidget);
-      expect(find.textContaining('90.5'), findsOneWidget);
+      expect(
+        find.textContaining('Recipe Quality: 85/100'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('one of your favorites'),
+        findsOneWidget,
+      );
+    });
+  });
+
+  group('RecipeSelectionCard - Badge Colors', () {
+    testWidgets('quality badge shows correct colors based on score',
+        (WidgetTester tester) async {
+      final scores = [
+        (
+          score: 90.0,
+          bg: Colors.green.withValues(alpha: 0.26),
+          border: Colors.green,
+          text: Colors.green.shade800
+        ),
+        (
+          score: 72.0,
+          bg: Colors.amber.withValues(alpha: 0.26),
+          border: Colors.amber,
+          text: Colors.amber.shade800
+        ),
+        (
+          score: 30.0,
+          bg: Colors.blueGrey.withValues(alpha: 0.26),
+          border: Colors.blueGrey.shade700,
+          text: Colors.blueGrey.shade700
+        ),
+        (
+          score: 0.0,
+          bg: Colors.grey.withValues(alpha: 0.26),
+          border: Colors.grey.shade600,
+          text: Colors.grey.shade700
+        ),
+      ];
+
+      for (final scoreInfo in scores) {
+        testRecommendation = RecipeRecommendation(
+          recipe: testRecipe,
+          totalScore: 75.0,
+          factorScores: {'rating': scoreInfo.score},
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: RecipeSelectionCard(
+                recommendation: testRecommendation,
+              ),
+            ),
+          ),
+        );
+
+        // Find the badge container by its label text
+        final badge = find.ancestor(
+          of: find.text(_getQualityLabel(scoreInfo.score)),
+          matching: find.byType(Container),
+        );
+
+        final container = tester.widget<Container>(badge);
+        final decoration = container.decoration as BoxDecoration;
+
+        expect(decoration.color, scoreInfo.bg,
+            reason: 'Background color mismatch for score ${scoreInfo.score}');
+        expect(decoration.border?.top.color, scoreInfo.border,
+            reason: 'Border color mismatch for score ${scoreInfo.score}');
+
+        final text = tester.widget<Text>(find.descendant(
+          of: badge,
+          matching: find.byType(Text),
+        ));
+
+        expect(text.style?.color, scoreInfo.text,
+            reason: 'Text color mismatch for score ${scoreInfo.score}');
+      }
     });
 
-    testWidgets('handles empty factor scores', (WidgetTester tester) async {
-      // Arrange
-      final recipe = Recipe(
+    testWidgets('timing badge shows correct colors based on score',
+        (WidgetTester tester) async {
+      final scores = [
+        (
+          score: 80.0,
+          bg: Colors.green.withValues(alpha: 0.26),
+          border: Colors.green,
+          text: Colors.green.shade800
+        ),
+        (
+          score: 60.0,
+          bg: Colors.amber.withValues(alpha: 0.26),
+          border: Colors.amber,
+          text: Colors.amber.shade800
+        ),
+        (
+          score: 30.0,
+          bg: Colors.red.withValues(alpha: 0.26),
+          border: Colors.red,
+          text: Colors.red.shade800
+        ),
+      ];
+
+      for (final scoreInfo in scores) {
+        testRecommendation = RecipeRecommendation(
+          recipe: testRecipe,
+          totalScore: 75.0,
+          factorScores: {
+            'frequency': scoreInfo.score,
+            'protein_rotation': scoreInfo.score,
+            'variety_encouragement': scoreInfo.score,
+          },
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: RecipeSelectionCard(
+                recommendation: testRecommendation,
+              ),
+            ),
+          ),
+        );
+
+        // Find the badge container by its label text
+        final badge = find.ancestor(
+          of: find.text(_getTimingVarietyLabel(scoreInfo.score)),
+          matching: find.byType(Container),
+        );
+
+        final container = tester.widget<Container>(badge);
+        final decoration = container.decoration as BoxDecoration;
+
+        expect(decoration.color, scoreInfo.bg,
+            reason: 'Background color mismatch for score ${scoreInfo.score}');
+        expect(decoration.border?.top.color, scoreInfo.border,
+            reason: 'Border color mismatch for score ${scoreInfo.score}');
+
+        final text = tester.widget<Text>(
+            find.descendant(of: badge, matching: find.byType(Text)));
+
+        expect(text.style?.color, scoreInfo.text,
+            reason: 'Text color mismatch for score ${scoreInfo.score}');
+      }
+    });
+
+    testWidgets('effort badge shows correct colors and labels',
+        (WidgetTester tester) async {
+      final testCases = [
+        (
+          difficulty: 2,
+          time: 25,
+          expectedLabel: 'Quick',
+          bg: Colors.green.withValues(alpha: 0.26),
+          border: Colors.green,
+          text: Colors.green.shade800
+        ),
+        (
+          difficulty: 3,
+          time: 45,
+          expectedLabel: 'Moderate',
+          bg: Colors.amber.withValues(alpha: 0.26),
+          border: Colors.amber,
+          text: Colors.amber.shade800
+        ),
+        (
+          difficulty: 4,
+          time: 90,
+          expectedLabel: 'Project',
+          bg: Colors.red.withValues(alpha: 0.26),
+          border: Colors.red,
+          text: Colors.red.shade800
+        ),
+      ];
+
+      for (final testCase in testCases) {
+        testRecipe = Recipe(
+          id: 'test-recipe',
+          name: 'Test Recipe',
+          category: RecipeCategory.mainDishes,
+          prepTimeMinutes: testCase.time ~/ 2,
+          cookTimeMinutes: testCase.time ~/ 2,
+          difficulty: testCase.difficulty,
+          createdAt: DateTime.now(), // Adding required createdAt field
+        );
+
+        testRecommendation = RecipeRecommendation(
+          recipe: testRecipe,
+          totalScore: 75.0,
+          factorScores: {'rating': 75.0},
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: RecipeSelectionCard(
+                recommendation: testRecommendation,
+              ),
+            ),
+          ),
+        );
+
+        // Find the badge container by its label text
+        final badge = find.ancestor(
+          of: find.text(testCase.expectedLabel),
+          matching: find.byType(Container),
+        );
+
+        final container = tester.widget<Container>(badge);
+        final decoration = container.decoration as BoxDecoration;
+
+        expect(decoration.color, testCase.bg,
+            reason: 'Background color mismatch for ${testCase.expectedLabel}');
+        expect(decoration.border?.top.color, testCase.border,
+            reason: 'Border color mismatch for ${testCase.expectedLabel}');
+
+        final text = tester.widget<Text>(
+            find.descendant(of: badge, matching: find.byType(Text)));
+
+        expect(text.style?.color, testCase.text,
+            reason: 'Text color mismatch for ${testCase.expectedLabel}');
+      }
+    });
+
+    testWidgets('handles missing recommendation data gracefully',
+        (WidgetTester tester) async {
+      testRecipe = Recipe(
         id: 'test-recipe',
         name: 'Test Recipe',
+        category: RecipeCategory.mainDishes,
         createdAt: DateTime.now(),
-        desiredFrequency: null,
       );
 
-      final recommendation = RecipeRecommendation(
-        recipe: recipe,
-        totalScore: 50.0,
+      // Test with empty factor scores
+      testRecommendation = RecipeRecommendation(
+        recipe: testRecipe,
+        totalScore: 75.0,
         factorScores: {}, // Empty factor scores
       );
 
-      // Act
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: RecipeSelectionCard(recommendation: recommendation),
+            body: RecipeSelectionCard(
+              recommendation: testRecommendation,
+            ),
           ),
         ),
       );
 
-      // Assert
-      expect(find.text('No factors'), findsOneWidget);
-    });
+      // For debugging: print all text in card
+      print('\nActual widget text contents:');
+      tester.widgetList<Text>(find.byType(Text)).forEach((text) {
+        print('- "${text.data}"');
+      });
 
-    testWidgets('displays strength label below score indicator',
-        (WidgetTester tester) async {
-      // Arrange
-      final recipe = Recipe(
-        id: 'test-recipe',
-        name: 'Test Recipe',
-        createdAt: DateTime.now(),
-        desiredFrequency: null,
-      );
+      // Should show default values for badges
+      expect(find.text('Repeat'), findsOneWidget); // Default timing badge
+      expect(find.text('New'), findsOneWidget); // Default quality badge
+      expect(find.text('Moderate'), findsOneWidget); // Default effort badge
 
-      // Test high score
-      var recommendation = RecipeRecommendation(
-        recipe: recipe,
-        totalScore: 85.0,
-        factorScores: {},
-      );
-
-      // Act
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: RecipeSelectionCard(recommendation: recommendation),
-          ),
-        ),
-      );
-
-      // Assert
-      expect(find.text('Strong'), findsOneWidget);
-
-      // Test medium score
-      recommendation = RecipeRecommendation(
-        recipe: recipe,
-        totalScore: 65.0,
-        factorScores: {},
-      );
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: RecipeSelectionCard(recommendation: recommendation),
-          ),
-        ),
-      );
-
-      expect(find.text('Good'), findsOneWidget);
-
-      // Test low score
-      recommendation = RecipeRecommendation(
-        recipe: recipe,
-        totalScore: 35.0,
-        factorScores: {},
-      );
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: RecipeSelectionCard(recommendation: recommendation),
-          ),
-        ),
-      );
-
-      expect(find.text('Weak'), findsOneWidget);
-    });
-
-    testWidgets('displays factor badges with strength labels',
-        (WidgetTester tester) async {
-      // Arrange
-      final recipe = Recipe(
-        id: 'test-recipe',
-        name: 'Test Recipe',
-        createdAt: DateTime.now(),
-        desiredFrequency: null,
-      );
-
-      final recommendation = RecipeRecommendation(
-        recipe: recipe,
+      // Test with missing specific factors
+      testRecommendation = RecipeRecommendation(
+        recipe: testRecipe,
         totalScore: 75.0,
         factorScores: {
-          'frequency': 85.0, // Due
-          'rating': 65.0, // Good
-          'protein_rotation': 45.0, // Recent
-          'variety_encouragement': 30.0, // Regular
+          'other_factor': 50.0, // Some unrelated factor
         },
       );
 
-      // Act
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: RecipeSelectionCard(recommendation: recommendation),
+            body: RecipeSelectionCard(
+              recommendation: testRecommendation,
+            ),
           ),
         ),
       );
 
-      // Assert
-      // Find all instances of strength labels
-      expect(find.text('Due'), findsAtLeastNWidgets(1));
-      expect(find.text('Good'), findsAtLeastNWidgets(1));
-      expect(find.text('Recent'), findsAtLeastNWidgets(1));
-      expect(find.text('Regular'), findsAtLeastNWidgets(1));
+      // Should handle missing factors same as empty scores
+      expect(find.text('Repeat'), findsOneWidget);
+      expect(find.text('New'), findsOneWidget);
+      expect(find.text('Moderate'), findsOneWidget);
 
-      // Should find the "Recent" warning for protein rotation
-      expect(find.text('Recent'), findsOneWidget);
+      // Test with 0.0 scores
+      testRecommendation = RecipeRecommendation(
+        recipe: testRecipe,
+        totalScore: 75.0,
+        factorScores: {
+          'frequency': 0.0,
+          'protein_rotation': 0.0,
+          'rating': 0.0,
+        },
+      );
 
-      // Verify that each factor icon is present
-      expect(find.byIcon(Icons.schedule), findsOneWidget); // frequency
-      expect(find.byIcon(Icons.star), findsWidgets); // rating
-      expect(
-          find.byIcon(Icons.rotate_right), findsOneWidget); // protein_rotation
-      expect(
-          find.byIcon(Icons.shuffle), findsOneWidget); // variety_encouragement
-    });
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: RecipeSelectionCard(
+              recommendation: testRecommendation,
+            ),
+          ),
+        ),
+      );
 
-    // Add this test to test/widgets/recipe_recommendation_card_test.dart
-    testWidgets('shows appropriate protein warning based on score',
-        (WidgetTester tester) async {
-      // Arrange
-      final recipe = Recipe(
+      // Should show minimum value badges
+      expect(find.text('Repeat'), findsOneWidget);
+      expect(find.text('New'),
+          findsOneWidget); // Even with 0 rating, shows New for never cooked
+      expect(find.text('Moderate'), findsOneWidget);
+
+      // Test recipe with missing time/difficulty but has scores
+      testRecipe = Recipe(
         id: 'test-recipe',
         name: 'Test Recipe',
+        category: RecipeCategory.mainDishes,
         createdAt: DateTime.now(),
-        desiredFrequency: null,
+        // No prepTimeMinutes or difficulty
       );
 
-      // Test very low protein score
-      final recommendation = RecipeRecommendation(
-        recipe: recipe,
-        totalScore: 70.0,
+      testRecommendation = RecipeRecommendation(
+        recipe: testRecipe,
+        totalScore: 75.0,
         factorScores: {
-          'protein_rotation': 20.0, // Very low score
+          'frequency': 75.0,
+          'protein_rotation': 75.0,
+          'rating': 75.0,
         },
       );
 
-      // Act
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: RecipeSelectionCard(recommendation: recommendation),
+            body: RecipeSelectionCard(
+              recommendation: testRecommendation,
+            ),
           ),
         ),
       );
 
-      // Assert
-      expect(find.text('Recent'), findsOneWidget);
-
-      // Check tooltip with long press
-      final tooltipFinder = find.ancestor(
-        of: find.byIcon(Icons.warning),
-        matching: find.byType(Tooltip),
-      );
-
-      await tester.longPress(tooltipFinder);
-      await tester.pump();
-
-      expect(find.textContaining('protein type was used recently'),
-          findsOneWidget);
+      // Should still show correct timing/quality badges, but default effort
+      expect(find.text('Explore'), findsOneWidget); // Based on 75.0 score
+      expect(find.text('High'), findsOneWidget); // Based on 75.0 score
+      expect(find.text('Moderate'),
+          findsOneWidget); // Default effort without time/difficulty
     });
   });
+
+  group('RecipeSelectionCard - Edge Cases', () {
+    testWidgets('timing badge shows correct labels at boundaries',
+        (WidgetTester tester) async {
+      final scoreLabels = [
+        (score: 75.0, expected: 'Explore'), // Exactly at first boundary
+        (score: 74.9, expected: 'Varied'), // Just below first boundary
+        (score: 60.0, expected: 'Varied'), // Exactly at second boundary
+        (score: 59.9, expected: 'Recent'), // Just below second boundary
+        (score: 40.0, expected: 'Recent'), // Exactly at third boundary
+        (score: 39.9, expected: 'Repeat'), // Just below third boundary
+        (score: 0.0, expected: 'Repeat'), // Minimum score
+      ];
+
+      for (final test in scoreLabels) {
+        testRecommendation = RecipeRecommendation(
+          recipe: testRecipe,
+          totalScore: 75.0,
+          factorScores: {
+            'frequency': test.score,
+            'protein_rotation': test.score,
+            'variety_encouragement': test.score,
+          },
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: RecipeSelectionCard(
+                recommendation: testRecommendation,
+              ),
+            ),
+          ),
+        );
+
+        expect(find.text(test.expected), findsOneWidget,
+            reason: 'Score ${test.score} should show label ${test.expected}');
+      }
+    });
+
+    testWidgets('effort badge shows correct labels for different combinations',
+        (WidgetTester tester) async {
+      final tests = [
+        (
+          difficulty: 2,
+          time: 30,
+          expectedLabel: 'Quick'
+        ), // Easy and fast (≤30 min)
+        (
+          difficulty: 2,
+          time: 45,
+          expectedLabel: 'Easy'
+        ), // Easy but longer time
+        (
+          difficulty: 4,
+          time: 90,
+          expectedLabel: 'Project'
+        ), // Hard and very long (>60 min)
+        (
+          difficulty: 4,
+          time: 45,
+          expectedLabel: 'Complex'
+        ), // Hard but shorter time
+        (difficulty: 3, time: 45, expectedLabel: 'Moderate'), // Everything else
+      ];
+
+      for (final test in tests) {
+        testRecipe = Recipe(
+          id: 'test-recipe',
+          name: 'Test Recipe',
+          category: RecipeCategory.mainDishes,
+          createdAt: DateTime.now(),
+          difficulty: test.difficulty,
+          prepTimeMinutes: test.time ~/ 2,
+          cookTimeMinutes: test.time ~/ 2,
+        );
+
+        testRecommendation = RecipeRecommendation(
+          recipe: testRecipe,
+          totalScore: 75.0,
+          factorScores: {'rating': 75.0},
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: RecipeSelectionCard(
+                recommendation: testRecommendation,
+              ),
+            ),
+          ),
+        );
+
+        expect(find.text(test.expectedLabel), findsOneWidget,
+            reason:
+                'Difficulty ${test.difficulty} and time ${test.time} should show ${test.expectedLabel}');
+      }
+    });
+  });
+}
+
+// Helper function to match the widget's logic
+String _getQualityLabel(double score) {
+  if (score >= 85) return 'Loved';
+  if (score >= 70) return 'Great';
+  if (score >= 50) return 'Good';
+  if (score > 0) return 'Fair';
+  return 'New';
+}
+
+String _getTimingVarietyLabel(double score) {
+  if (score >= 75) return 'Explore'; // High variety, good timing
+  if (score >= 60) return 'Varied'; // Good variety, decent timing
+  if (score >= 40) return 'Recent'; // Recently used proteins/recipes
+  return 'Repeat'; // Very recently used
 }
