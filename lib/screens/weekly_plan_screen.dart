@@ -260,9 +260,9 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
 
     final isWeekday = date.weekday >= 1 && date.weekday <= 5;
 
-    final recommendations =
+    final allRecommendations =
         await _recommendationService.getDetailedRecommendations(
-      count: 8,
+      count: 999, // Get all recommendations for selection
       excludeIds: recommendationContext['excludeIds'] ?? [],
       avoidProteinTypes: recommendationContext['avoidProteinTypes'],
       forDate: date,
@@ -270,6 +270,9 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       weekdayMeal: isWeekday,
       maxDifficulty: isWeekday ? 4 : null,
     );
+    // Keep top 8 for "Try This" tab
+    final topRecommendations =
+        allRecommendations.recommendations.take(8).toList();
 
     // Check if widget is still mounted before showing dialog
     if (!mounted) return;
@@ -279,7 +282,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       context: context,
       builder: (context) => _RecipeSelectionDialog(
         recipes: recipes,
-        detailedRecommendations: recommendations.recommendations,
+        detailedRecommendations: topRecommendations,
+        allScoredRecipes: allRecommendations.recommendations,
         onRefreshDetailedRecommendations: () =>
             _refreshDetailedRecommendations(date, mealType),
       ),
@@ -1112,6 +1116,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
 class _RecipeSelectionDialog extends StatefulWidget {
   final List<Recipe> recipes;
   final List<RecipeRecommendation> detailedRecommendations;
+  final List<RecipeRecommendation> allScoredRecipes;
   final Future<List<RecipeRecommendation>> Function()?
       onRefreshDetailedRecommendations;
   final Recipe? initialPrimaryRecipe;
@@ -1120,6 +1125,7 @@ class _RecipeSelectionDialog extends StatefulWidget {
   const _RecipeSelectionDialog({
     required this.recipes,
     this.detailedRecommendations = const [],
+    this.allScoredRecipes = const [],
     this.onRefreshDetailedRecommendations,
     this.initialPrimaryRecipe,
     this.initialAdditionalRecipes,
@@ -1393,23 +1399,25 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
 
   // Helper method to build consistent recipe list tiles
   Widget _buildRecipeListTile(Recipe recipe) {
-    return ListTile(
-      title: Text(recipe.name),
-      subtitle: Row(
-        children: [
-          // Display difficulty rating
-          ...List.generate(
-            5,
-            (i) => Icon(
-              i < recipe.difficulty ? Icons.star : Icons.star_border,
-              size: 14,
-              color: i < recipe.difficulty ? Colors.amber : Colors.grey,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text('${recipe.prepTimeMinutes + recipe.cookTimeMinutes} min'),
-        ],
-      ),
+    // Find the real recommendation for this recipe
+    final realRecommendation = widget.allScoredRecipes
+        .where((rec) => rec.recipe.id == recipe.id)
+        .firstOrNull;
+
+    final recommendation = realRecommendation ??
+        RecipeRecommendation(
+          recipe: recipe,
+          totalScore: 50.0,
+          factorScores: {
+            'frequency': 50.0,
+            'protein_rotation': 50.0,
+            'variety_encouragement': 50.0,
+            'rating': 50.0,
+          },
+        );
+
+    return RecipeRecommendationCard(
+      recommendation: recommendation,
       onTap: () => _handleRecipeSelection(recipe),
     );
   }
