@@ -365,8 +365,10 @@ void main() {
       );
 
       // For debugging: print all text in card
+      // ignore: avoid_print
       print('\nActual widget text contents:');
       tester.widgetList<Text>(find.byType(Text)).forEach((text) {
+        // ignore: avoid_print
         print('- "${text.data}"');
       });
 
