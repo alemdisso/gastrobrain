@@ -214,6 +214,9 @@ void main() {
       await mockDbHelper.insertRecipe(simpleRecipe);
       await mockDbHelper.insertRecipe(highRatedComplexRecipe);
 
+      // Remove randomization factor to eliminate test flakiness
+      recommendationService.unregisterFactor('randomization');
+
       // Get weekend recommendations
       final weekendDate = DateTime(2024, 1, 6); // Saturday
       final weekendResults =
