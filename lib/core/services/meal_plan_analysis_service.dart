@@ -123,6 +123,7 @@ class MealPlanAnalysisService {
           'Error getting recently cooked recipe IDs: ${e.toString()}');
     }
   }
+
   /// Get protein types that were cooked recently
   Future<List<ProteinType>> getRecentlyCookedProteins({
     int dayWindow = 7,

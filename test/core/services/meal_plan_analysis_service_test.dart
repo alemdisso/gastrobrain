@@ -19,59 +19,58 @@ void main() {
     mockDbHelper = MockDatabaseHelper();
     analysisService = MealPlanAnalysisService(mockDbHelper);
   });
-
   tearDown(() {
     mockDbHelper.resetAllData();
   });
 
-  group('MealPlanAnalysisService Tests', () {
-    // Helper function to create a test meal plan with items and recipes
-    Future<MealPlan> createTestMealPlan({
-      required DateTime weekStartDate,
-      required List<Recipe> recipes,
-      required List<String> dates,
-      required List<String> mealTypes,
-    }) async {
-      final mealPlanId = IdGenerator.generateId();
-      final mealPlan = MealPlan(
-        id: mealPlanId,
-        weekStartDate: weekStartDate,
-        notes: 'Test Plan',
-        createdAt: DateTime.now(),
-        modifiedAt: DateTime.now(),
+  // Helper function to create a test meal plan with items and recipes
+  Future<MealPlan> createTestMealPlan({
+    required DateTime weekStartDate,
+    required List<Recipe> recipes,
+    required List<String> dates,
+    required List<String> mealTypes,
+  }) async {
+    final mealPlanId = IdGenerator.generateId();
+    final mealPlan = MealPlan(
+      id: mealPlanId,
+      weekStartDate: weekStartDate,
+      notes: 'Test Plan',
+      createdAt: DateTime.now(),
+      modifiedAt: DateTime.now(),
+    );
+
+    // Add the meal plan to the mock database
+    await mockDbHelper.insertMealPlan(mealPlan);
+
+    // Create meal plan items with recipes
+    for (var i = 0; i < dates.length; i++) {
+      final itemId = IdGenerator.generateId();
+      final item = MealPlanItem(
+        id: itemId,
+        mealPlanId: mealPlanId,
+        plannedDate: dates[i],
+        mealType: mealTypes[i],
       );
 
-      // Add the meal plan to the mock database
-      await mockDbHelper.insertMealPlan(mealPlan);
+      // Add the item to the meal plan
+      mealPlan.items.add(item);
 
-      // Create meal plan items with recipes
-      for (var i = 0; i < dates.length; i++) {
-        final itemId = IdGenerator.generateId();
-        final item = MealPlanItem(
-          id: itemId,
-          mealPlanId: mealPlanId,
-          plannedDate: dates[i],
-          mealType: mealTypes[i],
-        );
+      // Create recipe association (making first recipe primary for each item)
+      final recipe = recipes[i % recipes.length];
+      final mealPlanItemRecipe = MealPlanItemRecipe(
+        mealPlanItemId: itemId,
+        recipeId: recipe.id,
+        isPrimaryDish: true,
+      );
 
-        // Add the item to the meal plan
-        mealPlan.items.add(item);
-
-        // Create recipe association (making first recipe primary for each item)
-        final recipe = recipes[i % recipes.length];
-        final mealPlanItemRecipe = MealPlanItemRecipe(
-          mealPlanItemId: itemId,
-          recipeId: recipe.id,
-          isPrimaryDish: true,
-        );
-
-        // Add recipe association
-        item.mealPlanItemRecipes = [mealPlanItemRecipe];
-      }
-
-      return mealPlan;
+      // Add recipe association
+      item.mealPlanItemRecipes = [mealPlanItemRecipe];
     }
 
+    return mealPlan;
+  }
+
+  group('MealPlanAnalysisService Tests', () {
     test('getPlannedRecipeIds returns correct IDs from meal plan', () async {
       // Create test recipes
       final recipes = [
@@ -390,7 +389,7 @@ void main() {
           dates: [dates[i]],
           useJunctionTable: true,
         );
-      }      // Test with 3-day window
+      } // Test with 3-day window
       var recentIds = await analysisService.getRecentlyCookedRecipeIds(
         dayWindow: 3,
         referenceDate: today,
@@ -398,12 +397,13 @@ void main() {
       expect(recentIds.length,
           2); // Should include today and 1 day ago (both recipes)
 
-      // Test with 5-day window  
+      // Test with 5-day window
       recentIds = await analysisService.getRecentlyCookedRecipeIds(
         dayWindow: 5,
         referenceDate: today,
       );
-      expect(recentIds.length, 2); // Should include up to 5 days ago (both recipes)
+      expect(recentIds.length,
+          2); // Should include up to 5 days ago (both recipes)
 
       // Test with 8-day window (to include the 7-day ago meal)
       recentIds = await analysisService.getRecentlyCookedRecipeIds(
@@ -449,7 +449,8 @@ void main() {
         today.subtract(const Duration(days: 3)), // Beef 3 days ago
       ];
 
-      await createTestMealsWithDates(recipes: recipes, dates: dates);      // Test with 2-day window
+      await createTestMealsWithDates(
+          recipes: recipes, dates: dates); // Test with 2-day window
       var recentProteins = await analysisService.getRecentlyCookedProteins(
         dayWindow: 2,
         referenceDate: today,
@@ -508,7 +509,9 @@ void main() {
 
       // Create meal with direct reference
       await createTestMealsWithDates(
-          recipes: [recipes[1]], dates: [dates[1]], useJunctionTable: false);      // Test recipe IDs
+          recipes: [recipes[1]],
+          dates: [dates[1]],
+          useJunctionTable: false); // Test recipe IDs
       final recentIds = await analysisService.getRecentlyCookedRecipeIds(
         dayWindow: 2,
         referenceDate: today,
@@ -525,6 +528,567 @@ void main() {
       expect(recentProteins.length, 2);
       expect(recentProteins.contains(ProteinType.chicken), true);
       expect(recentProteins.contains(ProteinType.beef), true);
+    });
+  });
+
+  group('Protein Penalty Strategy Tests', () {
+    // Helper function to create test meals with cooked dates
+    Future<void> createTestMealsWithCookedDates({
+      required List<Recipe> recipes,
+      required List<DateTime> cookedDates,
+    }) async {
+      for (var i = 0; i < recipes.length && i < cookedDates.length; i++) {
+        final meal = Meal(
+          id: IdGenerator.generateId(),
+          cookedAt: cookedDates[i],
+          servings: 4,
+          notes: 'Test meal ${i + 1}',
+          wasSuccessful: true,
+          actualPrepTime: 30,
+          actualCookTime: 45,
+        );
+
+        await mockDbHelper.insertMeal(meal);
+
+        final mealRecipe = MealRecipe(
+          mealId: meal.id,
+          recipeId: recipes[i].id,
+          isPrimaryDish: true,
+        );
+
+        await mockDbHelper.insertMealRecipe(mealRecipe);
+      }
+    }
+
+    // Helper function to create test meal plan with protein recipes
+    Future<MealPlan> createMealPlanWithProteins({
+      required DateTime weekStart,
+      required Map<String, List<ProteinType>> proteinMap,
+    }) async {
+      final recipes = <Recipe>[];
+
+      // Create recipes for each protein type
+      proteinMap.forEach((recipeName, proteins) {
+        final recipe = Recipe(
+          id: IdGenerator.generateId(),
+          name: recipeName,
+          desiredFrequency: FrequencyType.weekly,
+          createdAt: DateTime.now(),
+        );
+        recipes.add(recipe);
+      });
+
+      // Add recipes to mock database and set protein types
+      for (var i = 0; i < recipes.length; i++) {
+        await mockDbHelper.insertRecipe(recipes[i]);
+        final recipeName = recipes[i].name;
+        mockDbHelper.recipeProteinTypes[recipes[i].id] =
+            proteinMap[recipeName]!;
+      }
+
+      // Create meal plan with these recipes
+      return await createTestMealPlan(
+        weekStartDate: weekStart,
+        recipes: recipes,
+        dates: List.generate(
+            recipes.length,
+            (i) => weekStart
+                .add(Duration(days: i))
+                .toIso8601String()
+                .substring(0, 10)),
+        mealTypes: List.generate(recipes.length, (_) => MealPlanItem.dinner),
+      );
+    }
+
+    test('calculates no penalty for proteins not planned or recently cooked',
+        () async {
+      final today = DateTime(2025, 6, 11);
+      final weekStart = DateTime(2025, 6, 9); // Monday
+
+      // Create empty meal plan and no recent meals
+      final emptyPlan = MealPlan(
+        id: IdGenerator.generateId(),
+        weekStartDate: weekStart,
+        notes: 'Empty Plan',
+        createdAt: DateTime.now(),
+        modifiedAt: DateTime.now(),
+      );
+
+      await mockDbHelper.insertMealPlan(emptyPlan);
+
+      // Calculate penalty strategy
+      final strategy = await analysisService.calculateProteinPenaltyStrategy(
+        emptyPlan,
+        today,
+        MealPlanItem.dinner,
+      );
+
+      // Should have no penalties for any proteins
+      for (final protein in ProteinType.values.where((p) => p.isMainProtein)) {
+        expect(strategy.getPenalty(protein), equals(0.0),
+            reason:
+                'Protein $protein should have no penalty when not planned or recently cooked');
+      }
+    });
+
+    test('applies ~0.6 penalty for proteins planned this week only', () async {
+      final today = DateTime(2025, 6, 11); // Wednesday
+      final weekStart = DateTime(2025, 6, 9); // Monday
+
+      // Create meal plan with chicken and beef planned
+      final mealPlan = await createMealPlanWithProteins(
+        weekStart: weekStart,
+        proteinMap: {
+          'Chicken Curry': [ProteinType.chicken],
+          'Beef Stew': [ProteinType.beef],
+        },
+      );
+
+      // Calculate penalty strategy
+      final strategy = await analysisService.calculateProteinPenaltyStrategy(
+        mealPlan,
+        today,
+        MealPlanItem.dinner,
+      );
+
+      // Planned proteins should have ~0.6 penalty
+      expect(strategy.getPenalty(ProteinType.chicken), equals(0.6),
+          reason: 'Chicken planned this week should have 0.6 penalty');
+      expect(strategy.getPenalty(ProteinType.beef), equals(0.6),
+          reason: 'Beef planned this week should have 0.6 penalty');
+
+      // Non-planned proteins should have no penalty
+      expect(strategy.getPenalty(ProteinType.fish), equals(0.0),
+          reason: 'Fish not planned should have no penalty');
+      expect(strategy.getPenalty(ProteinType.pork), equals(0.0),
+          reason: 'Pork not planned should have no penalty');
+    });
+
+    test('applies 0.6-0.8 penalty for proteins cooked 1-2 days ago', () async {
+      final today = DateTime(2025, 6, 11);
+
+      final recipes = [
+        Recipe(
+          id: IdGenerator.generateId(),
+          name: 'Chicken Recipe',
+          desiredFrequency: FrequencyType.weekly,
+          createdAt: today,
+        ),
+        Recipe(
+          id: IdGenerator.generateId(),
+          name: 'Beef Recipe',
+          desiredFrequency: FrequencyType.weekly,
+          createdAt: today,
+        ),
+      ];
+
+      // Add recipes to mock database
+      for (final recipe in recipes) {
+        await mockDbHelper.insertRecipe(recipe);
+      }
+
+      mockDbHelper.recipeProteinTypes = {
+        recipes[0].id: [ProteinType.chicken],
+        recipes[1].id: [ProteinType.beef],
+      };
+
+      // Create meals: chicken 1 day ago, beef 2 days ago
+      await createTestMealsWithCookedDates(
+        recipes: recipes,
+        cookedDates: [
+          today.subtract(const Duration(days: 1)), // Chicken 1 day ago
+          today.subtract(const Duration(days: 2)), // Beef 2 days ago
+        ],
+      );
+
+      // Create empty meal plan (no current planning)
+      final emptyPlan = MealPlan(
+        id: IdGenerator.generateId(),
+        weekStartDate: today.subtract(const Duration(days: 2)),
+        notes: 'Empty Plan',
+        createdAt: DateTime.now(),
+        modifiedAt: DateTime.now(),
+      );
+      await mockDbHelper.insertMealPlan(emptyPlan);
+
+      // Calculate penalty strategy
+      final strategy = await analysisService.calculateProteinPenaltyStrategy(
+        emptyPlan,
+        today,
+        MealPlanItem.dinner,
+      );
+
+      // Chicken (1 day ago) should have 0.8 penalty
+      expect(strategy.getPenalty(ProteinType.chicken), equals(0.8),
+          reason: 'Chicken cooked 1 day ago should have 0.8 penalty');
+
+      // Beef (2 days ago) should have 0.6 penalty
+      expect(strategy.getPenalty(ProteinType.beef), equals(0.6),
+          reason: 'Beef cooked 2 days ago should have 0.6 penalty');
+
+      // Non-cooked proteins should have no penalty
+      expect(strategy.getPenalty(ProteinType.fish), equals(0.0),
+          reason: 'Fish not recently cooked should have no penalty');
+    });
+
+    test('applies 0.25-0.4 penalty for proteins cooked 3-4 days ago', () async {
+      final today = DateTime(2025, 6, 11);
+
+      final recipes = [
+        Recipe(
+          id: IdGenerator.generateId(),
+          name: 'Fish Recipe',
+          desiredFrequency: FrequencyType.weekly,
+          createdAt: today,
+        ),
+        Recipe(
+          id: IdGenerator.generateId(),
+          name: 'Pork Recipe',
+          desiredFrequency: FrequencyType.weekly,
+          createdAt: today,
+        ),
+      ];
+
+      // Add recipes to mock database
+      for (final recipe in recipes) {
+        await mockDbHelper.insertRecipe(recipe);
+      }
+
+      mockDbHelper.recipeProteinTypes = {
+        recipes[0].id: [ProteinType.fish],
+        recipes[1].id: [ProteinType.pork],
+      };
+
+      // Create meals: fish 3 days ago, pork 4 days ago
+      await createTestMealsWithCookedDates(
+        recipes: recipes,
+        cookedDates: [
+          today.subtract(const Duration(days: 3)), // Fish 3 days ago
+          today.subtract(const Duration(days: 4)), // Pork 4 days ago
+        ],
+      );
+
+      // Create empty meal plan (no current planning)
+      final emptyPlan = MealPlan(
+        id: IdGenerator.generateId(),
+        weekStartDate: today.subtract(const Duration(days: 2)),
+        notes: 'Empty Plan',
+        createdAt: DateTime.now(),
+        modifiedAt: DateTime.now(),
+      );
+      await mockDbHelper.insertMealPlan(emptyPlan);
+
+      // Calculate penalty strategy
+      final strategy = await analysisService.calculateProteinPenaltyStrategy(
+        emptyPlan,
+        today,
+        MealPlanItem.dinner,
+      );
+
+      // Fish (3 days ago) should have 0.4 penalty
+      expect(strategy.getPenalty(ProteinType.fish), equals(0.4),
+          reason: 'Fish cooked 3 days ago should have 0.4 penalty');
+
+      // Pork (4 days ago) should have 0.25 penalty
+      expect(strategy.getPenalty(ProteinType.pork), equals(0.25),
+          reason: 'Pork cooked 4 days ago should have 0.25 penalty');
+
+      // Non-cooked proteins should have no penalty
+      expect(strategy.getPenalty(ProteinType.chicken), equals(0.0),
+          reason: 'Chicken not recently cooked should have no penalty');
+    });
+
+    test('combines planned and recently cooked penalties, capped at 1.0',
+        () async {
+      final today = DateTime(2025, 6, 11); // Wednesday
+      final weekStart = DateTime(2025, 6, 9); // Monday
+
+      // Create recipe with chicken
+      final recipe = Recipe(
+        id: IdGenerator.generateId(),
+        name: 'Chicken Dish',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: today,
+      );
+
+      await mockDbHelper.insertRecipe(recipe);
+      mockDbHelper.recipeProteinTypes = {
+        recipe.id: [ProteinType.chicken],
+      };
+
+      // Create meal plan with chicken planned
+      final mealPlan = await createMealPlanWithProteins(
+        weekStart: weekStart,
+        proteinMap: {
+          'Planned Chicken': [ProteinType.chicken],
+        },
+      );
+
+      // Also create a recent meal with chicken (1 day ago)
+      await createTestMealsWithCookedDates(
+        recipes: [recipe],
+        cookedDates: [today.subtract(const Duration(days: 1))],
+      );
+
+      // Calculate penalty strategy
+      final strategy = await analysisService.calculateProteinPenaltyStrategy(
+        mealPlan,
+        today,
+        MealPlanItem.dinner,
+      );
+
+      // Chicken should have combined penalty: 0.6 (planned) + 0.8 (1 day ago) = 1.4, capped at 1.0
+      expect(strategy.getPenalty(ProteinType.chicken), equals(1.0),
+          reason:
+              'Chicken both planned and recently cooked should have penalty capped at 1.0');
+    });
+
+    test('applyPenalty method correctly reduces scores', () async {
+      // Create a strategy with various penalty levels
+      final strategy = ProteinPenaltyStrategy(penalties: {
+        ProteinType.chicken: 0.0, // No penalty
+        ProteinType.beef: 0.25, // Light penalty
+        ProteinType.fish: 0.5, // Moderate penalty
+        ProteinType.pork: 0.8, // High penalty
+        ProteinType.seafood: 1.0, // Maximum penalty
+      });
+
+      const baseScore = 100.0;
+
+      // Test different penalty levels
+      expect(
+          strategy.applyPenalty(ProteinType.chicken, baseScore), equals(100.0),
+          reason: 'No penalty should leave score unchanged');
+
+      expect(strategy.applyPenalty(ProteinType.beef, baseScore), equals(75.0),
+          reason: '0.25 penalty should reduce 100 to 75');
+
+      expect(strategy.applyPenalty(ProteinType.fish, baseScore), equals(50.0),
+          reason: '0.5 penalty should reduce 100 to 50');
+      expect(strategy.applyPenalty(ProteinType.pork, baseScore),
+          closeTo(20.0, 0.01),
+          reason: '0.8 penalty should reduce 100 to 20');
+
+      expect(strategy.applyPenalty(ProteinType.seafood, baseScore), equals(0.0),
+          reason: '1.0 penalty should reduce score to 0');
+
+      // Test with different base score
+      const lowBaseScore = 60.0;
+      expect(
+          strategy.applyPenalty(ProteinType.fish, lowBaseScore), equals(30.0),
+          reason: '0.5 penalty should reduce 60 to 30');
+    });
+
+    test('categorizes proteins by penalty levels correctly', () async {
+      final strategy = ProteinPenaltyStrategy(penalties: {
+        ProteinType.chicken: 0.0, // No penalty
+        ProteinType.beef: 0.1, // Light penalty
+        ProteinType.fish: 0.4, // Moderate penalty
+        ProteinType.pork: 0.8, // High penalty
+        ProteinType.seafood: 1.0, // Maximum penalty
+      });
+
+      // Test penalty categorization
+      expect(strategy.penalizedProteins.length, equals(4),
+          reason: 'Should identify 4 proteins with any penalty');
+
+      expect(strategy.highPenaltyProteins.length, equals(2),
+          reason: 'Should identify 2 proteins with high penalties (>=0.7)');
+      expect(strategy.highPenaltyProteins.contains(ProteinType.pork), isTrue);
+      expect(
+          strategy.highPenaltyProteins.contains(ProteinType.seafood), isTrue);
+
+      expect(strategy.moderatePenaltyProteins.length, equals(1),
+          reason: 'Should identify 1 protein with moderate penalty (0.3-0.69)');
+      expect(
+          strategy.moderatePenaltyProteins.contains(ProteinType.fish), isTrue);
+
+      expect(strategy.lightPenaltyProteins.length, equals(1),
+          reason: 'Should identify 1 protein with light penalty (0.01-0.29)');
+      expect(strategy.lightPenaltyProteins.contains(ProteinType.beef), isTrue);
+    });
+
+    test('handles edge cases with old cooked dates', () async {
+      final today = DateTime(2025, 6, 11);
+
+      final recipe = Recipe(
+        id: IdGenerator.generateId(),
+        name: 'Old Chicken Recipe',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: today,
+      );
+
+      await mockDbHelper.insertRecipe(recipe);
+      mockDbHelper.recipeProteinTypes = {
+        recipe.id: [ProteinType.chicken],
+      };
+
+      // Create meal with chicken cooked 7+ days ago
+      await createTestMealsWithCookedDates(
+        recipes: [recipe],
+        cookedDates: [today.subtract(const Duration(days: 8))],
+      );
+
+      // Create empty meal plan
+      final emptyPlan = MealPlan(
+        id: IdGenerator.generateId(),
+        weekStartDate: today.subtract(const Duration(days: 2)),
+        notes: 'Empty Plan',
+        createdAt: DateTime.now(),
+        modifiedAt: DateTime.now(),
+      );
+      await mockDbHelper.insertMealPlan(emptyPlan);
+
+      // Calculate penalty strategy
+      final strategy = await analysisService.calculateProteinPenaltyStrategy(
+        emptyPlan,
+        today,
+        MealPlanItem.dinner,
+      );
+
+      // Chicken cooked 8 days ago should have no penalty
+      expect(strategy.getPenalty(ProteinType.chicken), equals(0.0),
+          reason: 'Chicken cooked 8 days ago should have no penalty');
+    });
+
+    test('handles multiple proteins in same recipe', () async {
+      final today = DateTime(2025, 6, 11);
+
+      final recipe = Recipe(
+        id: IdGenerator.generateId(),
+        name: 'Surf and Turf',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: today,
+      );
+
+      await mockDbHelper.insertRecipe(recipe);
+
+      // Recipe has both beef and fish
+      mockDbHelper.recipeProteinTypes = {
+        recipe.id: [ProteinType.beef, ProteinType.fish],
+      };
+
+      // Create meal with mixed proteins cooked 2 days ago
+      await createTestMealsWithCookedDates(
+        recipes: [recipe],
+        cookedDates: [today.subtract(const Duration(days: 2))],
+      );
+
+      // Create empty meal plan
+      final emptyPlan = MealPlan(
+        id: IdGenerator.generateId(),
+        weekStartDate: today.subtract(const Duration(days: 2)),
+        notes: 'Empty Plan',
+        createdAt: DateTime.now(),
+        modifiedAt: DateTime.now(),
+      );
+      await mockDbHelper.insertMealPlan(emptyPlan);
+
+      // Calculate penalty strategy
+      final strategy = await analysisService.calculateProteinPenaltyStrategy(
+        emptyPlan,
+        today,
+        MealPlanItem.dinner,
+      );
+
+      // Both proteins should have 0.6 penalty (2 days ago)
+      expect(strategy.getPenalty(ProteinType.beef), equals(0.6),
+          reason: 'Beef cooked 2 days ago should have 0.6 penalty');
+      expect(strategy.getPenalty(ProteinType.fish), equals(0.6),
+          reason: 'Fish cooked 2 days ago should have 0.6 penalty');
+    });
+
+    test('verifies penalty calculation matches expected ranges', () async {
+      final today = DateTime(2025, 6, 11);
+
+      // Create recipes for different scenarios
+      final recipes = [
+        Recipe(
+            id: 'recipe-1-day',
+            name: '1 Day Recipe',
+            desiredFrequency: FrequencyType.weekly,
+            createdAt: today),
+        Recipe(
+            id: 'recipe-2-day',
+            name: '2 Day Recipe',
+            desiredFrequency: FrequencyType.weekly,
+            createdAt: today),
+        Recipe(
+            id: 'recipe-3-day',
+            name: '3 Day Recipe',
+            desiredFrequency: FrequencyType.weekly,
+            createdAt: today),
+        Recipe(
+            id: 'recipe-4-day',
+            name: '4 Day Recipe',
+            desiredFrequency: FrequencyType.weekly,
+            createdAt: today),
+        Recipe(
+            id: 'recipe-5-day',
+            name: '5 Day Recipe',
+            desiredFrequency: FrequencyType.weekly,
+            createdAt: today),
+        Recipe(
+            id: 'recipe-6-day',
+            name: '6 Day Recipe',
+            desiredFrequency: FrequencyType.weekly,
+            createdAt: today),
+      ]; // Add recipes and set protein types
+      for (var i = 0; i < recipes.length; i++) {
+        await mockDbHelper.insertRecipe(
+            recipes[i]); // Use different proteins to avoid conflicts
+        final proteinTypes = [
+          ProteinType.chicken,
+          ProteinType.beef,
+          ProteinType.fish,
+          ProteinType.pork,
+          ProteinType.seafood,
+          ProteinType.lamb
+        ];
+        mockDbHelper.recipeProteinTypes[recipes[i].id] = [proteinTypes[i]];
+      }
+
+      // Create meals with graduated dates
+      await createTestMealsWithCookedDates(
+        recipes: recipes,
+        cookedDates: [
+          today.subtract(const Duration(days: 1)), // Should get 0.8 penalty
+          today.subtract(const Duration(days: 2)), // Should get 0.6 penalty
+          today.subtract(const Duration(days: 3)), // Should get 0.4 penalty
+          today.subtract(const Duration(days: 4)), // Should get 0.25 penalty
+          today.subtract(const Duration(days: 5)), // Should get 0.1 penalty
+          today.subtract(const Duration(days: 6)), // Should get 0.1 penalty
+        ],
+      );
+
+      // Create empty meal plan
+      final emptyPlan = MealPlan(
+        id: IdGenerator.generateId(),
+        weekStartDate: today.subtract(const Duration(days: 2)),
+        notes: 'Empty Plan',
+        createdAt: DateTime.now(),
+        modifiedAt: DateTime.now(),
+      );
+      await mockDbHelper.insertMealPlan(emptyPlan);
+
+      // Calculate penalty strategy
+      final strategy = await analysisService.calculateProteinPenaltyStrategy(
+        emptyPlan,
+        today,
+        MealPlanItem.dinner,
+      ); // Verify graduated penalties match expected values
+      expect(strategy.getPenalty(ProteinType.chicken), equals(0.8),
+          reason: 'Chicken should have 0.8 penalty for 1 day ago');
+      expect(strategy.getPenalty(ProteinType.beef), equals(0.6),
+          reason: 'Beef should have 0.6 penalty for 2 days ago');
+      expect(strategy.getPenalty(ProteinType.fish), equals(0.4),
+          reason: 'Fish should have 0.4 penalty for 3 days ago');
+      expect(strategy.getPenalty(ProteinType.pork), equals(0.25),
+          reason: 'Pork should have 0.25 penalty for 4 days ago');
+      expect(strategy.getPenalty(ProteinType.seafood), equals(0.1),
+          reason: 'Seafood should have 0.1 penalty for 5 days ago');
+      expect(strategy.getPenalty(ProteinType.lamb), equals(0.1),
+          reason: 'Lamb should have 0.1 penalty for 6 days ago');
     });
   });
 }

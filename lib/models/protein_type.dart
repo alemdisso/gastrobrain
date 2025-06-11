@@ -5,6 +5,7 @@ enum ProteinType {
   pork(isMainProtein: true),
   fish(isMainProtein: true),
   seafood(isMainProtein: true),
+  lamb(isMainProtein: true),
 
   // Special categories (not for rotation)
   charcuterie(isMainProtein: false),
@@ -24,6 +25,8 @@ enum ProteinType {
         return 'Chicken';
       case ProteinType.pork:
         return 'Pork';
+      case ProteinType.lamb:
+        return 'Lamb';
       case ProteinType.fish:
         return 'Fish';
       case ProteinType.seafood:
