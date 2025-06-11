@@ -1,5 +1,3 @@
-// lib/screens/weekly_plan_screen.dart
-
 import 'package:flutter/material.dart';
 import '../models/meal.dart';
 import '../models/meal_recipe.dart';
@@ -12,6 +10,7 @@ import '../database/database_helper.dart';
 import '../core/di/service_provider.dart';
 import '../core/services/recommendation_service.dart';
 import '../core/services/snackbar_service.dart';
+import '../core/services/meal_plan_analysis_service.dart';
 import '../widgets/weekly_calendar_widget.dart';
 import '../widgets/meal_recording_dialog.dart';
 import '../widgets/edit_meal_recording_dialog.dart';
@@ -32,6 +31,7 @@ class WeeklyPlanScreen extends StatefulWidget {
 class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   late DatabaseHelper _dbHelper;
   late RecommendationService _recommendationService;
+  late MealPlanAnalysisService _mealPlanAnalysis;
   DateTime _currentWeekStart = _getFriday(DateTime.now());
   MealPlan? _currentMealPlan;
   bool _isLoading = true;
@@ -66,6 +66,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     _dbHelper = widget.databaseHelper ?? ServiceProvider.database.dbHelper;
     _recommendationService =
         ServiceProvider.recommendations.recommendationService;
+    _mealPlanAnalysis = MealPlanAnalysisService(_dbHelper);
     _loadData();
   }
 
@@ -124,46 +125,42 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     _loadData();
   }
 
-  /// Build context for recipe recommendations based on the current meal plan
+  /// Build enhanced context for recipe recommendations using dual-context analysis
   Future<Map<String, dynamic>> _buildRecommendationContext({
     DateTime? forDate,
     String? mealType,
   }) async {
-    final context = <String, dynamic>{
+    // Get planned context (current meal plan)
+    final plannedRecipeIds =
+        await _mealPlanAnalysis.getPlannedRecipeIds(_currentMealPlan);
+    final plannedProteins =
+        await _mealPlanAnalysis.getPlannedProteinsForWeek(_currentMealPlan);
+
+    // Get recently cooked context (meal history)
+    final recentRecipeIds =
+        await _mealPlanAnalysis.getRecentlyCookedRecipeIds(dayWindow: 5);
+    final recentProteins =
+        await _mealPlanAnalysis.getRecentlyCookedProteins(dayWindow: 5);
+
+    // Calculate penalty strategy
+    final penaltyStrategy =
+        await _mealPlanAnalysis.calculateProteinPenaltyStrategy(
+      _currentMealPlan,
+      forDate ?? DateTime.now(),
+      mealType ?? MealPlanItem.lunch,
+    );
+
+    return {
       'forDate': forDate,
       'mealType': mealType,
+      'plannedRecipeIds': plannedRecipeIds,
+      'recentlyCookedRecipeIds': recentRecipeIds,
+      'plannedProteins': plannedProteins,
+      'recentProteins': recentProteins,
+      'penaltyStrategy': penaltyStrategy,
+      // Backward compatibility
+      'excludeIds': plannedRecipeIds,
     };
-
-    // If we have a meal plan, analyze it for context
-    if (_currentMealPlan != null) {
-      // Get recipes already used in the current plan
-      final List<String> usedRecipeIds = [];
-
-      // Get protein types already used in this week's plan
-      // ignore: unused_local_variable
-      final List<String> usedProteinIds = [];
-
-      // Collect recipes from meal plan
-      for (final item in _currentMealPlan!.items) {
-        if (item.mealPlanItemRecipes != null) {
-          for (final mealRecipe in item.mealPlanItemRecipes!) {
-            usedRecipeIds.add(mealRecipe.recipeId);
-
-            // Get recipe details to check protein types
-            final recipe = await _dbHelper.getRecipe(mealRecipe.recipeId);
-            if (recipe != null) {
-              // This is a simple approach - for a more comprehensive solution,
-              // we would analyze the recipe's ingredients for protein types
-              // For now, we'll just collect the recipe IDs
-            }
-          }
-        }
-      }
-
-      context['excludeIds'] = usedRecipeIds;
-    }
-
-    return context;
   }
 
   /// Returns simple recipes without scores for caching.
@@ -186,16 +183,17 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     // Determine if this is a weekday
     final isWeekday = date.weekday >= 1 && date.weekday <= 5;
 
-    // Get recommendations with enhanced filtering
+// Get recommendations with enhanced dual-context filtering
     final recommendations = await _recommendationService.getRecommendations(
       count: count,
-      excludeIds: context['excludeIds'] ?? [],
-      avoidProteinTypes: context['avoidProteinTypes'],
+      excludeIds: context['plannedRecipeIds'] ?? [],
+      // Note: We'll need to update RecommendationService to use penalty strategy
+      // For now, use high penalty proteins as avoidProteinTypes
+      avoidProteinTypes: (context['penaltyStrategy'] as ProteinPenaltyStrategy?)
+          ?.highPenaltyProteins,
       forDate: date,
       mealType: mealType,
-      // Apply weekday/weekend context
       weekdayMeal: isWeekday,
-      // For weekdays, suggest slightly simpler recipes
       maxDifficulty: isWeekday ? 4 : null,
     );
 
@@ -221,8 +219,9 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     final recommendations =
         await _recommendationService.getDetailedRecommendations(
       count: count,
-      excludeIds: context['excludeIds'] ?? [],
-      avoidProteinTypes: context['avoidProteinTypes'],
+      excludeIds: context['plannedRecipeIds'] ?? [],
+      avoidProteinTypes: (context['penaltyStrategy'] as ProteinPenaltyStrategy?)
+          ?.highPenaltyProteins,
       forDate: date,
       mealType: mealType,
       weekdayMeal: isWeekday,

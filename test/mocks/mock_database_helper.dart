@@ -260,12 +260,25 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<List<Meal>> getRecentMeals({int limit = 10}) async {
-    // Sort meals by cooked date (most recent first)
-    final sortedMeals = _meals.values.toList()
+    final now = DateTime.now();
+    final cutoffDate =
+        now.subtract(const Duration(days: 30)); // Default to 30 days
+
+    // Get meals within date range and sort by cooked date (most recent first)
+    final sortedMeals = _meals.values
+        .where((meal) => meal.cookedAt.isAfter(cutoffDate))
+        .toList()
       ..sort((a, b) => b.cookedAt.compareTo(a.cookedAt));
 
     // Take the most recent meals, up to the limit
-    return sortedMeals.take(limit).toList();
+    final limitedMeals = sortedMeals.take(limit).toList();
+
+    // Load meal recipes for each meal
+    for (final meal in limitedMeals) {
+      meal.mealRecipes = await getMealRecipesForMeal(meal.id);
+    }
+
+    return limitedMeals;
   }
 
 // Add this to your MockDatabaseHelper class
@@ -475,8 +488,16 @@ class MockDatabaseHelper implements DatabaseHelper {
   @override
   Future<List<Map<String, dynamic>>> getRecipeIngredients(
       String recipeId) async {
-    // Return a minimal mock response with no ingredients for simplicity
-    // This should prevent the error in the rating recommendation tests
+    // If we have protein types defined for this recipe, create mock ingredients with those types
+    if (recipeProteinTypes.containsKey(recipeId)) {
+      return recipeProteinTypes[recipeId]!
+          .map((proteinType) => {
+                'protein_type': proteinType.name,
+                'name': 'Mock ${proteinType.name}',
+                'category': 'protein'
+              })
+          .toList();
+    }
     return [];
   }
 
