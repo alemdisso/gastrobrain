@@ -343,6 +343,10 @@ class RecommendationService {
     }
   }
 
+  bool _isWeekday(DateTime date) {
+    return date.weekday >= DateTime.monday && date.weekday <= DateTime.friday;
+  }
+
   /// Get detailed recommendation results including scores and metadata
   Future<RecommendationResults> getDetailedRecommendations({
     int count = 5,
@@ -503,6 +507,13 @@ class RecommendationService {
       'weekdayMeal': weekdayMeal,
       'randomSeed': _random.nextInt(1000), // For reproducible randomness
     };
+
+    // Add temporal context when date is provided
+    if (forDate != null) {
+      final isWeekday = _isWeekday(forDate);
+      context['dayType'] = isWeekday ? 'weekday' : 'weekend';
+      context['isWeekday'] = isWeekday;
+    }
 
     // Load meal history data if required
     if (requiredData.contains('mealCounts')) {
@@ -702,6 +713,7 @@ class RecommendationService {
   /// Mathematical effect: Simple recipes (difficulty 1-2) receive significantly
   /// higher scores due to the 20% difficulty weight, making them 4x more likely
   /// to appear in top recommendations compared to complex recipes.
+
   void _setWeekdayProfile() {
     _factorWeights['frequency'] = 30;
     _factorWeights['protein_rotation'] = 25;
