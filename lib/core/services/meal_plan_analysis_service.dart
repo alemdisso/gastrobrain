@@ -139,15 +139,16 @@ class MealPlanAnalysisService {
 
     return await _getProteinTypesForRecipes(recentRecipeIds);
   }
-
   /// Get recently cooked proteins organized by date
   Future<Map<DateTime, List<ProteinType>>> getRecentlyCookedProteinsByDate({
     int dayWindow = 7,
+    DateTime? referenceDate,
   }) async {
     final Map<DateTime, List<ProteinType>> result = {};
 
     try {
-      final cutoffDate = DateTime.now().subtract(Duration(days: dayWindow));
+      final reference = referenceDate ?? DateTime.now();
+      final cutoffDate = reference.subtract(Duration(days: dayWindow));
       final recentMeals = await _dbHelper.getRecentMeals(limit: 100);
 
       // Group meals by date
@@ -192,7 +193,6 @@ class MealPlanAnalysisService {
   // =============================================================================
   // COMBINED ANALYSIS
   // =============================================================================
-
   /// Calculate protein penalty strategy based on both planned and cooked context
   Future<ProteinPenaltyStrategy> calculateProteinPenaltyStrategy(
     MealPlan? currentPlan,
@@ -201,11 +201,9 @@ class MealPlanAnalysisService {
   ) async {
     try {
       // Get planned proteins with dates
-      final plannedProteinsByDate = await getPlannedProteinsByDate(currentPlan);
-
-      // Get recently cooked proteins with dates
+      final plannedProteinsByDate = await getPlannedProteinsByDate(currentPlan);      // Get recently cooked proteins with dates
       final recentProteinsByDate =
-          await getRecentlyCookedProteinsByDate(dayWindow: 7);
+          await getRecentlyCookedProteinsByDate(dayWindow: 7, referenceDate: targetDate);
 
       final penalties = <ProteinType, double>{};
 
@@ -223,7 +221,7 @@ class MealPlanAnalysisService {
 
         // Check recent cooking and apply graduated penalty based on recency
         final daysSinceLastCooked =
-            _getDaysSinceLastCooked(protein, recentProteinsByDate);
+            _getDaysSinceLastCooked(protein, recentProteinsByDate, targetDate);
 
         if (daysSinceLastCooked != null) {
           final recencyPenalty = _calculateRecencyPenalty(daysSinceLastCooked);
@@ -252,10 +250,12 @@ class MealPlanAnalysisService {
   }
 
   /// Get days since a protein was last cooked, returns null if never cooked recently
-  int? _getDaysSinceLastCooked(ProteinType protein,
-      Map<DateTime, List<ProteinType>> recentProteinsByDate) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
+  int? _getDaysSinceLastCooked(
+      ProteinType protein,
+      Map<DateTime, List<ProteinType>> recentProteinsByDate,
+      DateTime referenceDate) {
+    final today =
+        DateTime(referenceDate.year, referenceDate.month, referenceDate.day);
 
     // Find most recent date this protein was cooked
     DateTime? mostRecentDate;

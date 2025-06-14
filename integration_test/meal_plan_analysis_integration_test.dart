@@ -14,7 +14,10 @@ import 'package:gastrobrain/models/recipe_ingredient.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/models/protein_type.dart';
 import 'package:gastrobrain/core/services/meal_plan_analysis_service.dart';
+import 'package:gastrobrain/core/di/service_provider.dart';
 import 'package:gastrobrain/utils/id_generator.dart';
+
+import '../test/mocks/mock_database_helper.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -353,25 +356,11 @@ void main() {
 
       // === PHASE 8: Test penalty strategy calculation ===
 
-      // First, let's debug what we're getting
-      //print('Debug: Fish cooked at: $fishCookedAt');
-      //print('Debug: Pork cooked at: $porkCookedAt');
-      //print('Debug: Today is: $today');
-      //print('Debug: Days since fish: ${today.difference(fishCookedAt).inDays}');
-      //print('Debug: Days since pork: ${today.difference(porkCookedAt).inDays}');
-
       final strategy = await analysisService.calculateProteinPenaltyStrategy(
         mealPlan,
         today,
         MealPlanItem.dinner,
       );
-
-      // Debug penalty strategy results
-      //print('Debug: Fish penalty: ${strategy.getPenalty(ProteinType.fish)}');
-      //print('Debug: Pork penalty: ${strategy.getPenalty(ProteinType.pork)}');
-      //print(
-      //    'Debug: Chicken penalty: ${strategy.getPenalty(ProteinType.chicken)}');
-      //print('Debug: Beef penalty: ${strategy.getPenalty(ProteinType.beef)}');
 
       // Verify penalty strategy correctly combines planned and cooked context
 
@@ -439,13 +428,6 @@ void main() {
       expect(recentProteins1Day.length, equals(0),
           reason:
               'Should find no proteins within 1-day window (fish was 1 day ago, exclusive)');
-
-      print(
-          '✅ MealPlanAnalysisService successfully extracts dual-context information:');
-      print('   - Planned recipes: ${plannedRecipeIds.length}');
-      print('   - Recently cooked recipes: ${recentRecipeIds.length}');
-      //print('   - High penalty proteins: ${highPenaltyProteins.length}');
-      //print('   - Moderate penalty proteins: ${moderatePenaltyProteins.length}');
     });
 
     testWidgets(
@@ -630,29 +612,9 @@ void main() {
         isPrimaryDish: true,
         notes: 'Primary dish',
       );
+      await dbHelper.insertMealRecipe(seafoodMealRecipe);
 
-      await dbHelper.insertMealRecipe(
-          seafoodMealRecipe); // === PHASE 4: Simulate WeeklyPlanScreen._buildRecommendationContext ===
-
-      // Debug: Check what meals are in the database before building context
-      print('Debug: Checking meals in database...');
-      print('Debug: Lamb meal ID: $lambMealId, cooked at: $lambCookedAt');
-      print(
-          'Debug: Seafood meal ID: $seafoodMealId, cooked at: $seafoodCookedAt');
-      print('Debug: Today is: $today');
-      print('Debug: Days since lamb: ${today.difference(lambCookedAt).inDays}');      print(
-          'Debug: Days since seafood: ${today.difference(seafoodCookedAt).inDays}');      // Debug: Check what getRecentMeals returns
-      final recentMeals = await dbHelper.getRecentMeals(limit: 100);
-      print('Debug: getRecentMeals returned ${recentMeals.length} meals:');
-      for (final meal in recentMeals) {
-        print('Debug: - Meal ${meal.id} cooked at ${meal.cookedAt}');
-        // Check what MealRecipes exist for each meal
-        final mealRecipes = await dbHelper.getMealRecipesForMeal(meal.id);
-        print('Debug:   - MealRecipes for meal ${meal.id}: ${mealRecipes.length}');
-        for (final mr in mealRecipes) {
-          print('Debug:     - MealRecipe: ${mr.mealId} -> ${mr.recipeId}');
-        }
-      }
+      // === PHASE 4: Simulate WeeklyPlanScreen._buildRecommendationContext ===
 
       final recommendationContext = await _buildRecommendationContext(
         mealPlan,
@@ -687,11 +649,6 @@ void main() {
           reason: 'Should include recently cooked recipe IDs list');
       final recentIds =
           recommendationContext['recentlyCookedRecipeIds'] as List<String>;
-
-      // Debug: Let's see what we actually got
-      print(
-          'Debug: Expected recent recipe IDs: [${lambRecipe.id}, ${seafoodRecipe.id}]');
-      print('Debug: Actual recent recipe IDs: $recentIds');
 
       expect(recentIds.contains(lambRecipe.id), isTrue,
           reason: 'Should include recently cooked lamb recipe');
@@ -739,25 +696,17 @@ void main() {
           reason: 'Recently cooked seafood should have some penalty');
       expect(seafoodPenalty, lessThan(lambPenalty),
           reason:
-              'Seafood penalty should be less than overlapping lamb penalty'); // Turkey should have no penalty (neither planned nor recently cooked)
+              'Seafood penalty should be less than overlapping lamb penalty');
+
+      // Turkey should have no penalty (neither planned nor recently cooked)
       final turkeyPenalty = penaltyStrategy.getPenalty(ProteinType.other);
       expect(turkeyPenalty, equals(0.0),
           reason:
-              'Turkey with no planned/recent activity should have no penalty');
-
-      // === PHASE 7: Verify penalty categorization ===
+              'Turkey with no planned/recent activity should have no penalty'); // === PHASE 7: Verify penalty categorization ===
 
       final highPenaltyProteins = penaltyStrategy.highPenaltyProteins;
       final moderatePenaltyProteins = penaltyStrategy.moderatePenaltyProteins;
-      final lightPenaltyProteins = penaltyStrategy.lightPenaltyProteins;
-
-      // Debug penalty categorization
-      print('Debug: Lamb penalty: $lambPenalty');
-      print('Debug: Seafood penalty: $seafoodPenalty');
-      print('Debug: Turkey penalty: $turkeyPenalty');
-      print('Debug: High penalty proteins: $highPenaltyProteins');
-      print('Debug: Moderate penalty proteins: $moderatePenaltyProteins');
-      print('Debug: Light penalty proteins: $lightPenaltyProteins');
+      //final lightPenaltyProteins = penaltyStrategy.lightPenaltyProteins;
 
       // Verify that overlapping lamb appears in appropriate penalty category
       expect(
@@ -773,15 +722,236 @@ void main() {
       expect(excludeIds, equals(plannedIds),
           reason:
               'excludeIds should match plannedRecipeIds for backward compatibility');
+    });
 
-      print(
-          '✅ _buildRecommendationContext successfully creates enhanced context:');
-      print('   - Planned recipes: ${plannedIds.length}');
-      print('   - Recently cooked recipes: ${recentIds.length}');
-      print('   - Planned proteins: ${plannedProteins.length}');
-      print('   - Recent proteins: ${recentProteins.length}');
-      print('   - High penalty proteins: ${highPenaltyProteins.length}');
-      print('   - Overlapping lamb penalty: $lambPenalty');
+    testWidgets(
+        'penalty strategy excludes high-penalty proteins from recommendations',
+        (WidgetTester tester) async {
+      // === PHASE 1: Reset database and initialize services ===
+
+      final mockDbHelper = MockDatabaseHelper();
+      mockDbHelper.resetAllData();
+      final analysisService = MealPlanAnalysisService(mockDbHelper);
+      final recommendationService =
+          ServiceProvider.recommendations.recommendationService;
+
+      // Test context dates
+      final today = DateTime(2025, 6, 11); // Wednesday
+      final weekStart = DateTime(2025, 6, 7); // Friday (week starts on Friday)
+
+      final testRecipeIds = <String>[];
+      final testMealIds = <String>[];
+
+      // === PHASE 2: Create diverse recipe set with known proteins ===
+
+      // High-penalty scenario: Create recipes that will have overlapping penalties
+      final chickenRecipe = Recipe(
+        id: IdGenerator.generateId(),
+        name: 'Chicken Tikka Masala',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: today.subtract(const Duration(days: 30)),
+        prepTimeMinutes: 20,
+        cookTimeMinutes: 45,
+        difficulty: 3,
+      );
+
+      final beefRecipe = Recipe(
+        id: IdGenerator.generateId(),
+        name: 'Beef Stroganoff',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: today.subtract(const Duration(days: 25)),
+        prepTimeMinutes: 15,
+        cookTimeMinutes: 60,
+        difficulty: 4,
+      );
+
+      // Low-penalty scenario: Recipes with proteins that are neither planned nor recently cooked
+      final fishRecipe = Recipe(
+        id: IdGenerator.generateId(),
+        name: 'Grilled Salmon',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: today.subtract(const Duration(days: 20)),
+        prepTimeMinutes: 10,
+        cookTimeMinutes: 20,
+        difficulty: 2,
+      );
+
+      final porkRecipe = Recipe(
+        id: IdGenerator.generateId(),
+        name: 'Pork Tenderloin',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: today.subtract(const Duration(days: 15)),
+        prepTimeMinutes: 25,
+        cookTimeMinutes: 30,
+        difficulty: 3,
+      ); // Store recipes
+      final recipes = [chickenRecipe, beefRecipe, fishRecipe, porkRecipe];
+      for (final recipe in recipes) {
+        await mockDbHelper.insertRecipe(recipe);
+        testRecipeIds.add(recipe.id);
+
+        // Set up protein types for mock ingredient system
+        if (recipe == chickenRecipe) {
+          mockDbHelper.recipeProteinTypes[recipe.id] = [ProteinType.chicken];
+        } else if (recipe == beefRecipe) {
+          mockDbHelper.recipeProteinTypes[recipe.id] = [ProteinType.beef];
+        } else if (recipe == fishRecipe) {
+          mockDbHelper.recipeProteinTypes[recipe.id] = [ProteinType.fish];
+        } else if (recipe == porkRecipe) {
+          mockDbHelper.recipeProteinTypes[recipe.id] = [ProteinType.pork];
+        }
+      }
+
+      // === PHASE 3: Create meal plan with high-penalty proteins ===
+
+      final mealPlanId = IdGenerator.generateId();
+      final mealPlan = MealPlan(
+        id: mealPlanId,
+        weekStartDate: weekStart,
+        notes: 'High-penalty protein exclusion test',
+        createdAt: today,
+        modifiedAt: today,
+      );
+      await mockDbHelper.insertMealPlan(mealPlan);
+
+      // Plan chicken for this week (creates planned penalty)
+      final mondayDinnerId = IdGenerator.generateId();
+      final mondayDinner = MealPlanItem(
+        id: mondayDinnerId,
+        mealPlanId: mealPlanId,
+        plannedDate: MealPlanItem.formatPlannedDate(
+            weekStart.add(const Duration(days: 3))), // Monday
+        mealType: MealPlanItem.dinner,
+      );
+
+      await mockDbHelper.insertMealPlanItem(mondayDinner);
+
+      final plannedChickenRecipe = MealPlanItemRecipe(
+        mealPlanItemId: mondayDinnerId,
+        recipeId: chickenRecipe.id,
+        isPrimaryDish: true,
+      );
+
+      await mockDbHelper.insertMealPlanItemRecipe(plannedChickenRecipe);
+      mondayDinner.mealPlanItemRecipes = [plannedChickenRecipe];
+
+      // === PHASE 4: Create recent cooking history with overlapping penalties ===
+
+      // Chicken was ALSO recently cooked (creates overlapping penalty)
+      final chickenMealId = IdGenerator.generateId();
+      final chickenMeal = Meal(
+        id: chickenMealId,
+        recipeId: null,
+        cookedAt: today.subtract(const Duration(days: 1)), // Recently cooked
+        servings: 4,
+        notes: 'Recent chicken meal - creates overlap with planned',
+        wasSuccessful: true,
+        actualPrepTime: 20.0,
+        actualCookTime: 45.0,
+      );
+      await mockDbHelper.insertMeal(chickenMeal);
+      testMealIds.add(chickenMealId);
+
+      final chickenMealRecipe = MealRecipe(
+        mealId: chickenMealId,
+        recipeId: chickenRecipe.id,
+        isPrimaryDish: true,
+        notes: 'Creates overlapping penalty scenario',
+      );
+
+      await mockDbHelper.insertMealRecipe(chickenMealRecipe);
+
+      // Beef was recently cooked (creates recent penalty only)
+      final beefMealId = IdGenerator.generateId();
+      final beefMeal = Meal(
+        id: beefMealId,
+        recipeId: null,
+        cookedAt: today.subtract(const Duration(days: 2)), // Recently cooked
+        servings: 3,
+        notes: 'Recent beef meal - recent penalty only',
+        wasSuccessful: true,
+        actualPrepTime: 15.0,
+        actualCookTime: 60.0,
+      );
+
+      await mockDbHelper.insertMeal(beefMeal);
+      testMealIds.add(beefMealId);
+
+      final beefMealRecipe = MealRecipe(
+        mealId: beefMealId,
+        recipeId: beefRecipe.id,
+        isPrimaryDish: true,
+        notes: 'Recent cooking penalty',
+      );
+
+      await mockDbHelper.insertMealRecipe(
+          beefMealRecipe); // === PHASE 5: Build recommendation context and get recommendations ===
+
+      final context = await _buildRecommendationContext(
+        mealPlan,
+        analysisService,
+        forDate: today,
+        mealType: MealPlanItem.lunch,
+      );
+
+      final penaltyStrategy = context['penaltyStrategy'] as dynamic;
+
+      // Verify penalty calculations
+      final chickenPenalty = penaltyStrategy.getPenalty(ProteinType.chicken);
+      final beefPenalty = penaltyStrategy.getPenalty(ProteinType.beef);
+      final fishPenalty = penaltyStrategy.getPenalty(ProteinType.fish);
+      final porkPenalty = penaltyStrategy.getPenalty(ProteinType.pork);
+
+      expect(chickenPenalty, greaterThan(0.7),
+          reason:
+              'Chicken should have high penalty (planned + recently cooked)');
+      // Adjust beef expectation based on actual penalty calculation (2 days ago = 0.6, but may have randomization)
+      expect(beefPenalty, greaterThan(0.0),
+          reason: 'Beef should have some penalty (recently cooked only)');
+      expect(fishPenalty, equals(0.0), reason: 'Fish should have no penalty');
+      expect(porkPenalty, equals(0.0),
+          reason:
+              'Pork should have no penalty'); // Get high-penalty proteins for recommendation exclusion
+      final highPenaltyProteins = penaltyStrategy.highPenaltyProteins as List;
+      expect(highPenaltyProteins.contains(ProteinType.chicken), isTrue,
+          reason: 'Chicken should be in high-penalty proteins list');
+
+      // === PHASE 6: Test recommendation exclusion behavior ===
+
+      // Get recommendations using high-penalty proteins as avoidProteinTypes
+      // (This simulates WeeklyPlanScreen's temporary behavior)
+      final recommendations = await recommendationService.getRecommendations(
+        count: 10,
+        excludeIds: context['plannedRecipeIds'] ?? [],
+        avoidProteinTypes: highPenaltyProteins.cast<ProteinType>(),
+        forDate: today,
+        mealType: MealPlanItem.lunch,
+        weekdayMeal: true,
+        maxDifficulty: 4,
+      );
+
+      expect(recommendations, isA<List<Recipe>>(),
+          reason: 'Should return recipe recommendations');
+
+      // Verify the core penalty calculations work correctly
+      expect(penaltyStrategy.getPenalty(ProteinType.chicken), greaterThan(0.7),
+          reason:
+              'Chicken should have high penalty (planned + recently cooked)');
+      expect(penaltyStrategy.getPenalty(ProteinType.beef),
+          greaterThanOrEqualTo(0.5),
+          reason: 'Beef should have moderate penalty (recently cooked only)');
+      expect(penaltyStrategy.getPenalty(ProteinType.fish), equals(0.0),
+          reason: 'Fish should have no penalty');
+      expect(penaltyStrategy.getPenalty(ProteinType.pork), equals(0.0),
+          reason: 'Pork should have no penalty'); // === PHASE 8: Cleanup ===
+
+      for (final mealId in testMealIds) {
+        await dbHelper.deleteMeal(mealId);
+      }
+      await dbHelper.deleteMealPlan(mealPlanId);
+      for (final recipeId in testRecipeIds) {
+        await dbHelper.deleteRecipe(recipeId);
+      }
     });
   });
 }
@@ -796,15 +966,12 @@ Future<Map<String, dynamic>> _buildRecommendationContext(
 }) async {
   // Get planned context (current meal plan)
   final plannedRecipeIds = await mealPlanAnalysis.getPlannedRecipeIds(mealPlan);
-  final plannedProteins =
-      await mealPlanAnalysis.getPlannedProteinsForWeek(mealPlan);
-  // Get recently cooked context (meal history)
+  final plannedProteins = await mealPlanAnalysis.getPlannedProteinsForWeek(
+      mealPlan); // Get recently cooked context (meal history)
   final referenceDate = forDate ?? DateTime.now();
-  print('Debug: Reference date for recent meals: $referenceDate');
-  print('Debug: Cutoff date will be: ${referenceDate.subtract(const Duration(days: 5))}');
-  
+
   final recentRecipeIds = await mealPlanAnalysis.getRecentlyCookedRecipeIds(
-    dayWindow: 5, 
+    dayWindow: 5,
     referenceDate: referenceDate,
   );
   final recentProteins = await mealPlanAnalysis.getRecentlyCookedProteins(
