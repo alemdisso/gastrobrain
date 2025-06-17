@@ -26,7 +26,6 @@ void main() {
       expect(FrequencyType.monthly.value, 'monthly');
       expect(FrequencyType.rarely.value, 'rarely');
     });
-
     test('displayName returns correctly formatted string', () {
       expect(FrequencyType.daily.displayName, 'Daily');
       expect(FrequencyType.weekly.displayName, 'Weekly');
@@ -34,6 +33,15 @@ void main() {
       expect(FrequencyType.bimonthly.displayName, 'Bimonthly');
       expect(FrequencyType.monthly.displayName, 'Monthly');
       expect(FrequencyType.rarely.displayName, 'Rarely');
+    });
+
+    test('compactDisplayName returns compact abbreviations', () {
+      expect(FrequencyType.daily.compactDisplayName, '1d');
+      expect(FrequencyType.weekly.compactDisplayName, '1w');
+      expect(FrequencyType.biweekly.compactDisplayName, '2w');
+      expect(FrequencyType.monthly.compactDisplayName, '1m');
+      expect(FrequencyType.bimonthly.compactDisplayName, '2m');
+      expect(FrequencyType.rarely.compactDisplayName, 'rare');
     });
   });
 }

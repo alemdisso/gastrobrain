@@ -97,7 +97,8 @@ class _RecipeCardState extends State<RecipeCard> {
                           const SizedBox(width: 16),
                           const Icon(Icons.repeat, size: 16),
                           const SizedBox(width: 4),
-                          Text(widget.recipe.desiredFrequency.displayName),
+                          Text(widget
+                              .recipe.desiredFrequency.compactDisplayName),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -148,9 +149,9 @@ class _RecipeCardState extends State<RecipeCard> {
                       onPressed: widget.onCooked,
                       tooltip: 'Cook Now',
                       padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
+                      constraints:
+                          const BoxConstraints(minWidth: 24, minHeight: 24),
                     ),
-                    const SizedBox(width: 8),
                     IconButton(
                       icon: Icon(
                         isExpanded ? Icons.expand_less : Icons.expand_more,
@@ -159,7 +160,8 @@ class _RecipeCardState extends State<RecipeCard> {
                       onPressed: _toggleExpanded,
                       tooltip: isExpanded ? 'Show Less' : 'Show More',
                       padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
+                      constraints:
+                          const BoxConstraints(minWidth: 24, minHeight: 24),
                     ),
                   ],
                 ),
