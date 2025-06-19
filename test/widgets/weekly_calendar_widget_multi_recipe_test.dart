@@ -7,6 +7,7 @@ import 'package:gastrobrain/models/meal_plan_item.dart';
 import 'package:gastrobrain/models/meal_plan_item_recipe.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
+import 'package:gastrobrain/models/time_context.dart';
 import 'package:gastrobrain/widgets/weekly_calendar_widget.dart';
 import '../mocks/mock_database_helper.dart';
 
@@ -86,6 +87,7 @@ void main() {
             body: WeeklyCalendarWidget(
               weekStartDate: testWeekStart,
               mealPlan: mealPlan,
+              timeContext: TimeContext.current,
               databaseHelper: mockDbHelper,
             ),
           ),
@@ -145,6 +147,7 @@ void main() {
             body: WeeklyCalendarWidget(
               weekStartDate: testWeekStart,
               mealPlan: mealPlan,
+              timeContext: TimeContext.current,
               databaseHelper: mockDbHelper,
             ),
           ),
@@ -200,6 +203,7 @@ void main() {
             body: WeeklyCalendarWidget(
               weekStartDate: testWeekStart,
               mealPlan: mealPlan,
+              timeContext: TimeContext.current,
               databaseHelper: mockDbHelper,
             ),
           ),
@@ -267,6 +271,7 @@ void main() {
             body: WeeklyCalendarWidget(
               weekStartDate: testWeekStart,
               mealPlan: mealPlan,
+              timeContext: TimeContext.current,
               databaseHelper: mockDbHelper,
             ),
           ),

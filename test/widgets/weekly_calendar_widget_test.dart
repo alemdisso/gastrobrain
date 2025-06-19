@@ -7,6 +7,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:gastrobrain/models/meal_plan.dart';
 import 'package:gastrobrain/models/meal_plan_item.dart';
 import 'package:gastrobrain/models/meal_plan_item_recipe.dart';
+import 'package:gastrobrain/models/time_context.dart';
 import 'package:gastrobrain/widgets/weekly_calendar_widget.dart';
 import 'package:mockito/annotations.dart';
 
@@ -98,6 +99,7 @@ void main() {
           body: WeeklyCalendarWidget(
             weekStartDate: testWeekStart,
             mealPlan: null,
+            timeContext: TimeContext.current,
           ),
         ),
       ),
@@ -165,6 +167,7 @@ void main() {
           body: WeeklyCalendarWidget(
             weekStartDate: testWeekStart,
             mealPlan: null,
+            timeContext: TimeContext.current,
             onSlotTap: (date, mealType) {
               callbackCalled = true;
             },
@@ -227,6 +230,7 @@ void main() {
           body: WeeklyCalendarWidget(
             weekStartDate: testWeekStart,
             mealPlan: simpleMealPlan,
+            timeContext: TimeContext.current,
             onMealTap: (date, mealType, recipeId) {},
           ),
         ),
@@ -256,6 +260,7 @@ void main() {
           body: WeeklyCalendarWidget(
             weekStartDate: testWeekStart,
             mealPlan: null,
+            timeContext: TimeContext.current,
           ),
         ),
       ),
@@ -277,6 +282,7 @@ void main() {
           body: WeeklyCalendarWidget(
             weekStartDate: testWeekStart,
             mealPlan: null,
+            timeContext: TimeContext.current,
           ),
         ),
       ),

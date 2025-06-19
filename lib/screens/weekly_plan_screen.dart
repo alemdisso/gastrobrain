@@ -6,6 +6,7 @@ import '../models/meal_plan_item.dart';
 import '../models/meal_plan_item_recipe.dart';
 import '../models/recipe_recommendation.dart';
 import '../models/recipe.dart';
+import '../models/time_context.dart';
 import '../database/database_helper.dart';
 import '../core/di/service_provider.dart';
 import '../core/services/recommendation_service.dart';
@@ -78,6 +79,107 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         : weekday - 5; // Friday is day 5
 
     return date.subtract(Duration(days: daysToSubtract));
+  }
+
+  /// Determines the temporal context of the current week relative to today
+  TimeContext get _currentWeekContext {
+    final now = DateTime.now();
+    final currentWeekFriday = _getFriday(now);
+    
+    if (_currentWeekStart.isAtSameMomentAs(currentWeekFriday)) {
+      return TimeContext.current;
+    } else if (_currentWeekStart.isBefore(currentWeekFriday)) {
+      return TimeContext.past;
+    } else {
+      return TimeContext.future;
+    }
+  }
+
+  /// Calculates the relative week distance from the current week
+  /// Returns positive number for future weeks, negative for past weeks
+  int get _weekDistanceFromCurrent {
+    final now = DateTime.now();
+    final currentWeekFriday = _getFriday(now);
+    final differenceInDays = _currentWeekStart.difference(currentWeekFriday).inDays;
+    return (differenceInDays / 7).round();
+  }
+
+  /// Returns a formatted string showing relative time distance
+  String get _relativeTimeDistance {
+    final distance = _weekDistanceFromCurrent;
+    if (distance == 0) {
+      return 'This week';
+    } else if (distance == 1) {
+      return '+1 week';
+    } else if (distance == -1) {
+      return '-1 week';
+    } else if (distance > 0) {
+      return '+$distance weeks';
+    } else {
+      return '$distance weeks';
+    }
+  }
+
+  /// Jumps to the current week
+  void _jumpToCurrentWeek() {
+    final now = DateTime.now();
+    final currentWeekFriday = _getFriday(now);
+    
+    if (!_currentWeekStart.isAtSameMomentAs(currentWeekFriday)) {
+      setState(() {
+        _currentWeekStart = currentWeekFriday;
+        _currentMealPlan = null;
+      });
+      _loadData();
+    }
+  }
+
+  /// Gets the context indicator color
+  Color _getContextColor() {
+    switch (_currentWeekContext) {
+      case TimeContext.past:
+        return Colors.grey.withAlpha(51);
+      case TimeContext.current:
+        return Theme.of(context).colorScheme.primaryContainer.withAlpha(128);
+      case TimeContext.future:
+        return Theme.of(context).colorScheme.primary.withAlpha(76);
+    }
+  }
+
+  /// Gets the context border color
+  Color _getContextBorderColor() {
+    switch (_currentWeekContext) {
+      case TimeContext.past:
+        return Colors.grey.withAlpha(128);
+      case TimeContext.current:
+        return Theme.of(context).colorScheme.primary.withAlpha(128);
+      case TimeContext.future:
+        return Theme.of(context).colorScheme.primary.withAlpha(128);
+    }
+  }
+
+  /// Gets the context text color
+  Color _getContextTextColor() {
+    switch (_currentWeekContext) {
+      case TimeContext.past:
+        return Colors.grey[700] ?? Colors.grey;
+      case TimeContext.current:
+        return Theme.of(context).colorScheme.onPrimaryContainer;
+      case TimeContext.future:
+        return Theme.of(context).colorScheme.primary;
+    }
+  }
+
+  /// Gets the context icon
+  IconData _getContextIcon() {
+    switch (_currentWeekContext) {
+      case TimeContext.past:
+        return Icons.history;
+      case TimeContext.current:
+        return Icons.today;
+      case TimeContext.future:
+        return Icons.schedule;
+    }
   }
 
   Future<void> _loadData() async {
@@ -1062,23 +1164,93 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           // Week navigation controls
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
               children: [
-                IconButton(
-                  icon: const Icon(Icons.navigate_before),
-                  onPressed: () => _changeWeek(-1),
-                  tooltip: 'Previous Week',
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.navigate_before),
+                      onPressed: () => _changeWeek(-1),
+                      tooltip: 'Previous Week',
+                    ),
+                    Column(
+                      children: [
+                        Text(
+                          'Week of $formattedDate',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Time context indicator
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: _getContextColor(),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: _getContextBorderColor(),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    _getContextIcon(),
+                                    size: 14,
+                                    color: _getContextTextColor(),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    _currentWeekContext.displayName,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: _getContextTextColor(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            // Relative time distance
+                            Tooltip(
+                              message: _currentWeekContext.description,
+                              child: Text(
+                                _relativeTimeDistance,
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.navigate_next),
+                      onPressed: () => _changeWeek(1),
+                      tooltip: 'Next Week',
+                    ),
+                  ],
                 ),
-                Text(
-                  'Week of $formattedDate',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.navigate_next),
-                  onPressed: () => _changeWeek(1),
-                  tooltip: 'Next Week',
-                ),
+                // Jump to Current Week button (only show when not viewing current week)
+                if (_currentWeekContext != TimeContext.current) ...[
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: _jumpToCurrentWeek,
+                    icon: const Icon(Icons.today, size: 16),
+                    label: const Text('Jump to Current Week'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      minimumSize: const Size(0, 32),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -1090,6 +1262,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                 : WeeklyCalendarWidget(
                     weekStartDate: _currentWeekStart,
                     mealPlan: _currentMealPlan,
+                    timeContext: _currentWeekContext,
                     onSlotTap: _handleSlotTap,
                     onMealTap: _handleMealTap,
                     onDaySelected: _handleDaySelected,
