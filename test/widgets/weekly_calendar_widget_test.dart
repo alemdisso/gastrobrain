@@ -134,6 +134,7 @@ void main() {
           body: WeeklyCalendarWidget(
             weekStartDate: testWeekStart,
             mealPlan: testMealPlan,
+            timeContext: TimeContext.current,
           ),
         ),
       ),
@@ -317,6 +318,7 @@ void main() {
           body: WeeklyCalendarWidget(
             weekStartDate: testWeekStart,
             mealPlan: null,
+            timeContext: TimeContext.current,
             onDaySelected: (date, index) {
               selectedDate = date;
               selectedIndex = index;

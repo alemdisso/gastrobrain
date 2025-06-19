@@ -195,6 +195,7 @@ void main() {
               final calendarWidget = WeeklyCalendarWidget(
                 weekStartDate: testWeekStart,
                 mealPlan: testMealPlan,
+                timeContext: TimeContext.current,
                 databaseHelper: mockDbHelper,
               );
 

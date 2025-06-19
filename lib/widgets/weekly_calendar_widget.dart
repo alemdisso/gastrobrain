@@ -59,7 +59,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
   void initState() {
     super.initState();
     _dbHelper = widget.databaseHelper ?? ServiceProvider.database.dbHelper;
-    
+
     // Initialize animation controller
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
@@ -72,10 +72,10 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
       parent: _animationController,
       curve: Curves.easeInOut,
     ));
-    
+
     _initializeWeekDates();
     _prefetchRecipes();
-    
+
     // Start animation
     _animationController.forward();
   }
@@ -88,7 +88,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
         oldWidget.timeContext != widget.timeContext) {
       _initializeWeekDates();
       _prefetchRecipes();
-      
+
       // Trigger fade animation on context change
       if (oldWidget.timeContext != widget.timeContext) {
         _animationController.reset();
@@ -183,41 +183,53 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
     return '${date.day}/${date.month}/${date.year}';
   }
 
-  /// Gets the color modifier based on time context
-  double _getContextOpacity() {
+  /// Gets the context-specific background color (subtle styling)
+  Color _getContextBackgroundColor(BuildContext context) {
     switch (widget.timeContext) {
       case TimeContext.past:
-        return 0.6; // Faded for past weeks
+        return Colors.grey.withAlpha(25); // Very subtle gray background
       case TimeContext.current:
-        return 1.0; // Full opacity for current week
+        return Colors.transparent; // No special background
       case TimeContext.future:
-        return 0.85; // Slightly reduced for future weeks
+        return Theme.of(context)
+            .colorScheme
+            .primary
+            .withAlpha(15); // Very subtle blue background
     }
   }
 
-  /// Gets the context-specific color tint
-  Color _getContextTint(BuildContext context) {
+  /// Gets the context border color for containers
+  Color _getContextBorderColor(BuildContext context) {
     switch (widget.timeContext) {
       case TimeContext.past:
-        return Colors.grey.withAlpha(51); // Gray tint for past
+        return Colors.grey.withAlpha(76);
       case TimeContext.current:
-        return Colors.transparent; // No tint for current
+        return Theme.of(context).colorScheme.outline.withAlpha(76);
       case TimeContext.future:
-        return Theme.of(context).colorScheme.primary.withAlpha(25); // Blue tint for future
+        return Theme.of(context).colorScheme.primary.withAlpha(76);
     }
   }
 
-  /// Applies context-aware styling to a color
-  Color _applyContextStyling(BuildContext context, Color baseColor) {
-    final opacity = _getContextOpacity();
-    final tint = _getContextTint(context);
-    
-    if (tint == Colors.transparent) {
-      return baseColor.withValues(alpha: baseColor.alpha * opacity);
-    } else {
-      // Blend the base color with the tint
-      return Color.alphaBlend(tint, baseColor.withValues(alpha: baseColor.alpha * opacity));
-    }
+  /// Apply context styling ONLY to card backgrounds, not text or icons
+  Widget _buildContextualCard({
+    required Widget child,
+    Color? baseColor,
+    bool isSelected = false,
+    bool isToday = false,
+  }) {
+    final backgroundColor = baseColor ?? Theme.of(context).cardColor;
+
+    // Apply context background as an overlay, but keep original colors readable
+    final contextBackground = _getContextBackgroundColor(context);
+    final finalBackgroundColor = contextBackground == Colors.transparent
+        ? backgroundColor
+        : Color.alphaBlend(contextBackground, backgroundColor);
+
+    return Card(
+      color: finalBackgroundColor,
+      elevation: isSelected || isToday ? 2 : 1,
+      child: child,
+    );
   }
 
   @override
@@ -296,19 +308,16 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
   }
 
   Widget _buildCompactMealTile(DateTime date, String mealType, int dayIndex) {
-    // Find if there's a meal planned for this slot
     final MealPlanItem? plannedMeal =
         widget.mealPlan?.getItemsForDateAndMealType(date, mealType).firstOrNull;
 
-    // Get the first recipe (primary dish) if any recipes are associated
     final primaryRecipeId = _getPrimaryRecipeId(plannedMeal);
     final Recipe? recipe =
         primaryRecipeId != null ? _recipes[primaryRecipeId] : null;
 
     final bool hasPlannedMeal = plannedMeal != null && recipe != null;
 
-    return Card(
-      color: _applyContextStyling(context, Theme.of(context).cardColor),
+    return _buildContextualCard(
       child: InkWell(
         onTap: () => _handleTap(date, mealType, plannedMeal, hasPlannedMeal),
         child: Padding(
@@ -317,32 +326,25 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Day + meal
               Text(
                 '${_weekdayNames[dayIndex]} ${mealType == MealPlanItem.lunch ? 'Lunch' : 'Dinner'}',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold, 
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
                   fontSize: 12,
-                  color: _applyContextStyling(context, Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
                 ),
               ),
-
-              // Recipe or placeholder
               hasPlannedMeal
                   ? Text(
                       recipe.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: _applyContextStyling(context, Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
-                      ),
+                      style: const TextStyle(fontSize: 14),
                     )
                   : Text(
                       'Add meal',
                       style: TextStyle(
                         fontStyle: FontStyle.italic,
-                        color: _applyContextStyling(context, Colors.grey),
+                        color: Colors.grey,
                         fontSize: 14,
                       ),
                     ),
@@ -360,21 +362,21 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
         date.day == today.day;
     final isSelected = dayIndex == _selectedDayIndex;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-      color: _applyContextStyling(context, isSelected
-          ? Theme.of(context).colorScheme.primary.withAlpha(64)
-          : (isToday
-              ? Theme.of(context).colorScheme.primaryContainer.withAlpha(64)
-              : Theme.of(context).cardColor)),
+    final baseColor = isSelected
+        ? Theme.of(context).colorScheme.primary.withAlpha(64)
+        : (isToday
+            ? Theme.of(context).colorScheme.primaryContainer.withAlpha(64)
+            : Theme.of(context).cardColor);
+
+    return _buildContextualCard(
+      baseColor: baseColor,
+      isSelected: isSelected,
+      isToday: isToday,
       child: InkWell(
         onTap: () {
-          // Update selected day when tapped
           setState(() {
             _selectedDayIndex = dayIndex;
           });
-
-          // Notify parent about the day selection
           if (widget.onDaySelected != null) {
             widget.onDaySelected!(_weekDates[dayIndex], dayIndex);
           }
@@ -387,11 +389,11 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                 _weekdayNames[dayIndex],
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: _applyContextStyling(context, isSelected
+                  color: isSelected
                       ? Theme.of(context).colorScheme.primary
                       : (isToday
                           ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black)),
+                          : Theme.of(context).textTheme.bodyMedium?.color),
                 ),
               ),
               Text(
@@ -399,7 +401,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: _applyContextStyling(context, Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
               ),
             ],
@@ -415,11 +417,13 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
         date.month == today.month &&
         date.day == today.day;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      color: _applyContextStyling(context, isToday
-          ? Theme.of(context).colorScheme.primaryContainer.withAlpha(64)
-          : Theme.of(context).cardColor),
+    final baseColor = isToday
+        ? Theme.of(context).colorScheme.primaryContainer.withAlpha(64)
+        : Theme.of(context).cardColor;
+
+    return _buildContextualCard(
+      baseColor: baseColor,
+      isToday: isToday,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -433,18 +437,18 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: _applyContextStyling(context, isToday 
-                        ? Theme.of(context).colorScheme.primary 
-                        : Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
+                    color: isToday
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).textTheme.bodyMedium?.color,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Text(
                   _formatDate(date),
                   style: TextStyle(
-                    color: _applyContextStyling(context, isToday
+                    color: isToday
                         ? Theme.of(context).colorScheme.primary
-                        : Colors.grey),
+                        : Colors.grey,
                   ),
                 ),
                 if (isToday) ...[
@@ -453,13 +457,13 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: _applyContextStyling(context, Theme.of(context).colorScheme.primary),
+                      color: Theme.of(context).colorScheme.primary,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       'Today',
                       style: TextStyle(
-                        color: _applyContextStyling(context, Theme.of(context).colorScheme.onPrimary),
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontSize: 12,
                       ),
                     ),
@@ -484,47 +488,37 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
   }
 
   Widget _buildMealSection(DateTime date, String mealType) {
-    // Find if there's a meal planned for this slot
-    final MealPlanItem? plannedMeal = widget.mealPlan
-        ?.getItemsForDateAndMealType(
-          date,
-          mealType,
-        )
-        .firstOrNull;
+    final MealPlanItem? plannedMeal =
+        widget.mealPlan?.getItemsForDateAndMealType(date, mealType).firstOrNull;
 
-    // Get the first recipe (primary dish) if any recipes are associated
     final primaryRecipeId = _getPrimaryRecipeId(plannedMeal);
     final Recipe? recipe =
         primaryRecipeId != null ? _recipes[primaryRecipeId] : null;
 
     final bool hasPlannedMeal = plannedMeal != null && recipe != null;
+    final bool hasBeenCooked = plannedMeal?.hasBeenCooked ?? false;
 
-    // Define meal-specific colors
-    // Check if this meal has been cooked using the mealPlanItem's info
-    final bool hasBeenCooked =
-        plannedMeal != null ? plannedMeal.hasBeenCooked : false;
-
-    final Color backgroundColor = _applyContextStyling(context, !hasPlannedMeal
+    // Simplified color scheme - no context opacity applied to meal sections
+    final Color backgroundColor = !hasPlannedMeal
         ? Theme.of(context).colorScheme.surface
         : hasBeenCooked
-            ? Colors.green.withAlpha(64) // Light green for cooked meals
+            ? Colors.green.withAlpha(64)
             : mealType == MealPlanItem.lunch
                 ? Theme.of(context).colorScheme.primaryContainer.withAlpha(128)
                 : Theme.of(context)
                     .colorScheme
                     .secondaryContainer
-                    .withAlpha(128));
+                    .withAlpha(128);
 
-    final Color borderColor = _applyContextStyling(context, hasPlannedMeal
+    final Color borderColor = hasPlannedMeal
         ? mealType == MealPlanItem.lunch
             ? Theme.of(context).colorScheme.primary
             : Theme.of(context).colorScheme.secondary
-        : Theme.of(context).colorScheme.outline.withAlpha(76));
+        : _getContextBorderColor(context);
 
     final screenWidth = MediaQuery.of(context).size.width;
-    final EdgeInsets contentPadding = screenWidth < 360
-        ? const EdgeInsets.all(8) // Small screens get tighter padding
-        : const EdgeInsets.all(12); // Larger screens get more space
+    final EdgeInsets contentPadding =
+        screenWidth < 360 ? const EdgeInsets.all(8) : const EdgeInsets.all(12);
 
     return InkWell(
       onTap: () => _handleTap(date, mealType, plannedMeal, hasPlannedMeal),
@@ -542,14 +536,13 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: _applyContextStyling(context, mealType == MealPlanItem.lunch
+                color: mealType == MealPlanItem.lunch
                     ? Theme.of(context).colorScheme.primary.withAlpha(40)
-                    : Theme.of(context).colorScheme.secondary.withAlpha(40)),
+                    : Theme.of(context).colorScheme.secondary.withAlpha(40),
                 borderRadius: BorderRadius.circular(4),
-                // Optional: add a subtle shadow for more dimension
                 boxShadow: [
                   BoxShadow(
-                    color: _applyContextStyling(context, Colors.black.withAlpha(13)),
+                    color: Colors.black.withAlpha(13),
                     blurRadius: 2,
                     offset: const Offset(0, 1),
                   ),
@@ -558,24 +551,23 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Add a relevant icon
                   Icon(
                     mealType == MealPlanItem.lunch
-                        ? Icons.wb_sunny_outlined // Sun icon for lunch
-                        : Icons.nightlight_outlined, // Moon icon for dinner
+                        ? Icons.wb_sunny_outlined
+                        : Icons.nightlight_outlined,
                     size: 16,
-                    color: _applyContextStyling(context, mealType == MealPlanItem.lunch
+                    color: mealType == MealPlanItem.lunch
                         ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.secondary),
+                        : Theme.of(context).colorScheme.secondary,
                   ),
                   const SizedBox(width: 4),
                   Text(
                     mealType == MealPlanItem.lunch ? 'Lunch' : 'Dinner',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: _applyContextStyling(context, mealType == MealPlanItem.lunch
+                      color: mealType == MealPlanItem.lunch
                           ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.secondary),
+                          : Theme.of(context).colorScheme.secondary,
                     ),
                   ),
                 ],
@@ -584,7 +576,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
 
             const SizedBox(width: 16),
 
-            // Recipe info or placeholder
+            // Recipe info or placeholder (no opacity changes)
             Expanded(
               child: hasPlannedMeal
                   ? Column(
@@ -595,14 +587,12 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                             Expanded(
                               child: Text(
                                 recipe.name,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
-                                  color: _applyContextStyling(context, Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black),
                                 ),
                               ),
                             ),
-                            // Show recipe count badge if more than one recipe
                             if (plannedMeal.mealPlanItemRecipes != null &&
                                 plannedMeal.mealPlanItemRecipes!.length >
                                     1) ...[
@@ -610,30 +600,29 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: _applyContextStyling(context, Theme.of(context)
+                                  color: Theme.of(context)
                                       .colorScheme
-                                      .primaryContainer),
+                                      .primaryContainer,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(
                                   '${plannedMeal.mealPlanItemRecipes!.length - 1} recipes',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: _applyContextStyling(context, Theme.of(context)
+                                    color: Theme.of(context)
                                         .colorScheme
-                                        .onPrimaryContainer),
+                                        .onPrimaryContainer,
                                   ),
                                 ),
                               ),
                               const SizedBox(width: 8),
                             ],
-                            // Add check mark icon for cooked meals
                             if (hasBeenCooked)
-                              Tooltip(
+                              const Tooltip(
                                 message: 'Cooked',
                                 child: Icon(
                                   Icons.check_circle,
-                                  color: _applyContextStyling(context, Colors.green),
+                                  color: Colors.green,
                                   size: 20,
                                 ),
                               ),
@@ -642,7 +631,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            // Difficulty
+                            // Difficulty stars
                             Row(
                               children: List.generate(
                                 5,
@@ -651,9 +640,9 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                                       ? Icons.star
                                       : Icons.star_border,
                                   size: 16,
-                                  color: _applyContextStyling(context, index < recipe.difficulty
+                                  color: index < recipe.difficulty
                                       ? Colors.amber
-                                      : Colors.grey),
+                                      : Colors.grey,
                                 ),
                               ),
                             ),
@@ -661,11 +650,11 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                             // Time
                             Row(
                               children: [
-                                Icon(Icons.timer, size: 16, color: _applyContextStyling(context, Theme.of(context).iconTheme.color ?? Colors.grey)),
+                                const Icon(Icons.timer,
+                                    size: 16, color: Colors.grey),
                                 const SizedBox(width: 4),
                                 Text(
-                                    '${recipe.prepTimeMinutes + recipe.cookTimeMinutes} min',
-                                    style: TextStyle(color: _applyContextStyling(context, Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black))),
+                                    '${recipe.prepTimeMinutes + recipe.cookTimeMinutes} min'),
                               ],
                             ),
                           ],
@@ -674,12 +663,12 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                     )
                   : Row(
                       children: [
-                        Icon(Icons.add, color: _applyContextStyling(context, Theme.of(context).iconTheme.color ?? Colors.grey)),
+                        const Icon(Icons.add, color: Colors.grey),
                         const SizedBox(width: 8),
-                        Text(
+                        const Text(
                           'Add meal',
                           style: TextStyle(
-                            color: _applyContextStyling(context, Colors.grey),
+                            color: Colors.grey,
                             fontStyle: FontStyle.italic,
                           ),
                         ),
