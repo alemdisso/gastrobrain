@@ -85,10 +85,23 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   TimeContext get _currentWeekContext {
     final now = DateTime.now();
     final currentWeekFriday = _getFriday(now);
-    
-    if (_currentWeekStart.isAtSameMomentAs(currentWeekFriday)) {
+
+    // Compare dates only (ignore time)
+    final currentWeekStartNormalized = DateTime(
+      _currentWeekStart.year,
+      _currentWeekStart.month,
+      _currentWeekStart.day,
+    );
+
+    final currentFridayNormalized = DateTime(
+      currentWeekFriday.year,
+      currentWeekFriday.month,
+      currentWeekFriday.day,
+    );
+
+    if (currentWeekStartNormalized.isAtSameMomentAs(currentFridayNormalized)) {
       return TimeContext.current;
-    } else if (_currentWeekStart.isBefore(currentWeekFriday)) {
+    } else if (currentWeekStartNormalized.isBefore(currentFridayNormalized)) {
       return TimeContext.past;
     } else {
       return TimeContext.future;
@@ -100,7 +113,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   int get _weekDistanceFromCurrent {
     final now = DateTime.now();
     final currentWeekFriday = _getFriday(now);
-    final differenceInDays = _currentWeekStart.difference(currentWeekFriday).inDays;
+    final differenceInDays =
+        _currentWeekStart.difference(currentWeekFriday).inDays;
     return (differenceInDays / 7).round();
   }
 
@@ -124,8 +138,21 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   void _jumpToCurrentWeek() {
     final now = DateTime.now();
     final currentWeekFriday = _getFriday(now);
-    
-    if (!_currentWeekStart.isAtSameMomentAs(currentWeekFriday)) {
+
+    // Use normalized dates for comparison
+    final currentWeekStartNormalized = DateTime(
+      _currentWeekStart.year,
+      _currentWeekStart.month,
+      _currentWeekStart.day,
+    );
+
+    final currentFridayNormalized = DateTime(
+      currentWeekFriday.year,
+      currentWeekFriday.month,
+      currentWeekFriday.day,
+    );
+
+    if (!currentWeekStartNormalized.isAtSameMomentAs(currentFridayNormalized)) {
       setState(() {
         _currentWeekStart = currentWeekFriday;
         _currentMealPlan = null;
@@ -1164,17 +1191,20 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           // Week navigation controls
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.navigate_before),
-                      onPressed: () => _changeWeek(-1),
-                      tooltip: 'Previous Week',
-                    ),
-                    Column(
+                IconButton(
+                  icon: const Icon(Icons.navigate_before),
+                  onPressed: () => _changeWeek(-1),
+                  tooltip: 'Previous Week',
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: _currentWeekContext != TimeContext.current
+                        ? _jumpToCurrentWeek
+                        : null,
+                    child: Column(
                       children: [
                         Text(
                           'Week of $formattedDate',
@@ -1182,11 +1212,12 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                         ),
                         const SizedBox(height: 4),
                         Row(
-                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             // Time context indicator
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
                                 color: _getContextColor(),
                                 borderRadius: BorderRadius.circular(12),
@@ -1216,41 +1247,62 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            // Relative time distance
-                            Tooltip(
-                              message: _currentWeekContext.description,
-                              child: Text(
-                                _relativeTimeDistance,
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Colors.grey[600],
-                                  fontWeight: FontWeight.w500,
+                            // Relative time distance with tap hint
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  _relativeTimeDistance,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                 ),
-                              ),
+                                // Show subtle jump hint for non-current weeks
+                                if (_currentWeekContext !=
+                                    TimeContext.current) ...[
+                                  const SizedBox(width: 4),
+                                  Icon(
+                                    Icons.my_location,
+                                    size: 14,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withAlpha(128),
+                                  ),
+                                ],
+                              ],
                             ),
                           ],
                         ),
+                        // Add subtle hint text for non-current weeks
+                        if (_currentWeekContext != TimeContext.current)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              'Tap to jump to current week',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withAlpha(153),
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
                       ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.navigate_next),
-                      onPressed: () => _changeWeek(1),
-                      tooltip: 'Next Week',
-                    ),
-                  ],
-                ),
-                // Jump to Current Week button (only show when not viewing current week)
-                if (_currentWeekContext != TimeContext.current) ...[
-                  const SizedBox(height: 8),
-                  OutlinedButton.icon(
-                    onPressed: _jumpToCurrentWeek,
-                    icon: const Icon(Icons.today, size: 16),
-                    label: const Text('Jump to Current Week'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      minimumSize: const Size(0, 32),
-                    ),
                   ),
-                ],
+                ),
+                IconButton(
+                  icon: const Icon(Icons.navigate_next),
+                  onPressed: () => _changeWeek(1),
+                  tooltip: 'Next Week',
+                ),
               ],
             ),
           ),
@@ -1267,7 +1319,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                     onMealTap: _handleMealTap,
                     onDaySelected: _handleDaySelected,
                     scrollController: _scrollController,
-                    databaseHelper: _dbHelper, // Pass the controller
+                    databaseHelper: _dbHelper,
                   ),
           ),
         ],
