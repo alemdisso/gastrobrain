@@ -66,8 +66,8 @@ Create branches based on issue type and number using this format:
 #### 1. Starting Work on an Issue
 ```bash
 # Check out latest main/develop branch
-git checkout main
-git pull origin main
+git checkout develop
+git pull origin develop
 
 # Create and switch to new branch
 git checkout -b {type}/{issue-number}-{short-description}
