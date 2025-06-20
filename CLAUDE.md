@@ -200,6 +200,143 @@ gh issue edit {issue-number} --add-label "enhancement,✓✓"
 
 This protocol ensures consistent branch management and clear traceability between issues and code changes.
 
+## Git Flow Workflow
+
+This project follows the **Git Flow workflow model** for organized branch management and release cycles.
+
+### Core Branches
+
+#### Production Branches
+- **`master`** - Production-ready code with tagged releases (0.1, 0.2, 1.0)
+  - Always contains stable, deployable code
+  - All commits should be tagged with version numbers
+  - Only receives merges from `release` and `hotfix` branches
+
+- **`develop`** - Integration branch for ongoing development
+  - Contains the latest development changes
+  - All feature branches merge here
+  - Serves as the base for release branches
+
+#### Supporting Branches
+- **`release/`** - Preparation for production releases
+- **`hotfix/`** - Emergency fixes for production issues
+- **`feature/`** - New feature development (existing convention maintained)
+
+### Workflow Process
+
+#### Feature Development
+```bash
+# Create feature branch from develop
+git checkout develop
+git pull origin develop
+git checkout -b feature/{issue-number}-{short-description}
+
+# Work on feature
+# ... make commits ...
+
+# Merge back to develop when complete
+git checkout develop
+git pull origin develop
+git merge feature/{issue-number}-{short-description}
+git push origin develop
+
+# Delete feature branch
+git branch -d feature/{issue-number}-{short-description}
+```
+
+#### Release Process
+```bash
+# Create release branch from develop when ready
+git checkout develop
+git pull origin develop
+git checkout -b release/{version}
+
+# Final testing and bug fixes in release branch
+# ... make necessary fixes ...
+
+# Merge to master and tag
+git checkout master
+git pull origin master
+git merge release/{version}
+git tag -a {version} -m "Release version {version}"
+git push origin master --tags
+
+# Merge back to develop
+git checkout develop
+git merge release/{version}
+git push origin develop
+
+# Delete release branch
+git branch -d release/{version}
+```
+
+#### Hotfix Process
+```bash
+# Create hotfix branch from master for critical production bugs
+git checkout master
+git pull origin master
+git checkout -b hotfix/{patch-version}-{short-description}
+
+# Fix the issue
+# ... make commits ...
+
+# Merge to master and tag
+git checkout master
+git merge hotfix/{patch-version}-{short-description}
+git tag -a {patch-version} -m "Hotfix version {patch-version}"
+git push origin master --tags
+
+# Merge to develop
+git checkout develop
+git merge hotfix/{patch-version}-{short-description}
+git push origin develop
+
+# Delete hotfix branch
+git branch -d hotfix/{patch-version}-{short-description}
+```
+
+### Git Flow Rules
+
+1. **`master` always contains production-ready code**
+   - Never commit directly to master
+   - All releases are tagged for version tracking
+
+2. **`develop` contains latest development changes**
+   - All features merge here first
+   - Base for all release branches
+
+3. **Release branches allow final polish**
+   - Created from develop when feature-complete
+   - Only bug fixes and release preparation
+   - Prevents blocking new development
+
+4. **Hotfixes ensure production issues can be addressed immediately**
+   - Created from master for critical bugs
+   - Merged to both master and develop
+   - Tagged as patch releases
+
+5. **All releases are tagged for version tracking**
+   - Semantic versioning (MAJOR.MINOR.PATCH)
+   - Tags enable easy rollback and reference
+
+### Branch Naming Conventions (Updated for Git Flow)
+
+**Core Branches:**
+- `master` - Production releases
+- `develop` - Development integration
+
+**Supporting Branches:**
+- `feature/{issue-number}-{short-description}` - New features
+- `release/{version}` - Release preparation (e.g., `release/1.2.0`)
+- `hotfix/{patch-version}-{short-description}` - Production fixes (e.g., `hotfix/1.2.1-login-crash`)
+
+**Legacy Branch Types (still supported for non-feature work):**
+- `bugfix/{issue-number}-{short-description}` - Bug fixes for develop
+- `testing/{issue-number}-{short-description}` - Test improvements
+- `refactor/{issue-number}-{short-description}` - Code refactoring
+- `ui/{issue-number}-{short-description}` - UI improvements
+- `docs/{issue-number}-{short-description}` - Documentation updates
+
 ## Common Development Commands
 
 ### Flutter Commands
