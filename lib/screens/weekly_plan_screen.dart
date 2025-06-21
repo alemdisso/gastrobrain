@@ -260,11 +260,13 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     DateTime? forDate,
     String? mealType,
   }) async {
-    // Get planned context (current meal plan)
-    final plannedRecipeIds =
-        await _mealPlanAnalysis.getPlannedRecipeIds(_currentMealPlan);
-    final plannedProteins =
-        await _mealPlanAnalysis.getPlannedProteinsForWeek(_currentMealPlan);
+    // Get planned context (current meal plan) - handle null case
+    final plannedRecipeIds = _currentMealPlan != null
+        ? await _mealPlanAnalysis.getPlannedRecipeIds(_currentMealPlan)
+        : <String>[];
+    final plannedProteins = _currentMealPlan != null
+        ? await _mealPlanAnalysis.getPlannedProteinsForWeek(_currentMealPlan)
+        : <ProteinType>[];
 
     // Get recently cooked context (meal history)
     final recentRecipeIds =
@@ -272,13 +274,14 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     final recentProteins =
         await _mealPlanAnalysis.getRecentlyCookedProteins(dayWindow: 5);
 
-    // Calculate penalty strategy
-    final penaltyStrategy =
-        await _mealPlanAnalysis.calculateProteinPenaltyStrategy(
-      _currentMealPlan,
-      forDate ?? DateTime.now(),
-      mealType ?? MealPlanItem.lunch,
-    );
+    // Calculate penalty strategy - handle null meal plan
+    final penaltyStrategy = _currentMealPlan != null
+        ? await _mealPlanAnalysis.calculateProteinPenaltyStrategy(
+            _currentMealPlan!,
+            forDate ?? DateTime.now(),
+            mealType ?? MealPlanItem.lunch,
+          )
+        : null;
 
     return {
       'forDate': forDate,
