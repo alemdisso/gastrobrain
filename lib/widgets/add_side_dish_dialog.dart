@@ -32,8 +32,8 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
   List<Recipe> get _filteredRecipes {
     // Get recipes excluding already selected ones
     final availableRecipes = widget.availableRecipes.where((recipe) {
-      return !widget.excludeRecipes.any((excludedRecipe) => 
-          excludedRecipe.id == recipe.id);
+      return !widget.excludeRecipes
+          .any((excludedRecipe) => excludedRecipe.id == recipe.id);
     }).toList();
 
     // Apply search filter if enabled and query is not empty
@@ -106,9 +106,10 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
                             _searchQuery.isNotEmpty
                                 ? 'No recipes found matching "$_searchQuery"'
                                 : 'No available side dishes',
-                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: Colors.grey[600],
-                            ),
+                            style:
+                                Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                      color: Colors.grey[600],
+                                    ),
                             textAlign: TextAlign.center,
                           ),
                           if (_searchQuery.isNotEmpty) ...[
