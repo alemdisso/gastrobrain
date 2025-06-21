@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/protein_type.dart';
 import '../models/meal.dart';
 import '../models/meal_recipe.dart';
 import '../models/meal_plan.dart';
@@ -16,6 +17,7 @@ import '../widgets/weekly_calendar_widget.dart';
 import '../widgets/meal_recording_dialog.dart';
 import '../widgets/edit_meal_recording_dialog.dart';
 import '../widgets/recipe_selection_card.dart';
+import '../widgets/add_side_dish_dialog.dart';
 import '../utils/id_generator.dart';
 
 class WeeklyPlanScreen extends StatefulWidget {
@@ -259,11 +261,13 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     DateTime? forDate,
     String? mealType,
   }) async {
-    // Get planned context (current meal plan)
-    final plannedRecipeIds =
-        await _mealPlanAnalysis.getPlannedRecipeIds(_currentMealPlan);
-    final plannedProteins =
-        await _mealPlanAnalysis.getPlannedProteinsForWeek(_currentMealPlan);
+    // Get planned context (current meal plan) - handle null case
+    final plannedRecipeIds = _currentMealPlan != null
+        ? await _mealPlanAnalysis.getPlannedRecipeIds(_currentMealPlan)
+        : <String>[];
+    final plannedProteins = _currentMealPlan != null
+        ? await _mealPlanAnalysis.getPlannedProteinsForWeek(_currentMealPlan)
+        : <ProteinType>[];
 
     // Get recently cooked context (meal history)
     final recentRecipeIds =
@@ -271,13 +275,14 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     final recentProteins =
         await _mealPlanAnalysis.getRecentlyCookedProteins(dayWindow: 5);
 
-    // Calculate penalty strategy
-    final penaltyStrategy =
-        await _mealPlanAnalysis.calculateProteinPenaltyStrategy(
-      _currentMealPlan,
-      forDate ?? DateTime.now(),
-      mealType ?? MealPlanItem.lunch,
-    );
+    // Calculate penalty strategy - handle null meal plan
+    final penaltyStrategy = _currentMealPlan != null
+        ? await _mealPlanAnalysis.calculateProteinPenaltyStrategy(
+            _currentMealPlan!,
+            forDate ?? DateTime.now(),
+            mealType ?? MealPlanItem.lunch,
+          )
+        : null;
 
     return {
       'forDate': forDate,
@@ -1720,43 +1725,28 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
     );
   }
 
-  void _showAddSideDishDialog() {
-    showDialog(
+  Future<void> _showAddSideDishDialog() async {
+    // Create list of recipes to exclude (primary + already added)
+    final excludeRecipes = [
+      _selectedRecipe!,
+      ..._additionalRecipes,
+    ];
+
+    final selectedRecipe = await showDialog<Recipe>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add Side Dish'),
-        content: SizedBox(
-          width: double.maxFinite,
-          height: 300,
-          child: ListView.builder(
-            itemCount: widget.recipes.length,
-            itemBuilder: (context, index) {
-              final recipe = widget.recipes[index];
-              // Don't show recipes already selected
-              if (recipe.id == _selectedRecipe!.id ||
-                  _additionalRecipes.any((r) => r.id == recipe.id)) {
-                return const SizedBox.shrink();
-              }
-              return ListTile(
-                title: Text(recipe.name),
-                onTap: () {
-                  setState(() {
-                    _additionalRecipes.add(recipe);
-                  });
-                  Navigator.pop(context);
-                },
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-        ],
+      builder: (context) => AddSideDishDialog(
+        availableRecipes: widget.recipes,
+        excludeRecipes: excludeRecipes,
+        searchHint: 'Search side dishes...',
+        enableSearch: true,
       ),
     );
+
+    if (selectedRecipe != null && mounted) {
+      setState(() {
+        _additionalRecipes.add(selectedRecipe);
+      });
+    }
   }
 
   void _handleRecipeSelection(Recipe recipe) {

@@ -139,6 +139,7 @@ class MealPlanAnalysisService {
 
     return await _getProteinTypesForRecipes(recentRecipeIds);
   }
+
   /// Get recently cooked proteins organized by date
   Future<Map<DateTime, List<ProteinType>>> getRecentlyCookedProteinsByDate({
     int dayWindow = 7,
@@ -201,9 +202,10 @@ class MealPlanAnalysisService {
   ) async {
     try {
       // Get planned proteins with dates
-      final plannedProteinsByDate = await getPlannedProteinsByDate(currentPlan);      // Get recently cooked proteins with dates
-      final recentProteinsByDate =
-          await getRecentlyCookedProteinsByDate(dayWindow: 7, referenceDate: targetDate);
+      final plannedProteinsByDate = await getPlannedProteinsByDate(
+          currentPlan); // Get recently cooked proteins with dates
+      final recentProteinsByDate = await getRecentlyCookedProteinsByDate(
+          dayWindow: 7, referenceDate: targetDate);
 
       final penalties = <ProteinType, double>{};
 
