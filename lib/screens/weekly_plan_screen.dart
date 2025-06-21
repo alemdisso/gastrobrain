@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/protein_type.dart';
 import '../models/meal.dart';
 import '../models/meal_recipe.dart';
 import '../models/meal_plan.dart';
