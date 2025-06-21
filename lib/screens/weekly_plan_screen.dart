@@ -16,6 +16,7 @@ import '../widgets/weekly_calendar_widget.dart';
 import '../widgets/meal_recording_dialog.dart';
 import '../widgets/edit_meal_recording_dialog.dart';
 import '../widgets/recipe_selection_card.dart';
+import '../widgets/add_side_dish_dialog.dart';
 import '../utils/id_generator.dart';
 
 class WeeklyPlanScreen extends StatefulWidget {
@@ -1720,43 +1721,28 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
     );
   }
 
-  void _showAddSideDishDialog() {
-    showDialog(
+  Future<void> _showAddSideDishDialog() async {
+    // Create list of recipes to exclude (primary + already added)
+    final excludeRecipes = [
+      _selectedRecipe!,
+      ..._additionalRecipes,
+    ];
+
+    final selectedRecipe = await showDialog<Recipe>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add Side Dish'),
-        content: SizedBox(
-          width: double.maxFinite,
-          height: 300,
-          child: ListView.builder(
-            itemCount: widget.recipes.length,
-            itemBuilder: (context, index) {
-              final recipe = widget.recipes[index];
-              // Don't show recipes already selected
-              if (recipe.id == _selectedRecipe!.id ||
-                  _additionalRecipes.any((r) => r.id == recipe.id)) {
-                return const SizedBox.shrink();
-              }
-              return ListTile(
-                title: Text(recipe.name),
-                onTap: () {
-                  setState(() {
-                    _additionalRecipes.add(recipe);
-                  });
-                  Navigator.pop(context);
-                },
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-        ],
+      builder: (context) => AddSideDishDialog(
+        availableRecipes: widget.recipes,
+        excludeRecipes: excludeRecipes,
+        searchHint: 'Search side dishes...',
+        enableSearch: true,
       ),
     );
+
+    if (selectedRecipe != null && mounted) {
+      setState(() {
+        _additionalRecipes.add(selectedRecipe);
+      });
+    }
   }
 
   void _handleRecipeSelection(Recipe recipe) {
