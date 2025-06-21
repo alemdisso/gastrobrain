@@ -209,19 +209,24 @@ class _RecipeCardState extends State<RecipeCard> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Times cooked: ${widget.mealCount}',
-                            style: const TextStyle(fontSize: 13),
-                          ),
-                          Text(
-                            'Last cooked: ${_formatDateTime(widget.lastCooked)}',
-                            style: const TextStyle(fontSize: 13),
-                          ),
-                        ],
+                      Expanded(
+                        flex: 1,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Times cooked: ${widget.mealCount}',
+                              style: const TextStyle(fontSize: 13),
+                            ),
+                            Text(
+                              'Last cooked: ${_formatDateTime(widget.lastCooked)}',
+                              style: const TextStyle(fontSize: 13),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Wrap(
                         spacing: 8,
                         children: [
