@@ -1,0 +1,97 @@
+{
+  "@@locale": "pt",
+  "appTitle": "Gastrobrain",
+  "@appTitle": {
+    "description": "O título da aplicação"
+  },
+  "recipes": "Receitas",
+  "@recipes": {
+    "description": "Rótulo da aba para seção de receitas"
+  },
+  "mealPlan": "Planejamento",
+  "@mealPlan": {
+    "description": "Rótulo da aba para seção de planejamento de refeições"
+  },
+  "ingredients": "Ingredientes",
+  "@ingredients": {
+    "description": "Rótulo da aba para seção de ingredientes"
+  },
+  "deleteRecipe": "Excluir Receita",
+  "@deleteRecipe": {
+    "description": "Título do diálogo de confirmação para excluir receita"
+  },
+  "cancel": "Cancelar",
+  "@cancel": {
+    "description": "Texto do botão cancelar"
+  },
+  "delete": "Excluir",
+  "@delete": {
+    "description": "Texto do botão excluir"
+  },
+  "sortOptions": "Opções de Ordenação",
+  "@sortOptions": {
+    "description": "Título do menu de opções de ordenação"
+  },
+  "name": "Nome",
+  "@name": {
+    "description": "Opção de ordenar por nome"
+  },
+  "rating": "Avaliação",
+  "@rating": {
+    "description": "Opção de ordenar por avaliação"
+  },
+  "difficulty": "Dificuldade",
+  "@difficulty": {
+    "description": "Opção de ordenar por dificuldade"
+  },
+  "filterRecipes": "Filtrar Receitas",
+  "@filterRecipes": {
+    "description": "Título do diálogo de filtros de receitas"
+  },
+  "deleteConfirmation": "Tem certeza que deseja excluir \"{recipeName}\"?",
+  "@deleteConfirmation": {
+    "description": "Mensagem de confirmação para exclusão de receita",
+    "placeholders": {
+      "recipeName": {
+        "type": "String",
+        "description": "Nome da receita a ser excluída"
+      }
+    }
+  },
+  "sortRecipes": "Ordenar receitas",
+  "@sortRecipes": {
+    "description": "Dica do botão de ordenação"
+  },
+  "filterRecipesTooltip": "Filtrar receitas",
+  "@filterRecipesTooltip": {
+    "description": "Dica do botão de filtros"
+  },
+  "minimumRating": "Avaliação Mínima",
+  "@minimumRating": {
+    "description": "Rótulo para filtro de avaliação mínima"
+  },
+  "cookingFrequency": "Frequência de Preparo",
+  "@cookingFrequency": {
+    "description": "Rótulo para filtro de frequência de preparo"
+  },
+  "category": "Categoria",
+  "@category": {
+    "description": "Rótulo para filtro de categoria"
+  },
+  "any": "Qualquer",
+  "@any": {
+    "description": "Opção para qualquer/sem filtro"
+  },
+  "clear": "Limpar",
+  "@clear": {
+    "description": "Botão para limpar filtros"
+  },
+  "apply": "Aplicar",
+  "@apply": {
+    "description": "Botão para aplicar filtros"
+  },
+  "addRecipe": "Adicionar Receita",
+  "@addRecipe": {
+    "description": "Dica do botão adicionar receita"
+  }
+}

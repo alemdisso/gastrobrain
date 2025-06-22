@@ -1,0 +1,97 @@
+{
+  "@@locale": "en",
+  "appTitle": "Gastrobrain",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "recipes": "Recipes",
+  "@recipes": {
+    "description": "Tab label for recipes section"
+  },
+  "mealPlan": "Meal Plan",
+  "@mealPlan": {
+    "description": "Tab label for meal planning section"
+  },
+  "ingredients": "Ingredients",
+  "@ingredients": {
+    "description": "Tab label for ingredients section"
+  },
+  "deleteRecipe": "Delete Recipe",
+  "@deleteRecipe": {
+    "description": "Title for delete recipe confirmation dialog"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+  "delete": "Delete",
+  "@delete": {
+    "description": "Delete button text"
+  },
+  "sortOptions": "Sort Options",
+  "@sortOptions": {
+    "description": "Title for sorting options menu"
+  },
+  "name": "Name",
+  "@name": {
+    "description": "Sort by name option"
+  },
+  "rating": "Rating",
+  "@rating": {
+    "description": "Sort by rating option"
+  },
+  "difficulty": "Difficulty",
+  "@difficulty": {
+    "description": "Sort by difficulty option"
+  },
+  "filterRecipes": "Filter Recipes",
+  "@filterRecipes": {
+    "description": "Title for recipe filter dialog"
+  },
+  "deleteConfirmation": "Are you sure you want to delete \"{recipeName}\"?",
+  "@deleteConfirmation": {
+    "description": "Confirmation message for recipe deletion",
+    "placeholders": {
+      "recipeName": {
+        "type": "String",
+        "description": "Name of the recipe to be deleted"
+      }
+    }
+  },
+  "sortRecipes": "Sort recipes",
+  "@sortRecipes": {
+    "description": "Tooltip for sort button"
+  },
+  "filterRecipesTooltip": "Filter recipes",
+  "@filterRecipesTooltip": {
+    "description": "Tooltip for filter button"
+  },
+  "minimumRating": "Minimum Rating",
+  "@minimumRating": {
+    "description": "Label for minimum rating filter"
+  },
+  "cookingFrequency": "Cooking Frequency",
+  "@cookingFrequency": {
+    "description": "Label for cooking frequency filter"
+  },
+  "category": "Category",
+  "@category": {
+    "description": "Label for category filter"
+  },
+  "any": "Any",
+  "@any": {
+    "description": "Option for any/no filter"
+  },
+  "clear": "Clear",
+  "@clear": {
+    "description": "Button to clear filters"
+  },
+  "apply": "Apply",
+  "@apply": {
+    "description": "Button to apply filters"
+  },
+  "addRecipe": "Add Recipe",
+  "@addRecipe": {
+    "description": "Tooltip for add recipe button"
+  }
+}
