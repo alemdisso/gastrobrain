@@ -697,6 +697,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save Meal'**
   String get saveMeal;
+
+  /// Error message for invalid recommendation count
+  ///
+  /// In en, this message translates to:
+  /// **'Recommendation count must be positive'**
+  String get recommendationCountMustBePositive;
+
+  /// Error message when no recommendation factors are available
+  ///
+  /// In en, this message translates to:
+  /// **'No recommendation factors registered'**
+  String get noRecommendationFactorsRegistered;
+
+  /// Error message for unknown weight profile
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown weight profile: {profileName}'**
+  String unknownWeightProfile(String profileName);
+
+  /// Error message prefix for recommendation generation errors
+  ///
+  /// In en, this message translates to:
+  /// **'Error generating recommendations'**
+  String get errorGeneratingRecommendations;
+
+  /// Error message for candidate recipe retrieval
+  ///
+  /// In en, this message translates to:
+  /// **'Error getting candidate recipes'**
+  String get errorGettingCandidateRecipes;
+
+  /// Error message for protein type retrieval
+  ///
+  /// In en, this message translates to:
+  /// **'Error getting recipe protein types'**
+  String get errorGettingRecipeProteinTypes;
+
+  /// Error message for last cooked date retrieval
+  ///
+  /// In en, this message translates to:
+  /// **'Error getting last cooked dates'**
+  String get errorGettingLastCookedDates;
+
+  /// Error message for meal count retrieval
+  ///
+  /// In en, this message translates to:
+  /// **'Error getting meal counts'**
+  String get errorGettingMealCounts;
+
+  /// Error message for recent meal retrieval
+  ///
+  /// In en, this message translates to:
+  /// **'Error getting recent meals'**
+  String get errorGettingRecentMeals;
+
+  /// Error message when recommendation factor is not found
+  ///
+  /// In en, this message translates to:
+  /// **'Factor not found: {factorId}'**
+  String factorNotFound(String factorId);
+
+  /// Name for balanced weight profile
+  ///
+  /// In en, this message translates to:
+  /// **'Balanced'**
+  String get weightProfileBalanced;
+
+  /// Name for frequency-focused weight profile
+  ///
+  /// In en, this message translates to:
+  /// **'Frequency-focused'**
+  String get weightProfileFrequencyFocused;
+
+  /// Name for variety-focused weight profile
+  ///
+  /// In en, this message translates to:
+  /// **'Variety-focused'**
+  String get weightProfileVarietyFocused;
+
+  /// Name for weekday weight profile
+  ///
+  /// In en, this message translates to:
+  /// **'Weekday'**
+  String get weightProfileWeekday;
+
+  /// Name for weekend weight profile
+  ///
+  /// In en, this message translates to:
+  /// **'Weekend'**
+  String get weightProfileWeekend;
+
+  /// Error message for recipe statistics retrieval
+  ///
+  /// In en, this message translates to:
+  /// **'Error getting recipes with statistics'**
+  String get errorGettingRecipesWithStats;
+
+  /// Error message for recently cooked recipe ID retrieval
+  ///
+  /// In en, this message translates to:
+  /// **'Error getting recently cooked recipe IDs'**
+  String get errorGettingRecentlyCookedRecipeIds;
+
+  /// Error message for recently cooked proteins retrieval
+  ///
+  /// In en, this message translates to:
+  /// **'Error getting recently cooked proteins by date'**
+  String get errorGettingRecentlyCookedProteinsByDate;
+
+  /// Error message for protein penalty calculation
+  ///
+  /// In en, this message translates to:
+  /// **'Error calculating protein penalty strategy'**
+  String get errorCalculatingProteinPenaltyStrategy;
+
+  /// Error message for recipe protein type retrieval
+  ///
+  /// In en, this message translates to:
+  /// **'Error getting protein types for recipes'**
+  String get errorGettingProteinTypesForRecipes;
 }
 
 class _AppLocalizationsDelegate

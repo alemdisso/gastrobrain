@@ -433,5 +433,97 @@
   "saveMeal": "Salvar Refeição",
   "@saveMeal": {
     "description": "Texto do botão para salvar refeição"
+  },
+  "recommendationCountMustBePositive": "O número de recomendações deve ser positivo",
+  "@recommendationCountMustBePositive": {
+    "description": "Mensagem de erro para número de recomendações inválido"
+  },
+  "noRecommendationFactorsRegistered": "Nenhum fator de recomendação registrado",
+  "@noRecommendationFactorsRegistered": {
+    "description": "Mensagem de erro quando nenhum fator de recomendação está disponível"
+  },
+  "unknownWeightProfile": "Perfil de peso desconhecido: {profileName}",
+  "@unknownWeightProfile": {
+    "description": "Mensagem de erro para perfil de peso desconhecido",
+    "placeholders": {
+      "profileName": {
+        "type": "String",
+        "description": "Nome do perfil desconhecido"
+      }
+    }
+  },
+  "errorGeneratingRecommendations": "Erro ao gerar recomendações",
+  "@errorGeneratingRecommendations": {
+    "description": "Prefixo da mensagem de erro para erros de geração de recomendações"
+  },
+  "errorGettingCandidateRecipes": "Erro ao obter receitas candidatas",
+  "@errorGettingCandidateRecipes": {
+    "description": "Mensagem de erro para recuperação de receitas candidatas"
+  },
+  "errorGettingRecipeProteinTypes": "Erro ao obter tipos de proteína das receitas",
+  "@errorGettingRecipeProteinTypes": {
+    "description": "Mensagem de erro para recuperação de tipos de proteína"
+  },
+  "errorGettingLastCookedDates": "Erro ao obter datas da última preparação",
+  "@errorGettingLastCookedDates": {
+    "description": "Mensagem de erro para recuperação de datas da última preparação"
+  },
+  "errorGettingMealCounts": "Erro ao obter contagem de refeições",
+  "@errorGettingMealCounts": {
+    "description": "Mensagem de erro para recuperação de contagem de refeições"
+  },
+  "errorGettingRecentMeals": "Erro ao obter refeições recentes",
+  "@errorGettingRecentMeals": {
+    "description": "Mensagem de erro para recuperação de refeições recentes"
+  },
+  "factorNotFound": "Fator não encontrado: {factorId}",
+  "@factorNotFound": {
+    "description": "Mensagem de erro quando fator de recomendação não é encontrado",
+    "placeholders": {
+      "factorId": {
+        "type": "String",
+        "description": "ID do fator ausente"
+      }
+    }
+  },
+  "weightProfileBalanced": "Equilibrado",
+  "@weightProfileBalanced": {
+    "description": "Nome para perfil de peso equilibrado"
+  },
+  "weightProfileFrequencyFocused": "Focado em Frequência",
+  "@weightProfileFrequencyFocused": {
+    "description": "Nome para perfil de peso focado em frequência"
+  },
+  "weightProfileVarietyFocused": "Focado em Variedade",
+  "@weightProfileVarietyFocused": {
+    "description": "Nome para perfil de peso focado em variedade"
+  },
+  "weightProfileWeekday": "Dia de Semana",
+  "@weightProfileWeekday": {
+    "description": "Nome para perfil de peso de dia de semana"
+  },
+  "weightProfileWeekend": "Final de Semana",
+  "@weightProfileWeekend": {
+    "description": "Nome para perfil de peso de final de semana"
+  },
+  "errorGettingRecipesWithStats": "Erro ao obter receitas com estatísticas",
+  "@errorGettingRecipesWithStats": {
+    "description": "Mensagem de erro para recuperação de estatísticas de receitas"
+  },
+  "errorGettingRecentlyCookedRecipeIds": "Erro ao obter IDs de receitas cozinhadas recentemente",
+  "@errorGettingRecentlyCookedRecipeIds": {
+    "description": "Mensagem de erro para recuperação de IDs de receitas cozinhadas recentemente"
+  },
+  "errorGettingRecentlyCookedProteinsByDate": "Erro ao obter proteínas cozinhadas recentemente por data",
+  "@errorGettingRecentlyCookedProteinsByDate": {
+    "description": "Mensagem de erro para recuperação de proteínas cozinhadas recentemente"
+  },
+  "errorCalculatingProteinPenaltyStrategy": "Erro ao calcular estratégia de penalidade de proteína",
+  "@errorCalculatingProteinPenaltyStrategy": {
+    "description": "Mensagem de erro para cálculo de penalidade de proteína"
+  },
+  "errorGettingProteinTypesForRecipes": "Erro ao obter tipos de proteína para receitas",
+  "@errorGettingProteinTypesForRecipes": {
+    "description": "Mensagem de erro para recuperação de tipos de proteína de receitas"
   }
 }

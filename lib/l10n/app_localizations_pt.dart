@@ -327,4 +327,78 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get saveMeal => 'Salvar Refeição';
+
+  @override
+  String get recommendationCountMustBePositive =>
+      'O número de recomendações deve ser positivo';
+
+  @override
+  String get noRecommendationFactorsRegistered =>
+      'Nenhum fator de recomendação registrado';
+
+  @override
+  String unknownWeightProfile(String profileName) {
+    return 'Perfil de peso desconhecido: $profileName';
+  }
+
+  @override
+  String get errorGeneratingRecommendations => 'Erro ao gerar recomendações';
+
+  @override
+  String get errorGettingCandidateRecipes =>
+      'Erro ao obter receitas candidatas';
+
+  @override
+  String get errorGettingRecipeProteinTypes =>
+      'Erro ao obter tipos de proteína das receitas';
+
+  @override
+  String get errorGettingLastCookedDates =>
+      'Erro ao obter datas da última preparação';
+
+  @override
+  String get errorGettingMealCounts => 'Erro ao obter contagem de refeições';
+
+  @override
+  String get errorGettingRecentMeals => 'Erro ao obter refeições recentes';
+
+  @override
+  String factorNotFound(String factorId) {
+    return 'Fator não encontrado: $factorId';
+  }
+
+  @override
+  String get weightProfileBalanced => 'Equilibrado';
+
+  @override
+  String get weightProfileFrequencyFocused => 'Focado em Frequência';
+
+  @override
+  String get weightProfileVarietyFocused => 'Focado em Variedade';
+
+  @override
+  String get weightProfileWeekday => 'Dia de Semana';
+
+  @override
+  String get weightProfileWeekend => 'Final de Semana';
+
+  @override
+  String get errorGettingRecipesWithStats =>
+      'Erro ao obter receitas com estatísticas';
+
+  @override
+  String get errorGettingRecentlyCookedRecipeIds =>
+      'Erro ao obter IDs de receitas cozinhadas recentemente';
+
+  @override
+  String get errorGettingRecentlyCookedProteinsByDate =>
+      'Erro ao obter proteínas cozinhadas recentemente por data';
+
+  @override
+  String get errorCalculatingProteinPenaltyStrategy =>
+      'Erro ao calcular estratégia de penalidade de proteína';
+
+  @override
+  String get errorGettingProteinTypesForRecipes =>
+      'Erro ao obter tipos de proteína para receitas';
 }

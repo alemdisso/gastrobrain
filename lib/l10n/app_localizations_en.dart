@@ -322,4 +322,77 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get saveMeal => 'Save Meal';
+
+  @override
+  String get recommendationCountMustBePositive =>
+      'Recommendation count must be positive';
+
+  @override
+  String get noRecommendationFactorsRegistered =>
+      'No recommendation factors registered';
+
+  @override
+  String unknownWeightProfile(String profileName) {
+    return 'Unknown weight profile: $profileName';
+  }
+
+  @override
+  String get errorGeneratingRecommendations =>
+      'Error generating recommendations';
+
+  @override
+  String get errorGettingCandidateRecipes => 'Error getting candidate recipes';
+
+  @override
+  String get errorGettingRecipeProteinTypes =>
+      'Error getting recipe protein types';
+
+  @override
+  String get errorGettingLastCookedDates => 'Error getting last cooked dates';
+
+  @override
+  String get errorGettingMealCounts => 'Error getting meal counts';
+
+  @override
+  String get errorGettingRecentMeals => 'Error getting recent meals';
+
+  @override
+  String factorNotFound(String factorId) {
+    return 'Factor not found: $factorId';
+  }
+
+  @override
+  String get weightProfileBalanced => 'Balanced';
+
+  @override
+  String get weightProfileFrequencyFocused => 'Frequency-focused';
+
+  @override
+  String get weightProfileVarietyFocused => 'Variety-focused';
+
+  @override
+  String get weightProfileWeekday => 'Weekday';
+
+  @override
+  String get weightProfileWeekend => 'Weekend';
+
+  @override
+  String get errorGettingRecipesWithStats =>
+      'Error getting recipes with statistics';
+
+  @override
+  String get errorGettingRecentlyCookedRecipeIds =>
+      'Error getting recently cooked recipe IDs';
+
+  @override
+  String get errorGettingRecentlyCookedProteinsByDate =>
+      'Error getting recently cooked proteins by date';
+
+  @override
+  String get errorCalculatingProteinPenaltyStrategy =>
+      'Error calculating protein penalty strategy';
+
+  @override
+  String get errorGettingProteinTypesForRecipes =>
+      'Error getting protein types for recipes';
 }

@@ -6,6 +6,7 @@ import '../../models/protein_type.dart';
 //import '../../models/recipe_ingredient.dart';
 //import '../../models/ingredient.dart';
 import '../errors/gastrobrain_exceptions.dart';
+import 'localized_error_messages.dart';
 
 /// Specialized database query methods for the recommendation engine
 class RecommendationDatabaseQueries {
@@ -78,7 +79,7 @@ class RecommendationDatabaseQueries {
       return recipes;
     } catch (e) {
       throw GastrobrainException(
-          'Error getting candidate recipes: ${e.toString()}');
+          '${LocalizedErrorMessages.getMessage('errorGettingCandidateRecipes')}: ${e.toString()}');
     }
   }
 
@@ -185,7 +186,7 @@ class RecommendationDatabaseQueries {
       // Otherwise, use the more efficient bulk query
       return await _dbHelper.getAllMealCounts();
     } catch (e) {
-      throw GastrobrainException('Error getting meal counts: ${e.toString()}');
+      throw GastrobrainException('${LocalizedErrorMessages.getMessage('errorGettingMealCounts')}: ${e.toString()}');
     }
   }
 
@@ -283,7 +284,7 @@ class RecommendationDatabaseQueries {
 
       return result;
     } catch (e) {
-      throw GastrobrainException('Error getting recent meals: ${e.toString()}');
+      throw GastrobrainException('${LocalizedErrorMessages.getMessage('errorGettingRecentMeals')}: ${e.toString()}');
     }
   }
 }

@@ -433,5 +433,97 @@
   "saveMeal": "Save Meal",
   "@saveMeal": {
     "description": "Button text to save meal"
+  },
+  "recommendationCountMustBePositive": "Recommendation count must be positive",
+  "@recommendationCountMustBePositive": {
+    "description": "Error message for invalid recommendation count"
+  },
+  "noRecommendationFactorsRegistered": "No recommendation factors registered",
+  "@noRecommendationFactorsRegistered": {
+    "description": "Error message when no recommendation factors are available"
+  },
+  "unknownWeightProfile": "Unknown weight profile: {profileName}",
+  "@unknownWeightProfile": {
+    "description": "Error message for unknown weight profile",
+    "placeholders": {
+      "profileName": {
+        "type": "String",
+        "description": "Name of the unknown profile"
+      }
+    }
+  },
+  "errorGeneratingRecommendations": "Error generating recommendations",
+  "@errorGeneratingRecommendations": {
+    "description": "Error message prefix for recommendation generation errors"
+  },
+  "errorGettingCandidateRecipes": "Error getting candidate recipes",
+  "@errorGettingCandidateRecipes": {
+    "description": "Error message for candidate recipe retrieval"
+  },
+  "errorGettingRecipeProteinTypes": "Error getting recipe protein types",
+  "@errorGettingRecipeProteinTypes": {
+    "description": "Error message for protein type retrieval"
+  },
+  "errorGettingLastCookedDates": "Error getting last cooked dates",
+  "@errorGettingLastCookedDates": {
+    "description": "Error message for last cooked date retrieval"
+  },
+  "errorGettingMealCounts": "Error getting meal counts",
+  "@errorGettingMealCounts": {
+    "description": "Error message for meal count retrieval"
+  },
+  "errorGettingRecentMeals": "Error getting recent meals",
+  "@errorGettingRecentMeals": {
+    "description": "Error message for recent meal retrieval"
+  },
+  "factorNotFound": "Factor not found: {factorId}",
+  "@factorNotFound": {
+    "description": "Error message when recommendation factor is not found",
+    "placeholders": {
+      "factorId": {
+        "type": "String",
+        "description": "ID of the missing factor"
+      }
+    }
+  },
+  "weightProfileBalanced": "Balanced",
+  "@weightProfileBalanced": {
+    "description": "Name for balanced weight profile"
+  },
+  "weightProfileFrequencyFocused": "Frequency-focused",
+  "@weightProfileFrequencyFocused": {
+    "description": "Name for frequency-focused weight profile"
+  },
+  "weightProfileVarietyFocused": "Variety-focused",
+  "@weightProfileVarietyFocused": {
+    "description": "Name for variety-focused weight profile"
+  },
+  "weightProfileWeekday": "Weekday",
+  "@weightProfileWeekday": {
+    "description": "Name for weekday weight profile"
+  },
+  "weightProfileWeekend": "Weekend",
+  "@weightProfileWeekend": {
+    "description": "Name for weekend weight profile"
+  },
+  "errorGettingRecipesWithStats": "Error getting recipes with statistics",
+  "@errorGettingRecipesWithStats": {
+    "description": "Error message for recipe statistics retrieval"
+  },
+  "errorGettingRecentlyCookedRecipeIds": "Error getting recently cooked recipe IDs",
+  "@errorGettingRecentlyCookedRecipeIds": {
+    "description": "Error message for recently cooked recipe ID retrieval"
+  },
+  "errorGettingRecentlyCookedProteinsByDate": "Error getting recently cooked proteins by date",
+  "@errorGettingRecentlyCookedProteinsByDate": {
+    "description": "Error message for recently cooked proteins retrieval"
+  },
+  "errorCalculatingProteinPenaltyStrategy": "Error calculating protein penalty strategy",
+  "@errorCalculatingProteinPenaltyStrategy": {
+    "description": "Error message for protein penalty calculation"
+  },
+  "errorGettingProteinTypesForRecipes": "Error getting protein types for recipes",
+  "@errorGettingProteinTypesForRecipes": {
+    "description": "Error message for recipe protein type retrieval"
   }
 }

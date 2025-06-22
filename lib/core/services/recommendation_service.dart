@@ -8,6 +8,7 @@ import '../../models/protein_type.dart';
 import '../../models/frequency_type.dart';
 import '../../models/recipe_recommendation.dart';
 import '../errors/gastrobrain_exceptions.dart';
+import 'localized_error_messages.dart';
 import 'recommendation_database_queries.dart';
 import 'recommendation_factors/frequency_factor.dart';
 import 'recommendation_factors/protein_rotation_factor.dart';
@@ -155,7 +156,7 @@ class RecommendationService {
   /// Set weight for an already registered factor
   void setFactorWeight(String factorId, int weight) {
     if (!_factors.containsKey(factorId)) {
-      throw NotFoundException('Factor not found: $factorId');
+      throw NotFoundException(LocalizedErrorMessages.factorNotFound(factorId));
     }
     _factorWeights[factorId] = weight;
     _normalizeWeights();
@@ -260,12 +261,12 @@ class RecommendationService {
     try {
       // Validate inputs
       if (count <= 0) {
-        throw ValidationException('Recommendation count must be positive');
+        throw ValidationException(LocalizedErrorMessages.getMessage('recommendationCountMustBePositive'));
       }
 
       if (_factors.isEmpty) {
-        throw const GastrobrainException(
-            'No recommendation factors registered');
+        throw GastrobrainException(
+            LocalizedErrorMessages.getMessage('noRecommendationFactorsRegistered'));
       }
 
       // Build context data needed by factors
@@ -362,12 +363,12 @@ class RecommendationService {
     try {
       // Validate inputs
       if (count <= 0) {
-        throw ValidationException('Recommendation count must be positive');
+        throw ValidationException(LocalizedErrorMessages.getMessage('recommendationCountMustBePositive'));
       }
 
       if (_factors.isEmpty) {
-        throw const GastrobrainException(
-            'No recommendation factors registered');
+        throw GastrobrainException(
+            LocalizedErrorMessages.getMessage('noRecommendationFactorsRegistered'));
       }
 
       // Build context data needed by factors
@@ -657,7 +658,7 @@ class RecommendationService {
         _setWeekendProfile();
         break;
       default:
-        throw ValidationException('Unknown weight profile: $profileName');
+        throw ValidationException(LocalizedErrorMessages.unknownWeightProfile(profileName));
     }
   }
 

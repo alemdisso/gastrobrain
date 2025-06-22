@@ -4,6 +4,7 @@ import '../../database/database_helper.dart';
 import '../../models/meal_plan.dart';
 import '../../models/protein_type.dart';
 import '../errors/gastrobrain_exceptions.dart';
+import 'localized_error_messages.dart';
 
 /// Service for analyzing meal plan data to provide context for recommendations
 ///
@@ -120,7 +121,7 @@ class MealPlanAnalysisService {
       return recipeIds.toList();
     } catch (e) {
       throw GastrobrainException(
-          'Error getting recently cooked recipe IDs: ${e.toString()}');
+          '${LocalizedErrorMessages.getMessage('errorGettingRecentlyCookedRecipeIds')}: ${e.toString()}');
     }
   }
 
@@ -187,7 +188,7 @@ class MealPlanAnalysisService {
       return result;
     } catch (e) {
       throw GastrobrainException(
-          'Error getting recently cooked proteins by date: ${e.toString()}');
+          '${LocalizedErrorMessages.getMessage('errorGettingRecentlyCookedProteinsByDate')}: ${e.toString()}');
     }
   }
 
