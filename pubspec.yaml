@@ -35,24 +35,28 @@ environment:
 # dependencies can be manually updated by changing the version numbers below to
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
+#
+# NOTE: Version ranges are intentionally flexible to support cross-platform
+# development between Windows and WSL environments. This ensures both 
+# environments can resolve to compatible versions without conflicts.
 dependencies:
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  intl: ">=0.19.0 <0.21.0"
-  sqflite: ^2.3.2
-  path: ^1.8.3
+  intl: ">=0.19.0 <0.21.0"  # Flexible range to work with both environments
+  sqflite: ">=2.3.0 <3.0.0"  # Flexible range
+  path: ">=1.8.0 <2.0.0"     # Flexible range
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
-  uuid: ^4.2.1
+  cupertino_icons: ">=1.0.0 <2.0.0"  # Flexible range
+  uuid: ">=4.0.0 <5.0.0"     # Flexible range
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  mockito: ^5.4.0
-  build_runner: ^2.3.3
+  mockito: ">=5.4.0 <6.0.0"     # Flexible range
+  build_runner: ">=2.3.0 <3.0.0"  # Flexible range
   integration_test:
     sdk: flutter
   
@@ -62,10 +66,10 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   # was flutter_lints: ^5.0.0, downgraded from ^6.0.0 due to Dart SDK compatibility
-  flutter_lints: ^5.0.0
-  sqflite_common_ffi: ^2.3.0  # Added for database testing
-  mocktail: ^1.0.4
-  csv: ^6.0.0
+  flutter_lints: ">=5.0.0 <7.0.0"  # Flexible range
+  sqflite_common_ffi: ">=2.3.0 <3.0.0"  # Added for database testing
+  mocktail: ">=1.0.0 <2.0.0"     # Flexible range
+  csv: ">=6.0.0 <7.0.0"          # Flexible range
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
