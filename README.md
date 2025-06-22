@@ -9,6 +9,7 @@ Gastrobrain is a Flutter-based mobile application designed to assist home cooks 
 ## Features
 
 ### Current Features
+
 - Recipe management with difficulty and rating tracking
 - Ingredient system with comprehensive categorization
 - Meal history tracking and success rate monitoring
@@ -17,6 +18,7 @@ Gastrobrain is a Flutter-based mobile application designed to assist home cooks 
 - Cooking session logging
 
 ### Planned Features
+
 - Weekly meal planning tools
 - Advanced timeline planning for complex meals
 - Shopping venue-specific list generation
@@ -26,30 +28,36 @@ Gastrobrain is a Flutter-based mobile application designed to assist home cooks 
 ## Getting Started
 
 ### Prerequisites
+
 - Flutter SDK
 - SQLite support
 - Android Studio or VS Code with Flutter plugins
 
 ### Installation
+
 1. Clone the repository
-```bash
-git clone https://github.com/yourusername/gastrobrain.git
-```
+
+   ```bash
+   git clone https://github.com/yourusername/gastrobrain.git
+   ```
 
 2. Install dependencies
-```bash
-cd gastrobrain
-flutter pub get
-```
+
+   ```bash
+   cd gastrobrain
+   flutter pub get
+   ```
 
 3. Run the app
-```bash
-flutter run
-```
+
+   ```bash
+   flutter run
+   ```
 
 ## Project Structure
 
-```
+``` text
+
 lib/
 ├── models/         # Data models
 ├── screens/        # UI screens
@@ -62,6 +70,7 @@ lib/
 ## Database Schema
 
 The app uses SQLite for local storage with the following main entities:
+
 - Recipes
 - Ingredients
 - Meals
@@ -74,6 +83,7 @@ This project is currently in early development and not open for contributions. S
 ## Development Status
 
 Current Version: v0.0.1
+
 - Basic recipe management
 - Ingredient system implementation
 - Meal history tracking
