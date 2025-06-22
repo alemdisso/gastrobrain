@@ -6,6 +6,7 @@ import '../database/database_helper.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../widgets/edit_meal_recording_dialog.dart';
 import 'cook_meal_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class MealHistoryScreen extends StatefulWidget {
   final Recipe recipe;
@@ -66,12 +67,12 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
       });
     } on GastrobrainException catch (e) {
       setState(() {
-        _errorMessage = 'Error loading meals: ${e.message}';
+        _errorMessage = '${AppLocalizations.of(context)!.errorLoadingMeals} ${e.message}';
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _errorMessage = 'An unexpected error occurred while loading meals';
+        _errorMessage = AppLocalizations.of(context)!.unexpectedErrorLoadingMeals;
         _isLoading = false;
       });
     }
@@ -89,7 +90,7 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
           const Icon(Icons.error_outline, size: 64, color: Colors.red),
           const SizedBox(height: 16),
           Text(
-            _errorMessage ?? 'An error occurred',
+            _errorMessage ?? AppLocalizations.of(context)!.anErrorOccurred,
             style: const TextStyle(fontSize: 18, color: Colors.red),
             textAlign: TextAlign.center,
           ),
@@ -97,7 +98,7 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
           ElevatedButton.icon(
             onPressed: _loadMeals,
             icon: const Icon(Icons.refresh),
-            label: const Text('Try Again'),
+            label: Text(AppLocalizations.of(context)!.tryAgain),
           ),
         ],
       ),
@@ -105,15 +106,15 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
   }
 
   Widget _buildEmptyView() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.history, size: 64, color: Colors.grey),
-          SizedBox(height: 16),
+          const Icon(Icons.history, size: 64, color: Colors.grey),
+          const SizedBox(height: 16),
           Text(
-            'No meals recorded yet',
-            style: TextStyle(fontSize: 18, color: Colors.grey),
+            AppLocalizations.of(context)!.noMealsRecorded,
+            style: const TextStyle(fontSize: 18, color: Colors.grey),
           ),
         ],
       ),
@@ -178,14 +179,14 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Meal updated successfully')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.mealUpdatedSuccessfully)),
           );
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error editing meal: $e')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.errorEditingMeal} $e')),
         );
       }
     }
@@ -249,12 +250,12 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('History: ${widget.recipe.name}'),
+        title: Text(AppLocalizations.of(context)!.historyTitle(widget.recipe.name)),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _isLoading ? null : _loadMeals,
-            tooltip: 'Refresh',
+            tooltip: AppLocalizations.of(context)!.refresh,
           ),
         ],
       ),
@@ -310,7 +311,7 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                               BorderRadius.circular(10),
                                         ),
                                         child: Text(
-                                          '${meal.mealRecipes!.length} recipes',
+                                          AppLocalizations.of(context)!.recipesCount(meal.mealRecipes!.length),
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Theme.of(context)
@@ -329,7 +330,7 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                     IconButton(
                                       icon: const Icon(Icons.edit, size: 20),
                                       onPressed: () => _handleEditMeal(meal),
-                                      tooltip: 'Edit meal',
+                                      tooltip: AppLocalizations.of(context)!.editMeal,
                                       constraints: const BoxConstraints(
                                         minWidth: 36,
                                         minHeight: 36,
@@ -386,7 +387,7 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                                         'From planned meal') ==
                                                     true)
                                                   Tooltip(
-                                                    message: 'From meal plan',
+                                                    message: AppLocalizations.of(context)!.fromMealPlan,
                                                     child: Icon(
                                                         Icons.event_available,
                                                         size: 16,
@@ -435,7 +436,10 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                       const Icon(Icons.timer, size: 16),
                                       const SizedBox(width: 4),
                                       Text(
-                                        'Actual times - Prep: ${meal.actualPrepTime}min, Cook: ${meal.actualCookTime}min',
+                                        AppLocalizations.of(context)!.actualTimes(
+                                          meal.actualPrepTime.toString(),
+                                          meal.actualCookTime.toString(),
+                                        ),
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodySmall,
@@ -469,7 +473,7 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
             _loadMeals();
           }
         },
-        tooltip: 'Cook Now',
+        tooltip: AppLocalizations.of(context)!.cookNow,
         child: const Icon(Icons.add),
       ),
     );

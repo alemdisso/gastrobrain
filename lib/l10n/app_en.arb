@@ -227,5 +227,71 @@
   "edit": "Edit",
   "@edit": {
     "description": "Edit menu item text"
+  },
+  "historyTitle": "History: {recipeName}",
+  "@historyTitle": {
+    "description": "Title for meal history screen",
+    "placeholders": {
+      "recipeName": {
+        "type": "String",
+        "description": "Name of the recipe"
+      }
+    }
+  },
+  "errorLoadingMeals": "Error loading meals:",
+  "@errorLoadingMeals": {
+    "description": "Error message prefix for meal loading errors"
+  },
+  "unexpectedErrorLoadingMeals": "An unexpected error occurred while loading meals",
+  "@unexpectedErrorLoadingMeals": {
+    "description": "Generic error message for meal loading"
+  },
+  "noMealsRecorded": "No meals recorded yet",
+  "@noMealsRecorded": {
+    "description": "Empty state message for meal history"
+  },
+  "mealUpdatedSuccessfully": "Meal updated successfully",
+  "@mealUpdatedSuccessfully": {
+    "description": "Success message for meal update"
+  },
+  "errorEditingMeal": "Error editing meal:",
+  "@errorEditingMeal": {
+    "description": "Error message prefix for meal editing errors"
+  },
+  "recipesCount": "{count} recipes",
+  "@recipesCount": {
+    "description": "Recipe count display",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of recipes"
+      }
+    }
+  },
+  "editMeal": "Edit meal",
+  "@editMeal": {
+    "description": "Tooltip for edit meal button"
+  },
+  "cookNow": "Cook Now",
+  "@cookNow": {
+    "description": "Tooltip for cook now button"
+  },
+  "fromMealPlan": "From meal plan",
+  "@fromMealPlan": {
+    "description": "Tooltip for meal plan indicator"
+  },
+  "actualTimes": "Actual times - Prep: {prepTime}min, Cook: {cookTime}min",
+  "@actualTimes": {
+    "description": "Display for actual cooking times",
+    "placeholders": {
+      "prepTime": {
+        "type": "String",
+        "description": "Preparation time in minutes"
+      },
+      "cookTime": {
+        "type": "String",
+        "description": "Cooking time in minutes"
+      }
+    }
   }
 }

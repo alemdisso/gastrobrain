@@ -176,4 +176,44 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get edit => 'Editar';
+
+  @override
+  String historyTitle(String recipeName) {
+    return 'Histórico: $recipeName';
+  }
+
+  @override
+  String get errorLoadingMeals => 'Erro ao carregar refeições:';
+
+  @override
+  String get unexpectedErrorLoadingMeals =>
+      'Ocorreu um erro inesperado ao carregar as refeições';
+
+  @override
+  String get noMealsRecorded => 'Nenhuma refeição registrada ainda';
+
+  @override
+  String get mealUpdatedSuccessfully => 'Refeição atualizada com sucesso';
+
+  @override
+  String get errorEditingMeal => 'Erro ao editar refeição:';
+
+  @override
+  String recipesCount(int count) {
+    return '$count receitas';
+  }
+
+  @override
+  String get editMeal => 'Editar refeição';
+
+  @override
+  String get cookNow => 'Cozinhar Agora';
+
+  @override
+  String get fromMealPlan => 'Do planejamento de refeições';
+
+  @override
+  String actualTimes(String prepTime, String cookTime) {
+    return 'Tempos reais - Preparo: ${prepTime}min, Cozimento: ${cookTime}min';
+  }
 }

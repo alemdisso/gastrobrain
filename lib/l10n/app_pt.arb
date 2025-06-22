@@ -227,5 +227,71 @@
   "edit": "Editar",
   "@edit": {
     "description": "Texto do item de menu editar"
+  },
+  "historyTitle": "Histórico: {recipeName}",
+  "@historyTitle": {
+    "description": "Título da tela de histórico de refeições",
+    "placeholders": {
+      "recipeName": {
+        "type": "String",
+        "description": "Nome da receita"
+      }
+    }
+  },
+  "errorLoadingMeals": "Erro ao carregar refeições:",
+  "@errorLoadingMeals": {
+    "description": "Prefixo da mensagem de erro ao carregar refeições"
+  },
+  "unexpectedErrorLoadingMeals": "Ocorreu um erro inesperado ao carregar as refeições",
+  "@unexpectedErrorLoadingMeals": {
+    "description": "Mensagem de erro genérica para carregamento de refeições"
+  },
+  "noMealsRecorded": "Nenhuma refeição registrada ainda",
+  "@noMealsRecorded": {
+    "description": "Mensagem de estado vazio para histórico de refeições"
+  },
+  "mealUpdatedSuccessfully": "Refeição atualizada com sucesso",
+  "@mealUpdatedSuccessfully": {
+    "description": "Mensagem de sucesso para atualização de refeição"
+  },
+  "errorEditingMeal": "Erro ao editar refeição:",
+  "@errorEditingMeal": {
+    "description": "Prefixo da mensagem de erro ao editar refeição"
+  },
+  "recipesCount": "{count} receitas",
+  "@recipesCount": {
+    "description": "Exibição da contagem de receitas",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Número de receitas"
+      }
+    }
+  },
+  "editMeal": "Editar refeição",
+  "@editMeal": {
+    "description": "Dica do botão editar refeição"
+  },
+  "cookNow": "Cozinhar Agora",
+  "@cookNow": {
+    "description": "Dica do botão cozinhar agora"
+  },
+  "fromMealPlan": "Do planejamento de refeições",
+  "@fromMealPlan": {
+    "description": "Dica do indicador de planejamento de refeições"
+  },
+  "actualTimes": "Tempos reais - Preparo: {prepTime}min, Cozimento: {cookTime}min",
+  "@actualTimes": {
+    "description": "Exibição dos tempos reais de cozimento",
+    "placeholders": {
+      "prepTime": {
+        "type": "String",
+        "description": "Tempo de preparo em minutos"
+      },
+      "cookTime": {
+        "type": "String",
+        "description": "Tempo de cozimento em minutos"
+      }
+    }
   }
 }

@@ -175,4 +175,44 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get edit => 'Edit';
+
+  @override
+  String historyTitle(String recipeName) {
+    return 'History: $recipeName';
+  }
+
+  @override
+  String get errorLoadingMeals => 'Error loading meals:';
+
+  @override
+  String get unexpectedErrorLoadingMeals =>
+      'An unexpected error occurred while loading meals';
+
+  @override
+  String get noMealsRecorded => 'No meals recorded yet';
+
+  @override
+  String get mealUpdatedSuccessfully => 'Meal updated successfully';
+
+  @override
+  String get errorEditingMeal => 'Error editing meal:';
+
+  @override
+  String recipesCount(int count) {
+    return '$count recipes';
+  }
+
+  @override
+  String get editMeal => 'Edit meal';
+
+  @override
+  String get cookNow => 'Cook Now';
+
+  @override
+  String get fromMealPlan => 'From meal plan';
+
+  @override
+  String actualTimes(String prepTime, String cookTime) {
+    return 'Actual times - Prep: ${prepTime}min, Cook: ${cookTime}min';
+  }
 }

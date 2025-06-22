@@ -421,6 +421,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Edit'**
   String get edit;
+
+  /// Title for meal history screen
+  ///
+  /// In en, this message translates to:
+  /// **'History: {recipeName}'**
+  String historyTitle(String recipeName);
+
+  /// Error message prefix for meal loading errors
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading meals:'**
+  String get errorLoadingMeals;
+
+  /// Generic error message for meal loading
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred while loading meals'**
+  String get unexpectedErrorLoadingMeals;
+
+  /// Empty state message for meal history
+  ///
+  /// In en, this message translates to:
+  /// **'No meals recorded yet'**
+  String get noMealsRecorded;
+
+  /// Success message for meal update
+  ///
+  /// In en, this message translates to:
+  /// **'Meal updated successfully'**
+  String get mealUpdatedSuccessfully;
+
+  /// Error message prefix for meal editing errors
+  ///
+  /// In en, this message translates to:
+  /// **'Error editing meal:'**
+  String get errorEditingMeal;
+
+  /// Recipe count display
+  ///
+  /// In en, this message translates to:
+  /// **'{count} recipes'**
+  String recipesCount(int count);
+
+  /// Tooltip for edit meal button
+  ///
+  /// In en, this message translates to:
+  /// **'Edit meal'**
+  String get editMeal;
+
+  /// Tooltip for cook now button
+  ///
+  /// In en, this message translates to:
+  /// **'Cook Now'**
+  String get cookNow;
+
+  /// Tooltip for meal plan indicator
+  ///
+  /// In en, this message translates to:
+  /// **'From meal plan'**
+  String get fromMealPlan;
+
+  /// Display for actual cooking times
+  ///
+  /// In en, this message translates to:
+  /// **'Actual times - Prep: {prepTime}min, Cook: {cookTime}min'**
+  String actualTimes(String prepTime, String cookTime);
 }
 
 class _AppLocalizationsDelegate
