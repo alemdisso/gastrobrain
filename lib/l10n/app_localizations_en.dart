@@ -126,4 +126,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unexpectedError => 'An unexpected error occurred';
+
+  @override
+  String get editRecipe => 'Edit Recipe';
+
+  @override
+  String get saveChanges => 'Save Changes';
+
+  @override
+  String get errorUpdatingRecipe => 'Error updating recipe:';
 }

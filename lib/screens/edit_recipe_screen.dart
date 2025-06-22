@@ -5,6 +5,7 @@ import '../models/recipe_category.dart';
 import '../database/database_helper.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
+import '../l10n/app_localizations.dart';
 
 class EditRecipeScreen extends StatefulWidget {
   final Recipe recipe;
@@ -92,14 +93,14 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
-        suffixText: 'minutes',
+        suffixText: AppLocalizations.of(context)!.minutes,
       ),
       keyboardType: TextInputType.number,
       validator: (value) {
         if (value != null && value.isNotEmpty) {
           final minutes = int.tryParse(value);
           if (minutes == null || minutes < 0) {
-            return 'Please enter a valid time';
+            return AppLocalizations.of(context)!.pleaseEnterValidTime;
           }
         }
         return null;
@@ -166,9 +167,9 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     } on NotFoundException catch (e) {
       _showErrorSnackBar(e.message);
     } on GastrobrainException catch (e) {
-      _showErrorSnackBar('Error updating recipe: ${e.message}');
+      _showErrorSnackBar('${AppLocalizations.of(context)!.errorUpdatingRecipe} ${e.message}');
     } catch (e) {
-      _showErrorSnackBar('An unexpected error occurred');
+      _showErrorSnackBar(AppLocalizations.of(context)!.unexpectedError);
     } finally {
       if (mounted) {
         setState(() {
@@ -191,7 +192,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Recipe'),
+        title: Text(AppLocalizations.of(context)!.editRecipe),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -203,13 +204,13 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
               children: [
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Recipe Name',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!.recipeName,
+                    border: const OutlineInputBorder(),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a recipe name';
+                      return AppLocalizations.of(context)!.pleaseEnterRecipeName;
                     }
                     return null;
                   },
@@ -217,9 +218,9 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                 const SizedBox(height: 16),
                 DropdownButtonFormField<FrequencyType>(
                   value: _selectedFrequency,
-                  decoration: const InputDecoration(
-                    labelText: 'Desired Frequency',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!.desiredFrequency,
+                    border: const OutlineInputBorder(),
                   ),
                   items: FrequencyType.values.map((frequency) {
                     return DropdownMenuItem<FrequencyType>(
@@ -238,9 +239,9 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                 const SizedBox(height: 16),
                 DropdownButtonFormField<RecipeCategory>(
                   value: _selectedCategory,
-                  decoration: const InputDecoration(
-                    labelText: 'Category',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!.category,
+                    border: const OutlineInputBorder(),
                   ),
                   items: RecipeCategory.values.map((category) {
                     return DropdownMenuItem<RecipeCategory>(
@@ -257,23 +258,23 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                _buildDifficultyField('Difficulty Level', _difficulty, (value) {
+                _buildDifficultyField(AppLocalizations.of(context)!.difficultyLevel, _difficulty, (value) {
                   setState(() => _difficulty = value);
                 }),
                 const SizedBox(height: 16),
-                _buildTimeField('Preparation Time', _prepTimeController),
+                _buildTimeField(AppLocalizations.of(context)!.preparationTime, _prepTimeController),
                 const SizedBox(height: 16),
-                _buildTimeField('Cooking Time', _cookTimeController),
+                _buildTimeField(AppLocalizations.of(context)!.cookingTime, _cookTimeController),
                 const SizedBox(height: 16),
-                _buildRatingField('Rating', _rating, (value) {
+                _buildRatingField(AppLocalizations.of(context)!.rating, _rating, (value) {
                   setState(() => _rating = value);
                 }),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _notesController,
-                  decoration: const InputDecoration(
-                    labelText: 'Notes',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!.notes,
+                    border: const OutlineInputBorder(),
                   ),
                   maxLines: 3,
                 ),
@@ -286,7 +287,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       child: _isSaving
                           ? const CircularProgressIndicator()
-                          : const Text('Save Changes'),
+                          : Text(AppLocalizations.of(context)!.saveChanges),
                     ),
                   ),
                 ),

@@ -161,5 +161,17 @@
   "unexpectedError": "An unexpected error occurred",
   "@unexpectedError": {
     "description": "Generic error message"
+  },
+  "editRecipe": "Edit Recipe",
+  "@editRecipe": {
+    "description": "Title for edit recipe screen"
+  },
+  "saveChanges": "Save Changes",
+  "@saveChanges": {
+    "description": "Save changes button text"
+  },
+  "errorUpdatingRecipe": "Error updating recipe:",
+  "@errorUpdatingRecipe": {
+    "description": "Error message prefix for recipe updating errors"
   }
 }

@@ -161,5 +161,17 @@
   "unexpectedError": "Ocorreu um erro inesperado",
   "@unexpectedError": {
     "description": "Mensagem de erro genérica"
+  },
+  "editRecipe": "Editar Receita",
+  "@editRecipe": {
+    "description": "Título da tela de editar receita"
+  },
+  "saveChanges": "Salvar Alterações",
+  "@saveChanges": {
+    "description": "Texto do botão salvar alterações"
+  },
+  "errorUpdatingRecipe": "Erro ao atualizar receita:",
+  "@errorUpdatingRecipe": {
+    "description": "Prefixo da mensagem de erro ao atualizar receita"
   }
 }

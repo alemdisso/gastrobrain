@@ -331,6 +331,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'An unexpected error occurred'**
   String get unexpectedError;
+
+  /// Title for edit recipe screen
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Recipe'**
+  String get editRecipe;
+
+  /// Save changes button text
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get saveChanges;
+
+  /// Error message prefix for recipe updating errors
+  ///
+  /// In en, this message translates to:
+  /// **'Error updating recipe:'**
+  String get errorUpdatingRecipe;
 }
 
 class _AppLocalizationsDelegate

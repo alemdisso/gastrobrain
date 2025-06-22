@@ -126,4 +126,13 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get unexpectedError => 'Ocorreu um erro inesperado';
+
+  @override
+  String get editRecipe => 'Editar Receita';
+
+  @override
+  String get saveChanges => 'Salvar Alterações';
+
+  @override
+  String get errorUpdatingRecipe => 'Erro ao atualizar receita:';
 }
