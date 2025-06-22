@@ -3,6 +3,7 @@ import '../database/database_helper.dart';
 import '../models/recipe.dart';
 import '../models/recipe_category.dart';
 import '../widgets/recipe_card.dart';
+import '../l10n/app_localizations.dart';
 import 'add_recipe_screen.dart';
 import 'edit_recipe_screen.dart';
 import 'cook_meal_screen.dart';
@@ -80,16 +81,16 @@ class _HomePageState extends State<HomePage> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Recipe'),
-        content: Text('Are you sure you want to delete "${recipe.name}"?'),
+        title: Text(AppLocalizations.of(context)!.deleteRecipe),
+        content: Text(AppLocalizations.of(context)!.deleteConfirmation(recipe.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
+            child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],
       ),
@@ -108,15 +109,15 @@ class _HomePageState extends State<HomePage> {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const ListTile(
-              title: Text('Sort Options'),
+            ListTile(
+              title: Text(AppLocalizations.of(context)!.sortOptions),
               dense: true,
             ),
             ListTile(
               leading: Icon(_currentSortBy == 'name'
                   ? Icons.radio_button_checked
                   : Icons.radio_button_unchecked),
-              title: const Text('Name'),
+              title: Text(AppLocalizations.of(context)!.name),
               onTap: () {
                 setState(() {
                   _currentSortBy = 'name';
@@ -130,7 +131,7 @@ class _HomePageState extends State<HomePage> {
               leading: Icon(_currentSortBy == 'rating'
                   ? Icons.radio_button_checked
                   : Icons.radio_button_unchecked),
-              title: const Text('Rating'),
+              title: Text(AppLocalizations.of(context)!.rating),
               onTap: () {
                 setState(() {
                   _currentSortBy = 'rating';
@@ -144,7 +145,7 @@ class _HomePageState extends State<HomePage> {
               leading: Icon(_currentSortBy == 'difficulty'
                   ? Icons.radio_button_checked
                   : Icons.radio_button_unchecked),
-              title: const Text('Difficulty'),
+              title: Text(AppLocalizations.of(context)!.difficulty),
               onTap: () {
                 setState(() {
                   _currentSortBy = 'difficulty';
@@ -171,13 +172,13 @@ class _HomePageState extends State<HomePage> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text('Filter Recipes'),
+              title: Text(AppLocalizations.of(context)!.filterRecipes),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Difficulty'),
+                    Text(AppLocalizations.of(context)!.difficulty),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: List.generate(5, (index) {
@@ -199,7 +200,7 @@ class _HomePageState extends State<HomePage> {
                       }),
                     ),
                     const SizedBox(height: 16),
-                    const Text('Minimum Rating'),
+                    Text(AppLocalizations.of(context)!.minimumRating),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: List.generate(5, (index) {
@@ -223,11 +224,11 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       value: selectedFrequency,
-                      decoration: const InputDecoration(
-                        labelText: 'Cooking Frequency',
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.cookingFrequency,
                       ),
                       items: [
-                        const DropdownMenuItem(value: null, child: Text('Any')),
+                        DropdownMenuItem(value: null, child: Text(AppLocalizations.of(context)!.any)),
                         ...[
                           'daily',
                           'weekly',
@@ -246,11 +247,11 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       value: selectedCategory,
-                      decoration: const InputDecoration(
-                        labelText: 'Category',
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.category,
                       ),
                       items: [
-                        const DropdownMenuItem(value: null, child: Text('Any')),
+                        DropdownMenuItem(value: null, child: Text(AppLocalizations.of(context)!.any)),
                         ...RecipeCategory.values.map(
                           (category) => DropdownMenuItem(
                             value: category.value,
@@ -277,11 +278,11 @@ class _HomePageState extends State<HomePage> {
                       selectedCategory = null;
                     });
                   },
-                  child: const Text('Clear'),
+                  child: Text(AppLocalizations.of(context)!.clear),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
+                  child: Text(AppLocalizations.of(context)!.cancel),
                 ),
                 TextButton(
                   onPressed: () {
@@ -297,7 +298,7 @@ class _HomePageState extends State<HomePage> {
                     _loadRecipes();
                     Navigator.pop(context);
                   },
-                  child: const Text('Apply'),
+                  child: Text(AppLocalizations.of(context)!.apply),
                 ),
               ],
             );
@@ -345,18 +346,18 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gastrobrain'),
+        title: Text(AppLocalizations.of(context)!.appTitle),
         actions: _selectedIndex == 0
             ? [
                 IconButton(
                   icon: const Icon(Icons.sort),
                   onPressed: _showSortingMenu,
-                  tooltip: 'Sort recipes',
+                  tooltip: AppLocalizations.of(context)!.sortRecipes,
                 ),
                 IconButton(
                   icon: const Icon(Icons.filter_list),
                   onPressed: _showFilterDialog,
-                  tooltip: 'Filter recipes',
+                  tooltip: AppLocalizations.of(context)!.filterRecipesTooltip,
                 ),
               ]
             : null,
@@ -369,25 +370,25 @@ class _HomePageState extends State<HomePage> {
             _selectedIndex = index;
           });
         },
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
-            label: 'Recipes',
+            icon: const Icon(Icons.menu_book),
+            label: AppLocalizations.of(context)!.recipes,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'Meal Plan',
+            icon: const Icon(Icons.calendar_today),
+            label: AppLocalizations.of(context)!.mealPlan,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant_menu),
-            label: 'Ingredients',
+            icon: const Icon(Icons.restaurant_menu),
+            label: AppLocalizations.of(context)!.ingredients,
           ),
         ],
       ),
       floatingActionButton: _selectedIndex == 0
           ? FloatingActionButton(
               onPressed: _addRecipe,
-              tooltip: 'Add Recipe',
+              tooltip: AppLocalizations.of(context)!.addRecipe,
               child: const Icon(Icons.add),
             )
           : null,
