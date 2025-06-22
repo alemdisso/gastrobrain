@@ -340,7 +340,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(fontSize: 14),
                     )
-                  : Text(
+                  : const Text(
                       'Add meal',
                       style: TextStyle(
                         fontStyle: FontStyle.italic,
@@ -661,11 +661,11 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                         ),
                       ],
                     )
-                  : Row(
+                  : const Row(
                       children: [
-                        const Icon(Icons.add, color: Colors.grey),
-                        const SizedBox(width: 8),
-                        const Text(
+                        Icon(Icons.add, color: Colors.grey),
+                        SizedBox(width: 8),
+                        Text(
                           'Add meal',
                           style: TextStyle(
                             color: Colors.grey,

@@ -1072,7 +1072,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
               context: context,
               builder: (context) => _RecipeSelectionDialog(
                 recipes: _availableRecipes,
-                detailedRecommendations: [], // No recommendations needed for editing
+                detailedRecommendations: const [], // No recommendations needed for editing
                 initialPrimaryRecipe: primaryRecipe,
                 initialAdditionalRecipes: additionalRecipes,
               ),

@@ -845,7 +845,7 @@ void main() {
 
     test('applyPenalty method correctly reduces scores', () async {
       // Create a strategy with various penalty levels
-      final strategy = ProteinPenaltyStrategy(penalties: {
+      const strategy = ProteinPenaltyStrategy(penalties: {
         ProteinType.chicken: 0.0, // No penalty
         ProteinType.beef: 0.25, // Light penalty
         ProteinType.fish: 0.5, // Moderate penalty
@@ -880,7 +880,7 @@ void main() {
     });
 
     test('categorizes proteins by penalty levels correctly', () async {
-      final strategy = ProteinPenaltyStrategy(penalties: {
+      const strategy = ProteinPenaltyStrategy(penalties: {
         ProteinType.chicken: 0.0, // No penalty
         ProteinType.beef: 0.1, // Light penalty
         ProteinType.fish: 0.4, // Moderate penalty
