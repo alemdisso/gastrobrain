@@ -75,4 +75,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addRecipe => 'Add Recipe';
+
+  @override
+  String get addNewRecipe => 'Add New Recipe';
+
+  @override
+  String get recipeName => 'Recipe Name';
+
+  @override
+  String get desiredFrequency => 'Desired Frequency';
+
+  @override
+  String get difficultyLevel => 'Difficulty Level';
+
+  @override
+  String get preparationTime => 'Preparation Time';
+
+  @override
+  String get cookingTime => 'Cooking Time';
+
+  @override
+  String get notes => 'Notes';
+
+  @override
+  String get minutes => 'minutes';
+
+  @override
+  String get add => 'Add';
+
+  @override
+  String get noIngredientsAdded => 'No ingredients added yet';
+
+  @override
+  String get saveRecipe => 'Save Recipe';
+
+  @override
+  String get loading => 'Loading...';
+
+  @override
+  String get unknown => 'Unknown';
+
+  @override
+  String get pleaseEnterRecipeName => 'Please enter a recipe name';
+
+  @override
+  String get pleaseEnterValidTime => 'Please enter a valid time';
+
+  @override
+  String get errorSavingRecipe => 'Error saving recipe:';
+
+  @override
+  String get unexpectedError => 'An unexpected error occurred';
 }

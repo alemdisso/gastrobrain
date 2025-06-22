@@ -93,5 +93,73 @@
   "addRecipe": "Add Recipe",
   "@addRecipe": {
     "description": "Tooltip for add recipe button"
+  },
+  "addNewRecipe": "Add New Recipe",
+  "@addNewRecipe": {
+    "description": "Title for add recipe screen"
+  },
+  "recipeName": "Recipe Name",
+  "@recipeName": {
+    "description": "Label for recipe name field"
+  },
+  "desiredFrequency": "Desired Frequency",
+  "@desiredFrequency": {
+    "description": "Label for desired cooking frequency field"
+  },
+  "difficultyLevel": "Difficulty Level",
+  "@difficultyLevel": {
+    "description": "Label for difficulty level field"
+  },
+  "preparationTime": "Preparation Time",
+  "@preparationTime": {
+    "description": "Label for preparation time field"
+  },
+  "cookingTime": "Cooking Time",
+  "@cookingTime": {
+    "description": "Label for cooking time field"
+  },
+  "notes": "Notes",
+  "@notes": {
+    "description": "Label for notes field"
+  },
+  "minutes": "minutes",
+  "@minutes": {
+    "description": "Time unit for minutes"
+  },
+  "add": "Add",
+  "@add": {
+    "description": "Add button text"
+  },
+  "noIngredientsAdded": "No ingredients added yet",
+  "@noIngredientsAdded": {
+    "description": "Message when no ingredients are added"
+  },
+  "saveRecipe": "Save Recipe",
+  "@saveRecipe": {
+    "description": "Save recipe button text"
+  },
+  "loading": "Loading...",
+  "@loading": {
+    "description": "Loading indicator text"
+  },
+  "unknown": "Unknown",
+  "@unknown": {
+    "description": "Unknown value placeholder"
+  },
+  "pleaseEnterRecipeName": "Please enter a recipe name",
+  "@pleaseEnterRecipeName": {
+    "description": "Validation message for empty recipe name"
+  },
+  "pleaseEnterValidTime": "Please enter a valid time",
+  "@pleaseEnterValidTime": {
+    "description": "Validation message for invalid time"
+  },
+  "errorSavingRecipe": "Error saving recipe:",
+  "@errorSavingRecipe": {
+    "description": "Error message prefix for recipe saving errors"
+  },
+  "unexpectedError": "An unexpected error occurred",
+  "@unexpectedError": {
+    "description": "Generic error message"
   }
 }

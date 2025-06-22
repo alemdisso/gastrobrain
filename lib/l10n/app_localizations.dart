@@ -229,6 +229,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add Recipe'**
   String get addRecipe;
+
+  /// Title for add recipe screen
+  ///
+  /// In en, this message translates to:
+  /// **'Add New Recipe'**
+  String get addNewRecipe;
+
+  /// Label for recipe name field
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe Name'**
+  String get recipeName;
+
+  /// Label for desired cooking frequency field
+  ///
+  /// In en, this message translates to:
+  /// **'Desired Frequency'**
+  String get desiredFrequency;
+
+  /// Label for difficulty level field
+  ///
+  /// In en, this message translates to:
+  /// **'Difficulty Level'**
+  String get difficultyLevel;
+
+  /// Label for preparation time field
+  ///
+  /// In en, this message translates to:
+  /// **'Preparation Time'**
+  String get preparationTime;
+
+  /// Label for cooking time field
+  ///
+  /// In en, this message translates to:
+  /// **'Cooking Time'**
+  String get cookingTime;
+
+  /// Label for notes field
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get notes;
+
+  /// Time unit for minutes
+  ///
+  /// In en, this message translates to:
+  /// **'minutes'**
+  String get minutes;
+
+  /// Add button text
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// Message when no ingredients are added
+  ///
+  /// In en, this message translates to:
+  /// **'No ingredients added yet'**
+  String get noIngredientsAdded;
+
+  /// Save recipe button text
+  ///
+  /// In en, this message translates to:
+  /// **'Save Recipe'**
+  String get saveRecipe;
+
+  /// Loading indicator text
+  ///
+  /// In en, this message translates to:
+  /// **'Loading...'**
+  String get loading;
+
+  /// Unknown value placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get unknown;
+
+  /// Validation message for empty recipe name
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a recipe name'**
+  String get pleaseEnterRecipeName;
+
+  /// Validation message for invalid time
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid time'**
+  String get pleaseEnterValidTime;
+
+  /// Error message prefix for recipe saving errors
+  ///
+  /// In en, this message translates to:
+  /// **'Error saving recipe:'**
+  String get errorSavingRecipe;
+
+  /// Generic error message
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred'**
+  String get unexpectedError;
 }
 
 class _AppLocalizationsDelegate

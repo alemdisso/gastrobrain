@@ -75,4 +75,55 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get addRecipe => 'Adicionar Receita';
+
+  @override
+  String get addNewRecipe => 'Adicionar Nova Receita';
+
+  @override
+  String get recipeName => 'Nome da Receita';
+
+  @override
+  String get desiredFrequency => 'Frequência Desejada';
+
+  @override
+  String get difficultyLevel => 'Nível de Dificuldade';
+
+  @override
+  String get preparationTime => 'Tempo de Preparo';
+
+  @override
+  String get cookingTime => 'Tempo de Cozimento';
+
+  @override
+  String get notes => 'Observações';
+
+  @override
+  String get minutes => 'minutos';
+
+  @override
+  String get add => 'Adicionar';
+
+  @override
+  String get noIngredientsAdded => 'Nenhum ingrediente adicionado ainda';
+
+  @override
+  String get saveRecipe => 'Salvar Receita';
+
+  @override
+  String get loading => 'Carregando...';
+
+  @override
+  String get unknown => 'Desconhecido';
+
+  @override
+  String get pleaseEnterRecipeName => 'Por favor, insira o nome da receita';
+
+  @override
+  String get pleaseEnterValidTime => 'Por favor, insira um tempo válido';
+
+  @override
+  String get errorSavingRecipe => 'Erro ao salvar receita:';
+
+  @override
+  String get unexpectedError => 'Ocorreu um erro inesperado';
 }

@@ -11,6 +11,7 @@ import '../core/validators/entity_validator.dart';
 import '../core/di/service_provider.dart';
 import '../utils/id_generator.dart';
 import '../core/services/snackbar_service.dart';
+import '../l10n/app_localizations.dart';
 
 class AddRecipeScreen extends StatefulWidget {
   final DatabaseHelper? databaseHelper;
@@ -99,14 +100,14 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
-        suffixText: 'minutes',
+        suffixText: AppLocalizations.of(context)!.minutes,
       ),
       keyboardType: TextInputType.number,
       validator: (value) {
         if (value != null && value.isNotEmpty) {
           final minutes = int.tryParse(value);
           if (minutes == null || minutes < 0) {
-            return 'Please enter a valid time';
+            return AppLocalizations.of(context)!.pleaseEnterValidTime;
           }
         }
         return null;
@@ -127,13 +128,13 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   future: _getIngredientDetails(ingredient.ingredientId!),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
-                      final ingredientName = snapshot.data?.name ?? 'Unknown';
+                      final ingredientName = snapshot.data?.name ?? AppLocalizations.of(context)!.unknown;
                       final unit =
                           ingredient.unitOverride ?? snapshot.data?.unit ?? '';
                       return Text(
                           '$ingredientName: ${ingredient.quantity} $unit');
                     }
-                    return const Text('Loading...');
+                    return Text(AppLocalizations.of(context)!.loading);
                   },
                 )
               : Text(
@@ -268,11 +269,11 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       }
     } on GastrobrainException catch (e) {
       if (mounted) {
-        SnackbarService.showError(context, 'Error saving recipe: ${e.message}');
+        SnackbarService.showError(context, '${AppLocalizations.of(context)!.errorSavingRecipe} ${e.message}');
       }
     } catch (e) {
       if (mounted) {
-        SnackbarService.showError(context, 'An unexpected error occurred');
+        SnackbarService.showError(context, AppLocalizations.of(context)!.unexpectedError);
       }
     } finally {
       if (mounted) {
@@ -296,7 +297,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Recipe'),
+        title: Text(AppLocalizations.of(context)!.addNewRecipe),
       ),
       body: SingleChildScrollView(
         // Added ScrollView
@@ -309,13 +310,13 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
               children: [
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Recipe Name',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!.recipeName,
+                    border: const OutlineInputBorder(),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a recipe name';
+                      return AppLocalizations.of(context)!.pleaseEnterRecipeName;
                     }
                     return null;
                   },
@@ -323,9 +324,9 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                 const SizedBox(height: 16),
                 DropdownButtonFormField<FrequencyType>(
                   value: _selectedFrequency,
-                  decoration: const InputDecoration(
-                    labelText: 'Desired Frequency',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!.desiredFrequency,
+                    border: const OutlineInputBorder(),
                   ),
                   items: frequencies.map((frequency) {
                     return DropdownMenuItem<FrequencyType>(
@@ -344,9 +345,9 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                 const SizedBox(height: 16),
                 DropdownButtonFormField<RecipeCategory>(
                   value: _selectedCategory,
-                  decoration: const InputDecoration(
-                    labelText: 'Category',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!.category,
+                    border: const OutlineInputBorder(),
                   ),
                   items: RecipeCategory.values.map((category) {
                     return DropdownMenuItem<RecipeCategory>(
@@ -363,23 +364,23 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                _buildDifficultyField('Difficulty Level', _difficulty, (value) {
+                _buildDifficultyField(AppLocalizations.of(context)!.difficultyLevel, _difficulty, (value) {
                   setState(() => _difficulty = value);
                 }),
                 const SizedBox(height: 16),
-                _buildTimeField('Preparation Time', _prepTimeController),
+                _buildTimeField(AppLocalizations.of(context)!.preparationTime, _prepTimeController),
                 const SizedBox(height: 16),
-                _buildTimeField('Cooking Time', _cookTimeController),
+                _buildTimeField(AppLocalizations.of(context)!.cookingTime, _cookTimeController),
                 const SizedBox(height: 16),
-                _buildRatingField('Rating', _rating, (value) {
+                _buildRatingField(AppLocalizations.of(context)!.rating, _rating, (value) {
                   setState(() => _rating = value);
                 }),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _notesController,
-                  decoration: const InputDecoration(
-                    labelText: 'Notes',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!.notes,
+                    border: const OutlineInputBorder(),
                   ),
                   maxLines: 3,
                 ),
@@ -394,27 +395,27 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
-                              'Ingredients',
-                              style: TextStyle(
+                            Text(
+                              AppLocalizations.of(context)!.ingredients,
+                              style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             TextButton.icon(
                               icon: const Icon(Icons.add),
-                              label: const Text('Add'),
+                              label: Text(AppLocalizations.of(context)!.add),
                               onPressed: _addIngredient,
                             ),
                           ],
                         ),
                         if (_pendingIngredients.isEmpty)
-                          const Center(
+                          Center(
                             child: Padding(
-                              padding: EdgeInsets.all(16.0),
+                              padding: const EdgeInsets.all(16.0),
                               child: Text(
-                                'No ingredients added yet',
-                                style: TextStyle(
+                                AppLocalizations.of(context)!.noIngredientsAdded,
+                                style: const TextStyle(
                                   color: Colors.grey,
                                   fontStyle: FontStyle.italic,
                                 ),
@@ -436,7 +437,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       child: _isSaving
                           ? const CircularProgressIndicator()
-                          : const Text('Save Recipe'),
+                          : Text(AppLocalizations.of(context)!.saveRecipe),
                     ),
                   ),
                 ),

@@ -93,5 +93,73 @@
   "addRecipe": "Adicionar Receita",
   "@addRecipe": {
     "description": "Dica do botão adicionar receita"
+  },
+  "addNewRecipe": "Adicionar Nova Receita",
+  "@addNewRecipe": {
+    "description": "Título da tela de adicionar receita"
+  },
+  "recipeName": "Nome da Receita",
+  "@recipeName": {
+    "description": "Rótulo do campo nome da receita"
+  },
+  "desiredFrequency": "Frequência Desejada",
+  "@desiredFrequency": {
+    "description": "Rótulo do campo frequência desejada de preparo"
+  },
+  "difficultyLevel": "Nível de Dificuldade",
+  "@difficultyLevel": {
+    "description": "Rótulo do campo nível de dificuldade"
+  },
+  "preparationTime": "Tempo de Preparo",
+  "@preparationTime": {
+    "description": "Rótulo do campo tempo de preparo"
+  },
+  "cookingTime": "Tempo de Cozimento",
+  "@cookingTime": {
+    "description": "Rótulo do campo tempo de cozimento"
+  },
+  "notes": "Observações",
+  "@notes": {
+    "description": "Rótulo do campo observações"
+  },
+  "minutes": "minutos",
+  "@minutes": {
+    "description": "Unidade de tempo para minutos"
+  },
+  "add": "Adicionar",
+  "@add": {
+    "description": "Texto do botão adicionar"
+  },
+  "noIngredientsAdded": "Nenhum ingrediente adicionado ainda",
+  "@noIngredientsAdded": {
+    "description": "Mensagem quando nenhum ingrediente foi adicionado"
+  },
+  "saveRecipe": "Salvar Receita",
+  "@saveRecipe": {
+    "description": "Texto do botão salvar receita"
+  },
+  "loading": "Carregando...",
+  "@loading": {
+    "description": "Texto do indicador de carregamento"
+  },
+  "unknown": "Desconhecido",
+  "@unknown": {
+    "description": "Valor de placeholder para desconhecido"
+  },
+  "pleaseEnterRecipeName": "Por favor, insira o nome da receita",
+  "@pleaseEnterRecipeName": {
+    "description": "Mensagem de validação para nome de receita vazio"
+  },
+  "pleaseEnterValidTime": "Por favor, insira um tempo válido",
+  "@pleaseEnterValidTime": {
+    "description": "Mensagem de validação para tempo inválido"
+  },
+  "errorSavingRecipe": "Erro ao salvar receita:",
+  "@errorSavingRecipe": {
+    "description": "Prefixo da mensagem de erro ao salvar receita"
+  },
+  "unexpectedError": "Ocorreu um erro inesperado",
+  "@unexpectedError": {
+    "description": "Mensagem de erro genérica"
   }
 }
