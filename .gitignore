@@ -33,6 +33,7 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 build/
+pubspec.lock
 
 # iOS/XCode related
 **/ios/**/*.mode1v3
