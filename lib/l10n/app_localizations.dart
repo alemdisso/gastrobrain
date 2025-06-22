@@ -487,6 +487,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Actual times - Prep: {prepTime}min, Cook: {cookTime}min'**
   String actualTimes(String prepTime, String cookTime);
+
+  /// Title for weekly meal plan screen
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Meal Plan'**
+  String get weeklyMealPlan;
+
+  /// Tooltip for previous week button
+  ///
+  /// In en, this message translates to:
+  /// **'Previous Week'**
+  String get previousWeek;
+
+  /// Tooltip for next week button
+  ///
+  /// In en, this message translates to:
+  /// **'Next Week'**
+  String get nextWeek;
+
+  /// Tooltip for current week navigation
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to jump to current week'**
+  String get tapToJumpToCurrentWeek;
+
+  /// Label for current week
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get thisWeek;
+
+  /// Title for meal options dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Meal Options'**
+  String get mealOptions;
+
+  /// Button text to view recipe details
+  ///
+  /// In en, this message translates to:
+  /// **'View Recipe Details'**
+  String get viewRecipeDetails;
+
+  /// Button text to change recipe
+  ///
+  /// In en, this message translates to:
+  /// **'Change Recipe'**
+  String get changeRecipe;
+
+  /// Button text to manage recipes
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Recipes'**
+  String get manageRecipes;
+
+  /// Button text to mark meal as cooked
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as Cooked'**
+  String get markAsCooked;
+
+  /// Button text to edit cooked meal
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Cooked Meal'**
+  String get editCookedMeal;
+
+  /// Button text to manage side dishes
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Side Dishes'**
+  String get manageSideDishes;
+
+  /// Button text to remove meal from plan
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from Plan'**
+  String get removeFromPlan;
+
+  /// Error message when planned meal is not found
+  ///
+  /// In en, this message translates to:
+  /// **'Planned meal not found'**
+  String get plannedMealNotFound;
+
+  /// Error message when recipe is not found
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe not found'**
+  String get recipeNotFound;
+
+  /// Label for main dish
+  ///
+  /// In en, this message translates to:
+  /// **'Main dish'**
+  String get mainDish;
+
+  /// Label for side dish
+  ///
+  /// In en, this message translates to:
+  /// **'Side dish'**
+  String get sideDish;
+
+  /// Success message when meal is marked as cooked
+  ///
+  /// In en, this message translates to:
+  /// **'Meal marked as cooked'**
+  String get mealMarkedAsCooked;
+
+  /// Error message when meal is not found or not cooked
+  ///
+  /// In en, this message translates to:
+  /// **'Meal not found or not yet cooked'**
+  String get mealNotFoundOrNotCooked;
+
+  /// Error message when cooked meal record is not found
+  ///
+  /// In en, this message translates to:
+  /// **'Could not find the cooked meal record'**
+  String get couldNotFindCookedMeal;
+
+  /// Success message when side dishes are updated
+  ///
+  /// In en, this message translates to:
+  /// **'Side dishes updated successfully'**
+  String get sideDishesUpdatedSuccessfully;
+
+  /// Success message when meal recipes are updated
+  ///
+  /// In en, this message translates to:
+  /// **'Meal recipes updated successfully'**
+  String get mealRecipesUpdatedSuccessfully;
+
+  /// Error message when no primary recipe is found
+  ///
+  /// In en, this message translates to:
+  /// **'No primary recipe found'**
+  String get noPrimaryRecipeFound;
+
+  /// Button text to add side dishes
+  ///
+  /// In en, this message translates to:
+  /// **'Add Side Dishes'**
+  String get addSideDishes;
+
+  /// Button text to select recipe
+  ///
+  /// In en, this message translates to:
+  /// **'Select Recipe'**
+  String get selectRecipe;
+
+  /// Button text to try a recommendation
+  ///
+  /// In en, this message translates to:
+  /// **'Try this'**
+  String get tryThis;
+
+  /// Tab label for all recipes
+  ///
+  /// In en, this message translates to:
+  /// **'All Recipes'**
+  String get allRecipes;
+
+  /// Message when no recommendations are available
+  ///
+  /// In en, this message translates to:
+  /// **'No recommendations available'**
+  String get noRecommendationsAvailable;
+
+  /// Save button text
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// Subtitle for save action
+  ///
+  /// In en, this message translates to:
+  /// **'Add this recipe to meal plan'**
+  String get addThisRecipeToMealPlan;
+
+  /// Subtitle for add side dishes action
+  ///
+  /// In en, this message translates to:
+  /// **'Add more recipes to this meal'**
+  String get addMoreRecipesToThisMeal;
+
+  /// Subtitle for back action
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a different recipe'**
+  String get chooseDifferentRecipe;
+
+  /// Back button text
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// Button text to add side dish
+  ///
+  /// In en, this message translates to:
+  /// **'Add Side Dish'**
+  String get addSideDish;
+
+  /// Button text to save meal
+  ///
+  /// In en, this message translates to:
+  /// **'Save Meal'**
+  String get saveMeal;
 }
 
 class _AppLocalizationsDelegate

@@ -215,4 +215,111 @@ class AppLocalizationsEn extends AppLocalizations {
   String actualTimes(String prepTime, String cookTime) {
     return 'Actual times - Prep: ${prepTime}min, Cook: ${cookTime}min';
   }
+
+  @override
+  String get weeklyMealPlan => 'Weekly Meal Plan';
+
+  @override
+  String get previousWeek => 'Previous Week';
+
+  @override
+  String get nextWeek => 'Next Week';
+
+  @override
+  String get tapToJumpToCurrentWeek => 'Tap to jump to current week';
+
+  @override
+  String get thisWeek => 'This week';
+
+  @override
+  String get mealOptions => 'Meal Options';
+
+  @override
+  String get viewRecipeDetails => 'View Recipe Details';
+
+  @override
+  String get changeRecipe => 'Change Recipe';
+
+  @override
+  String get manageRecipes => 'Manage Recipes';
+
+  @override
+  String get markAsCooked => 'Mark as Cooked';
+
+  @override
+  String get editCookedMeal => 'Edit Cooked Meal';
+
+  @override
+  String get manageSideDishes => 'Manage Side Dishes';
+
+  @override
+  String get removeFromPlan => 'Remove from Plan';
+
+  @override
+  String get plannedMealNotFound => 'Planned meal not found';
+
+  @override
+  String get recipeNotFound => 'Recipe not found';
+
+  @override
+  String get mainDish => 'Main dish';
+
+  @override
+  String get sideDish => 'Side dish';
+
+  @override
+  String get mealMarkedAsCooked => 'Meal marked as cooked';
+
+  @override
+  String get mealNotFoundOrNotCooked => 'Meal not found or not yet cooked';
+
+  @override
+  String get couldNotFindCookedMeal => 'Could not find the cooked meal record';
+
+  @override
+  String get sideDishesUpdatedSuccessfully =>
+      'Side dishes updated successfully';
+
+  @override
+  String get mealRecipesUpdatedSuccessfully =>
+      'Meal recipes updated successfully';
+
+  @override
+  String get noPrimaryRecipeFound => 'No primary recipe found';
+
+  @override
+  String get addSideDishes => 'Add Side Dishes';
+
+  @override
+  String get selectRecipe => 'Select Recipe';
+
+  @override
+  String get tryThis => 'Try this';
+
+  @override
+  String get allRecipes => 'All Recipes';
+
+  @override
+  String get noRecommendationsAvailable => 'No recommendations available';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get addThisRecipeToMealPlan => 'Add this recipe to meal plan';
+
+  @override
+  String get addMoreRecipesToThisMeal => 'Add more recipes to this meal';
+
+  @override
+  String get chooseDifferentRecipe => 'Choose a different recipe';
+
+  @override
+  String get back => 'Back';
+
+  @override
+  String get addSideDish => 'Add Side Dish';
+
+  @override
+  String get saveMeal => 'Save Meal';
 }

@@ -216,4 +216,115 @@ class AppLocalizationsPt extends AppLocalizations {
   String actualTimes(String prepTime, String cookTime) {
     return 'Tempos reais - Preparo: ${prepTime}min, Cozimento: ${cookTime}min';
   }
+
+  @override
+  String get weeklyMealPlan => 'Planejamento Semanal de Refeições';
+
+  @override
+  String get previousWeek => 'Semana Anterior';
+
+  @override
+  String get nextWeek => 'Próxima Semana';
+
+  @override
+  String get tapToJumpToCurrentWeek => 'Toque para ir para a semana atual';
+
+  @override
+  String get thisWeek => 'Esta semana';
+
+  @override
+  String get mealOptions => 'Opções de Refeição';
+
+  @override
+  String get viewRecipeDetails => 'Ver Detalhes da Receita';
+
+  @override
+  String get changeRecipe => 'Trocar Receita';
+
+  @override
+  String get manageRecipes => 'Gerenciar Receitas';
+
+  @override
+  String get markAsCooked => 'Marcar como Cozinhada';
+
+  @override
+  String get editCookedMeal => 'Editar Refeição Cozinhada';
+
+  @override
+  String get manageSideDishes => 'Gerenciar Acompanhamentos';
+
+  @override
+  String get removeFromPlan => 'Remover do Planejamento';
+
+  @override
+  String get plannedMealNotFound => 'Refeição planejada não encontrada';
+
+  @override
+  String get recipeNotFound => 'Receita não encontrada';
+
+  @override
+  String get mainDish => 'Prato principal';
+
+  @override
+  String get sideDish => 'Acompanhamento';
+
+  @override
+  String get mealMarkedAsCooked => 'Refeição marcada como cozinhada';
+
+  @override
+  String get mealNotFoundOrNotCooked =>
+      'Refeição não encontrada ou ainda não cozinhada';
+
+  @override
+  String get couldNotFindCookedMeal =>
+      'Não foi possível encontrar o registro da refeição cozinhada';
+
+  @override
+  String get sideDishesUpdatedSuccessfully =>
+      'Acompanhamentos atualizados com sucesso';
+
+  @override
+  String get mealRecipesUpdatedSuccessfully =>
+      'Receitas da refeição atualizadas com sucesso';
+
+  @override
+  String get noPrimaryRecipeFound => 'Nenhuma receita principal encontrada';
+
+  @override
+  String get addSideDishes => 'Adicionar Acompanhamentos';
+
+  @override
+  String get selectRecipe => 'Selecionar Receita';
+
+  @override
+  String get tryThis => 'Experimente';
+
+  @override
+  String get allRecipes => 'Todas as Receitas';
+
+  @override
+  String get noRecommendationsAvailable => 'Nenhuma recomendação disponível';
+
+  @override
+  String get save => 'Salvar';
+
+  @override
+  String get addThisRecipeToMealPlan =>
+      'Adicionar esta receita ao planejamento de refeições';
+
+  @override
+  String get addMoreRecipesToThisMeal =>
+      'Adicionar mais receitas a esta refeição';
+
+  @override
+  String get chooseDifferentRecipe => 'Escolher uma receita diferente';
+
+  @override
+  String get back => 'Voltar';
+
+  @override
+  String get addSideDish => 'Adicionar Acompanhamento';
+
+  @override
+  String get saveMeal => 'Salvar Refeição';
 }

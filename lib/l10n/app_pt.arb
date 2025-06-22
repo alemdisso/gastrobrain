@@ -293,5 +293,145 @@
         "description": "Tempo de cozimento em minutos"
       }
     }
+  },
+  "weeklyMealPlan": "Planejamento Semanal de Refeições",
+  "@weeklyMealPlan": {
+    "description": "Título da tela de planejamento semanal de refeições"
+  },
+  "previousWeek": "Semana Anterior",
+  "@previousWeek": {
+    "description": "Dica do botão semana anterior"
+  },
+  "nextWeek": "Próxima Semana",
+  "@nextWeek": {
+    "description": "Dica do botão próxima semana"
+  },
+  "tapToJumpToCurrentWeek": "Toque para ir para a semana atual",
+  "@tapToJumpToCurrentWeek": {
+    "description": "Dica para navegação da semana atual"
+  },
+  "thisWeek": "Esta semana",
+  "@thisWeek": {
+    "description": "Rótulo para semana atual"
+  },
+  "mealOptions": "Opções de Refeição",
+  "@mealOptions": {
+    "description": "Título do diálogo de opções de refeição"
+  },
+  "viewRecipeDetails": "Ver Detalhes da Receita",
+  "@viewRecipeDetails": {
+    "description": "Texto do botão para ver detalhes da receita"
+  },
+  "changeRecipe": "Trocar Receita",
+  "@changeRecipe": {
+    "description": "Texto do botão para trocar receita"
+  },
+  "manageRecipes": "Gerenciar Receitas",
+  "@manageRecipes": {
+    "description": "Texto do botão para gerenciar receitas"
+  },
+  "markAsCooked": "Marcar como Cozinhada",
+  "@markAsCooked": {
+    "description": "Texto do botão para marcar refeição como cozinhada"
+  },
+  "editCookedMeal": "Editar Refeição Cozinhada",
+  "@editCookedMeal": {
+    "description": "Texto do botão para editar refeição cozinhada"
+  },
+  "manageSideDishes": "Gerenciar Acompanhamentos",
+  "@manageSideDishes": {
+    "description": "Texto do botão para gerenciar acompanhamentos"
+  },
+  "removeFromPlan": "Remover do Planejamento",
+  "@removeFromPlan": {
+    "description": "Texto do botão para remover refeição do planejamento"
+  },
+  "plannedMealNotFound": "Refeição planejada não encontrada",
+  "@plannedMealNotFound": {
+    "description": "Mensagem de erro quando refeição planejada não é encontrada"
+  },
+  "recipeNotFound": "Receita não encontrada",
+  "@recipeNotFound": {
+    "description": "Mensagem de erro quando receita não é encontrada"
+  },
+  "mainDish": "Prato principal",
+  "@mainDish": {
+    "description": "Rótulo para prato principal"
+  },
+  "sideDish": "Acompanhamento",
+  "@sideDish": {
+    "description": "Rótulo para acompanhamento"
+  },
+  "mealMarkedAsCooked": "Refeição marcada como cozinhada",
+  "@mealMarkedAsCooked": {
+    "description": "Mensagem de sucesso quando refeição é marcada como cozinhada"
+  },
+  "mealNotFoundOrNotCooked": "Refeição não encontrada ou ainda não cozinhada",
+  "@mealNotFoundOrNotCooked": {
+    "description": "Mensagem de erro quando refeição não é encontrada ou não foi cozinhada"
+  },
+  "couldNotFindCookedMeal": "Não foi possível encontrar o registro da refeição cozinhada",
+  "@couldNotFindCookedMeal": {
+    "description": "Mensagem de erro quando registro de refeição cozinhada não é encontrado"
+  },
+  "sideDishesUpdatedSuccessfully": "Acompanhamentos atualizados com sucesso",
+  "@sideDishesUpdatedSuccessfully": {
+    "description": "Mensagem de sucesso quando acompanhamentos são atualizados"
+  },
+  "mealRecipesUpdatedSuccessfully": "Receitas da refeição atualizadas com sucesso",
+  "@mealRecipesUpdatedSuccessfully": {
+    "description": "Mensagem de sucesso quando receitas da refeição são atualizadas"
+  },
+  "noPrimaryRecipeFound": "Nenhuma receita principal encontrada",
+  "@noPrimaryRecipeFound": {
+    "description": "Mensagem de erro quando nenhuma receita principal é encontrada"
+  },
+  "addSideDishes": "Adicionar Acompanhamentos",
+  "@addSideDishes": {
+    "description": "Texto do botão para adicionar acompanhamentos"
+  },
+  "selectRecipe": "Selecionar Receita",
+  "@selectRecipe": {
+    "description": "Texto do botão para selecionar receita"
+  },
+  "tryThis": "Experimente",
+  "@tryThis": {
+    "description": "Texto do botão para experimentar uma recomendação"
+  },
+  "allRecipes": "Todas as Receitas",
+  "@allRecipes": {
+    "description": "Rótulo da aba para todas as receitas"
+  },
+  "noRecommendationsAvailable": "Nenhuma recomendação disponível",
+  "@noRecommendationsAvailable": {
+    "description": "Mensagem quando não há recomendações disponíveis"
+  },
+  "save": "Salvar",
+  "@save": {
+    "description": "Texto do botão salvar"
+  },
+  "addThisRecipeToMealPlan": "Adicionar esta receita ao planejamento de refeições",
+  "@addThisRecipeToMealPlan": {
+    "description": "Subtítulo para ação de salvar"
+  },
+  "addMoreRecipesToThisMeal": "Adicionar mais receitas a esta refeição",
+  "@addMoreRecipesToThisMeal": {
+    "description": "Subtítulo para ação de adicionar acompanhamentos"
+  },
+  "chooseDifferentRecipe": "Escolher uma receita diferente",
+  "@chooseDifferentRecipe": {
+    "description": "Subtítulo para ação de voltar"
+  },
+  "back": "Voltar",
+  "@back": {
+    "description": "Texto do botão voltar"
+  },
+  "addSideDish": "Adicionar Acompanhamento",
+  "@addSideDish": {
+    "description": "Texto do botão para adicionar acompanhamento"
+  },
+  "saveMeal": "Salvar Refeição",
+  "@saveMeal": {
+    "description": "Texto do botão para salvar refeição"
   }
 }

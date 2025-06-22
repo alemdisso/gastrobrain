@@ -19,6 +19,7 @@ import '../widgets/edit_meal_recording_dialog.dart';
 import '../widgets/recipe_selection_card.dart';
 import '../widgets/add_side_dish_dialog.dart';
 import '../utils/id_generator.dart';
+import '../l10n/app_localizations.dart';
 
 class WeeklyPlanScreen extends StatefulWidget {
   final DatabaseHelper? databaseHelper;
@@ -593,7 +594,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           ),
           SimpleDialogOption(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
         ],
       ),
@@ -651,7 +652,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           _currentMealPlan?.getItemsForDateAndMealType(date, mealType) ?? [];
       if (items.isEmpty) {
         if (mounted) {
-          SnackbarService.showError(context, 'Planned meal not found');
+          SnackbarService.showError(context, AppLocalizations.of(context)!.plannedMealNotFound);
         }
         return;
       }
@@ -660,7 +661,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       final recipe = await _dbHelper.getRecipe(recipeId);
       if (recipe == null) {
         if (mounted) {
-          SnackbarService.showError(context, 'Recipe not found');
+          SnackbarService.showError(context, AppLocalizations.of(context)!.recipeNotFound);
         }
         return;
       }
@@ -732,7 +733,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
             mealId: mealId,
             recipeId: primaryRecipe.id,
             isPrimaryDish: true,
-            notes: 'Main dish',
+            notes: AppLocalizations.of(context)!.mainDish,
           );
 
           // Insert the primary junction record
@@ -744,7 +745,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
               mealId: mealId,
               recipeId: recipe.id,
               isPrimaryDish: false,
-              notes: 'Side dish',
+              notes: AppLocalizations.of(context)!.sideDish,
             );
 
             await txn.insert('meal_recipes', sideDishMealRecipe.toMap());
@@ -761,7 +762,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       });
 
       if (mounted) {
-        SnackbarService.showSuccess(context, 'Meal marked as cooked');
+        SnackbarService.showSuccess(context, AppLocalizations.of(context)!.mealMarkedAsCooked);
         // Refresh data to show updated meal history
         _loadData();
       }
@@ -827,7 +828,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       final recipe = await _dbHelper.getRecipe(recipeId);
       if (recipe == null) {
         if (mounted) {
-          SnackbarService.showError(context, 'Recipe not found');
+          SnackbarService.showError(context, AppLocalizations.of(context)!.recipeNotFound);
         }
         return;
       }
@@ -933,7 +934,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       final recipe = await _dbHelper.getRecipe(recipeId);
       if (recipe == null) {
         if (mounted) {
-          SnackbarService.showError(context, 'Recipe not found');
+          SnackbarService.showError(context, AppLocalizations.of(context)!.recipeNotFound);
         }
         return;
       }
@@ -1032,7 +1033,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           _currentMealPlan?.getItemsForDateAndMealType(date, mealType) ?? [];
       if (items.isEmpty) {
         if (mounted) {
-          SnackbarService.showError(context, 'Planned meal not found');
+          SnackbarService.showError(context, AppLocalizations.of(context)!.plannedMealNotFound);
         }
         return;
       }
@@ -1182,12 +1183,12 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Weekly Meal Plan'),
+        title: Text(AppLocalizations.of(context)!.weeklyMealPlan),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loadData,
-            tooltip: 'Refresh',
+            tooltip: AppLocalizations.of(context)!.refresh,
           ),
         ],
       ),
@@ -1202,7 +1203,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                 IconButton(
                   icon: const Icon(Icons.navigate_before),
                   onPressed: () => _changeWeek(-1),
-                  tooltip: 'Previous Week',
+                  tooltip: AppLocalizations.of(context)!.previousWeek,
                 ),
                 Expanded(
                   child: GestureDetector(
@@ -1288,7 +1289,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                           Padding(
                             padding: const EdgeInsets.only(top: 2),
                             child: Text(
-                              'Tap to jump to current week',
+                              AppLocalizations.of(context)!.tapToJumpToCurrentWeek,
                               style: TextStyle(
                                 fontSize: 10,
                                 color: Theme.of(context)
@@ -1306,7 +1307,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                 IconButton(
                   icon: const Icon(Icons.navigate_next),
                   onPressed: () => _changeWeek(1),
-                  tooltip: 'Next Week',
+                  tooltip: AppLocalizations.of(context)!.nextWeek,
                 ),
               ],
             ),
@@ -1450,8 +1451,8 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
           children: [
             Text(
               _showingMultiRecipeMode
-                  ? 'Add Side Dishes'
-                  : (_showingMenu ? 'Meal Options' : 'Select Recipe'),
+                  ? AppLocalizations.of(context)!.addSideDishes
+                  : (_showingMenu ? AppLocalizations.of(context)!.mealOptions : AppLocalizations.of(context)!.selectRecipe),
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
@@ -1462,7 +1463,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
                     : Expanded(child: _buildRecipeSelection())),
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
           ],
         ),
@@ -1488,7 +1489,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Try this'),
+                  Text(AppLocalizations.of(context)!.tryThis),
                   if (widget.onRefreshDetailedRecommendations != null)
                     GestureDetector(
                       onTap: _isLoading ? null : _handleRefresh,
@@ -1506,7 +1507,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
                 ],
               ),
             ),
-            const Tab(text: 'All Recipes'),
+            Tab(text: AppLocalizations.of(context)!.allRecipes),
           ],
         ),
         const SizedBox(height: 16),
@@ -1541,8 +1542,8 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
               _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _recommendations.isEmpty
-                      ? const Center(
-                          child: Text('No recommendations available'))
+                      ? Center(
+                          child: Text(AppLocalizations.of(context)!.noRecommendationsAvailable))
                       : ListView.builder(
                           itemCount: _recommendations.length,
                           itemBuilder: (context, index) {
@@ -1598,8 +1599,8 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
         // Menu options
         ListTile(
           leading: const Icon(Icons.save),
-          title: const Text('Save'),
-          subtitle: const Text('Add this recipe to meal plan'),
+          title: Text(AppLocalizations.of(context)!.save),
+          subtitle: Text(AppLocalizations.of(context)!.addThisRecipeToMealPlan),
           onTap: () => Navigator.pop(context, {
             'primaryRecipe': _selectedRecipe!,
             'additionalRecipes': <Recipe>[],
@@ -1607,16 +1608,16 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
         ),
         ListTile(
           leading: const Icon(Icons.add),
-          title: const Text('Add Side Dishes'),
-          subtitle: const Text('Add more recipes to this meal'),
+          title: Text(AppLocalizations.of(context)!.addSideDishes),
+          subtitle: Text(AppLocalizations.of(context)!.addMoreRecipesToThisMeal),
           onTap: () => setState(() {
             _showingMultiRecipeMode = true;
           }),
         ),
         ListTile(
           leading: const Icon(Icons.arrow_back),
-          title: const Text('Back'),
-          subtitle: const Text('Choose a different recipe'),
+          title: Text(AppLocalizations.of(context)!.back),
+          subtitle: Text(AppLocalizations.of(context)!.chooseDifferentRecipe),
           onTap: () => setState(() {
             _showingMenu = false;
             _selectedRecipe = null;
@@ -1698,7 +1699,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
         ElevatedButton.icon(
           onPressed: () => _showAddSideDishDialog(),
           icon: const Icon(Icons.add),
-          label: const Text('Add Side Dish'),
+          label: Text(AppLocalizations.of(context)!.addSideDish),
         ),
         const SizedBox(height: 16),
 
@@ -1710,14 +1711,14 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
               onPressed: () => setState(() {
                 _showingMultiRecipeMode = false;
               }),
-              child: const Text('Back'),
+              child: Text(AppLocalizations.of(context)!.back),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, {
                 'primaryRecipe': _selectedRecipe!,
                 'additionalRecipes': _additionalRecipes,
               }),
-              child: const Text('Save Meal'),
+              child: Text(AppLocalizations.of(context)!.saveMeal),
             ),
           ],
         ),

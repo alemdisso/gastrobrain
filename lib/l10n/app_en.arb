@@ -293,5 +293,145 @@
         "description": "Cooking time in minutes"
       }
     }
+  },
+  "weeklyMealPlan": "Weekly Meal Plan",
+  "@weeklyMealPlan": {
+    "description": "Title for weekly meal plan screen"
+  },
+  "previousWeek": "Previous Week",
+  "@previousWeek": {
+    "description": "Tooltip for previous week button"
+  },
+  "nextWeek": "Next Week",
+  "@nextWeek": {
+    "description": "Tooltip for next week button"
+  },
+  "tapToJumpToCurrentWeek": "Tap to jump to current week",
+  "@tapToJumpToCurrentWeek": {
+    "description": "Tooltip for current week navigation"
+  },
+  "thisWeek": "This week",
+  "@thisWeek": {
+    "description": "Label for current week"
+  },
+  "mealOptions": "Meal Options",
+  "@mealOptions": {
+    "description": "Title for meal options dialog"
+  },
+  "viewRecipeDetails": "View Recipe Details",
+  "@viewRecipeDetails": {
+    "description": "Button text to view recipe details"
+  },
+  "changeRecipe": "Change Recipe",
+  "@changeRecipe": {
+    "description": "Button text to change recipe"
+  },
+  "manageRecipes": "Manage Recipes",
+  "@manageRecipes": {
+    "description": "Button text to manage recipes"
+  },
+  "markAsCooked": "Mark as Cooked",
+  "@markAsCooked": {
+    "description": "Button text to mark meal as cooked"
+  },
+  "editCookedMeal": "Edit Cooked Meal",
+  "@editCookedMeal": {
+    "description": "Button text to edit cooked meal"
+  },
+  "manageSideDishes": "Manage Side Dishes",
+  "@manageSideDishes": {
+    "description": "Button text to manage side dishes"
+  },
+  "removeFromPlan": "Remove from Plan",
+  "@removeFromPlan": {
+    "description": "Button text to remove meal from plan"
+  },
+  "plannedMealNotFound": "Planned meal not found",
+  "@plannedMealNotFound": {
+    "description": "Error message when planned meal is not found"
+  },
+  "recipeNotFound": "Recipe not found",
+  "@recipeNotFound": {
+    "description": "Error message when recipe is not found"
+  },
+  "mainDish": "Main dish",
+  "@mainDish": {
+    "description": "Label for main dish"
+  },
+  "sideDish": "Side dish",
+  "@sideDish": {
+    "description": "Label for side dish"
+  },
+  "mealMarkedAsCooked": "Meal marked as cooked",
+  "@mealMarkedAsCooked": {
+    "description": "Success message when meal is marked as cooked"
+  },
+  "mealNotFoundOrNotCooked": "Meal not found or not yet cooked",
+  "@mealNotFoundOrNotCooked": {
+    "description": "Error message when meal is not found or not cooked"
+  },
+  "couldNotFindCookedMeal": "Could not find the cooked meal record",
+  "@couldNotFindCookedMeal": {
+    "description": "Error message when cooked meal record is not found"
+  },
+  "sideDishesUpdatedSuccessfully": "Side dishes updated successfully",
+  "@sideDishesUpdatedSuccessfully": {
+    "description": "Success message when side dishes are updated"
+  },
+  "mealRecipesUpdatedSuccessfully": "Meal recipes updated successfully",
+  "@mealRecipesUpdatedSuccessfully": {
+    "description": "Success message when meal recipes are updated"
+  },
+  "noPrimaryRecipeFound": "No primary recipe found",
+  "@noPrimaryRecipeFound": {
+    "description": "Error message when no primary recipe is found"
+  },
+  "addSideDishes": "Add Side Dishes",
+  "@addSideDishes": {
+    "description": "Button text to add side dishes"
+  },
+  "selectRecipe": "Select Recipe",
+  "@selectRecipe": {
+    "description": "Button text to select recipe"
+  },
+  "tryThis": "Try this",
+  "@tryThis": {
+    "description": "Button text to try a recommendation"
+  },
+  "allRecipes": "All Recipes",
+  "@allRecipes": {
+    "description": "Tab label for all recipes"
+  },
+  "noRecommendationsAvailable": "No recommendations available",
+  "@noRecommendationsAvailable": {
+    "description": "Message when no recommendations are available"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Save button text"
+  },
+  "addThisRecipeToMealPlan": "Add this recipe to meal plan",
+  "@addThisRecipeToMealPlan": {
+    "description": "Subtitle for save action"
+  },
+  "addMoreRecipesToThisMeal": "Add more recipes to this meal",
+  "@addMoreRecipesToThisMeal": {
+    "description": "Subtitle for add side dishes action"
+  },
+  "chooseDifferentRecipe": "Choose a different recipe",
+  "@chooseDifferentRecipe": {
+    "description": "Subtitle for back action"
+  },
+  "back": "Back",
+  "@back": {
+    "description": "Back button text"
+  },
+  "addSideDish": "Add Side Dish",
+  "@addSideDish": {
+    "description": "Button text to add side dish"
+  },
+  "saveMeal": "Save Meal",
+  "@saveMeal": {
+    "description": "Button text to save meal"
   }
 }
