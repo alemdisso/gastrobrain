@@ -87,18 +87,25 @@ class _RecipeCardState extends State<RecipeCard> {
                           const Icon(Icons.category,
                               size: 16, color: Colors.blue),
                           const SizedBox(width: 4),
-                          Text(
-                            widget.recipe.category.displayName,
-                            style: TextStyle(
-                              color: Colors.blue.shade700,
-                              fontWeight: FontWeight.w500,
+                          Flexible(
+                            child: Text(
+                              widget.recipe.category.displayName,
+                              style: TextStyle(
+                                color: Colors.blue.shade700,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           const SizedBox(width: 16),
                           const Icon(Icons.repeat, size: 16),
                           const SizedBox(width: 4),
-                          Text(widget
-                              .recipe.desiredFrequency.compactDisplayName),
+                          Flexible(
+                            child: Text(
+                              widget.recipe.desiredFrequency.compactDisplayName,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -181,17 +188,23 @@ class _RecipeCardState extends State<RecipeCard> {
                       Icon(Icons.timer_outlined,
                           size: 16, color: Colors.grey[600]),
                       const SizedBox(width: 4),
-                      Text(
-                        'Prep: ${widget.recipe.prepTimeMinutes} min',
-                        style: TextStyle(color: Colors.grey[600]),
+                      Flexible(
+                        child: Text(
+                          'Prep: ${widget.recipe.prepTimeMinutes} min',
+                          style: TextStyle(color: Colors.grey[600]),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       const SizedBox(width: 16),
                       Icon(Icons.restaurant_outlined,
                           size: 16, color: Colors.grey[600]),
                       const SizedBox(width: 4),
-                      Text(
-                        'Cook: ${widget.recipe.cookTimeMinutes} min',
-                        style: TextStyle(color: Colors.grey[600]),
+                      Flexible(
+                        child: Text(
+                          'Cook: ${widget.recipe.cookTimeMinutes} min',
+                          style: TextStyle(color: Colors.grey[600]),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
