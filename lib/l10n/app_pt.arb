@@ -173,5 +173,59 @@
   "errorUpdatingRecipe": "Erro ao atualizar receita:",
   "@errorUpdatingRecipe": {
     "description": "Prefixo da mensagem de erro ao atualizar receita"
+  },
+  "errorLoadingIngredients": "Erro ao carregar ingredientes:",
+  "@errorLoadingIngredients": {
+    "description": "Prefixo da mensagem de erro ao carregar ingredientes"
+  },
+  "unexpectedErrorLoadingIngredients": "Ocorreu um erro inesperado ao carregar os ingredientes",
+  "@unexpectedErrorLoadingIngredients": {
+    "description": "Mensagem de erro genérica para carregamento de ingredientes"
+  },
+  "unexpectedErrorDeletingIngredient": "Ocorreu um erro inesperado ao excluir o ingrediente",
+  "@unexpectedErrorDeletingIngredient": {
+    "description": "Mensagem de erro genérica para exclusão de ingrediente"
+  },
+  "anErrorOccurred": "Ocorreu um erro",
+  "@anErrorOccurred": {
+    "description": "Mensagem de erro genérica"
+  },
+  "deleteIngredient": "Excluir Ingrediente",
+  "@deleteIngredient": {
+    "description": "Título do diálogo de excluir ingrediente"
+  },
+  "deleteIngredientConfirmation": "Tem certeza que deseja excluir {ingredientName}?",
+  "@deleteIngredientConfirmation": {
+    "description": "Mensagem de confirmação para exclusão de ingrediente",
+    "placeholders": {
+      "ingredientName": {
+        "type": "String",
+        "description": "Nome do ingrediente a ser excluído"
+      }
+    }
+  },
+  "ingredientDeletedSuccessfully": "Ingrediente excluído com sucesso",
+  "@ingredientDeletedSuccessfully": {
+    "description": "Mensagem de sucesso para exclusão de ingrediente"
+  },
+  "tryAgain": "Tentar Novamente",
+  "@tryAgain": {
+    "description": "Texto do botão tentar novamente"
+  },
+  "addIngredient": "Adicionar Ingrediente",
+  "@addIngredient": {
+    "description": "Texto do botão adicionar ingrediente"
+  },
+  "searchIngredients": "Buscar ingredientes...",
+  "@searchIngredients": {
+    "description": "Texto da dica do campo de busca de ingredientes"
+  },
+  "refresh": "Atualizar",
+  "@refresh": {
+    "description": "Dica do botão atualizar"
+  },
+  "edit": "Editar",
+  "@edit": {
+    "description": "Texto do item de menu editar"
   }
 }

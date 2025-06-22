@@ -4,6 +4,7 @@ import '../database/database_helper.dart';
 import '../widgets/add_new_ingredient_dialog.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/services/snackbar_service.dart';
+import '../l10n/app_localizations.dart';
 
 class IngredientsScreen extends StatefulWidget {
   const IngredientsScreen({super.key});
@@ -44,13 +45,12 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
       }
     } on GastrobrainException catch (e) {
       setState(() {
-        _errorMessage = 'Error loading ingredients: ${e.message}';
+        _errorMessage = '${AppLocalizations.of(context)!.errorLoadingIngredients} ${e.message}';
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _errorMessage =
-            'An unexpected error occurred while loading ingredients';
+        _errorMessage = AppLocalizations.of(context)!.unexpectedErrorLoadingIngredients;
         _isLoading = false;
       });
     }
@@ -85,19 +85,19 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Delete Ingredient'),
-          content: Text('Are you sure you want to delete ${ingredient.name}?'),
+          title: Text(AppLocalizations.of(context)!.deleteIngredient),
+          content: Text(AppLocalizations.of(context)!.deleteIngredientConfirmation(ingredient.name)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
               style: TextButton.styleFrom(
                 foregroundColor: Theme.of(context).colorScheme.error,
               ),
-              child: const Text('Delete'),
+              child: Text(AppLocalizations.of(context)!.delete),
             ),
           ],
         );
@@ -109,7 +109,7 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
         await _dbHelper.deleteIngredient(ingredient.id);
         if (mounted) {
           SnackbarService.showSuccess(
-              context, 'Ingredient deleted successfully');
+              context, AppLocalizations.of(context)!.ingredientDeletedSuccessfully);
           _loadIngredients();
         }
       } on GastrobrainException catch (e) {
@@ -119,7 +119,7 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
       } catch (e) {
         if (mounted) {
           SnackbarService.showError(context,
-              'An unexpected error occurred while deleting the ingredient');
+              AppLocalizations.of(context)!.unexpectedErrorDeletingIngredient);
         }
       }
     }
@@ -133,7 +133,7 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
           const Icon(Icons.error_outline, size: 64, color: Colors.red),
           const SizedBox(height: 16),
           Text(
-            _errorMessage ?? 'An error occurred',
+            _errorMessage ?? AppLocalizations.of(context)!.anErrorOccurred,
             style: const TextStyle(fontSize: 18, color: Colors.red),
             textAlign: TextAlign.center,
           ),
@@ -141,7 +141,7 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
           ElevatedButton.icon(
             onPressed: _loadIngredients,
             icon: const Icon(Icons.refresh),
-            label: const Text('Try Again'),
+            label: Text(AppLocalizations.of(context)!.tryAgain),
           ),
         ],
       ),
@@ -163,7 +163,7 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
           ElevatedButton.icon(
             onPressed: _addIngredient,
             icon: const Icon(Icons.add),
-            label: const Text('Add Ingredient'),
+            label: Text(AppLocalizations.of(context)!.addIngredient),
           ),
         ],
       ),
@@ -184,12 +184,12 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ingredients'),
+        title: Text(AppLocalizations.of(context)!.ingredients),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _isLoading ? null : _loadIngredients,
-            tooltip: 'Refresh',
+            tooltip: AppLocalizations.of(context)!.refresh,
           ),
         ],
       ),
@@ -198,10 +198,10 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
-              decoration: const InputDecoration(
-                hintText: 'Search ingredients...',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: AppLocalizations.of(context)!.searchIngredients,
+                prefixIcon: const Icon(Icons.search),
+                border: const OutlineInputBorder(),
               ),
               onChanged: (value) {
                 setState(() {
@@ -239,23 +239,23 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
                                     }
                                   },
                                   itemBuilder: (context) => [
-                                    const PopupMenuItem(
+                                    PopupMenuItem(
                                       value: 'edit',
                                       child: Row(
                                         children: [
-                                          Icon(Icons.edit),
-                                          SizedBox(width: 8),
-                                          Text('Edit'),
+                                          const Icon(Icons.edit),
+                                          const SizedBox(width: 8),
+                                          Text(AppLocalizations.of(context)!.edit),
                                         ],
                                       ),
                                     ),
-                                    const PopupMenuItem(
+                                    PopupMenuItem(
                                       value: 'delete',
                                       child: Row(
                                         children: [
-                                          Icon(Icons.delete),
-                                          SizedBox(width: 8),
-                                          Text('Delete'),
+                                          const Icon(Icons.delete),
+                                          const SizedBox(width: 8),
+                                          Text(AppLocalizations.of(context)!.delete),
                                         ],
                                       ),
                                     ),
@@ -269,7 +269,7 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addIngredient,
-        tooltip: 'Add Ingredient',
+        tooltip: AppLocalizations.of(context)!.addIngredient,
         child: const Icon(Icons.add),
       ),
     );

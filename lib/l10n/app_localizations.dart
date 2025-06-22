@@ -349,6 +349,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error updating recipe:'**
   String get errorUpdatingRecipe;
+
+  /// Error message prefix for ingredient loading errors
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading ingredients:'**
+  String get errorLoadingIngredients;
+
+  /// Generic error message for ingredient loading
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred while loading ingredients'**
+  String get unexpectedErrorLoadingIngredients;
+
+  /// Generic error message for ingredient deletion
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred while deleting the ingredient'**
+  String get unexpectedErrorDeletingIngredient;
+
+  /// Generic error message
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred'**
+  String get anErrorOccurred;
+
+  /// Title for delete ingredient dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Ingredient'**
+  String get deleteIngredient;
+
+  /// Confirmation message for ingredient deletion
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete {ingredientName}?'**
+  String deleteIngredientConfirmation(String ingredientName);
+
+  /// Success message for ingredient deletion
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredient deleted successfully'**
+  String get ingredientDeletedSuccessfully;
+
+  /// Try again button text
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get tryAgain;
+
+  /// Add ingredient button text
+  ///
+  /// In en, this message translates to:
+  /// **'Add Ingredient'**
+  String get addIngredient;
+
+  /// Search field hint text for ingredients
+  ///
+  /// In en, this message translates to:
+  /// **'Search ingredients...'**
+  String get searchIngredients;
+
+  /// Refresh button tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get refresh;
+
+  /// Edit menu item text
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
 }
 
 class _AppLocalizationsDelegate

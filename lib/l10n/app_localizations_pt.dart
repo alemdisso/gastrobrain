@@ -135,4 +135,45 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get errorUpdatingRecipe => 'Erro ao atualizar receita:';
+
+  @override
+  String get errorLoadingIngredients => 'Erro ao carregar ingredientes:';
+
+  @override
+  String get unexpectedErrorLoadingIngredients =>
+      'Ocorreu um erro inesperado ao carregar os ingredientes';
+
+  @override
+  String get unexpectedErrorDeletingIngredient =>
+      'Ocorreu um erro inesperado ao excluir o ingrediente';
+
+  @override
+  String get anErrorOccurred => 'Ocorreu um erro';
+
+  @override
+  String get deleteIngredient => 'Excluir Ingrediente';
+
+  @override
+  String deleteIngredientConfirmation(String ingredientName) {
+    return 'Tem certeza que deseja excluir $ingredientName?';
+  }
+
+  @override
+  String get ingredientDeletedSuccessfully =>
+      'Ingrediente excluído com sucesso';
+
+  @override
+  String get tryAgain => 'Tentar Novamente';
+
+  @override
+  String get addIngredient => 'Adicionar Ingrediente';
+
+  @override
+  String get searchIngredients => 'Buscar ingredientes...';
+
+  @override
+  String get refresh => 'Atualizar';
+
+  @override
+  String get edit => 'Editar';
 }

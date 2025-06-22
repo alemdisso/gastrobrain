@@ -173,5 +173,59 @@
   "errorUpdatingRecipe": "Error updating recipe:",
   "@errorUpdatingRecipe": {
     "description": "Error message prefix for recipe updating errors"
+  },
+  "errorLoadingIngredients": "Error loading ingredients:",
+  "@errorLoadingIngredients": {
+    "description": "Error message prefix for ingredient loading errors"
+  },
+  "unexpectedErrorLoadingIngredients": "An unexpected error occurred while loading ingredients",
+  "@unexpectedErrorLoadingIngredients": {
+    "description": "Generic error message for ingredient loading"
+  },
+  "unexpectedErrorDeletingIngredient": "An unexpected error occurred while deleting the ingredient",
+  "@unexpectedErrorDeletingIngredient": {
+    "description": "Generic error message for ingredient deletion"
+  },
+  "anErrorOccurred": "An error occurred",
+  "@anErrorOccurred": {
+    "description": "Generic error message"
+  },
+  "deleteIngredient": "Delete Ingredient",
+  "@deleteIngredient": {
+    "description": "Title for delete ingredient dialog"
+  },
+  "deleteIngredientConfirmation": "Are you sure you want to delete {ingredientName}?",
+  "@deleteIngredientConfirmation": {
+    "description": "Confirmation message for ingredient deletion",
+    "placeholders": {
+      "ingredientName": {
+        "type": "String",
+        "description": "Name of the ingredient to be deleted"
+      }
+    }
+  },
+  "ingredientDeletedSuccessfully": "Ingredient deleted successfully",
+  "@ingredientDeletedSuccessfully": {
+    "description": "Success message for ingredient deletion"
+  },
+  "tryAgain": "Try Again",
+  "@tryAgain": {
+    "description": "Try again button text"
+  },
+  "addIngredient": "Add Ingredient",
+  "@addIngredient": {
+    "description": "Add ingredient button text"
+  },
+  "searchIngredients": "Search ingredients...",
+  "@searchIngredients": {
+    "description": "Search field hint text for ingredients"
+  },
+  "refresh": "Refresh",
+  "@refresh": {
+    "description": "Refresh button tooltip"
+  },
+  "edit": "Edit",
+  "@edit": {
+    "description": "Edit menu item text"
   }
 }

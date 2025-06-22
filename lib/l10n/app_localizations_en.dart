@@ -135,4 +135,44 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorUpdatingRecipe => 'Error updating recipe:';
+
+  @override
+  String get errorLoadingIngredients => 'Error loading ingredients:';
+
+  @override
+  String get unexpectedErrorLoadingIngredients =>
+      'An unexpected error occurred while loading ingredients';
+
+  @override
+  String get unexpectedErrorDeletingIngredient =>
+      'An unexpected error occurred while deleting the ingredient';
+
+  @override
+  String get anErrorOccurred => 'An error occurred';
+
+  @override
+  String get deleteIngredient => 'Delete Ingredient';
+
+  @override
+  String deleteIngredientConfirmation(String ingredientName) {
+    return 'Are you sure you want to delete $ingredientName?';
+  }
+
+  @override
+  String get ingredientDeletedSuccessfully => 'Ingredient deleted successfully';
+
+  @override
+  String get tryAgain => 'Try Again';
+
+  @override
+  String get addIngredient => 'Add Ingredient';
+
+  @override
+  String get searchIngredients => 'Search ingredients...';
+
+  @override
+  String get refresh => 'Refresh';
+
+  @override
+  String get edit => 'Edit';
 }
