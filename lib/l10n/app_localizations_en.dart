@@ -395,4 +395,106 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorGettingProteinTypesForRecipes =>
       'Error getting protein types for recipes';
+
+  @override
+  String get frequencyDaily => 'Daily';
+
+  @override
+  String get frequencyWeekly => 'Weekly';
+
+  @override
+  String get frequencyBiweekly => 'Biweekly';
+
+  @override
+  String get frequencyMonthly => 'Monthly';
+
+  @override
+  String get frequencyBimonthly => 'Bimonthly';
+
+  @override
+  String get frequencyRarely => 'Rarely';
+
+  @override
+  String get proteinBeef => 'Beef';
+
+  @override
+  String get proteinChicken => 'Chicken';
+
+  @override
+  String get proteinPork => 'Pork';
+
+  @override
+  String get proteinFish => 'Fish';
+
+  @override
+  String get proteinSeafood => 'Seafood';
+
+  @override
+  String get proteinLamb => 'Lamb';
+
+  @override
+  String get proteinCharcuterie => 'Charcuterie';
+
+  @override
+  String get proteinOffal => 'Offal';
+
+  @override
+  String get proteinPlantBased => 'Plant Based';
+
+  @override
+  String get proteinOther => 'Other';
+
+  @override
+  String get categoryMainDishes => 'Main dishes';
+
+  @override
+  String get categorySideDishes => 'Side dishes';
+
+  @override
+  String get categorySandwiches => 'Sandwiches';
+
+  @override
+  String get categoryCompleteMeals => 'Complete meals';
+
+  @override
+  String get categoryBreakfastItems => 'Breakfast items';
+
+  @override
+  String get categoryDesserts => 'Desserts';
+
+  @override
+  String get categorySoupsStews => 'Soups/stews';
+
+  @override
+  String get categorySalads => 'Salads';
+
+  @override
+  String get categorySauces => 'Sauces';
+
+  @override
+  String get categoryDips => 'Dips';
+
+  @override
+  String get categorySnacks => 'Snacks';
+
+  @override
+  String get categoryUncategorized => 'Uncategorized';
+
+  @override
+  String get timeContextPast => 'Past';
+
+  @override
+  String get timeContextCurrent => 'Current';
+
+  @override
+  String get timeContextFuture => 'Future';
+
+  @override
+  String get timeContextPastDescription => 'Previous week';
+
+  @override
+  String get timeContextCurrentDescription => 'This week';
+
+  @override
+  String get timeContextFutureDescription => 'Upcoming week';
 }

@@ -238,7 +238,7 @@ class MealPlanAnalysisService {
       return ProteinPenaltyStrategy(penalties: penalties);
     } catch (e) {
       throw GastrobrainException(
-          'Error calculating protein penalty strategy: ${e.toString()}');
+          '${LocalizedErrorMessages.getMessage('errorCalculatingProteinPenaltyStrategy')}: ${e.toString()}');
     }
   }
 
@@ -313,7 +313,7 @@ class MealPlanAnalysisService {
       return proteinTypes.toList();
     } catch (e) {
       throw GastrobrainException(
-          'Error getting protein types for recipes: ${e.toString()}');
+          '${LocalizedErrorMessages.getMessage('errorGettingProteinTypesForRecipes')}: ${e.toString()}');
     }
   }
 }

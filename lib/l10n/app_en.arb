@@ -525,5 +525,141 @@
   "errorGettingProteinTypesForRecipes": "Error getting protein types for recipes",
   "@errorGettingProteinTypesForRecipes": {
     "description": "Error message for recipe protein type retrieval"
+  },
+  "frequencyDaily": "Daily",
+  "@frequencyDaily": {
+    "description": "Display name for daily frequency"
+  },
+  "frequencyWeekly": "Weekly",
+  "@frequencyWeekly": {
+    "description": "Display name for weekly frequency"
+  },
+  "frequencyBiweekly": "Biweekly",
+  "@frequencyBiweekly": {
+    "description": "Display name for biweekly frequency"
+  },
+  "frequencyMonthly": "Monthly",
+  "@frequencyMonthly": {
+    "description": "Display name for monthly frequency"
+  },
+  "frequencyBimonthly": "Bimonthly",
+  "@frequencyBimonthly": {
+    "description": "Display name for bimonthly frequency"
+  },
+  "frequencyRarely": "Rarely",
+  "@frequencyRarely": {
+    "description": "Display name for rarely frequency"
+  },
+  "proteinBeef": "Beef",
+  "@proteinBeef": {
+    "description": "Display name for beef protein type"
+  },
+  "proteinChicken": "Chicken",
+  "@proteinChicken": {
+    "description": "Display name for chicken protein type"
+  },
+  "proteinPork": "Pork",
+  "@proteinPork": {
+    "description": "Display name for pork protein type"
+  },
+  "proteinFish": "Fish",
+  "@proteinFish": {
+    "description": "Display name for fish protein type"
+  },
+  "proteinSeafood": "Seafood",
+  "@proteinSeafood": {
+    "description": "Display name for seafood protein type"
+  },
+  "proteinLamb": "Lamb",
+  "@proteinLamb": {
+    "description": "Display name for lamb protein type"
+  },
+  "proteinCharcuterie": "Charcuterie",
+  "@proteinCharcuterie": {
+    "description": "Display name for charcuterie protein type"
+  },
+  "proteinOffal": "Offal",
+  "@proteinOffal": {
+    "description": "Display name for offal protein type"
+  },
+  "proteinPlantBased": "Plant Based",
+  "@proteinPlantBased": {
+    "description": "Display name for plant-based protein type"
+  },
+  "proteinOther": "Other",
+  "@proteinOther": {
+    "description": "Display name for other protein type"
+  },
+  "categoryMainDishes": "Main dishes",
+  "@categoryMainDishes": {
+    "description": "Display name for main dishes category"
+  },
+  "categorySideDishes": "Side dishes",
+  "@categorySideDishes": {
+    "description": "Display name for side dishes category"
+  },
+  "categorySandwiches": "Sandwiches",
+  "@categorySandwiches": {
+    "description": "Display name for sandwiches category"
+  },
+  "categoryCompleteMeals": "Complete meals",
+  "@categoryCompleteMeals": {
+    "description": "Display name for complete meals category"
+  },
+  "categoryBreakfastItems": "Breakfast items",
+  "@categoryBreakfastItems": {
+    "description": "Display name for breakfast items category"
+  },
+  "categoryDesserts": "Desserts",
+  "@categoryDesserts": {
+    "description": "Display name for desserts category"
+  },
+  "categorySoupsStews": "Soups/stews",
+  "@categorySoupsStews": {
+    "description": "Display name for soups/stews category"
+  },
+  "categorySalads": "Salads",
+  "@categorySalads": {
+    "description": "Display name for salads category"
+  },
+  "categorySauces": "Sauces",
+  "@categorySauces": {
+    "description": "Display name for sauces category"
+  },
+  "categoryDips": "Dips",
+  "@categoryDips": {
+    "description": "Display name for dips category"
+  },
+  "categorySnacks": "Snacks",
+  "@categorySnacks": {
+    "description": "Display name for snacks category"
+  },
+  "categoryUncategorized": "Uncategorized",
+  "@categoryUncategorized": {
+    "description": "Display name for uncategorized category"
+  },
+  "timeContextPast": "Past",
+  "@timeContextPast": {
+    "description": "Display name for past time context"
+  },
+  "timeContextCurrent": "Current",
+  "@timeContextCurrent": {
+    "description": "Display name for current time context"
+  },
+  "timeContextFuture": "Future",
+  "@timeContextFuture": {
+    "description": "Display name for future time context"
+  },
+  "timeContextPastDescription": "Previous week",
+  "@timeContextPastDescription": {
+    "description": "Description for past time context"
+  },
+  "timeContextCurrentDescription": "This week",
+  "@timeContextCurrentDescription": {
+    "description": "Description for current time context"
+  },
+  "timeContextFutureDescription": "Upcoming week",
+  "@timeContextFutureDescription": {
+    "description": "Description for future time context"
   }
 }

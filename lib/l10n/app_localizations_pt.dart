@@ -401,4 +401,106 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get errorGettingProteinTypesForRecipes =>
       'Erro ao obter tipos de proteína para receitas';
+
+  @override
+  String get frequencyDaily => 'Diário';
+
+  @override
+  String get frequencyWeekly => 'Semanal';
+
+  @override
+  String get frequencyBiweekly => 'Quinzenal';
+
+  @override
+  String get frequencyMonthly => 'Mensal';
+
+  @override
+  String get frequencyBimonthly => 'Bimestral';
+
+  @override
+  String get frequencyRarely => 'Raramente';
+
+  @override
+  String get proteinBeef => 'Carne Bovina';
+
+  @override
+  String get proteinChicken => 'Frango';
+
+  @override
+  String get proteinPork => 'Carne Suína';
+
+  @override
+  String get proteinFish => 'Peixe';
+
+  @override
+  String get proteinSeafood => 'Frutos do Mar';
+
+  @override
+  String get proteinLamb => 'Cordeiro';
+
+  @override
+  String get proteinCharcuterie => 'Charcutaria';
+
+  @override
+  String get proteinOffal => 'Miúdos';
+
+  @override
+  String get proteinPlantBased => 'À Base de Plantas';
+
+  @override
+  String get proteinOther => 'Outro';
+
+  @override
+  String get categoryMainDishes => 'Pratos principais';
+
+  @override
+  String get categorySideDishes => 'Acompanhamentos';
+
+  @override
+  String get categorySandwiches => 'Sanduíches';
+
+  @override
+  String get categoryCompleteMeals => 'Refeições completas';
+
+  @override
+  String get categoryBreakfastItems => 'Itens de café da manhã';
+
+  @override
+  String get categoryDesserts => 'Sobremesas';
+
+  @override
+  String get categorySoupsStews => 'Sopas/ensopados';
+
+  @override
+  String get categorySalads => 'Saladas';
+
+  @override
+  String get categorySauces => 'Molhos';
+
+  @override
+  String get categoryDips => 'Patês/molhos para mergulhar';
+
+  @override
+  String get categorySnacks => 'Petiscos';
+
+  @override
+  String get categoryUncategorized => 'Sem categoria';
+
+  @override
+  String get timeContextPast => 'Passado';
+
+  @override
+  String get timeContextCurrent => 'Atual';
+
+  @override
+  String get timeContextFuture => 'Futuro';
+
+  @override
+  String get timeContextPastDescription => 'Semana anterior';
+
+  @override
+  String get timeContextCurrentDescription => 'Esta semana';
+
+  @override
+  String get timeContextFutureDescription => 'Próxima semana';
 }

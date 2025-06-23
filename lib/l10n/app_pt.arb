@@ -525,5 +525,141 @@
   "errorGettingProteinTypesForRecipes": "Erro ao obter tipos de proteína para receitas",
   "@errorGettingProteinTypesForRecipes": {
     "description": "Mensagem de erro para recuperação de tipos de proteína de receitas"
+  },
+  "frequencyDaily": "Diário",
+  "@frequencyDaily": {
+    "description": "Nome para frequência diária"
+  },
+  "frequencyWeekly": "Semanal",
+  "@frequencyWeekly": {
+    "description": "Nome para frequência semanal"
+  },
+  "frequencyBiweekly": "Quinzenal",
+  "@frequencyBiweekly": {
+    "description": "Nome para frequência quinzenal"
+  },
+  "frequencyMonthly": "Mensal",
+  "@frequencyMonthly": {
+    "description": "Nome para frequência mensal"
+  },
+  "frequencyBimonthly": "Bimestral",
+  "@frequencyBimonthly": {
+    "description": "Nome para frequência bimestral"
+  },
+  "frequencyRarely": "Raramente",
+  "@frequencyRarely": {
+    "description": "Nome para frequência rara"
+  },
+  "proteinBeef": "Carne Bovina",
+  "@proteinBeef": {
+    "description": "Nome para tipo de proteína bovina"
+  },
+  "proteinChicken": "Frango",
+  "@proteinChicken": {
+    "description": "Nome para tipo de proteína frango"
+  },
+  "proteinPork": "Carne Suína",
+  "@proteinPork": {
+    "description": "Nome para tipo de proteína suína"
+  },
+  "proteinFish": "Peixe",
+  "@proteinFish": {
+    "description": "Nome para tipo de proteína peixe"
+  },
+  "proteinSeafood": "Frutos do Mar",
+  "@proteinSeafood": {
+    "description": "Nome para tipo de proteína frutos do mar"
+  },
+  "proteinLamb": "Cordeiro",
+  "@proteinLamb": {
+    "description": "Nome para tipo de proteína cordeiro"
+  },
+  "proteinCharcuterie": "Charcutaria",
+  "@proteinCharcuterie": {
+    "description": "Nome para tipo de proteína charcutaria"
+  },
+  "proteinOffal": "Miúdos",
+  "@proteinOffal": {
+    "description": "Nome para tipo de proteína miúdos"
+  },
+  "proteinPlantBased": "À Base de Plantas",
+  "@proteinPlantBased": {
+    "description": "Nome para tipo de proteína vegetal"
+  },
+  "proteinOther": "Outro",
+  "@proteinOther": {
+    "description": "Nome para outro tipo de proteína"
+  },
+  "categoryMainDishes": "Pratos principais",
+  "@categoryMainDishes": {
+    "description": "Nome para categoria de pratos principais"
+  },
+  "categorySideDishes": "Acompanhamentos",
+  "@categorySideDishes": {
+    "description": "Nome para categoria de acompanhamentos"
+  },
+  "categorySandwiches": "Sanduíches",
+  "@categorySandwiches": {
+    "description": "Nome para categoria de sanduíches"
+  },
+  "categoryCompleteMeals": "Refeições completas",
+  "@categoryCompleteMeals": {
+    "description": "Nome para categoria de refeições completas"
+  },
+  "categoryBreakfastItems": "Itens de café da manhã",
+  "@categoryBreakfastItems": {
+    "description": "Nome para categoria de itens de café da manhã"
+  },
+  "categoryDesserts": "Sobremesas",
+  "@categoryDesserts": {
+    "description": "Nome para categoria de sobremesas"
+  },
+  "categorySoupsStews": "Sopas/ensopados",
+  "@categorySoupsStews": {
+    "description": "Nome para categoria de sopas/ensopados"
+  },
+  "categorySalads": "Saladas",
+  "@categorySalads": {
+    "description": "Nome para categoria de saladas"
+  },
+  "categorySauces": "Molhos",
+  "@categorySauces": {
+    "description": "Nome para categoria de molhos"
+  },
+  "categoryDips": "Patês/molhos para mergulhar",
+  "@categoryDips": {
+    "description": "Nome para categoria de patês/molhos"
+  },
+  "categorySnacks": "Petiscos",
+  "@categorySnacks": {
+    "description": "Nome para categoria de petiscos"
+  },
+  "categoryUncategorized": "Sem categoria",
+  "@categoryUncategorized": {
+    "description": "Nome para categoria sem classificação"
+  },
+  "timeContextPast": "Passado",
+  "@timeContextPast": {
+    "description": "Nome para contexto temporal passado"
+  },
+  "timeContextCurrent": "Atual",
+  "@timeContextCurrent": {
+    "description": "Nome para contexto temporal atual"
+  },
+  "timeContextFuture": "Futuro",
+  "@timeContextFuture": {
+    "description": "Nome para contexto temporal futuro"
+  },
+  "timeContextPastDescription": "Semana anterior",
+  "@timeContextPastDescription": {
+    "description": "Descrição para contexto temporal passado"
+  },
+  "timeContextCurrentDescription": "Esta semana",
+  "@timeContextCurrentDescription": {
+    "description": "Descrição para contexto temporal atual"
+  },
+  "timeContextFutureDescription": "Próxima semana",
+  "@timeContextFutureDescription": {
+    "description": "Descrição para contexto temporal futuro"
   }
 }

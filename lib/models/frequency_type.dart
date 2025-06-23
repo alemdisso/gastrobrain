@@ -1,3 +1,5 @@
+import '../l10n/app_localizations.dart';
+
 enum FrequencyType {
   daily('daily'),
   weekly('weekly'),
@@ -17,6 +19,30 @@ enum FrequencyType {
   }
 
   String get displayName => value[0].toUpperCase() + value.substring(1);
+
+  String getLocalizedDisplayName(context) {
+    // Import will be needed at the top of file
+    final localizations = context != null ? AppLocalizations.of(context)! : null;
+    
+    if (localizations == null) {
+      return displayName; // Fallback to English
+    }
+    
+    switch (this) {
+      case FrequencyType.daily:
+        return localizations.frequencyDaily;
+      case FrequencyType.weekly:
+        return localizations.frequencyWeekly;
+      case FrequencyType.biweekly:
+        return localizations.frequencyBiweekly;
+      case FrequencyType.monthly:
+        return localizations.frequencyMonthly;
+      case FrequencyType.bimonthly:
+        return localizations.frequencyBimonthly;
+      case FrequencyType.rarely:
+        return localizations.frequencyRarely;
+    }
+  }
 
   String get compactDisplayName {
     switch (this) {

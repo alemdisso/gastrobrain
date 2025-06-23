@@ -1,3 +1,5 @@
+import '../l10n/app_localizations.dart';
+
 enum RecipeCategory {
   mainDishes('main_dishes'),
   sideDishes('side_dishes'),
@@ -48,6 +50,41 @@ enum RecipeCategory {
         return 'Snacks';
       case RecipeCategory.uncategorized:
         return 'Uncategorized';
+    }
+  }
+
+  String getLocalizedDisplayName(context) {
+    final localizations = context != null ? AppLocalizations.of(context)! : null;
+    
+    if (localizations == null) {
+      return displayName; // Fallback to English
+    }
+    
+    switch (this) {
+      case RecipeCategory.mainDishes:
+        return localizations.categoryMainDishes;
+      case RecipeCategory.sideDishes:
+        return localizations.categorySideDishes;
+      case RecipeCategory.sandwiches:
+        return localizations.categorySandwiches;
+      case RecipeCategory.completeMeals:
+        return localizations.categoryCompleteMeals;
+      case RecipeCategory.breakfastItems:
+        return localizations.categoryBreakfastItems;
+      case RecipeCategory.desserts:
+        return localizations.categoryDesserts;
+      case RecipeCategory.soupsStews:
+        return localizations.categorySoupsStews;
+      case RecipeCategory.salads:
+        return localizations.categorySalads;
+      case RecipeCategory.sauces:
+        return localizations.categorySauces;
+      case RecipeCategory.dips:
+        return localizations.categoryDips;
+      case RecipeCategory.snacks:
+        return localizations.categorySnacks;
+      case RecipeCategory.uncategorized:
+        return localizations.categoryUncategorized;
     }
   }
 }

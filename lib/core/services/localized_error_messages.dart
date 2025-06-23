@@ -21,6 +21,7 @@ class LocalizedErrorMessages {
     'errorGettingRecentlyCookedProteinsByDate': 'Error getting recently cooked proteins by date',
     'errorCalculatingProteinPenaltyStrategy': 'Error calculating protein penalty strategy',
     'errorGettingProteinTypesForRecipes': 'Error getting protein types for recipes',
+    'errorGeneratingDetailedRecommendations': 'Error generating detailed recommendations',
   };
 
   // Portuguese messages (for reference)
@@ -38,6 +39,7 @@ class LocalizedErrorMessages {
     'errorGettingRecentlyCookedProteinsByDate': 'Erro ao obter proteínas cozinhadas recentemente por data',
     'errorCalculatingProteinPenaltyStrategy': 'Erro ao calcular estratégia de penalidade de proteína',
     'errorGettingProteinTypesForRecipes': 'Erro ao obter tipos de proteína para receitas',
+    'errorGeneratingDetailedRecommendations': 'Erro ao gerar recomendações detalhadas',
   };
 
   /// Get error message in English (for logging/debugging)

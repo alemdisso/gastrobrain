@@ -340,7 +340,7 @@ class RecommendationService {
       rethrow;
     } catch (e) {
       throw GastrobrainException(
-          'Error generating recommendations: ${e.toString()}');
+          '${LocalizedErrorMessages.getMessage('errorGeneratingRecommendations')}: ${e.toString()}');
     }
   }
 
@@ -460,7 +460,7 @@ class RecommendationService {
       rethrow;
     } catch (e) {
       throw GastrobrainException(
-          'Error generating detailed recommendations: ${e.toString()}');
+          '${LocalizedErrorMessages.getMessage('errorGeneratingDetailedRecommendations')}: ${e.toString()}');
     }
   }
 

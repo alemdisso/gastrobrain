@@ -133,7 +133,7 @@ class RecommendationDatabaseQueries {
       return result;
     } catch (e) {
       throw GastrobrainException(
-          'Error getting recipe protein types: ${e.toString()}');
+          '${LocalizedErrorMessages.getMessage('errorGettingRecipeProteinTypes')}: ${e.toString()}');
     }
   }
 
@@ -160,7 +160,7 @@ class RecommendationDatabaseQueries {
       return await _dbHelper.getAllLastCooked();
     } catch (e) {
       throw GastrobrainException(
-          'Error getting last cooked dates: ${e.toString()}');
+          '${LocalizedErrorMessages.getMessage('errorGettingLastCookedDates')}: ${e.toString()}');
     }
   }
 
@@ -230,7 +230,7 @@ class RecommendationDatabaseQueries {
       }).toList();
     } catch (e) {
       throw GastrobrainException(
-          'Error getting recipes with stats: ${e.toString()}');
+          '${LocalizedErrorMessages.getMessage('errorGettingRecipesWithStats')}: ${e.toString()}');
     }
   }
 

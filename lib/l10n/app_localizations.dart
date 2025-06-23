@@ -817,6 +817,210 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error getting protein types for recipes'**
   String get errorGettingProteinTypesForRecipes;
+
+  /// Display name for daily frequency
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get frequencyDaily;
+
+  /// Display name for weekly frequency
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get frequencyWeekly;
+
+  /// Display name for biweekly frequency
+  ///
+  /// In en, this message translates to:
+  /// **'Biweekly'**
+  String get frequencyBiweekly;
+
+  /// Display name for monthly frequency
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get frequencyMonthly;
+
+  /// Display name for bimonthly frequency
+  ///
+  /// In en, this message translates to:
+  /// **'Bimonthly'**
+  String get frequencyBimonthly;
+
+  /// Display name for rarely frequency
+  ///
+  /// In en, this message translates to:
+  /// **'Rarely'**
+  String get frequencyRarely;
+
+  /// Display name for beef protein type
+  ///
+  /// In en, this message translates to:
+  /// **'Beef'**
+  String get proteinBeef;
+
+  /// Display name for chicken protein type
+  ///
+  /// In en, this message translates to:
+  /// **'Chicken'**
+  String get proteinChicken;
+
+  /// Display name for pork protein type
+  ///
+  /// In en, this message translates to:
+  /// **'Pork'**
+  String get proteinPork;
+
+  /// Display name for fish protein type
+  ///
+  /// In en, this message translates to:
+  /// **'Fish'**
+  String get proteinFish;
+
+  /// Display name for seafood protein type
+  ///
+  /// In en, this message translates to:
+  /// **'Seafood'**
+  String get proteinSeafood;
+
+  /// Display name for lamb protein type
+  ///
+  /// In en, this message translates to:
+  /// **'Lamb'**
+  String get proteinLamb;
+
+  /// Display name for charcuterie protein type
+  ///
+  /// In en, this message translates to:
+  /// **'Charcuterie'**
+  String get proteinCharcuterie;
+
+  /// Display name for offal protein type
+  ///
+  /// In en, this message translates to:
+  /// **'Offal'**
+  String get proteinOffal;
+
+  /// Display name for plant-based protein type
+  ///
+  /// In en, this message translates to:
+  /// **'Plant Based'**
+  String get proteinPlantBased;
+
+  /// Display name for other protein type
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get proteinOther;
+
+  /// Display name for main dishes category
+  ///
+  /// In en, this message translates to:
+  /// **'Main dishes'**
+  String get categoryMainDishes;
+
+  /// Display name for side dishes category
+  ///
+  /// In en, this message translates to:
+  /// **'Side dishes'**
+  String get categorySideDishes;
+
+  /// Display name for sandwiches category
+  ///
+  /// In en, this message translates to:
+  /// **'Sandwiches'**
+  String get categorySandwiches;
+
+  /// Display name for complete meals category
+  ///
+  /// In en, this message translates to:
+  /// **'Complete meals'**
+  String get categoryCompleteMeals;
+
+  /// Display name for breakfast items category
+  ///
+  /// In en, this message translates to:
+  /// **'Breakfast items'**
+  String get categoryBreakfastItems;
+
+  /// Display name for desserts category
+  ///
+  /// In en, this message translates to:
+  /// **'Desserts'**
+  String get categoryDesserts;
+
+  /// Display name for soups/stews category
+  ///
+  /// In en, this message translates to:
+  /// **'Soups/stews'**
+  String get categorySoupsStews;
+
+  /// Display name for salads category
+  ///
+  /// In en, this message translates to:
+  /// **'Salads'**
+  String get categorySalads;
+
+  /// Display name for sauces category
+  ///
+  /// In en, this message translates to:
+  /// **'Sauces'**
+  String get categorySauces;
+
+  /// Display name for dips category
+  ///
+  /// In en, this message translates to:
+  /// **'Dips'**
+  String get categoryDips;
+
+  /// Display name for snacks category
+  ///
+  /// In en, this message translates to:
+  /// **'Snacks'**
+  String get categorySnacks;
+
+  /// Display name for uncategorized category
+  ///
+  /// In en, this message translates to:
+  /// **'Uncategorized'**
+  String get categoryUncategorized;
+
+  /// Display name for past time context
+  ///
+  /// In en, this message translates to:
+  /// **'Past'**
+  String get timeContextPast;
+
+  /// Display name for current time context
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get timeContextCurrent;
+
+  /// Display name for future time context
+  ///
+  /// In en, this message translates to:
+  /// **'Future'**
+  String get timeContextFuture;
+
+  /// Description for past time context
+  ///
+  /// In en, this message translates to:
+  /// **'Previous week'**
+  String get timeContextPastDescription;
+
+  /// Description for current time context
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get timeContextCurrentDescription;
+
+  /// Description for future time context
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming week'**
+  String get timeContextFutureDescription;
 }
 
 class _AppLocalizationsDelegate
