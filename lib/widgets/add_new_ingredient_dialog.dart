@@ -7,6 +7,7 @@ import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
 import '../core/services/snackbar_service.dart';
 import '../core/di/service_provider.dart';
+import '../l10n/app_localizations.dart';
 
 class AddNewIngredientDialog extends StatefulWidget {
   final DatabaseHelper? databaseHelper;
@@ -125,11 +126,11 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
     } on GastrobrainException catch (e) {
       if (mounted) {
         SnackbarService.showError(
-            context, 'Error saving ingredient: ${e.message}');
+            context, '${AppLocalizations.of(context)!.errorSavingRecipe} ${e.message}');
       }
     } catch (e) {
       if (mounted) {
-        SnackbarService.showError(context, 'An unexpected error occurred');
+        SnackbarService.showError(context, AppLocalizations.of(context)!.unexpectedError);
       }
     } finally {
       if (mounted) {
@@ -141,15 +142,63 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
   }
 
   String formatCategoryName(String category) {
-    // Convert snake_case to Title Case
-    if (category.contains('_')) {
-      return category
-          .split('_')
-          .map((word) => word[0].toUpperCase() + word.substring(1))
-          .join(' ');
+    final l10n = AppLocalizations.of(context)!;
+    
+    // Map string categories to localized names
+    switch (category.toLowerCase()) {
+      case 'vegetable':
+        return l10n.ingredientCategoryVegetable;
+      case 'fruit':
+        return l10n.ingredientCategoryFruit;
+      case 'protein':
+        return l10n.ingredientCategoryProtein;
+      case 'dairy':
+        return l10n.ingredientCategoryDairy;
+      case 'grain':
+        return l10n.ingredientCategoryGrain;
+      case 'pulse':
+        return l10n.ingredientCategoryPulse;
+      case 'nuts_and_seeds':
+        return l10n.ingredientCategoryNutsAndSeeds;
+      case 'seasoning':
+        return l10n.ingredientCategorySeasoning;
+      case 'sugar products':
+        return l10n.ingredientCategorySugarProducts;
+      case 'oil':
+        return l10n.ingredientCategoryOil;
+      case 'other':
+        return l10n.ingredientCategoryOther;
+      default:
+        // Fallback to simple capitalization for unknown categories
+        if (category.contains('_')) {
+          return category
+              .split('_')
+              .map((word) => word[0].toUpperCase() + word.substring(1))
+              .join(' ');
+        }
+        return category[0].toUpperCase() + category.substring(1);
     }
-    // Simple capitalization for single words
-    return category[0].toUpperCase() + category.substring(1);
+  }
+
+  /// Helper method to get localized unit display name
+  String getLocalizedUnitName(String unit) {
+    final l10n = AppLocalizations.of(context)!;
+    
+    // Localize descriptive units, keep abbreviations as-is
+    switch (unit.toLowerCase()) {
+      case 'cup':
+        return l10n.measurementUnitCup;
+      case 'piece':
+        return l10n.measurementUnitPiece;
+      case 'slice':
+        return l10n.measurementUnitSlice;
+      case 'tbsp':
+        return l10n.measurementUnitTablespoon;
+      case 'tsp':
+        return l10n.measurementUnitTeaspoon;
+      default:
+        return unit; // Keep abbreviations like 'g', 'ml', 'kg', etc.
+    }
   }
 
   @override
@@ -163,7 +212,9 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(
-          widget.ingredient != null ? 'Edit Ingredient' : 'New Ingredient'),
+          widget.ingredient != null 
+              ? AppLocalizations.of(context)!.editIngredient 
+              : AppLocalizations.of(context)!.newIngredient),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -172,13 +223,13 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Ingredient Name',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.ingredientName,
+                  border: const OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter an ingredient name';
+                    return AppLocalizations.of(context)!.pleaseEnterIngredientName;
                   }
                   return null;
                 },
@@ -188,9 +239,9 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
               // Category Dropdown
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
-                decoration: const InputDecoration(
-                  labelText: 'Category',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.categoryLabel,
+                  border: const OutlineInputBorder(),
                 ),
                 items: _categories.map((category) {
                   return DropdownMenuItem(
@@ -212,19 +263,19 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
               // Unit Dropdown
               DropdownButtonFormField<String>(
                 value: _selectedUnit,
-                decoration: const InputDecoration(
-                  labelText: 'Unit (Optional)',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.unitOptional,
+                  border: const OutlineInputBorder(),
                 ),
                 items: [
-                  const DropdownMenuItem<String>(
+                  DropdownMenuItem<String>(
                     value: null,
-                    child: Text('No unit'),
+                    child: Text(AppLocalizations.of(context)!.noUnit),
                   ),
                   ..._units.map((unit) {
                     return DropdownMenuItem(
                       value: unit,
-                      child: Text(unit),
+                      child: Text(getLocalizedUnitName(unit)),
                     );
                   }),
                 ],
@@ -240,9 +291,9 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
               if (_selectedCategory == 'protein')
                 DropdownButtonFormField<ProteinType>(
                   value: _selectedProteinType,
-                  decoration: const InputDecoration(
-                    labelText: 'Protein Type',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!.proteinTypeLabel,
+                    border: const OutlineInputBorder(),
                   ),
                   items: ProteinType.values.map((type) {
                     return DropdownMenuItem(
@@ -257,7 +308,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
                   },
                   validator: (value) {
                     if (_selectedCategory == 'protein' && value == null) {
-                      return 'Please select a protein type';
+                      return AppLocalizations.of(context)!.pleaseSelectProteinType;
                     }
                     return null;
                   },
@@ -268,10 +319,10 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
               // Notes
               TextFormField(
                 controller: _notesController,
-                decoration: const InputDecoration(
-                  labelText: 'Notes (Optional)',
-                  border: OutlineInputBorder(),
-                  hintText: 'Any additional information',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.notesOptional,
+                  border: const OutlineInputBorder(),
+                  hintText: AppLocalizations.of(context)!.anyAdditionalInformation,
                 ),
                 maxLines: 2,
               ),
@@ -282,7 +333,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
       actions: [
         TextButton(
           onPressed: _isSaving ? null : () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(AppLocalizations.of(context)!.cancel),
         ),
         ElevatedButton(
           onPressed: _isSaving ? null : _saveIngredient,
@@ -292,7 +343,9 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : Text(widget.ingredient != null ? 'Save Changes' : 'Save'),
+              : Text(widget.ingredient != null 
+                  ? AppLocalizations.of(context)!.saveChanges 
+                  : AppLocalizations.of(context)!.save),
         ),
       ],
     );

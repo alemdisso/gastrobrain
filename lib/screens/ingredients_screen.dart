@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/ingredient.dart';
+import '../models/protein_type.dart';
 import '../database/database_helper.dart';
 import '../widgets/add_new_ingredient_dialog.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
@@ -19,6 +20,100 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   String _searchQuery = '';
+
+  /// Helper method to get localized protein type display name
+  String? _getLocalizedProteinType(BuildContext context, String? proteinTypeString) {
+    if (proteinTypeString == null) return null;
+    
+    // Convert string to ProteinType enum
+    try {
+      final proteinType = ProteinType.values.firstWhere(
+        (e) => e.name == proteinTypeString,
+      );
+      return proteinType.getLocalizedDisplayName(context);
+    } catch (e) {
+      // If conversion fails, return the original string
+      return proteinTypeString;
+    }
+  }
+
+  /// Helper method to get localized category display name
+  String _getLocalizedCategory(BuildContext context, String category) {
+    final l10n = AppLocalizations.of(context)!;
+    
+    // Map string categories to localized names
+    switch (category.toLowerCase()) {
+      case 'vegetable':
+        return l10n.ingredientCategoryVegetable;
+      case 'fruit':
+        return l10n.ingredientCategoryFruit;
+      case 'protein':
+        return l10n.ingredientCategoryProtein;
+      case 'dairy':
+        return l10n.ingredientCategoryDairy;
+      case 'grain':
+        return l10n.ingredientCategoryGrain;
+      case 'pulse':
+        return l10n.ingredientCategoryPulse;
+      case 'nuts_and_seeds':
+        return l10n.ingredientCategoryNutsAndSeeds;
+      case 'seasoning':
+        return l10n.ingredientCategorySeasoning;
+      case 'sugar products':
+        return l10n.ingredientCategorySugarProducts;
+      case 'oil':
+        return l10n.ingredientCategoryOil;
+      case 'other':
+        return l10n.ingredientCategoryOther;
+      default:
+        return category; // Fallback to original string
+    }
+  }
+
+  /// Helper method to get localized unit display name
+  String? _getLocalizedUnit(BuildContext context, String? unit) {
+    if (unit == null) return null;
+    
+    final l10n = AppLocalizations.of(context)!;
+    
+    // Localize descriptive units, keep abbreviations as-is
+    switch (unit.toLowerCase()) {
+      case 'cup':
+        return l10n.measurementUnitCup;
+      case 'piece':
+        return l10n.measurementUnitPiece;
+      case 'slice':
+        return l10n.measurementUnitSlice;
+      case 'tbsp':
+        return l10n.measurementUnitTablespoon;
+      case 'tsp':
+        return l10n.measurementUnitTeaspoon;
+      default:
+        return unit; // Keep abbreviations like 'g', 'ml', 'kg', etc.
+    }
+  }
+
+  /// Helper method to build localized ingredient subtitle
+  String _buildIngredientSubtitle(BuildContext context, Ingredient ingredient) {
+    final List<String> parts = [];
+    
+    // Add localized category
+    parts.add(_getLocalizedCategory(context, ingredient.category));
+    
+    // Add localized unit if available
+    final localizedUnit = _getLocalizedUnit(context, ingredient.unit);
+    if (localizedUnit != null) {
+      parts.add(localizedUnit);
+    }
+    
+    // Add localized protein type if available
+    final localizedProteinType = _getLocalizedProteinType(context, ingredient.proteinType);
+    if (localizedProteinType != null) {
+      parts.add(localizedProteinType);
+    }
+    
+    return parts.join(' • ');
+  }
 
   @override
   void initState() {
@@ -155,9 +250,9 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
         children: [
           const Icon(Icons.no_food, size: 64, color: Colors.grey),
           const SizedBox(height: 16),
-          const Text(
-            'No ingredients added yet',
-            style: TextStyle(fontSize: 18, color: Colors.grey),
+          Text(
+            AppLocalizations.of(context)!.noIngredientsAddedYet,
+            style: const TextStyle(fontSize: 18, color: Colors.grey),
           ),
           const SizedBox(height: 8),
           ElevatedButton.icon(
@@ -225,7 +320,7 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
                               return ListTile(
                                 title: Text(ingredient.name),
                                 subtitle: Text(
-                                  '${ingredient.category}${ingredient.unit != null ? ' • ${ingredient.unit}' : ''}${ingredient.proteinType != null ? ' • ${ingredient.proteinType}' : ''}',
+                                  _buildIngredientSubtitle(context, ingredient),
                                 ),
                                 trailing: PopupMenuButton(
                                   onSelected: (value) {

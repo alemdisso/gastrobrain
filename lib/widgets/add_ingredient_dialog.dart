@@ -8,6 +8,7 @@ import '../utils/id_generator.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
 import '../core/services/snackbar_service.dart';
+import '../l10n/app_localizations.dart';
 import '../core/di/service_provider.dart';
 
 class AddIngredientDialog extends StatefulWidget {
@@ -309,8 +310,8 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(widget.existingIngredient != null
-          ? 'Edit Ingredient'
-          : 'Add Ingredient'),
+          ? AppLocalizations.of(context)!.editIngredient
+          : AppLocalizations.of(context)!.addIngredient),
       content: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Form(
@@ -324,14 +325,14 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                       children: [
                         Expanded(
                           child: SegmentedButton<bool>(
-                            segments: const [
+                            segments: [
                               ButtonSegment(
                                 value: false,
-                                label: Text('From Database'),
+                                label: Text(AppLocalizations.of(context)!.fromDatabase),
                               ),
                               ButtonSegment(
                                 value: true,
-                                label: Text('Custom'),
+                                label: Text(AppLocalizations.of(context)!.custom),
                               ),
                             ],
                             selected: {_isCustomIngredient},
@@ -351,13 +352,13 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                       // Custom Ingredient Name
                       TextFormField(
                         controller: _customNameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Ingredient Name',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: AppLocalizations.of(context)!.ingredientName,
+                          border: const OutlineInputBorder(),
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter an ingredient name';
+                            return AppLocalizations.of(context)!.pleaseEnterIngredientName;
                           }
                           return null;
                         },
@@ -366,9 +367,9 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                       // Custom Ingredient Category
                       DropdownButtonFormField<String>(
                         value: _selectedCategory,
-                        decoration: const InputDecoration(
-                          labelText: 'Category',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: AppLocalizations.of(context)!.categoryLabel,
+                          border: const OutlineInputBorder(),
                         ),
                         items: _categories.map((category) {
                           return DropdownMenuItem(
@@ -390,11 +391,11 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                           // Search field
                           TextField(
                             controller: _searchController,
-                            decoration: const InputDecoration(
-                              labelText: 'Search Ingredients',
-                              border: OutlineInputBorder(),
-                              prefixIcon: Icon(Icons.search),
-                              hintText: 'Type to search...',
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context)!.searchIngredients,
+                              border: const OutlineInputBorder(),
+                              prefixIcon: const Icon(Icons.search),
+                              hintText: AppLocalizations.of(context)!.typeToSearch,
                             ),
                             onChanged: _filterIngredients,
                           ),
@@ -405,9 +406,9 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                     .contains(_selectedIngredient)
                                 ? _selectedIngredient
                                 : null,
-                            decoration: const InputDecoration(
-                              labelText: 'Select Ingredient',
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context)!.selectIngredient,
+                              border: const OutlineInputBorder(),
                             ),
                             items: _filteredIngredients.map((ingredient) {
                               return DropdownMenuItem(
@@ -422,7 +423,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                             },
                             validator: (value) {
                               if (!_isCustomIngredient && value == null) {
-                                return 'Please select an ingredient';
+                                return AppLocalizations.of(context)!.pleaseSelectAnIngredient;
                               }
                               return null;
                             },
@@ -432,7 +433,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                       const SizedBox(height: 8),
                       TextButton.icon(
                         icon: const Icon(Icons.add),
-                        label: const Text('Create New Ingredient'),
+                        label: Text(AppLocalizations.of(context)!.createNewIngredient),
                         onPressed: _createNewIngredient,
                       ),
                     ],
@@ -446,18 +447,18 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                         Expanded(
                           child: TextFormField(
                             controller: _quantityController,
-                            decoration: const InputDecoration(
-                              labelText: 'Quantity',
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context)!.quantity,
+                              border: const OutlineInputBorder(),
                             ),
                             keyboardType: const TextInputType.numberWithOptions(
                                 decimal: true),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter a quantity';
+                                return AppLocalizations.of(context)!.pleaseEnterQuantity;
                               }
                               if (double.tryParse(value) == null) {
-                                return 'Please enter a valid number';
+                                return AppLocalizations.of(context)!.pleaseEnterValidNumber;
                               }
                               return null;
                             },
@@ -470,14 +471,14 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                               // Custom ingredient unit selection
                               ? DropdownButtonFormField<String>(
                                   value: _selectedUnitOverride,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Unit (Optional)',
-                                    border: OutlineInputBorder(),
+                                  decoration: InputDecoration(
+                                    labelText: AppLocalizations.of(context)!.unitOptional,
+                                    border: const OutlineInputBorder(),
                                   ),
                                   items: [
-                                    const DropdownMenuItem(
+                                    DropdownMenuItem(
                                       value: null,
-                                      child: Text('No unit'),
+                                      child: Text(AppLocalizations.of(context)!.noUnit),
                                     ),
                                     ..._units.map((unit) {
                                       return DropdownMenuItem(
@@ -499,9 +500,9 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                     if (_useCustomUnit)
                                       DropdownButtonFormField<String>(
                                         value: _selectedUnitOverride,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Unit',
-                                          border: OutlineInputBorder(),
+                                        decoration: InputDecoration(
+                                          labelText: AppLocalizations.of(context)!.unit,
+                                          border: const OutlineInputBorder(),
                                         ),
                                         items: _units.map((unit) {
                                           return DropdownMenuItem(
@@ -519,9 +520,9 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                       SizedBox(
                                         height: 56,
                                         child: InputDecorator(
-                                          decoration: const InputDecoration(
-                                            labelText: 'Unit',
-                                            border: OutlineInputBorder(),
+                                          decoration: InputDecoration(
+                                            labelText: AppLocalizations.of(context)!.unit,
+                                            border: const OutlineInputBorder(),
                                           ),
                                           child: Text(
                                             _selectedIngredient?.unit ?? 'N/A',
@@ -554,7 +555,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                 });
                               },
                             ),
-                            const Text('Override default unit'),
+                            Text(AppLocalizations.of(context)!.overrideDefaultUnit),
                           ],
                         ),
                       ),
@@ -563,10 +564,10 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                     // Notes Field
                     TextFormField(
                       controller: _notesController,
-                      decoration: const InputDecoration(
-                        labelText: 'Preparation Notes (Optional)',
-                        border: OutlineInputBorder(),
-                        hintText: 'e.g., finely chopped, diced, etc.',
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.preparationNotesOptional,
+                        border: const OutlineInputBorder(),
+                        hintText: AppLocalizations.of(context)!.preparationNotesHint,
                       ),
                       maxLines: 2,
                     ),
@@ -577,7 +578,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
       actions: [
         TextButton(
           onPressed: _isSaving ? null : () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(AppLocalizations.of(context)!.cancel),
         ),
         ElevatedButton(
           onPressed: _isSaving ? null : _addIngredientToRecipe,
@@ -588,7 +589,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : Text(
-                  widget.existingIngredient != null ? 'Save Changes' : 'Add'),
+                  widget.existingIngredient != null ? AppLocalizations.of(context)!.saveChanges : AppLocalizations.of(context)!.add),
         ),
       ],
     );
