@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../core/validators/entity_validator.dart';
+import '../l10n/app_localizations.dart';
 
 class MealCookedDialog extends StatefulWidget {
   final Recipe recipe;
@@ -59,7 +60,7 @@ class _MealCookedDialogState extends State<MealCookedDialog> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error selecting date')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.errorSelectingDate)),
         );
       }
     }
@@ -98,7 +99,7 @@ class _MealCookedDialogState extends State<MealCookedDialog> {
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(content: Text('${AppLocalizations.of(context)!.errorPrefix} $e')),
       );
     }
   }
@@ -115,7 +116,7 @@ class _MealCookedDialogState extends State<MealCookedDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Cook ${widget.recipe.name}'),
+      title: Text('${AppLocalizations.of(context)!.cookNow} ${widget.recipe.name}'),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -127,10 +128,10 @@ class _MealCookedDialogState extends State<MealCookedDialog> {
               ListTile(
                 leading: const Icon(Icons.calendar_today),
                 title: Text(
-                  'Cooked on: ${_cookedAt.toString().split('.')[0]}',
+                  '${AppLocalizations.of(context)!.cookedOn}: ${_cookedAt.toString().split('.')[0]}',
                 ),
                 subtitle: Text(
-                  'Planned for: ${widget.plannedDate.toString().split('T')[0]}',
+                  '${AppLocalizations.of(context)!.plannedFor}: ${widget.plannedDate.toString().split('T')[0]}',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 onTap: _selectDate,
@@ -141,18 +142,18 @@ class _MealCookedDialogState extends State<MealCookedDialog> {
               // Servings
               TextFormField(
                 controller: _servingsController,
-                decoration: const InputDecoration(
-                  labelText: 'Number of Servings',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.people),
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.numberOfServings,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.people),
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter number of servings';
+                    return AppLocalizations.of(context)!.pleaseEnterNumberOfServings;
                   }
                   if (int.tryParse(value) == null || int.parse(value) < 1) {
-                    return 'Please enter a valid number';
+                    return AppLocalizations.of(context)!.pleaseEnterValidNumber;
                   }
                   return null;
                 },
@@ -165,17 +166,17 @@ class _MealCookedDialogState extends State<MealCookedDialog> {
                   Expanded(
                     child: TextFormField(
                       controller: _prepTimeController,
-                      decoration: const InputDecoration(
-                        labelText: 'Actual Prep Time (min)',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.timer),
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.actualPrepTimeMin,
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.timer),
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value != null && value.isNotEmpty) {
                           final time = double.tryParse(value);
                           if (time == null || time < 0) {
-                            return 'Enter a valid time';
+                            return AppLocalizations.of(context)!.enterValidTime;
                           }
                         }
                         return null;
@@ -186,17 +187,17 @@ class _MealCookedDialogState extends State<MealCookedDialog> {
                   Expanded(
                     child: TextFormField(
                       controller: _cookTimeController,
-                      decoration: const InputDecoration(
-                        labelText: 'Actual Cook Time (min)',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.timer),
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.actualCookTimeMin,
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.timer),
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value != null && value.isNotEmpty) {
                           final time = double.tryParse(value);
                           if (time == null || time < 0) {
-                            return 'Enter a valid time';
+                            return AppLocalizations.of(context)!.enterValidTime;
                           }
                         }
                         return null;
@@ -210,7 +211,7 @@ class _MealCookedDialogState extends State<MealCookedDialog> {
               // Success rating
               Row(
                 children: [
-                  const Text('Was it successful?'),
+                  Text(AppLocalizations.of(context)!.wasItSuccessful),
                   const Spacer(),
                   Switch(
                     value: _wasSuccessful,
@@ -227,10 +228,10 @@ class _MealCookedDialogState extends State<MealCookedDialog> {
               // Notes
               TextFormField(
                 controller: _notesController,
-                decoration: const InputDecoration(
-                  labelText: 'Notes (optional)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.note),
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.notesOptional,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.note),
                 ),
                 maxLines: 2,
               ),
@@ -241,11 +242,11 @@ class _MealCookedDialogState extends State<MealCookedDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(AppLocalizations.of(context)!.cancel),
         ),
         ElevatedButton(
           onPressed: _saveMeal,
-          child: const Text('Save'),
+          child: Text(AppLocalizations.of(context)!.save),
         ),
       ],
     );

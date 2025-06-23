@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../database/database_helper.dart';
 import '../core/validators/entity_validator.dart';
+import '../l10n/app_localizations.dart';
 
 class MealRecordingDialog extends StatefulWidget {
   final Recipe primaryRecipe;
@@ -88,7 +89,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
           _isLoadingRecipes = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading recipes: $e')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.errorLoadingRecipes} $e')),
         );
       }
     }
@@ -118,7 +119,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error selecting date')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.errorSelectingDate)),
         );
       }
     }
@@ -127,7 +128,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
   Future<void> _showAddRecipeDialog() async {
     if (_availableRecipes.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No additional recipes available.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.noAdditionalRecipesAvailable)),
       );
       return;
     }
@@ -220,7 +221,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(content: Text('${AppLocalizations.of(context)!.errorPrefix} $e')),
       );
     }
   }
