@@ -39,7 +39,7 @@ class RecipeSelectionCard extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                recommendation.recipe.category.displayName,
+                recommendation.recipe.category.getLocalizedDisplayName(context),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Theme.of(context)
                           .textTheme

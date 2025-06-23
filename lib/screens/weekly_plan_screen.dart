@@ -652,7 +652,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           _currentMealPlan?.getItemsForDateAndMealType(date, mealType) ?? [];
       if (items.isEmpty) {
         if (mounted) {
-          SnackbarService.showError(context, AppLocalizations.of(context)!.plannedMealNotFound);
+          SnackbarService.showError(
+              context, AppLocalizations.of(context)!.plannedMealNotFound);
         }
         return;
       }
@@ -661,7 +662,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       final recipe = await _dbHelper.getRecipe(recipeId);
       if (recipe == null) {
         if (mounted) {
-          SnackbarService.showError(context, AppLocalizations.of(context)!.recipeNotFound);
+          SnackbarService.showError(
+              context, AppLocalizations.of(context)!.recipeNotFound);
         }
         return;
       }
@@ -762,7 +764,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       });
 
       if (mounted) {
-        SnackbarService.showSuccess(context, AppLocalizations.of(context)!.mealMarkedAsCooked);
+        SnackbarService.showSuccess(
+            context, AppLocalizations.of(context)!.mealMarkedAsCooked);
         // Refresh data to show updated meal history
         _loadData();
       }
@@ -828,7 +831,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       final recipe = await _dbHelper.getRecipe(recipeId);
       if (recipe == null) {
         if (mounted) {
-          SnackbarService.showError(context, AppLocalizations.of(context)!.recipeNotFound);
+          SnackbarService.showError(
+              context, AppLocalizations.of(context)!.recipeNotFound);
         }
         return;
       }
@@ -934,7 +938,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       final recipe = await _dbHelper.getRecipe(recipeId);
       if (recipe == null) {
         if (mounted) {
-          SnackbarService.showError(context, AppLocalizations.of(context)!.recipeNotFound);
+          SnackbarService.showError(
+              context, AppLocalizations.of(context)!.recipeNotFound);
         }
         return;
       }
@@ -1033,7 +1038,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           _currentMealPlan?.getItemsForDateAndMealType(date, mealType) ?? [];
       if (items.isEmpty) {
         if (mounted) {
-          SnackbarService.showError(context, AppLocalizations.of(context)!.plannedMealNotFound);
+          SnackbarService.showError(
+              context, AppLocalizations.of(context)!.plannedMealNotFound);
         }
         return;
       }
@@ -1242,7 +1248,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    _currentWeekContext.displayName,
+                                    _currentWeekContext
+                                        .getLocalizedDisplayName(context),
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
@@ -1289,7 +1296,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                           Padding(
                             padding: const EdgeInsets.only(top: 2),
                             child: Text(
-                              AppLocalizations.of(context)!.tapToJumpToCurrentWeek,
+                              AppLocalizations.of(context)!
+                                  .tapToJumpToCurrentWeek,
                               style: TextStyle(
                                 fontSize: 10,
                                 color: Theme.of(context)
@@ -1452,7 +1460,9 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
             Text(
               _showingMultiRecipeMode
                   ? AppLocalizations.of(context)!.addSideDishes
-                  : (_showingMenu ? AppLocalizations.of(context)!.mealOptions : AppLocalizations.of(context)!.selectRecipe),
+                  : (_showingMenu
+                      ? AppLocalizations.of(context)!.mealOptions
+                      : AppLocalizations.of(context)!.selectRecipe),
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
@@ -1543,7 +1553,8 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
                   ? const Center(child: CircularProgressIndicator())
                   : _recommendations.isEmpty
                       ? Center(
-                          child: Text(AppLocalizations.of(context)!.noRecommendationsAvailable))
+                          child: Text(AppLocalizations.of(context)!
+                              .noRecommendationsAvailable))
                       : ListView.builder(
                           itemCount: _recommendations.length,
                           itemBuilder: (context, index) {
@@ -1609,7 +1620,8 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
         ListTile(
           leading: const Icon(Icons.add),
           title: Text(AppLocalizations.of(context)!.addSideDishes),
-          subtitle: Text(AppLocalizations.of(context)!.addMoreRecipesToThisMeal),
+          subtitle:
+              Text(AppLocalizations.of(context)!.addMoreRecipesToThisMeal),
           onTap: () => setState(() {
             _showingMultiRecipeMode = true;
           }),

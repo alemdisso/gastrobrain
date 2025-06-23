@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 import '../models/recipe.dart';
 import '../models/recipe_category.dart';
+import '../models/frequency_type.dart';
 import '../widgets/recipe_card.dart';
 import '../l10n/app_localizations.dart';
 import 'add_recipe_screen.dart';
@@ -82,7 +83,8 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(AppLocalizations.of(context)!.deleteRecipe),
-        content: Text(AppLocalizations.of(context)!.deleteConfirmation(recipe.name)),
+        content:
+            Text(AppLocalizations.of(context)!.deleteConfirmation(recipe.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -225,18 +227,18 @@ class _HomePageState extends State<HomePage> {
                     DropdownButtonFormField<String>(
                       value: selectedFrequency,
                       decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)!.cookingFrequency,
+                        labelText:
+                            AppLocalizations.of(context)!.cookingFrequency,
                       ),
                       items: [
-                        DropdownMenuItem(value: null, child: Text(AppLocalizations.of(context)!.any)),
-                        ...[
-                          'daily',
-                          'weekly',
-                          'biweekly',
-                          'monthly',
-                          'rarely'
-                        ].map(
-                            (f) => DropdownMenuItem(value: f, child: Text(f))),
+                        DropdownMenuItem(
+                            value: null,
+                            child: Text(AppLocalizations.of(context)!.any)),
+                        ...FrequencyType.values.map((frequency) => 
+                            DropdownMenuItem(
+                              value: frequency.value, 
+                              child: Text(frequency.getLocalizedDisplayName(context))
+                            )),
                       ],
                       onChanged: (value) {
                         setState(() {
@@ -251,11 +253,14 @@ class _HomePageState extends State<HomePage> {
                         labelText: AppLocalizations.of(context)!.category,
                       ),
                       items: [
-                        DropdownMenuItem(value: null, child: Text(AppLocalizations.of(context)!.any)),
+                        DropdownMenuItem(
+                            value: null,
+                            child: Text(AppLocalizations.of(context)!.any)),
                         ...RecipeCategory.values.map(
                           (category) => DropdownMenuItem(
                             value: category.value,
-                            child: Text(category.displayName),
+                            child:
+                                Text(category.getLocalizedDisplayName(context)),
                           ),
                         ),
                       ],

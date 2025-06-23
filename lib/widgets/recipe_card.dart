@@ -89,7 +89,8 @@ class _RecipeCardState extends State<RecipeCard> {
                           const SizedBox(width: 4),
                           Flexible(
                             child: Text(
-                              widget.recipe.category.displayName,
+                              widget.recipe.category
+                                  .getLocalizedDisplayName(context),
                               style: TextStyle(
                                 color: Colors.blue.shade700,
                                 fontWeight: FontWeight.w500,

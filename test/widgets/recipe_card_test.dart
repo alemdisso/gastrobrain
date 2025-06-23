@@ -1,13 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/recipe_category.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/widgets/recipe_card.dart';
+import 'package:gastrobrain/l10n/app_localizations.dart';
 
 void main() {
   group('RecipeCard Layout Tests', () {
     late Recipe testRecipe;
+
+    Widget createTestableWidget(Widget child, {Locale locale = const Locale('en', '')}) {
+      return MaterialApp(
+        locale: locale,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en', ''),
+          Locale('pt', ''),
+        ],
+        home: Scaffold(body: child),
+      );
+    }
 
     setUp(() {
       testRecipe = Recipe(
@@ -29,18 +48,16 @@ void main() {
       
       // Build the widget in a constrained width to simulate mobile
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SizedBox(
-              width: 350, // Simulate narrow mobile screen
-              child: RecipeCard(
-                recipe: testRecipe,
-                onEdit: () {},
-                onDelete: () {},
-                onCooked: () {},
-                mealCount: 15, // High count to make "Times cooked: 15" longer
-                lastCooked: longDate,
-              ),
+        createTestableWidget(
+          SizedBox(
+            width: 350, // Simulate narrow mobile screen
+            child: RecipeCard(
+              recipe: testRecipe,
+              onEdit: () {},
+              onDelete: () {},
+              onCooked: () {},
+              mealCount: 15, // High count to make "Times cooked: 15" longer
+              lastCooked: longDate,
             ),
           ),
         ),
@@ -62,6 +79,43 @@ void main() {
       // Let's at least verify the widgets exist and are rendered
       final actionButtons = find.byType(IconButton);
       expect(actionButtons, findsAtLeast(2)); // Should find multiple action buttons
+    });
+
+    testWidgets('recipe card displays localized category - English', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(
+          RecipeCard(
+            recipe: testRecipe,
+            onEdit: () {},
+            onDelete: () {},
+            onCooked: () {},
+            mealCount: 5,
+            lastCooked: DateTime(2023, 12, 25),
+          ),
+        ),
+      );
+
+      // Should display English category name
+      expect(find.text('Main dishes'), findsOneWidget);
+    });
+
+    testWidgets('recipe card displays localized category - Portuguese', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(
+          RecipeCard(
+            recipe: testRecipe,
+            onEdit: () {},
+            onDelete: () {},
+            onCooked: () {},
+            mealCount: 5,
+            lastCooked: DateTime(2023, 12, 25),
+          ),
+          locale: const Locale('pt', ''),
+        ),
+      );
+
+      // Should display Portuguese category name
+      expect(find.text('Pratos principais'), findsOneWidget);
     });
   });
 }

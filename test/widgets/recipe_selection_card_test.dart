@@ -1,14 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/recipe_recommendation.dart';
 import 'package:gastrobrain/models/recipe_category.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/widgets/recipe_selection_card.dart';
+import 'package:gastrobrain/l10n/app_localizations.dart';
 
 void main() {
   late Recipe testRecipe;
   late RecipeRecommendation testRecommendation;
+
+  Widget createTestableWidget(Widget child, {Locale locale = const Locale('en', '')}) {
+    return MaterialApp(
+      locale: locale,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', ''),
+        Locale('pt', ''),
+      ],
+      home: Scaffold(body: child),
+    );
+  }
 
   setUp(() {
     testRecipe = Recipe(
@@ -36,14 +55,12 @@ void main() {
   });
 
   group('RecipeSelectionCard - Basic Rendering', () {
-    testWidgets('displays recipe name and category',
+    testWidgets('displays recipe name and category - English',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: RecipeSelectionCard(
-              recommendation: testRecommendation,
-            ),
+        createTestableWidget(
+          RecipeSelectionCard(
+            recommendation: testRecommendation,
           ),
         ),
       );
@@ -52,15 +69,31 @@ void main() {
       expect(find.text('Test Recipe'), findsOneWidget);
 
       // Verify category is displayed
-      expect(find.text(RecipeCategory.mainDishes.displayName), findsOneWidget);
+      expect(find.text('Main dishes'), findsOneWidget);
+    });
+
+    testWidgets('displays recipe name and category - Portuguese',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(
+          RecipeSelectionCard(
+            recommendation: testRecommendation,
+          ),
+          locale: const Locale('pt', ''),
+        ),
+      );
+
+      // Verify recipe name is displayed
+      expect(find.text('Test Recipe'), findsOneWidget);
+
+      // Verify category is displayed
+      expect(find.text('Pratos principais'), findsOneWidget);
     });
     testWidgets('displays all three badge types', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: RecipeSelectionCard(
-              recommendation: testRecommendation,
-            ),
+        createTestableWidget(
+          RecipeSelectionCard(
+            recommendation: testRecommendation,
           ),
         ),
       );
@@ -79,12 +112,10 @@ void main() {
       bool wasTapped = false;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: RecipeSelectionCard(
-              recommendation: testRecommendation,
-              onTap: () => wasTapped = true,
-            ),
+        createTestableWidget(
+          RecipeSelectionCard(
+            recommendation: testRecommendation,
+            onTap: () => wasTapped = true,
           ),
         ),
       );
@@ -98,11 +129,9 @@ void main() {
     testWidgets('displays tooltips on badge long press',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: RecipeSelectionCard(
-              recommendation: testRecommendation,
-            ),
+        createTestableWidget(
+          RecipeSelectionCard(
+            recommendation: testRecommendation,
           ),
         ),
       );
@@ -161,11 +190,9 @@ void main() {
         );
 
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: RecipeSelectionCard(
-                recommendation: testRecommendation,
-              ),
+          createTestableWidget(
+            RecipeSelectionCard(
+              recommendation: testRecommendation,
             ),
           ),
         );
@@ -229,11 +256,9 @@ void main() {
         );
 
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: RecipeSelectionCard(
-                recommendation: testRecommendation,
-              ),
+          createTestableWidget(
+            RecipeSelectionCard(
+              recommendation: testRecommendation,
             ),
           ),
         );
@@ -307,11 +332,9 @@ void main() {
         );
 
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: RecipeSelectionCard(
-                recommendation: testRecommendation,
-              ),
+          createTestableWidget(
+            RecipeSelectionCard(
+              recommendation: testRecommendation,
             ),
           ),
         );
@@ -355,11 +378,9 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: RecipeSelectionCard(
-              recommendation: testRecommendation,
-            ),
+        createTestableWidget(
+          RecipeSelectionCard(
+            recommendation: testRecommendation,
           ),
         ),
       );
@@ -379,11 +400,9 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: RecipeSelectionCard(
-              recommendation: testRecommendation,
-            ),
+        createTestableWidget(
+          RecipeSelectionCard(
+            recommendation: testRecommendation,
           ),
         ),
       );
@@ -405,11 +424,9 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: RecipeSelectionCard(
-              recommendation: testRecommendation,
-            ),
+        createTestableWidget(
+          RecipeSelectionCard(
+            recommendation: testRecommendation,
           ),
         ),
       );
@@ -440,11 +457,9 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: RecipeSelectionCard(
-              recommendation: testRecommendation,
-            ),
+        createTestableWidget(
+          RecipeSelectionCard(
+            recommendation: testRecommendation,
           ),
         ),
       );
@@ -482,11 +497,9 @@ void main() {
         );
 
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: RecipeSelectionCard(
-                recommendation: testRecommendation,
-              ),
+          createTestableWidget(
+            RecipeSelectionCard(
+              recommendation: testRecommendation,
             ),
           ),
         );
@@ -540,11 +553,9 @@ void main() {
         );
 
         await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: RecipeSelectionCard(
-                recommendation: testRecommendation,
-              ),
+          createTestableWidget(
+            RecipeSelectionCard(
+              recommendation: testRecommendation,
             ),
           ),
         );

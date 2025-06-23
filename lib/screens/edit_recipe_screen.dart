@@ -167,7 +167,8 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     } on NotFoundException catch (e) {
       _showErrorSnackBar(e.message);
     } on GastrobrainException catch (e) {
-      _showErrorSnackBar('${AppLocalizations.of(context)!.errorUpdatingRecipe} ${e.message}');
+      _showErrorSnackBar(
+          '${AppLocalizations.of(context)!.errorUpdatingRecipe} ${e.message}');
     } catch (e) {
       _showErrorSnackBar(AppLocalizations.of(context)!.unexpectedError);
     } finally {
@@ -210,7 +211,8 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return AppLocalizations.of(context)!.pleaseEnterRecipeName;
+                      return AppLocalizations.of(context)!
+                          .pleaseEnterRecipeName;
                     }
                     return null;
                   },
@@ -225,7 +227,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                   items: FrequencyType.values.map((frequency) {
                     return DropdownMenuItem<FrequencyType>(
                       value: frequency,
-                      child: Text(frequency.displayName),
+                      child: Text(frequency.getLocalizedDisplayName(context)),
                     );
                   }).toList(),
                   onChanged: (FrequencyType? newValue) {
@@ -246,7 +248,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                   items: RecipeCategory.values.map((category) {
                     return DropdownMenuItem<RecipeCategory>(
                       value: category,
-                      child: Text(category.displayName),
+                      child: Text(category.getLocalizedDisplayName(context)),
                     );
                   }).toList(),
                   onChanged: (RecipeCategory? newValue) {
@@ -258,15 +260,20 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                _buildDifficultyField(AppLocalizations.of(context)!.difficultyLevel, _difficulty, (value) {
+                _buildDifficultyField(
+                    AppLocalizations.of(context)!.difficultyLevel, _difficulty,
+                    (value) {
                   setState(() => _difficulty = value);
                 }),
                 const SizedBox(height: 16),
-                _buildTimeField(AppLocalizations.of(context)!.preparationTime, _prepTimeController),
+                _buildTimeField(AppLocalizations.of(context)!.preparationTime,
+                    _prepTimeController),
                 const SizedBox(height: 16),
-                _buildTimeField(AppLocalizations.of(context)!.cookingTime, _cookTimeController),
+                _buildTimeField(AppLocalizations.of(context)!.cookingTime,
+                    _cookTimeController),
                 const SizedBox(height: 16),
-                _buildRatingField(AppLocalizations.of(context)!.rating, _rating, (value) {
+                _buildRatingField(AppLocalizations.of(context)!.rating, _rating,
+                    (value) {
                   setState(() => _rating = value);
                 }),
                 const SizedBox(height: 16),

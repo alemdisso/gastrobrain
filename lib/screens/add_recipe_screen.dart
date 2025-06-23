@@ -128,7 +128,8 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   future: _getIngredientDetails(ingredient.ingredientId!),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
-                      final ingredientName = snapshot.data?.name ?? AppLocalizations.of(context)!.unknown;
+                      final ingredientName = snapshot.data?.name ??
+                          AppLocalizations.of(context)!.unknown;
                       final unit =
                           ingredient.unitOverride ?? snapshot.data?.unit ?? '';
                       return Text(
@@ -269,11 +270,13 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       }
     } on GastrobrainException catch (e) {
       if (mounted) {
-        SnackbarService.showError(context, '${AppLocalizations.of(context)!.errorSavingRecipe} ${e.message}');
+        SnackbarService.showError(context,
+            '${AppLocalizations.of(context)!.errorSavingRecipe} ${e.message}');
       }
     } catch (e) {
       if (mounted) {
-        SnackbarService.showError(context, AppLocalizations.of(context)!.unexpectedError);
+        SnackbarService.showError(
+            context, AppLocalizations.of(context)!.unexpectedError);
       }
     } finally {
       if (mounted) {
@@ -316,7 +319,8 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return AppLocalizations.of(context)!.pleaseEnterRecipeName;
+                      return AppLocalizations.of(context)!
+                          .pleaseEnterRecipeName;
                     }
                     return null;
                   },
@@ -331,7 +335,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   items: frequencies.map((frequency) {
                     return DropdownMenuItem<FrequencyType>(
                       value: frequency,
-                      child: Text(frequency.displayName),
+                      child: Text(frequency.getLocalizedDisplayName(context)),
                     );
                   }).toList(),
                   onChanged: (FrequencyType? newValue) {
@@ -352,7 +356,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   items: RecipeCategory.values.map((category) {
                     return DropdownMenuItem<RecipeCategory>(
                       value: category,
-                      child: Text(category.displayName),
+                      child: Text(category.getLocalizedDisplayName(context)),
                     );
                   }).toList(),
                   onChanged: (RecipeCategory? newValue) {
@@ -364,15 +368,20 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                _buildDifficultyField(AppLocalizations.of(context)!.difficultyLevel, _difficulty, (value) {
+                _buildDifficultyField(
+                    AppLocalizations.of(context)!.difficultyLevel, _difficulty,
+                    (value) {
                   setState(() => _difficulty = value);
                 }),
                 const SizedBox(height: 16),
-                _buildTimeField(AppLocalizations.of(context)!.preparationTime, _prepTimeController),
+                _buildTimeField(AppLocalizations.of(context)!.preparationTime,
+                    _prepTimeController),
                 const SizedBox(height: 16),
-                _buildTimeField(AppLocalizations.of(context)!.cookingTime, _cookTimeController),
+                _buildTimeField(AppLocalizations.of(context)!.cookingTime,
+                    _cookTimeController),
                 const SizedBox(height: 16),
-                _buildRatingField(AppLocalizations.of(context)!.rating, _rating, (value) {
+                _buildRatingField(AppLocalizations.of(context)!.rating, _rating,
+                    (value) {
                   setState(() => _rating = value);
                 }),
                 const SizedBox(height: 16),
@@ -414,7 +423,8 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                             child: Padding(
                               padding: const EdgeInsets.all(16.0),
                               child: Text(
-                                AppLocalizations.of(context)!.noIngredientsAdded,
+                                AppLocalizations.of(context)!
+                                    .noIngredientsAdded,
                                 style: const TextStyle(
                                   color: Colors.grey,
                                   fontStyle: FontStyle.italic,
