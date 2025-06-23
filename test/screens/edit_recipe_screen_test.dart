@@ -1,12 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/screens/edit_recipe_screen.dart';
+import 'package:gastrobrain/l10n/app_localizations.dart';
 
 void main() {
   group('EditRecipeScreen', () {
     late Recipe testRecipe;
+
+    Widget createTestableWidget(Widget child) {
+      return MaterialApp(
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en', ''),
+          Locale('pt', ''),
+        ],
+        home: child,
+      );
+    }
 
     setUp(() {
       testRecipe = Recipe(
@@ -24,9 +42,7 @@ void main() {
     testWidgets('loads recipe frequency correctly',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: EditRecipeScreen(recipe: testRecipe),
-        ),
+        createTestableWidget(EditRecipeScreen(recipe: testRecipe)),
       );
 
       // Find dropdown
@@ -49,9 +65,7 @@ void main() {
 
     testWidgets('shows all frequency options', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: EditRecipeScreen(recipe: testRecipe),
-        ),
+        createTestableWidget(EditRecipeScreen(recipe: testRecipe)),
       );
 
       // Find and tap the dropdown button to open the menu
@@ -74,9 +88,7 @@ void main() {
 
     testWidgets('can change frequency', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: EditRecipeScreen(recipe: testRecipe),
-        ),
+        createTestableWidget(EditRecipeScreen(recipe: testRecipe)),
       );
 
       // Open dropdown and select monthly
@@ -106,9 +118,7 @@ void main() {
     testWidgets('preserves frequency when other fields change',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: EditRecipeScreen(recipe: testRecipe),
-        ),
+        createTestableWidget(EditRecipeScreen(recipe: testRecipe)),
       );
 
       // Change recipe name

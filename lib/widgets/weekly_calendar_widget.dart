@@ -631,31 +631,30 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            // Difficulty stars
-                            Row(
-                              children: List.generate(
-                                5,
-                                (index) => Icon(
-                                  index < recipe.difficulty
-                                      ? Icons.star
-                                      : Icons.star_border,
-                                  size: 16,
-                                  color: index < recipe.difficulty
-                                      ? Colors.amber
-                                      : Colors.grey,
-                                ),
+                            // Difficulty stars (reduced to 3 stars to save space)
+                            ...List.generate(
+                              3,
+                              (index) => Icon(
+                                index < recipe.difficulty
+                                    ? Icons.star
+                                    : Icons.star_border,
+                                size: 12,
+                                color: index < recipe.difficulty
+                                    ? Colors.amber
+                                    : Colors.grey,
                               ),
                             ),
-                            const SizedBox(width: 16),
+                            const SizedBox(width: 4),
                             // Time
-                            Row(
-                              children: [
-                                const Icon(Icons.timer,
-                                    size: 16, color: Colors.grey),
-                                const SizedBox(width: 4),
-                                Text(
-                                    '${recipe.prepTimeMinutes + recipe.cookTimeMinutes} min'),
-                              ],
+                            const Icon(Icons.timer,
+                                size: 12, color: Colors.grey),
+                            const SizedBox(width: 2),
+                            Expanded(
+                              child: Text(
+                                  '${recipe.prepTimeMinutes + recipe.cookTimeMinutes}min',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 11),
+                              ),
                             ),
                           ],
                         ),

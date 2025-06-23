@@ -2,11 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/meal.dart';
 import 'package:gastrobrain/models/meal_recipe.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/screens/meal_history_screen.dart';
+import 'package:gastrobrain/l10n/app_localizations.dart';
 import '../mocks/mock_database_helper.dart';
 
 void main() {
@@ -14,6 +16,22 @@ void main() {
   late Recipe testRecipe;
   late Recipe sideRecipe;
   late Meal testMeal;
+
+  Widget createTestableWidget(Widget child) {
+    return MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', ''),
+        Locale('pt', ''),
+      ],
+      home: child,
+    );
+  }
 
   setUp(() async {
     mockDbHelper = MockDatabaseHelper();
@@ -72,8 +90,8 @@ void main() {
     testWidgets('displays edit button for each meal',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: MealHistoryScreen(
+        createTestableWidget(
+          MealHistoryScreen(
             recipe: testRecipe,
             databaseHelper: mockDbHelper,
           ),
@@ -109,8 +127,8 @@ void main() {
       ));
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: MealHistoryScreen(
+        createTestableWidget(
+          MealHistoryScreen(
             recipe: testRecipe,
             databaseHelper: mockDbHelper,
           ),
@@ -155,8 +173,8 @@ void main() {
       await mockDbHelper.insertMealRecipe(sideMealRecipe);
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: MealHistoryScreen(
+        createTestableWidget(
+          MealHistoryScreen(
             recipe: testRecipe,
             databaseHelper: mockDbHelper,
           ),
@@ -210,8 +228,8 @@ void main() {
       ));
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: MealHistoryScreen(
+        createTestableWidget(
+          MealHistoryScreen(
             recipe: testRecipe,
             databaseHelper: mockDbHelper,
           ),
@@ -245,8 +263,8 @@ void main() {
     testWidgets('edit button is properly sized and positioned',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: MealHistoryScreen(
+        createTestableWidget(
+          MealHistoryScreen(
             recipe: testRecipe,
             databaseHelper: mockDbHelper,
           ),
@@ -296,8 +314,8 @@ void main() {
       await mockDbHelper.insertMealRecipe(planMealRecipe);
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: MealHistoryScreen(
+        createTestableWidget(
+          MealHistoryScreen(
             recipe: testRecipe,
             databaseHelper: mockDbHelper,
           ),

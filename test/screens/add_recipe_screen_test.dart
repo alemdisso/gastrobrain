@@ -2,10 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:gastrobrain/core/di/providers/database_provider.dart';
 import 'package:gastrobrain/models/ingredient.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/screens/add_recipe_screen.dart';
+import 'package:gastrobrain/l10n/app_localizations.dart';
 import '../mocks/mock_database_helper.dart';
 
 void main() {
@@ -44,6 +46,16 @@ void main() {
     // Build a testable widget
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en', ''),
+          Locale('pt', ''),
+        ],
         home: Scaffold(
           body: Builder(
             builder: (context) {

@@ -2,22 +2,35 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-//import 'package:sqflite/sqflite.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:gastrobrain/models/meal_plan.dart';
 import 'package:gastrobrain/models/meal_plan_item.dart';
 import 'package:gastrobrain/models/meal_plan_item_recipe.dart';
 import 'package:gastrobrain/models/time_context.dart';
+import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/widgets/weekly_calendar_widget.dart';
-import 'package:mockito/annotations.dart';
+import '../mocks/mock_database_helper.dart';
 
-// Generate mocks for the database
-@GenerateMocks([])
 void main() {
   late DateTime testWeekStart;
   late MealPlan testMealPlan;
+  late MockDatabaseHelper mockDbHelper;
 
-  setUp(() {
+  setUp(() async {
+    // Set up mock database
+    mockDbHelper = MockDatabaseHelper();
+    
+    // Add test recipes to mock database
+    await mockDbHelper.insertRecipe(Recipe(
+      id: 'recipe-1',
+      name: 'Test Recipe 1',
+      createdAt: DateTime.now(),
+    ));
+    await mockDbHelper.insertRecipe(Recipe(
+      id: 'recipe-2', 
+      name: 'Test Recipe 2',
+      createdAt: DateTime.now(),
+    ));
+    
     // Set up a Friday as the week start date
     testWeekStart = DateTime(2024, 3, 1); // March 1, 2024 is a Friday
 
@@ -79,12 +92,6 @@ void main() {
     );
   });
 
-  setUpAll(() {
-    // Initialize FFI
-    sqfliteFfiInit();
-    // Set the database factory
-    databaseFactory = databaseFactoryFfi;
-  });
 
   testWidgets('WeeklyCalendarWidget renders correctly',
       (WidgetTester tester) async {
@@ -100,6 +107,7 @@ void main() {
             weekStartDate: testWeekStart,
             mealPlan: null,
             timeContext: TimeContext.current,
+            databaseHelper: mockDbHelper,
           ),
         ),
       ),
@@ -135,6 +143,7 @@ void main() {
             weekStartDate: testWeekStart,
             mealPlan: testMealPlan,
             timeContext: TimeContext.current,
+            databaseHelper: mockDbHelper,
           ),
         ),
       ),
@@ -169,6 +178,7 @@ void main() {
             weekStartDate: testWeekStart,
             mealPlan: null,
             timeContext: TimeContext.current,
+            databaseHelper: mockDbHelper,
             onSlotTap: (date, mealType) {
               callbackCalled = true;
             },
@@ -232,6 +242,7 @@ void main() {
             weekStartDate: testWeekStart,
             mealPlan: simpleMealPlan,
             timeContext: TimeContext.current,
+            databaseHelper: mockDbHelper,
             onMealTap: (date, mealType, recipeId) {},
           ),
         ),
@@ -262,6 +273,7 @@ void main() {
             weekStartDate: testWeekStart,
             mealPlan: null,
             timeContext: TimeContext.current,
+            databaseHelper: mockDbHelper,
           ),
         ),
       ),
@@ -284,6 +296,7 @@ void main() {
             weekStartDate: testWeekStart,
             mealPlan: null,
             timeContext: TimeContext.current,
+            databaseHelper: mockDbHelper,
           ),
         ),
       ),
@@ -319,6 +332,7 @@ void main() {
             weekStartDate: testWeekStart,
             mealPlan: null,
             timeContext: TimeContext.current,
+            databaseHelper: mockDbHelper,
             onDaySelected: (date, index) {
               selectedDate = date;
               selectedIndex = index;
@@ -337,8 +351,4 @@ void main() {
     // For now, this is a placeholder for when the widget has better test hooks
   });
 
-  tearDown(() async {
-    // Close any open database connections
-    await databaseFactory.deleteDatabase(inMemoryDatabasePath);
-  });
 }

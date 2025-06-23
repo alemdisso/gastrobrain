@@ -2,11 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/meal.dart';
 import 'package:gastrobrain/models/meal_recipe.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/screens/meal_history_screen.dart';
+import 'package:gastrobrain/l10n/app_localizations.dart';
 import '../mocks/mock_database_helper.dart';
 
 void main() {
@@ -14,6 +16,22 @@ void main() {
   late Recipe testRecipe;
   late Recipe sideRecipe1;
   late Recipe sideRecipe2;
+
+  Widget createTestableWidget(Widget child) {
+    return MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', ''),
+        Locale('pt', ''),
+      ],
+      home: child,
+    );
+  }
 
   setUp(() async {
     mockDbHelper = MockDatabaseHelper();
@@ -53,8 +71,8 @@ void main() {
     testWidgets('displays app bar and basic structure',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: MealHistoryScreen(
+        createTestableWidget(
+          MealHistoryScreen(
             recipe: testRecipe,
             databaseHelper: mockDbHelper, // Add the mock database helper
           ),
@@ -107,8 +125,8 @@ void main() {
       await mockDbHelper.insertMealRecipe(mealRecipe);
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: MealHistoryScreen(
+        createTestableWidget(
+          MealHistoryScreen(
             recipe: testRecipe,
             databaseHelper: mockDbHelper, // Add the mock database helper
           ),
@@ -173,8 +191,8 @@ void main() {
       await mockDbHelper.insertMealRecipe(sideMealRecipe2);
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: MealHistoryScreen(
+        createTestableWidget(
+          MealHistoryScreen(
             recipe: testRecipe,
             databaseHelper: mockDbHelper,
           ),
@@ -227,8 +245,8 @@ void main() {
       await mockDbHelper.insertMealRecipe(primaryMealRecipe);
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: MealHistoryScreen(
+        createTestableWidget(
+          MealHistoryScreen(
             recipe: testRecipe,
             databaseHelper: mockDbHelper,
           ),
@@ -272,8 +290,8 @@ void main() {
       await mockDbHelper.insertMealRecipe(mealRecipe);
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: MealHistoryScreen(
+        createTestableWidget(
+          MealHistoryScreen(
             recipe: testRecipe,
             databaseHelper: mockDbHelper,
           ),
@@ -332,8 +350,8 @@ void main() {
       ));
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: MealHistoryScreen(
+        createTestableWidget(
+          MealHistoryScreen(
             recipe: testRecipe,
             databaseHelper: mockDbHelper,
           ),
@@ -375,8 +393,8 @@ void main() {
       ));
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: MealHistoryScreen(
+        createTestableWidget(
+          MealHistoryScreen(
             recipe: testRecipe,
             databaseHelper: mockDbHelper,
           ),

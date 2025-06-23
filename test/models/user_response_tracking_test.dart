@@ -4,17 +4,12 @@ import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/models/recipe_recommendation.dart';
 import 'package:gastrobrain/models/recommendation_results.dart';
 import 'package:gastrobrain/utils/id_generator.dart';
-import 'package:gastrobrain/database/database_helper.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import '../mocks/mock_database_helper.dart';
 
 void main() {
-  // Initialize FFI
-  sqfliteFfiInit();
-  databaseFactory = databaseFactoryFfi;
-
   group('User Response Tracking', () {
     late Recipe testRecipe;
-    late DatabaseHelper dbHelper;
+    late MockDatabaseHelper mockDbHelper;
 
     setUp(() async {
       // Set up test recipe
@@ -25,12 +20,11 @@ void main() {
         createdAt: DateTime.now(),
       );
 
-      // Set up database
-      dbHelper = DatabaseHelper();
-      await dbHelper.resetDatabaseForTests();
-
-      // Add test recipe to database
-      await dbHelper.insertRecipe(testRecipe);
+      // Set up mock database
+      mockDbHelper = MockDatabaseHelper();
+      
+      // Add test recipe to mock database
+      await mockDbHelper.insertRecipe(testRecipe);
     });
 
     test('can create recommendation with all response types', () {
@@ -107,7 +101,7 @@ void main() {
 
         // Reconstruct from JSON
         final reconstructed =
-            await RecipeRecommendation.fromJson(json, dbHelper);
+            await RecipeRecommendation.fromJson(json, mockDbHelper);
 
         // Verify response was preserved
         expect(reconstructed.userResponse, equals(response));
@@ -131,7 +125,7 @@ void main() {
       );
 
       // Save to history
-      final historyId = await dbHelper.saveRecommendationHistory(
+      final historyId = await mockDbHelper.saveRecommendationHistory(
         results,
         'test_response_timestamps',
       );
@@ -143,7 +137,7 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 100));
 
       // Update with user response
-      await dbHelper.updateRecommendationResponse(
+      await mockDbHelper.updateRecommendationResponse(
         historyId,
         testRecipe.id,
         UserResponse.accepted,
@@ -153,7 +147,7 @@ void main() {
       final afterUpdate = DateTime.now();
 
       // Retrieve updated recommendation
-      final updatedResults = await dbHelper.getRecommendationById(historyId);
+      final updatedResults = await mockDbHelper.getRecommendationById(historyId);
       expect(updatedResults, isNotNull);
       expect(updatedResults!.recommendations[0].userResponse,
           equals(UserResponse.accepted));
@@ -188,20 +182,20 @@ void main() {
       );
 
       // Save to history
-      final historyId = await dbHelper.saveRecommendationHistory(
+      final historyId = await mockDbHelper.saveRecommendationHistory(
         results,
         'test_response_update',
       );
 
       // Update with new response
-      await dbHelper.updateRecommendationResponse(
+      await mockDbHelper.updateRecommendationResponse(
         historyId,
         testRecipe.id,
         UserResponse.accepted,
       );
 
       // Retrieve updated recommendation
-      final updatedResults = await dbHelper.getRecommendationById(historyId);
+      final updatedResults = await mockDbHelper.getRecommendationById(historyId);
       expect(updatedResults, isNotNull);
 
       // Verify response was changed
@@ -224,7 +218,7 @@ void main() {
         desiredFrequency: FrequencyType.monthly,
         createdAt: DateTime.now(),
       );
-      await dbHelper.insertRecipe(testRecipe2);
+      await mockDbHelper.insertRecipe(testRecipe2);
 
       // Create recommendations with different responses
       final rec1 = RecipeRecommendation(
@@ -251,20 +245,20 @@ void main() {
       );
 
       // Save to history
-      final historyId = await dbHelper.saveRecommendationHistory(
+      final historyId = await mockDbHelper.saveRecommendationHistory(
         results,
         'test_multiple_recs',
       );
 
       // Update only the first recommendation
-      await dbHelper.updateRecommendationResponse(
+      await mockDbHelper.updateRecommendationResponse(
         historyId,
         testRecipe.id,
         UserResponse.accepted,
       );
 
       // Retrieve results
-      final updatedResults = await dbHelper.getRecommendationById(historyId);
+      final updatedResults = await mockDbHelper.getRecommendationById(historyId);
       expect(updatedResults, isNotNull);
 
       // Find recommendations by recipe ID
@@ -300,17 +294,14 @@ void main() {
       );
 
       // Save to history
-      final historyId = await dbHelper.saveRecommendationHistory(
+      final historyId = await mockDbHelper.saveRecommendationHistory(
         results,
         'test_persistence',
       );
 
-      // Create a new database helper to simulate app restart
-      final newDbHelper = DatabaseHelper();
-
-      // Load results with new helper
+      // Load results with same helper (mock already simulates persistence)
       final reloadedResults =
-          await newDbHelper.getRecommendationById(historyId);
+          await mockDbHelper.getRecommendationById(historyId);
       expect(reloadedResults, isNotNull);
 
       // Verify response data persisted

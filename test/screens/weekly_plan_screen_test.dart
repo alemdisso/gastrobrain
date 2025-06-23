@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:gastrobrain/core/di/providers/database_provider.dart';
 import 'package:gastrobrain/core/services/recommendation_service.dart';
 import 'package:gastrobrain/core/di/service_provider.dart';
@@ -14,10 +15,27 @@ import 'package:gastrobrain/models/recipe_recommendation.dart';
 import 'package:gastrobrain/models/protein_type.dart';
 import 'package:gastrobrain/screens/weekly_plan_screen.dart';
 import 'package:gastrobrain/utils/id_generator.dart';
+import 'package:gastrobrain/l10n/app_localizations.dart';
 import '../mocks/mock_database_helper.dart';
 
 void main() {
   late MockDatabaseHelper mockDbHelper;
+
+  Widget createTestableWidget(Widget child) {
+    return MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', ''),
+        Locale('pt', ''),
+      ],
+      home: child,
+    );
+  }
 
   setUp(() {
     // Create a fresh mock database for each test
@@ -92,8 +110,8 @@ void main() {
 
     // Build a simplified widget for testing database injection
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
+      createTestableWidget(
+        Scaffold(
           body: Builder(
             builder: (context) {
               // Create the screen with the mock database
@@ -116,8 +134,8 @@ void main() {
   testWidgets('WeeklyPlanScreen shows empty state when no meal plan exists',
       (WidgetTester tester) async {
     // Build the widget with the injected mock database - no meal plans added
-    await tester.pumpWidget(MaterialApp(
-      home: WeeklyPlanScreen(
+    await tester.pumpWidget(createTestableWidget(
+      WeeklyPlanScreen(
         databaseHelper: mockDbHelper,
       ),
     ));
@@ -175,8 +193,8 @@ void main() {
 
     // Build a simplified widget for testing dependency injection
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
+      createTestableWidget(
+        Scaffold(
           body: Builder(
             builder: (context) {
               // Create the screen with the mock database and verify it builds
@@ -238,8 +256,8 @@ void main() {
 
     // Build a simplified widget to verify injection works
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
+      createTestableWidget(
+        Scaffold(
           body: Builder(
             builder: (context) {
               // The actual test is that these injections work without errors
