@@ -125,15 +125,15 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   String get _relativeTimeDistance {
     final distance = _weekDistanceFromCurrent;
     if (distance == 0) {
-      return 'This week';
+      return AppLocalizations.of(context)!.thisWeekRelative;
     } else if (distance == 1) {
-      return '+1 week';
+      return AppLocalizations.of(context)!.nextWeekRelative;
     } else if (distance == -1) {
-      return '-1 week';
+      return AppLocalizations.of(context)!.previousWeekRelative;
     } else if (distance > 0) {
-      return '+$distance weeks';
+      return AppLocalizations.of(context)!.futureWeeksRelative(distance);
     } else {
-      return '$distance weeks';
+      return AppLocalizations.of(context)!.pastWeeksRelative(distance);
     }
   }
 
@@ -242,7 +242,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading data: $e')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.errorLoadingData} $e')),
         );
       }
     }
@@ -1219,7 +1219,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                     child: Column(
                       children: [
                         Text(
-                          'Week of $formattedDate',
+                          AppLocalizations.of(context)!.weekOf(formattedDate),
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 4),
@@ -1434,7 +1434,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
           _isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error refreshing recommendations: $e')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.errorRefreshingRecommendations} $e')),
         );
       }
     }
@@ -1528,10 +1528,10 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
           builder: (context, child) {
             return _tabController.index == 1
                 ? TextField(
-                    decoration: const InputDecoration(
-                      hintText: 'Search recipes...',
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context)!.searchRecipesHint,
+                      prefixIcon: const Icon(Icons.search),
+                      border: const OutlineInputBorder(),
                     ),
                     onChanged: (value) {
                       setState(() {

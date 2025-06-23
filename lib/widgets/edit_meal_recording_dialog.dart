@@ -5,6 +5,7 @@ import '../models/recipe.dart';
 import '../models/meal.dart';
 import '../database/database_helper.dart';
 import '../core/validators/entity_validator.dart';
+import '../l10n/app_localizations.dart';
 
 class EditMealRecordingDialog extends StatefulWidget {
   final Meal meal;
@@ -76,7 +77,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
           _isLoadingRecipes = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading recipes: $e')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.errorLoadingRecipes} $e')),
         );
       }
     }
@@ -104,7 +105,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error selecting date')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.errorSelectingDate)),
         );
       }
     }
@@ -113,7 +114,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
   Future<void> _showAddRecipeDialog() async {
     if (_availableRecipes.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No additional recipes available.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.noAdditionalRecipesAvailable)),
       );
       return;
     }
@@ -195,7 +196,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(content: Text('${AppLocalizations.of(context)!.errorPrefix} $e')),
       );
     }
   }
@@ -212,7 +213,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Edit ${widget.primaryRecipe.name}'),
+      title: Text(AppLocalizations.of(context)!.editMealTitle(widget.primaryRecipe.name)),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -235,18 +236,18 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
               // Servings
               TextFormField(
                 controller: _servingsController,
-                decoration: const InputDecoration(
-                  labelText: 'Number of Servings',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.people),
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.numberOfServings,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.people),
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter number of servings';
+                    return AppLocalizations.of(context)!.pleaseEnterNumberOfServings;
                   }
                   if (int.tryParse(value) == null || int.parse(value) < 1) {
-                    return 'Please enter a valid number';
+                    return AppLocalizations.of(context)!.pleaseEnterValidNumber;
                   }
                   return null;
                 },

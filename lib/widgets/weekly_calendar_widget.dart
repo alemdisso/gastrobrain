@@ -7,6 +7,7 @@ import '../models/recipe.dart';
 import '../models/time_context.dart';
 import '../core/di/service_provider.dart';
 import '../database/database_helper.dart';
+import '../l10n/app_localizations.dart';
 
 class WeeklyCalendarWidget extends StatefulWidget {
   final DateTime weekStartDate;
@@ -36,15 +37,25 @@ class WeeklyCalendarWidget extends StatefulWidget {
 
 class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
     with SingleTickerProviderStateMixin {
-  final List<String> _weekdayNames = [
-    'Friday',
-    'Saturday',
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday'
-  ];
+  /// Returns localized weekday names starting from Friday
+  List<String> _getLocalizedWeekdayNames(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      l10n.friday,
+      l10n.saturday,
+      l10n.sunday,
+      l10n.monday,
+      l10n.tuesday,
+      l10n.wednesday,
+      l10n.thursday,
+    ];
+  }
+
+  /// Returns localized meal type name
+  String _getLocalizedMealType(BuildContext context, String mealType) {
+    final l10n = AppLocalizations.of(context)!;
+    return mealType == MealPlanItem.lunch ? l10n.lunch : l10n.dinner;
+  }
   late List<DateTime> _weekDates;
   late DatabaseHelper _dbHelper;
   late AnimationController _animationController;
@@ -327,7 +338,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                '${_weekdayNames[dayIndex]} ${mealType == MealPlanItem.lunch ? 'Lunch' : 'Dinner'}',
+                '${_getLocalizedWeekdayNames(context)[dayIndex]} ${_getLocalizedMealType(context, mealType)}',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
@@ -340,9 +351,9 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(fontSize: 14),
                     )
-                  : const Text(
-                      'Add meal',
-                      style: TextStyle(
+                  : Text(
+                      AppLocalizations.of(context)!.addMeal,
+                      style: const TextStyle(
                         fontStyle: FontStyle.italic,
                         color: Colors.grey,
                         fontSize: 14,
@@ -386,7 +397,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
           child: Column(
             children: [
               Text(
-                _weekdayNames[dayIndex],
+                _getLocalizedWeekdayNames(context)[dayIndex],
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: isSelected
@@ -433,7 +444,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
             Row(
               children: [
                 Text(
-                  _weekdayNames[dayIndex],
+                  _getLocalizedWeekdayNames(context)[dayIndex],
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -461,7 +472,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      'Today',
+                      AppLocalizations.of(context)!.today,
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onPrimary,
                         fontSize: 12,
@@ -606,7 +617,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(
-                                  '${plannedMeal.mealPlanItemRecipes!.length - 1} recipes',
+                                  AppLocalizations.of(context)!.additionalRecipesCount(plannedMeal.mealPlanItemRecipes!.length - 1),
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Theme.of(context)
@@ -660,13 +671,13 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                         ),
                       ],
                     )
-                  : const Row(
+                  : Row(
                       children: [
-                        Icon(Icons.add, color: Colors.grey),
-                        SizedBox(width: 8),
+                        const Icon(Icons.add, color: Colors.grey),
+                        const SizedBox(width: 8),
                         Text(
-                          'Add meal',
-                          style: TextStyle(
+                          AppLocalizations.of(context)!.addMeal,
+                          style: const TextStyle(
                             color: Colors.grey,
                             fontStyle: FontStyle.italic,
                           ),
