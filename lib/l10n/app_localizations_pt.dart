@@ -755,4 +755,22 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get custom => 'Personalizado';
+
+  @override
+  String get addRecipeDialog => 'Adicionar Receita';
+
+  @override
+  String get selectRecipeToAddAsSideDish => 'Selecione uma receita para adicionar como acompanhamento:';
+
+  @override
+  String get recipesLabel => 'Receitas';
+
+  @override
+  String get removeTooltip => 'Remover';
+
+  @override
+  String get prepTimeLabel => 'Tempo de Preparo (min)';
+
+  @override
+  String get cookTimeLabel => 'Tempo de Cozimento (min)';
 }

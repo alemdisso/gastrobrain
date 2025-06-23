@@ -1495,6 +1495,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Custom'**
   String get custom;
+
+  /// Dialog title for adding recipe
+  ///
+  /// In en, this message translates to:
+  /// **'Add Recipe'**
+  String get addRecipeDialog;
+
+  /// Instruction text for selecting side dish
+  ///
+  /// In en, this message translates to:
+  /// **'Select a recipe to add as a side dish:'**
+  String get selectRecipeToAddAsSideDish;
+
+  /// Label for recipes section
+  ///
+  /// In en, this message translates to:
+  /// **'Recipes'**
+  String get recipesLabel;
+
+  /// Tooltip for remove button
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get removeTooltip;
+
+  /// Label for prep time field
+  ///
+  /// In en, this message translates to:
+  /// **'Prep Time (min)'**
+  String get prepTimeLabel;
+
+  /// Label for cook time field
+  ///
+  /// In en, this message translates to:
+  /// **'Cook Time (min)'**
+  String get cookTimeLabel;
 }
 
 class _AppLocalizationsDelegate

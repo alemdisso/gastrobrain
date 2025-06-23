@@ -122,12 +122,12 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
     final selectedRecipe = await showDialog<Recipe>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add Recipe'),
+        title: Text(AppLocalizations.of(context)!.addRecipeDialog),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Select a recipe to add as a side dish:'),
+              Text(AppLocalizations.of(context)!.selectRecipeToAddAsSideDish),
               const SizedBox(height: 16),
               SizedBox(
                 height: 300,
@@ -153,7 +153,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
         ],
       ),
@@ -178,8 +178,8 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
       final prepTime = double.tryParse(_prepTimeController.text);
       final cookTime = double.tryParse(_cookTimeController.text);
 
-      EntityValidator.validateTime(prepTime, 'Preparation');
-      EntityValidator.validateTime(cookTime, 'Cooking');
+      EntityValidator.validateTime(prepTime, AppLocalizations.of(context)!.preparationTime);
+      EntityValidator.validateTime(cookTime, AppLocalizations.of(context)!.cookingTime);
 
       // Return the updated meal data
       Navigator.of(context).pop({
@@ -225,7 +225,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
               ListTile(
                 leading: const Icon(Icons.calendar_today),
                 title: Text(
-                  'Cooked on: ${_cookedAt.toString().split('.')[0]}',
+                  '${AppLocalizations.of(context)!.cookedOn}: ${_cookedAt.toString().split('.')[0]}',
                 ),
                 onTap: _selectDate,
                 dense: true,
@@ -261,14 +261,14 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Recipes',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)!.recipesLabel,
+                        style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                       TextButton.icon(
                         icon: const Icon(Icons.add),
-                        label: const Text('Add Recipe'),
+                        label: Text(AppLocalizations.of(context)!.addRecipe),
                         onPressed:
                             _isLoadingRecipes ? null : _showAddRecipeDialog,
                       ),
@@ -280,7 +280,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
                   ListTile(
                     leading: const Icon(Icons.restaurant, color: Colors.green),
                     title: Text(widget.primaryRecipe.name),
-                    subtitle: const Text('Main dish'),
+                    subtitle: Text(AppLocalizations.of(context)!.mainDish),
                     contentPadding: EdgeInsets.zero,
                   ),
 
@@ -293,7 +293,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
                         leading: const Icon(Icons.restaurant_menu,
                             color: Colors.grey),
                         title: Text(recipe.name),
-                        subtitle: const Text('Side dish'),
+                        subtitle: Text(AppLocalizations.of(context)!.sideDish),
                         trailing: IconButton(
                           icon: const Icon(Icons.delete_outline),
                           onPressed: () {
@@ -301,7 +301,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
                               _additionalRecipes.removeAt(index);
                             });
                           },
-                          tooltip: 'Remove',
+                          tooltip: AppLocalizations.of(context)!.removeTooltip,
                         ),
                         contentPadding: EdgeInsets.zero,
                       );
@@ -317,17 +317,17 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
                   Expanded(
                     child: TextFormField(
                       controller: _prepTimeController,
-                      decoration: const InputDecoration(
-                        labelText: 'Prep Time (min)',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.timer),
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.prepTimeLabel,
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.timer),
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value != null && value.isNotEmpty) {
                           final time = double.tryParse(value);
                           if (time == null || time < 0) {
-                            return 'Enter a valid time';
+                            return AppLocalizations.of(context)!.enterValidTime;
                           }
                         }
                         return null;
@@ -338,17 +338,17 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
                   Expanded(
                     child: TextFormField(
                       controller: _cookTimeController,
-                      decoration: const InputDecoration(
-                        labelText: 'Cook Time (min)',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.timer),
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.cookTimeLabel,
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.timer),
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value != null && value.isNotEmpty) {
                           final time = double.tryParse(value);
                           if (time == null || time < 0) {
-                            return 'Enter a valid time';
+                            return AppLocalizations.of(context)!.enterValidTime;
                           }
                         }
                         return null;
@@ -362,7 +362,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
               // Success rating
               Row(
                 children: [
-                  const Text('Was it successful?'),
+                  Text(AppLocalizations.of(context)!.wasItSuccessful),
                   const Spacer(),
                   Switch(
                     value: _wasSuccessful,
@@ -379,10 +379,10 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
               // Notes
               TextFormField(
                 controller: _notesController,
-                decoration: const InputDecoration(
-                  labelText: 'Notes (optional)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.note),
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.notesOptional,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.note),
                 ),
                 maxLines: 3,
               ),
@@ -397,7 +397,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
         ),
         ElevatedButton(
           onPressed: _saveChanges,
-          child: const Text('Save Changes'),
+          child: Text(AppLocalizations.of(context)!.saveChanges),
         ),
       ],
     );

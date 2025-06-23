@@ -749,4 +749,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get custom => 'Custom';
+
+  @override
+  String get addRecipeDialog => 'Add Recipe';
+
+  @override
+  String get selectRecipeToAddAsSideDish => 'Select a recipe to add as a side dish:';
+
+  @override
+  String get recipesLabel => 'Recipes';
+
+  @override
+  String get removeTooltip => 'Remove';
+
+  @override
+  String get prepTimeLabel => 'Prep Time (min)';
+
+  @override
+  String get cookTimeLabel => 'Cook Time (min)';
 }
