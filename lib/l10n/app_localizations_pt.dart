@@ -221,6 +221,234 @@ class AppLocalizationsPt extends AppLocalizations {
   String get weeklyMealPlan => 'Planejamento Semanal de Refeições';
 
   @override
+  String weekOf(String date) {
+    return 'Semana de $date';
+  }
+
+  @override
+  String get thisWeekRelative => 'Esta semana';
+
+  @override
+  String get nextWeekRelative => '+1 semana';
+
+  @override
+  String get previousWeekRelative => '-1 semana';
+
+  @override
+  String futureWeeksRelative(int count) {
+    return '+$count semanas';
+  }
+
+  @override
+  String pastWeeksRelative(int count) {
+    return '$count semanas';
+  }
+
+  @override
+  String additionalRecipesCount(int count) {
+    return intl.Intl.plural(
+      count,
+      one: '$count receita',
+      other: '$count receitas',
+      locale: localeName,
+    );
+  }
+
+  @override
+  String get sunday => 'Domingo';
+
+  @override
+  String get monday => 'Segunda-feira';
+
+  @override
+  String get tuesday => 'Terça-feira';
+
+  @override
+  String get wednesday => 'Quarta-feira';
+
+  @override
+  String get thursday => 'Quinta-feira';
+
+  @override
+  String get friday => 'Sexta-feira';
+
+  @override
+  String get saturday => 'Sábado';
+
+  @override
+  String get lunch => 'Almoço';
+
+  @override
+  String get dinner => 'Jantar';
+
+  @override
+  String get today => 'Hoje';
+
+  @override
+  String get addMeal => 'Adicionar refeição';
+
+  @override
+  String get searchRecipesHint => 'Buscar receitas...';
+
+  @override
+  String get noIngredientsAddedYet => 'Nenhum ingrediente adicionado ainda';
+
+  @override
+  String get ingredientCategoryVegetable => 'Vegetal';
+
+  @override
+  String get ingredientCategoryFruit => 'Fruta';
+
+  @override
+  String get ingredientCategoryProtein => 'Proteína';
+
+  @override
+  String get ingredientCategoryDairy => 'Laticínios';
+
+  @override
+  String get ingredientCategoryGrain => 'Cereal';
+
+  @override
+  String get ingredientCategoryPulse => 'Leguminosa';
+
+  @override
+  String get ingredientCategoryNutsAndSeeds => 'Nozes e Sementes';
+
+  @override
+  String get ingredientCategorySeasoning => 'Tempero';
+
+  @override
+  String get ingredientCategorySugarProducts => 'Produtos Açucarados';
+
+  @override
+  String get ingredientCategoryOil => 'Óleo';
+
+  @override
+  String get ingredientCategoryOther => 'Outro';
+
+  @override
+  String get measurementUnitCup => 'Xícara';
+
+  @override
+  String get measurementUnitPiece => 'Unidade';
+
+  @override
+  String get measurementUnitSlice => 'Fatia';
+
+  @override
+  String get measurementUnitTablespoon => 'Colher de sopa';
+
+  @override
+  String get measurementUnitTeaspoon => 'Colher de chá';
+
+  @override
+  String get unitOptional => 'Unidade (Opcional)';
+
+  @override
+  String get noUnit => 'Sem unidade';
+
+  @override
+  String get editIngredient => 'Editar Ingrediente';
+
+  @override
+  String get newIngredient => 'Novo Ingrediente';
+
+  @override
+  String get ingredientName => 'Nome do Ingrediente';
+
+  @override
+  String get pleaseEnterIngredientName => 'Por favor, insira o nome do ingrediente';
+
+  @override
+  String get categoryLabel => 'Categoria';
+
+  @override
+  String get proteinTypeLabel => 'Tipo de Proteína';
+
+  @override
+  String get pleaseSelectProteinType => 'Por favor, selecione um tipo de proteína';
+
+  @override
+  String get notesOptional => 'Notas (Opcional)';
+
+  @override
+  String get anyAdditionalInformation => 'Qualquer informação adicional';
+
+  @override
+  String get addRecipeTitle => 'Adicionar Receita';
+
+  @override
+  String get remove => 'Remover';
+
+  @override
+  String get numberOfServings => 'Número de Porções';
+
+  @override
+  String get pleaseEnterNumberOfServings => 'Por favor, insira o número de porções';
+
+  @override
+  String get pleaseEnterValidNumber => 'Por favor, insira um número válido';
+
+  @override
+  String get prepTimeMin => 'Tempo de Preparo (min)';
+
+  @override
+  String get cookTimeMin => 'Tempo de Cozimento (min)';
+
+  @override
+  String get enterValidTime => 'Insira um tempo válido';
+
+  @override
+  String get wasItSuccessful => 'Foi bem-sucedido?';
+
+  @override
+  String editMealTitle(String recipeName) {
+    return 'Editar $recipeName';
+  }
+
+  @override
+  String get errorLoadingRecipes => 'Erro ao carregar receitas:';
+
+  @override
+  String get errorSelectingDate => 'Erro ao selecionar data';
+
+  @override
+  String get noAdditionalRecipesAvailable => 'Nenhuma receita adicional disponível.';
+
+  @override
+  String get errorPrefix => 'Erro:';
+
+  @override
+  String get errorLoadingData => 'Erro ao carregar dados:';
+
+  @override
+  String get errorRefreshingRecommendations => 'Erro ao atualizar recomendações:';
+
+  @override
+  String get selectIngredient => 'Selecionar Ingrediente';
+
+  @override
+  String get quantity => 'Quantidade';
+
+  @override
+  String get unit => 'Unidade';
+
+  @override
+  String get preparationNotesOptional => 'Notas de Preparo (Opcional)';
+
+  @override
+  String get typeToSearch => 'Digite para buscar...';
+
+  @override
+  String get preparationNotesHint => 'ex: finamente picado, em cubos, etc.';
+
+  @override
+  String get actualPrepTimeMin => 'Tempo Real de Preparo (min)';
+
+  @override
+  String get actualCookTimeMin => 'Tempo Real de Cozimento (min)';
+
+  @override
   String get previousWeek => 'Semana Anterior';
 
   @override
@@ -503,4 +731,28 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get timeContextFutureDescription => 'Próxima semana';
+
+  @override
+  String get cookedOn => 'Cozinhado em';
+
+  @override
+  String get plannedFor => 'Planejado para';
+
+  @override
+  String get pleaseSelectAnIngredient => 'Por favor, selecione um ingrediente';
+
+  @override
+  String get createNewIngredient => 'Criar Novo Ingrediente';
+
+  @override
+  String get pleaseEnterQuantity => 'Por favor, insira uma quantidade';
+
+  @override
+  String get overrideDefaultUnit => 'Substituir unidade padrão';
+
+  @override
+  String get fromDatabase => 'Do Banco de Dados';
+
+  @override
+  String get custom => 'Personalizado';
 }
