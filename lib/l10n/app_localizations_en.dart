@@ -198,7 +198,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mealUpdatedSuccessfully => 'Meal updated successfully';
 
   @override
-  String get errorEditingMeal => 'Error editing meal:';
+  String errorEditingMeal(String error) {
+    return 'Error editing meal: $error';
+  }
 
   @override
   String recipesCount(int count) {
@@ -259,6 +261,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get removeFromPlan => 'Remove from Plan';
 
   @override
+  String get viewRecipeDetailsNotImplemented =>
+      'View recipe details (not implemented)';
+
+  @override
+  String errorMarkingMealAsCooked(String error) {
+    return 'Error marking meal as cooked: $error';
+  }
+
+  @override
+  String get cookedMealRecordNotFound =>
+      'Could not find the cooked meal record';
+
+  @override
+  String get noRecipesAvailable =>
+      'No recipes available. Add some recipes first.';
+
+  @override
+  String get mealNotFoundOrNotCooked => 'Meal not found or not yet cooked';
+
+  @override
+  String errorAddingSideDish(String error) {
+    return 'Error adding side dish: $error';
+  }
+
+  @override
+  String get noPrimaryRecipeFound => 'No primary recipe found';
+
+  @override
+  String get mealRecipesUpdatedSuccessfully =>
+      'Meal recipes updated successfully';
+
+  @override
+  String errorManagingRecipes(String error) {
+    return 'Error managing recipes: $error';
+  }
+
+  @override
+  String get sideDishAddedLater => 'Side dish - added later';
+
+  @override
   String get plannedMealNotFound => 'Planned meal not found';
 
   @override
@@ -274,21 +316,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mealMarkedAsCooked => 'Meal marked as cooked';
 
   @override
-  String get mealNotFoundOrNotCooked => 'Meal not found or not yet cooked';
-
-  @override
   String get couldNotFindCookedMeal => 'Could not find the cooked meal record';
 
   @override
   String get sideDishesUpdatedSuccessfully =>
       'Side dishes updated successfully';
-
-  @override
-  String get mealRecipesUpdatedSuccessfully =>
-      'Meal recipes updated successfully';
-
-  @override
-  String get noPrimaryRecipeFound => 'No primary recipe found';
 
   @override
   String get addSideDishes => 'Add Side Dishes';

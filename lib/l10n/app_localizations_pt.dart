@@ -199,7 +199,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get mealUpdatedSuccessfully => 'Refeição atualizada com sucesso';
 
   @override
-  String get errorEditingMeal => 'Erro ao editar refeição:';
+  String errorEditingMeal(String error) {
+    return 'Erro ao editar refeição: $error';
+  }
 
   @override
   String recipesCount(int count) {
@@ -260,6 +262,47 @@ class AppLocalizationsPt extends AppLocalizations {
   String get removeFromPlan => 'Remover do Planejamento';
 
   @override
+  String get viewRecipeDetailsNotImplemented =>
+      'Ver detalhes da receita (não implementado)';
+
+  @override
+  String errorMarkingMealAsCooked(String error) {
+    return 'Erro ao marcar refeição como cozinhada: $error';
+  }
+
+  @override
+  String get cookedMealRecordNotFound =>
+      'Não foi possível encontrar o registro da refeição cozinhada';
+
+  @override
+  String get noRecipesAvailable =>
+      'Nenhuma receita disponível. Adicione algumas receitas primeiro.';
+
+  @override
+  String get mealNotFoundOrNotCooked =>
+      'Refeição não encontrada ou ainda não cozinhada';
+
+  @override
+  String errorAddingSideDish(String error) {
+    return 'Erro ao adicionar acompanhamento: $error';
+  }
+
+  @override
+  String get noPrimaryRecipeFound => 'Nenhuma receita principal encontrada';
+
+  @override
+  String get mealRecipesUpdatedSuccessfully =>
+      'Receitas da refeição atualizadas com sucesso';
+
+  @override
+  String errorManagingRecipes(String error) {
+    return 'Erro ao gerenciar receitas: $error';
+  }
+
+  @override
+  String get sideDishAddedLater => 'Acompanhamento - adicionado depois';
+
+  @override
   String get plannedMealNotFound => 'Refeição planejada não encontrada';
 
   @override
@@ -275,23 +318,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get mealMarkedAsCooked => 'Refeição marcada como cozinhada';
 
   @override
-  String get mealNotFoundOrNotCooked =>
-      'Refeição não encontrada ou ainda não cozinhada';
-
-  @override
   String get couldNotFindCookedMeal =>
       'Não foi possível encontrar o registro da refeição cozinhada';
 
   @override
   String get sideDishesUpdatedSuccessfully =>
       'Acompanhamentos atualizados com sucesso';
-
-  @override
-  String get mealRecipesUpdatedSuccessfully =>
-      'Receitas da refeição atualizadas com sucesso';
-
-  @override
-  String get noPrimaryRecipeFound => 'Nenhuma receita principal encontrada';
 
   @override
   String get addSideDishes => 'Adicionar Acompanhamentos';

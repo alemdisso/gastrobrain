@@ -458,11 +458,11 @@ abstract class AppLocalizations {
   /// **'Meal updated successfully'**
   String get mealUpdatedSuccessfully;
 
-  /// Error message prefix for meal editing errors
+  /// Error message when editing meal fails
   ///
   /// In en, this message translates to:
-  /// **'Error editing meal:'**
-  String get errorEditingMeal;
+  /// **'Error editing meal: {error}'**
+  String errorEditingMeal(String error);
 
   /// Recipe count display
   ///
@@ -572,6 +572,66 @@ abstract class AppLocalizations {
   /// **'Remove from Plan'**
   String get removeFromPlan;
 
+  /// Snackbar message for not implemented view recipe details feature
+  ///
+  /// In en, this message translates to:
+  /// **'View recipe details (not implemented)'**
+  String get viewRecipeDetailsNotImplemented;
+
+  /// Error message when marking meal as cooked fails
+  ///
+  /// In en, this message translates to:
+  /// **'Error marking meal as cooked: {error}'**
+  String errorMarkingMealAsCooked(String error);
+
+  /// Error message when cooked meal record is not found
+  ///
+  /// In en, this message translates to:
+  /// **'Could not find the cooked meal record'**
+  String get cookedMealRecordNotFound;
+
+  /// Message when no recipes are available
+  ///
+  /// In en, this message translates to:
+  /// **'No recipes available. Add some recipes first.'**
+  String get noRecipesAvailable;
+
+  /// Error message when meal is not found or not cooked
+  ///
+  /// In en, this message translates to:
+  /// **'Meal not found or not yet cooked'**
+  String get mealNotFoundOrNotCooked;
+
+  /// Error message when adding side dish fails
+  ///
+  /// In en, this message translates to:
+  /// **'Error adding side dish: {error}'**
+  String errorAddingSideDish(String error);
+
+  /// Error message when no primary recipe is found
+  ///
+  /// In en, this message translates to:
+  /// **'No primary recipe found'**
+  String get noPrimaryRecipeFound;
+
+  /// Success message when meal recipes are updated
+  ///
+  /// In en, this message translates to:
+  /// **'Meal recipes updated successfully'**
+  String get mealRecipesUpdatedSuccessfully;
+
+  /// Error message when managing recipes fails
+  ///
+  /// In en, this message translates to:
+  /// **'Error managing recipes: {error}'**
+  String errorManagingRecipes(String error);
+
+  /// Notes text for side dishes added later
+  ///
+  /// In en, this message translates to:
+  /// **'Side dish - added later'**
+  String get sideDishAddedLater;
+
   /// Error message when planned meal is not found
   ///
   /// In en, this message translates to:
@@ -602,12 +662,6 @@ abstract class AppLocalizations {
   /// **'Meal marked as cooked'**
   String get mealMarkedAsCooked;
 
-  /// Error message when meal is not found or not cooked
-  ///
-  /// In en, this message translates to:
-  /// **'Meal not found or not yet cooked'**
-  String get mealNotFoundOrNotCooked;
-
   /// Error message when cooked meal record is not found
   ///
   /// In en, this message translates to:
@@ -619,18 +673,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Side dishes updated successfully'**
   String get sideDishesUpdatedSuccessfully;
-
-  /// Success message when meal recipes are updated
-  ///
-  /// In en, this message translates to:
-  /// **'Meal recipes updated successfully'**
-  String get mealRecipesUpdatedSuccessfully;
-
-  /// Error message when no primary recipe is found
-  ///
-  /// In en, this message translates to:
-  /// **'No primary recipe found'**
-  String get noPrimaryRecipeFound;
 
   /// Button text to add side dishes
   ///

@@ -258,9 +258,15 @@
   "@mealUpdatedSuccessfully": {
     "description": "Success message for meal update"
   },
-  "errorEditingMeal": "Error editing meal:",
+  "errorEditingMeal": "Error editing meal: {error}",
   "@errorEditingMeal": {
-    "description": "Error message prefix for meal editing errors"
+    "description": "Error message when editing meal fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
   },
   "recipesCount": "{count} recipes",
   "@recipesCount": {
@@ -350,6 +356,64 @@
   "@removeFromPlan": {
     "description": "Button text to remove meal from plan"
   },
+  "viewRecipeDetailsNotImplemented": "View recipe details (not implemented)",
+  "@viewRecipeDetailsNotImplemented": {
+    "description": "Snackbar message for not implemented view recipe details feature"
+  },
+  "errorMarkingMealAsCooked": "Error marking meal as cooked: {error}",
+  "@errorMarkingMealAsCooked": {
+    "description": "Error message when marking meal as cooked fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "cookedMealRecordNotFound": "Could not find the cooked meal record",
+  "@cookedMealRecordNotFound": {
+    "description": "Error message when cooked meal record is not found"
+  },
+  "noRecipesAvailable": "No recipes available. Add some recipes first.",
+  "@noRecipesAvailable": {
+    "description": "Message when no recipes are available"
+  },
+  "mealNotFoundOrNotCooked": "Meal not found or not yet cooked",
+  "@mealNotFoundOrNotCooked": {
+    "description": "Error message when meal is not found or not cooked"
+  },
+  "errorAddingSideDish": "Error adding side dish: {error}",
+  "@errorAddingSideDish": {
+    "description": "Error message when adding side dish fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "noPrimaryRecipeFound": "No primary recipe found",
+  "@noPrimaryRecipeFound": {
+    "description": "Error message when no primary recipe is found"
+  },
+  "mealRecipesUpdatedSuccessfully": "Meal recipes updated successfully",
+  "@mealRecipesUpdatedSuccessfully": {
+    "description": "Success message when meal recipes are updated"
+  },
+  "errorManagingRecipes": "Error managing recipes: {error}",
+  "@errorManagingRecipes": {
+    "description": "Error message when managing recipes fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "sideDishAddedLater": "Side dish - added later",
+  "@sideDishAddedLater": {
+    "description": "Notes text for side dishes added later"
+  },
   "plannedMealNotFound": "Planned meal not found",
   "@plannedMealNotFound": {
     "description": "Error message when planned meal is not found"
@@ -370,10 +434,6 @@
   "@mealMarkedAsCooked": {
     "description": "Success message when meal is marked as cooked"
   },
-  "mealNotFoundOrNotCooked": "Meal not found or not yet cooked",
-  "@mealNotFoundOrNotCooked": {
-    "description": "Error message when meal is not found or not cooked"
-  },
   "couldNotFindCookedMeal": "Could not find the cooked meal record",
   "@couldNotFindCookedMeal": {
     "description": "Error message when cooked meal record is not found"
@@ -381,14 +441,6 @@
   "sideDishesUpdatedSuccessfully": "Side dishes updated successfully",
   "@sideDishesUpdatedSuccessfully": {
     "description": "Success message when side dishes are updated"
-  },
-  "mealRecipesUpdatedSuccessfully": "Meal recipes updated successfully",
-  "@mealRecipesUpdatedSuccessfully": {
-    "description": "Success message when meal recipes are updated"
-  },
-  "noPrimaryRecipeFound": "No primary recipe found",
-  "@noPrimaryRecipeFound": {
-    "description": "Error message when no primary recipe is found"
   },
   "addSideDishes": "Add Side Dishes",
   "@addSideDishes": {

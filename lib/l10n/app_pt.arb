@@ -258,9 +258,15 @@
   "@mealUpdatedSuccessfully": {
     "description": "Mensagem de sucesso para atualização de refeição"
   },
-  "errorEditingMeal": "Erro ao editar refeição:",
+  "errorEditingMeal": "Erro ao editar refeição: {error}",
   "@errorEditingMeal": {
-    "description": "Prefixo da mensagem de erro ao editar refeição"
+    "description": "Mensagem de erro quando falha ao editar refeição",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "A mensagem de erro"
+      }
+    }
   },
   "recipesCount": "{count} receitas",
   "@recipesCount": {
@@ -350,6 +356,46 @@
   "@removeFromPlan": {
     "description": "Texto do botão para remover refeição do planejamento"
   },
+  "noRecipesAvailable": "Nenhuma receita disponível. Adicione algumas receitas primeiro.",
+  "@noRecipesAvailable": {
+    "description": "Mensagem quando nenhuma receita está disponível"
+  },
+  "mealNotFoundOrNotCooked": "Refeição não encontrada ou ainda não cozinhada",
+  "@mealNotFoundOrNotCooked": {
+    "description": "Mensagem de erro quando refeição não é encontrada ou não foi cozinhada"
+  },
+  "errorAddingSideDish": "Erro ao adicionar acompanhamento: {error}",
+  "@errorAddingSideDish": {
+    "description": "Mensagem de erro quando falha ao adicionar acompanhamento",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "A mensagem de erro"
+      }
+    }
+  },
+  "noPrimaryRecipeFound": "Nenhuma receita principal encontrada",
+  "@noPrimaryRecipeFound": {
+    "description": "Mensagem de erro quando nenhuma receita principal é encontrada"
+  },
+  "mealRecipesUpdatedSuccessfully": "Receitas da refeição atualizadas com sucesso",
+  "@mealRecipesUpdatedSuccessfully": {
+    "description": "Mensagem de sucesso quando receitas da refeição são atualizadas"
+  },
+  "errorManagingRecipes": "Erro ao gerenciar receitas: {error}",
+  "@errorManagingRecipes": {
+    "description": "Mensagem de erro quando falha ao gerenciar receitas",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "A mensagem de erro"
+      }
+    }
+  },
+  "sideDishAddedLater": "Acompanhamento - adicionado depois",
+  "@sideDishAddedLater": {
+    "description": "Texto de notas para acompanhamentos adicionados depois"
+  },
   "plannedMealNotFound": "Refeição planejada não encontrada",
   "@plannedMealNotFound": {
     "description": "Mensagem de erro quando refeição planejada não é encontrada"
@@ -370,10 +416,6 @@
   "@mealMarkedAsCooked": {
     "description": "Mensagem de sucesso quando refeição é marcada como cozinhada"
   },
-  "mealNotFoundOrNotCooked": "Refeição não encontrada ou ainda não cozinhada",
-  "@mealNotFoundOrNotCooked": {
-    "description": "Mensagem de erro quando refeição não é encontrada ou não foi cozinhada"
-  },
   "couldNotFindCookedMeal": "Não foi possível encontrar o registro da refeição cozinhada",
   "@couldNotFindCookedMeal": {
     "description": "Mensagem de erro quando registro de refeição cozinhada não é encontrado"
@@ -381,14 +423,6 @@
   "sideDishesUpdatedSuccessfully": "Acompanhamentos atualizados com sucesso",
   "@sideDishesUpdatedSuccessfully": {
     "description": "Mensagem de sucesso quando acompanhamentos são atualizados"
-  },
-  "mealRecipesUpdatedSuccessfully": "Receitas da refeição atualizadas com sucesso",
-  "@mealRecipesUpdatedSuccessfully": {
-    "description": "Mensagem de sucesso quando receitas da refeição são atualizadas"
-  },
-  "noPrimaryRecipeFound": "Nenhuma receita principal encontrada",
-  "@noPrimaryRecipeFound": {
-    "description": "Mensagem de erro quando nenhuma receita principal é encontrada"
   },
   "addSideDishes": "Adicionar Acompanhamentos",
   "@addSideDishes": {
@@ -1091,5 +1125,23 @@
         "description": "Data formatada da última preparação"
       }
     }
+  },
+  "viewRecipeDetailsNotImplemented": "Ver detalhes da receita (não implementado)",
+  "@viewRecipeDetailsNotImplemented": {
+    "description": "Mensagem para funcionalidade não implementada de detalhes da receita"
+  },
+  "errorMarkingMealAsCooked": "Erro ao marcar refeição como cozinhada: {error}",
+  "@errorMarkingMealAsCooked": {
+    "description": "Mensagem de erro ao marcar refeição como cozinhada",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "A mensagem de erro específica"
+      }
+    }
+  },
+  "cookedMealRecordNotFound": "Não foi possível encontrar o registro da refeição cozinhada",
+  "@cookedMealRecordNotFound": {
+    "description": "Erro quando não é possível encontrar o registro da refeição cozinhada"
   }
 }

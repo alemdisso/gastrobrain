@@ -380,8 +380,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     if (recipes.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('No recipes available. Add some recipes first.')),
+        SnackBar(
+            content: Text(AppLocalizations.of(context)!.noRecipesAvailable)),
       );
       return;
     }
@@ -605,8 +605,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       // Implement viewing recipe details
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('View recipe details (not implemented)')),
+          SnackBar(
+              content: Text(AppLocalizations.of(context)!.viewRecipeDetailsNotImplemented)),
         );
       }
     } else if (action == 'change') {
@@ -771,7 +771,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       }
     } catch (e) {
       if (mounted) {
-        SnackbarService.showError(context, 'Error marking meal as cooked: $e');
+        SnackbarService.showError(context, AppLocalizations.of(context)!.errorMarkingMealAsCooked(e.toString()));
       }
     }
   }
@@ -786,7 +786,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       if (items.isEmpty || !items[0].hasBeenCooked) {
         if (mounted) {
           SnackbarService.showError(
-              context, 'Meal not found or not yet cooked');
+              context, AppLocalizations.of(context)!.mealNotFoundOrNotCooked);
         }
         return;
       }
@@ -822,7 +822,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       if (targetMeal == null) {
         if (mounted) {
           SnackbarService.showError(
-              context, 'Could not find the cooked meal record');
+              context, AppLocalizations.of(context)!.cookedMealRecordNotFound);
         }
         return;
       }
@@ -876,13 +876,13 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
 
       if (mounted) {
         SnackbarService.showSuccess(
-            context, 'Side dishes updated successfully');
+            context, AppLocalizations.of(context)!.sideDishesUpdatedSuccessfully);
         // Refresh data to show updated meal history
         _loadData();
       }
     } catch (e) {
       if (mounted) {
-        SnackbarService.showError(context, 'Error adding side dish: $e');
+        SnackbarService.showError(context, AppLocalizations.of(context)!.errorAddingSideDish(e.toString()));
       }
     }
   }
@@ -896,7 +896,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       if (items.isEmpty || !items[0].hasBeenCooked) {
         if (mounted) {
           SnackbarService.showError(
-              context, 'Meal not found or not yet cooked');
+              context, AppLocalizations.of(context)!.mealNotFoundOrNotCooked);
         }
         return;
       }
@@ -929,7 +929,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       if (targetMeal == null) {
         if (mounted) {
           SnackbarService.showError(
-              context, 'Could not find the cooked meal record');
+              context, AppLocalizations.of(context)!.cookedMealRecordNotFound);
         }
         return;
       }
@@ -992,12 +992,12 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       await _updateMealRecipes(mealId, recipe.id, updatedAdditionalRecipes);
 
       if (mounted) {
-        SnackbarService.showSuccess(context, 'Meal updated successfully');
+        SnackbarService.showSuccess(context, AppLocalizations.of(context)!.mealUpdatedSuccessfully);
         _loadData(); // Refresh the display
       }
     } catch (e) {
       if (mounted) {
-        SnackbarService.showError(context, 'Error editing meal: $e');
+        SnackbarService.showError(context, AppLocalizations.of(context)!.errorEditingMeal(e.toString()));
       }
     }
   }
@@ -1067,7 +1067,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
 
       if (primaryRecipe == null) {
         if (mounted) {
-          SnackbarService.showError(context, 'No primary recipe found');
+          SnackbarService.showError(context, AppLocalizations.of(context)!.noPrimaryRecipeFound);
         }
         return;
       }
@@ -1092,12 +1092,12 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
 
       if (mounted) {
         SnackbarService.showSuccess(
-            context, 'Meal recipes updated successfully');
+            context, AppLocalizations.of(context)!.mealRecipesUpdatedSuccessfully);
         _loadData(); // Refresh the display
       }
     } catch (e) {
       if (mounted) {
-        SnackbarService.showError(context, 'Error managing recipes: $e');
+        SnackbarService.showError(context, AppLocalizations.of(context)!.errorManagingRecipes(e.toString()));
       }
     }
   }
