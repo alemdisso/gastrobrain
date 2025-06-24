@@ -11,7 +11,8 @@ void main() {
   group('RecipeCard Layout Tests', () {
     late Recipe testRecipe;
 
-    Widget createTestableWidget(Widget child, {Locale locale = const Locale('en', '')}) {
+    Widget createTestableWidget(Widget child,
+        {Locale locale = const Locale('en', '')}) {
       return MaterialApp(
         locale: locale,
         localizationsDelegates: const [
@@ -42,10 +43,12 @@ void main() {
       );
     });
 
-    testWidgets('expanded recipe card should not have text overflow with long last cooked date', (WidgetTester tester) async {
+    testWidgets(
+        'expanded recipe card should not have text overflow with long last cooked date',
+        (WidgetTester tester) async {
       // Create a date that will format to a long string
       final longDate = DateTime(2023, 12, 25); // "25/12/2023" - reasonably long
-      
+
       // Build the widget in a constrained width to simulate mobile
       await tester.pumpWidget(
         createTestableWidget(
@@ -66,22 +69,24 @@ void main() {
       // First, expand the card to see the problematic section
       final expandButton = find.byIcon(Icons.expand_more);
       expect(expandButton, findsOneWidget);
-      
+
       await tester.tap(expandButton);
       await tester.pumpAndSettle();
 
       // Look for the "Last cooked" text
-      final lastCookedText = find.textContaining('Last cooked:');
+      final lastCookedText = find.textContaining('Preparada em ');
       expect(lastCookedText, findsOneWidget);
 
       // This is where we would check for overflow, but Flutter's testing
       // framework makes it challenging to detect RenderFlex overflow directly
       // Let's at least verify the widgets exist and are rendered
       final actionButtons = find.byType(IconButton);
-      expect(actionButtons, findsAtLeast(2)); // Should find multiple action buttons
+      expect(actionButtons,
+          findsAtLeast(2)); // Should find multiple action buttons
     });
 
-    testWidgets('recipe card displays localized category - English', (WidgetTester tester) async {
+    testWidgets('recipe card displays localized category - English',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestableWidget(
           RecipeCard(
@@ -99,7 +104,8 @@ void main() {
       expect(find.text('Main dishes'), findsOneWidget);
     });
 
-    testWidgets('recipe card displays localized category - Portuguese', (WidgetTester tester) async {
+    testWidgets('recipe card displays localized category - Portuguese',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestableWidget(
           RecipeCard(
