@@ -573,7 +573,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    mealType == MealPlanItem.lunch ? 'Lunch' : 'Dinner',
+                    mealType == MealPlanItem.lunch ? AppLocalizations.of(context)!.lunch : AppLocalizations.of(context)!.dinner,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: mealType == MealPlanItem.lunch
@@ -675,11 +675,15 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                       children: [
                         const Icon(Icons.add, color: Colors.grey),
                         const SizedBox(width: 8),
-                        Text(
-                          AppLocalizations.of(context)!.addMeal,
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontStyle: FontStyle.italic,
+                        Expanded(
+                          child: Text(
+                            AppLocalizations.of(context)!.addMeal,
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontStyle: FontStyle.italic,
+                              fontSize: 12,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
