@@ -5,6 +5,7 @@ import '../models/recipe.dart';
 import '../database/database_helper.dart';
 import '../core/validators/entity_validator.dart';
 import '../l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
 
 class MealRecordingDialog extends StatefulWidget {
   final Recipe primaryRecipe;
@@ -66,6 +67,10 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
 
     // Load available recipes for selection
     _loadAvailableRecipes();
+  }
+
+  String _formatDate(DateTime date) {
+    return DateFormat('yyyy-MM-dd').format(date);
   }
 
   Future<void> _loadAvailableRecipes() async {
@@ -136,12 +141,12 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
     final selectedRecipe = await showDialog<Recipe>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add Recipe'),
+        title: Text(AppLocalizations.of(context)!.buttonAddRecipe),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Select a recipe to add as a side dish:'),
+              Text(AppLocalizations.of(context)!.selectRecipeToAddAsSideDish),
               const SizedBox(height: 16),
               SizedBox(
                 height: 300,
@@ -167,7 +172,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.buttonCancel),
           ),
         ],
       ),
@@ -238,7 +243,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Cook ${widget.primaryRecipe.name}'),
+      title: Text(AppLocalizations.of(context)!.cookRecipeTitle(widget.primaryRecipe.name)),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -250,11 +255,11 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
               ListTile(
                 leading: const Icon(Icons.calendar_today),
                 title: Text(
-                  'Cooked on: ${_cookedAt.toString().split('.')[0]}',
+                  AppLocalizations.of(context)!.cookedOnDate(_formatDate(_cookedAt)),
                 ),
                 subtitle: widget.plannedDate != null
                     ? Text(
-                        'Planned for: ${widget.plannedDate.toString().split('T')[0]}',
+                        AppLocalizations.of(context)!.plannedForDate(_formatDate(widget.plannedDate!)),
                         style: Theme.of(context).textTheme.bodySmall,
                       )
                     : null,
@@ -266,18 +271,18 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
               // Servings
               TextFormField(
                 controller: _servingsController,
-                decoration: const InputDecoration(
-                  labelText: 'Number of Servings',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.people),
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.numberOfServings,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.people),
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter number of servings';
+                    return AppLocalizations.of(context)!.pleaseEnterNumberOfServings;
                   }
                   if (int.tryParse(value) == null || int.parse(value) < 1) {
-                    return 'Please enter a valid number';
+                    return AppLocalizations.of(context)!.pleaseEnterValidNumber;
                   }
                   return null;
                 },
@@ -291,15 +296,15 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Recipes',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)!.recipesLabel,
+                        style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                       if (widget.allowRecipeChange)
                         TextButton.icon(
                           icon: const Icon(Icons.add),
-                          label: const Text('Add Recipe'),
+                          label: Text(AppLocalizations.of(context)!.buttonAddRecipe),
                           onPressed:
                               _isLoadingRecipes ? null : _showAddRecipeDialog,
                         ),
@@ -311,7 +316,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
                   ListTile(
                     leading: const Icon(Icons.restaurant, color: Colors.green),
                     title: Text(widget.primaryRecipe.name),
-                    subtitle: const Text('Main dish'),
+                    subtitle: Text(AppLocalizations.of(context)!.mainDish),
                     contentPadding: EdgeInsets.zero,
                   ),
 
@@ -324,7 +329,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
                         leading: const Icon(Icons.restaurant_menu,
                             color: Colors.grey),
                         title: Text(recipe.name),
-                        subtitle: const Text('Side dish'),
+                        subtitle: Text(AppLocalizations.of(context)!.sideDish),
                         trailing: widget.allowRecipeChange
                             ? IconButton(
                                 icon: const Icon(Icons.delete_outline),
@@ -333,7 +338,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
                                     _additionalRecipes.removeAt(index);
                                   });
                                 },
-                                tooltip: 'Remove',
+                                tooltip: AppLocalizations.of(context)!.removeTooltip,
                               )
                             : null,
                         contentPadding: EdgeInsets.zero,
@@ -350,17 +355,17 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
                   Expanded(
                     child: TextFormField(
                       controller: _prepTimeController,
-                      decoration: const InputDecoration(
-                        labelText: 'Actual Prep Time (min)',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.timer),
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.actualPrepTimeMin,
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.timer),
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value != null && value.isNotEmpty) {
                           final time = double.tryParse(value);
                           if (time == null || time < 0) {
-                            return 'Enter a valid time';
+                            return AppLocalizations.of(context)!.enterValidTime;
                           }
                         }
                         return null;
@@ -371,17 +376,17 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
                   Expanded(
                     child: TextFormField(
                       controller: _cookTimeController,
-                      decoration: const InputDecoration(
-                        labelText: 'Actual Cook Time (min)',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.timer),
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.actualCookTimeMin,
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.timer),
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value != null && value.isNotEmpty) {
                           final time = double.tryParse(value);
                           if (time == null || time < 0) {
-                            return 'Enter a valid time';
+                            return AppLocalizations.of(context)!.enterValidTime;
                           }
                         }
                         return null;
@@ -395,7 +400,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
               // Success rating
               Row(
                 children: [
-                  const Text('Was it successful?'),
+                  Text(AppLocalizations.of(context)!.wasItSuccessful),
                   const Spacer(),
                   Switch(
                     value: _wasSuccessful,
@@ -412,10 +417,10 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
               // Notes
               TextFormField(
                 controller: _notesController,
-                decoration: const InputDecoration(
-                  labelText: 'Notes (optional)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.note),
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.notesOptional,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.note),
                 ),
                 maxLines: 3,
               ),
@@ -426,11 +431,11 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(AppLocalizations.of(context)!.buttonCancel),
         ),
         ElevatedButton(
           onPressed: _saveMeal,
-          child: const Text('Save'),
+          child: Text(AppLocalizations.of(context)!.save),
         ),
       ],
     );

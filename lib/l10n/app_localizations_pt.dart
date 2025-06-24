@@ -809,6 +809,27 @@ class AppLocalizationsPt extends AppLocalizations {
       'Selecione uma receita para adicionar como acompanhamento:';
 
   @override
+  String get buttonAddRecipe => 'Adicionar Receita';
+
+  @override
+  String get buttonCancel => 'Cancelar';
+
+  @override
+  String cookRecipeTitle(String recipeName) {
+    return 'Cozinhar $recipeName';
+  }
+
+  @override
+  String cookedOnDate(String date) {
+    return 'Cozinhada em: $date';
+  }
+
+  @override
+  String plannedForDate(String date) {
+    return 'Planejada para: $date';
+  }
+
+  @override
   String get recipesLabel => 'Receitas';
 
   @override

@@ -146,11 +146,11 @@
   "@unknown": {
     "description": "Valor de placeholder para desconhecido"
   },
-  "pleaseEnterRecipeName": "Por favor, insira o nome da receita",
+  "pleaseEnterRecipeName": "Por favor, informe o nome da receita",
   "@pleaseEnterRecipeName": {
     "description": "Mensagem de validação para nome de receita vazio"
   },
-  "pleaseEnterValidTime": "Por favor, insira um tempo válido",
+  "pleaseEnterValidTime": "Por favor, informe um tempo válido",
   "@pleaseEnterValidTime": {
     "description": "Mensagem de validação para tempo inválido"
   },
@@ -892,7 +892,7 @@
   "@ingredientName": {
     "description": "Rótulo para campo de nome do ingrediente"
   },
-  "pleaseEnterIngredientName": "Por favor, insira o nome do ingrediente",
+  "pleaseEnterIngredientName": "Por favor, informe o nome do ingrediente",
   "@pleaseEnterIngredientName": {
     "description": "Mensagem de validação para nome de ingrediente vazio"
   },
@@ -928,11 +928,11 @@
   "@numberOfServings": {
     "description": "Rótulo para campo de porções"
   },
-  "pleaseEnterNumberOfServings": "Por favor, insira o número de porções",
+  "pleaseEnterNumberOfServings": "Por favor, informe o número de porções",
   "@pleaseEnterNumberOfServings": {
     "description": "Mensagem de validação para porções"
   },
-  "pleaseEnterValidNumber": "Por favor, insira um número válido",
+  "pleaseEnterValidNumber": "Por favor, informe um número válido",
   "@pleaseEnterValidNumber": {
     "description": "Mensagem de validação para número válido"
   },
@@ -944,7 +944,7 @@
   "@cookTimeMin": {
     "description": "Rótulo para campo de tempo de cozimento"
   },
-  "enterValidTime": "Insira um tempo válido",
+  "enterValidTime": "Informe um tempo válido",
   "@enterValidTime": {
     "description": "Mensagem de validação para tempo válido"
   },
@@ -1034,7 +1034,7 @@
   "@createNewIngredient": {
     "description": "Texto do botão para criar novo ingrediente"
   },
-  "pleaseEnterQuantity": "Por favor, insira uma quantidade",
+  "pleaseEnterQuantity": "Por favor, informe uma quantidade",
   "@pleaseEnterQuantity": {
     "description": "Mensagem de validação para inserir quantidade"
   },
@@ -1057,6 +1057,44 @@
   "selectRecipeToAddAsSideDish": "Selecione uma receita para adicionar como acompanhamento:",
   "@selectRecipeToAddAsSideDish": {
     "description": "Texto de instrução para selecionar acompanhamento"
+  },
+  "buttonAddRecipe": "Adicionar Receita",
+  "@buttonAddRecipe": {
+    "description": "Texto do botão para adicionar receita"
+  },
+  "buttonCancel": "Cancelar",
+  "@buttonCancel": {
+    "description": "Texto do botão cancelar"
+  },
+  "cookRecipeTitle": "Cozinhar {recipeName}",
+  "@cookRecipeTitle": {
+    "description": "Título para diálogo de cozinhar receita",
+    "placeholders": {
+      "recipeName": {
+        "type": "String",
+        "description": "Nome da receita sendo cozinhada"
+      }
+    }
+  },
+  "cookedOnDate": "Cozinhada em: {date}",
+  "@cookedOnDate": {
+    "description": "Rótulo para data em que foi cozinhada",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "description": "Data formatada quando a refeição foi cozinhada"
+      }
+    }
+  },
+  "plannedForDate": "Planejada para: {date}",
+  "@plannedForDate": {
+    "description": "Rótulo para data planejada",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "description": "Data formatada quando a refeição foi planejada"
+      }
+    }
   },
   "recipesLabel": "Receitas",
   "@recipesLabel": {

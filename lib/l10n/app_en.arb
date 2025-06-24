@@ -1076,6 +1076,44 @@
   "@selectRecipeToAddAsSideDish": {
     "description": "Instruction text for selecting side dish"
   },
+  "buttonAddRecipe": "Add Recipe",
+  "@buttonAddRecipe": {
+    "description": "Button text for adding a recipe"
+  },
+  "buttonCancel": "Cancel",
+  "@buttonCancel": {
+    "description": "Cancel button text"
+  },
+  "cookRecipeTitle": "Cook {recipeName}",
+  "@cookRecipeTitle": {
+    "description": "Title for cooking recipe dialog",
+    "placeholders": {
+      "recipeName": {
+        "type": "String",
+        "description": "Name of the recipe being cooked"
+      }
+    }
+  },
+  "cookedOnDate": "Cooked on: {date}",
+  "@cookedOnDate": {
+    "description": "Label for cooked on date",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "description": "Formatted date when meal was cooked"
+      }
+    }
+  },
+  "plannedForDate": "Planned for: {date}",
+  "@plannedForDate": {
+    "description": "Label for planned for date",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "description": "Formatted date when meal was planned"
+      }
+    }
+  },
   "recipesLabel": "Recipes",
   "@recipesLabel": {
     "description": "Label for recipes section"

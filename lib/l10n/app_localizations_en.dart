@@ -798,6 +798,27 @@ class AppLocalizationsEn extends AppLocalizations {
       'Select a recipe to add as a side dish:';
 
   @override
+  String get buttonAddRecipe => 'Add Recipe';
+
+  @override
+  String get buttonCancel => 'Cancel';
+
+  @override
+  String cookRecipeTitle(String recipeName) {
+    return 'Cook $recipeName';
+  }
+
+  @override
+  String cookedOnDate(String date) {
+    return 'Cooked on: $date';
+  }
+
+  @override
+  String plannedForDate(String date) {
+    return 'Planned for: $date';
+  }
+
+  @override
   String get recipesLabel => 'Recipes';
 
   @override

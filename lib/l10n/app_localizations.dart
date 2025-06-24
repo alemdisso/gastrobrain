@@ -1562,6 +1562,36 @@ abstract class AppLocalizations {
   /// **'Select a recipe to add as a side dish:'**
   String get selectRecipeToAddAsSideDish;
 
+  /// Button text for adding a recipe
+  ///
+  /// In en, this message translates to:
+  /// **'Add Recipe'**
+  String get buttonAddRecipe;
+
+  /// Cancel button text
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get buttonCancel;
+
+  /// Title for cooking recipe dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Cook {recipeName}'**
+  String cookRecipeTitle(String recipeName);
+
+  /// Label for cooked on date
+  ///
+  /// In en, this message translates to:
+  /// **'Cooked on: {date}'**
+  String cookedOnDate(String date);
+
+  /// Label for planned for date
+  ///
+  /// In en, this message translates to:
+  /// **'Planned for: {date}'**
+  String plannedForDate(String date);
+
   /// Label for recipes section
   ///
   /// In en, this message translates to:
