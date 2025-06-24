@@ -661,5 +661,379 @@
   "timeContextFutureDescription": "Upcoming week",
   "@timeContextFutureDescription": {
     "description": "Description for future time context"
+  },
+  "never": "Never",
+  "@never": {
+    "description": "Text shown when a recipe has never been cooked"
+  },
+  "weekOf": "Week of {date}",
+  "@weekOf": {
+    "description": "Format string for week header with date",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "description": "Date string for the week"
+      }
+    }
+  },
+  "thisWeekRelative": "This week",
+  "@thisWeekRelative": {
+    "description": "Relative time distance for current week"
+  },
+  "nextWeekRelative": "+1 week",
+  "@nextWeekRelative": {
+    "description": "Relative time distance for next week"
+  },
+  "previousWeekRelative": "-1 week",
+  "@previousWeekRelative": {
+    "description": "Relative time distance for previous week"
+  },
+  "futureWeeksRelative": "+{count} weeks",
+  "@futureWeeksRelative": {
+    "description": "Relative time distance for future weeks",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of weeks in the future"
+      }
+    }
+  },
+  "pastWeeksRelative": "{count} weeks",
+  "@pastWeeksRelative": {
+    "description": "Relative time distance for past weeks",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of weeks in the past"
+      }
+    }
+  },
+  "additionalRecipesCount": "{count,plural, =1{1 recipe} other{{count} recipes}}",
+  "@additionalRecipesCount": {
+    "description": "Count of additional recipes with proper pluralization",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of additional recipes"
+      }
+    }
+  },
+  "sunday": "Sunday",
+  "@sunday": {
+    "description": "Day names for the weekly calendar"
+  },
+  "monday": "Monday",
+  "@monday": {
+    "description": "Day names for the weekly calendar"
+  },
+  "tuesday": "Tuesday",
+  "@tuesday": {
+    "description": "Day names for the weekly calendar"
+  },
+  "wednesday": "Wednesday",
+  "@wednesday": {
+    "description": "Day names for the weekly calendar"
+  },
+  "thursday": "Thursday",
+  "@thursday": {
+    "description": "Day names for the weekly calendar"
+  },
+  "friday": "Friday",
+  "@friday": {
+    "description": "Day names for the weekly calendar"
+  },
+  "saturday": "Saturday",
+  "@saturday": {
+    "description": "Day names for the weekly calendar"
+  },
+  "lunch": "Lunch",
+  "@lunch": {
+    "description": "Meal type names"
+  },
+  "dinner": "Dinner",
+  "@dinner": {
+    "description": "Meal type names"
+  },
+  "today": "Today",
+  "@today": {
+    "description": "Label for today indicator"
+  },
+  "addMeal": "Add meal",
+  "@addMeal": {
+    "description": "Label for add meal button"
+  },
+  "searchRecipesHint": "Search recipes...",
+  "@searchRecipesHint": {
+    "description": "Hint text for recipe search field"
+  },
+  "noIngredientsAddedYet": "No ingredients added yet",
+  "@noIngredientsAddedYet": {
+    "description": "Message when no ingredients have been added yet"
+  },
+  "ingredientCategoryVegetable": "Vegetable",
+  "@ingredientCategoryVegetable": {
+    "description": "Ingredient category names"
+  },
+  "ingredientCategoryFruit": "Fruit",
+  "@ingredientCategoryFruit": {
+    "description": "Ingredient category names"
+  },
+  "ingredientCategoryProtein": "Protein",
+  "@ingredientCategoryProtein": {
+    "description": "Ingredient category names"
+  },
+  "ingredientCategoryDairy": "Dairy",
+  "@ingredientCategoryDairy": {
+    "description": "Ingredient category names"
+  },
+  "ingredientCategoryGrain": "Grain",
+  "@ingredientCategoryGrain": {
+    "description": "Ingredient category names"
+  },
+  "ingredientCategoryPulse": "Pulse",
+  "@ingredientCategoryPulse": {
+    "description": "Ingredient category names"
+  },
+  "ingredientCategoryNutsAndSeeds": "Nuts and Seeds",
+  "@ingredientCategoryNutsAndSeeds": {
+    "description": "Ingredient category names"
+  },
+  "ingredientCategorySeasoning": "Seasoning",
+  "@ingredientCategorySeasoning": {
+    "description": "Ingredient category names"
+  },
+  "ingredientCategorySugarProducts": "Sugar Products",
+  "@ingredientCategorySugarProducts": {
+    "description": "Ingredient category names"
+  },
+  "ingredientCategoryOil": "Oil",
+  "@ingredientCategoryOil": {
+    "description": "Ingredient category names"
+  },
+  "ingredientCategoryOther": "Other",
+  "@ingredientCategoryOther": {
+    "description": "Ingredient category names"
+  },
+  "measurementUnitCup": "Cup",
+  "@measurementUnitCup": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitPiece": "Piece",
+  "@measurementUnitPiece": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitSlice": "Slice",
+  "@measurementUnitSlice": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitTablespoon": "Tbsp",
+  "@measurementUnitTablespoon": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitTeaspoon": "Tsp",
+  "@measurementUnitTeaspoon": {
+    "description": "Measurement unit names"
+  },
+  "unitOptional": "Unit (Optional)",
+  "@unitOptional": {
+    "description": "Label for unit field in ingredient forms"
+  },
+  "noUnit": "No unit",
+  "@noUnit": {
+    "description": "Option for no unit in dropdowns"
+  },
+  "editIngredient": "Edit Ingredient",
+  "@editIngredient": {
+    "description": "Dialog title for editing ingredient"
+  },
+  "newIngredient": "New Ingredient",
+  "@newIngredient": {
+    "description": "Dialog title for adding new ingredient"
+  },
+  "ingredientName": "Ingredient Name",
+  "@ingredientName": {
+    "description": "Label for ingredient name field"
+  },
+  "pleaseEnterIngredientName": "Please enter an ingredient name",
+  "@pleaseEnterIngredientName": {
+    "description": "Validation message for empty ingredient name"
+  },
+  "categoryLabel": "Category",
+  "@categoryLabel": {
+    "description": "Label for category field"
+  },
+  "proteinTypeLabel": "Protein Type",
+  "@proteinTypeLabel": {
+    "description": "Label for protein type field"
+  },
+  "pleaseSelectProteinType": "Please select a protein type",
+  "@pleaseSelectProteinType": {
+    "description": "Validation message for protein type selection"
+  },
+  "notesOptional": "Notes (Optional)",
+  "@notesOptional": {
+    "description": "Label for notes field"
+  },
+  "anyAdditionalInformation": "Any additional information",
+  "@anyAdditionalInformation": {
+    "description": "Hint text for notes field"
+  },
+  "addRecipeTitle": "Add Recipe",
+  "@addRecipeTitle": {
+    "description": "Text for add recipe button/dialog"
+  },
+  "remove": "Remove",
+  "@remove": {
+    "description": "Text for removing items"
+  },
+  "numberOfServings": "Number of Servings",
+  "@numberOfServings": {
+    "description": "Label for servings field"
+  },
+  "pleaseEnterNumberOfServings": "Please enter number of servings",
+  "@pleaseEnterNumberOfServings": {
+    "description": "Validation message for servings"
+  },
+  "pleaseEnterValidNumber": "Please enter a valid number",
+  "@pleaseEnterValidNumber": {
+    "description": "Validation message for valid number"
+  },
+  "prepTimeMin": "Prep Time (min)",
+  "@prepTimeMin": {
+    "description": "Label for prep time field"
+  },
+  "cookTimeMin": "Cook Time (min)",
+  "@cookTimeMin": {
+    "description": "Label for cook time field"
+  },
+  "enterValidTime": "Enter a valid time",
+  "@enterValidTime": {
+    "description": "Validation message for valid time"
+  },
+  "wasItSuccessful": "Was it successful?",
+  "@wasItSuccessful": {
+    "description": "Question about meal success"
+  },
+  "editMealTitle": "Edit {recipeName}",
+  "@editMealTitle": {
+    "description": "Edit meal dialog title format",
+    "placeholders": {
+      "recipeName": {
+        "type": "String",
+        "description": "Name of the recipe being edited"
+      }
+    }
+  },
+  "errorLoadingRecipes": "Error loading recipes:",
+  "@errorLoadingRecipes": {
+    "description": "Error message for loading recipes"
+  },
+  "errorSelectingDate": "Error selecting date",
+  "@errorSelectingDate": {
+    "description": "Error message for selecting date"
+  },
+  "noAdditionalRecipesAvailable": "No additional recipes available.",
+  "@noAdditionalRecipesAvailable": {
+    "description": "Message when no additional recipes available"
+  },
+  "errorPrefix": "Error:",
+  "@errorPrefix": {
+    "description": "General error prefix"
+  },
+  "errorLoadingData": "Error loading data:",
+  "@errorLoadingData": {
+    "description": "Error message for loading data"
+  },
+  "errorRefreshingRecommendations": "Error refreshing recommendations:",
+  "@errorRefreshingRecommendations": {
+    "description": "Error message for refreshing recommendations"
+  },
+  "selectIngredient": "Select Ingredient",
+  "@selectIngredient": {
+    "description": "Label for select ingredient dropdown"
+  },
+  "quantity": "Quantity",
+  "@quantity": {
+    "description": "Label for quantity field"
+  },
+  "unit": "Unit",
+  "@unit": {
+    "description": "Label for unit field"
+  },
+  "preparationNotesOptional": "Preparation Notes (Optional)",
+  "@preparationNotesOptional": {
+    "description": "Label for preparation notes field"
+  },
+  "typeToSearch": "Type to search...",
+  "@typeToSearch": {
+    "description": "Hint text for search field"
+  },
+  "preparationNotesHint": "e.g., finely chopped, diced, etc.",
+  "@preparationNotesHint": {
+    "description": "Hint text for preparation notes"
+  },
+  "actualPrepTimeMin": "Actual Prep Time (min)",
+  "@actualPrepTimeMin": {
+    "description": "Label for actual prep time"
+  },
+  "actualCookTimeMin": "Actual Cook Time (min)",
+  "@actualCookTimeMin": {
+    "description": "Label for actual cook time"
+  },
+  "cookedOn": "Cooked on",
+  "@cookedOn": {
+    "description": "Label for cooked on date"
+  },
+  "plannedFor": "Planned for",
+  "@plannedFor": {
+    "description": "Label for planned for date"
+  },
+  "pleaseSelectAnIngredient": "Please select an ingredient",
+  "@pleaseSelectAnIngredient": {
+    "description": "Validation message for selecting an ingredient"
+  },
+  "createNewIngredient": "Create New Ingredient",
+  "@createNewIngredient": {
+    "description": "Button text for creating new ingredient"
+  },
+  "pleaseEnterQuantity": "Please enter a quantity",
+  "@pleaseEnterQuantity": {
+    "description": "Validation message for entering quantity"
+  },
+  "overrideDefaultUnit": "Override default unit",
+  "@overrideDefaultUnit": {
+    "description": "Label for override default unit checkbox"
+  },
+  "fromDatabase": "From Database",
+  "@fromDatabase": {
+    "description": "Label for from database option"
+  },
+  "custom": "Custom",
+  "@custom": {
+    "description": "Label for custom option"
+  },
+  "addRecipeDialog": "Add Recipe",
+  "@addRecipeDialog": {
+    "description": "Dialog title for adding recipe"
+  },
+  "selectRecipeToAddAsSideDish": "Select a recipe to add as a side dish:",
+  "@selectRecipeToAddAsSideDish": {
+    "description": "Instruction text for selecting side dish"
+  },
+  "recipesLabel": "Recipes",
+  "@recipesLabel": {
+    "description": "Label for recipes section"
+  },
+  "removeTooltip": "Remove",
+  "@removeTooltip": {
+    "description": "Tooltip for remove button"
+  },
+  "prepTimeLabel": "Prep Time (min)",
+  "@prepTimeLabel": {
+    "description": "Label for prep time field"
+  },
+  "cookTimeLabel": "Cook Time (min)",
+  "@cookTimeLabel": {
+    "description": "Label for cook time field"
   }
 }

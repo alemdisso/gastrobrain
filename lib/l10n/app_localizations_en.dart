@@ -220,234 +220,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weeklyMealPlan => 'Weekly Meal Plan';
 
   @override
-  String weekOf(String date) {
-    return 'Week of $date';
-  }
-
-  @override
-  String get thisWeekRelative => 'This week';
-
-  @override
-  String get nextWeekRelative => '+1 week';
-
-  @override
-  String get previousWeekRelative => '-1 week';
-
-  @override
-  String futureWeeksRelative(int count) {
-    return '+$count weeks';
-  }
-
-  @override
-  String pastWeeksRelative(int count) {
-    return '$count weeks';
-  }
-
-  @override
-  String additionalRecipesCount(int count) {
-    return intl.Intl.plural(
-      count,
-      one: '$count recipe',
-      other: '$count recipes',
-      locale: localeName,
-    );
-  }
-
-  @override
-  String get sunday => 'Sunday';
-
-  @override
-  String get monday => 'Monday';
-
-  @override
-  String get tuesday => 'Tuesday';
-
-  @override
-  String get wednesday => 'Wednesday';
-
-  @override
-  String get thursday => 'Thursday';
-
-  @override
-  String get friday => 'Friday';
-
-  @override
-  String get saturday => 'Saturday';
-
-  @override
-  String get lunch => 'Lunch';
-
-  @override
-  String get dinner => 'Dinner';
-
-  @override
-  String get today => 'Today';
-
-  @override
-  String get addMeal => 'Add meal';
-
-  @override
-  String get searchRecipesHint => 'Search recipes...';
-
-  @override
-  String get noIngredientsAddedYet => 'No ingredients added yet';
-
-  @override
-  String get ingredientCategoryVegetable => 'Vegetable';
-
-  @override
-  String get ingredientCategoryFruit => 'Fruit';
-
-  @override
-  String get ingredientCategoryProtein => 'Protein';
-
-  @override
-  String get ingredientCategoryDairy => 'Dairy';
-
-  @override
-  String get ingredientCategoryGrain => 'Grain';
-
-  @override
-  String get ingredientCategoryPulse => 'Pulse';
-
-  @override
-  String get ingredientCategoryNutsAndSeeds => 'Nuts and Seeds';
-
-  @override
-  String get ingredientCategorySeasoning => 'Seasoning';
-
-  @override
-  String get ingredientCategorySugarProducts => 'Sugar Products';
-
-  @override
-  String get ingredientCategoryOil => 'Oil';
-
-  @override
-  String get ingredientCategoryOther => 'Other';
-
-  @override
-  String get measurementUnitCup => 'Cup';
-
-  @override
-  String get measurementUnitPiece => 'Piece';
-
-  @override
-  String get measurementUnitSlice => 'Slice';
-
-  @override
-  String get measurementUnitTablespoon => 'Tbsp';
-
-  @override
-  String get measurementUnitTeaspoon => 'Tsp';
-
-  @override
-  String get unitOptional => 'Unit (Optional)';
-
-  @override
-  String get noUnit => 'No unit';
-
-  @override
-  String get editIngredient => 'Edit Ingredient';
-
-  @override
-  String get newIngredient => 'New Ingredient';
-
-  @override
-  String get ingredientName => 'Ingredient Name';
-
-  @override
-  String get pleaseEnterIngredientName => 'Please enter an ingredient name';
-
-  @override
-  String get categoryLabel => 'Category';
-
-  @override
-  String get proteinTypeLabel => 'Protein Type';
-
-  @override
-  String get pleaseSelectProteinType => 'Please select a protein type';
-
-  @override
-  String get notesOptional => 'Notes (Optional)';
-
-  @override
-  String get anyAdditionalInformation => 'Any additional information';
-
-  @override
-  String get addRecipeTitle => 'Add Recipe';
-
-  @override
-  String get remove => 'Remove';
-
-  @override
-  String get numberOfServings => 'Number of Servings';
-
-  @override
-  String get pleaseEnterNumberOfServings => 'Please enter number of servings';
-
-  @override
-  String get pleaseEnterValidNumber => 'Please enter a valid number';
-
-  @override
-  String get prepTimeMin => 'Prep Time (min)';
-
-  @override
-  String get cookTimeMin => 'Cook Time (min)';
-
-  @override
-  String get enterValidTime => 'Enter a valid time';
-
-  @override
-  String get wasItSuccessful => 'Was it successful?';
-
-  @override
-  String editMealTitle(String recipeName) {
-    return 'Edit $recipeName';
-  }
-
-  @override
-  String get errorLoadingRecipes => 'Error loading recipes:';
-
-  @override
-  String get errorSelectingDate => 'Error selecting date';
-
-  @override
-  String get noAdditionalRecipesAvailable => 'No additional recipes available.';
-
-  @override
-  String get errorPrefix => 'Error:';
-
-  @override
-  String get errorLoadingData => 'Error loading data:';
-
-  @override
-  String get errorRefreshingRecommendations => 'Error refreshing recommendations:';
-
-  @override
-  String get selectIngredient => 'Select Ingredient';
-
-  @override
-  String get quantity => 'Quantity';
-
-  @override
-  String get unit => 'Unit';
-
-  @override
-  String get preparationNotesOptional => 'Preparation Notes (Optional)';
-
-  @override
-  String get typeToSearch => 'Type to search...';
-
-  @override
-  String get preparationNotesHint => 'e.g., finely chopped, diced, etc.';
-
-  @override
-  String get actualPrepTimeMin => 'Actual Prep Time (min)';
-
-  @override
-  String get actualCookTimeMin => 'Actual Cook Time (min)';
-
-  @override
   String get previousWeek => 'Previous Week';
 
   @override
@@ -727,6 +499,239 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timeContextFutureDescription => 'Upcoming week';
 
   @override
+  String get never => 'Never';
+
+  @override
+  String weekOf(String date) {
+    return 'Week of $date';
+  }
+
+  @override
+  String get thisWeekRelative => 'This week';
+
+  @override
+  String get nextWeekRelative => '+1 week';
+
+  @override
+  String get previousWeekRelative => '-1 week';
+
+  @override
+  String futureWeeksRelative(int count) {
+    return '+$count weeks';
+  }
+
+  @override
+  String pastWeeksRelative(int count) {
+    return '$count weeks';
+  }
+
+  @override
+  String additionalRecipesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes',
+      one: '1 recipe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sunday => 'Sunday';
+
+  @override
+  String get monday => 'Monday';
+
+  @override
+  String get tuesday => 'Tuesday';
+
+  @override
+  String get wednesday => 'Wednesday';
+
+  @override
+  String get thursday => 'Thursday';
+
+  @override
+  String get friday => 'Friday';
+
+  @override
+  String get saturday => 'Saturday';
+
+  @override
+  String get lunch => 'Lunch';
+
+  @override
+  String get dinner => 'Dinner';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get addMeal => 'Add meal';
+
+  @override
+  String get searchRecipesHint => 'Search recipes...';
+
+  @override
+  String get noIngredientsAddedYet => 'No ingredients added yet';
+
+  @override
+  String get ingredientCategoryVegetable => 'Vegetable';
+
+  @override
+  String get ingredientCategoryFruit => 'Fruit';
+
+  @override
+  String get ingredientCategoryProtein => 'Protein';
+
+  @override
+  String get ingredientCategoryDairy => 'Dairy';
+
+  @override
+  String get ingredientCategoryGrain => 'Grain';
+
+  @override
+  String get ingredientCategoryPulse => 'Pulse';
+
+  @override
+  String get ingredientCategoryNutsAndSeeds => 'Nuts and Seeds';
+
+  @override
+  String get ingredientCategorySeasoning => 'Seasoning';
+
+  @override
+  String get ingredientCategorySugarProducts => 'Sugar Products';
+
+  @override
+  String get ingredientCategoryOil => 'Oil';
+
+  @override
+  String get ingredientCategoryOther => 'Other';
+
+  @override
+  String get measurementUnitCup => 'Cup';
+
+  @override
+  String get measurementUnitPiece => 'Piece';
+
+  @override
+  String get measurementUnitSlice => 'Slice';
+
+  @override
+  String get measurementUnitTablespoon => 'Tbsp';
+
+  @override
+  String get measurementUnitTeaspoon => 'Tsp';
+
+  @override
+  String get unitOptional => 'Unit (Optional)';
+
+  @override
+  String get noUnit => 'No unit';
+
+  @override
+  String get editIngredient => 'Edit Ingredient';
+
+  @override
+  String get newIngredient => 'New Ingredient';
+
+  @override
+  String get ingredientName => 'Ingredient Name';
+
+  @override
+  String get pleaseEnterIngredientName => 'Please enter an ingredient name';
+
+  @override
+  String get categoryLabel => 'Category';
+
+  @override
+  String get proteinTypeLabel => 'Protein Type';
+
+  @override
+  String get pleaseSelectProteinType => 'Please select a protein type';
+
+  @override
+  String get notesOptional => 'Notes (Optional)';
+
+  @override
+  String get anyAdditionalInformation => 'Any additional information';
+
+  @override
+  String get addRecipeTitle => 'Add Recipe';
+
+  @override
+  String get remove => 'Remove';
+
+  @override
+  String get numberOfServings => 'Number of Servings';
+
+  @override
+  String get pleaseEnterNumberOfServings => 'Please enter number of servings';
+
+  @override
+  String get pleaseEnterValidNumber => 'Please enter a valid number';
+
+  @override
+  String get prepTimeMin => 'Prep Time (min)';
+
+  @override
+  String get cookTimeMin => 'Cook Time (min)';
+
+  @override
+  String get enterValidTime => 'Enter a valid time';
+
+  @override
+  String get wasItSuccessful => 'Was it successful?';
+
+  @override
+  String editMealTitle(String recipeName) {
+    return 'Edit $recipeName';
+  }
+
+  @override
+  String get errorLoadingRecipes => 'Error loading recipes:';
+
+  @override
+  String get errorSelectingDate => 'Error selecting date';
+
+  @override
+  String get noAdditionalRecipesAvailable => 'No additional recipes available.';
+
+  @override
+  String get errorPrefix => 'Error:';
+
+  @override
+  String get errorLoadingData => 'Error loading data:';
+
+  @override
+  String get errorRefreshingRecommendations =>
+      'Error refreshing recommendations:';
+
+  @override
+  String get selectIngredient => 'Select Ingredient';
+
+  @override
+  String get quantity => 'Quantity';
+
+  @override
+  String get unit => 'Unit';
+
+  @override
+  String get preparationNotesOptional => 'Preparation Notes (Optional)';
+
+  @override
+  String get typeToSearch => 'Type to search...';
+
+  @override
+  String get preparationNotesHint => 'e.g., finely chopped, diced, etc.';
+
+  @override
+  String get actualPrepTimeMin => 'Actual Prep Time (min)';
+
+  @override
+  String get actualCookTimeMin => 'Actual Cook Time (min)';
+
+  @override
   String get cookedOn => 'Cooked on';
 
   @override
@@ -754,7 +759,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addRecipeDialog => 'Add Recipe';
 
   @override
-  String get selectRecipeToAddAsSideDish => 'Select a recipe to add as a side dish:';
+  String get selectRecipeToAddAsSideDish =>
+      'Select a recipe to add as a side dish:';
 
   @override
   String get recipesLabel => 'Recipes';

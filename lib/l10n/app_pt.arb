@@ -661,5 +661,379 @@
   "timeContextFutureDescription": "Próxima semana",
   "@timeContextFutureDescription": {
     "description": "Descrição para contexto temporal futuro"
+  },
+  "never": "Nunca",
+  "@never": {
+    "description": "Texto exibido quando uma receita nunca foi cozinhada"
+  },
+  "weekOf": "Semana de {date}",
+  "@weekOf": {
+    "description": "String de formato para cabeçalho da semana com data",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "description": "String de data para a semana"
+      }
+    }
+  },
+  "thisWeekRelative": "Esta semana",
+  "@thisWeekRelative": {
+    "description": "Distância temporal relativa para semana atual"
+  },
+  "nextWeekRelative": "+1 semana",
+  "@nextWeekRelative": {
+    "description": "Distância temporal relativa para próxima semana"
+  },
+  "previousWeekRelative": "-1 semana",
+  "@previousWeekRelative": {
+    "description": "Distância temporal relativa para semana anterior"
+  },
+  "futureWeeksRelative": "+{count} semanas",
+  "@futureWeeksRelative": {
+    "description": "Distância temporal relativa para semanas futuras",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Número de semanas no futuro"
+      }
+    }
+  },
+  "pastWeeksRelative": "{count} semanas",
+  "@pastWeeksRelative": {
+    "description": "Distância temporal relativa para semanas passadas",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Número de semanas no passado"
+      }
+    }
+  },
+  "additionalRecipesCount": "{count,plural, =1{1 receita} other{{count} receitas}}",
+  "@additionalRecipesCount": {
+    "description": "Contagem de receitas adicionais com pluralização adequada",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Número de receitas adicionais"
+      }
+    }
+  },
+  "sunday": "Domingo",
+  "@sunday": {
+    "description": "Nomes dos dias para o calendário semanal"
+  },
+  "monday": "Segunda",
+  "@monday": {
+    "description": "Nomes dos dias para o calendário semanal"
+  },
+  "tuesday": "Terça",
+  "@tuesday": {
+    "description": "Nomes dos dias para o calendário semanal"
+  },
+  "wednesday": "Quarta",
+  "@wednesday": {
+    "description": "Nomes dos dias para o calendário semanal"
+  },
+  "thursday": "Quinta",
+  "@thursday": {
+    "description": "Nomes dos dias para o calendário semanal"
+  },
+  "friday": "Sexta",
+  "@friday": {
+    "description": "Nomes dos dias para o calendário semanal"
+  },
+  "saturday": "Sábado",
+  "@saturday": {
+    "description": "Nomes dos dias para o calendário semanal"
+  },
+  "lunch": "Almoço",
+  "@lunch": {
+    "description": "Nomes dos tipos de refeição"
+  },
+  "dinner": "Jantar",
+  "@dinner": {
+    "description": "Nomes dos tipos de refeição"
+  },
+  "today": "Hoje",
+  "@today": {
+    "description": "Rótulo para indicador de hoje"
+  },
+  "addMeal": "Adicionar refeição",
+  "@addMeal": {
+    "description": "Rótulo para botão adicionar refeição"
+  },
+  "searchRecipesHint": "Buscar receitas...",
+  "@searchRecipesHint": {
+    "description": "Texto de dica para campo de busca de receitas"
+  },
+  "noIngredientsAddedYet": "Nenhum ingrediente adicionado ainda",
+  "@noIngredientsAddedYet": {
+    "description": "Mensagem quando nenhum ingrediente foi adicionado ainda"
+  },
+  "ingredientCategoryVegetable": "Vegetal",
+  "@ingredientCategoryVegetable": {
+    "description": "Nomes das categorias de ingredientes"
+  },
+  "ingredientCategoryFruit": "Fruta",
+  "@ingredientCategoryFruit": {
+    "description": "Nomes das categorias de ingredientes"
+  },
+  "ingredientCategoryProtein": "Proteína",
+  "@ingredientCategoryProtein": {
+    "description": "Nomes das categorias de ingredientes"
+  },
+  "ingredientCategoryDairy": "Laticínios",
+  "@ingredientCategoryDairy": {
+    "description": "Nomes das categorias de ingredientes"
+  },
+  "ingredientCategoryGrain": "Grão",
+  "@ingredientCategoryGrain": {
+    "description": "Nomes das categorias de ingredientes"
+  },
+  "ingredientCategoryPulse": "Leguminosa",
+  "@ingredientCategoryPulse": {
+    "description": "Nomes das categorias de ingredientes"
+  },
+  "ingredientCategoryNutsAndSeeds": "Nozes e Sementes",
+  "@ingredientCategoryNutsAndSeeds": {
+    "description": "Nomes das categorias de ingredientes"
+  },
+  "ingredientCategorySeasoning": "Tempero",
+  "@ingredientCategorySeasoning": {
+    "description": "Nomes das categorias de ingredientes"
+  },
+  "ingredientCategorySugarProducts": "Produtos Açucarados",
+  "@ingredientCategorySugarProducts": {
+    "description": "Nomes das categorias de ingredientes"
+  },
+  "ingredientCategoryOil": "Óleo",
+  "@ingredientCategoryOil": {
+    "description": "Nomes das categorias de ingredientes"
+  },
+  "ingredientCategoryOther": "Outro",
+  "@ingredientCategoryOther": {
+    "description": "Nomes das categorias de ingredientes"
+  },
+  "measurementUnitCup": "Xícara",
+  "@measurementUnitCup": {
+    "description": "Nomes das unidades de medida"
+  },
+  "measurementUnitPiece": "Unidade",
+  "@measurementUnitPiece": {
+    "description": "Nomes das unidades de medida"
+  },
+  "measurementUnitSlice": "Fatia",
+  "@measurementUnitSlice": {
+    "description": "Nomes das unidades de medida"
+  },
+  "measurementUnitTablespoon": "Colher de sopa",
+  "@measurementUnitTablespoon": {
+    "description": "Nomes das unidades de medida"
+  },
+  "measurementUnitTeaspoon": "Colher de chá",
+  "@measurementUnitTeaspoon": {
+    "description": "Nomes das unidades de medida"
+  },
+  "unitOptional": "Unidade (Opcional)",
+  "@unitOptional": {
+    "description": "Rótulo para campo de unidade em formulários de ingredientes"
+  },
+  "noUnit": "Sem unidade",
+  "@noUnit": {
+    "description": "Opção para sem unidade em menus suspensos"
+  },
+  "editIngredient": "Editar Ingrediente",
+  "@editIngredient": {
+    "description": "Título do diálogo para editar ingrediente"
+  },
+  "newIngredient": "Novo Ingrediente",
+  "@newIngredient": {
+    "description": "Título do diálogo para adicionar novo ingrediente"
+  },
+  "ingredientName": "Nome do Ingrediente",
+  "@ingredientName": {
+    "description": "Rótulo para campo de nome do ingrediente"
+  },
+  "pleaseEnterIngredientName": "Por favor, insira o nome do ingrediente",
+  "@pleaseEnterIngredientName": {
+    "description": "Mensagem de validação para nome de ingrediente vazio"
+  },
+  "categoryLabel": "Categoria",
+  "@categoryLabel": {
+    "description": "Rótulo para campo de categoria"
+  },
+  "proteinTypeLabel": "Tipo de Proteína",
+  "@proteinTypeLabel": {
+    "description": "Rótulo para campo de tipo de proteína"
+  },
+  "pleaseSelectProteinType": "Por favor, selecione um tipo de proteína",
+  "@pleaseSelectProteinType": {
+    "description": "Mensagem de validação para seleção de tipo de proteína"
+  },
+  "notesOptional": "Observações (Opcional)",
+  "@notesOptional": {
+    "description": "Rótulo para campo de observações"
+  },
+  "anyAdditionalInformation": "Qualquer informação adicional",
+  "@anyAdditionalInformation": {
+    "description": "Texto de dica para campo de observações"
+  },
+  "addRecipeTitle": "Adicionar Receita",
+  "@addRecipeTitle": {
+    "description": "Texto para botão/diálogo de adicionar receita"
+  },
+  "remove": "Remover",
+  "@remove": {
+    "description": "Texto para remover itens"
+  },
+  "numberOfServings": "Número de Porções",
+  "@numberOfServings": {
+    "description": "Rótulo para campo de porções"
+  },
+  "pleaseEnterNumberOfServings": "Por favor, insira o número de porções",
+  "@pleaseEnterNumberOfServings": {
+    "description": "Mensagem de validação para porções"
+  },
+  "pleaseEnterValidNumber": "Por favor, insira um número válido",
+  "@pleaseEnterValidNumber": {
+    "description": "Mensagem de validação para número válido"
+  },
+  "prepTimeMin": "Tempo de Preparo (min)",
+  "@prepTimeMin": {
+    "description": "Rótulo para campo de tempo de preparo"
+  },
+  "cookTimeMin": "Tempo de Cozimento (min)",
+  "@cookTimeMin": {
+    "description": "Rótulo para campo de tempo de cozimento"
+  },
+  "enterValidTime": "Insira um tempo válido",
+  "@enterValidTime": {
+    "description": "Mensagem de validação para tempo válido"
+  },
+  "wasItSuccessful": "Foi bem-sucedido?",
+  "@wasItSuccessful": {
+    "description": "Pergunta sobre sucesso da refeição"
+  },
+  "editMealTitle": "Editar {recipeName}",
+  "@editMealTitle": {
+    "description": "Formato do título do diálogo de editar refeição",
+    "placeholders": {
+      "recipeName": {
+        "type": "String",
+        "description": "Nome da receita sendo editada"
+      }
+    }
+  },
+  "errorLoadingRecipes": "Erro ao carregar receitas:",
+  "@errorLoadingRecipes": {
+    "description": "Mensagem de erro para carregar receitas"
+  },
+  "errorSelectingDate": "Erro ao selecionar data",
+  "@errorSelectingDate": {
+    "description": "Mensagem de erro para selecionar data"
+  },
+  "noAdditionalRecipesAvailable": "Nenhuma receita adicional disponível.",
+  "@noAdditionalRecipesAvailable": {
+    "description": "Mensagem quando nenhuma receita adicional está disponível"
+  },
+  "errorPrefix": "Erro:",
+  "@errorPrefix": {
+    "description": "Prefixo de erro geral"
+  },
+  "errorLoadingData": "Erro ao carregar dados:",
+  "@errorLoadingData": {
+    "description": "Mensagem de erro para carregar dados"
+  },
+  "errorRefreshingRecommendations": "Erro ao atualizar recomendações:",
+  "@errorRefreshingRecommendations": {
+    "description": "Mensagem de erro para atualizar recomendações"
+  },
+  "selectIngredient": "Selecionar Ingrediente",
+  "@selectIngredient": {
+    "description": "Rótulo para menu suspenso de selecionar ingrediente"
+  },
+  "quantity": "Quantidade",
+  "@quantity": {
+    "description": "Rótulo para campo de quantidade"
+  },
+  "unit": "Unidade",
+  "@unit": {
+    "description": "Rótulo para campo de unidade"
+  },
+  "preparationNotesOptional": "Observações de Preparo (Opcional)",
+  "@preparationNotesOptional": {
+    "description": "Rótulo para campo de observações de preparo"
+  },
+  "typeToSearch": "Digite para buscar...",
+  "@typeToSearch": {
+    "description": "Texto de dica para campo de busca"
+  },
+  "preparationNotesHint": "ex.: finamente picado, cortado em cubos, etc.",
+  "@preparationNotesHint": {
+    "description": "Texto de dica para observações de preparo"
+  },
+  "actualPrepTimeMin": "Tempo Real de Preparo (min)",
+  "@actualPrepTimeMin": {
+    "description": "Rótulo para tempo real de preparo"
+  },
+  "actualCookTimeMin": "Tempo Real de Cozimento (min)",
+  "@actualCookTimeMin": {
+    "description": "Rótulo para tempo real de cozimento"
+  },
+  "cookedOn": "Cozinhado em",
+  "@cookedOn": {
+    "description": "Rótulo para data de cozimento"
+  },
+  "plannedFor": "Planejado para",
+  "@plannedFor": {
+    "description": "Rótulo para data planejada"
+  },
+  "pleaseSelectAnIngredient": "Por favor, selecione um ingrediente",
+  "@pleaseSelectAnIngredient": {
+    "description": "Mensagem de validação para selecionar um ingrediente"
+  },
+  "createNewIngredient": "Criar Novo Ingrediente",
+  "@createNewIngredient": {
+    "description": "Texto do botão para criar novo ingrediente"
+  },
+  "pleaseEnterQuantity": "Por favor, insira uma quantidade",
+  "@pleaseEnterQuantity": {
+    "description": "Mensagem de validação para inserir quantidade"
+  },
+  "overrideDefaultUnit": "Substituir unidade padrão",
+  "@overrideDefaultUnit": {
+    "description": "Rótulo para caixa de seleção de substituir unidade padrão"
+  },
+  "fromDatabase": "Do Banco de Dados",
+  "@fromDatabase": {
+    "description": "Rótulo para opção do banco de dados"
+  },
+  "custom": "Personalizado",
+  "@custom": {
+    "description": "Rótulo para opção personalizada"
+  },
+  "addRecipeDialog": "Adicionar Receita",
+  "@addRecipeDialog": {
+    "description": "Título do diálogo para adicionar receita"
+  },
+  "selectRecipeToAddAsSideDish": "Selecione uma receita para adicionar como acompanhamento:",
+  "@selectRecipeToAddAsSideDish": {
+    "description": "Texto de instrução para selecionar acompanhamento"
+  },
+  "recipesLabel": "Receitas",
+  "@recipesLabel": {
+    "description": "Rótulo para seção de receitas"
+  },
+  "removeTooltip": "Remover",
+  "@removeTooltip": {
+    "description": "Dica para botão remover"
+  },
+  "prepTimeLabel": "Tempo de Preparo (min)",
+  "@prepTimeLabel": {
+    "description": "Rótulo para campo de tempo de preparo"
+  },
+  "cookTimeLabel": "Tempo de Cozimento (min)",
+  "@cookTimeLabel": {
+    "description": "Rótulo para campo de tempo de cozimento"
   }
 }

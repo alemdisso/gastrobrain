@@ -494,432 +494,6 @@ abstract class AppLocalizations {
   /// **'Weekly Meal Plan'**
   String get weeklyMealPlan;
 
-  /// Format string for week header with date
-  ///
-  /// In en, this message translates to:
-  /// **'Week of {date}'**
-  String weekOf(String date);
-
-  /// Relative time distance for current week
-  ///
-  /// In en, this message translates to:
-  /// **'This week'**
-  String get thisWeekRelative;
-
-  /// Relative time distance for next week
-  ///
-  /// In en, this message translates to:
-  /// **'+1 week'**
-  String get nextWeekRelative;
-
-  /// Relative time distance for previous week
-  ///
-  /// In en, this message translates to:
-  /// **'-1 week'**
-  String get previousWeekRelative;
-
-  /// Relative time distance for future weeks
-  ///
-  /// In en, this message translates to:
-  /// **'+{count} weeks'**
-  String futureWeeksRelative(int count);
-
-  /// Relative time distance for past weeks
-  ///
-  /// In en, this message translates to:
-  /// **'{count} weeks'**
-  String pastWeeksRelative(int count);
-
-  /// Count of additional recipes with proper pluralization
-  ///
-  /// In en, this message translates to:
-  /// **'{count} recipe' / '{count} recipes'**
-  String additionalRecipesCount(int count);
-
-  /// Day names for the weekly calendar
-  ///
-  /// In en, this message translates to:
-  /// **'Sunday'**
-  String get sunday;
-
-  /// Day names for the weekly calendar
-  ///
-  /// In en, this message translates to:
-  /// **'Monday'**
-  String get monday;
-
-  /// Day names for the weekly calendar
-  ///
-  /// In en, this message translates to:
-  /// **'Tuesday'**
-  String get tuesday;
-
-  /// Day names for the weekly calendar
-  ///
-  /// In en, this message translates to:
-  /// **'Wednesday'**
-  String get wednesday;
-
-  /// Day names for the weekly calendar
-  ///
-  /// In en, this message translates to:
-  /// **'Thursday'**
-  String get thursday;
-
-  /// Day names for the weekly calendar
-  ///
-  /// In en, this message translates to:
-  /// **'Friday'**
-  String get friday;
-
-  /// Day names for the weekly calendar
-  ///
-  /// In en, this message translates to:
-  /// **'Saturday'**
-  String get saturday;
-
-  /// Meal type names
-  ///
-  /// In en, this message translates to:
-  /// **'Lunch'**
-  String get lunch;
-
-  /// Meal type names
-  ///
-  /// In en, this message translates to:
-  /// **'Dinner'**
-  String get dinner;
-
-  /// Label for today indicator
-  ///
-  /// In en, this message translates to:
-  /// **'Today'**
-  String get today;
-
-  /// Label for add meal button
-  ///
-  /// In en, this message translates to:
-  /// **'Add meal'**
-  String get addMeal;
-
-  /// Hint text for recipe search field
-  ///
-  /// In en, this message translates to:
-  /// **'Search recipes...'**
-  String get searchRecipesHint;
-
-  /// Message when no ingredients have been added yet
-  ///
-  /// In en, this message translates to:
-  /// **'No ingredients added yet'**
-  String get noIngredientsAddedYet;
-
-  /// Ingredient category names
-  ///
-  /// In en, this message translates to:
-  /// **'Vegetable'**
-  String get ingredientCategoryVegetable;
-
-  /// Ingredient category names
-  ///
-  /// In en, this message translates to:
-  /// **'Fruit'**
-  String get ingredientCategoryFruit;
-
-  /// Ingredient category names
-  ///
-  /// In en, this message translates to:
-  /// **'Protein'**
-  String get ingredientCategoryProtein;
-
-  /// Ingredient category names
-  ///
-  /// In en, this message translates to:
-  /// **'Dairy'**
-  String get ingredientCategoryDairy;
-
-  /// Ingredient category names
-  ///
-  /// In en, this message translates to:
-  /// **'Grain'**
-  String get ingredientCategoryGrain;
-
-  /// Ingredient category names
-  ///
-  /// In en, this message translates to:
-  /// **'Pulse'**
-  String get ingredientCategoryPulse;
-
-  /// Ingredient category names
-  ///
-  /// In en, this message translates to:
-  /// **'Nuts and Seeds'**
-  String get ingredientCategoryNutsAndSeeds;
-
-  /// Ingredient category names
-  ///
-  /// In en, this message translates to:
-  /// **'Seasoning'**
-  String get ingredientCategorySeasoning;
-
-  /// Ingredient category names
-  ///
-  /// In en, this message translates to:
-  /// **'Sugar Products'**
-  String get ingredientCategorySugarProducts;
-
-  /// Ingredient category names
-  ///
-  /// In en, this message translates to:
-  /// **'Oil'**
-  String get ingredientCategoryOil;
-
-  /// Ingredient category names
-  ///
-  /// In en, this message translates to:
-  /// **'Other'**
-  String get ingredientCategoryOther;
-
-  /// Measurement unit names
-  ///
-  /// In en, this message translates to:
-  /// **'Cup'**
-  String get measurementUnitCup;
-
-  /// Measurement unit names
-  ///
-  /// In en, this message translates to:
-  /// **'Piece'**
-  String get measurementUnitPiece;
-
-  /// Measurement unit names
-  ///
-  /// In en, this message translates to:
-  /// **'Slice'**
-  String get measurementUnitSlice;
-
-  /// Measurement unit names
-  ///
-  /// In en, this message translates to:
-  /// **'Tbsp'**
-  String get measurementUnitTablespoon;
-
-  /// Measurement unit names
-  ///
-  /// In en, this message translates to:
-  /// **'Tsp'**
-  String get measurementUnitTeaspoon;
-
-  /// Label for unit field in ingredient forms
-  ///
-  /// In en, this message translates to:
-  /// **'Unit (Optional)'**
-  String get unitOptional;
-
-  /// Option for no unit in dropdowns
-  ///
-  /// In en, this message translates to:
-  /// **'No unit'**
-  String get noUnit;
-
-  /// Dialog title for editing ingredient
-  ///
-  /// In en, this message translates to:
-  /// **'Edit Ingredient'**
-  String get editIngredient;
-
-  /// Dialog title for adding new ingredient
-  ///
-  /// In en, this message translates to:
-  /// **'New Ingredient'**
-  String get newIngredient;
-
-  /// Label for ingredient name field
-  ///
-  /// In en, this message translates to:
-  /// **'Ingredient Name'**
-  String get ingredientName;
-
-  /// Validation message for empty ingredient name
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter an ingredient name'**
-  String get pleaseEnterIngredientName;
-
-  /// Label for category field
-  ///
-  /// In en, this message translates to:
-  /// **'Category'**
-  String get categoryLabel;
-
-  /// Label for protein type field
-  ///
-  /// In en, this message translates to:
-  /// **'Protein Type'**
-  String get proteinTypeLabel;
-
-  /// Validation message for protein type selection
-  ///
-  /// In en, this message translates to:
-  /// **'Please select a protein type'**
-  String get pleaseSelectProteinType;
-
-  /// Label for notes field
-  ///
-  /// In en, this message translates to:
-  /// **'Notes (Optional)'**
-  String get notesOptional;
-
-  /// Hint text for notes field
-  ///
-  /// In en, this message translates to:
-  /// **'Any additional information'**
-  String get anyAdditionalInformation;
-
-  /// Text for add recipe button/dialog
-  ///
-  /// In en, this message translates to:
-  /// **'Add Recipe'**
-  String get addRecipeTitle;
-
-  /// Text for removing items
-  ///
-  /// In en, this message translates to:
-  /// **'Remove'**
-  String get remove;
-
-  /// Label for servings field
-  ///
-  /// In en, this message translates to:
-  /// **'Number of Servings'**
-  String get numberOfServings;
-
-  /// Validation message for servings
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter number of servings'**
-  String get pleaseEnterNumberOfServings;
-
-  /// Validation message for valid number
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter a valid number'**
-  String get pleaseEnterValidNumber;
-
-  /// Label for prep time field
-  ///
-  /// In en, this message translates to:
-  /// **'Prep Time (min)'**
-  String get prepTimeMin;
-
-  /// Label for cook time field
-  ///
-  /// In en, this message translates to:
-  /// **'Cook Time (min)'**
-  String get cookTimeMin;
-
-  /// Validation message for valid time
-  ///
-  /// In en, this message translates to:
-  /// **'Enter a valid time'**
-  String get enterValidTime;
-
-  /// Question about meal success
-  ///
-  /// In en, this message translates to:
-  /// **'Was it successful?'**
-  String get wasItSuccessful;
-
-  /// Edit meal dialog title format
-  ///
-  /// In en, this message translates to:
-  /// **'Edit {recipeName}'**
-  String editMealTitle(String recipeName);
-
-  /// Error message for loading recipes
-  ///
-  /// In en, this message translates to:
-  /// **'Error loading recipes:'**
-  String get errorLoadingRecipes;
-
-  /// Error message for selecting date
-  ///
-  /// In en, this message translates to:
-  /// **'Error selecting date'**
-  String get errorSelectingDate;
-
-  /// Message when no additional recipes available
-  ///
-  /// In en, this message translates to:
-  /// **'No additional recipes available.'**
-  String get noAdditionalRecipesAvailable;
-
-  /// General error prefix
-  ///
-  /// In en, this message translates to:
-  /// **'Error:'**
-  String get errorPrefix;
-
-  /// Error message for loading data
-  ///
-  /// In en, this message translates to:
-  /// **'Error loading data:'**
-  String get errorLoadingData;
-
-  /// Error message for refreshing recommendations
-  ///
-  /// In en, this message translates to:
-  /// **'Error refreshing recommendations:'**
-  String get errorRefreshingRecommendations;
-
-  /// Label for select ingredient dropdown
-  ///
-  /// In en, this message translates to:
-  /// **'Select Ingredient'**
-  String get selectIngredient;
-
-  /// Label for quantity field
-  ///
-  /// In en, this message translates to:
-  /// **'Quantity'**
-  String get quantity;
-
-  /// Label for unit field
-  ///
-  /// In en, this message translates to:
-  /// **'Unit'**
-  String get unit;
-
-  /// Label for preparation notes field
-  ///
-  /// In en, this message translates to:
-  /// **'Preparation Notes (Optional)'**
-  String get preparationNotesOptional;
-
-  /// Hint text for search field
-  ///
-  /// In en, this message translates to:
-  /// **'Type to search...'**
-  String get typeToSearch;
-
-  /// Hint text for preparation notes
-  ///
-  /// In en, this message translates to:
-  /// **'e.g., finely chopped, diced, etc.'**
-  String get preparationNotesHint;
-
-  /// Label for actual prep time
-  ///
-  /// In en, this message translates to:
-  /// **'Actual Prep Time (min)'**
-  String get actualPrepTimeMin;
-
-  /// Label for actual cook time
-  ///
-  /// In en, this message translates to:
-  /// **'Actual Cook Time (min)'**
-  String get actualCookTimeMin;
-
   /// Tooltip for previous week button
   ///
   /// In en, this message translates to:
@@ -1447,6 +1021,438 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Upcoming week'**
   String get timeContextFutureDescription;
+
+  /// Text shown when a recipe has never been cooked
+  ///
+  /// In en, this message translates to:
+  /// **'Never'**
+  String get never;
+
+  /// Format string for week header with date
+  ///
+  /// In en, this message translates to:
+  /// **'Week of {date}'**
+  String weekOf(String date);
+
+  /// Relative time distance for current week
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get thisWeekRelative;
+
+  /// Relative time distance for next week
+  ///
+  /// In en, this message translates to:
+  /// **'+1 week'**
+  String get nextWeekRelative;
+
+  /// Relative time distance for previous week
+  ///
+  /// In en, this message translates to:
+  /// **'-1 week'**
+  String get previousWeekRelative;
+
+  /// Relative time distance for future weeks
+  ///
+  /// In en, this message translates to:
+  /// **'+{count} weeks'**
+  String futureWeeksRelative(int count);
+
+  /// Relative time distance for past weeks
+  ///
+  /// In en, this message translates to:
+  /// **'{count} weeks'**
+  String pastWeeksRelative(int count);
+
+  /// Count of additional recipes with proper pluralization
+  ///
+  /// In en, this message translates to:
+  /// **'{count,plural, =1{1 recipe} other{{count} recipes}}'**
+  String additionalRecipesCount(int count);
+
+  /// Day names for the weekly calendar
+  ///
+  /// In en, this message translates to:
+  /// **'Sunday'**
+  String get sunday;
+
+  /// Day names for the weekly calendar
+  ///
+  /// In en, this message translates to:
+  /// **'Monday'**
+  String get monday;
+
+  /// Day names for the weekly calendar
+  ///
+  /// In en, this message translates to:
+  /// **'Tuesday'**
+  String get tuesday;
+
+  /// Day names for the weekly calendar
+  ///
+  /// In en, this message translates to:
+  /// **'Wednesday'**
+  String get wednesday;
+
+  /// Day names for the weekly calendar
+  ///
+  /// In en, this message translates to:
+  /// **'Thursday'**
+  String get thursday;
+
+  /// Day names for the weekly calendar
+  ///
+  /// In en, this message translates to:
+  /// **'Friday'**
+  String get friday;
+
+  /// Day names for the weekly calendar
+  ///
+  /// In en, this message translates to:
+  /// **'Saturday'**
+  String get saturday;
+
+  /// Meal type names
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch'**
+  String get lunch;
+
+  /// Meal type names
+  ///
+  /// In en, this message translates to:
+  /// **'Dinner'**
+  String get dinner;
+
+  /// Label for today indicator
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// Label for add meal button
+  ///
+  /// In en, this message translates to:
+  /// **'Add meal'**
+  String get addMeal;
+
+  /// Hint text for recipe search field
+  ///
+  /// In en, this message translates to:
+  /// **'Search recipes...'**
+  String get searchRecipesHint;
+
+  /// Message when no ingredients have been added yet
+  ///
+  /// In en, this message translates to:
+  /// **'No ingredients added yet'**
+  String get noIngredientsAddedYet;
+
+  /// Ingredient category names
+  ///
+  /// In en, this message translates to:
+  /// **'Vegetable'**
+  String get ingredientCategoryVegetable;
+
+  /// Ingredient category names
+  ///
+  /// In en, this message translates to:
+  /// **'Fruit'**
+  String get ingredientCategoryFruit;
+
+  /// Ingredient category names
+  ///
+  /// In en, this message translates to:
+  /// **'Protein'**
+  String get ingredientCategoryProtein;
+
+  /// Ingredient category names
+  ///
+  /// In en, this message translates to:
+  /// **'Dairy'**
+  String get ingredientCategoryDairy;
+
+  /// Ingredient category names
+  ///
+  /// In en, this message translates to:
+  /// **'Grain'**
+  String get ingredientCategoryGrain;
+
+  /// Ingredient category names
+  ///
+  /// In en, this message translates to:
+  /// **'Pulse'**
+  String get ingredientCategoryPulse;
+
+  /// Ingredient category names
+  ///
+  /// In en, this message translates to:
+  /// **'Nuts and Seeds'**
+  String get ingredientCategoryNutsAndSeeds;
+
+  /// Ingredient category names
+  ///
+  /// In en, this message translates to:
+  /// **'Seasoning'**
+  String get ingredientCategorySeasoning;
+
+  /// Ingredient category names
+  ///
+  /// In en, this message translates to:
+  /// **'Sugar Products'**
+  String get ingredientCategorySugarProducts;
+
+  /// Ingredient category names
+  ///
+  /// In en, this message translates to:
+  /// **'Oil'**
+  String get ingredientCategoryOil;
+
+  /// Ingredient category names
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get ingredientCategoryOther;
+
+  /// Measurement unit names
+  ///
+  /// In en, this message translates to:
+  /// **'Cup'**
+  String get measurementUnitCup;
+
+  /// Measurement unit names
+  ///
+  /// In en, this message translates to:
+  /// **'Piece'**
+  String get measurementUnitPiece;
+
+  /// Measurement unit names
+  ///
+  /// In en, this message translates to:
+  /// **'Slice'**
+  String get measurementUnitSlice;
+
+  /// Measurement unit names
+  ///
+  /// In en, this message translates to:
+  /// **'Tbsp'**
+  String get measurementUnitTablespoon;
+
+  /// Measurement unit names
+  ///
+  /// In en, this message translates to:
+  /// **'Tsp'**
+  String get measurementUnitTeaspoon;
+
+  /// Label for unit field in ingredient forms
+  ///
+  /// In en, this message translates to:
+  /// **'Unit (Optional)'**
+  String get unitOptional;
+
+  /// Option for no unit in dropdowns
+  ///
+  /// In en, this message translates to:
+  /// **'No unit'**
+  String get noUnit;
+
+  /// Dialog title for editing ingredient
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Ingredient'**
+  String get editIngredient;
+
+  /// Dialog title for adding new ingredient
+  ///
+  /// In en, this message translates to:
+  /// **'New Ingredient'**
+  String get newIngredient;
+
+  /// Label for ingredient name field
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredient Name'**
+  String get ingredientName;
+
+  /// Validation message for empty ingredient name
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter an ingredient name'**
+  String get pleaseEnterIngredientName;
+
+  /// Label for category field
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get categoryLabel;
+
+  /// Label for protein type field
+  ///
+  /// In en, this message translates to:
+  /// **'Protein Type'**
+  String get proteinTypeLabel;
+
+  /// Validation message for protein type selection
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a protein type'**
+  String get pleaseSelectProteinType;
+
+  /// Label for notes field
+  ///
+  /// In en, this message translates to:
+  /// **'Notes (Optional)'**
+  String get notesOptional;
+
+  /// Hint text for notes field
+  ///
+  /// In en, this message translates to:
+  /// **'Any additional information'**
+  String get anyAdditionalInformation;
+
+  /// Text for add recipe button/dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Add Recipe'**
+  String get addRecipeTitle;
+
+  /// Text for removing items
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// Label for servings field
+  ///
+  /// In en, this message translates to:
+  /// **'Number of Servings'**
+  String get numberOfServings;
+
+  /// Validation message for servings
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter number of servings'**
+  String get pleaseEnterNumberOfServings;
+
+  /// Validation message for valid number
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid number'**
+  String get pleaseEnterValidNumber;
+
+  /// Label for prep time field
+  ///
+  /// In en, this message translates to:
+  /// **'Prep Time (min)'**
+  String get prepTimeMin;
+
+  /// Label for cook time field
+  ///
+  /// In en, this message translates to:
+  /// **'Cook Time (min)'**
+  String get cookTimeMin;
+
+  /// Validation message for valid time
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid time'**
+  String get enterValidTime;
+
+  /// Question about meal success
+  ///
+  /// In en, this message translates to:
+  /// **'Was it successful?'**
+  String get wasItSuccessful;
+
+  /// Edit meal dialog title format
+  ///
+  /// In en, this message translates to:
+  /// **'Edit {recipeName}'**
+  String editMealTitle(String recipeName);
+
+  /// Error message for loading recipes
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading recipes:'**
+  String get errorLoadingRecipes;
+
+  /// Error message for selecting date
+  ///
+  /// In en, this message translates to:
+  /// **'Error selecting date'**
+  String get errorSelectingDate;
+
+  /// Message when no additional recipes available
+  ///
+  /// In en, this message translates to:
+  /// **'No additional recipes available.'**
+  String get noAdditionalRecipesAvailable;
+
+  /// General error prefix
+  ///
+  /// In en, this message translates to:
+  /// **'Error:'**
+  String get errorPrefix;
+
+  /// Error message for loading data
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading data:'**
+  String get errorLoadingData;
+
+  /// Error message for refreshing recommendations
+  ///
+  /// In en, this message translates to:
+  /// **'Error refreshing recommendations:'**
+  String get errorRefreshingRecommendations;
+
+  /// Label for select ingredient dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Select Ingredient'**
+  String get selectIngredient;
+
+  /// Label for quantity field
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get quantity;
+
+  /// Label for unit field
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get unit;
+
+  /// Label for preparation notes field
+  ///
+  /// In en, this message translates to:
+  /// **'Preparation Notes (Optional)'**
+  String get preparationNotesOptional;
+
+  /// Hint text for search field
+  ///
+  /// In en, this message translates to:
+  /// **'Type to search...'**
+  String get typeToSearch;
+
+  /// Hint text for preparation notes
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., finely chopped, diced, etc.'**
+  String get preparationNotesHint;
+
+  /// Label for actual prep time
+  ///
+  /// In en, this message translates to:
+  /// **'Actual Prep Time (min)'**
+  String get actualPrepTimeMin;
+
+  /// Label for actual cook time
+  ///
+  /// In en, this message translates to:
+  /// **'Actual Cook Time (min)'**
+  String get actualCookTimeMin;
 
   /// Label for cooked on date
   ///
