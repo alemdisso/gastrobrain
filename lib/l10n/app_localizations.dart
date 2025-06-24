@@ -422,6 +422,12 @@ abstract class AppLocalizations {
   /// **'Edit'**
   String get edit;
 
+  /// History tooltip text
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get history;
+
   /// Title for meal history screen
   ///
   /// In en, this message translates to:

@@ -177,6 +177,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get edit => 'Edit';
 
   @override
+  String get history => 'History';
+
+  @override
   String historyTitle(String recipeName) {
     return 'History: $recipeName';
   }

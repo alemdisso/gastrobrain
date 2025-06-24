@@ -178,6 +178,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get edit => 'Editar';
 
   @override
+  String get history => 'Histórico';
+
+  @override
   String historyTitle(String recipeName) {
     return 'Histórico: $recipeName';
   }

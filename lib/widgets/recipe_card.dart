@@ -262,7 +262,7 @@ class _RecipeCardState extends State<RecipeCard> {
                                 ),
                               );
                             },
-                            tooltip: 'Ingredients',
+                            tooltip: AppLocalizations.of(context)!.ingredients,
                           ),
                           IconButton.outlined(
                             icon: const Icon(Icons.history, size: 20),
@@ -275,7 +275,7 @@ class _RecipeCardState extends State<RecipeCard> {
                                 ),
                               );
                             },
-                            tooltip: 'History',
+                            tooltip: AppLocalizations.of(context)!.history,
                           ),
                           PopupMenuButton<String>(
                             icon: const Icon(Icons.more_vert, size: 20),
@@ -290,23 +290,23 @@ class _RecipeCardState extends State<RecipeCard> {
                               }
                             },
                             itemBuilder: (context) => [
-                              const PopupMenuItem(
+                              PopupMenuItem(
                                 value: 'edit',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.edit),
-                                    SizedBox(width: 8),
-                                    Text('Edit'),
+                                    const Icon(Icons.edit),
+                                    const SizedBox(width: 8),
+                                    Text(AppLocalizations.of(context)!.edit),
                                   ],
                                 ),
                               ),
-                              const PopupMenuItem(
+                              PopupMenuItem(
                                 value: 'delete',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.delete),
-                                    SizedBox(width: 8),
-                                    Text('Delete'),
+                                    const Icon(Icons.delete),
+                                    const SizedBox(width: 8),
+                                    Text(AppLocalizations.of(context)!.delete),
                                   ],
                                 ),
                               ),

@@ -228,6 +228,10 @@
   "@edit": {
     "description": "Texto do item de menu editar"
   },
+  "history": "Histórico",
+  "@history": {
+    "description": "Texto do tooltip de histórico"
+  },
   "historyTitle": "Histórico: {recipeName}",
   "@historyTitle": {
     "description": "Título da tela de histórico de refeições",

@@ -74,7 +74,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Look for the "Last cooked" text
-      final lastCookedText = find.textContaining('Preparada em ');
+      final lastCookedText = find.textContaining('Last Cooked: ');
       expect(lastCookedText, findsOneWidget);
 
       // This is where we would check for overflow, but Flutter's testing
