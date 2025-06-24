@@ -97,3 +97,4 @@ app.*.map.json
 
 # Project specific
 docs/Issue #*.md
+lib/l10n/untranslated_messages.txt
