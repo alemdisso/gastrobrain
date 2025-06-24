@@ -559,38 +559,38 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     final action = await showDialog<String>(
       context: context,
       builder: (context) => SimpleDialog(
-        title: const Text('Meal Options'),
+        title: Text(AppLocalizations.of(context)!.mealOptions),
         children: [
           SimpleDialogOption(
             onPressed: () => Navigator.pop(context, 'view'),
-            child: const Text('View Recipe Details'),
+            child: Text(AppLocalizations.of(context)!.viewRecipeDetails),
           ),
           SimpleDialogOption(
             onPressed: () => Navigator.pop(context, 'change'),
-            child: const Text('Change Recipe'),
+            child: Text(AppLocalizations.of(context)!.changeRecipe),
           ),
           SimpleDialogOption(
             onPressed: () => Navigator.pop(context, 'manage_recipes'),
-            child: const Text('Manage Recipes'),
+            child: Text(AppLocalizations.of(context)!.manageRecipes),
           ),
           if (!mealCooked)
             SimpleDialogOption(
               onPressed: () => Navigator.pop(context, 'cooked'),
-              child: const Text('Mark as Cooked'),
+              child: Text(AppLocalizations.of(context)!.markAsCooked),
             ),
           if (mealCooked) ...[
             SimpleDialogOption(
               onPressed: () => Navigator.pop(context, 'edit_cooked'),
-              child: const Text('Edit Cooked Meal'),
+              child: Text(AppLocalizations.of(context)!.editCookedMeal),
             ),
             SimpleDialogOption(
               onPressed: () => Navigator.pop(context, 'add_side_dish'),
-              child: const Text('Manage Side Dishes'),
+              child: Text(AppLocalizations.of(context)!.manageSideDishes),
             ),
           ],
           SimpleDialogOption(
             onPressed: () => Navigator.pop(context, 'remove'),
-            child: const Text('Remove from Plan'),
+            child: Text(AppLocalizations.of(context)!.removeFromPlan),
           ),
           SimpleDialogOption(
             onPressed: () => Navigator.pop(context),
