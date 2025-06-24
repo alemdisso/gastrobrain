@@ -1035,5 +1035,58 @@
   "cookTimeLabel": "Cook Time (min)",
   "@cookTimeLabel": {
     "description": "Label for cook time field"
+  },
+  "minuteAbbreviation": "min",
+  "@minuteAbbreviation": {
+    "description": "Compact way to express minutes"
+  },
+    "showLess": "Show Less",
+  "@showLess": {
+    "description": "Show less"
+  },
+    "showMore": "Show More",
+  "@showMore": {
+    "description": "Show more"
+  },
+  "detailedPrepTime": "Prep: {prepTimeMinutes}min",
+  "@detailedPrepTime": {
+    "description": "Display for detailed preparating times",
+    "placeholders": {
+      "prepTimeMinutes": {
+        "type": "int",
+        "description": "Preparation time in minutes"
+      }
+    }
+  },
+  "detailedCookTime": "Cook: {cookTimeMinutes}min",
+  "@detailedCookTime": {
+    "description": "Display for detailed cooking times",
+    "placeholders": {
+      "cookTimeMinutes": {
+        "type": "int",
+        "description": "Cooking time in minutes"
+      }
+    }
+  },
+  "detailedTimesCooked": "Times Cooked: {mealCount}",
+  "@detailedTimesCooked": {
+    "description": "Display for detailed meal count",
+    "placeholders": {
+      "mealCount": {
+        "type": "int",
+        "description": "Meal count"
+      }
+    }
+  },
+  "detailedLastCooked": "Last Cooked: {formattedLastCooked}",
+  "@detailedLastCooked": {
+    "description": "Display for detailed last cooked time",
+    "placeholders": {
+      "formattedLastCooked": {
+        "type": "String",
+        "description": "Formatted last cooked date"
+      }
+    }
   }
+
 }

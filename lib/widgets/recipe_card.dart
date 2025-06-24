@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../screens/recipe_ingredients_screen.dart';
 import '../screens/meal_history_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class RecipeCard extends StatefulWidget {
   final Recipe recipe;
@@ -38,8 +39,8 @@ class _RecipeCardState extends State<RecipeCard> {
     //_loadMealStats();
   }
 
-  String _formatDateTime(DateTime? dateTime) {
-    if (dateTime == null) return 'Never';
+  String _formatDateTime(DateTime? dateTime, BuildContext context) {
+    if (dateTime == null) return AppLocalizations.of(context)!.never;
     return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
   }
 
@@ -155,7 +156,7 @@ class _RecipeCardState extends State<RecipeCard> {
                     IconButton(
                       icon: const Icon(Icons.restaurant, size: 20),
                       onPressed: widget.onCooked,
-                      tooltip: 'Cook Now',
+                      tooltip: AppLocalizations.of(context)!.cookNow,
                       padding: EdgeInsets.zero,
                       constraints:
                           const BoxConstraints(minWidth: 24, minHeight: 24),
@@ -166,7 +167,9 @@ class _RecipeCardState extends State<RecipeCard> {
                         size: 20,
                       ),
                       onPressed: _toggleExpanded,
-                      tooltip: isExpanded ? 'Show Less' : 'Show More',
+                      tooltip: isExpanded
+                          ? AppLocalizations.of(context)!.showLess
+                          : AppLocalizations.of(context)!.showMore,
                       padding: EdgeInsets.zero,
                       constraints:
                           const BoxConstraints(minWidth: 24, minHeight: 24),
@@ -191,7 +194,8 @@ class _RecipeCardState extends State<RecipeCard> {
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
-                          'Prep: ${widget.recipe.prepTimeMinutes} min',
+                          AppLocalizations.of(context)!
+                              .detailedPrepTime(widget.recipe.prepTimeMinutes),
                           style: TextStyle(color: Colors.grey[600]),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -202,7 +206,8 @@ class _RecipeCardState extends State<RecipeCard> {
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
-                          'Cook: ${widget.recipe.cookTimeMinutes} min',
+                          AppLocalizations.of(context)!
+                              .detailedCookTime(widget.recipe.cookTimeMinutes),
                           style: TextStyle(color: Colors.grey[600]),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -229,11 +234,13 @@ class _RecipeCardState extends State<RecipeCard> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Times cooked: ${widget.mealCount}',
+                              AppLocalizations.of(context)!
+                                  .detailedTimesCooked(widget.mealCount),
                               style: const TextStyle(fontSize: 13),
                             ),
                             Text(
-                              'Last cooked: ${_formatDateTime(widget.lastCooked)}',
+                              AppLocalizations.of(context)!.detailedLastCooked(
+                                  _formatDateTime(widget.lastCooked, context)),
                               style: const TextStyle(fontSize: 13),
                               overflow: TextOverflow.ellipsis,
                             ),

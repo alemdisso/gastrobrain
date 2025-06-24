@@ -1537,6 +1537,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cook Time (min)'**
   String get cookTimeLabel;
+
+  /// Compact way to express minutes
+  ///
+  /// In en, this message translates to:
+  /// **'min'**
+  String get minuteAbbreviation;
+
+  /// Show less
+  ///
+  /// In en, this message translates to:
+  /// **'Show Less'**
+  String get showLess;
+
+  /// Show more
+  ///
+  /// In en, this message translates to:
+  /// **'Show More'**
+  String get showMore;
+
+  /// Display for detailed preparating times
+  ///
+  /// In en, this message translates to:
+  /// **'Prep: {prepTimeMinutes}min'**
+  String detailedPrepTime(int prepTimeMinutes);
+
+  /// Display for detailed cooking times
+  ///
+  /// In en, this message translates to:
+  /// **'Cook: {cookTimeMinutes}min'**
+  String detailedCookTime(int cookTimeMinutes);
+
+  /// Display for detailed meal count
+  ///
+  /// In en, this message translates to:
+  /// **'Times Cooked: {mealCount}'**
+  String detailedTimesCooked(int mealCount);
+
+  /// Display for detailed last cooked time
+  ///
+  /// In en, this message translates to:
+  /// **'Last Cooked: {formattedLastCooked}'**
+  String detailedLastCooked(String formattedLastCooked);
 }
 
 class _AppLocalizationsDelegate

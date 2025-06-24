@@ -784,4 +784,33 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get cookTimeLabel => 'Tempo de Cozimento (min)';
+
+  @override
+  String get minuteAbbreviation => 'min';
+
+  @override
+  String get showLess => 'Mostrar Menos';
+
+  @override
+  String get showMore => 'Mostrar Mais';
+
+  @override
+  String detailedPrepTime(int prepTimeMinutes) {
+    return 'Prep: ${prepTimeMinutes}min';
+  }
+
+  @override
+  String detailedCookTime(int cookTimeMinutes) {
+    return 'Cook: ${cookTimeMinutes}min';
+  }
+
+  @override
+  String detailedTimesCooked(int mealCount) {
+    return 'Preparada $mealCount vezes';
+  }
+
+  @override
+  String detailedLastCooked(String formattedLastCooked) {
+    return 'Preparada em $formattedLastCooked';
+  }
 }

@@ -1035,5 +1035,57 @@
   "cookTimeLabel": "Tempo de Cozimento (min)",
   "@cookTimeLabel": {
     "description": "Rótulo para campo de tempo de cozimento"
+  },
+  "minuteAbbreviation": "min",
+  "@minuteAbbreviation": {
+    "description": "Forma compacta de dizer minutos"
+  },
+      "showLess": "Mostrar Menos",
+  "@showLess": {
+    "description": "Mostrar menos"
+  },
+    "showMore": "Mostrar Mais",
+  "@showMore": {
+    "description": "Mostrar mais"
+  },
+  "detailedPrepTime": "Prep: {prepTimeMinutes}min",
+  "@detailedPrepTime": {
+    "description": "Mostrar tempo de preparo detalhado",
+    "placeholders": {
+      "prepTimeMinutes": {
+        "type": "int",
+        "description": "Tempo de preparo em minutos"
+      }
+    }
+  },
+  "detailedCookTime": "Cook: {cookTimeMinutes}min",
+  "@detailedCookTime": {
+    "description": "Mostrar tempo de cozimento detalhado",
+    "placeholders": {
+      "cookTimeMinutes": {
+        "type": "int",
+        "description": "Tempo de cozimento em minutos"
+      }
+    }
+  },
+  "detailedTimesCooked": "Preparada {mealCount} vezes",
+  "@detailedTimesCooked": {
+    "description": "Quanats vezes a receita foi preparada",
+    "placeholders": {
+      "mealCount": {
+        "type": "int",
+        "description": "Número de vezes que a receita foi preparada"
+      }
+    }
+  },
+  "detailedLastCooked": "Preparada em {formattedLastCooked}",
+  "@detailedLastCooked": {
+    "description": "Ultima vez que receita foi preparada",
+    "placeholders": {
+      "formattedLastCooked": {
+        "type": "String",
+        "description": "Data formatada da última preparação"
+      }
+    }
   }
 }
