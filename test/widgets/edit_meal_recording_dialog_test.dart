@@ -6,6 +6,7 @@ import 'package:gastrobrain/widgets/edit_meal_recording_dialog.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/meal.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
+import '../test_utils/test_app_wrapper.dart';
 
 void main() {
   late Recipe testRecipe;
@@ -48,32 +49,30 @@ void main() {
     testWidgets('displays dialog with pre-populated data',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => EditMealRecordingDialog(
-                      meal: testMeal,
-                      primaryRecipe: testRecipe,
-                    ),
-                  );
-                },
-                child: const Text('Show Dialog'),
-              ),
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => EditMealRecordingDialog(
+                    meal: testMeal,
+                    primaryRecipe: testRecipe,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
             ),
           ),
-        ),
+        )),
       );
 
       // Tap button to show dialog
       await tester.tap(find.text('Show Dialog'));
       await tester.pumpAndSettle();
 
-      // Verify dialog title shows recipe name
-      expect(find.text('Edit ${testRecipe.name}'), findsOneWidget);
+      // Verify dialog title shows recipe name (Portuguese)
+      expect(find.text('Editar ${testRecipe.name}'), findsOneWidget);
 
       // Verify pre-populated data appears
       expect(find.text('3'), findsOneWidget); // Servings field
@@ -83,35 +82,33 @@ void main() {
 
       // Verify primary recipe is shown
       expect(find.text(testRecipe.name), findsOneWidget);
-      expect(find.text('Main dish'), findsOneWidget);
+      expect(find.text('Prato principal'), findsOneWidget);
 
       // Verify action buttons
       expect(find.text('Cancel'), findsOneWidget);
-      expect(find.text('Save Changes'), findsOneWidget);
+      expect(find.text('Salvar Alterações'), findsOneWidget);
     });
 
     testWidgets('displays additional recipes correctly',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => EditMealRecordingDialog(
-                      meal: testMeal,
-                      primaryRecipe: testRecipe,
-                      additionalRecipes: [sideRecipe],
-                    ),
-                  );
-                },
-                child: const Text('Show Dialog'),
-              ),
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => EditMealRecordingDialog(
+                    meal: testMeal,
+                    primaryRecipe: testRecipe,
+                    additionalRecipes: [sideRecipe],
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
             ),
           ),
-        ),
+        )),
       );
 
       // Show dialog
@@ -123,8 +120,8 @@ void main() {
       expect(find.text(sideRecipe.name), findsOneWidget);
 
       // Verify recipe roles
-      expect(find.text('Main dish'), findsOneWidget);
-      expect(find.text('Side dish'), findsOneWidget);
+      expect(find.text('Prato principal'), findsOneWidget);
+      expect(find.text('Acompanhamento'), findsOneWidget);
 
       // Verify side dish has remove button
       expect(find.byIcon(Icons.delete_outline), findsOneWidget);
@@ -133,24 +130,22 @@ void main() {
     testWidgets('can cancel dialog without changes',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => EditMealRecordingDialog(
-                      meal: testMeal,
-                      primaryRecipe: testRecipe,
-                    ),
-                  );
-                },
-                child: const Text('Show Dialog'),
-              ),
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => EditMealRecordingDialog(
+                    meal: testMeal,
+                    primaryRecipe: testRecipe,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
             ),
           ),
-        ),
+        )),
       );
 
       // Show dialog
@@ -162,31 +157,29 @@ void main() {
       await tester.pumpAndSettle();
 
       // Dialog should be gone
-      expect(find.text('Edit ${testRecipe.name}'), findsNothing);
+      expect(find.text('Editar ${testRecipe.name}'), findsNothing);
       expect(find.text('Show Dialog'), findsOneWidget); // Back to main screen
     });
 
     testWidgets('validates servings field correctly',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => EditMealRecordingDialog(
-                      meal: testMeal,
-                      primaryRecipe: testRecipe,
-                    ),
-                  );
-                },
-                child: const Text('Show Dialog'),
-              ),
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => EditMealRecordingDialog(
+                    meal: testMeal,
+                    primaryRecipe: testRecipe,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
             ),
           ),
-        ),
+        )),
       );
 
       // Show dialog
@@ -197,11 +190,11 @@ void main() {
       await tester.enterText(find.byType(TextFormField).first, '0');
 
       // Try to save
-      await tester.tap(find.text('Save Changes'));
+      await tester.tap(find.text('Salvar Alterações'));
       await tester.pumpAndSettle();
 
-      // Should show validation error
-      expect(find.text('Please enter a valid number'), findsOneWidget);
+      // Should show validation error (Portuguese)
+      expect(find.text('Por favor, insira um número válido'), findsOneWidget);
     });
 
     testWidgets('shows success switch in correct state',
@@ -215,24 +208,22 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => EditMealRecordingDialog(
-                      meal: unsuccessfulMeal,
-                      primaryRecipe: testRecipe,
-                    ),
-                  );
-                },
-                child: const Text('Show Dialog'),
-              ),
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => EditMealRecordingDialog(
+                    meal: unsuccessfulMeal,
+                    primaryRecipe: testRecipe,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
             ),
           ),
-        ),
+        )),
       );
 
       // Show dialog
@@ -269,20 +260,18 @@ void main() {
 
       // Build the dialog
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: EditMealRecordingDialog(
-              meal: testMeal,
-              primaryRecipe: primaryRecipe,
-            ),
+        wrapWithLocalizations(Scaffold(
+          body: EditMealRecordingDialog(
+            meal: testMeal,
+            primaryRecipe: primaryRecipe,
           ),
-        ),
+        )),
       );
 
       await tester.pumpAndSettle();
 
       // Verify the dialog appears with correct title
-      expect(find.text('Edit ${primaryRecipe.name}'), findsOneWidget);
+      expect(find.text('Editar ${primaryRecipe.name}'), findsOneWidget);
 
       // Check that fields are pre-filled with existing meal data
       expect(find.text('3'), findsOneWidget); // Servings field
@@ -332,14 +321,12 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: EditMealRecordingDialog(
-              meal: testMeal,
-              primaryRecipe: primaryRecipe,
-            ),
+        wrapWithLocalizations(Scaffold(
+          body: EditMealRecordingDialog(
+            meal: testMeal,
+            primaryRecipe: primaryRecipe,
           ),
-        ),
+        )),
       );
 
       await tester.pumpAndSettle();
@@ -366,7 +353,7 @@ void main() {
       // We can test the switch separately once we figure out the layout issue
 
       // Verify Save Changes button exists
-      expect(find.text('Save Changes'), findsOneWidget);
+      expect(find.text('Salvar Alterações'), findsOneWidget);
       expect(find.text('Cancel'), findsOneWidget);
     });
     testWidgets('EditMealRecordingDialog switch can be toggled',
@@ -390,20 +377,18 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: EditMealRecordingDialog(
-              meal: testMeal,
-              primaryRecipe: primaryRecipe,
-            ),
+        wrapWithLocalizations(Scaffold(
+          body: EditMealRecordingDialog(
+            meal: testMeal,
+            primaryRecipe: primaryRecipe,
           ),
-        ),
+        )),
       );
 
       await tester.pumpAndSettle();
 
       // Find the "Was it successful?" text and the Switch near it
-      expect(find.text('Was it successful?'), findsOneWidget);
+      expect(find.text('Foi bem-sucedido?'), findsOneWidget);
 
       final switchFinder = find.byType(Switch);
       expect(switchFinder, findsOneWidget);

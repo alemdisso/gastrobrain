@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/screens/cook_meal_screen.dart';
+import '../test_utils/test_app_wrapper.dart';
 
 void main() {
   late Recipe testRecipe;
@@ -36,9 +37,7 @@ void main() {
     testWidgets('renders with correct recipe name in title',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: CookMealScreen(recipe: testRecipe),
-        ),
+        wrapWithLocalizations(CookMealScreen(recipe: testRecipe)),
       );
 
       await tester.pumpAndSettle();
@@ -58,9 +57,7 @@ void main() {
     testWidgets('tapping button shows meal recording dialog',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: CookMealScreen(recipe: testRecipe),
-        ),
+        wrapWithLocalizations(CookMealScreen(recipe: testRecipe)),
       );
 
       await tester.pumpAndSettle();
@@ -83,9 +80,7 @@ void main() {
     testWidgets('handles dialog cancellation correctly',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: CookMealScreen(recipe: testRecipe),
-        ),
+        wrapWithLocalizations(CookMealScreen(recipe: testRecipe)),
       );
 
       await tester.pumpAndSettle();
@@ -110,12 +105,10 @@ void main() {
     testWidgets('renders with additional recipes when provided',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: CookMealScreen(
-            recipe: testRecipe,
-            additionalRecipes: [sideRecipe],
-          ),
-        ),
+        wrapWithLocalizations(CookMealScreen(
+          recipe: testRecipe,
+          additionalRecipes: [sideRecipe],
+        )),
       );
 
       await tester.pumpAndSettle();
@@ -132,12 +125,10 @@ void main() {
     testWidgets('passes additional recipes to dialog when provided',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: CookMealScreen(
-            recipe: testRecipe,
-            additionalRecipes: [sideRecipe],
-          ),
-        ),
+        wrapWithLocalizations(CookMealScreen(
+          recipe: testRecipe,
+          additionalRecipes: [sideRecipe],
+        )),
       );
 
       await tester.pumpAndSettle();
@@ -157,12 +148,10 @@ void main() {
     testWidgets('handles empty additional recipes list',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: CookMealScreen(
-            recipe: testRecipe,
-            additionalRecipes: const [],
-          ),
-        ),
+        wrapWithLocalizations(CookMealScreen(
+          recipe: testRecipe,
+          additionalRecipes: const [],
+        )),
       );
 
       await tester.pumpAndSettle();
@@ -192,9 +181,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: CookMealScreen(recipe: longNameRecipe),
-        ),
+        wrapWithLocalizations(CookMealScreen(recipe: longNameRecipe)),
       );
 
       await tester.pumpAndSettle();

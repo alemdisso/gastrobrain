@@ -9,6 +9,7 @@ import 'package:gastrobrain/core/di/providers/database_provider.dart';
 import 'package:gastrobrain/models/ingredient.dart';
 import 'package:gastrobrain/models/recipe_ingredient.dart';
 import '../mocks/mock_database_helper.dart';
+import '../test_utils/test_app_wrapper.dart';
 
 // Simple test to verify the dialog appears
 void main() {
@@ -28,33 +29,31 @@ void main() {
         (WidgetTester tester) async {
       // Build test app with proper scaffold
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (BuildContext context) {
-                return ElevatedButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AddIngredientDialog(
-                        recipe: testRecipe,
-                      ),
-                    );
-                  },
-                  child: const Text('Show Dialog'),
-                );
-              },
-            ),
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (BuildContext context) {
+              return ElevatedButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AddIngredientDialog(
+                      recipe: testRecipe,
+                    ),
+                  );
+                },
+                child: const Text('Show Dialog'),
+              );
+            },
           ),
-        ),
+        )),
       );
 
       // Tap button to show dialog
       await tester.tap(find.text('Show Dialog'));
       await tester.pump();
 
-      // Verify the dialog appears with the expected title
-      expect(find.text('Add Ingredient'), findsOneWidget);
+      // Verify the dialog appears with the expected title (Portuguese)
+      expect(find.text('Adicionar Ingrediente'), findsOneWidget);
 
       // Basic verification is complete
       // Note: Full testing would require mocking database operations
@@ -109,30 +108,28 @@ void main() {
       RecipeIngredient? savedIngredient;
 
       // Build the dialog WITH THE TEST RECIPE
-      await tester.pumpWidget(MaterialApp(
-        home: Scaffold(
-          body: Builder(
-            builder: (BuildContext context) {
-              return TextButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AddIngredientDialog(
-                      recipe: testRecipe, // Use the test recipe here
-                      databaseHelper: mockDbHelper,
-                      onSave: (ingredient) {
-                        savedIngredient = ingredient;
-                        Navigator.pop(context, ingredient);
-                      },
-                    ),
-                  );
-                },
-                child: const Text('Show Dialog'),
-              );
-            },
-          ),
+      await tester.pumpWidget(wrapWithLocalizations(Scaffold(
+        body: Builder(
+          builder: (BuildContext context) {
+            return TextButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AddIngredientDialog(
+                    recipe: testRecipe, // Use the test recipe here
+                    databaseHelper: mockDbHelper,
+                    onSave: (ingredient) {
+                      savedIngredient = ingredient;
+                      Navigator.pop(context, ingredient);
+                    },
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            );
+          },
         ),
-      ));
+      )));
       expect(savedIngredient, null);
     });
 
