@@ -114,7 +114,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify that at least some day text is shown (Portuguese weekdays)
-    expect(find.textContaining('feira'), findsWidgets);
+    expect(find.textContaining('Domingo'), findsWidgets);
 
     // Verify meal type sections are shown (Portuguese)
     expect(find.text('Almoço'), findsWidgets);
@@ -148,7 +148,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Find at least one weekday (may not find all depending on layout) (Portuguese)
-    expect(find.textContaining('feira'), findsWidgets);
+    expect(find.textContaining('Sábado'), findsWidgets);
 
     // Verify meal type sections are shown (Portuguese)
     expect(find.text('Almoço'), findsWidgets);
