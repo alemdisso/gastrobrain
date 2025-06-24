@@ -10,6 +10,7 @@ import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/models/time_context.dart';
 import 'package:gastrobrain/widgets/weekly_calendar_widget.dart';
 import '../mocks/mock_database_helper.dart';
+import '../test_utils/test_app_wrapper.dart';
 
 void main() {
   late DateTime testWeekStart;
@@ -82,23 +83,21 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: WeeklyCalendarWidget(
-              weekStartDate: testWeekStart,
-              mealPlan: mealPlan,
-              timeContext: TimeContext.current,
-              databaseHelper: mockDbHelper,
-            ),
+        wrapWithLocalizations(Scaffold(
+          body: WeeklyCalendarWidget(
+            weekStartDate: testWeekStart,
+            mealPlan: mealPlan,
+            timeContext: TimeContext.current,
+            databaseHelper: mockDbHelper,
           ),
-        ),
+        )),
       );
 
       await tester.pumpAndSettle();
 
       // Should show recipe name but no count badge for single recipe
       expect(find.text(primaryRecipe.name), findsOneWidget);
-      expect(find.textContaining('recipes'), findsNothing);
+      expect(find.textContaining('receitas'), findsNothing);
     });
     testWidgets('displays multi-recipe meal with count badge in regular layout',
         (WidgetTester tester) async {
@@ -142,22 +141,20 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: WeeklyCalendarWidget(
-              weekStartDate: testWeekStart,
-              mealPlan: mealPlan,
-              timeContext: TimeContext.current,
-              databaseHelper: mockDbHelper,
-            ),
+        wrapWithLocalizations(Scaffold(
+          body: WeeklyCalendarWidget(
+            weekStartDate: testWeekStart,
+            mealPlan: mealPlan,
+            timeContext: TimeContext.current,
+            databaseHelper: mockDbHelper,
           ),
-        ),
+        )),
       );
 
       await tester.pumpAndSettle();
 
-      // Should show count badge for multiple recipes (3 total - 1 = 2 additional)
-      expect(find.text('2 recipes'), findsOneWidget);
+      // Should show count badge for multiple recipes (3 total - 1 = 2 additional) - Portuguese
+      expect(find.text('2 receitas'), findsOneWidget);
 
       // Reset view for other tests
       addTearDown(tester.view.reset);
@@ -198,22 +195,20 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: WeeklyCalendarWidget(
-              weekStartDate: testWeekStart,
-              mealPlan: mealPlan,
-              timeContext: TimeContext.current,
-              databaseHelper: mockDbHelper,
-            ),
+        wrapWithLocalizations(Scaffold(
+          body: WeeklyCalendarWidget(
+            weekStartDate: testWeekStart,
+            mealPlan: mealPlan,
+            timeContext: TimeContext.current,
+            databaseHelper: mockDbHelper,
           ),
-        ),
+        )),
       );
 
       await tester.pumpAndSettle();
 
       // Should show "1 recipes" for 2 total recipes (2-1=1 additional)
-      expect(find.text('1 recipes'), findsOneWidget);
+      expect(find.text('1 receita'), findsOneWidget);
 
       addTearDown(tester.view.reset);
     });
@@ -266,16 +261,14 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: WeeklyCalendarWidget(
-              weekStartDate: testWeekStart,
-              mealPlan: mealPlan,
-              timeContext: TimeContext.current,
-              databaseHelper: mockDbHelper,
-            ),
+        wrapWithLocalizations(Scaffold(
+          body: WeeklyCalendarWidget(
+            weekStartDate: testWeekStart,
+            mealPlan: mealPlan,
+            timeContext: TimeContext.current,
+            databaseHelper: mockDbHelper,
           ),
-        ),
+        )),
       );
 
       await tester.pumpAndSettle();
@@ -285,7 +278,7 @@ void main() {
 
       // Multi-recipe meal should show badge
       expect(find.text(sideRecipe1.name), findsOneWidget);
-      expect(find.text('1 recipes'), findsOneWidget);
+      expect(find.text('1 receita'), findsOneWidget);
 
       addTearDown(tester.view.reset);
     });

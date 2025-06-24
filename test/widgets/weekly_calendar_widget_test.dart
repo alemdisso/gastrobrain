@@ -9,6 +9,7 @@ import 'package:gastrobrain/models/time_context.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/widgets/weekly_calendar_widget.dart';
 import '../mocks/mock_database_helper.dart';
+import '../test_utils/test_app_wrapper.dart';
 
 void main() {
   late DateTime testWeekStart;
@@ -18,7 +19,7 @@ void main() {
   setUp(() async {
     // Set up mock database
     mockDbHelper = MockDatabaseHelper();
-    
+
     // Add test recipes to mock database
     await mockDbHelper.insertRecipe(Recipe(
       id: 'recipe-1',
@@ -26,11 +27,11 @@ void main() {
       createdAt: DateTime.now(),
     ));
     await mockDbHelper.insertRecipe(Recipe(
-      id: 'recipe-2', 
+      id: 'recipe-2',
       name: 'Test Recipe 2',
       createdAt: DateTime.now(),
     ));
-    
+
     // Set up a Friday as the week start date
     testWeekStart = DateTime(2024, 3, 1); // March 1, 2024 is a Friday
 
@@ -92,7 +93,6 @@ void main() {
     );
   });
 
-
   testWidgets('WeeklyCalendarWidget renders correctly',
       (WidgetTester tester) async {
     // Set a consistent size for testing
@@ -101,29 +101,27 @@ void main() {
 
     // Build the widget with empty meal plan
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: WeeklyCalendarWidget(
-            weekStartDate: testWeekStart,
-            mealPlan: null,
-            timeContext: TimeContext.current,
-            databaseHelper: mockDbHelper,
-          ),
+      wrapWithLocalizations(Scaffold(
+        body: WeeklyCalendarWidget(
+          weekStartDate: testWeekStart,
+          mealPlan: null,
+          timeContext: TimeContext.current,
+          databaseHelper: mockDbHelper,
         ),
-      ),
+      )),
     );
 
     await tester.pumpAndSettle();
 
-    // Verify that at least some day text is shown
-    expect(find.textContaining('day'), findsWidgets);
+    // Verify that at least some day text is shown (Portuguese weekdays)
+    expect(find.textContaining('feira'), findsWidgets);
 
-    // Verify meal type sections are shown
-    expect(find.text('Lunch'), findsWidgets);
-    expect(find.text('Dinner'), findsWidgets);
+    // Verify meal type sections are shown (Portuguese)
+    expect(find.text('Almoço'), findsWidgets);
+    expect(find.text('Jantar'), findsWidgets);
 
-    // Verify empty state is shown
-    expect(find.text('Add meal'), findsWidgets);
+    // Verify empty state is shown (Portuguese)
+    expect(find.text('Adicionar refeição'), findsWidgets);
 
     // Reset the test environment
     addTearDown(tester.view.reset);
@@ -137,26 +135,24 @@ void main() {
 
     // Build the widget with the test meal plan
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: WeeklyCalendarWidget(
-            weekStartDate: testWeekStart,
-            mealPlan: testMealPlan,
-            timeContext: TimeContext.current,
-            databaseHelper: mockDbHelper,
-          ),
+      wrapWithLocalizations(Scaffold(
+        body: WeeklyCalendarWidget(
+          weekStartDate: testWeekStart,
+          mealPlan: testMealPlan,
+          timeContext: TimeContext.current,
+          databaseHelper: mockDbHelper,
         ),
-      ),
+      )),
     );
 
     await tester.pumpAndSettle();
 
-    // Find at least one weekday (may not find all depending on layout)
-    expect(find.textContaining('day'), findsWidgets);
+    // Find at least one weekday (may not find all depending on layout) (Portuguese)
+    expect(find.textContaining('feira'), findsWidgets);
 
-    // Verify meal type sections are shown
-    expect(find.text('Lunch'), findsWidgets);
-    expect(find.text('Dinner'), findsWidgets);
+    // Verify meal type sections are shown (Portuguese)
+    expect(find.text('Almoço'), findsWidgets);
+    expect(find.text('Jantar'), findsWidgets);
 
     // Reset the test environment
     addTearDown(tester.view.reset);
@@ -172,26 +168,24 @@ void main() {
 
     // Build the widget with a callback
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: WeeklyCalendarWidget(
-            weekStartDate: testWeekStart,
-            mealPlan: null,
-            timeContext: TimeContext.current,
-            databaseHelper: mockDbHelper,
-            onSlotTap: (date, mealType) {
-              callbackCalled = true;
-            },
-          ),
+      wrapWithLocalizations(Scaffold(
+        body: WeeklyCalendarWidget(
+          weekStartDate: testWeekStart,
+          mealPlan: null,
+          timeContext: TimeContext.current,
+          databaseHelper: mockDbHelper,
+          onSlotTap: (date, mealType) {
+            callbackCalled = true;
+          },
         ),
-      ),
+      )),
     );
 
     // Wait for all animations and async operations to complete
     await tester.pumpAndSettle();
 
-    // Find and tap an "Add meal" text which should be present in empty slots
-    final addMealFinder = find.text('Add meal').first;
+    // Find and tap an "Add meal" text which should be present in empty slots (Portuguese)
+    final addMealFinder = find.text('Adicionar refeição').first;
     await tester.tap(addMealFinder);
     await tester.pumpAndSettle();
 
@@ -236,17 +230,15 @@ void main() {
 
     // Build the widget with a meal tap callback
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: WeeklyCalendarWidget(
-            weekStartDate: testWeekStart,
-            mealPlan: simpleMealPlan,
-            timeContext: TimeContext.current,
-            databaseHelper: mockDbHelper,
-            onMealTap: (date, mealType, recipeId) {},
-          ),
+      wrapWithLocalizations(Scaffold(
+        body: WeeklyCalendarWidget(
+          weekStartDate: testWeekStart,
+          mealPlan: simpleMealPlan,
+          timeContext: TimeContext.current,
+          databaseHelper: mockDbHelper,
+          onMealTap: (date, mealType, recipeId) {},
         ),
-      ),
+      )),
     );
 
     // Wait for all animations and async operations to complete
@@ -254,7 +246,7 @@ void main() {
 
     // Skip trying to find and tap on a meal item since that's proving difficult
     // Instead, just verify the widget renders without errors
-    expect(find.text('Lunch'), findsWidgets);
+    expect(find.text('Almoço'), findsWidgets);
 
     // Reset the test environment
     addTearDown(tester.view.reset);
@@ -267,16 +259,14 @@ void main() {
     tester.view.devicePixelRatio = 3.0;
     // Portrait mode (narrow screen)
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: WeeklyCalendarWidget(
-            weekStartDate: testWeekStart,
-            mealPlan: null,
-            timeContext: TimeContext.current,
-            databaseHelper: mockDbHelper,
-          ),
+      wrapWithLocalizations(Scaffold(
+        body: WeeklyCalendarWidget(
+          weekStartDate: testWeekStart,
+          mealPlan: null,
+          timeContext: TimeContext.current,
+          databaseHelper: mockDbHelper,
         ),
-      ),
+      )),
     );
 
     await tester.pumpAndSettle();
@@ -290,16 +280,14 @@ void main() {
 
     // Landscape mode (wide screen)
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: WeeklyCalendarWidget(
-            weekStartDate: testWeekStart,
-            mealPlan: null,
-            timeContext: TimeContext.current,
-            databaseHelper: mockDbHelper,
-          ),
+      wrapWithLocalizations(Scaffold(
+        body: WeeklyCalendarWidget(
+          weekStartDate: testWeekStart,
+          mealPlan: null,
+          timeContext: TimeContext.current,
+          databaseHelper: mockDbHelper,
         ),
-      ),
+      )),
     );
 
     await tester.pumpAndSettle();
@@ -326,20 +314,18 @@ void main() {
     int? selectedIndex;
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: WeeklyCalendarWidget(
-            weekStartDate: testWeekStart,
-            mealPlan: null,
-            timeContext: TimeContext.current,
-            databaseHelper: mockDbHelper,
-            onDaySelected: (date, index) {
-              selectedDate = date;
-              selectedIndex = index;
-            },
-          ),
+      wrapWithLocalizations(Scaffold(
+        body: WeeklyCalendarWidget(
+          weekStartDate: testWeekStart,
+          mealPlan: null,
+          timeContext: TimeContext.current,
+          databaseHelper: mockDbHelper,
+          onDaySelected: (date, index) {
+            selectedDate = date;
+            selectedIndex = index;
+          },
         ),
-      ),
+      )),
     );
 
     await tester.pumpAndSettle();
@@ -350,5 +336,4 @@ void main() {
 
     // For now, this is a placeholder for when the widget has better test hooks
   });
-
 }

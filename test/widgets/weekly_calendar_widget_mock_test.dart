@@ -13,6 +13,9 @@ import 'package:gastrobrain/widgets/weekly_calendar_widget.dart';
 // Import our MockDatabaseHelper
 import '../mocks/mock_database_helper.dart';
 
+// Import test utilities for localization
+import '../test_utils/test_app_wrapper.dart';
+
 void main() {
   late DateTime testWeekStart;
   late MealPlan testMealPlan;
@@ -132,35 +135,33 @@ void main() {
 
     // Build a simplified version of the widget
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: Builder(
-            builder: (context) {
-              // Create the calendar widget with minimal properties
-              final calendarWidget = WeeklyCalendarWidget(
-                weekStartDate: testWeekStart,
-                mealPlan: null,
-                timeContext: TimeContext.current,
-                databaseHelper: mockDbHelper,
-              );
+      wrapWithLocalizations(Scaffold(
+        body: Builder(
+          builder: (context) {
+            // Create the calendar widget with minimal properties
+            final calendarWidget = WeeklyCalendarWidget(
+              weekStartDate: testWeekStart,
+              mealPlan: null,
+              timeContext: TimeContext.current,
+              databaseHelper: mockDbHelper,
+            );
 
-              // Here we're primarily testing that the widget can be created
-              // with the injected database without errors
-              return Column(
-                children: [
-                  const Text('Calendar Widget Test'),
-                  Expanded(
-                    child: SizedBox(
-                      height: 300, // Constrain height to avoid layout issues
-                      child: calendarWidget,
-                    ),
+            // Here we're primarily testing that the widget can be created
+            // with the injected database without errors
+            return Column(
+              children: [
+                const Text('Calendar Widget Test'),
+                Expanded(
+                  child: SizedBox(
+                    height: 300, // Constrain height to avoid layout issues
+                    child: calendarWidget,
                   ),
-                ],
-              );
-            },
-          ),
+                ),
+              ],
+            );
+          },
         ),
-      ),
+      )),
     );
 
     // Just verify the widget was built successfully
@@ -187,35 +188,33 @@ void main() {
 
     // Build a simplified version of the widget
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: Builder(
-            builder: (context) {
-              // Create the calendar widget with the test meal plan
-              final calendarWidget = WeeklyCalendarWidget(
-                weekStartDate: testWeekStart,
-                mealPlan: testMealPlan,
-                timeContext: TimeContext.current,
-                databaseHelper: mockDbHelper,
-              );
+      wrapWithLocalizations(Scaffold(
+        body: Builder(
+          builder: (context) {
+            // Create the calendar widget with the test meal plan
+            final calendarWidget = WeeklyCalendarWidget(
+              weekStartDate: testWeekStart,
+              mealPlan: testMealPlan,
+              timeContext: TimeContext.current,
+              databaseHelper: mockDbHelper,
+            );
 
-              // Here we're primarily testing that the widget can be created
-              // with the injected database and meal plan without errors
-              return Column(
-                children: [
-                  const Text('Calendar With Meal Plan Test'),
-                  Expanded(
-                    child: SizedBox(
-                      height: 300, // Constrain height to avoid layout issues
-                      child: calendarWidget,
-                    ),
+            // Here we're primarily testing that the widget can be created
+            // with the injected database and meal plan without errors
+            return Column(
+              children: [
+                const Text('Calendar With Meal Plan Test'),
+                Expanded(
+                  child: SizedBox(
+                    height: 300, // Constrain height to avoid layout issues
+                    child: calendarWidget,
                   ),
-                ],
-              );
-            },
-          ),
+                ),
+              ],
+            );
+          },
         ),
-      ),
+      )),
     );
 
     // Just verify the widget was built successfully
