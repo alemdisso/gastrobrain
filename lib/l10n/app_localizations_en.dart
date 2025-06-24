@@ -155,7 +155,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String deleteIngredientConfirmation(String ingredientName) {
-    return 'Are you sure you want to delete $ingredientName?';
+    return 'Are you sure you want to remove $ingredientName from this recipe?';
   }
 
   @override
@@ -816,6 +816,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String plannedForDate(String date) {
     return 'Planned for: $date';
+  }
+
+  @override
+  String ingredientsTitle(String recipeName) {
+    return 'Ingredients: $recipeName';
+  }
+
+  @override
+  String unitOverridden(String defaultUnit) {
+    return 'Unit overridden (default: $defaultUnit)';
   }
 
   @override

@@ -116,10 +116,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get unknown => 'Desconhecido';
 
   @override
-  String get pleaseEnterRecipeName => 'Por favor, insira o nome da receita';
+  String get pleaseEnterRecipeName => 'Por favor, informe o nome da receita';
 
   @override
-  String get pleaseEnterValidTime => 'Por favor, insira um tempo válido';
+  String get pleaseEnterValidTime => 'Por favor, informe um tempo válido';
 
   @override
   String get errorSavingRecipe => 'Erro ao salvar receita:';
@@ -155,7 +155,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String deleteIngredientConfirmation(String ingredientName) {
-    return 'Tem certeza que deseja excluir $ingredientName?';
+    return 'Tem certeza de que deseja remover $ingredientName desta receita?';
   }
 
   @override
@@ -681,7 +681,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get pleaseEnterIngredientName =>
-      'Por favor, insira o nome do ingrediente';
+      'Por favor, informe o nome do ingrediente';
 
   @override
   String get categoryLabel => 'Categoria';
@@ -710,10 +710,10 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get pleaseEnterNumberOfServings =>
-      'Por favor, insira o número de porções';
+      'Por favor, informe o número de porções';
 
   @override
-  String get pleaseEnterValidNumber => 'Por favor, insira um número válido';
+  String get pleaseEnterValidNumber => 'Por favor, informe um número válido';
 
   @override
   String get prepTimeMin => 'Tempo de Preparo (min)';
@@ -722,7 +722,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get cookTimeMin => 'Tempo de Cozimento (min)';
 
   @override
-  String get enterValidTime => 'Insira um tempo válido';
+  String get enterValidTime => 'Informe um tempo válido';
 
   @override
   String get wasItSuccessful => 'Foi bem-sucedido?';
@@ -790,7 +790,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get createNewIngredient => 'Criar Novo Ingrediente';
 
   @override
-  String get pleaseEnterQuantity => 'Por favor, insira uma quantidade';
+  String get pleaseEnterQuantity => 'Por favor, informe uma quantidade';
 
   @override
   String get overrideDefaultUnit => 'Substituir unidade padrão';
@@ -827,6 +827,16 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String plannedForDate(String date) {
     return 'Planejada para: $date';
+  }
+
+  @override
+  String ingredientsTitle(String recipeName) {
+    return 'Ingredientes: $recipeName';
+  }
+
+  @override
+  String unitOverridden(String defaultUnit) {
+    return 'Unidade substituída (padrão: $defaultUnit)';
   }
 
   @override

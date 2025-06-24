@@ -194,7 +194,7 @@
   "@deleteIngredient": {
     "description": "Título do diálogo de excluir ingrediente"
   },
-  "deleteIngredientConfirmation": "Tem certeza que deseja excluir {ingredientName}?",
+  "deleteIngredientConfirmation": "Tem certeza de que deseja remover {ingredientName} desta receita?",
   "@deleteIngredientConfirmation": {
     "description": "Mensagem de confirmação para exclusão de ingrediente",
     "placeholders": {
@@ -1093,6 +1093,26 @@
       "date": {
         "type": "String",
         "description": "Data formatada quando a refeição foi planejada"
+      }
+    }
+  },
+  "ingredientsTitle": "Ingredientes: {recipeName}",
+  "@ingredientsTitle": {
+    "description": "Título da tela de ingredientes com nome da receita",
+    "placeholders": {
+      "recipeName": {
+        "type": "String",
+        "description": "Nome da receita"
+      }
+    }
+  },
+  "unitOverridden": "Unidade substituída (padrão: {defaultUnit})",
+  "@unitOverridden": {
+    "description": "Dica para indicador de substituição de unidade",
+    "placeholders": {
+      "defaultUnit": {
+        "type": "String",
+        "description": "A unidade padrão que foi substituída"
       }
     }
   },

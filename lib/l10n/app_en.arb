@@ -194,7 +194,7 @@
   "@deleteIngredient": {
     "description": "Title for delete ingredient dialog"
   },
-  "deleteIngredientConfirmation": "Are you sure you want to delete {ingredientName}?",
+  "deleteIngredientConfirmation": "Are you sure you want to remove {ingredientName} from this recipe?",
   "@deleteIngredientConfirmation": {
     "description": "Confirmation message for ingredient deletion",
     "placeholders": {
@@ -1111,6 +1111,26 @@
       "date": {
         "type": "String",
         "description": "Formatted date when meal was planned"
+      }
+    }
+  },
+  "ingredientsTitle": "Ingredients: {recipeName}",
+  "@ingredientsTitle": {
+    "description": "Title for ingredients screen with recipe name",
+    "placeholders": {
+      "recipeName": {
+        "type": "String",
+        "description": "Name of the recipe"
+      }
+    }
+  },
+  "unitOverridden": "Unit overridden (default: {defaultUnit})",
+  "@unitOverridden": {
+    "description": "Tooltip for unit override indicator",
+    "placeholders": {
+      "defaultUnit": {
+        "type": "String",
+        "description": "The default unit that was overridden"
       }
     }
   },

@@ -383,7 +383,7 @@ abstract class AppLocalizations {
   /// Confirmation message for ingredient deletion
   ///
   /// In en, this message translates to:
-  /// **'Are you sure you want to delete {ingredientName}?'**
+  /// **'Are you sure you want to remove {ingredientName} from this recipe?'**
   String deleteIngredientConfirmation(String ingredientName);
 
   /// Success message for ingredient deletion
@@ -1591,6 +1591,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Planned for: {date}'**
   String plannedForDate(String date);
+
+  /// Title for ingredients screen with recipe name
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredients: {recipeName}'**
+  String ingredientsTitle(String recipeName);
+
+  /// Tooltip for unit override indicator
+  ///
+  /// In en, this message translates to:
+  /// **'Unit overridden (default: {defaultUnit})'**
+  String unitOverridden(String defaultUnit);
 
   /// Label for recipes section
   ///

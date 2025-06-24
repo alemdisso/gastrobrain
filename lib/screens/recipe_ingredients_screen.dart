@@ -7,6 +7,7 @@ import '../database/database_helper.dart';
 import '../widgets/add_ingredient_dialog.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/services/snackbar_service.dart';
+import '../l10n/app_localizations.dart';
 
 class RecipeIngredientsScreen extends StatefulWidget {
   final Recipe recipe;
@@ -52,13 +53,12 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
       });
     } on GastrobrainException catch (e) {
       setState(() {
-        _errorMessage = 'Error loading ingredients: ${e.message}';
+        _errorMessage = '${AppLocalizations.of(context)!.errorLoadingIngredients} ${e.message}';
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _errorMessage =
-            'An unexpected error occurred while loading ingredients';
+        _errorMessage = AppLocalizations.of(context)!.unexpectedErrorLoadingIngredients;
         _isLoading = false;
       });
     }
@@ -80,20 +80,20 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Delete Ingredient'),
+          title: Text(AppLocalizations.of(context)!.deleteIngredient),
           content: Text(
-              'Are you sure you want to remove ${ingredient['name']} from this recipe?'),
+              AppLocalizations.of(context)!.deleteIngredientConfirmation(ingredient['name'])),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
+              child: Text(AppLocalizations.of(context)!.buttonCancel),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
               style: TextButton.styleFrom(
                 foregroundColor: Theme.of(context).colorScheme.error,
               ),
-              child: const Text('Delete'),
+              child: Text(AppLocalizations.of(context)!.delete),
             ),
           ],
         );
@@ -106,7 +106,7 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
             .deleteRecipeIngredient(ingredient['recipe_ingredient_id']);
         if (mounted) {
           SnackbarService.showSuccess(
-              context, 'Ingredient deleted successfully');
+              context, AppLocalizations.of(context)!.ingredientDeletedSuccessfully);
           _loadIngredients();
         }
         _loadIngredients(); // Reload the ingredients list
@@ -117,7 +117,7 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
       } catch (e) {
         if (mounted) {
           SnackbarService.showError(context,
-              'An unexpected error occurred while deleting the ingredient');
+              AppLocalizations.of(context)!.unexpectedErrorDeletingIngredient);
         }
       }
     }
@@ -154,7 +154,7 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
           ElevatedButton.icon(
             onPressed: _loadIngredients,
             icon: const Icon(Icons.refresh),
-            label: const Text('Try Again'),
+            label: Text(AppLocalizations.of(context)!.tryAgain),
           ),
         ],
       ),
@@ -168,15 +168,15 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
         children: [
           const Icon(Icons.no_food, size: 64, color: Colors.grey),
           const SizedBox(height: 16),
-          const Text(
-            'No ingredients added yet',
-            style: TextStyle(fontSize: 18, color: Colors.grey),
+          Text(
+            AppLocalizations.of(context)!.noIngredientsAddedYet,
+            style: const TextStyle(fontSize: 18, color: Colors.grey),
           ),
           const SizedBox(height: 8),
           ElevatedButton.icon(
             onPressed: _addIngredient,
             icon: const Icon(Icons.add),
-            label: const Text('Add Ingredient'),
+            label: Text(AppLocalizations.of(context)!.addIngredient),
           ),
         ],
       ),
@@ -187,12 +187,12 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Ingredients: ${widget.recipe.name}'),
+        title: Text(AppLocalizations.of(context)!.ingredientsTitle(widget.recipe.name)),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _isLoading ? null : _loadIngredients,
-            tooltip: 'Refresh',
+            tooltip: AppLocalizations.of(context)!.refresh,
           ),
         ],
       ),
@@ -244,7 +244,7 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
                                         padding: const EdgeInsets.only(left: 4),
                                         child: Tooltip(
                                           message:
-                                              'Unit overridden (default: ${ingredient['unit'] ?? 'none'})',
+                                              AppLocalizations.of(context)!.unitOverridden(ingredient['unit'] ?? AppLocalizations.of(context)!.noUnit),
                                           child: const Icon(Icons.edit_note,
                                               size: 16),
                                         ),
@@ -271,23 +271,23 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
                                 }
                               },
                               itemBuilder: (context) => [
-                                const PopupMenuItem(
+                                PopupMenuItem(
                                   value: 'edit',
                                   child: Row(
                                     children: [
-                                      Icon(Icons.edit),
-                                      SizedBox(width: 8),
-                                      Text('Edit'),
+                                      const Icon(Icons.edit),
+                                      const SizedBox(width: 8),
+                                      Text(AppLocalizations.of(context)!.edit),
                                     ],
                                   ),
                                 ),
-                                const PopupMenuItem(
+                                PopupMenuItem(
                                   value: 'delete',
                                   child: Row(
                                     children: [
-                                      Icon(Icons.delete),
-                                      SizedBox(width: 8),
-                                      Text('Delete'),
+                                      const Icon(Icons.delete),
+                                      const SizedBox(width: 8),
+                                      Text(AppLocalizations.of(context)!.delete),
                                     ],
                                   ),
                                 ),
@@ -299,7 +299,7 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
                     ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addIngredient,
-        tooltip: 'Add Ingredient',
+        tooltip: AppLocalizations.of(context)!.addIngredient,
         child: const Icon(Icons.add),
       ),
     );
