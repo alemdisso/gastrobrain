@@ -1,0 +1,56 @@
+# This file configures the analyzer, which statically analyzes Dart code to
+# check for errors, warnings, and lints.
+#
+# The issues identified by the analyzer are surfaced in the UI of Dart-enabled
+# IDEs (https://dart.dev/tools#ides-and-editors). The analyzer can also be
+# invoked from the command line by running `flutter analyze`.
+
+# The following line activates a set of recommended lints for Flutter apps,
+# packages, and plugins designed to encourage good coding practices.
+# include: package:flutter_lints/flutter.yaml
+
+linter:
+  # The lint rules applied to this project can be customized in the
+  # section below to disable rules from the `package:flutter_lints/flutter.yaml`
+  # included above or to enable additional rules. A list of all available lints
+  # and their documentation is published at https://dart.dev/lints.
+  #
+  # Instead of disabling a lint rule for the entire project in the
+  # section below, it can also be suppressed for a single line of code
+  # or a specific dart file by using the `// ignore: name_of_lint` and
+  # `// ignore_for_file: name_of_lint` syntax on the line or in the file
+  # producing the lint.
+  rules:
+    # Code style preferences (enabled gradually)
+    prefer_single_quotes: false  # Can enable later with dart format --fix
+    prefer_const_constructors: true
+    prefer_const_literals_to_create_immutables: true
+    
+    # Error prevention (keep these enabled)
+    avoid_type_to_string: true
+    close_sinks: true
+    literal_only_boolean_expressions: true
+    no_adjacent_strings_in_list: true
+    throw_in_finally: true
+    unnecessary_statements: true
+    
+    # Performance (helpful for optimization)
+    avoid_function_literals_in_foreach_calls: true
+    prefer_foreach: true
+    
+    # Documentation (disabled for now)
+    public_member_api_docs: false
+    
+    # Maintainability (can be introduced gradually)
+    avoid_catching_errors: true
+    use_named_constants: true
+    
+    # Disabled for now (can enable later)
+    # prefer_final_locals: true
+    # prefer_final_in_for_each: true  
+    # avoid_dynamic_calls: true
+    # avoid_catches_without_on_clauses: true
+    # comment_references: true
+
+# Additional information about this file can be found at
+# https://dart.dev/guides/language/analysis-options

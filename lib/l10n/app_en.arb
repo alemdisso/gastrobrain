@@ -1,0 +1,1406 @@
+{
+  "@@locale": "en",
+  "appTitle": "Gastrobrain",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "recipes": "Recipes",
+  "@recipes": {
+    "description": "Tab label for recipes section"
+  },
+  "mealPlan": "Meal Plan",
+  "@mealPlan": {
+    "description": "Tab label for meal planning section"
+  },
+  "ingredients": "Ingredients",
+  "@ingredients": {
+    "description": "Tab label for ingredients section"
+  },
+  "deleteRecipe": "Delete Recipe",
+  "@deleteRecipe": {
+    "description": "Title for delete recipe confirmation dialog"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+  "delete": "Delete",
+  "@delete": {
+    "description": "Delete button text"
+  },
+  "sortOptions": "Sort Options",
+  "@sortOptions": {
+    "description": "Title for sorting options menu"
+  },
+  "name": "Name",
+  "@name": {
+    "description": "Sort by name option"
+  },
+  "rating": "Rating",
+  "@rating": {
+    "description": "Sort by rating option"
+  },
+  "difficulty": "Difficulty",
+  "@difficulty": {
+    "description": "Sort by difficulty option"
+  },
+  "filterRecipes": "Filter Recipes",
+  "@filterRecipes": {
+    "description": "Title for recipe filter dialog"
+  },
+  "deleteConfirmation": "Are you sure you want to delete \"{recipeName}\"?",
+  "@deleteConfirmation": {
+    "description": "Confirmation message for recipe deletion",
+    "placeholders": {
+      "recipeName": {
+        "type": "String",
+        "description": "Name of the recipe to be deleted"
+      }
+    }
+  },
+  "sortRecipes": "Sort recipes",
+  "@sortRecipes": {
+    "description": "Tooltip for sort button"
+  },
+  "filterRecipesTooltip": "Filter recipes",
+  "@filterRecipesTooltip": {
+    "description": "Tooltip for filter button"
+  },
+  "minimumRating": "Minimum Rating",
+  "@minimumRating": {
+    "description": "Label for minimum rating filter"
+  },
+  "cookingFrequency": "Cooking Frequency",
+  "@cookingFrequency": {
+    "description": "Label for cooking frequency filter"
+  },
+  "category": "Category",
+  "@category": {
+    "description": "Label for category filter"
+  },
+  "any": "Any",
+  "@any": {
+    "description": "Option for any/no filter"
+  },
+  "clear": "Clear",
+  "@clear": {
+    "description": "Button to clear filters"
+  },
+  "apply": "Apply",
+  "@apply": {
+    "description": "Button to apply filters"
+  },
+  "addRecipe": "Add Recipe",
+  "@addRecipe": {
+    "description": "Tooltip for add recipe button"
+  },
+  "addNewRecipe": "Add New Recipe",
+  "@addNewRecipe": {
+    "description": "Title for add recipe screen"
+  },
+  "recipeName": "Recipe Name",
+  "@recipeName": {
+    "description": "Label for recipe name field"
+  },
+  "desiredFrequency": "Desired Frequency",
+  "@desiredFrequency": {
+    "description": "Label for desired cooking frequency field"
+  },
+  "difficultyLevel": "Difficulty Level",
+  "@difficultyLevel": {
+    "description": "Label for difficulty level field"
+  },
+  "preparationTime": "Preparation Time",
+  "@preparationTime": {
+    "description": "Label for preparation time field"
+  },
+  "cookingTime": "Cooking Time",
+  "@cookingTime": {
+    "description": "Label for cooking time field"
+  },
+  "notes": "Notes",
+  "@notes": {
+    "description": "Label for notes field"
+  },
+  "minutes": "minutes",
+  "@minutes": {
+    "description": "Time unit for minutes"
+  },
+  "add": "Add",
+  "@add": {
+    "description": "Add button text"
+  },
+  "noIngredientsAdded": "No ingredients added yet",
+  "@noIngredientsAdded": {
+    "description": "Message when no ingredients are added"
+  },
+  "saveRecipe": "Save Recipe",
+  "@saveRecipe": {
+    "description": "Save recipe button text"
+  },
+  "loading": "Loading...",
+  "@loading": {
+    "description": "Loading indicator text"
+  },
+  "unknown": "Unknown",
+  "@unknown": {
+    "description": "Unknown value placeholder"
+  },
+  "pleaseEnterRecipeName": "Please enter a recipe name",
+  "@pleaseEnterRecipeName": {
+    "description": "Validation message for empty recipe name"
+  },
+  "pleaseEnterValidTime": "Please enter a valid time",
+  "@pleaseEnterValidTime": {
+    "description": "Validation message for invalid time"
+  },
+  "errorSavingRecipe": "Error saving recipe:",
+  "@errorSavingRecipe": {
+    "description": "Error message prefix for recipe saving errors"
+  },
+  "unexpectedError": "An unexpected error occurred",
+  "@unexpectedError": {
+    "description": "Generic error message"
+  },
+  "editRecipe": "Edit Recipe",
+  "@editRecipe": {
+    "description": "Title for edit recipe screen"
+  },
+  "saveChanges": "Save Changes",
+  "@saveChanges": {
+    "description": "Save changes button text"
+  },
+  "errorUpdatingRecipe": "Error updating recipe:",
+  "@errorUpdatingRecipe": {
+    "description": "Error message prefix for recipe updating errors"
+  },
+  "errorLoadingIngredients": "Error loading ingredients:",
+  "@errorLoadingIngredients": {
+    "description": "Error message prefix for ingredient loading errors"
+  },
+  "unexpectedErrorLoadingIngredients": "An unexpected error occurred while loading ingredients",
+  "@unexpectedErrorLoadingIngredients": {
+    "description": "Generic error message for ingredient loading"
+  },
+  "unexpectedErrorDeletingIngredient": "An unexpected error occurred while deleting the ingredient",
+  "@unexpectedErrorDeletingIngredient": {
+    "description": "Generic error message for ingredient deletion"
+  },
+  "anErrorOccurred": "An error occurred",
+  "@anErrorOccurred": {
+    "description": "Generic error message"
+  },
+  "deleteIngredient": "Delete Ingredient",
+  "@deleteIngredient": {
+    "description": "Title for delete ingredient dialog"
+  },
+  "deleteIngredientConfirmation": "Are you sure you want to remove {ingredientName} from this recipe?",
+  "@deleteIngredientConfirmation": {
+    "description": "Confirmation message for ingredient deletion",
+    "placeholders": {
+      "ingredientName": {
+        "type": "String",
+        "description": "Name of the ingredient to be deleted"
+      }
+    }
+  },
+  "ingredientDeletedSuccessfully": "Ingredient deleted successfully",
+  "@ingredientDeletedSuccessfully": {
+    "description": "Success message for ingredient deletion"
+  },
+  "tryAgain": "Try Again",
+  "@tryAgain": {
+    "description": "Try again button text"
+  },
+  "addIngredient": "Add Ingredient",
+  "@addIngredient": {
+    "description": "Add ingredient button text"
+  },
+  "searchIngredients": "Search ingredients...",
+  "@searchIngredients": {
+    "description": "Search field hint text for ingredients"
+  },
+  "refresh": "Refresh",
+  "@refresh": {
+    "description": "Refresh button tooltip"
+  },
+  "edit": "Edit",
+  "@edit": {
+    "description": "Edit menu item text"
+  },
+  "history": "History",
+  "@history": {
+    "description": "History tooltip text"
+  },
+  "historyTitle": "History: {recipeName}",
+  "@historyTitle": {
+    "description": "Title for meal history screen",
+    "placeholders": {
+      "recipeName": {
+        "type": "String",
+        "description": "Name of the recipe"
+      }
+    }
+  },
+  "errorLoadingMeals": "Error loading meals:",
+  "@errorLoadingMeals": {
+    "description": "Error message prefix for meal loading errors"
+  },
+  "unexpectedErrorLoadingMeals": "An unexpected error occurred while loading meals",
+  "@unexpectedErrorLoadingMeals": {
+    "description": "Generic error message for meal loading"
+  },
+  "noMealsRecorded": "No meals recorded yet",
+  "@noMealsRecorded": {
+    "description": "Empty state message for meal history"
+  },
+  "mealUpdatedSuccessfully": "Meal updated successfully",
+  "@mealUpdatedSuccessfully": {
+    "description": "Success message for meal update"
+  },
+  "errorEditingMeal": "Error editing meal: {error}",
+  "@errorEditingMeal": {
+    "description": "Error message when editing meal fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "recipesCount": "{count} recipes",
+  "@recipesCount": {
+    "description": "Recipe count display",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of recipes"
+      }
+    }
+  },
+  "editMeal": "Edit meal",
+  "@editMeal": {
+    "description": "Tooltip for edit meal button"
+  },
+  "cookNow": "Cook Now",
+  "@cookNow": {
+    "description": "Tooltip for cook now button"
+  },
+  "fromMealPlan": "From meal plan",
+  "@fromMealPlan": {
+    "description": "Tooltip for meal plan indicator"
+  },
+  "actualTimes": "Actual times - Prep: {prepTime}min, Cook: {cookTime}min",
+  "@actualTimes": {
+    "description": "Display for actual cooking times",
+    "placeholders": {
+      "prepTime": {
+        "type": "String",
+        "description": "Preparation time in minutes"
+      },
+      "cookTime": {
+        "type": "String",
+        "description": "Cooking time in minutes"
+      }
+    }
+  },
+  "weeklyMealPlan": "Weekly Meal Plan",
+  "@weeklyMealPlan": {
+    "description": "Title for weekly meal plan screen"
+  },
+  "previousWeek": "Previous Week",
+  "@previousWeek": {
+    "description": "Tooltip for previous week button"
+  },
+  "nextWeek": "Next Week",
+  "@nextWeek": {
+    "description": "Tooltip for next week button"
+  },
+  "tapToJumpToCurrentWeek": "Tap to jump to current week",
+  "@tapToJumpToCurrentWeek": {
+    "description": "Tooltip for current week navigation"
+  },
+  "thisWeek": "This week",
+  "@thisWeek": {
+    "description": "Label for current week"
+  },
+  "mealOptions": "Meal Options",
+  "@mealOptions": {
+    "description": "Title for meal options dialog"
+  },
+  "viewRecipeDetails": "View Recipe Details",
+  "@viewRecipeDetails": {
+    "description": "Button text to view recipe details"
+  },
+  "changeRecipe": "Change Recipe",
+  "@changeRecipe": {
+    "description": "Button text to change recipe"
+  },
+  "manageRecipes": "Manage Recipes",
+  "@manageRecipes": {
+    "description": "Button text to manage recipes"
+  },
+  "markAsCooked": "Mark as Cooked",
+  "@markAsCooked": {
+    "description": "Button text to mark meal as cooked"
+  },
+  "editCookedMeal": "Edit Cooked Meal",
+  "@editCookedMeal": {
+    "description": "Button text to edit cooked meal"
+  },
+  "manageSideDishes": "Manage Side Dishes",
+  "@manageSideDishes": {
+    "description": "Button text to manage side dishes"
+  },
+  "removeFromPlan": "Remove from Plan",
+  "@removeFromPlan": {
+    "description": "Button text to remove meal from plan"
+  },
+  "viewRecipeDetailsNotImplemented": "View recipe details (not implemented)",
+  "@viewRecipeDetailsNotImplemented": {
+    "description": "Snackbar message for not implemented view recipe details feature"
+  },
+  "errorMarkingMealAsCooked": "Error marking meal as cooked: {error}",
+  "@errorMarkingMealAsCooked": {
+    "description": "Error message when marking meal as cooked fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "cookedMealRecordNotFound": "Could not find the cooked meal record",
+  "@cookedMealRecordNotFound": {
+    "description": "Error message when cooked meal record is not found"
+  },
+  "noRecipesAvailable": "No recipes available. Add some recipes first.",
+  "@noRecipesAvailable": {
+    "description": "Message when no recipes are available"
+  },
+  "mealNotFoundOrNotCooked": "Meal not found or not yet cooked",
+  "@mealNotFoundOrNotCooked": {
+    "description": "Error message when meal is not found or not cooked"
+  },
+  "errorAddingSideDish": "Error adding side dish: {error}",
+  "@errorAddingSideDish": {
+    "description": "Error message when adding side dish fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "noPrimaryRecipeFound": "No primary recipe found",
+  "@noPrimaryRecipeFound": {
+    "description": "Error message when no primary recipe is found"
+  },
+  "mealRecipesUpdatedSuccessfully": "Meal recipes updated successfully",
+  "@mealRecipesUpdatedSuccessfully": {
+    "description": "Success message when meal recipes are updated"
+  },
+  "errorManagingRecipes": "Error managing recipes: {error}",
+  "@errorManagingRecipes": {
+    "description": "Error message when managing recipes fails",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error message"
+      }
+    }
+  },
+  "sideDishAddedLater": "Side dish - added later",
+  "@sideDishAddedLater": {
+    "description": "Notes text for side dishes added later"
+  },
+  "plannedMealNotFound": "Planned meal not found",
+  "@plannedMealNotFound": {
+    "description": "Error message when planned meal is not found"
+  },
+  "recipeNotFound": "Recipe not found",
+  "@recipeNotFound": {
+    "description": "Error message when recipe is not found"
+  },
+  "mainDish": "Main dish",
+  "@mainDish": {
+    "description": "Label for main dish"
+  },
+  "sideDish": "Side dish",
+  "@sideDish": {
+    "description": "Label for side dish"
+  },
+  "mealMarkedAsCooked": "Meal marked as cooked",
+  "@mealMarkedAsCooked": {
+    "description": "Success message when meal is marked as cooked"
+  },
+  "couldNotFindCookedMeal": "Could not find the cooked meal record",
+  "@couldNotFindCookedMeal": {
+    "description": "Error message when cooked meal record is not found"
+  },
+  "sideDishesUpdatedSuccessfully": "Side dishes updated successfully",
+  "@sideDishesUpdatedSuccessfully": {
+    "description": "Success message when side dishes are updated"
+  },
+  "addSideDishes": "Add Side Dishes",
+  "@addSideDishes": {
+    "description": "Button text to add side dishes"
+  },
+  "selectRecipe": "Select Recipe",
+  "@selectRecipe": {
+    "description": "Button text to select recipe"
+  },
+  "tryThis": "Try this",
+  "@tryThis": {
+    "description": "Button text to try a recommendation"
+  },
+  "allRecipes": "All Recipes",
+  "@allRecipes": {
+    "description": "Tab label for all recipes"
+  },
+  "noRecommendationsAvailable": "No recommendations available",
+  "@noRecommendationsAvailable": {
+    "description": "Message when no recommendations are available"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Save button text"
+  },
+  "addThisRecipeToMealPlan": "Add this recipe to meal plan",
+  "@addThisRecipeToMealPlan": {
+    "description": "Subtitle for save action"
+  },
+  "addMoreRecipesToThisMeal": "Add more recipes to this meal",
+  "@addMoreRecipesToThisMeal": {
+    "description": "Subtitle for add side dishes action"
+  },
+  "chooseDifferentRecipe": "Choose a different recipe",
+  "@chooseDifferentRecipe": {
+    "description": "Subtitle for back action"
+  },
+  "back": "Back",
+  "@back": {
+    "description": "Back button text"
+  },
+  "addSideDish": "Add Side Dish",
+  "@addSideDish": {
+    "description": "Button text to add side dish"
+  },
+  "saveMeal": "Save Meal",
+  "@saveMeal": {
+    "description": "Button text to save meal"
+  },
+  "recommendationCountMustBePositive": "Recommendation count must be positive",
+  "@recommendationCountMustBePositive": {
+    "description": "Error message for invalid recommendation count"
+  },
+  "noRecommendationFactorsRegistered": "No recommendation factors registered",
+  "@noRecommendationFactorsRegistered": {
+    "description": "Error message when no recommendation factors are available"
+  },
+  "unknownWeightProfile": "Unknown weight profile: {profileName}",
+  "@unknownWeightProfile": {
+    "description": "Error message for unknown weight profile",
+    "placeholders": {
+      "profileName": {
+        "type": "String",
+        "description": "Name of the unknown profile"
+      }
+    }
+  },
+  "errorGeneratingRecommendations": "Error generating recommendations",
+  "@errorGeneratingRecommendations": {
+    "description": "Error message prefix for recommendation generation errors"
+  },
+  "errorGettingCandidateRecipes": "Error getting candidate recipes",
+  "@errorGettingCandidateRecipes": {
+    "description": "Error message for candidate recipe retrieval"
+  },
+  "errorGettingRecipeProteinTypes": "Error getting recipe protein types",
+  "@errorGettingRecipeProteinTypes": {
+    "description": "Error message for protein type retrieval"
+  },
+  "errorGettingLastCookedDates": "Error getting last cooked dates",
+  "@errorGettingLastCookedDates": {
+    "description": "Error message for last cooked date retrieval"
+  },
+  "errorGettingMealCounts": "Error getting meal counts",
+  "@errorGettingMealCounts": {
+    "description": "Error message for meal count retrieval"
+  },
+  "errorGettingRecentMeals": "Error getting recent meals",
+  "@errorGettingRecentMeals": {
+    "description": "Error message for recent meal retrieval"
+  },
+  "factorNotFound": "Factor not found: {factorId}",
+  "@factorNotFound": {
+    "description": "Error message when recommendation factor is not found",
+    "placeholders": {
+      "factorId": {
+        "type": "String",
+        "description": "ID of the missing factor"
+      }
+    }
+  },
+  "weightProfileBalanced": "Balanced",
+  "@weightProfileBalanced": {
+    "description": "Name for balanced weight profile"
+  },
+  "weightProfileFrequencyFocused": "Frequency-focused",
+  "@weightProfileFrequencyFocused": {
+    "description": "Name for frequency-focused weight profile"
+  },
+  "weightProfileVarietyFocused": "Variety-focused",
+  "@weightProfileVarietyFocused": {
+    "description": "Name for variety-focused weight profile"
+  },
+  "weightProfileWeekday": "Weekday",
+  "@weightProfileWeekday": {
+    "description": "Name for weekday weight profile"
+  },
+  "weightProfileWeekend": "Weekend",
+  "@weightProfileWeekend": {
+    "description": "Name for weekend weight profile"
+  },
+  "errorGettingRecipesWithStats": "Error getting recipes with statistics",
+  "@errorGettingRecipesWithStats": {
+    "description": "Error message for recipe statistics retrieval"
+  },
+  "errorGettingRecentlyCookedRecipeIds": "Error getting recently cooked recipe IDs",
+  "@errorGettingRecentlyCookedRecipeIds": {
+    "description": "Error message for recently cooked recipe ID retrieval"
+  },
+  "errorGettingRecentlyCookedProteinsByDate": "Error getting recently cooked proteins by date",
+  "@errorGettingRecentlyCookedProteinsByDate": {
+    "description": "Error message for recently cooked proteins retrieval"
+  },
+  "errorCalculatingProteinPenaltyStrategy": "Error calculating protein penalty strategy",
+  "@errorCalculatingProteinPenaltyStrategy": {
+    "description": "Error message for protein penalty calculation"
+  },
+  "errorGettingProteinTypesForRecipes": "Error getting protein types for recipes",
+  "@errorGettingProteinTypesForRecipes": {
+    "description": "Error message for recipe protein type retrieval"
+  },
+  "frequencyDaily": "Daily",
+  "@frequencyDaily": {
+    "description": "Display name for daily frequency"
+  },
+  "frequencyWeekly": "Weekly",
+  "@frequencyWeekly": {
+    "description": "Display name for weekly frequency"
+  },
+  "frequencyBiweekly": "Biweekly",
+  "@frequencyBiweekly": {
+    "description": "Display name for biweekly frequency"
+  },
+  "frequencyMonthly": "Monthly",
+  "@frequencyMonthly": {
+    "description": "Display name for monthly frequency"
+  },
+  "frequencyBimonthly": "Bimonthly",
+  "@frequencyBimonthly": {
+    "description": "Display name for bimonthly frequency"
+  },
+  "frequencyRarely": "Rarely",
+  "@frequencyRarely": {
+    "description": "Display name for rarely frequency"
+  },
+  "proteinBeef": "Beef",
+  "@proteinBeef": {
+    "description": "Display name for beef protein type"
+  },
+  "proteinChicken": "Chicken",
+  "@proteinChicken": {
+    "description": "Display name for chicken protein type"
+  },
+  "proteinPork": "Pork",
+  "@proteinPork": {
+    "description": "Display name for pork protein type"
+  },
+  "proteinFish": "Fish",
+  "@proteinFish": {
+    "description": "Display name for fish protein type"
+  },
+  "proteinSeafood": "Seafood",
+  "@proteinSeafood": {
+    "description": "Display name for seafood protein type"
+  },
+  "proteinLamb": "Lamb",
+  "@proteinLamb": {
+    "description": "Display name for lamb protein type"
+  },
+  "proteinCharcuterie": "Charcuterie",
+  "@proteinCharcuterie": {
+    "description": "Display name for charcuterie protein type"
+  },
+  "proteinOffal": "Offal",
+  "@proteinOffal": {
+    "description": "Display name for offal protein type"
+  },
+  "proteinPlantBased": "Plant Based",
+  "@proteinPlantBased": {
+    "description": "Display name for plant-based protein type"
+  },
+  "proteinOther": "Other",
+  "@proteinOther": {
+    "description": "Display name for other protein type"
+  },
+  "categoryMainDishes": "Main dishes",
+  "@categoryMainDishes": {
+    "description": "Display name for main dishes category"
+  },
+  "categorySideDishes": "Side dishes",
+  "@categorySideDishes": {
+    "description": "Display name for side dishes category"
+  },
+  "categorySandwiches": "Sandwiches",
+  "@categorySandwiches": {
+    "description": "Display name for sandwiches category"
+  },
+  "categoryCompleteMeals": "Complete meals",
+  "@categoryCompleteMeals": {
+    "description": "Display name for complete meals category"
+  },
+  "categoryBreakfastItems": "Breakfast items",
+  "@categoryBreakfastItems": {
+    "description": "Display name for breakfast items category"
+  },
+  "categoryDesserts": "Desserts",
+  "@categoryDesserts": {
+    "description": "Display name for desserts category"
+  },
+  "categorySoupsStews": "Soups/stews",
+  "@categorySoupsStews": {
+    "description": "Display name for soups/stews category"
+  },
+  "categorySalads": "Salads",
+  "@categorySalads": {
+    "description": "Display name for salads category"
+  },
+  "categorySauces": "Sauces",
+  "@categorySauces": {
+    "description": "Display name for sauces category"
+  },
+  "categoryDips": "Dips",
+  "@categoryDips": {
+    "description": "Display name for dips category"
+  },
+  "categorySnacks": "Snacks",
+  "@categorySnacks": {
+    "description": "Display name for snacks category"
+  },
+  "categoryUncategorized": "Uncategorized",
+  "@categoryUncategorized": {
+    "description": "Display name for uncategorized category"
+  },
+  "timeContextPast": "Past",
+  "@timeContextPast": {
+    "description": "Display name for past time context"
+  },
+  "timeContextCurrent": "Current",
+  "@timeContextCurrent": {
+    "description": "Display name for current time context"
+  },
+  "timeContextFuture": "Future",
+  "@timeContextFuture": {
+    "description": "Display name for future time context"
+  },
+  "timeContextPastDescription": "Previous week",
+  "@timeContextPastDescription": {
+    "description": "Description for past time context"
+  },
+  "timeContextCurrentDescription": "This week",
+  "@timeContextCurrentDescription": {
+    "description": "Description for current time context"
+  },
+  "timeContextFutureDescription": "Upcoming week",
+  "@timeContextFutureDescription": {
+    "description": "Description for future time context"
+  },
+  "never": "Never",
+  "@never": {
+    "description": "Text shown when a recipe has never been cooked"
+  },
+  "weekOf": "Week of {date}",
+  "@weekOf": {
+    "description": "Format string for week header with date",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "description": "Date string for the week"
+      }
+    }
+  },
+  "thisWeekRelative": "This week",
+  "@thisWeekRelative": {
+    "description": "Relative time distance for current week"
+  },
+  "nextWeekRelative": "+1 week",
+  "@nextWeekRelative": {
+    "description": "Relative time distance for next week"
+  },
+  "previousWeekRelative": "-1 week",
+  "@previousWeekRelative": {
+    "description": "Relative time distance for previous week"
+  },
+  "futureWeeksRelative": "+{count} weeks",
+  "@futureWeeksRelative": {
+    "description": "Relative time distance for future weeks",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of weeks in the future"
+      }
+    }
+  },
+  "pastWeeksRelative": "{count} weeks",
+  "@pastWeeksRelative": {
+    "description": "Relative time distance for past weeks",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of weeks in the past"
+      }
+    }
+  },
+  "additionalRecipesCount": "{count,plural, =1{1 recipe} other{{count} recipes}}",
+  "@additionalRecipesCount": {
+    "description": "Count of additional recipes with proper pluralization",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of additional recipes"
+      }
+    }
+  },
+  "sunday": "Sunday",
+  "@sunday": {
+    "description": "Day names for the weekly calendar"
+  },
+  "monday": "Monday",
+  "@monday": {
+    "description": "Day names for the weekly calendar"
+  },
+  "tuesday": "Tuesday",
+  "@tuesday": {
+    "description": "Day names for the weekly calendar"
+  },
+  "wednesday": "Wednesday",
+  "@wednesday": {
+    "description": "Day names for the weekly calendar"
+  },
+  "thursday": "Thursday",
+  "@thursday": {
+    "description": "Day names for the weekly calendar"
+  },
+  "friday": "Friday",
+  "@friday": {
+    "description": "Day names for the weekly calendar"
+  },
+  "saturday": "Saturday",
+  "@saturday": {
+    "description": "Day names for the weekly calendar"
+  },
+  "lunch": "Lunch",
+  "@lunch": {
+    "description": "Meal type names"
+  },
+  "dinner": "Dinner",
+  "@dinner": {
+    "description": "Meal type names"
+  },
+  "today": "Today",
+  "@today": {
+    "description": "Label for today indicator"
+  },
+  "addMeal": "Add meal",
+  "@addMeal": {
+    "description": "Label for add meal button"
+  },
+  "searchRecipesHint": "Search recipes...",
+  "@searchRecipesHint": {
+    "description": "Hint text for recipe search field"
+  },
+  "noIngredientsAddedYet": "No ingredients added yet",
+  "@noIngredientsAddedYet": {
+    "description": "Message when no ingredients have been added yet"
+  },
+  "ingredientCategoryVegetable": "Vegetable",
+  "@ingredientCategoryVegetable": {
+    "description": "Ingredient category names"
+  },
+  "ingredientCategoryFruit": "Fruit",
+  "@ingredientCategoryFruit": {
+    "description": "Ingredient category names"
+  },
+  "ingredientCategoryProtein": "Protein",
+  "@ingredientCategoryProtein": {
+    "description": "Ingredient category names"
+  },
+  "ingredientCategoryDairy": "Dairy",
+  "@ingredientCategoryDairy": {
+    "description": "Ingredient category names"
+  },
+  "ingredientCategoryGrain": "Grain",
+  "@ingredientCategoryGrain": {
+    "description": "Ingredient category names"
+  },
+  "ingredientCategoryPulse": "Pulse",
+  "@ingredientCategoryPulse": {
+    "description": "Ingredient category names"
+  },
+  "ingredientCategoryNutsAndSeeds": "Nuts and Seeds",
+  "@ingredientCategoryNutsAndSeeds": {
+    "description": "Ingredient category names"
+  },
+  "ingredientCategorySeasoning": "Seasoning",
+  "@ingredientCategorySeasoning": {
+    "description": "Ingredient category names"
+  },
+  "ingredientCategorySugarProducts": "Sugar Products",
+  "@ingredientCategorySugarProducts": {
+    "description": "Ingredient category names"
+  },
+  "ingredientCategoryOil": "Oil",
+  "@ingredientCategoryOil": {
+    "description": "Ingredient category names"
+  },
+  "ingredientCategoryOther": "Other",
+  "@ingredientCategoryOther": {
+    "description": "Ingredient category names"
+  },
+  "measurementUnitCup": "Cup",
+  "@measurementUnitCup": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitPiece": "Piece",
+  "@measurementUnitPiece": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitSlice": "Slice",
+  "@measurementUnitSlice": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitTablespoon": "Tbsp",
+  "@measurementUnitTablespoon": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitTeaspoon": "Tsp",
+  "@measurementUnitTeaspoon": {
+    "description": "Measurement unit names"
+  },
+  "unitOptional": "Unit (Optional)",
+  "@unitOptional": {
+    "description": "Label for unit field in ingredient forms"
+  },
+  "noUnit": "No unit",
+  "@noUnit": {
+    "description": "Option for no unit in dropdowns"
+  },
+  "editIngredient": "Edit Ingredient",
+  "@editIngredient": {
+    "description": "Dialog title for editing ingredient"
+  },
+  "newIngredient": "New Ingredient",
+  "@newIngredient": {
+    "description": "Dialog title for adding new ingredient"
+  },
+  "ingredientName": "Ingredient Name",
+  "@ingredientName": {
+    "description": "Label for ingredient name field"
+  },
+  "pleaseEnterIngredientName": "Please enter an ingredient name",
+  "@pleaseEnterIngredientName": {
+    "description": "Validation message for empty ingredient name"
+  },
+  "categoryLabel": "Category",
+  "@categoryLabel": {
+    "description": "Label for category field"
+  },
+  "proteinTypeLabel": "Protein Type",
+  "@proteinTypeLabel": {
+    "description": "Label for protein type field"
+  },
+  "pleaseSelectProteinType": "Please select a protein type",
+  "@pleaseSelectProteinType": {
+    "description": "Validation message for protein type selection"
+  },
+  "notesOptional": "Notes (Optional)",
+  "@notesOptional": {
+    "description": "Label for notes field"
+  },
+  "anyAdditionalInformation": "Any additional information",
+  "@anyAdditionalInformation": {
+    "description": "Hint text for notes field"
+  },
+  "addRecipeTitle": "Add Recipe",
+  "@addRecipeTitle": {
+    "description": "Text for add recipe button/dialog"
+  },
+  "remove": "Remove",
+  "@remove": {
+    "description": "Text for removing items"
+  },
+  "numberOfServings": "Number of Servings",
+  "@numberOfServings": {
+    "description": "Label for servings field"
+  },
+  "pleaseEnterNumberOfServings": "Please enter number of servings",
+  "@pleaseEnterNumberOfServings": {
+    "description": "Validation message for servings"
+  },
+  "pleaseEnterValidNumber": "Please enter a valid number",
+  "@pleaseEnterValidNumber": {
+    "description": "Validation message for valid number"
+  },
+  "prepTimeMin": "Prep Time (min)",
+  "@prepTimeMin": {
+    "description": "Label for prep time field"
+  },
+  "cookTimeMin": "Cook Time (min)",
+  "@cookTimeMin": {
+    "description": "Label for cook time field"
+  },
+  "enterValidTime": "Enter a valid time",
+  "@enterValidTime": {
+    "description": "Validation message for valid time"
+  },
+  "wasItSuccessful": "Was it successful?",
+  "@wasItSuccessful": {
+    "description": "Question about meal success"
+  },
+  "editMealTitle": "Edit {recipeName}",
+  "@editMealTitle": {
+    "description": "Edit meal dialog title format",
+    "placeholders": {
+      "recipeName": {
+        "type": "String",
+        "description": "Name of the recipe being edited"
+      }
+    }
+  },
+  "errorLoadingRecipes": "Error loading recipes:",
+  "@errorLoadingRecipes": {
+    "description": "Error message for loading recipes"
+  },
+  "errorSelectingDate": "Error selecting date",
+  "@errorSelectingDate": {
+    "description": "Error message for selecting date"
+  },
+  "noAdditionalRecipesAvailable": "No additional recipes available.",
+  "@noAdditionalRecipesAvailable": {
+    "description": "Message when no additional recipes available"
+  },
+  "errorPrefix": "Error:",
+  "@errorPrefix": {
+    "description": "General error prefix"
+  },
+  "errorLoadingData": "Error loading data:",
+  "@errorLoadingData": {
+    "description": "Error message for loading data"
+  },
+  "errorRefreshingRecommendations": "Error refreshing recommendations:",
+  "@errorRefreshingRecommendations": {
+    "description": "Error message for refreshing recommendations"
+  },
+  "selectIngredient": "Select Ingredient",
+  "@selectIngredient": {
+    "description": "Label for select ingredient dropdown"
+  },
+  "quantity": "Quantity",
+  "@quantity": {
+    "description": "Label for quantity field"
+  },
+  "unit": "Unit",
+  "@unit": {
+    "description": "Label for unit field"
+  },
+  "preparationNotesOptional": "Preparation Notes (Optional)",
+  "@preparationNotesOptional": {
+    "description": "Label for preparation notes field"
+  },
+  "typeToSearch": "Type to search...",
+  "@typeToSearch": {
+    "description": "Hint text for search field"
+  },
+  "preparationNotesHint": "e.g., finely chopped, diced, etc.",
+  "@preparationNotesHint": {
+    "description": "Hint text for preparation notes"
+  },
+  "actualPrepTimeMin": "Actual Prep Time (min)",
+  "@actualPrepTimeMin": {
+    "description": "Label for actual prep time"
+  },
+  "actualCookTimeMin": "Actual Cook Time (min)",
+  "@actualCookTimeMin": {
+    "description": "Label for actual cook time"
+  },
+  "cookedOn": "Cooked on",
+  "@cookedOn": {
+    "description": "Label for cooked on date"
+  },
+  "plannedFor": "Planned for",
+  "@plannedFor": {
+    "description": "Label for planned for date"
+  },
+  "pleaseSelectAnIngredient": "Please select an ingredient",
+  "@pleaseSelectAnIngredient": {
+    "description": "Validation message for selecting an ingredient"
+  },
+  "createNewIngredient": "Create New Ingredient",
+  "@createNewIngredient": {
+    "description": "Button text for creating new ingredient"
+  },
+  "pleaseEnterQuantity": "Please enter a quantity",
+  "@pleaseEnterQuantity": {
+    "description": "Validation message for entering quantity"
+  },
+  "overrideDefaultUnit": "Override default unit",
+  "@overrideDefaultUnit": {
+    "description": "Label for override default unit checkbox"
+  },
+  "fromDatabase": "From Database",
+  "@fromDatabase": {
+    "description": "Label for from database option"
+  },
+  "custom": "Custom",
+  "@custom": {
+    "description": "Label for custom option"
+  },
+  "addRecipeDialog": "Add Recipe",
+  "@addRecipeDialog": {
+    "description": "Dialog title for adding recipe"
+  },
+  "selectRecipeToAddAsSideDish": "Select a recipe to add as a side dish:",
+  "@selectRecipeToAddAsSideDish": {
+    "description": "Instruction text for selecting side dish"
+  },
+  "buttonAddRecipe": "Add Recipe",
+  "@buttonAddRecipe": {
+    "description": "Button text for adding a recipe"
+  },
+  "buttonCancel": "Cancel",
+  "@buttonCancel": {
+    "description": "Cancel button text"
+  },
+  "cookRecipeTitle": "Cook {recipeName}",
+  "@cookRecipeTitle": {
+    "description": "Title for cooking recipe dialog",
+    "placeholders": {
+      "recipeName": {
+        "type": "String",
+        "description": "Name of the recipe being cooked"
+      }
+    }
+  },
+  "cookedOnDate": "Cooked on: {date}",
+  "@cookedOnDate": {
+    "description": "Label for cooked on date",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "description": "Formatted date when meal was cooked"
+      }
+    }
+  },
+  "plannedForDate": "Planned for: {date}",
+  "@plannedForDate": {
+    "description": "Label for planned for date",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "description": "Formatted date when meal was planned"
+      }
+    }
+  },
+  "ingredientsTitle": "Ingredients: {recipeName}",
+  "@ingredientsTitle": {
+    "description": "Title for ingredients screen with recipe name",
+    "placeholders": {
+      "recipeName": {
+        "type": "String",
+        "description": "Name of the recipe"
+      }
+    }
+  },
+  "unitOverridden": "Unit overridden (default: {defaultUnit})",
+  "@unitOverridden": {
+    "description": "Tooltip for unit override indicator",
+    "placeholders": {
+      "defaultUnit": {
+        "type": "String",
+        "description": "The default unit that was overridden"
+      }
+    }
+  },
+  "recipesLabel": "Recipes",
+  "@recipesLabel": {
+    "description": "Label for recipes section"
+  },
+  "removeTooltip": "Remove",
+  "@removeTooltip": {
+    "description": "Tooltip for remove button"
+  },
+  "prepTimeLabel": "Prep Time (min)",
+  "@prepTimeLabel": {
+    "description": "Label for prep time field"
+  },
+  "cookTimeLabel": "Cook Time (min)",
+  "@cookTimeLabel": {
+    "description": "Label for cook time field"
+  },
+  "minuteAbbreviation": "min",
+  "@minuteAbbreviation": {
+    "description": "Compact way to express minutes"
+  },
+    "showLess": "Show Less",
+  "@showLess": {
+    "description": "Show less"
+  },
+    "showMore": "Show More",
+  "@showMore": {
+    "description": "Show more"
+  },
+  "detailedPrepTime": "Prep: {prepTimeMinutes}min",
+  "@detailedPrepTime": {
+    "description": "Display for detailed preparating times",
+    "placeholders": {
+      "prepTimeMinutes": {
+        "type": "int",
+        "description": "Preparation time in minutes"
+      }
+    }
+  },
+  "detailedCookTime": "Cook: {cookTimeMinutes}min",
+  "@detailedCookTime": {
+    "description": "Display for detailed cooking times",
+    "placeholders": {
+      "cookTimeMinutes": {
+        "type": "int",
+        "description": "Cooking time in minutes"
+      }
+    }
+  },
+  "detailedTimesCooked": "Times Cooked: {mealCount}",
+  "@detailedTimesCooked": {
+    "description": "Display for detailed meal count",
+    "placeholders": {
+      "mealCount": {
+        "type": "int",
+        "description": "Meal count"
+      }
+    }
+  },
+  "detailedLastCooked": "Last Cooked: {formattedLastCooked}",
+  "@detailedLastCooked": {
+    "description": "Display for detailed last cooked time",
+    "placeholders": {
+      "formattedLastCooked": {
+        "type": "String",
+        "description": "Formatted last cooked date"
+      }
+    }
+  },
+  "searchSideDishesHint": "Search side dishes...",
+  "@searchSideDishesHint": {
+    "description": "Hint text for side dish search field"
+  },
+  "noRecipesFoundMatching": "No recipes found matching \"{query}\"",
+  "@noRecipesFoundMatching": {
+    "description": "Message when no recipes match search query",
+    "placeholders": {
+      "query": {
+        "type": "String",
+        "description": "The search query that returned no results"
+      }
+    }
+  },
+  "noAvailableSideDishes": "No available side dishes",
+  "@noAvailableSideDishes": {
+    "description": "Message when no side dishes are available"
+  },
+  "clearSearch": "Clear search",
+  "@clearSearch": {
+    "description": "Button text to clear search"
+  },
+  "mealRecordedSuccessfully": "Meal recorded successfully",
+  "@mealRecordedSuccessfully": {
+    "description": "Success message when meal is recorded"
+  },
+  "unexpectedErrorSavingMeal": "An unexpected error occurred while saving the meal: {error}",
+  "@unexpectedErrorSavingMeal": {
+    "description": "Error message when saving meal fails unexpectedly",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error details"
+      }
+    }
+  },
+  "recordCookingDetails": "Record cooking details for {recipeName}",
+  "@recordCookingDetails": {
+    "description": "Instruction text for recording cooking details",
+    "placeholders": {
+      "recipeName": {
+        "type": "String",
+        "description": "Name of the recipe being cooked"
+      }
+    }
+  },
+  "recordMealDetails": "Record Meal Details",
+  "@recordMealDetails": {
+    "description": "Button text to record meal details"
+  },
+  "readyToExplore": "ready to explore",
+  "@readyToExplore": {
+    "description": "Recipe timing status - ready to explore"
+  },
+  "goodVariety": "good variety",
+  "@goodVariety": {
+    "description": "Recipe timing status - good variety"
+  },
+  "recentlyUsed": "recently used",
+  "@recentlyUsed": {
+    "description": "Recipe timing status - recently used"
+  },
+  "veryRecentlyUsed": "very recently used",
+  "@veryRecentlyUsed": {
+    "description": "Recipe timing status - very recently used"
+  },
+  "timingVarietyTooltip": "Timing & Variety: {score}/100\nThis recipe is {status} based on:\n• When you last cooked it\n• Protein type variety\n• Recipe rotation",
+  "@timingVarietyTooltip": {
+    "description": "Tooltip for timing and variety badge",
+    "placeholders": {
+      "score": {
+        "type": "String",
+        "description": "The timing/variety score"
+      },
+      "status": {
+        "type": "String",
+        "description": "The status description"
+      }
+    }
+  },
+  "oneOfFavorites": "one of your favorites",
+  "@oneOfFavorites": {
+    "description": "Recipe quality status - one of favorites"
+  },
+  "highlyRated": "highly rated by you",
+  "@highlyRated": {
+    "description": "Recipe quality status - highly rated"
+  },
+  "ratedAboveAverage": "rated above average",
+  "@ratedAboveAverage": {
+    "description": "Recipe quality status - above average"
+  },
+  "ratedBelowAverage": "rated below average",
+  "@ratedBelowAverage": {
+    "description": "Recipe quality status - below average"
+  },
+  "notYetRated": "not yet rated",
+  "@notYetRated": {
+    "description": "Recipe quality status - not rated"
+  },
+  "recipeQualityTooltip": "Recipe Quality: {score}/100\nThis recipe is {status}",
+  "@recipeQualityTooltip": {
+    "description": "Tooltip for recipe quality badge",
+    "placeholders": {
+      "score": {
+        "type": "String",
+        "description": "The quality score"
+      },
+      "status": {
+        "type": "String",
+        "description": "The quality status"
+      }
+    }
+  },
+  "recipeEffortTooltip": "Recipe Effort: {score}/100\nTotal time: {minutes} minutes\nDifficulty level: {difficulty}/5",
+  "@recipeEffortTooltip": {
+    "description": "Tooltip for recipe effort badge",
+    "placeholders": {
+      "score": {
+        "type": "String",
+        "description": "The effort score"
+      },
+      "minutes": {
+        "type": "String",
+        "description": "Total cooking time in minutes"
+      },
+      "difficulty": {
+        "type": "String",
+        "description": "Difficulty level"
+      }
+    }
+  },
+  "badgeExplore": "Explore",
+  "@badgeExplore": {
+    "description": "Badge label - explore (high variety, good timing)"
+  },
+  "badgeVaried": "Varied",
+  "@badgeVaried": {
+    "description": "Badge label - varied (good variety, decent timing)"
+  },
+  "badgeRecent": "Recent",
+  "@badgeRecent": {
+    "description": "Badge label - recent (recently used)"
+  },
+  "badgeRepeat": "Repeat",
+  "@badgeRepeat": {
+    "description": "Badge label - repeat (very recently used)"
+  },
+  "badgeLoved": "Loved",
+  "@badgeLoved": {
+    "description": "Badge label - loved (consistently high rated)"
+  },
+  "badgeHigh": "High",
+  "@badgeHigh": {
+    "description": "Badge label - high (high quality)"
+  },
+  "badgeGreat": "Great",
+  "@badgeGreat": {
+    "description": "Badge label - great (good quality)"
+  },
+  "badgeGood": "Good",
+  "@badgeGood": {
+    "description": "Badge label - good (average rating)"
+  },
+  "badgeFair": "Fair",
+  "@badgeFair": {
+    "description": "Badge label - fair (below average)"
+  },
+  "badgeNew": "New",
+  "@badgeNew": {
+    "description": "Badge label - new (no rating yet)"
+  },
+  "badgeQuick": "Quick",
+  "@badgeQuick": {
+    "description": "Badge label - quick (easy and fast)"
+  },
+  "badgeEasy": "Easy",
+  "@badgeEasy": {
+    "description": "Badge label - easy (low difficulty)"
+  },
+  "badgeProject": "Project",
+  "@badgeProject": {
+    "description": "Badge label - project (high difficulty, long time)"
+  },
+  "badgeComplex": "Complex",
+  "@badgeComplex": {
+    "description": "Badge label - complex (high difficulty)"
+  },
+  "badgeModerate": "Moderate",
+  "@badgeModerate": {
+    "description": "Badge label - moderate (default effort level)"
+  },
+  "noBadges": "No badges",
+  "@noBadges": {
+    "description": "Fallback text when no badges are available"
+  },
+  "sideDishesLabel": "Side Dishes:",
+  "@sideDishesLabel": {
+    "description": "Label for side dishes section"
+  }
+
+}
