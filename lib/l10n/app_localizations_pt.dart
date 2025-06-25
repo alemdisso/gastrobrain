@@ -893,4 +893,20 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get clearSearch => 'Limpar busca';
+
+  @override
+  String get mealRecordedSuccessfully => 'Refeição registrada com sucesso';
+
+  @override
+  String unexpectedErrorSavingMeal(String error) {
+    return 'Ocorreu um erro inesperado ao salvar a refeição: $error';
+  }
+
+  @override
+  String recordCookingDetails(String recipeName) {
+    return 'Registrar detalhes de preparo para $recipeName';
+  }
+
+  @override
+  String get recordMealDetails => 'Registrar Detalhes da Refeição';
 }

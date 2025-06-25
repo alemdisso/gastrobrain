@@ -882,4 +882,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get clearSearch => 'Clear search';
+
+  @override
+  String get mealRecordedSuccessfully => 'Meal recorded successfully';
+
+  @override
+  String unexpectedErrorSavingMeal(String error) {
+    return 'An unexpected error occurred while saving the meal: $error';
+  }
+
+  @override
+  String recordCookingDetails(String recipeName) {
+    return 'Record cooking details for $recipeName';
+  }
+
+  @override
+  String get recordMealDetails => 'Record Meal Details';
 }

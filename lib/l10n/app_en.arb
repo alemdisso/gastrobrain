@@ -1223,6 +1223,34 @@
   "clearSearch": "Clear search",
   "@clearSearch": {
     "description": "Button text to clear search"
+  },
+  "mealRecordedSuccessfully": "Meal recorded successfully",
+  "@mealRecordedSuccessfully": {
+    "description": "Success message when meal is recorded"
+  },
+  "unexpectedErrorSavingMeal": "An unexpected error occurred while saving the meal: {error}",
+  "@unexpectedErrorSavingMeal": {
+    "description": "Error message when saving meal fails unexpectedly",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "The error details"
+      }
+    }
+  },
+  "recordCookingDetails": "Record cooking details for {recipeName}",
+  "@recordCookingDetails": {
+    "description": "Instruction text for recording cooking details",
+    "placeholders": {
+      "recipeName": {
+        "type": "String",
+        "description": "Name of the recipe being cooked"
+      }
+    }
+  },
+  "recordMealDetails": "Record Meal Details",
+  "@recordMealDetails": {
+    "description": "Button text to record meal details"
   }
 
 }

@@ -1693,6 +1693,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear search'**
   String get clearSearch;
+
+  /// Success message when meal is recorded
+  ///
+  /// In en, this message translates to:
+  /// **'Meal recorded successfully'**
+  String get mealRecordedSuccessfully;
+
+  /// Error message when saving meal fails unexpectedly
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred while saving the meal: {error}'**
+  String unexpectedErrorSavingMeal(String error);
+
+  /// Instruction text for recording cooking details
+  ///
+  /// In en, this message translates to:
+  /// **'Record cooking details for {recipeName}'**
+  String recordCookingDetails(String recipeName);
+
+  /// Button text to record meal details
+  ///
+  /// In en, this message translates to:
+  /// **'Record Meal Details'**
+  String get recordMealDetails;
 }
 
 class _AppLocalizationsDelegate

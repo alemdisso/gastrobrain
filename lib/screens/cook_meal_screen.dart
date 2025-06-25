@@ -6,6 +6,7 @@ import '../utils/id_generator.dart';
 import '../widgets/meal_recording_dialog.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/services/snackbar_service.dart';
+import '../l10n/app_localizations.dart';
 
 class CookMealScreen extends StatefulWidget {
   final Recipe recipe;
@@ -87,7 +88,7 @@ class _CookMealScreenState extends State<CookMealScreen> {
             mealId: mealId,
             recipeId: primaryRecipe.id,
             isPrimaryDish: true,
-            notes: 'Main dish',
+            notes: AppLocalizations.of(context)!.mainDish,
           );
 
           // Insert the primary junction record
@@ -99,7 +100,7 @@ class _CookMealScreenState extends State<CookMealScreen> {
               mealId: mealId,
               recipeId: recipe.id,
               isPrimaryDish: false,
-              notes: 'Side dish',
+              notes: AppLocalizations.of(context)!.sideDish,
             );
 
             await txn.insert('meal_recipes', sideDishMealRecipe.toMap());
@@ -108,7 +109,7 @@ class _CookMealScreenState extends State<CookMealScreen> {
       });
 
       if (mounted) {
-        SnackbarService.showSuccess(context, 'Meal recorded successfully');
+        SnackbarService.showSuccess(context, AppLocalizations.of(context)!.mealRecordedSuccessfully);
         Navigator.pop(context, true);
       }
     } on ValidationException catch (e) {
@@ -122,7 +123,7 @@ class _CookMealScreenState extends State<CookMealScreen> {
     } catch (e) {
       if (mounted) {
         SnackbarService.showError(context,
-            'An unexpected error occurred while saving the meal: ${e.toString()}');
+            AppLocalizations.of(context)!.unexpectedErrorSavingMeal(e.toString()));
       }
     } finally {
       if (mounted) {
@@ -137,7 +138,7 @@ class _CookMealScreenState extends State<CookMealScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Cook ${widget.recipe.name}'),
+        title: Text(AppLocalizations.of(context)!.cookRecipeTitle(widget.recipe.name)),
       ),
       body: _isSaving
           ? const Center(child: CircularProgressIndicator())
@@ -148,7 +149,7 @@ class _CookMealScreenState extends State<CookMealScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Record cooking details for ${widget.recipe.name}',
+                      AppLocalizations.of(context)!.recordCookingDetails(widget.recipe.name),
                       style: Theme.of(context).textTheme.titleLarge,
                       textAlign: TextAlign.center,
                     ),
@@ -156,7 +157,7 @@ class _CookMealScreenState extends State<CookMealScreen> {
                     ElevatedButton.icon(
                       onPressed: _showMealRecordingDialog,
                       icon: const Icon(Icons.restaurant),
-                      label: const Text('Record Meal Details'),
+                      label: Text(AppLocalizations.of(context)!.recordMealDetails),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,

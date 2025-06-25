@@ -1223,5 +1223,33 @@
   "clearSearch": "Limpar busca",
   "@clearSearch": {
     "description": "Texto do botão para limpar busca"
+  },
+  "mealRecordedSuccessfully": "Refeição registrada com sucesso",
+  "@mealRecordedSuccessfully": {
+    "description": "Mensagem de sucesso quando refeição é registrada"
+  },
+  "unexpectedErrorSavingMeal": "Ocorreu um erro inesperado ao salvar a refeição: {error}",
+  "@unexpectedErrorSavingMeal": {
+    "description": "Mensagem de erro quando salvar refeição falha inesperadamente",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "description": "Os detalhes do erro"
+      }
+    }
+  },
+  "recordCookingDetails": "Registrar detalhes de preparo para {recipeName}",
+  "@recordCookingDetails": {
+    "description": "Texto de instrução para registrar detalhes de preparo",
+    "placeholders": {
+      "recipeName": {
+        "type": "String",
+        "description": "Nome da receita sendo preparada"
+      }
+    }
+  },
+  "recordMealDetails": "Registrar Detalhes da Refeição",
+  "@recordMealDetails": {
+    "description": "Texto do botão para registrar detalhes da refeição"
   }
 }
