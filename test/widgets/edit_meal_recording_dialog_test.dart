@@ -85,7 +85,7 @@ void main() {
       expect(find.text('Prato principal'), findsOneWidget);
 
       // Verify action buttons
-      expect(find.text('Cancel'), findsOneWidget);
+      expect(find.text('Cancelar'), findsOneWidget);
       expect(find.text('Salvar Alterações'), findsOneWidget);
     });
 
@@ -153,7 +153,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Cancel dialog
-      await tester.tap(find.text('Cancel'));
+      await tester.tap(find.text('Cancelar'));
       await tester.pumpAndSettle();
 
       // Dialog should be gone
@@ -194,7 +194,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Should show validation error (Portuguese)
-      expect(find.text('Por favor, insira um número válido'), findsOneWidget);
+      expect(find.text('Por favor, informe um número válido'), findsOneWidget);
     });
 
     testWidgets('shows success switch in correct state',
@@ -354,7 +354,7 @@ void main() {
 
       // Verify Save Changes button exists
       expect(find.text('Salvar Alterações'), findsOneWidget);
-      expect(find.text('Cancel'), findsOneWidget);
+      expect(find.text('Cancelar'), findsOneWidget);
     });
     testWidgets('EditMealRecordingDialog switch can be toggled',
         (WidgetTester tester) async {

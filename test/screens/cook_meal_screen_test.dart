@@ -42,15 +42,15 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Verify app bar title shows recipe name
-      expect(find.text('Cook ${testRecipe.name}'), findsOneWidget);
+      // Verify app bar title shows recipe name (Portuguese)
+      expect(find.text('Cozinhar ${testRecipe.name}'), findsOneWidget);
 
-      // Verify main content text
-      expect(find.text('Record cooking details for ${testRecipe.name}'),
+      // Verify main content text (Portuguese)
+      expect(find.text('Registrar detalhes de preparo para ${testRecipe.name}'),
           findsOneWidget);
 
-      // Verify the "Record Meal Details" button exists
-      expect(find.text('Record Meal Details'), findsOneWidget);
+      // Verify the "Registrar Detalhes da Refeição" button exists
+      expect(find.text('Registrar Detalhes da Refeição'), findsOneWidget);
       expect(find.byIcon(Icons.restaurant), findsOneWidget);
     });
 
@@ -62,19 +62,19 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Tap the "Record Meal Details" button
-      await tester.tap(find.text('Record Meal Details'));
+      // Tap the "Registrar Detalhes da Refeição" button
+      await tester.tap(find.text('Registrar Detalhes da Refeição'));
       await tester.pumpAndSettle();
 
       // Verify that the MealRecordingDialog appeared
       // We can check for the dialog title which should show the recipe name
-      expect(find.text('Cook ${testRecipe.name}'),
+      expect(find.text('Cozinhar ${testRecipe.name}'),
           findsNWidgets(2)); // One in app bar, one in dialog
 
-      // Or check for dialog-specific elements
-      expect(find.text('Number of Servings'), findsOneWidget);
-      expect(find.text('Save'), findsOneWidget);
-      expect(find.text('Cancel'), findsOneWidget);
+      // Or check for dialog-specific elements (Portuguese)
+      expect(find.text('Número de Porções'), findsOneWidget);
+      expect(find.text('Salvar'), findsOneWidget);
+      expect(find.text('Cancelar'), findsOneWidget);
     });
 
     testWidgets('handles dialog cancellation correctly',
@@ -86,20 +86,20 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap the button to open dialog
-      await tester.tap(find.text('Record Meal Details'));
+      await tester.tap(find.text('Registrar Detalhes da Refeição'));
       await tester.pumpAndSettle();
 
       // Cancel the dialog
-      await tester.tap(find.text('Cancel'));
+      await tester.tap(find.text('Cancelar'));
       await tester.pumpAndSettle();
 
       // Should return to the main screen (dialog closed)
-      expect(find.text('Record cooking details for ${testRecipe.name}'),
+      expect(find.text('Registrar detalhes de preparo para ${testRecipe.name}'),
           findsOneWidget);
-      expect(find.text('Record Meal Details'), findsOneWidget);
+      expect(find.text('Registrar Detalhes da Refeição'), findsOneWidget);
 
       // Dialog should be gone
-      expect(find.text('Number of Servings'), findsNothing);
+      expect(find.text('Número de Porções'), findsNothing);
     });
 
     testWidgets('renders with additional recipes when provided',
@@ -114,12 +114,12 @@ void main() {
       await tester.pumpAndSettle();
 
       // Should still show the primary recipe name in title
-      expect(find.text('Cook ${testRecipe.name}'), findsOneWidget);
+      expect(find.text('Cozinhar ${testRecipe.name}'), findsOneWidget);
 
       // Should show the same UI regardless of additional recipes
-      expect(find.text('Record cooking details for ${testRecipe.name}'),
+      expect(find.text('Registrar detalhes de preparo para ${testRecipe.name}'),
           findsOneWidget);
-      expect(find.text('Record Meal Details'), findsOneWidget);
+      expect(find.text('Registrar Detalhes da Refeição'), findsOneWidget);
     });
 
     testWidgets('passes additional recipes to dialog when provided',
@@ -134,16 +134,16 @@ void main() {
       await tester.pumpAndSettle();
 
       // Open the dialog
-      await tester.tap(find.text('Record Meal Details'));
+      await tester.tap(find.text('Registrar Detalhes da Refeição'));
       await tester.pumpAndSettle();
 
       // Should show both primary and additional recipes in the dialog
       expect(find.text(testRecipe.name), findsOneWidget);
       expect(find.text(sideRecipe.name), findsOneWidget);
 
-      // Should show proper indicators for main vs side dish
-      expect(find.text('Main dish'), findsOneWidget);
-      expect(find.text('Side dish'), findsOneWidget);
+      // Should show proper indicators for main vs side dish (Portuguese)
+      expect(find.text('Prato principal'), findsOneWidget);
+      expect(find.text('Acompanhamento'), findsOneWidget);
     });
     testWidgets('handles empty additional recipes list',
         (WidgetTester tester) async {
@@ -157,18 +157,18 @@ void main() {
       await tester.pumpAndSettle();
 
       // Open the dialog
-      await tester.tap(find.text('Record Meal Details'));
+      await tester.tap(find.text('Registrar Detalhes da Refeição'));
       await tester.pumpAndSettle();
 
       // Should only show primary recipe
       expect(find.text(testRecipe.name), findsOneWidget);
-      expect(find.text('Main dish'), findsOneWidget);
+      expect(find.text('Prato principal'), findsOneWidget);
 
       // Should not show any side dishes
-      expect(find.text('Side dish'), findsNothing);
+      expect(find.text('Acompanhamento'), findsNothing);
 
-      // Should still show "Add Recipe" button for adding sides
-      expect(find.text('Add Recipe'), findsOneWidget);
+      // Should still show "Adicionar Receita" button for adding sides
+      expect(find.text('Adicionar Receita'), findsOneWidget);
     });
 
     testWidgets('shows correct app bar title with long recipe names',
@@ -187,10 +187,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Should handle long names gracefully in app bar
-      expect(find.text('Cook ${longNameRecipe.name}'), findsOneWidget);
+      expect(find.text('Cozinhar ${longNameRecipe.name}'), findsOneWidget);
 
       // Should also show in main content
-      expect(find.text('Record cooking details for ${longNameRecipe.name}'),
+      expect(find.text('Registrar detalhes de preparo para ${longNameRecipe.name}'),
           findsOneWidget);
     });
   });
