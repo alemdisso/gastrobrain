@@ -175,11 +175,14 @@ class _HomePageState extends State<HomePage> {
           builder: (context, setState) {
             return AlertDialog(
               title: Text(AppLocalizations.of(context)!.filterRecipes),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+              content: SizedBox(
+                width: double.maxFinite,
+                height: MediaQuery.of(context).size.height * 0.6,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                     Text(AppLocalizations.of(context)!.difficulty),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -271,6 +274,7 @@ class _HomePageState extends State<HomePage> {
                       },
                     ),
                   ],
+                  ),
                 ),
               ),
               actions: [
