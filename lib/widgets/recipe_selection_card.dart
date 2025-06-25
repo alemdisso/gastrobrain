@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gastrobrain/models/recipe_recommendation.dart';
+import '../l10n/app_localizations.dart';
 
 class _BadgeInfo {
   final double score;
@@ -80,42 +81,47 @@ class RecipeSelectionCard extends StatelessWidget {
     return score.clamp(0.0, 100.0);
   }
 
-  String _getTooltip(_BadgeInfo badge, String type) {
+  String _getTooltip(BuildContext context, _BadgeInfo badge, String type) {
+    final l10n = AppLocalizations.of(context)!;
+    
     switch (type) {
       case 'timing':
         final statusText = badge.score >= 75
-            ? 'ready to explore'
+            ? l10n.readyToExplore
             : badge.score >= 60
-                ? 'good variety'
+                ? l10n.goodVariety
                 : badge.score >= 40
-                    ? 'recently used'
-                    : 'very recently used';
-        return 'Timing & Variety: ${badge.score.toStringAsFixed(0)}/100\n'
-            'This recipe is $statusText based on:\n'
-            '• When you last cooked it\n'
-            '• Protein type variety\n'
-            '• Recipe rotation';
+                    ? l10n.recentlyUsed
+                    : l10n.veryRecentlyUsed;
+        return l10n.timingVarietyTooltip(
+          badge.score.toStringAsFixed(0),
+          statusText,
+        );
 
       case 'quality':
         final ratingText = badge.score >= 85
-            ? 'one of your favorites'
+            ? l10n.oneOfFavorites
             : badge.score >= 70
-                ? 'highly rated by you'
+                ? l10n.highlyRated
                 : badge.score >= 50
-                    ? 'rated above average'
+                    ? l10n.ratedAboveAverage
                     : badge.score > 0
-                        ? 'rated below average'
-                        : 'not yet rated';
-        return 'Recipe Quality: ${badge.score.toStringAsFixed(0)}/100\n'
-            'This recipe is $ratingText';
+                        ? l10n.ratedBelowAverage
+                        : l10n.notYetRated;
+        return l10n.recipeQualityTooltip(
+          badge.score.toStringAsFixed(0),
+          ratingText,
+        );
 
       case 'effort':
         final timeText = recommendation.recipe.prepTimeMinutes +
             recommendation.recipe.cookTimeMinutes;
         final difficultyText = recommendation.recipe.difficulty;
-        return 'Recipe Effort: ${badge.score.toStringAsFixed(0)}/100\n'
-            'Total time: $timeText minutes\n'
-            'Difficulty level: $difficultyText/5';
+        return l10n.recipeEffortTooltip(
+          badge.score.toStringAsFixed(0),
+          timeText.toString(),
+          difficultyText.toString(),
+        );
 
       default:
         return badge.label;
@@ -161,21 +167,21 @@ class RecipeSelectionCard extends StatelessWidget {
       (
         info: _BadgeInfo(
           score: timingVarietyScore,
-          label: _getTimingVarietyLabel(timingVarietyScore),
+          label: _getTimingVarietyLabel(context, timingVarietyScore),
         ),
         type: 'timing'
       ),
       (
         info: _BadgeInfo(
           score: qualityScore,
-          label: _getQualityLabel(qualityScore),
+          label: _getQualityLabel(context, qualityScore),
         ),
         type: 'quality'
       ),
       (
         info: _BadgeInfo(
           score: effortScore,
-          label: _getEffortLabel(),
+          label: _getEffortLabel(context),
         ),
         type: 'effort'
       ),
@@ -192,7 +198,7 @@ class RecipeSelectionCard extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(right: 8.0),
           child: Tooltip(
-            message: _getTooltip(badge.info, badge.type),
+            message: _getTooltip(context, badge.info, badge.type),
             child: Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
@@ -221,55 +227,58 @@ class RecipeSelectionCard extends StatelessWidget {
       spacing: 4,
       runSpacing: 8,
       children: badges.isEmpty
-          ? [Text('No badges', style: Theme.of(context).textTheme.bodySmall)]
+          ? [Text(AppLocalizations.of(context)!.noBadges, style: Theme.of(context).textTheme.bodySmall)]
           : badges,
     );
   }
 
-  String _getTimingVarietyLabel(double score) {
+  String _getTimingVarietyLabel(BuildContext context, double score) {
+    final l10n = AppLocalizations.of(context)!;
     // Maps frequency, protein_rotation, and variety scores
-    if (score >= 75) return 'Explore'; // High variety, good timing
-    if (score >= 60) return 'Varied'; // Good variety, decent timing
-    if (score >= 40) return 'Recent'; // Recently used proteins/recipes
-    return 'Repeat'; // Very recently used
+    if (score >= 75) return l10n.badgeExplore; // High variety, good timing
+    if (score >= 60) return l10n.badgeVaried; // Good variety, decent timing
+    if (score >= 40) return l10n.badgeRecent; // Recently used proteins/recipes
+    return l10n.badgeRepeat; // Very recently used
   }
 
-  String _getQualityLabel(double score) {
+  String _getQualityLabel(BuildContext context, double score) {
+    final l10n = AppLocalizations.of(context)!;
     // Maps rating score to user preference labels
-    if (score >= 85) return 'Loved'; // Consistently high rated
+    if (score >= 85) return l10n.badgeLoved; // Consistently high rated
     if (score >= 70) {
       // Handle both test scenarios - 72 shows as "Great", 75 shows as "High"
-      if (score >= 75) return 'High';
-      return 'Great';
+      if (score >= 75) return l10n.badgeHigh;
+      return l10n.badgeGreat;
     }
-    if (score >= 50) return 'Good'; // Average rating
-    if (score > 0) return 'Fair'; // Below average rating
-    return 'New'; // No rating yet
+    if (score >= 50) return l10n.badgeGood; // Average rating
+    if (score > 0) return l10n.badgeFair; // Below average rating
+    return l10n.badgeNew; // No rating yet
   }
 
-  String _getEffortLabel() {
+  String _getEffortLabel(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final prepTime = recommendation.recipe.prepTimeMinutes;
     final cookTime = recommendation.recipe.cookTimeMinutes;
     final totalTime = prepTime + cookTime;
     final difficulty = recommendation.recipe.difficulty;
 
     // Default to Moderate if not explicitly set (meaning they're at their default values)
-    if (prepTime == 0 && cookTime == 0) return 'Moderate';
+    if (prepTime == 0 && cookTime == 0) return l10n.badgeModerate;
 
     // Quick: Easy and under 30 minutes
-    if (difficulty <= 2 && totalTime <= 30) return 'Quick';
+    if (difficulty <= 2 && totalTime <= 30) return l10n.badgeQuick;
 
     // Easy: Low difficulty, any time
-    if (difficulty <= 2) return 'Easy';
+    if (difficulty <= 2) return l10n.badgeEasy;
 
     // Complex: High difficulty, over 60 minutes
-    if (difficulty >= 4 && totalTime > 60) return 'Project';
+    if (difficulty >= 4 && totalTime > 60) return l10n.badgeProject;
 
     // Complex: High difficulty
-    if (difficulty >= 4) return 'Complex';
+    if (difficulty >= 4) return l10n.badgeComplex;
 
     // Moderate: Everything else
-    return 'Moderate';
+    return l10n.badgeModerate;
   }
 
   Color _getBadgeBackgroundColor(double score, String badgeType) {

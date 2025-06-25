@@ -1251,5 +1251,151 @@
   "recordMealDetails": "Registrar Detalhes da Refeição",
   "@recordMealDetails": {
     "description": "Texto do botão para registrar detalhes da refeição"
+  },
+  "readyToExplore": "pronta para explorar",
+  "@readyToExplore": {
+    "description": "Status de timing da receita - pronta para explorar"
+  },
+  "goodVariety": "boa variedade",
+  "@goodVariety": {
+    "description": "Status de timing da receita - boa variedade"
+  },
+  "recentlyUsed": "usada recentemente",
+  "@recentlyUsed": {
+    "description": "Status de timing da receita - usada recentemente"
+  },
+  "veryRecentlyUsed": "usada muito recentemente",
+  "@veryRecentlyUsed": {
+    "description": "Status de timing da receita - usada muito recentemente"
+  },
+  "timingVarietyTooltip": "Timing e Variedade: {score}/100\nEsta receita está {status} baseado em:\n• Quando você cozinhou pela última vez\n• Variedade de tipos de proteína\n• Rotação de receitas",
+  "@timingVarietyTooltip": {
+    "description": "Tooltip para badge de timing e variedade",
+    "placeholders": {
+      "score": {
+        "type": "String",
+        "description": "A pontuação de timing/variedade"
+      },
+      "status": {
+        "type": "String",
+        "description": "A descrição do status"
+      }
+    }
+  },
+  "oneOfFavorites": "uma das suas favoritas",
+  "@oneOfFavorites": {
+    "description": "Status de qualidade da receita - uma das favoritas"
+  },
+  "highlyRated": "muito bem avaliada por você",
+  "@highlyRated": {
+    "description": "Status de qualidade da receita - muito bem avaliada"
+  },
+  "ratedAboveAverage": "avaliada acima da média",
+  "@ratedAboveAverage": {
+    "description": "Status de qualidade da receita - acima da média"
+  },
+  "ratedBelowAverage": "avaliada abaixo da média",
+  "@ratedBelowAverage": {
+    "description": "Status de qualidade da receita - abaixo da média"
+  },
+  "notYetRated": "ainda não avaliada",
+  "@notYetRated": {
+    "description": "Status de qualidade da receita - não avaliada"
+  },
+  "recipeQualityTooltip": "Qualidade da Receita: {score}/100\nEsta receita é {status}",
+  "@recipeQualityTooltip": {
+    "description": "Tooltip para badge de qualidade da receita",
+    "placeholders": {
+      "score": {
+        "type": "String",
+        "description": "A pontuação de qualidade"
+      },
+      "status": {
+        "type": "String",
+        "description": "O status de qualidade"
+      }
+    }
+  },
+  "recipeEffortTooltip": "Esforço da Receita: {score}/100\nTempo total: {minutes} minutos\nNível de dificuldade: {difficulty}/5",
+  "@recipeEffortTooltip": {
+    "description": "Tooltip para badge de esforço da receita",
+    "placeholders": {
+      "score": {
+        "type": "String",
+        "description": "A pontuação de esforço"
+      },
+      "minutes": {
+        "type": "String",
+        "description": "Tempo total de cozimento em minutos"
+      },
+      "difficulty": {
+        "type": "String",
+        "description": "Nível de dificuldade"
+      }
+    }
+  },
+  "badgeExplore": "Explorar",
+  "@badgeExplore": {
+    "description": "Label do badge - explorar (alta variedade, bom timing)"
+  },
+  "badgeVaried": "Variada",
+  "@badgeVaried": {
+    "description": "Label do badge - variada (boa variedade, timing decente)"
+  },
+  "badgeRecent": "Recente",
+  "@badgeRecent": {
+    "description": "Label do badge - recente (usada recentemente)"
+  },
+  "badgeRepeat": "Repetir",
+  "@badgeRepeat": {
+    "description": "Label do badge - repetir (usada muito recentemente)"
+  },
+  "badgeLoved": "Amada",
+  "@badgeLoved": {
+    "description": "Label do badge - amada (consistentemente bem avaliada)"
+  },
+  "badgeHigh": "Alta",
+  "@badgeHigh": {
+    "description": "Label do badge - alta (alta qualidade)"
+  },
+  "badgeGreat": "Ótima",
+  "@badgeGreat": {
+    "description": "Label do badge - ótima (boa qualidade)"
+  },
+  "badgeGood": "Boa",
+  "@badgeGood": {
+    "description": "Label do badge - boa (avaliação média)"
+  },
+  "badgeFair": "Razoável",
+  "@badgeFair": {
+    "description": "Label do badge - razoável (abaixo da média)"
+  },
+  "badgeNew": "Nova",
+  "@badgeNew": {
+    "description": "Label do badge - nova (ainda não avaliada)"
+  },
+  "badgeQuick": "Rápida",
+  "@badgeQuick": {
+    "description": "Label do badge - rápida (fácil e rápida)"
+  },
+  "badgeEasy": "Fácil",
+  "@badgeEasy": {
+    "description": "Label do badge - fácil (baixa dificuldade)"
+  },
+  "badgeProject": "Projeto",
+  "@badgeProject": {
+    "description": "Label do badge - projeto (alta dificuldade, tempo longo)"
+  },
+  "badgeComplex": "Complexa",
+  "@badgeComplex": {
+    "description": "Label do badge - complexa (alta dificuldade)"
+  },
+  "badgeModerate": "Moderada",
+  "@badgeModerate": {
+    "description": "Label do badge - moderada (nível de esforço padrão)"
+  },
+  "noBadges": "Nenhum badge",
+  "@noBadges": {
+    "description": "Texto de fallback quando nenhum badge está disponível"
   }
 }

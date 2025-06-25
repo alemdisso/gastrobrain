@@ -909,4 +909,94 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get recordMealDetails => 'Registrar Detalhes da Refeição';
+
+  @override
+  String get readyToExplore => 'pronta para explorar';
+
+  @override
+  String get goodVariety => 'boa variedade';
+
+  @override
+  String get recentlyUsed => 'usada recentemente';
+
+  @override
+  String get veryRecentlyUsed => 'usada muito recentemente';
+
+  @override
+  String timingVarietyTooltip(String score, String status) {
+    return 'Timing e Variedade: $score/100\nEsta receita está $status baseado em:\n• Quando você cozinhou pela última vez\n• Variedade de tipos de proteína\n• Rotação de receitas';
+  }
+
+  @override
+  String get oneOfFavorites => 'uma das suas favoritas';
+
+  @override
+  String get highlyRated => 'muito bem avaliada por você';
+
+  @override
+  String get ratedAboveAverage => 'avaliada acima da média';
+
+  @override
+  String get ratedBelowAverage => 'avaliada abaixo da média';
+
+  @override
+  String get notYetRated => 'ainda não avaliada';
+
+  @override
+  String recipeQualityTooltip(String score, String status) {
+    return 'Qualidade da Receita: $score/100\nEsta receita é $status';
+  }
+
+  @override
+  String recipeEffortTooltip(String score, String minutes, String difficulty) {
+    return 'Esforço da Receita: $score/100\nTempo total: $minutes minutos\nNível de dificuldade: $difficulty/5';
+  }
+
+  @override
+  String get badgeExplore => 'Explorar';
+
+  @override
+  String get badgeVaried => 'Variada';
+
+  @override
+  String get badgeRecent => 'Recente';
+
+  @override
+  String get badgeRepeat => 'Repetir';
+
+  @override
+  String get badgeLoved => 'Amada';
+
+  @override
+  String get badgeHigh => 'Alta';
+
+  @override
+  String get badgeGreat => 'Ótima';
+
+  @override
+  String get badgeGood => 'Boa';
+
+  @override
+  String get badgeFair => 'Razoável';
+
+  @override
+  String get badgeNew => 'Nova';
+
+  @override
+  String get badgeQuick => 'Rápida';
+
+  @override
+  String get badgeEasy => 'Fácil';
+
+  @override
+  String get badgeProject => 'Projeto';
+
+  @override
+  String get badgeComplex => 'Complexa';
+
+  @override
+  String get badgeModerate => 'Moderada';
+
+  @override
+  String get noBadges => 'Nenhum badge';
 }

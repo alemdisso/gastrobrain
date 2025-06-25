@@ -1251,6 +1251,152 @@
   "recordMealDetails": "Record Meal Details",
   "@recordMealDetails": {
     "description": "Button text to record meal details"
+  },
+  "readyToExplore": "ready to explore",
+  "@readyToExplore": {
+    "description": "Recipe timing status - ready to explore"
+  },
+  "goodVariety": "good variety",
+  "@goodVariety": {
+    "description": "Recipe timing status - good variety"
+  },
+  "recentlyUsed": "recently used",
+  "@recentlyUsed": {
+    "description": "Recipe timing status - recently used"
+  },
+  "veryRecentlyUsed": "very recently used",
+  "@veryRecentlyUsed": {
+    "description": "Recipe timing status - very recently used"
+  },
+  "timingVarietyTooltip": "Timing & Variety: {score}/100\nThis recipe is {status} based on:\n• When you last cooked it\n• Protein type variety\n• Recipe rotation",
+  "@timingVarietyTooltip": {
+    "description": "Tooltip for timing and variety badge",
+    "placeholders": {
+      "score": {
+        "type": "String",
+        "description": "The timing/variety score"
+      },
+      "status": {
+        "type": "String",
+        "description": "The status description"
+      }
+    }
+  },
+  "oneOfFavorites": "one of your favorites",
+  "@oneOfFavorites": {
+    "description": "Recipe quality status - one of favorites"
+  },
+  "highlyRated": "highly rated by you",
+  "@highlyRated": {
+    "description": "Recipe quality status - highly rated"
+  },
+  "ratedAboveAverage": "rated above average",
+  "@ratedAboveAverage": {
+    "description": "Recipe quality status - above average"
+  },
+  "ratedBelowAverage": "rated below average",
+  "@ratedBelowAverage": {
+    "description": "Recipe quality status - below average"
+  },
+  "notYetRated": "not yet rated",
+  "@notYetRated": {
+    "description": "Recipe quality status - not rated"
+  },
+  "recipeQualityTooltip": "Recipe Quality: {score}/100\nThis recipe is {status}",
+  "@recipeQualityTooltip": {
+    "description": "Tooltip for recipe quality badge",
+    "placeholders": {
+      "score": {
+        "type": "String",
+        "description": "The quality score"
+      },
+      "status": {
+        "type": "String",
+        "description": "The quality status"
+      }
+    }
+  },
+  "recipeEffortTooltip": "Recipe Effort: {score}/100\nTotal time: {minutes} minutes\nDifficulty level: {difficulty}/5",
+  "@recipeEffortTooltip": {
+    "description": "Tooltip for recipe effort badge",
+    "placeholders": {
+      "score": {
+        "type": "String",
+        "description": "The effort score"
+      },
+      "minutes": {
+        "type": "String",
+        "description": "Total cooking time in minutes"
+      },
+      "difficulty": {
+        "type": "String",
+        "description": "Difficulty level"
+      }
+    }
+  },
+  "badgeExplore": "Explore",
+  "@badgeExplore": {
+    "description": "Badge label - explore (high variety, good timing)"
+  },
+  "badgeVaried": "Varied",
+  "@badgeVaried": {
+    "description": "Badge label - varied (good variety, decent timing)"
+  },
+  "badgeRecent": "Recent",
+  "@badgeRecent": {
+    "description": "Badge label - recent (recently used)"
+  },
+  "badgeRepeat": "Repeat",
+  "@badgeRepeat": {
+    "description": "Badge label - repeat (very recently used)"
+  },
+  "badgeLoved": "Loved",
+  "@badgeLoved": {
+    "description": "Badge label - loved (consistently high rated)"
+  },
+  "badgeHigh": "High",
+  "@badgeHigh": {
+    "description": "Badge label - high (high quality)"
+  },
+  "badgeGreat": "Great",
+  "@badgeGreat": {
+    "description": "Badge label - great (good quality)"
+  },
+  "badgeGood": "Good",
+  "@badgeGood": {
+    "description": "Badge label - good (average rating)"
+  },
+  "badgeFair": "Fair",
+  "@badgeFair": {
+    "description": "Badge label - fair (below average)"
+  },
+  "badgeNew": "New",
+  "@badgeNew": {
+    "description": "Badge label - new (no rating yet)"
+  },
+  "badgeQuick": "Quick",
+  "@badgeQuick": {
+    "description": "Badge label - quick (easy and fast)"
+  },
+  "badgeEasy": "Easy",
+  "@badgeEasy": {
+    "description": "Badge label - easy (low difficulty)"
+  },
+  "badgeProject": "Project",
+  "@badgeProject": {
+    "description": "Badge label - project (high difficulty, long time)"
+  },
+  "badgeComplex": "Complex",
+  "@badgeComplex": {
+    "description": "Badge label - complex (high difficulty)"
+  },
+  "badgeModerate": "Moderate",
+  "@badgeModerate": {
+    "description": "Badge label - moderate (default effort level)"
+  },
+  "noBadges": "No badges",
+  "@noBadges": {
+    "description": "Fallback text when no badges are available"
   }
 
 }

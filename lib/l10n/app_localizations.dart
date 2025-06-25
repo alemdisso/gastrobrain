@@ -1717,6 +1717,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Record Meal Details'**
   String get recordMealDetails;
+
+  /// Recipe timing status - ready to explore
+  ///
+  /// In en, this message translates to:
+  /// **'ready to explore'**
+  String get readyToExplore;
+
+  /// Recipe timing status - good variety
+  ///
+  /// In en, this message translates to:
+  /// **'good variety'**
+  String get goodVariety;
+
+  /// Recipe timing status - recently used
+  ///
+  /// In en, this message translates to:
+  /// **'recently used'**
+  String get recentlyUsed;
+
+  /// Recipe timing status - very recently used
+  ///
+  /// In en, this message translates to:
+  /// **'very recently used'**
+  String get veryRecentlyUsed;
+
+  /// Tooltip for timing and variety badge
+  ///
+  /// In en, this message translates to:
+  /// **'Timing & Variety: {score}/100\nThis recipe is {status} based on:\n• When you last cooked it\n• Protein type variety\n• Recipe rotation'**
+  String timingVarietyTooltip(String score, String status);
+
+  /// Recipe quality status - one of favorites
+  ///
+  /// In en, this message translates to:
+  /// **'one of your favorites'**
+  String get oneOfFavorites;
+
+  /// Recipe quality status - highly rated
+  ///
+  /// In en, this message translates to:
+  /// **'highly rated by you'**
+  String get highlyRated;
+
+  /// Recipe quality status - above average
+  ///
+  /// In en, this message translates to:
+  /// **'rated above average'**
+  String get ratedAboveAverage;
+
+  /// Recipe quality status - below average
+  ///
+  /// In en, this message translates to:
+  /// **'rated below average'**
+  String get ratedBelowAverage;
+
+  /// Recipe quality status - not rated
+  ///
+  /// In en, this message translates to:
+  /// **'not yet rated'**
+  String get notYetRated;
+
+  /// Tooltip for recipe quality badge
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe Quality: {score}/100\nThis recipe is {status}'**
+  String recipeQualityTooltip(String score, String status);
+
+  /// Tooltip for recipe effort badge
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe Effort: {score}/100\nTotal time: {minutes} minutes\nDifficulty level: {difficulty}/5'**
+  String recipeEffortTooltip(String score, String minutes, String difficulty);
+
+  /// Badge label - explore (high variety, good timing)
+  ///
+  /// In en, this message translates to:
+  /// **'Explore'**
+  String get badgeExplore;
+
+  /// Badge label - varied (good variety, decent timing)
+  ///
+  /// In en, this message translates to:
+  /// **'Varied'**
+  String get badgeVaried;
+
+  /// Badge label - recent (recently used)
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get badgeRecent;
+
+  /// Badge label - repeat (very recently used)
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat'**
+  String get badgeRepeat;
+
+  /// Badge label - loved (consistently high rated)
+  ///
+  /// In en, this message translates to:
+  /// **'Loved'**
+  String get badgeLoved;
+
+  /// Badge label - high (high quality)
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get badgeHigh;
+
+  /// Badge label - great (good quality)
+  ///
+  /// In en, this message translates to:
+  /// **'Great'**
+  String get badgeGreat;
+
+  /// Badge label - good (average rating)
+  ///
+  /// In en, this message translates to:
+  /// **'Good'**
+  String get badgeGood;
+
+  /// Badge label - fair (below average)
+  ///
+  /// In en, this message translates to:
+  /// **'Fair'**
+  String get badgeFair;
+
+  /// Badge label - new (no rating yet)
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get badgeNew;
+
+  /// Badge label - quick (easy and fast)
+  ///
+  /// In en, this message translates to:
+  /// **'Quick'**
+  String get badgeQuick;
+
+  /// Badge label - easy (low difficulty)
+  ///
+  /// In en, this message translates to:
+  /// **'Easy'**
+  String get badgeEasy;
+
+  /// Badge label - project (high difficulty, long time)
+  ///
+  /// In en, this message translates to:
+  /// **'Project'**
+  String get badgeProject;
+
+  /// Badge label - complex (high difficulty)
+  ///
+  /// In en, this message translates to:
+  /// **'Complex'**
+  String get badgeComplex;
+
+  /// Badge label - moderate (default effort level)
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate'**
+  String get badgeModerate;
+
+  /// Fallback text when no badges are available
+  ///
+  /// In en, this message translates to:
+  /// **'No badges'**
+  String get noBadges;
 }
 
 class _AppLocalizationsDelegate

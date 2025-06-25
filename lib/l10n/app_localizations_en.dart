@@ -898,4 +898,94 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recordMealDetails => 'Record Meal Details';
+
+  @override
+  String get readyToExplore => 'ready to explore';
+
+  @override
+  String get goodVariety => 'good variety';
+
+  @override
+  String get recentlyUsed => 'recently used';
+
+  @override
+  String get veryRecentlyUsed => 'very recently used';
+
+  @override
+  String timingVarietyTooltip(String score, String status) {
+    return 'Timing & Variety: $score/100\nThis recipe is $status based on:\n• When you last cooked it\n• Protein type variety\n• Recipe rotation';
+  }
+
+  @override
+  String get oneOfFavorites => 'one of your favorites';
+
+  @override
+  String get highlyRated => 'highly rated by you';
+
+  @override
+  String get ratedAboveAverage => 'rated above average';
+
+  @override
+  String get ratedBelowAverage => 'rated below average';
+
+  @override
+  String get notYetRated => 'not yet rated';
+
+  @override
+  String recipeQualityTooltip(String score, String status) {
+    return 'Recipe Quality: $score/100\nThis recipe is $status';
+  }
+
+  @override
+  String recipeEffortTooltip(String score, String minutes, String difficulty) {
+    return 'Recipe Effort: $score/100\nTotal time: $minutes minutes\nDifficulty level: $difficulty/5';
+  }
+
+  @override
+  String get badgeExplore => 'Explore';
+
+  @override
+  String get badgeVaried => 'Varied';
+
+  @override
+  String get badgeRecent => 'Recent';
+
+  @override
+  String get badgeRepeat => 'Repeat';
+
+  @override
+  String get badgeLoved => 'Loved';
+
+  @override
+  String get badgeHigh => 'High';
+
+  @override
+  String get badgeGreat => 'Great';
+
+  @override
+  String get badgeGood => 'Good';
+
+  @override
+  String get badgeFair => 'Fair';
+
+  @override
+  String get badgeNew => 'New';
+
+  @override
+  String get badgeQuick => 'Quick';
+
+  @override
+  String get badgeEasy => 'Easy';
+
+  @override
+  String get badgeProject => 'Project';
+
+  @override
+  String get badgeComplex => 'Complex';
+
+  @override
+  String get badgeModerate => 'Moderate';
+
+  @override
+  String get noBadges => 'No badges';
 }
