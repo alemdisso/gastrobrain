@@ -1397,5 +1397,9 @@
   "noBadges": "Nenhum badge",
   "@noBadges": {
     "description": "Texto de fallback quando nenhum badge está disponível"
+  },
+  "sideDishesLabel": "Acompanhamentos:",
+  "@sideDishesLabel": {
+    "description": "Rótulo para seção de acompanhamentos"
   }
 }

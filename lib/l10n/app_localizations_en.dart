@@ -988,4 +988,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noBadges => 'No badges';
+
+  @override
+  String get sideDishesLabel => 'Side Dishes:';
 }

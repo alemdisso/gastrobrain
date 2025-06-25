@@ -999,4 +999,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get noBadges => 'Nenhum badge';
+
+  @override
+  String get sideDishesLabel => 'Acompanhamentos:';
 }

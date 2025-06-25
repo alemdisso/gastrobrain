@@ -1119,7 +1119,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
             mealId: mealId,
             recipeId: recipe.id,
             isPrimaryDish: false,
-            notes: 'Side dish - added later',
+            notes: AppLocalizations.of(context)!.sideDishAddedLater,
           );
 
           await txn.insert('meal_recipes', sideDishMealRecipe.toMap());
@@ -1691,7 +1691,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
 
         // Show selected additional recipes
         if (_additionalRecipes.isNotEmpty) ...[
-          const Text('Side Dishes:',
+          Text(AppLocalizations.of(context)!.sideDishesLabel,
               style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           ..._additionalRecipes.map((recipe) => ListTile(

@@ -1397,6 +1397,10 @@
   "noBadges": "No badges",
   "@noBadges": {
     "description": "Fallback text when no badges are available"
+  },
+  "sideDishesLabel": "Side Dishes:",
+  "@sideDishesLabel": {
+    "description": "Label for side dishes section"
   }
 
 }

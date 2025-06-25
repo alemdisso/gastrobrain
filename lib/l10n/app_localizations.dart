@@ -1885,6 +1885,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No badges'**
   String get noBadges;
+
+  /// Label for side dishes section
+  ///
+  /// In en, this message translates to:
+  /// **'Side Dishes:'**
+  String get sideDishesLabel;
 }
 
 class _AppLocalizationsDelegate
