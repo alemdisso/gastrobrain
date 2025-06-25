@@ -879,4 +879,18 @@ class AppLocalizationsPt extends AppLocalizations {
   String detailedLastCooked(String formattedLastCooked) {
     return 'Preparada em $formattedLastCooked';
   }
+
+  @override
+  String get searchSideDishesHint => 'Buscar acompanhamentos...';
+
+  @override
+  String noRecipesFoundMatching(String query) {
+    return 'Nenhuma receita encontrada para \"$query\"';
+  }
+
+  @override
+  String get noAvailableSideDishes => 'Nenhum acompanhamento disponível';
+
+  @override
+  String get clearSearch => 'Limpar busca';
 }

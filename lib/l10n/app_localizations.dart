@@ -1669,6 +1669,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Last Cooked: {formattedLastCooked}'**
   String detailedLastCooked(String formattedLastCooked);
+
+  /// Hint text for side dish search field
+  ///
+  /// In en, this message translates to:
+  /// **'Search side dishes...'**
+  String get searchSideDishesHint;
+
+  /// Message when no recipes match search query
+  ///
+  /// In en, this message translates to:
+  /// **'No recipes found matching \"{query}\"'**
+  String noRecipesFoundMatching(String query);
+
+  /// Message when no side dishes are available
+  ///
+  /// In en, this message translates to:
+  /// **'No available side dishes'**
+  String get noAvailableSideDishes;
+
+  /// Button text to clear search
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get clearSearch;
 }
 
 class _AppLocalizationsDelegate

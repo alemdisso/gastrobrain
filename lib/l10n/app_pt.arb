@@ -1201,5 +1201,27 @@
   "cookedMealRecordNotFound": "Não foi possível encontrar o registro da refeição cozinhada",
   "@cookedMealRecordNotFound": {
     "description": "Erro quando não é possível encontrar o registro da refeição cozinhada"
+  },
+  "searchSideDishesHint": "Buscar acompanhamentos...",
+  "@searchSideDishesHint": {
+    "description": "Texto de dica para campo de busca de acompanhamentos"
+  },
+  "noRecipesFoundMatching": "Nenhuma receita encontrada para \"{query}\"",
+  "@noRecipesFoundMatching": {
+    "description": "Mensagem quando nenhuma receita corresponde à busca",
+    "placeholders": {
+      "query": {
+        "type": "String",
+        "description": "A consulta de busca que não retornou resultados"
+      }
+    }
+  },
+  "noAvailableSideDishes": "Nenhum acompanhamento disponível",
+  "@noAvailableSideDishes": {
+    "description": "Mensagem quando nenhum acompanhamento está disponível"
+  },
+  "clearSearch": "Limpar busca",
+  "@clearSearch": {
+    "description": "Texto do botão para limpar busca"
   }
 }

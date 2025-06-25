@@ -1201,6 +1201,28 @@
         "description": "Formatted last cooked date"
       }
     }
+  },
+  "searchSideDishesHint": "Search side dishes...",
+  "@searchSideDishesHint": {
+    "description": "Hint text for side dish search field"
+  },
+  "noRecipesFoundMatching": "No recipes found matching \"{query}\"",
+  "@noRecipesFoundMatching": {
+    "description": "Message when no recipes match search query",
+    "placeholders": {
+      "query": {
+        "type": "String",
+        "description": "The search query that returned no results"
+      }
+    }
+  },
+  "noAvailableSideDishes": "No available side dishes",
+  "@noAvailableSideDishes": {
+    "description": "Message when no side dishes are available"
+  },
+  "clearSearch": "Clear search",
+  "@clearSearch": {
+    "description": "Button text to clear search"
   }
 
 }

@@ -868,4 +868,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String detailedLastCooked(String formattedLastCooked) {
     return 'Last Cooked: $formattedLastCooked';
   }
+
+  @override
+  String get searchSideDishesHint => 'Search side dishes...';
+
+  @override
+  String noRecipesFoundMatching(String query) {
+    return 'No recipes found matching \"$query\"';
+  }
+
+  @override
+  String get noAvailableSideDishes => 'No available side dishes';
+
+  @override
+  String get clearSearch => 'Clear search';
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
+import '../l10n/app_localizations.dart';
 
 class AddSideDishDialog extends StatefulWidget {
   final List<Recipe> availableRecipes;
@@ -11,7 +12,7 @@ class AddSideDishDialog extends StatefulWidget {
     super.key,
     required this.availableRecipes,
     this.excludeRecipes = const [],
-    this.searchHint = 'Search side dishes...',
+    this.searchHint,
     this.enableSearch = true,
   });
 
@@ -56,7 +57,7 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
     return AlertDialog(
-      title: const Text('Add Side Dish'),
+      title: Text(AppLocalizations.of(context)!.addSideDish),
       content: SizedBox(
         width: double.maxFinite,
         height: 400,
@@ -67,7 +68,7 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
               TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: widget.searchHint,
+                  hintText: widget.searchHint ?? AppLocalizations.of(context)!.searchSideDishesHint,
                   prefixIcon: const Icon(Icons.search),
                   border: const OutlineInputBorder(),
                   suffixIcon: _searchQuery.isNotEmpty
@@ -104,8 +105,8 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
                           const SizedBox(height: 16),
                           Text(
                             _searchQuery.isNotEmpty
-                                ? 'No recipes found matching "$_searchQuery"'
-                                : 'No available side dishes',
+                                ? AppLocalizations.of(context)!.noRecipesFoundMatching(_searchQuery)
+                                : AppLocalizations.of(context)!.noAvailableSideDishes,
                             style:
                                 Theme.of(context).textTheme.bodyLarge?.copyWith(
                                       color: Colors.grey[600],
@@ -122,7 +123,7 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
                                 });
                               },
                               icon: const Icon(Icons.clear),
-                              label: const Text('Clear search'),
+                              label: Text(AppLocalizations.of(context)!.clearSearch),
                             ),
                           ],
                         ],
@@ -158,7 +159,7 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(AppLocalizations.of(context)!.cancel),
         ),
       ],
     );
