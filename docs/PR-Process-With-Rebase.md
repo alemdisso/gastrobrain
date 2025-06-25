@@ -3,11 +3,12 @@
 This guide provides a complete step-by-step process for creating, reviewing, and merging Pull Requests using the rebase strategy. This approach maintains clean linear history while preserving all individual commits.
 
 ## Table of Contents
+
 - [When to Use This Process](#when-to-use-this-process)
 - [Prerequisites](#prerequisites)
 - [Phase 1: Pre-PR Preparation](#phase-1-pre-pr-preparation)
 - [Phase 2: Create the Pull Request](#phase-2-create-the-pull-request)
-- [Phase 3: PR Review Process](#phase-3-pr-review-process)
+- [Phase 3: PR Review Process] (#phase-3-pr-review-process)
 - [Phase 4: Pre-Rebase Preparation](#phase-4-pre-rebase-preparation)
 - [Phase 5: Testing & Final Verification](#phase-5-testing--final-verification)
 - [Phase 6: Merge with Rebase](#phase-6-merge-with-rebase)
@@ -19,6 +20,7 @@ This guide provides a complete step-by-step process for creating, reviewing, and
 ## When to Use This Process
 
 **Use Rebase Merge for:**
+
 - ✅ **Major features** with logical progression (like i18n implementation)
 - ✅ **Learning projects** where commit history adds educational value
 - ✅ **Complex changes** that benefit from showing methodology
@@ -26,6 +28,7 @@ This guide provides a complete step-by-step process for creating, reviewing, and
 - ✅ **Well-structured commits** with meaningful messages
 
 **Consider Squash Merge for:**
+
 - ❌ Simple bug fixes or minor changes
 - ❌ Commits with poor messages or structure
 - ❌ Team projects requiring simplified history
@@ -40,6 +43,7 @@ This guide provides a complete step-by-step process for creating, reviewing, and
 ## Phase 1: Pre-PR Preparation
 
 ### Current Status Check
+
 Ensure your feature branch is ready:
 
 ```bash
@@ -55,6 +59,7 @@ git status
 ```
 
 **Checklist:**
+
 - [ ] Working on correct feature branch
 - [ ] All changes committed
 - [ ] Code tested (`flutter test`)
@@ -118,7 +123,7 @@ EOF
 )"
 ```
 
-## Phase 3: PR Review Process
+## Phase 3: Final Pre-Merge Verification
 
 ### Step 3: Review Your Own PR
 
@@ -126,15 +131,16 @@ EOF
 # View the PR you just created
 gh pr view
 
-# Look at the diff in the browser
+# Look at the diff in the browser for visual review
 gh pr view --web
 ```
 
 ### Step 4: Self-Review Checklist
 
-As the reviewer, systematically check:
+Before merging, systematically verify:
 
 #### **Code Quality**
+
 - [ ] All files follow project conventions
 - [ ] No hardcoded values where configuration should be used
 - [ ] Proper imports and dependencies
@@ -142,6 +148,7 @@ As the reviewer, systematically check:
 - [ ] Error handling is appropriate
 
 #### **Commit Quality** (Critical for Rebase)
+
 - [ ] Each commit has clear, descriptive message
 - [ ] Commits are logically separated (one concern per commit)
 - [ ] No "fix typo" or "oops" commits that should be squashed
@@ -149,16 +156,20 @@ As the reviewer, systematically check:
 - [ ] No merge commits in feature branch
 
 #### **Functionality**
+
 - [ ] New features work as expected
 - [ ] Existing features remain unaffected
 - [ ] Edge cases are handled
 - [ ] User experience is preserved or improved
 
 #### **Testing**
+
 - [ ] Existing tests still pass
 - [ ] New functionality is tested (if applicable)
 - [ ] Manual testing completed
 - [ ] No regressions introduced
+
+**Note:** This is a self-review process for single-developer workflow. GitHub doesn't allow approving your own PRs, so we skip the formal approval step and proceed directly to merge after verification.
 
 ## Phase 4: Pre-Rebase Preparation
 
@@ -202,6 +213,7 @@ git push --force-with-lease origin feature/{issue-number}-{description}
 ```
 
 **Conflict Resolution Tips:**
+
 - Take your time to understand each conflict
 - Test after resolving conflicts
 - Use `git status` to see which files need resolution
@@ -226,6 +238,7 @@ flutter build apk --debug
 ### Step 8: Manual Testing
 
 Perform targeted manual testing:
+
 - [ ] Core functionality works
 - [ ] New features behave correctly
 - [ ] UI displays properly
@@ -234,14 +247,7 @@ Perform targeted manual testing:
 
 ## Phase 6: Merge with Rebase
 
-### Step 9: Approve Your PR
-
-```bash
-# If satisfied with the review
-gh pr review --approve
-```
-
-### Step 10: Rebase Merge the PR
+### Step 9: Rebase Merge the PR
 
 ```bash
 # Merge using rebase strategy
@@ -249,6 +255,7 @@ gh pr merge --rebase --delete-branch
 ```
 
 **What This Does:**
+
 1. **Applies each commit individually** to develop branch
 2. **Maintains commit history** and messages
 3. **Creates linear timeline** without merge commits
@@ -258,7 +265,8 @@ gh pr merge --rebase --delete-branch
 ### Expected Result
 
 **Before Rebase Merge:**
-```
+
+``` txt
 develop: [old-commit] Previous work
 
 feature/branch:
@@ -269,7 +277,8 @@ feature/branch:
 ```
 
 **After Rebase Merge:**
-```
+
+``` txt
 develop:
 ├── [new-hash-3] Your latest work  
 ├── [new-hash-2] Your middle work
@@ -320,17 +329,20 @@ git branch -d feature/{issue-number}-{description}
 ## Benefits of Rebase Merge
 
 ### **For Learning Projects**
+
 - ✅ **Preserves methodology** - See exactly how complex features were built
 - ✅ **Educational value** - Future reference for similar work
 - ✅ **Clean progression** - Understand the thought process
 
 ### **For Code Quality**
+
 - ✅ **Linear history** - Easy to follow timeline
 - ✅ **No merge noise** - No "Merge branch" commits
 - ✅ **Bisect-friendly** - Each commit can be tested individually
 - ✅ **Clear attribution** - See who did what when
 
 ### **For Team Collaboration**
+
 - ✅ **Readable history** - Easy to understand project evolution
 - ✅ **Meaningful commits** - Each commit tells a story
 - ✅ **Professional appearance** - Clean, organized repository
@@ -338,17 +350,20 @@ git branch -d feature/{issue-number}-{description}
 ## Important Notes
 
 ### **Commit Hash Changes**
+
 - **Normal behavior:** Rebase changes commit hashes
 - **Content identical:** Code changes remain exactly the same
 - **Messages preserved:** Commit messages stay intact
 - **Authorship maintained:** You remain the author
 
 ### **Force Push Required**
+
 - **After rebase:** Must use `git push --force-with-lease`
 - **Safety feature:** `--force-with-lease` prevents overwriting others' work
 - **Only on feature branches:** Never force push to develop/main
 
 ### **Original History Preserved**
+
 - **In PR:** GitHub preserves original commits in PR view
 - **In reflog:** Git keeps references for recovery
 - **In documentation:** This process documents the approach
@@ -412,6 +427,7 @@ git push --force-with-lease origin feature/branch-name
 ## Summary
 
 This rebase merge process provides:
+
 - **Clean, linear history** showing your methodical approach
 - **Preserved commit details** for future reference and learning
 - **Professional workflow** suitable for solo or team development
