@@ -388,7 +388,10 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                         items: _categories.map((category) {
                           return DropdownMenuItem(
                             value: category,
-                            child: Text(_formatCategoryName(category)),
+                            child: Text(
+                              _formatCategoryName(category),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           );
                         }).toList(),
                         onChanged: (String? value) {
@@ -427,7 +430,10 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                             items: _filteredIngredients.map((ingredient) {
                               return DropdownMenuItem(
                                 value: ingredient,
-                                child: Text(ingredient.name),
+                                child: Text(
+                                  ingredient.name,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               );
                             }).toList(),
                             onChanged: (value) {
