@@ -108,10 +108,20 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
         _loadIngredients().then((_) {
           if (mounted) {
             setState(() {
-              _selectedIngredient = _availableIngredients.firstWhere(
-                (i) => i.id == widget.existingIngredient!['id'],
-                orElse: () => _availableIngredients.first,
-              );
+              // Find the existing ingredient by ID
+              final existingId = widget.existingIngredient!['id'];
+              final foundIngredient = _availableIngredients
+                  .where((i) => i.id == existingId)
+                  .firstOrNull;
+              
+              if (foundIngredient != null) {
+                _selectedIngredient = foundIngredient;
+              } else {
+                // If ingredient not found, leave _selectedIngredient as null
+                // The dropdown will show no selection, which is better than wrong selection
+                _selectedIngredient = null;
+              }
+              
               _filteredIngredients = List.from(_availableIngredients);
               // Clear the search field to ensure the selected ingredient is visible
               _searchController.clear();
