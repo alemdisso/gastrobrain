@@ -112,6 +112,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                 (i) => i.id == widget.existingIngredient!['id'],
                 orElse: () => _availableIngredients.first,
               );
+              _filteredIngredients = List.from(_availableIngredients);
             });
           }
         });
