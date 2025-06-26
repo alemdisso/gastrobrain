@@ -113,7 +113,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
               final foundIngredient = _availableIngredients
                   .where((i) => i.id == existingId)
                   .firstOrNull;
-              
+
               if (foundIngredient != null) {
                 _selectedIngredient = foundIngredient;
               } else {
@@ -121,7 +121,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                 // The dropdown will show no selection, which is better than wrong selection
                 _selectedIngredient = null;
               }
-              
+
               _filteredIngredients = List.from(_availableIngredients);
               // Clear the search field to ensure the selected ingredient is visible
               _searchController.clear();
@@ -342,11 +342,13 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                             segments: [
                               ButtonSegment(
                                 value: false,
-                                label: Text(AppLocalizations.of(context)!.fromDatabase),
+                                label: Text(
+                                    AppLocalizations.of(context)!.fromDatabase),
                               ),
                               ButtonSegment(
                                 value: true,
-                                label: Text(AppLocalizations.of(context)!.custom),
+                                label:
+                                    Text(AppLocalizations.of(context)!.custom),
                               ),
                             ],
                             selected: {_isCustomIngredient},
@@ -367,12 +369,14 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                       TextFormField(
                         controller: _customNameController,
                         decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!.ingredientName,
+                          labelText:
+                              AppLocalizations.of(context)!.ingredientName,
                           border: const OutlineInputBorder(),
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return AppLocalizations.of(context)!.pleaseEnterIngredientName;
+                            return AppLocalizations.of(context)!
+                                .pleaseEnterIngredientName;
                           }
                           return null;
                         },
@@ -382,7 +386,8 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                       DropdownButtonFormField<String>(
                         value: _selectedCategory,
                         decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!.categoryLabel,
+                          labelText:
+                              AppLocalizations.of(context)!.categoryLabel,
                           border: const OutlineInputBorder(),
                         ),
                         items: _categories.map((category) {
@@ -409,10 +414,12 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                           TextField(
                             controller: _searchController,
                             decoration: InputDecoration(
-                              labelText: AppLocalizations.of(context)!.searchIngredients,
+                              labelText: AppLocalizations.of(context)!
+                                  .searchIngredients,
                               border: const OutlineInputBorder(),
                               prefixIcon: const Icon(Icons.search),
-                              hintText: AppLocalizations.of(context)!.typeToSearch,
+                              hintText:
+                                  AppLocalizations.of(context)!.typeToSearch,
                             ),
                             onChanged: _filterIngredients,
                           ),
@@ -424,15 +431,22 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                 ? _selectedIngredient
                                 : null,
                             decoration: InputDecoration(
-                              labelText: AppLocalizations.of(context)!.selectIngredient,
+                              labelText: AppLocalizations.of(context)!
+                                  .selectIngredient,
                               border: const OutlineInputBorder(),
                             ),
+                            isExpanded: true, // Prevent overflow
                             items: _filteredIngredients.map((ingredient) {
                               return DropdownMenuItem(
                                 value: ingredient,
-                                child: Text(
-                                  ingredient.name,
-                                  overflow: TextOverflow.ellipsis,
+                                child: Container(
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 200),
+                                  child: Text(
+                                    ingredient.name,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
                                 ),
                               );
                             }).toList(),
@@ -443,7 +457,8 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                             },
                             validator: (value) {
                               if (!_isCustomIngredient && value == null) {
-                                return AppLocalizations.of(context)!.pleaseSelectAnIngredient;
+                                return AppLocalizations.of(context)!
+                                    .pleaseSelectAnIngredient;
                               }
                               return null;
                             },
@@ -453,7 +468,8 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                       const SizedBox(height: 8),
                       TextButton.icon(
                         icon: const Icon(Icons.add),
-                        label: Text(AppLocalizations.of(context)!.createNewIngredient),
+                        label: Text(
+                            AppLocalizations.of(context)!.createNewIngredient),
                         onPressed: _createNewIngredient,
                       ),
                     ],
@@ -475,10 +491,12 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                 decimal: true),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return AppLocalizations.of(context)!.pleaseEnterQuantity;
+                                return AppLocalizations.of(context)!
+                                    .pleaseEnterQuantity;
                               }
                               if (double.tryParse(value) == null) {
-                                return AppLocalizations.of(context)!.pleaseEnterValidNumber;
+                                return AppLocalizations.of(context)!
+                                    .pleaseEnterValidNumber;
                               }
                               return null;
                             },
@@ -492,13 +510,15 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                               ? DropdownButtonFormField<String>(
                                   value: _selectedUnitOverride,
                                   decoration: InputDecoration(
-                                    labelText: AppLocalizations.of(context)!.unitOptional,
+                                    labelText: AppLocalizations.of(context)!
+                                        .unitOptional,
                                     border: const OutlineInputBorder(),
                                   ),
                                   items: [
                                     DropdownMenuItem(
                                       value: null,
-                                      child: Text(AppLocalizations.of(context)!.noUnit),
+                                      child: Text(
+                                          AppLocalizations.of(context)!.noUnit),
                                     ),
                                     ..._units.map((unit) {
                                       return DropdownMenuItem(
@@ -521,7 +541,9 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                       DropdownButtonFormField<String>(
                                         value: _selectedUnitOverride,
                                         decoration: InputDecoration(
-                                          labelText: AppLocalizations.of(context)!.unit,
+                                          labelText:
+                                              AppLocalizations.of(context)!
+                                                  .unit,
                                           border: const OutlineInputBorder(),
                                         ),
                                         items: _units.map((unit) {
@@ -541,7 +563,9 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                         height: 56,
                                         child: InputDecorator(
                                           decoration: InputDecoration(
-                                            labelText: AppLocalizations.of(context)!.unit,
+                                            labelText:
+                                                AppLocalizations.of(context)!
+                                                    .unit,
                                             border: const OutlineInputBorder(),
                                           ),
                                           child: Text(
@@ -575,7 +599,8 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                 });
                               },
                             ),
-                            Text(AppLocalizations.of(context)!.overrideDefaultUnit),
+                            Text(AppLocalizations.of(context)!
+                                .overrideDefaultUnit),
                           ],
                         ),
                       ),
@@ -585,9 +610,11 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                     TextFormField(
                       controller: _notesController,
                       decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)!.preparationNotesOptional,
+                        labelText: AppLocalizations.of(context)!
+                            .preparationNotesOptional,
                         border: const OutlineInputBorder(),
-                        hintText: AppLocalizations.of(context)!.preparationNotesHint,
+                        hintText:
+                            AppLocalizations.of(context)!.preparationNotesHint,
                       ),
                       maxLines: 2,
                     ),
@@ -608,8 +635,9 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : Text(
-                  widget.existingIngredient != null ? AppLocalizations.of(context)!.saveChanges : AppLocalizations.of(context)!.add),
+              : Text(widget.existingIngredient != null
+                  ? AppLocalizations.of(context)!.saveChanges
+                  : AppLocalizations.of(context)!.add),
         ),
       ],
     );
