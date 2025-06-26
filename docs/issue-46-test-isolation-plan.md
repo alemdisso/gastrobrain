@@ -1,3 +1,4 @@
+<!-- markdownlint-disable -->
 # Issue #46: Test Isolation for Database Operations - Implementation Plan
 
 ## Problem Statement
@@ -174,3 +175,4 @@ Following the project's Git Flow protocol:
 - Documentation in `docs/` and `CLAUDE.md`
 
 This plan ensures complete test isolation while maintaining the project's architectural integrity and following established development patterns.
+<!-- markdownlint-enable -->
