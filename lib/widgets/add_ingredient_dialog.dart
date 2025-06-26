@@ -113,6 +113,8 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                 orElse: () => _availableIngredients.first,
               );
               _filteredIngredients = List.from(_availableIngredients);
+              // Clear the search field to ensure the selected ingredient is visible
+              _searchController.clear();
             });
           }
         });
@@ -261,6 +263,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
 
         setState(() {
           _availableIngredients = ingredients;
+          _filteredIngredients = List.from(ingredients);
           _isLoading = false;
         });
       }
