@@ -109,7 +109,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
           if (mounted) {
             setState(() {
               // Find the existing ingredient by ID
-              final existingId = widget.existingIngredient!['id'];
+              final existingId = widget.existingIngredient!['ingredient_id'];
               final foundIngredient = _availableIngredients
                   .where((i) => i.id == existingId)
                   .firstOrNull;
