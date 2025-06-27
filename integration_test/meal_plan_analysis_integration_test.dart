@@ -30,8 +30,13 @@ void main() {
     final testMealPlanIds = <String>[];
 
     setUpAll(() async {
+      // Set up database using ServiceProvider pattern
       dbHelper = DatabaseHelper();
       await dbHelper.resetDatabaseForTests();
+      
+      // Inject the test database helper into ServiceProvider
+      ServiceProvider.database.setDatabaseHelper(dbHelper);
+      
       analysisService = MealPlanAnalysisService(dbHelper);
     });
 

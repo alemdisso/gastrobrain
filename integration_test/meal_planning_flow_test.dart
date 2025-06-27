@@ -9,6 +9,7 @@ import 'package:gastrobrain/models/meal_plan_item.dart';
 import 'package:gastrobrain/models/meal_plan_item_recipe.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/utils/id_generator.dart';
+import 'package:gastrobrain/core/di/service_provider.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -19,9 +20,12 @@ void main() {
     final testRecipe2Id = IdGenerator.generateId();
 
     setUpAll(() async {
-      // Set up database
+      // Set up database using ServiceProvider pattern
       dbHelper = DatabaseHelper();
       await dbHelper.resetDatabaseForTests();
+      
+      // Inject the test database helper into ServiceProvider
+      ServiceProvider.database.setDatabaseHelper(dbHelper);
 
       // Create test recipes
       final recipe1 = Recipe(

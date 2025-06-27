@@ -255,9 +255,12 @@ void main() {
     }
 
     setUpAll(() async {
-      // Set up database
+      // Set up database using ServiceProvider pattern
       dbHelper = DatabaseHelper();
       await dbHelper.resetDatabaseForTests();
+      
+      // Inject the test database helper into ServiceProvider
+      ServiceProvider.database.setDatabaseHelper(dbHelper);
 
       // Create and set up test recipes
       await setupTestRecipes();
