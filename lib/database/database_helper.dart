@@ -36,21 +36,7 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    // More reliable detection: use a direct test to see if in test context
-    // Check if we're in a test by examining stack traces and context
-    bool inTestContext = _detectTestEnvironment();
-
-    String filename;
-    if (inTestContext) {
-      // For tests, use a named test database that's separate from the main one
-      // With timestamp for uniqueness between test runs
-      filename = 'gastrobrain_test_${DateTime.now().millisecondsSinceEpoch}.db';
-    } else {
-      // Normal app operation
-      filename = 'gastrobrain.db';
-    }
-
-    String path = join(await getDatabasesPath(), filename);
+    String path = join(await getDatabasesPath(), 'gastrobrain.db');
     return await openDatabase(
       path,
       version: 16, // Increment version number for new tables
@@ -63,47 +49,7 @@ class DatabaseHelper {
     );
   }
 
-  // Helper method to detect test environment more reliably
-  bool _detectTestEnvironment() {
-    try {
-      // Check stack trace for testing frameworks
-      final stackTraceStr = StackTrace.current.toString();
-      if (stackTraceStr.contains('_integrationTester') ||
-          stackTraceStr.contains('integration_test') ||
-          stackTraceStr.contains('flutter_test') ||
-          stackTraceStr.contains('test_async_utils')) {
-        return true;
-      }
 
-      // Basic check if we're in a test Zone
-      return Zone.current['test.declarer'] != null;
-    } catch (_) {
-      // If any error occurs in detection, be conservative
-    }
-
-    // Fallback to check environment variable (although we know it might not be reliable)
-    return const bool.fromEnvironment('FLUTTER_TEST', defaultValue: false);
-  }
-
-  Future<void> resetDatabaseForTests() async {
-    // Use the more reliable test detection method
-    if (!_detectTestEnvironment()) {
-      return; // Only allow in test environment
-    }
-
-    // Close any existing database connection
-    if (_database != null) {
-      await _database!.close();
-    }
-
-    // Since we're using a new database file for each test run with the timestamp,
-    // we don't need to delete anything - just set _database to null
-    // so that the next call to database getter will create a fresh one
-    _database = null;
-
-    // Force initialization of a new database
-    await database;
-  }
 
   Future<void> _onCreate(Database db, int version) async {
     // Enable foreign keys

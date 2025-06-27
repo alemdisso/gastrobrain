@@ -24,8 +24,6 @@ void main() {
     setUpAll(() async {
       dbHelper = DatabaseHelper();
 
-      // Reset the database to a clean state
-      await dbHelper.resetDatabaseForTests();
 
       // Create test recipes for reference
       testRecipeId1 = IdGenerator.generateId();

@@ -361,11 +361,6 @@ class MockDatabaseHelper implements DatabaseHelper {
     return Map.from(_mealCounts);
   }
 
-  // Override for resetDatabaseForTests to support integration tests
-  @override
-  Future<void> resetDatabaseForTests() async {
-    resetAllData();
-  }
 
   // INGREDIENT OPERATIONS
   @override

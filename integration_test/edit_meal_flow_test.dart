@@ -25,7 +25,6 @@ void main() {
     setUpAll(() async {
       // Set up database using ServiceProvider pattern
       dbHelper = DatabaseHelper();
-      await dbHelper.resetDatabaseForTests();
       
       // Inject the test database helper into ServiceProvider
       ServiceProvider.database.setDatabaseHelper(dbHelper);
@@ -130,13 +129,6 @@ void main() {
       final sideDish1Id = testRecipeIds[1];
       final sideDish2Id = testRecipeIds[2];
 
-      // Clean up any existing meals for these recipes to ensure test isolation
-      for (final recipeId in [primaryRecipeId, sideDish1Id, sideDish2Id]) {
-        final existingMeals = await dbHelper.getMealsForRecipe(recipeId);
-        for (final meal in existingMeals) {
-          await dbHelper.deleteMeal(meal.id);
-        }
-      }
 
       // === PHASE 1: Create initial meal with single recipe ===
 
@@ -334,11 +326,6 @@ void main() {
 
       final primaryRecipeId = testRecipeIds[0];
 
-      // Clean up any existing meals for this recipe to ensure test isolation
-      final existingMeals = await dbHelper.getMealsForRecipe(primaryRecipeId);
-      for (final meal in existingMeals) {
-        await dbHelper.deleteMeal(meal.id);
-      }
 
       // === SETUP: Create meal plan with cooked meal ===
 
@@ -480,11 +467,6 @@ void main() {
 
       final primaryRecipeId = testRecipeIds[0];
 
-      // Clean up any existing meals for this recipe to ensure test isolation
-      final existingMeals = await dbHelper.getMealsForRecipe(primaryRecipeId);
-      for (final meal in existingMeals) {
-        await dbHelper.deleteMeal(meal.id);
-      }
 
       // === CREATE MEAL WITHOUT MODIFIED TIMESTAMP ===
 
