@@ -8,6 +8,7 @@ import '../widgets/add_ingredient_dialog.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/services/snackbar_service.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/quantity_formatter.dart';
 
 class RecipeIngredientsScreen extends StatefulWidget {
   final Recipe recipe;
@@ -237,7 +238,7 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
                                 Row(
                                   children: [
                                     Text(
-                                      '${ingredient['quantity']} $effectiveUnit',
+                                      '${QuantityFormatter.format(ingredient['quantity'])} $effectiveUnit',
                                     ),
                                     if (ingredient['unit_override'] != null)
                                       Padding(

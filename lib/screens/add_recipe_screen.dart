@@ -12,6 +12,7 @@ import '../core/di/service_provider.dart';
 import '../utils/id_generator.dart';
 import '../core/services/snackbar_service.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/quantity_formatter.dart';
 
 class AddRecipeScreen extends StatefulWidget {
   final DatabaseHelper? databaseHelper;
@@ -133,13 +134,13 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                       final unit =
                           ingredient.unitOverride ?? snapshot.data?.unit ?? '';
                       return Text(
-                          '$ingredientName: ${ingredient.quantity} $unit');
+                          '$ingredientName: ${QuantityFormatter.format(ingredient.quantity)} $unit');
                     }
                     return Text(AppLocalizations.of(context)!.loading);
                   },
                 )
               : Text(
-                  '${ingredient.customName}: ${ingredient.quantity} ${ingredient.customUnit ?? ''}'),
+                  '${ingredient.customName}: ${QuantityFormatter.format(ingredient.quantity)} ${ingredient.customUnit ?? ''}'),
           subtitle: ingredient.notes != null ? Text(ingredient.notes!) : null,
           trailing: IconButton(
             icon: const Icon(Icons.delete),
