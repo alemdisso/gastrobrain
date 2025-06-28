@@ -225,16 +225,20 @@ class _RecipeCardState extends State<RecipeCard> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              AppLocalizations.of(context)!
-                                  .detailedTimesCooked(widget.mealCount),
+                              widget.mealCount == 0 && widget.lastCooked == null
+                                  ? AppLocalizations.of(context)!.neverCooked
+                                  : AppLocalizations.of(context)!
+                                      .detailedTimesCooked(widget.mealCount),
                               style: const TextStyle(fontSize: 13),
                             ),
-                            Text(
-                              AppLocalizations.of(context)!.detailedLastCooked(
-                                  _formatDateTime(widget.lastCooked, context)),
-                              style: const TextStyle(fontSize: 13),
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                            if (widget.lastCooked != null) ...[
+                              Text(
+                                AppLocalizations.of(context)!.detailedLastCooked(
+                                    _formatDateTime(widget.lastCooked, context)),
+                                style: const TextStyle(fontSize: 13),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ],
                         ),
                       ),

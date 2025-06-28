@@ -704,6 +704,10 @@
   "@never": {
     "description": "Texto exibido quando uma receita nunca foi cozinhada"
   },
+  "neverCooked": "Nunca cozinhada",
+  "@neverCooked": {
+    "description": "Texto mostrado nos cartões de receita para receitas que nunca foram cozinhadas"
+  },
   "weekOf": "Semana de {date}",
   "@weekOf": {
     "description": "String de formato para cabeçalho da semana com data",

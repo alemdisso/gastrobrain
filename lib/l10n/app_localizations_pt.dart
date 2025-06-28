@@ -543,6 +543,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get never => 'Nunca';
 
   @override
+  String get neverCooked => 'Nunca cozinhada';
+
+  @override
   String weekOf(String date) {
     return 'Semana de $date';
   }

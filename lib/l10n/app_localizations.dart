@@ -1076,6 +1076,12 @@ abstract class AppLocalizations {
   /// **'Never'**
   String get never;
 
+  /// Text shown in recipe cards for recipes that have never been cooked
+  ///
+  /// In en, this message translates to:
+  /// **'Never cooked'**
+  String get neverCooked;
+
   /// Format string for week header with date
   ///
   /// In en, this message translates to:

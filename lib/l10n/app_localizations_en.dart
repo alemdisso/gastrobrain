@@ -537,6 +537,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get never => 'Never';
 
   @override
+  String get neverCooked => 'Never cooked';
+
+  @override
   String weekOf(String date) {
     return 'Week of $date';
   }

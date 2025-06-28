@@ -722,6 +722,10 @@
   "@never": {
     "description": "Text shown when a recipe has never been cooked"
   },
+  "neverCooked": "Never cooked",
+  "@neverCooked": {
+    "description": "Text shown in recipe cards for recipes that have never been cooked"
+  },
   "weekOf": "Week of {date}",
   "@weekOf": {
     "description": "Format string for week header with date",
