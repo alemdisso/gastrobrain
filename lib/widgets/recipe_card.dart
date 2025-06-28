@@ -82,7 +82,7 @@ class _RecipeCardState extends State<RecipeCard> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Category and frequency row
+                      // Category row
                       Row(
                         children: [
                           const Icon(Icons.category,
@@ -96,15 +96,6 @@ class _RecipeCardState extends State<RecipeCard> {
                                 color: Colors.blue.shade700,
                                 fontWeight: FontWeight.w500,
                               ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          const Icon(Icons.repeat, size: 16),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            child: Text(
-                              widget.recipe.desiredFrequency.compactDisplayName,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
