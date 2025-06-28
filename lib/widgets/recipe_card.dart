@@ -124,17 +124,14 @@ class _RecipeCardState extends State<RecipeCard> {
                             ),
                           ),
                           const SizedBox(width: 16),
-                          // Rating stars
-                          if (widget.recipe.rating > 0) ...[
-                            ...List.generate(
-                              widget.recipe.rating,
-                              (index) => const Icon(
-                                Icons.star,
-                                size: 16,
-                                color: Colors.amber,
-                              ),
-                            ),
-                          ],
+                          // Rating stars (5-star scale)
+                          ...List.generate(5, (index) {
+                            return Icon(
+                              index < widget.recipe.rating ? Icons.star : Icons.star_border,
+                              size: 16,
+                              color: index < widget.recipe.rating ? Colors.amber : Colors.grey,
+                            );
+                          }),
                         ],
                       ),
                     ],
