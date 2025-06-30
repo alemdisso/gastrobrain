@@ -310,5 +310,84 @@ void main() {
       expect(reloadedResults.recommendations[0].respondedAt,
           equals(DateTime(2024, 3, 15)));
     });
+
+    test('handles new feedback UserResponse enum values correctly', () async {
+      // Test all new feedback response types
+      final newResponseTypes = [
+        UserResponse.notToday,
+        UserResponse.lessOften,
+        UserResponse.moreOften,
+        UserResponse.neverAgain,
+      ];
+
+      for (final responseType in newResponseTypes) {
+        // Create recommendation with new response type
+        final recommendation = RecipeRecommendation(
+          recipe: testRecipe,
+          totalScore: 75.0,
+          factorScores: {'test': 75.0},
+          userResponse: responseType,
+          respondedAt: DateTime(2024, 3, 15),
+        );
+
+        // Test JSON serialization
+        final json = recommendation.toJson();
+        expect(json['user_response'], equals(responseType.name));
+
+        // Test JSON deserialization
+        final reconstructed = await RecipeRecommendation.fromJson(json, mockDbHelper);
+        expect(reconstructed.userResponse, equals(responseType));
+        expect(reconstructed.respondedAt, equals(DateTime(2024, 3, 15)));
+      }
+    });
+
+    test('correctly saves and updates feedback responses in recommendation history', () async {
+      // Create initial recommendation without feedback
+      final recommendation = RecipeRecommendation(
+        recipe: testRecipe,
+        totalScore: 80.0,
+        factorScores: {'frequency': 70.0, 'rating': 90.0},
+      );
+
+      final results = RecommendationResults(
+        recommendations: [recommendation],
+        totalEvaluated: 10,
+        queryParameters: {'mealType': 'dinner'},
+        generatedAt: DateTime.now(),
+      );
+
+      // Save to history
+      final historyId = await mockDbHelper.saveRecommendationHistory(
+        results,
+        'meal_planning',
+        targetDate: DateTime(2024, 3, 15),
+        mealType: 'dinner',
+      );
+
+      // Test updating with new feedback response types
+      final feedbackTypes = [
+        UserResponse.lessOften,
+        UserResponse.moreOften,
+        UserResponse.notToday,
+        UserResponse.neverAgain,
+      ];
+
+      for (final feedbackType in feedbackTypes) {
+        // Update with feedback
+        final success = await mockDbHelper.updateRecommendationResponse(
+          historyId,
+          testRecipe.id,
+          feedbackType,
+        );
+
+        expect(success, isTrue);
+
+        // Verify feedback was saved
+        final updatedResults = await mockDbHelper.getRecommendationById(historyId);
+        expect(updatedResults, isNotNull);
+        expect(updatedResults!.recommendations[0].userResponse, equals(feedbackType));
+        expect(updatedResults.recommendations[0].respondedAt, isNotNull);
+      }
+    });
   });
 }
