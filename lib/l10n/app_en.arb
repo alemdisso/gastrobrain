@@ -1433,6 +1433,10 @@
   "hide": "Hide",
   "@hide": {
     "description": "Confirm button text for hiding recipe"
+  },
+  "feedbackSaveError": "Could not save feedback. Please try again.",
+  "@feedbackSaveError": {
+    "description": "Error message when feedback cannot be saved to database"
   }
 
 }

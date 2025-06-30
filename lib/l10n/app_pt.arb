@@ -1433,5 +1433,9 @@
   "hide": "Ocultar",
   "@hide": {
     "description": "Texto do botão de confirmação para ocultar receita"
+  },
+  "feedbackSaveError": "Não foi possível salvar o feedback. Tente novamente.",
+  "@feedbackSaveError": {
+    "description": "Mensagem de erro quando o feedback não pode ser salvo no banco de dados"
   }
 }

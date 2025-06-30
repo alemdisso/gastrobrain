@@ -1939,6 +1939,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hide'**
   String get hide;
+
+  /// Error message when feedback cannot be saved to database
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save feedback. Please try again.'**
+  String get feedbackSaveError;
 }
 
 class _AppLocalizationsDelegate

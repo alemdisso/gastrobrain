@@ -1016,4 +1016,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hide => 'Hide';
+
+  @override
+  String get feedbackSaveError => 'Could not save feedback. Please try again.';
 }

@@ -1027,4 +1027,8 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get hide => 'Ocultar';
+
+  @override
+  String get feedbackSaveError =>
+      'Não foi possível salvar o feedback. Tente novamente.';
 }
