@@ -12,11 +12,13 @@ class _BadgeInfo {
 class RecipeSelectionCard extends StatelessWidget {
   final RecipeRecommendation recommendation;
   final VoidCallback? onTap;
+  final Function(UserResponse)? onFeedback;
 
   const RecipeSelectionCard({
     super.key,
     required this.recommendation,
     this.onTap,
+    this.onFeedback,
   });
 
   @override
@@ -53,6 +55,12 @@ class RecipeSelectionCard extends StatelessWidget {
 
               // Factor indicators
               _buildFactorIndicators(context),
+              
+              // Feedback buttons
+              if (onFeedback != null) ...[
+                const SizedBox(height: 12),
+                _buildFeedbackButtons(context),
+              ],
             ],
           ),
         ),
@@ -357,5 +365,105 @@ class RecipeSelectionCard extends StatelessWidget {
       default:
         return Colors.grey.shade800;
     }
+  }
+
+  Widget _buildFeedbackButtons(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
+    return Row(
+      children: [
+        // Skip button (Not Today)
+        _buildFeedbackButton(
+          context: context,
+          icon: Icons.close,
+          label: l10n.buttonSkip,
+          onTap: () => onFeedback!(UserResponse.notToday),
+          color: Colors.grey,
+        ),
+        const SizedBox(width: 8),
+        
+        // Less Often button
+        _buildFeedbackButton(
+          context: context,
+          icon: Icons.thumb_down_outlined,
+          label: l10n.buttonLessOften,
+          onTap: () => onFeedback!(UserResponse.lessOften),
+          color: Colors.orange,
+        ),
+        const SizedBox(width: 8),
+        
+        // More Often button
+        _buildFeedbackButton(
+          context: context,
+          icon: Icons.favorite_outline,
+          label: l10n.buttonMoreOften,
+          onTap: () => onFeedback!(UserResponse.moreOften),
+          color: Colors.red,
+        ),
+        
+        const Spacer(),
+        
+        // Select button
+        ElevatedButton(
+          onPressed: onTap,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Theme.of(context).primaryColor,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          child: Text(
+            l10n.buttonSelect,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFeedbackButton({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    required Color color,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: color.withValues(alpha: 0.3)),
+            ),
+            child: Icon(
+              icon,
+              size: 18,
+              color: _getDarkerColor(color),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              color: _getDarkerColor(color),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getDarkerColor(Color color) {
+    // Create a darker version of the color for better contrast
+    final hsl = HSLColor.fromColor(color);
+    return hsl.withLightness((hsl.lightness - 0.3).clamp(0.0, 1.0)).toColor();
   }
 }
