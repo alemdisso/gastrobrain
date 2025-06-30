@@ -1005,4 +1005,26 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get sideDishesLabel => 'Acompanhamentos:';
+
+  @override
+  String get buttonSkip => 'Pular';
+
+  @override
+  String get buttonLessOften => 'Menos Vezes';
+
+  @override
+  String get buttonMoreOften => 'Mais Vezes';
+
+  @override
+  String get buttonNeverAgain => 'Nunca Mais';
+
+  @override
+  String get buttonSelect => 'SELECIONAR';
+
+  @override
+  String get confirmNeverAgain =>
+      'Tem certeza de que quer ocultar esta receita de recomendações futuras?';
+
+  @override
+  String get hide => 'Ocultar';
 }

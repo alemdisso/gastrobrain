@@ -1405,5 +1405,33 @@
   "sideDishesLabel": "Acompanhamentos:",
   "@sideDishesLabel": {
     "description": "Rótulo para seção de acompanhamentos"
+  },
+  "buttonSkip": "Pular",
+  "@buttonSkip": {
+    "description": "Botão para pular/dispensar receita apenas para a sessão atual"
+  },
+  "buttonLessOften": "Menos Vezes",
+  "@buttonLessOften": {
+    "description": "Botão para reduzir frequência de recomendação desta receita"
+  },
+  "buttonMoreOften": "Mais Vezes",
+  "@buttonMoreOften": {
+    "description": "Botão para aumentar frequência de recomendação desta receita"
+  },
+  "buttonNeverAgain": "Nunca Mais",
+  "@buttonNeverAgain": {
+    "description": "Botão para penalizar fortemente esta receita em recomendações futuras"
+  },
+  "buttonSelect": "SELECIONAR",
+  "@buttonSelect": {
+    "description": "Botão para selecionar receita para plano de refeições"
+  },
+  "confirmNeverAgain": "Tem certeza de que quer ocultar esta receita de recomendações futuras?",
+  "@confirmNeverAgain": {
+    "description": "Texto de diálogo de confirmação para ação nunca mais"
+  },
+  "hide": "Ocultar",
+  "@hide": {
+    "description": "Texto do botão de confirmação para ocultar receita"
   }
 }

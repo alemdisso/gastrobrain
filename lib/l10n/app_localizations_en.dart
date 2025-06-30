@@ -994,4 +994,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sideDishesLabel => 'Side Dishes:';
+
+  @override
+  String get buttonSkip => 'Skip';
+
+  @override
+  String get buttonLessOften => 'Less Often';
+
+  @override
+  String get buttonMoreOften => 'More Often';
+
+  @override
+  String get buttonNeverAgain => 'Never Again';
+
+  @override
+  String get buttonSelect => 'SELECT';
+
+  @override
+  String get confirmNeverAgain =>
+      'Are you sure you want to hide this recipe from future recommendations?';
+
+  @override
+  String get hide => 'Hide';
 }

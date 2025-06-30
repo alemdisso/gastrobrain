@@ -1897,6 +1897,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Side Dishes:'**
   String get sideDishesLabel;
+
+  /// Button to skip/dismiss recipe for current session only
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get buttonSkip;
+
+  /// Button to reduce recommendation frequency for this recipe
+  ///
+  /// In en, this message translates to:
+  /// **'Less Often'**
+  String get buttonLessOften;
+
+  /// Button to increase recommendation frequency for this recipe
+  ///
+  /// In en, this message translates to:
+  /// **'More Often'**
+  String get buttonMoreOften;
+
+  /// Button to strongly penalize this recipe in future recommendations
+  ///
+  /// In en, this message translates to:
+  /// **'Never Again'**
+  String get buttonNeverAgain;
+
+  /// Button to select recipe for meal plan
+  ///
+  /// In en, this message translates to:
+  /// **'SELECT'**
+  String get buttonSelect;
+
+  /// Confirmation dialog text for never again action
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to hide this recipe from future recommendations?'**
+  String get confirmNeverAgain;
+
+  /// Confirm button text for hiding recipe
+  ///
+  /// In en, this message translates to:
+  /// **'Hide'**
+  String get hide;
 }
 
 class _AppLocalizationsDelegate

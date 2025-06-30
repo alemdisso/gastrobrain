@@ -1405,6 +1405,34 @@
   "sideDishesLabel": "Side Dishes:",
   "@sideDishesLabel": {
     "description": "Label for side dishes section"
+  },
+  "buttonSkip": "Skip",
+  "@buttonSkip": {
+    "description": "Button to skip/dismiss recipe for current session only"
+  },
+  "buttonLessOften": "Less Often",
+  "@buttonLessOften": {
+    "description": "Button to reduce recommendation frequency for this recipe"
+  },
+  "buttonMoreOften": "More Often",
+  "@buttonMoreOften": {
+    "description": "Button to increase recommendation frequency for this recipe"
+  },
+  "buttonNeverAgain": "Never Again",
+  "@buttonNeverAgain": {
+    "description": "Button to strongly penalize this recipe in future recommendations"
+  },
+  "buttonSelect": "SELECT",
+  "@buttonSelect": {
+    "description": "Button to select recipe for meal plan"
+  },
+  "confirmNeverAgain": "Are you sure you want to hide this recipe from future recommendations?",
+  "@confirmNeverAgain": {
+    "description": "Confirmation dialog text for never again action"
+  },
+  "hide": "Hide",
+  "@hide": {
+    "description": "Confirm button text for hiding recipe"
   }
 
 }
