@@ -3,7 +3,19 @@ import '../core/errors/gastrobrain_exceptions.dart';
 import '../../models/recipe.dart';
 
 /// User responses to recommendations
-enum UserResponse { accepted, rejected, saved, ignored }
+enum UserResponse { 
+  // Existing responses
+  accepted,     // Recipe was selected for meal plan
+  rejected,     // Hard rejection 
+  saved,        // Recipe saved for later
+  ignored,      // No action taken
+  
+  // New feedback responses
+  notToday,     // Dismissed for this session only (no learning impact)
+  lessOften,    // Soft negative feedback - reduce recommendation frequency
+  moreOften,    // Soft positive feedback - increase recommendation frequency  
+  neverAgain,   // Strong negative feedback - significant penalty
+}
 
 /// A class representing a scored recipe recommendation.
 class RecipeRecommendation {
