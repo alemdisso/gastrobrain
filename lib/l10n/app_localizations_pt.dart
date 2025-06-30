@@ -1016,6 +1016,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get buttonMoreOften => 'Mais Vezes';
 
   @override
+  String get buttonLessShort => 'Menos';
+
+  @override
+  String get buttonMoreShort => 'Mais';
+
+  @override
   String get buttonNeverAgain => 'Nunca Mais';
 
   @override

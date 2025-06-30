@@ -1418,6 +1418,14 @@
   "@buttonMoreOften": {
     "description": "Botão para aumentar frequência de recomendação desta receita"
   },
+  "buttonLessShort": "Menos",
+  "@buttonLessShort": {
+    "description": "Texto curto do botão para reduzir frequência de recomendação desta receita"
+  },
+  "buttonMoreShort": "Mais",
+  "@buttonMoreShort": {
+    "description": "Texto curto do botão para aumentar frequência de recomendação desta receita"
+  },
   "buttonNeverAgain": "Nunca Mais",
   "@buttonNeverAgain": {
     "description": "Botão para penalizar fortemente esta receita em recomendações futuras"

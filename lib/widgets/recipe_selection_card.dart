@@ -9,7 +9,7 @@ class _BadgeInfo {
   const _BadgeInfo({required this.score, required this.label});
 }
 
-class RecipeSelectionCard extends StatelessWidget {
+class RecipeSelectionCard extends StatefulWidget {
   final RecipeRecommendation recommendation;
   final VoidCallback? onTap;
   final Function(UserResponse)? onFeedback;
@@ -22,44 +22,82 @@ class RecipeSelectionCard extends StatelessWidget {
   });
 
   @override
+  State<RecipeSelectionCard> createState() => _RecipeSelectionCardState();
+}
+
+class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
+  bool _showFactorBadges = false;
+
+  @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: InkWell(
-        onTap: onTap,
+        onTap: widget.onTap,
         borderRadius: BorderRadius.circular(4),
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Recipe name and category
+              // Recipe name and category with toggle
               Text(
-                recommendation.recipe.name,
+                widget.recommendation.recipe.name,
                 style: Theme.of(context).textTheme.titleMedium,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 2),
-              Text(
-                recommendation.recipe.category.getLocalizedDisplayName(context),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.color
-                          ?.withValues(alpha: 204), // 0.8 * 255 = 204
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.recommendation.recipe.category.getLocalizedDisplayName(context),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.color
+                                ?.withValues(alpha: 204), // 0.8 * 255 = 204
+                          ),
                     ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _showFactorBadges = !_showFactorBadges;
+                      });
+                    },
+                    child: Icon(
+                      _showFactorBadges ? Icons.expand_less : Icons.expand_more,
+                      size: 16,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
 
-              // Factor indicators
-              _buildFactorIndicators(context),
+              // Collapsible factor indicators
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                height: _showFactorBadges ? null : 0,
+                child: _showFactorBadges 
+                    ? Column(
+                        children: [
+                          _buildFactorIndicators(context),
+                          const SizedBox(height: 8),
+                        ],
+                      )
+                    : const SizedBox.shrink(),
+              ),
               
               // Feedback buttons
-              if (onFeedback != null) ...[
+              if (widget.onFeedback != null) ...[
                 const SizedBox(height: 12),
                 _buildFeedbackButtons(context),
+                const SizedBox(height: 8),
+                _buildSecondaryActionRow(context),
               ],
             ],
           ),
@@ -69,9 +107,9 @@ class RecipeSelectionCard extends StatelessWidget {
   }
 
   double _calculateEffortScore() {
-    final totalTime = recommendation.recipe.prepTimeMinutes +
-        recommendation.recipe.cookTimeMinutes;
-    final difficulty = recommendation.recipe.difficulty;
+    final totalTime = widget.recommendation.recipe.prepTimeMinutes +
+        widget.recommendation.recipe.cookTimeMinutes;
+    final difficulty = widget.recommendation.recipe.difficulty;
 
     // Base score from difficulty (0-100)
     double score = (6 - difficulty) * 20; // 5=0, 4=20, 3=40, 2=60, 1=80
@@ -122,9 +160,9 @@ class RecipeSelectionCard extends StatelessWidget {
         );
 
       case 'effort':
-        final timeText = recommendation.recipe.prepTimeMinutes +
-            recommendation.recipe.cookTimeMinutes;
-        final difficultyText = recommendation.recipe.difficulty;
+        final timeText = widget.recommendation.recipe.prepTimeMinutes +
+            widget.recommendation.recipe.cookTimeMinutes;
+        final difficultyText = widget.recommendation.recipe.difficulty;
         return l10n.recipeEffortTooltip(
           badge.score.toStringAsFixed(0),
           timeText.toString(),
@@ -139,9 +177,9 @@ class RecipeSelectionCard extends StatelessWidget {
   Widget _buildFactorIndicators(BuildContext context) {
     final badges =
         <Widget>[]; // Combine relevant scores for timing/variety badge
-    final frequencyScore = recommendation.factorScores['frequency'];
-    final proteinScore = recommendation.factorScores['protein_rotation'];
-    final varietyScore = recommendation.factorScores['variety_encouragement'];
+    final frequencyScore = widget.recommendation.factorScores['frequency'];
+    final proteinScore = widget.recommendation.factorScores['protein_rotation'];
+    final varietyScore = widget.recommendation.factorScores['variety_encouragement'];
 
     // Calculate average only from available scores, treat missing scores as neutral
     var timingVarietyScore = 0.0;
@@ -166,7 +204,7 @@ class RecipeSelectionCard extends StatelessWidget {
       // If there are no timing factors at all, use lowest score
       timingVarietyScore = 0.0;
     }
-    final qualityScore = recommendation.factorScores['rating'] ??
+    final qualityScore = widget.recommendation.factorScores['rating'] ??
         0.0; // Default to 0.0 for unrated recipes
     final effortScore = _calculateEffortScore();
 
@@ -265,10 +303,10 @@ class RecipeSelectionCard extends StatelessWidget {
 
   String _getEffortLabel(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final prepTime = recommendation.recipe.prepTimeMinutes;
-    final cookTime = recommendation.recipe.cookTimeMinutes;
+    final prepTime = widget.recommendation.recipe.prepTimeMinutes;
+    final cookTime = widget.recommendation.recipe.cookTimeMinutes;
     final totalTime = prepTime + cookTime;
-    final difficulty = recommendation.recipe.difficulty;
+    final difficulty = widget.recommendation.recipe.difficulty;
 
     // Default to Moderate if not explicitly set (meaning they're at their default values)
     if (prepTime == 0 && cookTime == 0) return l10n.badgeModerate;
@@ -369,94 +407,147 @@ class RecipeSelectionCard extends StatelessWidget {
 
   Widget _buildFeedbackButtons(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // Use short labels on small screens (< 360dp) to prevent button overflow
+    final screenWidth = MediaQuery.of(context).size.width;
+    final useShortLabels = screenWidth < 360;
     
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        // Skip button (Not Today)
-        _buildFeedbackButton(
-          context: context,
-          icon: Icons.close,
-          label: l10n.buttonSkip,
-          onTap: () => onFeedback!(UserResponse.notToday),
-          color: Colors.grey,
-        ),
-        const SizedBox(width: 8),
-        
         // Less Often button
-        _buildFeedbackButton(
+        _buildActionButton(
           context: context,
           icon: Icons.thumb_down_outlined,
-          label: l10n.buttonLessOften,
-          onTap: () => onFeedback!(UserResponse.lessOften),
+          label: useShortLabels ? l10n.buttonLessShort : l10n.buttonLessOften,
+          onTap: () => widget.onFeedback!(UserResponse.lessOften),
           color: Colors.orange,
         ),
-        const SizedBox(width: 8),
-        
-        // More Often button
-        _buildFeedbackButton(
-          context: context,
-          icon: Icons.favorite_outline,
-          label: l10n.buttonMoreOften,
-          onTap: () => onFeedback!(UserResponse.moreOften),
-          color: Colors.red,
-        ),
-        
-        const Spacer(),
         
         // Select button
-        ElevatedButton(
-          onPressed: onTap,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).primaryColor,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+        _buildActionButton(
+          context: context,
+          icon: null,
+          label: l10n.buttonSelect, // Select stays the same
+          onTap: widget.onTap,
+          color: Theme.of(context).primaryColor,
+          isPrimary: true,
+        ),
+        
+        // More Often button
+        _buildActionButton(
+          context: context,
+          icon: Icons.favorite_outline,
+          label: useShortLabels ? l10n.buttonMoreShort : l10n.buttonMoreOften,
+          onTap: () => widget.onFeedback!(UserResponse.moreOften),
+          color: Colors.green,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSecondaryActionRow(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        TextButton(
+          onPressed: () => widget.onFeedback!(UserResponse.notToday),
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.grey.shade600,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
-          child: Text(
-            l10n.buttonSelect,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.close,
+                size: 16,
+                color: Colors.grey.shade600,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                l10n.buttonSkip,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
           ),
         ),
       ],
     );
   }
 
-  Widget _buildFeedbackButton({
+  Widget _buildActionButton({
     required BuildContext context,
-    required IconData icon,
+    required IconData? icon,
     required String label,
-    required VoidCallback onTap,
+    required VoidCallback? onTap,
     required Color color,
+    bool isPrimary = false,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: color.withValues(alpha: 0.3)),
-            ),
-            child: Icon(
-              icon,
-              size: 18,
-              color: _getDarkerColor(color),
+    // Enhanced color specifications for better visual hierarchy
+    final backgroundColor = isPrimary 
+        ? color 
+        : _isOrangeColor(color) 
+            ? Colors.orange.withAlpha(38)  // 0.15 * 255 ≈ 38
+            : _isGreenColor(color)
+                ? Colors.green.withAlpha(38)  // 0.15 * 255 ≈ 38
+                : color.withValues(alpha: 0.15);
+    
+    final borderColor = isPrimary 
+        ? Colors.transparent
+        : _isOrangeColor(color)
+            ? Colors.orange.withAlpha(102)  // 0.4 * 255 ≈ 102
+            : _isGreenColor(color)
+                ? Colors.green.withAlpha(102)  // 0.4 * 255 ≈ 102
+                : color.withValues(alpha: 0.4);
+    
+    final textColor = isPrimary ? Colors.white : _getDarkerColor(color);
+    
+    return SizedBox(
+      height: 44, // 44dp touch target consistency
+      child: ElevatedButton(
+        onPressed: onTap,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: backgroundColor,
+          foregroundColor: textColor,
+          elevation: isPrimary ? 2 : 1, // Subtle elevation for all buttons
+          shadowColor: Colors.black.withValues(alpha: 0.1),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(
+              color: borderColor,
+              width: isPrimary ? 0 : 1,
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              color: _getDarkerColor(color),
-              fontWeight: FontWeight.w500,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(
+                icon, 
+                size: 18,
+                color: textColor, // Icon color matches text color
+              ),
+              const SizedBox(width: 8),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: isPrimary ? FontWeight.bold : FontWeight.w500,
+                color: textColor, // Explicit text color for accessibility
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -465,5 +556,23 @@ class RecipeSelectionCard extends StatelessWidget {
     // Create a darker version of the color for better contrast
     final hsl = HSLColor.fromColor(color);
     return hsl.withLightness((hsl.lightness - 0.3).clamp(0.0, 1.0)).toColor();
+  }
+
+  bool _isOrangeColor(Color color) {
+    // Check if the color is orange (including Material orange variants)
+    return color == Colors.orange || 
+           color == Colors.orange.shade600 || 
+           color == Colors.orange.shade700 ||
+           color == Colors.orange.shade800 ||
+           color == Colors.deepOrange;
+  }
+
+  bool _isGreenColor(Color color) {
+    // Check if the color is green (including Material green variants)
+    return color == Colors.green || 
+           color == Colors.green.shade600 || 
+           color == Colors.green.shade700 ||
+           color == Colors.green.shade800 ||
+           color == Colors.lightGreen;
   }
 }

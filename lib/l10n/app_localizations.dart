@@ -1916,6 +1916,18 @@ abstract class AppLocalizations {
   /// **'More Often'**
   String get buttonMoreOften;
 
+  /// Short button text to reduce recommendation frequency for this recipe
+  ///
+  /// In en, this message translates to:
+  /// **'Less'**
+  String get buttonLessShort;
+
+  /// Short button text to increase recommendation frequency for this recipe
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get buttonMoreShort;
+
   /// Button to strongly penalize this recipe in future recommendations
   ///
   /// In en, this message translates to:

@@ -1005,6 +1005,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get buttonMoreOften => 'More Often';
 
   @override
+  String get buttonLessShort => 'Less';
+
+  @override
+  String get buttonMoreShort => 'More';
+
+  @override
   String get buttonNeverAgain => 'Never Again';
 
   @override
