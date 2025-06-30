@@ -6,6 +6,7 @@ import '../models/meal_plan.dart';
 import '../models/meal_plan_item.dart';
 import '../models/meal_plan_item_recipe.dart';
 import '../models/recipe_recommendation.dart';
+import '../models/recommendation_results.dart' as model;
 import '../models/recipe.dart';
 import '../models/time_context.dart';
 import '../database/database_helper.dart';
@@ -340,7 +341,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     return recommendations;
   }
 
-  Future<List<RecipeRecommendation>> _getDetailedSlotRecommendations(
+  Future<({List<RecipeRecommendation> recommendations, String historyId})> _getDetailedSlotRecommendations(
       DateTime date, String mealType,
       {int count = 5}) async {
     // Build context for recommendations
@@ -365,10 +366,26 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       maxDifficulty: isWeekday ? 4 : null,
     );
 
-    return recommendations.recommendations;
+    // Convert service RecommendationResults to model RecommendationResults for database storage
+    final modelResults = model.RecommendationResults(
+      recommendations: recommendations.recommendations,
+      totalEvaluated: recommendations.totalEvaluated,
+      queryParameters: recommendations.queryParameters,
+      generatedAt: recommendations.generatedAt,
+    );
+
+    // Save recommendation history and get the history ID
+    final historyId = await _dbHelper.saveRecommendationHistory(
+      modelResults,
+      'meal_planning',
+      targetDate: date,
+      mealType: mealType,
+    );
+
+    return (recommendations: recommendations.recommendations, historyId: historyId);
   }
 
-  Future<List<RecipeRecommendation>> _refreshDetailedRecommendations(
+  Future<({List<RecipeRecommendation> recommendations, String historyId})> _refreshDetailedRecommendations(
       DateTime date, String mealType) async {
     // Clear the cache for this slot
     _invalidateRecommendationCache(date, mealType);
@@ -1366,7 +1383,7 @@ class _RecipeSelectionDialog extends StatefulWidget {
   final List<Recipe> recipes;
   final List<RecipeRecommendation> detailedRecommendations;
   final List<RecipeRecommendation> allScoredRecipes;
-  final Future<List<RecipeRecommendation>> Function()?
+  final Future<({List<RecipeRecommendation> recommendations, String historyId})> Function()?
       onRefreshDetailedRecommendations;
   final Recipe? initialPrimaryRecipe;
   final List<Recipe>? initialAdditionalRecipes;
@@ -1389,6 +1406,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
   late TabController _tabController;
   bool _isLoading = false;
   late List<RecipeRecommendation> _recommendations;
+  String? _recommendationHistoryId; // Store the history ID for feedback
   Recipe? _selectedRecipe;
   bool _showingMenu = false;
   List<Recipe> _additionalRecipes = [];
@@ -1421,6 +1439,50 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
     _recommendations = List.from(widget.detailedRecommendations);
   }
 
+  Future<void> _handleFeedback(String recipeId, UserResponse userResponse) async {
+    // Only process feedback if we have a recommendation history ID
+    if (_recommendationHistoryId == null) return;
+
+    try {
+      // Update the recommendation response in the database
+      final dbHelper = ServiceProvider.database.dbHelper;
+      final success = await dbHelper.updateRecommendationResponse(
+        _recommendationHistoryId!,
+        recipeId,
+        userResponse,
+      );
+
+      if (!success) {
+        // Show error message if feedback couldn't be saved
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.feedbackSaveError),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } else {
+        // Handle "Not Today" feedback by removing the recipe from current session
+        if (userResponse == UserResponse.notToday) {
+          setState(() {
+            _recommendations.removeWhere((rec) => rec.recipe.id == recipeId);
+          });
+        }
+      }
+    } catch (e) {
+      // Handle any errors silently for now, or show a message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.feedbackSaveError),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _handleRefresh() async {
     if (widget.onRefreshDetailedRecommendations == null) return;
 
@@ -1430,12 +1492,12 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
 
     try {
       // Get fresh detailed recommendations
-      final freshRecommendations =
-          await widget.onRefreshDetailedRecommendations!();
+      final result = await widget.onRefreshDetailedRecommendations!();
 
       if (mounted) {
         setState(() {
-          _recommendations = freshRecommendations;
+          _recommendations = result.recommendations;
+          _recommendationHistoryId = result.historyId;
           _isLoading = false;
         });
       }
@@ -1576,6 +1638,8 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
                               recommendation: recommendation,
                               onTap: () =>
                                   _handleRecipeSelection(recommendation.recipe),
+                              onFeedback: (userResponse) =>
+                                  _handleFeedback(recommendation.recipe.id, userResponse),
                             );
                           },
                         ),
