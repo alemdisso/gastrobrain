@@ -29,6 +29,15 @@ void main() {
     );
   }
 
+  // Helper method to expand factor badges in tests
+  Future<void> expandBadges(WidgetTester tester) async {
+    final expandIcon = find.byIcon(Icons.expand_more);
+    if (expandIcon.evaluate().isNotEmpty) {
+      await tester.tap(expandIcon);
+      await tester.pumpAndSettle();
+    }
+  }
+
   setUp(() {
     testRecipe = Recipe(
       id: 'test-recipe',
@@ -89,7 +98,7 @@ void main() {
       // Verify category is displayed
       expect(find.text('Pratos principais'), findsOneWidget);
     });
-    testWidgets('displays all three badge types', (WidgetTester tester) async {
+    testWidgets('displays all three badge types when expanded', (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestableWidget(
           RecipeSelectionCard(
@@ -98,12 +107,19 @@ void main() {
         ),
       );
 
-      // Should show all three badges
-      expect(
-          find.text('Explore'), findsOneWidget); // Timing badge (75% average)
+      // Badges should not be visible initially (collapsed)
+      expect(find.text('Explore'), findsNothing);
+      expect(find.text('Loved'), findsNothing);
+      expect(find.text('Moderate'), findsNothing);
+
+      // Tap the expand button to show badges
+      await tester.tap(find.byIcon(Icons.expand_more));
+      await tester.pumpAndSettle();
+
+      // Now badges should be visible
+      expect(find.text('Explore'), findsOneWidget); // Timing badge (75% average)
       expect(find.text('Loved'), findsOneWidget); // Quality badge (85%)
-      expect(find.text('Moderate'),
-          findsOneWidget); // Effort badge (difficulty 3, total time 75min)
+      expect(find.text('Moderate'), findsOneWidget); // Effort badge (difficulty 3, total time 75min)
     });
   });
 
@@ -135,6 +151,10 @@ void main() {
           ),
         ),
       );
+
+      // First expand the badges
+      await tester.tap(find.byIcon(Icons.expand_more));
+      await tester.pumpAndSettle();
 
       // Find and verify quality badge tooltip
       final qualityBadge = find.text('Loved');
@@ -197,11 +217,14 @@ void main() {
           ),
         );
 
-        // Find the badge container by its label text
+        // First expand the badges
+        await expandBadges(tester);
+
+        // Find the badge container by its label text (get the first/closest one)
         final badge = find.ancestor(
           of: find.text(_getQualityLabel(scoreInfo.score)),
           matching: find.byType(Container),
-        );
+        ).first;
 
         final container = tester.widget<Container>(badge);
         final decoration = container.decoration as BoxDecoration;
@@ -263,11 +286,14 @@ void main() {
           ),
         );
 
-        // Find the badge container by its label text
+        // First expand the badges
+        await expandBadges(tester);
+
+        // Find the badge container by its label text (get the first/closest one)
         final badge = find.ancestor(
           of: find.text(_getTimingVarietyLabel(scoreInfo.score)),
           matching: find.byType(Container),
-        );
+        ).first;
 
         final container = tester.widget<Container>(badge);
         final decoration = container.decoration as BoxDecoration;
@@ -339,11 +365,14 @@ void main() {
           ),
         );
 
-        // Find the badge container by its label text
+        // First expand the badges
+        await expandBadges(tester);
+
+        // Find the badge container by its label text (get the first/closest one)
         final badge = find.ancestor(
           of: find.text(testCase.expectedLabel),
           matching: find.byType(Container),
-        );
+        ).first;
 
         final container = tester.widget<Container>(badge);
         final decoration = container.decoration as BoxDecoration;
@@ -385,6 +414,9 @@ void main() {
         ),
       );
 
+      // First expand the badges
+      await expandBadges(tester);
+
       // Should show default values for badges
       expect(find.text('Repeat'), findsOneWidget); // Default timing badge
       expect(find.text('New'), findsOneWidget); // Default quality badge
@@ -406,6 +438,9 @@ void main() {
           ),
         ),
       );
+
+      // First expand the badges
+      await expandBadges(tester);
 
       // Should handle missing factors same as empty scores
       expect(find.text('Repeat'), findsOneWidget);
@@ -430,6 +465,9 @@ void main() {
           ),
         ),
       );
+
+      // First expand the badges
+      await expandBadges(tester);
 
       // Should show minimum value badges
       expect(find.text('Repeat'), findsOneWidget);
@@ -463,6 +501,9 @@ void main() {
           ),
         ),
       );
+
+      // First expand the badges
+      await expandBadges(tester);
 
       // Should still show correct timing/quality badges, but default effort
       expect(find.text('Explore'), findsOneWidget); // Based on 75.0 score
@@ -503,6 +544,9 @@ void main() {
             ),
           ),
         );
+
+        // First expand the badges
+        await expandBadges(tester);
 
         expect(find.text(test.expected), findsOneWidget,
             reason: 'Score ${test.score} should show label ${test.expected}');
@@ -559,6 +603,9 @@ void main() {
             ),
           ),
         );
+
+        // First expand the badges
+        await expandBadges(tester);
 
         expect(find.text(test.expectedLabel), findsOneWidget,
             reason:

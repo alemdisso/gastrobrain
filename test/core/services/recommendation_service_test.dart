@@ -45,7 +45,7 @@ void main() {
   group('RecommendationService - Factor Management', () {
     test('registers default factors correctly', () {
       // Verify the service has registered the correct factors
-      expect(recommendationService.factors.length, 6);
+      expect(recommendationService.factors.length, 7);
 
       final factorIds = recommendationService.factors.map((f) => f.id).toList();
       expect(factorIds, contains('frequency'));
@@ -54,20 +54,22 @@ void main() {
       expect(factorIds, contains('difficulty'));
       expect(factorIds, contains('variety_encouragement'));
       expect(factorIds, contains('randomization'));
+      expect(factorIds, contains('user_feedback'));
 
       expect(recommendationService.totalWeight, 100);
     });
 
     test('can register and unregister factors', () {
-      // Initial factors count (frequency and protein_rotation)
-      expect(recommendationService.factors.length, 6);
+      // Initial factors count
+      expect(recommendationService.factors.length, 7);
 
-      // Unregister four factors
+      // Unregister five factors
       recommendationService.unregisterFactor('frequency');
       recommendationService.unregisterFactor('rating');
       recommendationService.unregisterFactor('variety_encouragement');
       recommendationService.unregisterFactor('randomization');
       recommendationService.unregisterFactor('difficulty');
+      recommendationService.unregisterFactor('user_feedback');
       expect(recommendationService.factors.length, 1);
       expect(recommendationService.factors.map((f) => f.id).toList(),
           ['protein_rotation']);
@@ -143,6 +145,7 @@ void main() {
           'beef-recipe': 1,
           'chicken-recipe': 1,
         },
+        'feedbackHistory': <String, List<Map<String, dynamic>>>{},
       };
 
       // Act: Get detailed recommendations
@@ -206,6 +209,7 @@ void main() {
         'recentMeals': <Map<String, dynamic>>[],
         'lastCooked': <String, DateTime>{},
         'mealCounts': <String, int>{},
+        'feedbackHistory': <String, List<Map<String, dynamic>>>{},
       };
 
       // Act: Get recommendations
@@ -328,6 +332,7 @@ void main() {
           'recent-recipe-2': 1,
           'recent-recipe-3': 1,
         },
+        'feedbackHistory': <String, List<Map<String, dynamic>>>{},
       };
 
       // Act: Get recommendations
@@ -534,6 +539,7 @@ void main() {
         'lastCooked': lastCookedDates,
         'recentMeals': recentMeals,
         'mealCounts': mealCounts,
+        'feedbackHistory': <String, List<Map<String, dynamic>>>{},
       };
 
       // Act: Measure performance
@@ -594,6 +600,7 @@ void main() {
         'proteinTypes': proteinTypes,
         'recentMeals': recentMeals,
         'randomSeed': fixedSeed, // Fixed seed for deterministic results
+        'feedbackHistory': <String, List<Map<String, dynamic>>>{},
       };
 
 // Get recommendations for first run with fixed seed
@@ -607,6 +614,7 @@ void main() {
         'proteinTypes': proteinTypes,
         'recentMeals': recentMeals,
         'randomSeed': fixedSeed, // Same seed as before
+        'feedbackHistory': <String, List<Map<String, dynamic>>>{},
       };
 
 // Get recommendations for second run
@@ -657,6 +665,7 @@ void main() {
         'proteinTypes': proteinTypes,
         'recentMeals': recentMeals,
         'randomSeed': fixedSeed + 1, // Different seed
+        'feedbackHistory': <String, List<Map<String, dynamic>>>{},
       };
 
 // Get recommendations with different seed

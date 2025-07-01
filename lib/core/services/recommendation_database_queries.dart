@@ -19,6 +19,9 @@ class RecommendationDatabaseQueries {
     this.proteinTypesOverride,
   }) : _dbHelper = dbHelper;
 
+  /// Get access to the underlying database helper
+  DatabaseHelper get dbHelper => _dbHelper;
+
   /// Get all available recipes filtered by given criteria
   ///
   /// Parameters:
