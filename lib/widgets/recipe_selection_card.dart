@@ -52,13 +52,11 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
                 children: [
                   Expanded(
                     child: Text(
-                      widget.recommendation.recipe.category.getLocalizedDisplayName(context),
+                      widget.recommendation.recipe.category
+                          .getLocalizedDisplayName(context),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.color
-                                ?.withValues(alpha: 204), // 0.8 * 255 = 204
+                            color: Colors
+                                .blue.shade700, // Using blue like recipe_card
                           ),
                     ),
                   ),
@@ -82,7 +80,7 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 height: _showFactorBadges ? null : 0,
-                child: _showFactorBadges 
+                child: _showFactorBadges
                     ? Column(
                         children: [
                           _buildFactorIndicators(context),
@@ -91,7 +89,7 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
                       )
                     : const SizedBox.shrink(),
               ),
-              
+
               // Feedback buttons
               if (widget.onFeedback != null) ...[
                 const SizedBox(height: 12),
@@ -129,7 +127,7 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
 
   String _getTooltip(BuildContext context, _BadgeInfo badge, String type) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     switch (type) {
       case 'timing':
         final statusText = badge.score >= 75
@@ -179,7 +177,8 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
         <Widget>[]; // Combine relevant scores for timing/variety badge
     final frequencyScore = widget.recommendation.factorScores['frequency'];
     final proteinScore = widget.recommendation.factorScores['protein_rotation'];
-    final varietyScore = widget.recommendation.factorScores['variety_encouragement'];
+    final varietyScore =
+        widget.recommendation.factorScores['variety_encouragement'];
 
     // Calculate average only from available scores, treat missing scores as neutral
     var timingVarietyScore = 0.0;
@@ -273,7 +272,10 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
       spacing: 4,
       runSpacing: 8,
       children: badges.isEmpty
-          ? [Text(AppLocalizations.of(context)!.noBadges, style: Theme.of(context).textTheme.bodySmall)]
+          ? [
+              Text(AppLocalizations.of(context)!.noBadges,
+                  style: Theme.of(context).textTheme.bodySmall)
+            ]
           : badges,
     );
   }
@@ -407,10 +409,7 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
 
   Widget _buildFeedbackButtons(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    // Use short labels on small screens (< 360dp) to prevent button overflow
-    final screenWidth = MediaQuery.of(context).size.width;
-    final useShortLabels = screenWidth < 360;
-    
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -418,26 +417,26 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
         _buildActionButton(
           context: context,
           icon: Icons.thumb_down_outlined,
-          label: useShortLabels ? l10n.buttonLessShort : l10n.buttonLessOften,
+          label: l10n.buttonLessOften,
           onTap: () => widget.onFeedback!(UserResponse.lessOften),
           color: Colors.orange,
         ),
-        
+
         // Select button
         _buildActionButton(
           context: context,
-          icon: null,
-          label: l10n.buttonSelect, // Select stays the same
+          icon: Icons.check, // Using check icon instead of text
+          label: l10n.buttonSelect,
           onTap: widget.onTap,
           color: Theme.of(context).primaryColor,
           isPrimary: true,
         ),
-        
+
         // More Often button
         _buildActionButton(
           context: context,
           icon: Icons.favorite_outline,
-          label: useShortLabels ? l10n.buttonMoreShort : l10n.buttonMoreOften,
+          label: l10n.buttonMoreOften,
           onTap: () => widget.onFeedback!(UserResponse.moreOften),
           color: Colors.green,
         ),
@@ -447,7 +446,7 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
 
   Widget _buildSecondaryActionRow(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -491,62 +490,72 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
     bool isPrimary = false,
   }) {
     // Enhanced color specifications for better visual hierarchy
-    final backgroundColor = isPrimary 
-        ? color 
-        : _isOrangeColor(color) 
-            ? Colors.orange.withAlpha(38)  // 0.15 * 255 ≈ 38
+    final backgroundColor = isPrimary
+        ? color
+        : _isOrangeColor(color)
+            ? Colors.orange.withAlpha(38) // 0.15 * 255 ≈ 38
             : _isGreenColor(color)
-                ? Colors.green.withAlpha(38)  // 0.15 * 255 ≈ 38
+                ? Colors.green.withAlpha(38) // 0.15 * 255 ≈ 38
                 : color.withValues(alpha: 0.15);
-    
-    final borderColor = isPrimary 
+
+    final borderColor = isPrimary
         ? Colors.transparent
         : _isOrangeColor(color)
-            ? Colors.orange.withAlpha(102)  // 0.4 * 255 ≈ 102
+            ? Colors.orange.withAlpha(102) // 0.4 * 255 ≈ 102
             : _isGreenColor(color)
-                ? Colors.green.withAlpha(102)  // 0.4 * 255 ≈ 102
+                ? Colors.green.withAlpha(102) // 0.4 * 255 ≈ 102
                 : color.withValues(alpha: 0.4);
-    
+
     final textColor = isPrimary ? Colors.white : _getDarkerColor(color);
-    
-    return SizedBox(
-      height: 44, // 44dp touch target consistency
-      child: ElevatedButton(
-        onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor,
-          foregroundColor: textColor,
-          elevation: isPrimary ? 2 : 1, // Subtle elevation for all buttons
-          shadowColor: Colors.black.withValues(alpha: 0.1),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-            side: BorderSide(
-              color: borderColor,
-              width: isPrimary ? 0 : 1,
+
+    // Create compact icon-like buttons
+    return Tooltip(
+      message: label,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius:
+              BorderRadius.circular(16), // Circular for icon-like appearance
+          border: Border.all(
+            color: borderColor,
+            width: isPrimary ? 0 : 1,
+          ),
+          boxShadow: isPrimary
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 2,
+                    offset: const Offset(0, 1),
+                  )
+                ]
+              : null,
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(16),
+            child: Center(
+              child: icon != null
+                  ? Icon(
+                      icon,
+                      size: 16,
+                      color: textColor,
+                    )
+                  : Text(
+                      label
+                          .substring(0, 1)
+                          .toUpperCase(), // First letter for Select button
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
             ),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(
-                icon, 
-                size: 18,
-                color: textColor, // Icon color matches text color
-              ),
-              const SizedBox(width: 8),
-            ],
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: isPrimary ? FontWeight.bold : FontWeight.w500,
-                color: textColor, // Explicit text color for accessibility
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -560,19 +569,19 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
 
   bool _isOrangeColor(Color color) {
     // Check if the color is orange (including Material orange variants)
-    return color == Colors.orange || 
-           color == Colors.orange.shade600 || 
-           color == Colors.orange.shade700 ||
-           color == Colors.orange.shade800 ||
-           color == Colors.deepOrange;
+    return color == Colors.orange ||
+        color == Colors.orange.shade600 ||
+        color == Colors.orange.shade700 ||
+        color == Colors.orange.shade800 ||
+        color == Colors.deepOrange;
   }
 
   bool _isGreenColor(Color color) {
     // Check if the color is green (including Material green variants)
-    return color == Colors.green || 
-           color == Colors.green.shade600 || 
-           color == Colors.green.shade700 ||
-           color == Colors.green.shade800 ||
-           color == Colors.lightGreen;
+    return color == Colors.green ||
+        color == Colors.green.shade600 ||
+        color == Colors.green.shade700 ||
+        color == Colors.green.shade800 ||
+        color == Colors.lightGreen;
   }
 }
