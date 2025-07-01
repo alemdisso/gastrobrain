@@ -1,3 +1,4 @@
+<!-- markdownlint-disable -->
 # Issue #22: Smart Feedback System Implementation Plan
 
 ## Overview
