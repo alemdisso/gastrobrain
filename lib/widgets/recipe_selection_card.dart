@@ -41,11 +41,84 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Recipe name and category with toggle
-              Text(
-                widget.recommendation.recipe.name,
-                style: Theme.of(context).textTheme.titleMedium,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.recommendation.recipe.name,
+                      style: Theme.of(context).textTheme.titleMedium,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (widget.onFeedback != null) ...[
+                    const SizedBox(width: 8),
+                    PopupMenuButton<UserResponse>(
+                      icon: Icon(
+                        Icons.more_vert,
+                        size: 16,
+                        color: Colors.grey.shade600,
+                      ),
+                      iconSize: 16,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 32,
+                        minHeight: 32,
+                      ),
+                      onSelected: (UserResponse response) =>
+                          widget.onFeedback!(response),
+                      itemBuilder: (BuildContext context) => [
+                        PopupMenuItem<UserResponse>(
+                          value: UserResponse.moreOften,
+                          child: Row(
+                            children: [
+                              const Icon(Icons.favorite_outline,
+                                  size: 16, color: Colors.green),
+                              const SizedBox(width: 8),
+                              Text(AppLocalizations.of(context)!
+                                  .buttonMoreOften),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem<UserResponse>(
+                          value: UserResponse.lessOften,
+                          child: Row(
+                            children: [
+                              const Icon(Icons.thumb_down_outlined,
+                                  size: 16, color: Colors.orange),
+                              const SizedBox(width: 8),
+                              Text(AppLocalizations.of(context)!
+                                  .buttonLessOften),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem<UserResponse>(
+                          value: UserResponse.neverAgain,
+                          child: Row(
+                            children: [
+                              const Icon(Icons.block,
+                                  size: 16, color: Colors.red),
+                              const SizedBox(width: 8),
+                              Text(AppLocalizations.of(context)!
+                                  .buttonNeverAgain),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem<UserResponse>(
+                          value: UserResponse.notToday,
+                          child: Row(
+                            children: [
+                              const Icon(Icons.close,
+                                  size: 16, color: Colors.grey),
+                              const SizedBox(width: 8),
+                              Text(AppLocalizations.of(context)!.buttonSkip),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
               ),
               const SizedBox(height: 2),
               Row(
@@ -55,8 +128,7 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
                       widget.recommendation.recipe.category
                           .getLocalizedDisplayName(context),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors
-                                .blue.shade700, // Using blue like recipe_card
+                            color: Colors.blue.shade700,
                           ),
                     ),
                   ),
@@ -90,13 +162,9 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
                     : const SizedBox.shrink(),
               ),
 
-              // Feedback buttons
-              if (widget.onFeedback != null) ...[
-                const SizedBox(height: 12),
-                _buildFeedbackButtons(context),
-                const SizedBox(height: 8),
-                _buildSecondaryActionRow(context),
-              ],
+              // Select button
+              const SizedBox(height: 8),
+              _buildFeedbackButtons(context),
             ],
           ),
         ),
@@ -410,37 +478,21 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
   Widget _buildFeedbackButtons(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        // Less Often button
-        _buildActionButton(
-          context: context,
-          icon: Icons.thumb_down_outlined,
-          label: l10n.buttonLessOften,
-          onTap: () => widget.onFeedback!(UserResponse.lessOften),
-          color: Colors.orange,
+    return Align(
+      alignment: Alignment.centerRight,
+      child: TextButton(
+        onPressed: widget.onTap,
+        style: TextButton.styleFrom(
+          foregroundColor: Theme.of(context).colorScheme.primary,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         ),
-
-        // Select button
-        _buildActionButton(
-          context: context,
-          icon: Icons.check, // Using check icon instead of text
-          label: l10n.buttonSelect,
-          onTap: widget.onTap,
-          color: Theme.of(context).primaryColor,
-          isPrimary: true,
+        child: Text(
+          l10n.buttonSelect,
+          style: const TextStyle(
+            fontWeight: FontWeight.w500,
+          ),
         ),
-
-        // More Often button
-        _buildActionButton(
-          context: context,
-          icon: Icons.favorite_outline,
-          label: l10n.buttonMoreOften,
-          onTap: () => widget.onFeedback!(UserResponse.moreOften),
-          color: Colors.green,
-        ),
-      ],
+      ),
     );
   }
 
