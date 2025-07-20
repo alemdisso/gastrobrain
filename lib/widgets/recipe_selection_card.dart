@@ -31,14 +31,19 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: InkWell(
         onTap: widget.onTap,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(8),
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               // Recipe name and category with toggle
               Row(
@@ -309,24 +314,24 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
 
       badges.add(
         Padding(
-          padding: const EdgeInsets.only(right: 8.0),
+          padding: const EdgeInsets.only(right: 6.0),
           child: Tooltip(
             message: _getTooltip(context, badge.info, badge.type),
             child: Container(
-              padding: const EdgeInsets.all(4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
                 color: backgroundColor,
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: borderColor,
-                  width: 1,
+                  width: 0.5,
                 ),
               ),
               child: Text(
                 badge.info.label,
                 style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w400,
                   color: textColor,
                 ),
               ),
@@ -494,146 +499,5 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
         ),
       ),
     );
-  }
-
-  Widget _buildSecondaryActionRow(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        TextButton(
-          onPressed: () => widget.onFeedback!(UserResponse.notToday),
-          style: TextButton.styleFrom(
-            foregroundColor: Colors.grey.shade600,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            minimumSize: Size.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.close,
-                size: 16,
-                color: Colors.grey.shade600,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                l10n.buttonSkip,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButton({
-    required BuildContext context,
-    required IconData? icon,
-    required String label,
-    required VoidCallback? onTap,
-    required Color color,
-    bool isPrimary = false,
-  }) {
-    // Enhanced color specifications for better visual hierarchy
-    final backgroundColor = isPrimary
-        ? color
-        : _isOrangeColor(color)
-            ? Colors.orange.withAlpha(38) // 0.15 * 255 ≈ 38
-            : _isGreenColor(color)
-                ? Colors.green.withAlpha(38) // 0.15 * 255 ≈ 38
-                : color.withValues(alpha: 0.15);
-
-    final borderColor = isPrimary
-        ? Colors.transparent
-        : _isOrangeColor(color)
-            ? Colors.orange.withAlpha(102) // 0.4 * 255 ≈ 102
-            : _isGreenColor(color)
-                ? Colors.green.withAlpha(102) // 0.4 * 255 ≈ 102
-                : color.withValues(alpha: 0.4);
-
-    final textColor = isPrimary ? Colors.white : _getDarkerColor(color);
-
-    // Create compact icon-like buttons
-    return Tooltip(
-      message: label,
-      child: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius:
-              BorderRadius.circular(16), // Circular for icon-like appearance
-          border: Border.all(
-            color: borderColor,
-            width: isPrimary ? 0 : 1,
-          ),
-          boxShadow: isPrimary
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 2,
-                    offset: const Offset(0, 1),
-                  )
-                ]
-              : null,
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(16),
-            child: Center(
-              child: icon != null
-                  ? Icon(
-                      icon,
-                      size: 16,
-                      color: textColor,
-                    )
-                  : Text(
-                      label
-                          .substring(0, 1)
-                          .toUpperCase(), // First letter for Select button
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: textColor,
-                      ),
-                    ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Color _getDarkerColor(Color color) {
-    // Create a darker version of the color for better contrast
-    final hsl = HSLColor.fromColor(color);
-    return hsl.withLightness((hsl.lightness - 0.3).clamp(0.0, 1.0)).toColor();
-  }
-
-  bool _isOrangeColor(Color color) {
-    // Check if the color is orange (including Material orange variants)
-    return color == Colors.orange ||
-        color == Colors.orange.shade600 ||
-        color == Colors.orange.shade700 ||
-        color == Colors.orange.shade800 ||
-        color == Colors.deepOrange;
-  }
-
-  bool _isGreenColor(Color color) {
-    // Check if the color is green (including Material green variants)
-    return color == Colors.green ||
-        color == Colors.green.shade600 ||
-        color == Colors.green.shade700 ||
-        color == Colors.green.shade800 ||
-        color == Colors.lightGreen;
   }
 }
