@@ -1444,9 +1444,12 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
 
   Future<void> _handleFeedback(
       String recipeId, UserResponse userResponse) async {
-    // Handle "Not Today" feedback by removing the recipe from current session immediately
-    // This should happen regardless of database save success to ensure good UX
-    if (userResponse == UserResponse.notToday) {
+    // Handle feedback that indicates user doesn't want this recipe now
+    // Remove from current session immediately for better UX
+    if (userResponse == UserResponse.notToday ||
+        userResponse == UserResponse.lessOften ||
+        userResponse == UserResponse.moreOften ||
+        userResponse == UserResponse.neverAgain) {
       setState(() {
         _recommendations.removeWhere((rec) => rec.recipe.id == recipeId);
       });
