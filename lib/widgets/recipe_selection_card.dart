@@ -49,83 +49,11 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
               Row(
                 children: [
                   Expanded(
-                    child: Row(
-                children: [
-                  Expanded(
                     child: Text(
-                            widget.recommendation.recipe.name,
-                            style: Theme.of(context).textTheme.titleMedium,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  if (widget.onFeedback != null) ...[
-                    const SizedBox(width: 8),
-                    PopupMenuButton<UserResponse>(
-                      icon: Icon(
-                        Icons.more_vert,
-                        size: 16,
-                        color: Colors.grey.shade600,
-                      ),
-                      iconSize: 16,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(
-                        minWidth: 32,
-                        minHeight: 32,
-                      ),
-                      onSelected: (UserResponse response) =>
-                          widget.onFeedback!(response),
-                      itemBuilder: (BuildContext context) => [
-                        PopupMenuItem<UserResponse>(
-                          value: UserResponse.moreOften,
-                          child: Row(
-                            children: [
-                              const Icon(Icons.favorite_outline,
-                                  size: 16, color: Colors.green),
-                              const SizedBox(width: 8),
-                              Text(AppLocalizations.of(context)!
-                                  .buttonMoreOften),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem<UserResponse>(
-                          value: UserResponse.lessOften,
-                          child: Row(
-                            children: [
-                              const Icon(Icons.thumb_down_outlined,
-                                  size: 16, color: Colors.orange),
-                              const SizedBox(width: 8),
-                              Text(AppLocalizations.of(context)!
-                                  .buttonLessOften),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuItem<UserResponse>(
-                          value: UserResponse.neverAgain,
-                          child: Row(
-                            children: [
-                              Icon(Icons.block, size: 16, color: Colors.red),
-                              SizedBox(width: 8),
-                              Text(
-                                  "Never Again"), // You may need to add this localization
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem<UserResponse>(
-                          value: UserResponse.notToday,
-                          child: Row(
-                            children: [
-                              const Icon(Icons.close,
-                                  size: 16, color: Colors.grey),
-                              const SizedBox(width: 8),
-                              Text(AppLocalizations.of(context)!.buttonSkip),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ],
+                      widget.recommendation.recipe.name,
+                      style: Theme.of(context).textTheme.titleMedium,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   if (widget.onFeedback != null) ...[

@@ -341,9 +341,9 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     return recommendations;
   }
 
-  Future<({List<RecipeRecommendation> recommendations, String historyId})> _getDetailedSlotRecommendations(
-      DateTime date, String mealType,
-      {int count = 5}) async {
+  Future<({List<RecipeRecommendation> recommendations, String historyId})>
+      _getDetailedSlotRecommendations(DateTime date, String mealType,
+          {int count = 5}) async {
     // Build context for recommendations
     final context = await _buildRecommendationContext(
       forDate: date,
@@ -382,11 +382,14 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       mealType: mealType,
     );
 
-    return (recommendations: recommendations.recommendations, historyId: historyId);
+    return (
+      recommendations: recommendations.recommendations,
+      historyId: historyId
+    );
   }
 
-  Future<({List<RecipeRecommendation> recommendations, String historyId})> _refreshDetailedRecommendations(
-      DateTime date, String mealType) async {
+  Future<({List<RecipeRecommendation> recommendations, String historyId})>
+      _refreshDetailedRecommendations(DateTime date, String mealType) async {
     // Clear the cache for this slot
     _invalidateRecommendationCache(date, mealType);
 
@@ -1383,8 +1386,8 @@ class _RecipeSelectionDialog extends StatefulWidget {
   final List<Recipe> recipes;
   final List<RecipeRecommendation> detailedRecommendations;
   final List<RecipeRecommendation> allScoredRecipes;
-  final Future<({List<RecipeRecommendation> recommendations, String historyId})> Function()?
-      onRefreshDetailedRecommendations;
+  final Future<({List<RecipeRecommendation> recommendations, String historyId})>
+      Function()? onRefreshDetailedRecommendations;
   final Recipe? initialPrimaryRecipe;
   final List<Recipe>? initialAdditionalRecipes;
 
@@ -1439,8 +1442,17 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
     _recommendations = List.from(widget.detailedRecommendations);
   }
 
-  Future<void> _handleFeedback(String recipeId, UserResponse userResponse) async {
-    // Only process feedback if we have a recommendation history ID
+  Future<void> _handleFeedback(
+      String recipeId, UserResponse userResponse) async {
+    // Handle "Not Today" feedback by removing the recipe from current session immediately
+    // This should happen regardless of database save success to ensure good UX
+    if (userResponse == UserResponse.notToday) {
+      setState(() {
+        _recommendations.removeWhere((rec) => rec.recipe.id == recipeId);
+      });
+    }
+
+    // Only process database feedback if we have a recommendation history ID
     if (_recommendationHistoryId == null) return;
 
     try {
@@ -1461,13 +1473,6 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
               backgroundColor: Colors.red,
             ),
           );
-        }
-      } else {
-        // Handle "Not Today" feedback by removing the recipe from current session
-        if (userResponse == UserResponse.notToday) {
-          setState(() {
-            _recommendations.removeWhere((rec) => rec.recipe.id == recipeId);
-          });
         }
       }
     } catch (e) {
@@ -1638,8 +1643,8 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
                               recommendation: recommendation,
                               onTap: () =>
                                   _handleRecipeSelection(recommendation.recipe),
-                              onFeedback: (userResponse) =>
-                                  _handleFeedback(recommendation.recipe.id, userResponse),
+                              onFeedback: (userResponse) => _handleFeedback(
+                                  recommendation.recipe.id, userResponse),
                             );
                           },
                         ),
