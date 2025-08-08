@@ -260,14 +260,9 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<List<Meal>> getRecentMeals({int limit = 10}) async {
-    final now = DateTime.now();
-    final cutoffDate =
-        now.subtract(const Duration(days: 30)); // Default to 30 days
-
-    // Get meals within date range and sort by cooked date (most recent first)
-    final sortedMeals = _meals.values
-        .where((meal) => meal.cookedAt.isAfter(cutoffDate))
-        .toList()
+    // For testing, return all meals sorted by cooked date (most recent first)
+    // The analysis service will do its own date filtering
+    final sortedMeals = _meals.values.toList()
       ..sort((a, b) => b.cookedAt.compareTo(a.cookedAt));
 
     // Take the most recent meals, up to the limit

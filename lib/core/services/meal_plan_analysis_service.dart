@@ -103,8 +103,8 @@ class MealPlanAnalysisService {
       final Set<String> recipeIds = {};
 
       for (final meal in recentMeals) {
-        // Only include meals within the day window
-        if (meal.cookedAt.isAfter(cutoffDate)) {
+        // Only include meals within the day window (inclusive of cutoff date)
+        if (meal.cookedAt.isAfter(cutoffDate) || meal.cookedAt.isAtSameMomentAs(cutoffDate)) {
           // Get recipes from junction table
           final mealRecipes = await _dbHelper.getMealRecipesForMeal(meal.id);
           for (final mealRecipe in mealRecipes) {
@@ -117,7 +117,6 @@ class MealPlanAnalysisService {
           }
         }
       }
-
       return recipeIds.toList();
     } catch (e) {
       throw GastrobrainException(
@@ -157,7 +156,7 @@ class MealPlanAnalysisService {
       final Map<DateTime, List<String>> recipesByDate = {};
 
       for (final meal in recentMeals) {
-        if (meal.cookedAt.isAfter(cutoffDate)) {
+        if (meal.cookedAt.isAfter(cutoffDate) || meal.cookedAt.isAtSameMomentAs(cutoffDate)) {
           final date = DateTime(
             meal.cookedAt.year,
             meal.cookedAt.month,
