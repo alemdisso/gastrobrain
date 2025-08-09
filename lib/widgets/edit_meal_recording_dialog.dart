@@ -5,18 +5,21 @@ import '../models/recipe.dart';
 import '../models/meal.dart';
 import '../database/database_helper.dart';
 import '../core/validators/entity_validator.dart';
+import '../core/di/service_provider.dart';
 import '../l10n/app_localizations.dart';
 
 class EditMealRecordingDialog extends StatefulWidget {
   final Meal meal;
   final Recipe primaryRecipe;
   final List<Recipe> additionalRecipes;
+  final DatabaseHelper? databaseHelper;
 
   const EditMealRecordingDialog({
     super.key,
     required this.meal,
     required this.primaryRecipe,
     this.additionalRecipes = const [],
+    this.databaseHelper,
   });
 
   @override
@@ -34,13 +37,16 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
   late DateTime _cookedAt;
 
   final List<Recipe> _additionalRecipes = [];
-  final DatabaseHelper _dbHelper = DatabaseHelper();
+  late final DatabaseHelper _dbHelper;
   List<Recipe> _availableRecipes = [];
   bool _isLoadingRecipes = false;
 
   @override
   void initState() {
     super.initState();
+
+    // Initialize database helper using dependency injection
+    _dbHelper = widget.databaseHelper ?? ServiceProvider.database.dbHelper;
 
     // Pre-populate fields with existing meal data
     _notesController.text = widget.meal.notes;

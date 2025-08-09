@@ -7,13 +7,18 @@ import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/meal.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import '../test_utils/test_app_wrapper.dart';
+import '../mocks/mock_database_helper.dart';
 
 void main() {
   late Recipe testRecipe;
   late Recipe sideRecipe;
   late Meal testMeal;
+  late MockDatabaseHelper mockDbHelper;
 
   setUp(() {
+    // Set up mock database
+    mockDbHelper = MockDatabaseHelper();
+    mockDbHelper.resetAllData();
     testRecipe = Recipe(
       id: 'test-recipe-1',
       name: 'Grilled Chicken',
@@ -45,6 +50,10 @@ void main() {
     );
   });
 
+  tearDown(() {
+    mockDbHelper.resetAllData();
+  });
+
   group('EditMealRecordingDialog Widget Tests', () {
     testWidgets('displays dialog with pre-populated data',
         (WidgetTester tester) async {
@@ -58,6 +67,7 @@ void main() {
                   builder: (context) => EditMealRecordingDialog(
                     meal: testMeal,
                     primaryRecipe: testRecipe,
+                    databaseHelper: mockDbHelper,
                   ),
                 );
               },
@@ -102,6 +112,7 @@ void main() {
                     meal: testMeal,
                     primaryRecipe: testRecipe,
                     additionalRecipes: [sideRecipe],
+                    databaseHelper: mockDbHelper,
                   ),
                 );
               },
@@ -139,6 +150,7 @@ void main() {
                   builder: (context) => EditMealRecordingDialog(
                     meal: testMeal,
                     primaryRecipe: testRecipe,
+                    databaseHelper: mockDbHelper,
                   ),
                 );
               },
@@ -173,6 +185,7 @@ void main() {
                   builder: (context) => EditMealRecordingDialog(
                     meal: testMeal,
                     primaryRecipe: testRecipe,
+                    databaseHelper: mockDbHelper,
                   ),
                 );
               },
@@ -264,6 +277,7 @@ void main() {
           body: EditMealRecordingDialog(
             meal: testMeal,
             primaryRecipe: primaryRecipe,
+            databaseHelper: mockDbHelper,
           ),
         )),
       );
@@ -325,6 +339,7 @@ void main() {
           body: EditMealRecordingDialog(
             meal: testMeal,
             primaryRecipe: primaryRecipe,
+            databaseHelper: mockDbHelper,
           ),
         )),
       );
@@ -381,6 +396,7 @@ void main() {
           body: EditMealRecordingDialog(
             meal: testMeal,
             primaryRecipe: primaryRecipe,
+            databaseHelper: mockDbHelper,
           ),
         )),
       );
