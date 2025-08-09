@@ -2,7 +2,6 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:gastrobrain/database/database_helper.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/meal.dart';
 import 'package:gastrobrain/models/meal_recipe.dart';
@@ -11,23 +10,22 @@ import 'package:gastrobrain/models/meal_plan_item.dart';
 import 'package:gastrobrain/models/meal_plan_item_recipe.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/utils/id_generator.dart';
-import 'package:gastrobrain/core/di/service_provider.dart';
+import 'package:gastrobrain/core/di/providers/database_provider.dart';
+import '../test/mocks/mock_database_helper.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   group('Edit Meal - Core Functionality', () {
-    late DatabaseHelper dbHelper;
+    late MockDatabaseHelper mockDbHelper;
     final testRecipeIds = <String>[];
     final testMealIds = <String>[];
     final testMealPlanIds = <String>[];
 
     setUpAll(() async {
-      // Set up database using ServiceProvider pattern
-      dbHelper = DatabaseHelper();
-      
-      // Inject the test database helper into ServiceProvider
-      ServiceProvider.database.setDatabaseHelper(dbHelper);
+      // Set up mock database using GitHub comment pattern
+      mockDbHelper = MockDatabaseHelper();
+      DatabaseProvider().setDatabaseHelper(mockDbHelper);
 
       // Create test recipes for our meal editing tests
       final recipes = [
@@ -65,7 +63,7 @@ void main() {
 
       // Insert all test recipes
       for (final recipe in recipes) {
-        await dbHelper.insertRecipe(recipe);
+        await mockDbHelper.insertRecipe(recipe);
         testRecipeIds.add(recipe.id);
       }
     });
@@ -75,7 +73,7 @@ void main() {
       // Clean up meals created in this test
       for (final mealId in testMealIds.toList()) {
         try {
-          await dbHelper.deleteMeal(mealId);
+          await mockDbHelper.deleteMeal(mealId);
           testMealIds.remove(mealId);
         } catch (e) {
           // Ignore cleanup errors
@@ -85,7 +83,7 @@ void main() {
       // Clean up meal plans created in this test
       for (final planId in testMealPlanIds.toList()) {
         try {
-          await dbHelper.deleteMealPlan(planId);
+          await mockDbHelper.deleteMealPlan(planId);
           testMealPlanIds.remove(planId);
         } catch (e) {
           // Ignore cleanup errors
@@ -97,7 +95,7 @@ void main() {
       // Clean up all test data
       for (final mealId in testMealIds) {
         try {
-          await dbHelper.deleteMeal(mealId);
+          await mockDbHelper.deleteMeal(mealId);
         } catch (e) {
           // Ignore cleanup errors
         }
@@ -105,7 +103,7 @@ void main() {
 
       for (final planId in testMealPlanIds) {
         try {
-          await dbHelper.deleteMealPlan(planId);
+          await mockDbHelper.deleteMealPlan(planId);
         } catch (e) {
           // Ignore cleanup errors
         }
@@ -113,7 +111,7 @@ void main() {
 
       for (final recipeId in testRecipeIds) {
         try {
-          await dbHelper.deleteRecipe(recipeId);
+          await mockDbHelper.deleteRecipe(recipeId);
         } catch (e) {
           // Ignore cleanup errors
         }
@@ -146,7 +144,7 @@ void main() {
         actualCookTime: 35.0,
       );
 
-      await dbHelper.insertMeal(originalMeal);
+      await mockDbHelper.insertMeal(originalMeal);
 
       // Add primary recipe association
       final primaryMealRecipe = MealRecipe(
@@ -155,16 +153,16 @@ void main() {
         isPrimaryDish: true,
         notes: 'Main dish',
       );
-      await dbHelper.insertMealRecipe(primaryMealRecipe);
+      await mockDbHelper.insertMealRecipe(primaryMealRecipe);
 
       // Verify initial state
-      final initialMeal = await dbHelper.getMeal(mealId);
+      final initialMeal = await mockDbHelper.getMeal(mealId);
       expect(initialMeal, isNotNull, reason: "Initial meal should exist");
       expect(initialMeal!.servings, 3, reason: "Initial servings should be 3");
       expect(initialMeal.notes, 'Original meal notes',
           reason: "Initial notes should match");
 
-      final initialMealRecipes = await dbHelper.getMealRecipesForMeal(mealId);
+      final initialMealRecipes = await mockDbHelper.getMealRecipesForMeal(mealId);
       expect(initialMealRecipes.length, 1,
           reason: "Initial meal should have 1 recipe");
 
@@ -175,7 +173,7 @@ void main() {
       final modifiedAt = DateTime.now();
 
       // Update meal properties
-      final db = await dbHelper.database;
+      final db = await mockDbHelper.database;
       await db.update(
         'meals',
         {
@@ -193,7 +191,7 @@ void main() {
       );
 
       // Verify the basic properties were updated
-      final updatedMeal = await dbHelper.getMeal(mealId);
+      final updatedMeal = await mockDbHelper.getMeal(mealId);
       expect(updatedMeal, isNotNull, reason: "Updated meal should exist");
       expect(updatedMeal!.servings, 4,
           reason: "Servings should be updated to 4");
@@ -210,7 +208,7 @@ void main() {
 
       // Verify meal recipes are unchanged so far
       final mealRecipesAfterBasicUpdate =
-          await dbHelper.getMealRecipesForMeal(mealId);
+          await mockDbHelper.getMealRecipesForMeal(mealId);
       expect(mealRecipesAfterBasicUpdate.length, 1,
           reason: "Should still have 1 recipe after basic update");
 
@@ -223,7 +221,7 @@ void main() {
         isPrimaryDish: false,
         notes: 'Side dish 1',
       );
-      await dbHelper.insertMealRecipe(sideDish1MealRecipe);
+      await mockDbHelper.insertMealRecipe(sideDish1MealRecipe);
 
       // Add second side dish
       final sideDish2MealRecipe = MealRecipe(
@@ -232,10 +230,10 @@ void main() {
         isPrimaryDish: false,
         notes: 'Side dish 2',
       );
-      await dbHelper.insertMealRecipe(sideDish2MealRecipe);
+      await mockDbHelper.insertMealRecipe(sideDish2MealRecipe);
 
       // Verify side dishes were added
-      final mealRecipesWithSides = await dbHelper.getMealRecipesForMeal(mealId);
+      final mealRecipesWithSides = await mockDbHelper.getMealRecipesForMeal(mealId);
       expect(mealRecipesWithSides.length, 3,
           reason: "Should have 3 recipes (1 primary + 2 sides)");
 
@@ -267,7 +265,7 @@ void main() {
 
       // Verify removal
       final mealRecipesAfterRemoval =
-          await dbHelper.getMealRecipesForMeal(mealId);
+          await mockDbHelper.getMealRecipesForMeal(mealId);
       expect(mealRecipesAfterRemoval.length, 2,
           reason: "Should have 2 recipes after removing one side dish");
 
@@ -287,23 +285,23 @@ void main() {
 
       // Check that recipe statistics include the edited meal
       final primaryRecipeMeals =
-          await dbHelper.getMealsForRecipe(primaryRecipeId);
+          await mockDbHelper.getMealsForRecipe(primaryRecipeId);
       expect(primaryRecipeMeals.length, 1,
           reason: "Primary recipe should appear in 1 meal");
       expect(primaryRecipeMeals[0].id, mealId,
           reason: "Primary recipe meal should be our edited meal");
 
-      final sideDish2Meals = await dbHelper.getMealsForRecipe(sideDish2Id);
+      final sideDish2Meals = await mockDbHelper.getMealsForRecipe(sideDish2Id);
       expect(sideDish2Meals.length, 1,
           reason: "Remaining side dish should appear in 1 meal");
 
-      final sideDish1Meals = await dbHelper.getMealsForRecipe(sideDish1Id);
+      final sideDish1Meals = await mockDbHelper.getMealsForRecipe(sideDish1Id);
       expect(sideDish1Meals.length, 0,
           reason: "Removed side dish should appear in 0 meals");
 
       // === PHASE 6: Verify updated meal can be retrieved correctly ===
 
-      final finalMeal = await dbHelper.getMeal(mealId);
+      final finalMeal = await mockDbHelper.getMeal(mealId);
       expect(finalMeal, isNotNull, reason: "Final meal should exist");
       expect(finalMeal!.servings, 4, reason: "Final servings should be 4");
       expect(finalMeal.notes, 'Updated meal notes',
@@ -314,7 +312,7 @@ void main() {
           reason: "Final meal should have modification timestamp");
 
       // Load associated recipes
-      finalMeal.mealRecipes = await dbHelper.getMealRecipesForMeal(mealId);
+      finalMeal.mealRecipes = await mockDbHelper.getMealRecipesForMeal(mealId);
       expect(finalMeal.mealRecipes!.length, 2,
           reason: "Final meal should have 2 associated recipes");
     });
@@ -341,7 +339,7 @@ void main() {
         modifiedAt: DateTime.now(),
       );
 
-      await dbHelper.insertMealPlan(mealPlan);
+      await mockDbHelper.insertMealPlan(mealPlan);
 
       // Create meal plan item
       final planItemId = IdGenerator.generateId();
@@ -353,7 +351,7 @@ void main() {
         hasBeenCooked: true, // Mark as cooked
       );
 
-      await dbHelper.insertMealPlanItem(planItem);
+      await mockDbHelper.insertMealPlanItem(planItem);
 
       // Add recipe association to plan item
       final planItemRecipe = MealPlanItemRecipe(
@@ -361,7 +359,7 @@ void main() {
         recipeId: primaryRecipeId,
         isPrimaryDish: true,
       );
-      await dbHelper.insertMealPlanItemRecipe(planItemRecipe);
+      await mockDbHelper.insertMealPlanItemRecipe(planItemRecipe);
 
       // === CREATE CORRESPONDING MEAL RECORD ===
 
@@ -380,7 +378,7 @@ void main() {
         actualCookTime: 30.0,
       );
 
-      await dbHelper.insertMeal(originalMeal);
+      await mockDbHelper.insertMeal(originalMeal);
 
       // Add meal recipe association
       final mealRecipe = MealRecipe(
@@ -389,12 +387,12 @@ void main() {
         isPrimaryDish: true,
         notes: 'From planned meal',
       );
-      await dbHelper.insertMealRecipe(mealRecipe);
+      await mockDbHelper.insertMealRecipe(mealRecipe);
 
       // === VERIFY INITIAL STATE ===
 
       // Verify meal plan exists and is marked as cooked
-      final retrievedPlan = await dbHelper.getMealPlanForWeek(weekStart);
+      final retrievedPlan = await mockDbHelper.getMealPlanForWeek(weekStart);
       expect(retrievedPlan, isNotNull, reason: "Meal plan should exist");
       expect(retrievedPlan!.items.length, 1,
           reason: "Should have 1 meal plan item");
@@ -402,7 +400,7 @@ void main() {
           reason: "Meal plan item should be marked as cooked");
 
       // Verify meal exists
-      final retrievedMeal = await dbHelper.getMeal(mealId);
+      final retrievedMeal = await mockDbHelper.getMeal(mealId);
       expect(retrievedMeal, isNotNull, reason: "Meal should exist");
       expect(retrievedMeal!.servings, 2,
           reason: "Initial servings should be 2");
@@ -411,7 +409,7 @@ void main() {
 
       // Simulate editing the meal (what EditMealRecordingDialog would do)
       final modifiedAt = DateTime.now();
-      final db = await dbHelper.database;
+      final db = await mockDbHelper.database;
 
       await db.update(
         'meals',
@@ -429,7 +427,7 @@ void main() {
       // === VERIFY EDIT RESULTS ===
 
       // Verify meal was updated
-      final editedMeal = await dbHelper.getMeal(mealId);
+      final editedMeal = await mockDbHelper.getMeal(mealId);
       expect(editedMeal, isNotNull, reason: "Edited meal should exist");
       expect(editedMeal!.servings, 4,
           reason: "Servings should be updated to 4");
@@ -443,7 +441,7 @@ void main() {
           reason: "Modified timestamp should be set");
 
       // Verify meal plan is still intact
-      final planAfterEdit = await dbHelper.getMealPlanForWeek(weekStart);
+      final planAfterEdit = await mockDbHelper.getMealPlanForWeek(weekStart);
       expect(planAfterEdit, isNotNull, reason: "Meal plan should still exist");
       expect(planAfterEdit!.items.length, 1,
           reason: "Meal plan should still have 1 item");
@@ -451,7 +449,7 @@ void main() {
           reason: "Meal plan item should still be marked as cooked");
 
       // Verify recipe statistics are correct
-      final recipeMeals = await dbHelper.getMealsForRecipe(primaryRecipeId);
+      final recipeMeals = await mockDbHelper.getMealsForRecipe(primaryRecipeId);
 
       expect(recipeMeals.length, 1,
           reason: "Recipe should appear in 1 meal (the edited one)");
@@ -485,7 +483,7 @@ void main() {
         // modifiedAt is null initially
       );
 
-      await dbHelper.insertMeal(originalMeal);
+      await mockDbHelper.insertMeal(originalMeal);
 
       // Add recipe association
       final mealRecipe = MealRecipe(
@@ -493,11 +491,11 @@ void main() {
         recipeId: primaryRecipeId,
         isPrimaryDish: true,
       );
-      await dbHelper.insertMealRecipe(mealRecipe);
+      await mockDbHelper.insertMealRecipe(mealRecipe);
 
       // === VERIFY INITIAL STATE (NO MODIFIED TIMESTAMP) ===
 
-      final initialMeal = await dbHelper.getMeal(mealId);
+      final initialMeal = await mockDbHelper.getMeal(mealId);
       expect(initialMeal, isNotNull, reason: "Initial meal should exist");
       expect(initialMeal!.modifiedAt, isNull,
           reason: "Initial meal should have null modifiedAt");
@@ -505,7 +503,7 @@ void main() {
       // === EDIT MEAL AND ADD MODIFIED TIMESTAMP ===
 
       final modifiedAt = DateTime.now();
-      final db = await dbHelper.database;
+      final db = await mockDbHelper.database;
 
       await db.update(
         'meals',
@@ -521,7 +519,7 @@ void main() {
 
       // === VERIFY MODIFIED TIMESTAMP ===
 
-      final editedMeal = await dbHelper.getMeal(mealId);
+      final editedMeal = await mockDbHelper.getMeal(mealId);
       expect(editedMeal, isNotNull, reason: "Edited meal should exist");
       expect(editedMeal!.modifiedAt, isNotNull,
           reason: "Edited meal should have modifiedAt timestamp");
@@ -552,7 +550,7 @@ void main() {
       );
 
       // Verify second edit
-      final secondEditedMeal = await dbHelper.getMeal(mealId);
+      final secondEditedMeal = await mockDbHelper.getMeal(mealId);
       expect(secondEditedMeal, isNotNull,
           reason: "Second edited meal should exist");
       expect(secondEditedMeal!.servings, 4,

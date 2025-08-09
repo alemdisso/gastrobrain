@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:gastrobrain/database/database_helper.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/meal.dart';
 import 'package:gastrobrain/models/meal_recipe.dart';
@@ -10,21 +9,21 @@ import 'package:gastrobrain/models/meal_plan_item_recipe.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/utils/id_generator.dart';
 import 'package:gastrobrain/core/di/service_provider.dart';
+import 'package:gastrobrain/core/di/providers/database_provider.dart';
+import '../test/mocks/mock_database_helper.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   group('Meal Planning - Core Functionality', () {
-    late DatabaseHelper dbHelper;
+    late MockDatabaseHelper mockDbHelper;
     final testRecipeId = IdGenerator.generateId();
     final testRecipe2Id = IdGenerator.generateId();
 
     setUpAll(() async {
-      // Set up database using ServiceProvider pattern
-      dbHelper = DatabaseHelper();
-        
-      // Inject the test database helper into ServiceProvider
-      ServiceProvider.database.setDatabaseHelper(dbHelper);
+      // Set up mock database using GitHub comment pattern
+      mockDbHelper = MockDatabaseHelper();
+      DatabaseProvider().setDatabaseHelper(mockDbHelper);
 
       // Create test recipes
       final recipe1 = Recipe(
@@ -45,15 +44,15 @@ void main() {
         cookTimeMinutes: 20,
       );
 
-      await dbHelper.insertRecipe(recipe1);
-      await dbHelper.insertRecipe(recipe2);
+      await mockDbHelper.insertRecipe(recipe1);
+      await mockDbHelper.insertRecipe(recipe2);
     });
 
     tearDownAll(() async {
       // Clean up
       try {
-        await dbHelper.deleteRecipe(testRecipeId);
-        await dbHelper.deleteRecipe(testRecipe2Id);
+        await mockDbHelper.deleteRecipe(testRecipeId);
+        await mockDbHelper.deleteRecipe(testRecipe2Id);
       } catch (e) {
         // Ignore errors during cleanup
       }
@@ -72,9 +71,9 @@ void main() {
       );
 
       // 1. First get any existing meal plan and clean it up if needed
-      final existingPlan = await dbHelper.getMealPlanForWeek(weekStart);
+      final existingPlan = await mockDbHelper.getMealPlanForWeek(weekStart);
       if (existingPlan != null) {
-        await dbHelper.deleteMealPlan(existingPlan.id);
+        await mockDbHelper.deleteMealPlan(existingPlan.id);
       }
 
       // 2. Create meal plan with a fresh ID
@@ -86,10 +85,10 @@ void main() {
         createdAt: DateTime.now(),
         modifiedAt: DateTime.now(),
       );
-      await dbHelper.insertMealPlan(mealPlan);
+      await mockDbHelper.insertMealPlan(mealPlan);
 
       // Verify the plan was created
-      final createdPlan = await dbHelper.getMealPlan(mealPlanId);
+      final createdPlan = await mockDbHelper.getMealPlan(mealPlanId);
       expect(createdPlan, isNotNull);
       expect(createdPlan!.items.length, 0);
 
@@ -102,10 +101,10 @@ void main() {
         plannedDate: MealPlanItem.formatPlannedDate(weekStart),
         mealType: MealPlanItem.lunch,
       );
-      await dbHelper.insertMealPlanItem(fridayLunch);
+      await mockDbHelper.insertMealPlanItem(fridayLunch);
 
       // Verify first item was added
-      final planWithLunch = await dbHelper.getMealPlan(mealPlanId);
+      final planWithLunch = await mockDbHelper.getMealPlan(mealPlanId);
       expect(planWithLunch!.items.length, 1);
 
       // Friday dinner
@@ -116,27 +115,27 @@ void main() {
         plannedDate: MealPlanItem.formatPlannedDate(weekStart),
         mealType: MealPlanItem.dinner,
       );
-      await dbHelper.insertMealPlanItem(fridayDinner);
+      await mockDbHelper.insertMealPlanItem(fridayDinner);
 
       // Verify second item was added
-      final planWithBothMeals = await dbHelper.getMealPlan(mealPlanId);
+      final planWithBothMeals = await mockDbHelper.getMealPlan(mealPlanId);
       expect(planWithBothMeals!.items.length, 2);
 
       // Add recipe associations
-      await dbHelper.insertMealPlanItemRecipe(MealPlanItemRecipe(
+      await mockDbHelper.insertMealPlanItemRecipe(MealPlanItemRecipe(
         mealPlanItemId: fridayLunchId,
         recipeId: testRecipeId,
         isPrimaryDish: true,
       ));
 
-      await dbHelper.insertMealPlanItemRecipe(MealPlanItemRecipe(
+      await mockDbHelper.insertMealPlanItemRecipe(MealPlanItemRecipe(
         mealPlanItemId: fridayDinnerId,
         recipeId: testRecipe2Id,
         isPrimaryDish: true,
       ));
 
       // 4. Final verification for all the data
-      final savedPlan = await dbHelper.getMealPlanForWeek(weekStart);
+      final savedPlan = await mockDbHelper.getMealPlanForWeek(weekStart);
       expect(savedPlan, isNotNull,
           reason: "No meal plan found for the current week");
       expect(savedPlan!.items.length, 2,
@@ -153,16 +152,16 @@ void main() {
       expect(dinnerItems.length, 1);
 
       // 4. Update plan by removing the dinner item
-      await dbHelper.deleteMealPlanItem(fridayDinnerId);
+      await mockDbHelper.deleteMealPlanItem(fridayDinnerId);
 
       // 5. Verify update worked
-      final updatedPlan = await dbHelper.getMealPlanForWeek(weekStart);
+      final updatedPlan = await mockDbHelper.getMealPlanForWeek(weekStart);
       expect(updatedPlan, isNotNull);
       expect(updatedPlan!.items.length, 1);
       expect(updatedPlan.items[0].mealType, MealPlanItem.lunch);
 
       // 6. Clean up
-      await dbHelper.deleteMealPlan(mealPlanId);
+      await mockDbHelper.deleteMealPlan(mealPlanId);
     });
 
     testWidgets('Can add side dishes to an already cooked meal (Issue #104)',
@@ -204,9 +203,9 @@ void main() {
       );
 
       // Insert all recipes into database
-      await dbHelper.insertRecipe(primaryRecipe);
-      await dbHelper.insertRecipe(sideDish1);
-      await dbHelper.insertRecipe(sideDish2);
+      await mockDbHelper.insertRecipe(primaryRecipe);
+      await mockDbHelper.insertRecipe(sideDish1);
+      await mockDbHelper.insertRecipe(sideDish2);
 
       // === PHASE 1: Create and cook initial meal ===
 
@@ -225,7 +224,7 @@ void main() {
       );
 
       // Insert the meal
-      await dbHelper.insertMeal(originalMeal);
+      await mockDbHelper.insertMeal(originalMeal);
 
       // Create junction record for primary recipe
       final primaryMealRecipe = MealRecipe(
@@ -234,15 +233,15 @@ void main() {
         isPrimaryDish: true,
         notes: 'Main dish',
       );
-      await dbHelper.insertMealRecipe(primaryMealRecipe);
+      await mockDbHelper.insertMealRecipe(primaryMealRecipe);
 
       // === VERIFICATION PHASE 1: Initial state ===
 
       // Verify initial meal has only one recipe
-      final initialMeal = await dbHelper.getMeal(mealId);
+      final initialMeal = await mockDbHelper.getMeal(mealId);
       expect(initialMeal, isNotNull, reason: "Initial meal should exist");
 
-      final initialMealRecipes = await dbHelper.getMealRecipesForMeal(mealId);
+      final initialMealRecipes = await mockDbHelper.getMealRecipesForMeal(mealId);
       expect(initialMealRecipes.length, 1,
           reason: "Initial meal should have 1 recipe");
       expect(initialMealRecipes[0].recipeId, primaryRecipeId,
@@ -254,7 +253,7 @@ void main() {
 
       // Simulate adding a side dish using the database operations
       // (This simulates what would happen when user uses "Manage Side Dishes")
-      final sideDish1MealRecipeId = await dbHelper
+      final sideDish1MealRecipeId = await mockDbHelper
           .addRecipeToMeal(mealId, sideDish1Id, isPrimaryDish: false);
 
       expect(sideDish1MealRecipeId.isNotEmpty, true,
@@ -263,10 +262,10 @@ void main() {
       // === VERIFICATION PHASE 2: After adding first side dish ===
 
       // Verify meal now has two recipes
-      final mealWith1SideDish = await dbHelper.getMeal(mealId);
+      final mealWith1SideDish = await mockDbHelper.getMeal(mealId);
       expect(mealWith1SideDish, isNotNull, reason: "Meal should still exist");
 
-      final mealRecipesAfter1 = await dbHelper.getMealRecipesForMeal(mealId);
+      final mealRecipesAfter1 = await mockDbHelper.getMealRecipesForMeal(mealId);
       expect(mealRecipesAfter1.length, 2,
           reason: "Meal should now have 2 recipes (primary + 1 side)");
 
@@ -287,7 +286,7 @@ void main() {
 
       // === PHASE 3: Add second side dish ===
 
-      final sideDish2MealRecipeId = await dbHelper
+      final sideDish2MealRecipeId = await mockDbHelper
           .addRecipeToMeal(mealId, sideDish2Id, isPrimaryDish: false);
 
       expect(sideDish2MealRecipeId.isNotEmpty, true,
@@ -295,10 +294,10 @@ void main() {
 
       // === VERIFICATION PHASE 3: After adding second side dish ===
 
-      final mealWith2SideDishes = await dbHelper.getMeal(mealId);
+      final mealWith2SideDishes = await mockDbHelper.getMeal(mealId);
       expect(mealWith2SideDishes, isNotNull, reason: "Meal should still exist");
 
-      final mealRecipesAfter2 = await dbHelper.getMealRecipesForMeal(mealId);
+      final mealRecipesAfter2 = await mockDbHelper.getMealRecipesForMeal(mealId);
       expect(mealRecipesAfter2.length, 3,
           reason: "Meal should now have 3 recipes (primary + 2 sides)");
 
@@ -326,16 +325,16 @@ void main() {
 
       // Test removing a side dish (simulating removal via "Manage Side Dishes")
       final removeResult =
-          await dbHelper.removeRecipeFromMeal(mealId, sideDish1Id);
+          await mockDbHelper.removeRecipeFromMeal(mealId, sideDish1Id);
       expect(removeResult, true, reason: "Removing side dish should succeed");
 
       // === VERIFICATION PHASE 4: After removing side dish ===
 
-      final mealAfterRemoval = await dbHelper.getMeal(mealId);
+      final mealAfterRemoval = await mockDbHelper.getMeal(mealId);
       expect(mealAfterRemoval, isNotNull, reason: "Meal should still exist");
 
       final mealRecipesAfterRemoval =
-          await dbHelper.getMealRecipesForMeal(mealId);
+          await mockDbHelper.getMealRecipesForMeal(mealId);
       expect(mealRecipesAfterRemoval.length, 2,
           reason: "Meal should now have 2 recipes (primary + 1 side)");
 
@@ -362,26 +361,26 @@ void main() {
 
       // Check meals for each recipe
       final primaryRecipeMeals =
-          await dbHelper.getMealsForRecipe(primaryRecipeId);
+          await mockDbHelper.getMealsForRecipe(primaryRecipeId);
       expect(primaryRecipeMeals.length, 1,
           reason: "Primary recipe should appear in 1 meal");
       expect(primaryRecipeMeals[0].id, mealId,
           reason: "Primary recipe meal should be our test meal");
 
-      final sideDish2Meals = await dbHelper.getMealsForRecipe(sideDish2Id);
+      final sideDish2Meals = await mockDbHelper.getMealsForRecipe(sideDish2Id);
       expect(sideDish2Meals.length, 1,
           reason: "Remaining side dish should appear in 1 meal");
       expect(sideDish2Meals[0].id, mealId,
           reason: "Side dish meal should be our test meal");
 
-      final sideDish1Meals = await dbHelper.getMealsForRecipe(sideDish1Id);
+      final sideDish1Meals = await mockDbHelper.getMealsForRecipe(sideDish1Id);
       expect(sideDish1Meals.length, 0,
           reason: "Removed side dish should appear in 0 meals");
 
       // === PHASE 6: Test edge cases ===
 
       // Test adding the same recipe twice (should not create duplicate)
-      final duplicateResult = await dbHelper
+      final duplicateResult = await mockDbHelper
           .addRecipeToMeal(mealId, sideDish2Id, isPrimaryDish: false);
 
       // The method should handle this gracefully - either return existing ID or prevent duplicate
@@ -389,23 +388,23 @@ void main() {
           reason: "Adding duplicate should return a result (existing or new)");
 
       // Verify we still have only 2 recipes total
-      final finalMealRecipes = await dbHelper.getMealRecipesForMeal(mealId);
+      final finalMealRecipes = await mockDbHelper.getMealRecipesForMeal(mealId);
       expect(finalMealRecipes.length, 2,
           reason: "Should still have only 2 recipes after duplicate attempt");
 
       // Test removing non-existent recipe
       final removeNonExistentResult =
-          await dbHelper.removeRecipeFromMeal(mealId, sideDish1Id);
+          await mockDbHelper.removeRecipeFromMeal(mealId, sideDish1Id);
       expect(removeNonExistentResult, false,
           reason: "Removing non-existent recipe should return false");
 
       // === CLEANUP ===
 
       // Clean up test data
-      await dbHelper.deleteMeal(mealId);
-      await dbHelper.deleteRecipe(primaryRecipeId);
-      await dbHelper.deleteRecipe(sideDish1Id);
-      await dbHelper.deleteRecipe(sideDish2Id);
+      await mockDbHelper.deleteMeal(mealId);
+      await mockDbHelper.deleteRecipe(primaryRecipeId);
+      await mockDbHelper.deleteRecipe(sideDish1Id);
+      await mockDbHelper.deleteRecipe(sideDish2Id);
     });
   });
 }
