@@ -7,6 +7,7 @@ import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/meal.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import '../test_utils/test_app_wrapper.dart';
+import '../test_utils/test_setup.dart';
 import '../mocks/mock_database_helper.dart';
 
 void main() {
@@ -16,9 +17,8 @@ void main() {
   late MockDatabaseHelper mockDbHelper;
 
   setUp(() {
-    // Set up mock database
-    mockDbHelper = MockDatabaseHelper();
-    mockDbHelper.resetAllData();
+    // Set up mock database using TestSetup utility
+    mockDbHelper = TestSetup.setupMockDatabase();
     testRecipe = Recipe(
       id: 'test-recipe-1',
       name: 'Grilled Chicken',
@@ -51,7 +51,7 @@ void main() {
   });
 
   tearDown(() {
-    mockDbHelper.resetAllData();
+    TestSetup.cleanupMockDatabase(mockDbHelper);
   });
 
   group('EditMealRecordingDialog Widget Tests', () {

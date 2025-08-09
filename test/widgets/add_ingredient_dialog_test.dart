@@ -5,11 +5,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/widgets/add_ingredient_dialog.dart';
-import 'package:gastrobrain/core/di/providers/database_provider.dart';
 import 'package:gastrobrain/models/ingredient.dart';
 import 'package:gastrobrain/models/recipe_ingredient.dart';
 import '../mocks/mock_database_helper.dart';
 import '../test_utils/test_app_wrapper.dart';
+import '../test_utils/test_setup.dart';
 
 // Simple test to verify the dialog appears
 void main() {
@@ -66,11 +66,8 @@ void main() {
     late Recipe testRecipe;
 
     setUp(() {
-      // Create a fresh mock database for each test
-      mockDbHelper = MockDatabaseHelper();
-
-      // Inject the mock database into the provider
-      DatabaseProvider().setDatabaseHelper(mockDbHelper);
+      // Set up mock database using TestSetup utility
+      mockDbHelper = TestSetup.setupMockDatabase();
 
       // Set up a test recipe
       testRecipe = Recipe(
@@ -98,8 +95,7 @@ void main() {
     });
 
     tearDown(() {
-      // Reset the mock database after each test
-      mockDbHelper.resetAllData();
+      TestSetup.cleanupMockDatabase(mockDbHelper);
     });
 
     // Add the DI-specific test cases here

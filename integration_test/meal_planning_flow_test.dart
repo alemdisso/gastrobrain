@@ -8,8 +8,7 @@ import 'package:gastrobrain/models/meal_plan_item.dart';
 import 'package:gastrobrain/models/meal_plan_item_recipe.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/utils/id_generator.dart';
-import 'package:gastrobrain/core/di/service_provider.dart';
-import 'package:gastrobrain/core/di/providers/database_provider.dart';
+import '../test/test_utils/test_setup.dart';
 import '../test/mocks/mock_database_helper.dart';
 
 void main() {
@@ -21,9 +20,8 @@ void main() {
     final testRecipe2Id = IdGenerator.generateId();
 
     setUpAll(() async {
-      // Set up mock database using GitHub comment pattern
-      mockDbHelper = MockDatabaseHelper();
-      DatabaseProvider().setDatabaseHelper(mockDbHelper);
+      // Set up mock database using TestSetup utility
+      mockDbHelper = TestSetup.setupMockDatabase();
 
       // Create test recipes
       final recipe1 = Recipe(
@@ -49,13 +47,8 @@ void main() {
     });
 
     tearDownAll(() async {
-      // Clean up
-      try {
-        await mockDbHelper.deleteRecipe(testRecipeId);
-        await mockDbHelper.deleteRecipe(testRecipe2Id);
-      } catch (e) {
-        // Ignore errors during cleanup
-      }
+      // Clean up using TestSetup utility
+      TestSetup.cleanupMockDatabase(mockDbHelper);
     });
 
     testWidgets('Test database operations for meal plans',

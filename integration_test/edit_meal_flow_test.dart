@@ -10,8 +10,8 @@ import 'package:gastrobrain/models/meal_plan_item.dart';
 import 'package:gastrobrain/models/meal_plan_item_recipe.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/utils/id_generator.dart';
-import 'package:gastrobrain/core/di/providers/database_provider.dart';
 import '../test/mocks/mock_database_helper.dart';
+import '../test/test_utils/test_setup.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -23,9 +23,8 @@ void main() {
     final testMealPlanIds = <String>[];
 
     setUpAll(() async {
-      // Set up mock database using GitHub comment pattern
-      mockDbHelper = MockDatabaseHelper();
-      DatabaseProvider().setDatabaseHelper(mockDbHelper);
+      // Set up mock database using TestSetup utility
+      mockDbHelper = TestSetup.setupMockDatabase();
 
       // Create test recipes for our meal editing tests
       final recipes = [
@@ -92,30 +91,8 @@ void main() {
     });
 
     tearDownAll(() async {
-      // Clean up all test data
-      for (final mealId in testMealIds) {
-        try {
-          await mockDbHelper.deleteMeal(mealId);
-        } catch (e) {
-          // Ignore cleanup errors
-        }
-      }
-
-      for (final planId in testMealPlanIds) {
-        try {
-          await mockDbHelper.deleteMealPlan(planId);
-        } catch (e) {
-          // Ignore cleanup errors
-        }
-      }
-
-      for (final recipeId in testRecipeIds) {
-        try {
-          await mockDbHelper.deleteRecipe(recipeId);
-        } catch (e) {
-          // Ignore cleanup errors
-        }
-      }
+      // Clean up using TestSetup utility
+      TestSetup.cleanupMockDatabase(mockDbHelper);
     });
 
     testWidgets('Database operations for editing cooked meals',

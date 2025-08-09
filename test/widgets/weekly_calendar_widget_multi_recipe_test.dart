@@ -11,6 +11,7 @@ import 'package:gastrobrain/models/time_context.dart';
 import 'package:gastrobrain/widgets/weekly_calendar_widget.dart';
 import '../mocks/mock_database_helper.dart';
 import '../test_utils/test_app_wrapper.dart';
+import '../test_utils/test_setup.dart';
 
 void main() {
   late DateTime testWeekStart;
@@ -20,7 +21,7 @@ void main() {
   late Recipe sideRecipe2;
 
   setUp(() async {
-    mockDbHelper = MockDatabaseHelper();
+    mockDbHelper = TestSetup.setupMockDatabase();
     testWeekStart = DateTime(2024, 3, 1); // Friday
 
     // Create test recipes
@@ -52,7 +53,7 @@ void main() {
   });
 
   tearDown(() {
-    mockDbHelper.resetAllData();
+    TestSetup.cleanupMockDatabase(mockDbHelper);
   });
 
   group('WeeklyCalendarWidget Multi-Recipe Tests', () {

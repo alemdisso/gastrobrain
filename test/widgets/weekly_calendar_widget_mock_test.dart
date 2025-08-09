@@ -10,8 +10,9 @@ import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/models/time_context.dart';
 import 'package:gastrobrain/widgets/weekly_calendar_widget.dart';
 
-// Import our MockDatabaseHelper
+// Import our MockDatabaseHelper and TestSetup utility
 import '../mocks/mock_database_helper.dart';
+import '../test_utils/test_setup.dart';
 
 // Import test utilities for localization
 import '../test_utils/test_app_wrapper.dart';
@@ -22,8 +23,8 @@ void main() {
   late MockDatabaseHelper mockDbHelper;
 
   setUp(() {
-    // Initialize our mock database
-    mockDbHelper = MockDatabaseHelper();
+    // Set up mock database using TestSetup utility
+    mockDbHelper = TestSetup.setupMockDatabase();
 
     // Set up a Friday as the week start date
     testWeekStart = DateTime(2024, 3, 1); // March 1, 2024 is a Friday
@@ -117,8 +118,7 @@ void main() {
   });
 
   tearDown(() {
-    // Clean up after each test
-    mockDbHelper.resetAllData();
+    TestSetup.cleanupMockDatabase(mockDbHelper);
   });
 
 // LOCATE: test/widgets/weekly_calendar_widget_mock_test.dart
