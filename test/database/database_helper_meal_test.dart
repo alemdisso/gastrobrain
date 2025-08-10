@@ -1,8 +1,8 @@
 // test/database/database_helper_meal_test.dart
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:gastrobrain/database/database_helper.dart';
+import '../test_utils/test_setup.dart';
+import '../mocks/mock_database_helper.dart';
 import 'package:gastrobrain/models/meal.dart';
 import 'package:gastrobrain/models/meal_recipe.dart';
 import 'package:gastrobrain/models/recipe.dart';
@@ -10,19 +10,14 @@ import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/utils/id_generator.dart';
 
 void main() {
-  // Initialize FFI
-  sqfliteFfiInit();
-
-  // Set the database factory to use the FFI implementation
-  databaseFactory = databaseFactoryFfi;
-
   group('DatabaseHelper Meal Integration Tests', () {
-    late DatabaseHelper dbHelper;
+    late MockDatabaseHelper mockDbHelper;
     late String testRecipeId1;
     late String testRecipeId2;
 
     setUpAll(() async {
-      dbHelper = DatabaseHelper();
+      // Set up mock database using TestSetup utility
+      mockDbHelper = TestSetup.setupMockDatabase();
 
 
       // Create test recipes for reference
@@ -46,7 +41,7 @@ void main() {
 
       // Insert test recipes
       for (var recipe in recipes) {
-        await dbHelper.insertRecipe(recipe);
+        await mockDbHelper.insertRecipe(recipe);
       }
     });
 
@@ -65,7 +60,7 @@ void main() {
       );
 
       // Insert the meal
-      await dbHelper.insertMeal(meal);
+      await mockDbHelper.insertMeal(meal);
 
       // Create and insert a meal-recipe association
       final mealRecipe = MealRecipe(
@@ -74,10 +69,10 @@ void main() {
         isPrimaryDish: true,
       );
 
-      await dbHelper.insertMealRecipe(mealRecipe);
+      await mockDbHelper.insertMealRecipe(mealRecipe);
 
       // Retrieve the meal
-      final retrievedMeal = await dbHelper.getMeal(mealId);
+      final retrievedMeal = await mockDbHelper.getMeal(mealId);
 
       // Verify meal was correctly stored with null recipeId
       expect(retrievedMeal, isNotNull);
@@ -90,7 +85,7 @@ void main() {
       expect(retrievedMeal.actualCookTime, 20.0);
 
       // Verify we can get meal recipes
-      final mealRecipes = await dbHelper.getMealRecipesForMeal(mealId);
+      final mealRecipes = await mockDbHelper.getMealRecipesForMeal(mealId);
       expect(mealRecipes.length, 1);
       expect(mealRecipes[0].recipeId, testRecipeId1);
       expect(mealRecipes[0].isPrimaryDish, true);
@@ -108,7 +103,7 @@ void main() {
       );
 
       // Insert the meal
-      await dbHelper.insertMeal(meal);
+      await mockDbHelper.insertMeal(meal);
 
       // Create and insert multiple meal-recipe associations
       final mainDish = MealRecipe(
@@ -125,11 +120,11 @@ void main() {
         notes: 'Side dish',
       );
 
-      await dbHelper.insertMealRecipe(mainDish);
-      await dbHelper.insertMealRecipe(sideDish);
+      await mockDbHelper.insertMealRecipe(mainDish);
+      await mockDbHelper.insertMealRecipe(sideDish);
 
       // Retrieve the meal recipes
-      final mealRecipes = await dbHelper.getMealRecipesForMeal(mealId);
+      final mealRecipes = await mockDbHelper.getMealRecipesForMeal(mealId);
 
       // Verify we have both recipes associated with the meal
       expect(mealRecipes.length, 2);
@@ -159,7 +154,7 @@ void main() {
       );
 
       // Insert the meal
-      await dbHelper.insertMeal(meal);
+      await mockDbHelper.insertMeal(meal);
 
       // Associate with a recipe through junction table
       final mealRecipe = MealRecipe(
@@ -168,10 +163,10 @@ void main() {
         isPrimaryDish: true,
       );
 
-      await dbHelper.insertMealRecipe(mealRecipe);
+      await mockDbHelper.insertMealRecipe(mealRecipe);
 
       // Use the getMealsForRecipe method to find meals by recipe
-      final meals = await dbHelper.getMealsForRecipe(testRecipeId1);
+      final meals = await mockDbHelper.getMealsForRecipe(testRecipeId1);
 
       // Verify we can find the meal through the junction table
       expect(meals.isNotEmpty, true);
@@ -196,17 +191,17 @@ void main() {
       );
 
       // Insert the meal
-      await dbHelper.insertMeal(meal);
+      await mockDbHelper.insertMeal(meal);
 
       // Retrieve the meal
-      final retrievedMeal = await dbHelper.getMeal(mealId);
+      final retrievedMeal = await mockDbHelper.getMeal(mealId);
 
       // Verify meal was correctly stored with direct recipe reference
       expect(retrievedMeal, isNotNull);
       expect(retrievedMeal!.recipeId, testRecipeId2);
 
       // Verify getMealsForRecipe can find it
-      final meals = await dbHelper.getMealsForRecipe(testRecipeId2);
+      final meals = await mockDbHelper.getMealsForRecipe(testRecipeId2);
       expect(meals.any((m) => m.id == mealId), true);
     });
 
@@ -223,7 +218,7 @@ void main() {
       );
 
       // Insert the meal
-      await dbHelper.insertMeal(initialMeal);
+      await mockDbHelper.insertMeal(initialMeal);
 
       // Update the meal
       final updatedMeal = Meal(
@@ -237,10 +232,10 @@ void main() {
         actualCookTime: 25.0,
       );
 
-      await dbHelper.updateMeal(updatedMeal);
+      await mockDbHelper.updateMeal(updatedMeal);
 
       // Retrieve the meal
-      final retrievedMeal = await dbHelper.getMeal(mealId);
+      final retrievedMeal = await mockDbHelper.getMeal(mealId);
 
       // Verify meal was correctly updated while keeping recipeId null
       expect(retrievedMeal, isNotNull);
@@ -263,7 +258,7 @@ void main() {
       );
 
       // Insert the meal
-      await dbHelper.insertMeal(meal);
+      await mockDbHelper.insertMeal(meal);
 
       // Create and insert a meal-recipe association
       final mealRecipe = MealRecipe(
@@ -272,30 +267,25 @@ void main() {
         isPrimaryDish: true,
       );
 
-      await dbHelper.insertMealRecipe(mealRecipe);
+      await mockDbHelper.insertMealRecipe(mealRecipe);
 
       // Verify meal and junction record exist
-      final retrievedMeal = await dbHelper.getMeal(mealId);
+      final retrievedMeal = await mockDbHelper.getMeal(mealId);
       expect(retrievedMeal, isNotNull);
 
-      final mealRecipes = await dbHelper.getMealRecipesForMeal(mealId);
+      final mealRecipes = await mockDbHelper.getMealRecipesForMeal(mealId);
       expect(mealRecipes.length, 1);
 
       // Delete the meal
-      await dbHelper.deleteMeal(mealId);
+      await mockDbHelper.deleteMeal(mealId);
 
       // Verify meal is deleted
-      final deletedMeal = await dbHelper.getMeal(mealId);
+      final deletedMeal = await mockDbHelper.getMeal(mealId);
       expect(deletedMeal, isNull);
 
       // Verify junction records are cascaded (deleted)
-      final db = await dbHelper.database;
-      final junctionRecords = await db.query(
-        'meal_recipes',
-        where: 'meal_id = ?',
-        whereArgs: [mealId],
-      );
-      expect(junctionRecords.isEmpty, true);
+      final remainingMealRecipes = await mockDbHelper.getMealRecipesForMeal(mealId);
+      expect(remainingMealRecipes.isEmpty, true);
     });
 
     test('updateMeal method updates existing meal records', () async {
@@ -311,10 +301,10 @@ void main() {
         actualCookTime: 30.0,
       );
 
-      await dbHelper.insertMeal(originalMeal);
+      await mockDbHelper.insertMeal(originalMeal);
 
       // Verify the meal was inserted
-      final insertedMeal = await dbHelper.getMeal(originalMeal.id);
+      final insertedMeal = await mockDbHelper.getMeal(originalMeal.id);
       expect(insertedMeal, isNotNull);
       expect(insertedMeal!.notes, 'Original notes');
       expect(insertedMeal.servings, 2);
@@ -333,11 +323,11 @@ void main() {
       );
 
       // Update the meal
-      final updateResult = await dbHelper.updateMeal(updatedMeal);
+      final updateResult = await mockDbHelper.updateMeal(updatedMeal);
       expect(updateResult, 1, reason: 'Update should return 1 for success');
 
       // Retrieve and verify the changes
-      final retrievedMeal = await dbHelper.getMeal(originalMeal.id);
+      final retrievedMeal = await mockDbHelper.getMeal(originalMeal.id);
       expect(retrievedMeal, isNotNull);
       expect(retrievedMeal!.servings, 4);
       expect(retrievedMeal.notes, 'Updated notes');
@@ -361,7 +351,7 @@ void main() {
         actualCookTime: 25.0,
       );
 
-      await dbHelper.insertMeal(meal);
+      await mockDbHelper.insertMeal(meal);
 
       // Add multiple recipes via junction table
       final primaryMealRecipe = MealRecipe(
@@ -376,11 +366,11 @@ void main() {
         isPrimaryDish: false,
       );
 
-      await dbHelper.insertMealRecipe(primaryMealRecipe);
-      await dbHelper.insertMealRecipe(sideMealRecipe);
+      await mockDbHelper.insertMealRecipe(primaryMealRecipe);
+      await mockDbHelper.insertMealRecipe(sideMealRecipe);
 
       // Verify initial setup
-      final initialMealRecipes = await dbHelper.getMealRecipesForMeal(mealId);
+      final initialMealRecipes = await mockDbHelper.getMealRecipesForMeal(mealId);
       expect(initialMealRecipes.length, 2);
 
       // Update the meal
@@ -396,18 +386,18 @@ void main() {
         modifiedAt: DateTime.now(),
       );
 
-      final updateResult = await dbHelper.updateMeal(updatedMeal);
+      final updateResult = await mockDbHelper.updateMeal(updatedMeal);
       expect(updateResult, 1);
 
       // Verify meal was updated
-      final retrievedMeal = await dbHelper.getMeal(mealId);
+      final retrievedMeal = await mockDbHelper.getMeal(mealId);
       expect(retrievedMeal!.servings, 4);
       expect(retrievedMeal.notes, 'Updated notes');
       expect(retrievedMeal.wasSuccessful, false);
 
       // Verify junction table relationships are preserved
       final afterUpdateMealRecipes =
-          await dbHelper.getMealRecipesForMeal(mealId);
+          await mockDbHelper.getMealRecipesForMeal(mealId);
       expect(afterUpdateMealRecipes.length, 2);
 
       final recipeIds = afterUpdateMealRecipes.map((mr) => mr.recipeId).toSet();

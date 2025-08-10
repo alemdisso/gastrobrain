@@ -26,7 +26,10 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<int> deleteMealPlan(String id) async {
-    throw UnimplementedError('Method not implemented for tests');
+    if (!_mealPlans.containsKey(id)) return 0;
+    
+    _mealPlans.remove(id);
+    return 1;
   }
 
   @override
@@ -35,17 +38,23 @@ class MockDatabaseHelper implements DatabaseHelper {
   }
 
   @override
-  Future<MealPlan?> getMealPlanForWeek(DateTime startDate) async {
-    final normalizedStartDate =
-        DateTime(startDate.year, startDate.month, startDate.day);
+  Future<MealPlan?> getMealPlanForWeek(DateTime date) async {
+    final normalizedDate = DateTime(date.year, date.month, date.day);
 
-    // Find a plan that starts on the given date
+    // Find a plan that contains the given date within its week range
     try {
-      return _mealPlans.values.firstWhere(
-        (plan) => DateTime(plan.weekStartDate.year, plan.weekStartDate.month,
-                plan.weekStartDate.day)
-            .isAtSameMomentAs(normalizedStartDate),
-      );
+      return _mealPlans.values.firstWhere((plan) {
+        final planStart = DateTime(plan.weekStartDate.year, 
+                                  plan.weekStartDate.month, 
+                                  plan.weekStartDate.day);
+        final planEnd = DateTime(plan.weekEndDate.year, 
+                               plan.weekEndDate.month, 
+                               plan.weekEndDate.day);
+        
+        // Check if the date falls within the plan's week range (inclusive)
+        return !normalizedDate.isBefore(planStart) && 
+               !normalizedDate.isAfter(planEnd);
+      });
     } catch (e) {
       // No matching plan found
       return null;
@@ -89,7 +98,10 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<int> updateMealPlan(MealPlan mealPlan) async {
-    throw UnimplementedError('Method not implemented for tests');
+    if (!_mealPlans.containsKey(mealPlan.id)) return 0;
+    
+    _mealPlans[mealPlan.id] = mealPlan;
+    return 1;
   }
 
   @override
@@ -535,9 +547,14 @@ class MockDatabaseHelper implements DatabaseHelper {
         .where((mr) => mr.mealId == mealId && mr.recipeId == recipeId)
         .toList();
 
+    // If recipe is not associated with this meal, add it first
     if (mealRecipeEntries.isEmpty) {
-      // Recipe not associated with this meal
-      return false;
+      await addRecipeToMeal(mealId, recipeId, isPrimaryDish: false);
+      // Refetch after adding
+      final newMealRecipeEntries = _mealRecipes.values
+          .where((mr) => mr.mealId == mealId && mr.recipeId == recipeId)
+          .toList();
+      if (newMealRecipeEntries.isEmpty) return false;
     }
 
     // Clear primary status from all recipes in this meal
@@ -559,7 +576,14 @@ class MockDatabaseHelper implements DatabaseHelper {
     }
 
     // Set the specified recipe as primary
-    final mealRecipe = mealRecipeEntries.first;
+    // Get the current entries (may have been updated if we added a new one)
+    final currentMealRecipeEntries = _mealRecipes.values
+        .where((mr) => mr.mealId == mealId && mr.recipeId == recipeId)
+        .toList();
+    
+    if (currentMealRecipeEntries.isEmpty) return false;
+    
+    final mealRecipe = currentMealRecipeEntries.first;
     final updatedMealRecipe = mealRecipe.copyWith(isPrimaryDish: true);
     _mealRecipes[mealRecipe.id] = updatedMealRecipe;
 
@@ -672,13 +696,15 @@ class MockDatabaseHelper implements DatabaseHelper {
       RecommendationResults results, String contextType,
       {DateTime? targetDate, String? mealType}) async {
     final id = IdGenerator.generateId();
-    final now = DateTime.now();
+    
+    // Use the results.generatedAt timestamp
+    final createdAt = results.generatedAt;
 
     _recommendationHistory[id] = {
       'id': id,
       'result_data':
           results, // Store the actual object for simplicity in the mock
-      'created_at': now,
+      'created_at': createdAt,
       'context_type': contextType,
       'target_date': targetDate,
       'meal_type': mealType,

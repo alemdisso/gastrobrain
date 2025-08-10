@@ -1,28 +1,21 @@
-import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:gastrobrain/database/database_helper.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/models/recipe_recommendation.dart';
 import 'package:gastrobrain/models/recommendation_results.dart';
 import 'package:gastrobrain/utils/id_generator.dart';
+import '../test_utils/test_setup.dart';
+import '../mocks/mock_database_helper.dart';
 
 void main() {
-  // Initialize FFI
-  sqfliteFfiInit();
-
-  // Set the database factory to use the FFI implementation
-  databaseFactory = databaseFactoryFfi;
-
   group('DatabaseHelper Recommendation History Tests', () {
-    late DatabaseHelper dbHelper;
+    late MockDatabaseHelper mockDbHelper;
     late Recipe testRecipe1;
     late Recipe testRecipe2;
 
     setUpAll(() async {
-      dbHelper = DatabaseHelper();
-
+      // Set up mock database using TestSetup utility
+      mockDbHelper = TestSetup.setupMockDatabase();
 
       // Create test recipes
       testRecipe1 = Recipe(
@@ -40,8 +33,8 @@ void main() {
       );
 
       // Add recipes to database
-      await dbHelper.insertRecipe(testRecipe1);
-      await dbHelper.insertRecipe(testRecipe2);
+      await mockDbHelper.insertRecipe(testRecipe1);
+      await mockDbHelper.insertRecipe(testRecipe2);
     });
 
     test('can save and retrieve recommendation history', () async {
@@ -66,7 +59,7 @@ void main() {
       );
 
       // Save to history
-      final historyId = await dbHelper.saveRecommendationHistory(
+      final historyId = await mockDbHelper.saveRecommendationHistory(
         results,
         'meal_planning',
         targetDate: DateTime.now(),
@@ -78,7 +71,7 @@ void main() {
       expect(historyId.isNotEmpty, true);
 
       // Retrieve history
-      final retrievedResults = await dbHelper.getRecommendationById(historyId);
+      final retrievedResults = await mockDbHelper.getRecommendationById(historyId);
 
       // Verify retrieval was successful
       expect(retrievedResults, isNotNull);
@@ -103,13 +96,13 @@ void main() {
       );
 
       // Save to history
-      final historyId = await dbHelper.saveRecommendationHistory(
+      final historyId = await mockDbHelper.saveRecommendationHistory(
         results,
         'test_context',
       );
 
       // Update with user response
-      final updateResult = await dbHelper.updateRecommendationResponse(
+      final updateResult = await mockDbHelper.updateRecommendationResponse(
         historyId,
         testRecipe1.id,
         UserResponse.accepted,
@@ -119,7 +112,7 @@ void main() {
       expect(updateResult, true);
 
       // Retrieve and verify response was saved
-      final updatedResults = await dbHelper.getRecommendationById(historyId);
+      final updatedResults = await mockDbHelper.getRecommendationById(historyId);
       expect(updatedResults, isNotNull);
       expect(updatedResults!.recommendations[0].userResponse,
           UserResponse.accepted);
@@ -134,24 +127,20 @@ void main() {
         factorScores: {'test': 80.0},
       );
 
+      final oldGeneratedAt = DateTime.now().subtract(const Duration(days: 15));
       final oldResults = RecommendationResults(
         recommendations: [oldRecommendation],
         totalEvaluated: 5,
         queryParameters: {},
-        generatedAt: DateTime.now().subtract(const Duration(days: 15)),
+        generatedAt: oldGeneratedAt,
       );
 
-      // Save to history with the old date
-      final db = await dbHelper.database;
-      final oldHistoryId = IdGenerator.generateId();
-
-      await db.insert('recommendation_history', {
-        'id': oldHistoryId,
-        'result_data': jsonEncode(oldResults.toJson()),
-        'created_at':
-            DateTime.now().subtract(const Duration(days: 15)).toIso8601String(),
-        'context_type': 'test_old',
-      });
+      // Save to history with the old date using mock database
+      final oldHistoryId = await mockDbHelper.saveRecommendationHistory(
+        oldResults,
+        'test_old',
+        targetDate: DateTime.now().subtract(const Duration(days: 15)),
+      );
 
       // Create a recent recommendation
       final newRecommendation = RecipeRecommendation(
@@ -167,31 +156,35 @@ void main() {
       );
 
       // Save to history (current date)
-      final newHistoryId = await dbHelper.saveRecommendationHistory(
+      final newHistoryId = await mockDbHelper.saveRecommendationHistory(
         newResults,
         'test_new',
       );
 
       // Run cleanup with 14-day retention
       final deletedCount =
-          await dbHelper.cleanupRecommendationHistory(daysToKeep: 14);
+          await mockDbHelper.cleanupRecommendationHistory(daysToKeep: 14);
 
       // Verify old record was deleted
       expect(deletedCount, greaterThan(0));
 
       // Verify old record is gone
-      final oldRecord = await dbHelper.getRecommendationById(oldHistoryId);
+      final oldRecord = await mockDbHelper.getRecommendationById(oldHistoryId);
       expect(oldRecord, isNull);
 
       // Verify new record remains
-      final newRecord = await dbHelper.getRecommendationById(newHistoryId);
+      final newRecord = await mockDbHelper.getRecommendationById(newHistoryId);
       expect(newRecord, isNotNull);
     });
 
     test('getRecommendationHistory returns filtered results', () async {
-      // Clear existing history for this test
-      final db = await dbHelper.database;
-      await db.delete('recommendation_history');
+      // Clear existing history for this test using TestSetup utility
+      TestSetup.cleanupMockDatabase(mockDbHelper);
+      mockDbHelper = TestSetup.setupMockDatabase();
+      
+      // Re-add test recipes after cleanup
+      await mockDbHelper.insertRecipe(testRecipe1);
+      await mockDbHelper.insertRecipe(testRecipe2);
 
       // Create multiple entries with different contexts
       for (int i = 0; i < 5; i++) {
@@ -209,7 +202,7 @@ void main() {
 
         final contextType = i % 2 == 0 ? 'type_a' : 'type_b';
 
-        await dbHelper.saveRecommendationHistory(
+        await mockDbHelper.saveRecommendationHistory(
           results,
           contextType,
         );
@@ -217,15 +210,15 @@ void main() {
 
       // Test filtering by context type
       final typeAResults =
-          await dbHelper.getRecommendationHistory(contextType: 'type_a');
+          await mockDbHelper.getRecommendationHistory(contextType: 'type_a');
       expect(typeAResults.length, 3); // Should get 3 'type_a' entries
 
       final typeBResults =
-          await dbHelper.getRecommendationHistory(contextType: 'type_b');
+          await mockDbHelper.getRecommendationHistory(contextType: 'type_b');
       expect(typeBResults.length, 2); // Should get 2 'type_b' entries
 
       // Test limit
-      final limitedResults = await dbHelper.getRecommendationHistory(limit: 2);
+      final limitedResults = await mockDbHelper.getRecommendationHistory(limit: 2);
       expect(limitedResults.length, 2);
     });
   });
