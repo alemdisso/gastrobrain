@@ -1025,4 +1025,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get feedbackSaveError => 'Could not save feedback. Please try again.';
+
+  @override
+  String get errorOccurred => 'An error occurred';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get noRecipesFound => 'No recipes found';
+
+  @override
+  String get addFirstRecipe => 'Add your first recipe to get started';
 }

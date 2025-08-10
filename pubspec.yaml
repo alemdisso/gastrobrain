@@ -51,6 +51,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ">=1.0.0 <2.0.0"  # Flexible range
   uuid: ">=4.0.0 <5.0.0"     # Flexible range
+  provider: ">=6.0.0 <7.0.0"  # State management solution
 
 dev_dependencies:
   flutter_test:

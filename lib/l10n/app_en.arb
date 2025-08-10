@@ -1445,6 +1445,22 @@
   "feedbackSaveError": "Could not save feedback. Please try again.",
   "@feedbackSaveError": {
     "description": "Error message when feedback cannot be saved to database"
+  },
+  "errorOccurred": "An error occurred",
+  "@errorOccurred": {
+    "description": "Generic error message for when an error occurs"
+  },
+  "retry": "Retry",
+  "@retry": {
+    "description": "Button text to retry an operation"
+  },
+  "noRecipesFound": "No recipes found",
+  "@noRecipesFound": {
+    "description": "Message when no recipes are found"
+  },
+  "addFirstRecipe": "Add your first recipe to get started",
+  "@addFirstRecipe": {
+    "description": "Instruction text for adding first recipe"
   }
 
 }

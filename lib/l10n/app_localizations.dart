@@ -1957,6 +1957,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not save feedback. Please try again.'**
   String get feedbackSaveError;
+
+  /// Generic error message for when an error occurs
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred'**
+  String get errorOccurred;
+
+  /// Button text to retry an operation
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// Message when no recipes are found
+  ///
+  /// In en, this message translates to:
+  /// **'No recipes found'**
+  String get noRecipesFound;
+
+  /// Instruction text for adding first recipe
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first recipe to get started'**
+  String get addFirstRecipe;
 }
 
 class _AppLocalizationsDelegate

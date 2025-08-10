@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'database/database_helper.dart';
 import 'screens/home_screen.dart';
 import 'l10n/app_localizations.dart';
+import 'core/providers/recipe_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,16 +45,22 @@ class GastrobrainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Gastrobrain',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => RecipeProvider()),
+        // TODO: Add other providers as they are created
+      ],
+      child: MaterialApp(
+        title: 'Gastrobrain',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          useMaterial3: true,
+        ),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('pt', 'BR'), // Set Portuguese Brazil as default
+        home: const HomePage(),
       ),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('pt', 'BR'), // Set Portuguese Brazil as default
-      home: const HomePage(),
     );
   }
 }

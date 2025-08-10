@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '../database/database_helper.dart';
+import 'package:provider/provider.dart';
 import '../models/recipe.dart';
 import '../models/recipe_category.dart';
 import '../models/frequency_type.dart';
 import '../widgets/recipe_card.dart';
 import '../l10n/app_localizations.dart';
+import '../core/providers/recipe_provider.dart';
 import 'add_recipe_screen.dart';
 import 'edit_recipe_screen.dart';
 import 'cook_meal_screen.dart';
@@ -20,39 +21,16 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-  final DatabaseHelper _dbHelper = DatabaseHelper();
-  List<Recipe> recipes = [];
-  Map<String, int> recipeMealCounts = {}; // New map to store meal counts
-  Map<String, DateTime?> lastCookedDates =
-      {}; // New map to store last cooked dates
-
-  String? _currentSortBy = 'name';
-  String? _currentSortOrder = 'ASC';
-  Map<String, dynamic> _filters = {};
 
   @override
   void initState() {
     super.initState();
-    _loadRecipes();
-  }
-
-  Future<void> _loadRecipes() async {
-    final loadedRecipes = await _dbHelper.getRecipesWithSortAndFilter(
-      sortBy: _currentSortBy,
-      sortOrder: _currentSortOrder,
-      filters: _filters.isEmpty ? null : _filters,
-    );
-
-    // Load all meal statistics at once
-    final allMealCounts = await _dbHelper.getAllMealCounts();
-    final allLastCooked = await _dbHelper.getAllLastCooked();
-
-    setState(() {
-      recipes = loadedRecipes;
-      recipeMealCounts = allMealCounts;
-      lastCookedDates = allLastCooked;
+    // Load recipes when widget initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<RecipeProvider>().loadRecipes();
     });
   }
+
 
   Future<void> _addRecipe() async {
     final result = await Navigator.push<bool>(
@@ -61,7 +39,9 @@ class _HomePageState extends State<HomePage> {
     );
 
     if (result == true) {
-      _loadRecipes();
+      if (mounted) {
+        context.read<RecipeProvider>().loadRecipes(forceRefresh: true);
+      }
     }
   }
 
@@ -74,7 +54,9 @@ class _HomePageState extends State<HomePage> {
     );
 
     if (result == true) {
-      _loadRecipes();
+      if (mounted) {
+        context.read<RecipeProvider>().loadRecipes(forceRefresh: true);
+      }
     }
   }
 
@@ -99,8 +81,18 @@ class _HomePageState extends State<HomePage> {
     );
 
     if (confirm == true) {
-      await _dbHelper.deleteRecipe(recipe.id);
-      _loadRecipes();
+      final provider = context.read<RecipeProvider>();
+      final success = await provider.deleteRecipe(recipe.id);
+      
+      if (!success && mounted) {
+        // Show error message if deletion failed
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.errorOccurred),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -116,43 +108,46 @@ class _HomePageState extends State<HomePage> {
               dense: true,
             ),
             ListTile(
-              leading: Icon(_currentSortBy == 'name'
-                  ? Icons.radio_button_checked
-                  : Icons.radio_button_unchecked),
+              leading: Icon(
+                context.watch<RecipeProvider>().currentSortBy == 'name'
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+              ),
               title: Text(AppLocalizations.of(context)!.name),
               onTap: () {
-                setState(() {
-                  _currentSortBy = 'name';
-                  _currentSortOrder = 'ASC';
-                  _loadRecipes();
-                });
+                context.read<RecipeProvider>().setSorting(
+                  sortBy: 'name',
+                  sortOrder: 'ASC',
+                );
                 Navigator.pop(context);
               },
             ),
             ListTile(
-              leading: Icon(_currentSortBy == 'rating'
-                  ? Icons.radio_button_checked
-                  : Icons.radio_button_unchecked),
+              leading: Icon(
+                context.watch<RecipeProvider>().currentSortBy == 'rating'
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+              ),
               title: Text(AppLocalizations.of(context)!.rating),
               onTap: () {
-                setState(() {
-                  _currentSortBy = 'rating';
-                  _currentSortOrder = 'DESC'; // Higher ratings first
-                  _loadRecipes();
-                });
+                context.read<RecipeProvider>().setSorting(
+                  sortBy: 'rating',
+                  sortOrder: 'DESC', // Higher ratings first
+                );
                 Navigator.pop(context);
               },
             ),
             ListTile(
-              leading: Icon(_currentSortBy == 'difficulty'
-                  ? Icons.radio_button_checked
-                  : Icons.radio_button_unchecked),
+              leading: Icon(
+                context.watch<RecipeProvider>().currentSortBy == 'difficulty'
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+              ),
               title: Text(AppLocalizations.of(context)!.difficulty),
               onTap: () {
-                setState(() {
-                  _currentSortBy = 'difficulty';
-                  _loadRecipes();
-                });
+                context.read<RecipeProvider>().setSorting(
+                  sortBy: 'difficulty'
+                );
                 Navigator.pop(context);
               },
             ),
@@ -163,10 +158,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showFilterDialog() {
-    int? selectedDifficulty = _filters['difficulty'];
-    int? selectedRating = _filters['rating'];
-    String? selectedFrequency = _filters['desired_frequency'];
-    String? selectedCategory = _filters['category'];
+    final currentFilters = context.read<RecipeProvider>().filters;
+    int? selectedDifficulty = currentFilters['difficulty'];
+    int? selectedRating = currentFilters['rating'];
+    String? selectedFrequency = currentFilters['desired_frequency'];
+    String? selectedCategory = currentFilters['category'];
 
     showDialog(
       context: context,
@@ -295,7 +291,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 TextButton(
                   onPressed: () {
-                    _filters = {
+                    final newFilters = <String, dynamic>{
                       if (selectedDifficulty != null)
                         'difficulty': selectedDifficulty,
                       if (selectedRating != null) 'rating': selectedRating,
@@ -304,7 +300,7 @@ class _HomePageState extends State<HomePage> {
                       if (selectedCategory != null)
                         'category': selectedCategory,
                     };
-                    _loadRecipes();
+                    context.read<RecipeProvider>().setFilters(newFilters);
                     Navigator.pop(context);
                   },
                   child: Text(AppLocalizations.of(context)!.apply),
@@ -318,28 +314,104 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildRecipesScreen() {
-    return ListView.builder(
-      itemCount: recipes.length,
-      itemBuilder: (context, index) {
-        final recipe = recipes[index];
-        return RecipeCard(
-          recipe: recipe,
-          onEdit: () => _editRecipe(recipe),
-          onDelete: () => _deleteRecipe(recipe),
-          onCooked: () {
-            Navigator.push<bool>(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CookMealScreen(recipe: recipe),
-              ),
-            ).then((value) {
-              if (value == true) {
-                _loadRecipes();
-              }
-            });
-          },
-          mealCount: recipeMealCounts[recipe.id] ?? 0,
-          lastCooked: lastCookedDates[recipe.id],
+    return Consumer<RecipeProvider>(
+      builder: (context, recipeProvider, child) {
+        // Handle loading state
+        if (recipeProvider.isLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        // Handle error state
+        if (recipeProvider.hasError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: Colors.red[300],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  AppLocalizations.of(context)!.errorOccurred,
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  recipeProvider.error?.message ?? '',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    recipeProvider.clearError();
+                    recipeProvider.loadRecipes(forceRefresh: true);
+                  },
+                  child: Text(AppLocalizations.of(context)!.retry),
+                ),
+              ],
+            ),
+          );
+        }
+
+        // Handle empty state
+        if (!recipeProvider.hasData) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.restaurant_menu,
+                  size: 64,
+                  color: Colors.grey[400],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  AppLocalizations.of(context)!.noRecipesFound,
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  AppLocalizations.of(context)!.addFirstRecipe,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ],
+            ),
+          );
+        }
+
+        // Build recipes list
+        return RefreshIndicator(
+          onRefresh: () => recipeProvider.loadRecipes(forceRefresh: true),
+          child: ListView.builder(
+            itemCount: recipeProvider.recipes.length,
+            itemBuilder: (context, index) {
+              final recipe = recipeProvider.recipes[index];
+              return RecipeCard(
+                recipe: recipe,
+                onEdit: () => _editRecipe(recipe),
+                onDelete: () => _deleteRecipe(recipe),
+                onCooked: () {
+                  Navigator.push<bool>(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CookMealScreen(recipe: recipe),
+                    ),
+                  ).then((value) {
+                    if (value == true) {
+                      recipeProvider.loadRecipes(forceRefresh: true);
+                    }
+                  });
+                },
+                mealCount: recipeProvider.getMealCount(recipe.id),
+                lastCooked: recipeProvider.getLastCookedDate(recipe.id),
+              );
+            },
+          ),
         );
       },
     );

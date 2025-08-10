@@ -1445,5 +1445,21 @@
   "feedbackSaveError": "Não foi possível salvar o feedback. Tente novamente.",
   "@feedbackSaveError": {
     "description": "Mensagem de erro quando o feedback não pode ser salvo no banco de dados"
+  },
+  "errorOccurred": "Ocorreu um erro",
+  "@errorOccurred": {
+    "description": "Mensagem de erro genérica para quando um erro ocorre"
+  },
+  "retry": "Tentar Novamente",
+  "@retry": {
+    "description": "Texto do botão para tentar uma operação novamente"
+  },
+  "noRecipesFound": "Nenhuma receita encontrada",
+  "@noRecipesFound": {
+    "description": "Mensagem quando nenhuma receita é encontrada"
+  },
+  "addFirstRecipe": "Adicione sua primeira receita para começar",
+  "@addFirstRecipe": {
+    "description": "Texto de instrução para adicionar primeira receita"
   }
 }
