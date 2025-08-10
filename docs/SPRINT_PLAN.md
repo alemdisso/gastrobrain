@@ -1,3 +1,4 @@
+<!-- markdownlint-disable -->
 # 📋 Gastrobrain Development Sprint Plan
 
 ## 🎯 Current Sprint: Database Migration Strategy (#144)
