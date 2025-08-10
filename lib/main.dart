@@ -5,6 +5,7 @@ import 'screens/home_screen.dart';
 import 'l10n/app_localizations.dart';
 import 'core/providers/recipe_provider.dart';
 import 'core/providers/meal_provider.dart';
+import 'core/providers/meal_plan_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,7 +51,7 @@ class GastrobrainApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => RecipeProvider()),
         ChangeNotifierProvider(create: (_) => MealProvider()),
-        // TODO: Add other providers as they are created
+        ChangeNotifierProvider(create: (_) => MealPlanProvider()),
       ],
       child: MaterialApp(
         title: 'Gastrobrain',
