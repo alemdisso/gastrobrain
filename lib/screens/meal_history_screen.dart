@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/recipe.dart';
 import '../models/meal.dart';
 import '../models/meal_recipe.dart';
 import '../database/database_helper.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
+import '../core/providers/recipe_provider.dart';
 import '../widgets/edit_meal_recording_dialog.dart';
 import 'cook_meal_screen.dart';
 import '../l10n/app_localizations.dart';
@@ -176,6 +178,10 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
 
         // Refresh the meal list
         _loadMeals();
+        
+        // Refresh recipe statistics to reflect any changes in meal data
+        final recipeProvider = context.read<RecipeProvider>();
+        await recipeProvider.refreshMealStats();
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -471,6 +477,9 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
           );
           if (result == true) {
             _loadMeals();
+            // Refresh recipe statistics when returning from cooking
+            final recipeProvider = context.read<RecipeProvider>();
+            await recipeProvider.refreshMealStats();
           }
         },
         tooltip: AppLocalizations.of(context)!.cookNow,

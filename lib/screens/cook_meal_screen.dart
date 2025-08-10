@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/recipe.dart';
 import '../models/meal_recipe.dart';
-import '../database/database_helper.dart';
+import '../models/meal.dart';
 import '../utils/id_generator.dart';
 import '../widgets/meal_recording_dialog.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/services/snackbar_service.dart';
+import '../core/providers/recipe_provider.dart';
+import '../core/providers/meal_provider.dart';
 import '../l10n/app_localizations.dart';
 
 class CookMealScreen extends StatefulWidget {
@@ -23,7 +26,6 @@ class CookMealScreen extends StatefulWidget {
 }
 
 class _CookMealScreenState extends State<CookMealScreen> {
-  final DatabaseHelper _dbHelper = DatabaseHelper();
   bool _isSaving = false;
 
   Future<void> _showMealRecordingDialog() async {
@@ -65,48 +67,51 @@ class _CookMealScreenState extends State<CookMealScreen> {
       // Create the meal with a new ID
       final mealId = IdGenerator.generateId();
 
-      // Begin a transaction to ensure all operations succeed or fail together
-      await _dbHelper.database.then((db) async {
-        return await db.transaction((txn) async {
-          // Create meal object WITHOUT direct recipe_id (using null)
-          final mealMap = {
-            'id': mealId,
-            'recipe_id': null, // Use junction table instead
-            'cooked_at': cookedAt.toIso8601String(),
-            'servings': servings,
-            'notes': notes,
-            'was_successful': wasSuccessful ? 1 : 0,
-            'actual_prep_time': actualPrepTime,
-            'actual_cook_time': actualCookTime,
-          };
+      // Create the meal object
+      final meal = Meal(
+        id: mealId,
+        recipeId: null, // Use junction table instead
+        cookedAt: cookedAt,
+        servings: servings,
+        notes: notes,
+        wasSuccessful: wasSuccessful,
+        actualPrepTime: actualPrepTime,
+        actualCookTime: actualCookTime,
+        modifiedAt: DateTime.now(),
+      );
 
-          // Insert the meal map
-          await txn.insert('meals', mealMap);
+      // Get providers
+      final mealProvider = context.read<MealProvider>();
+      final recipeProvider = context.read<RecipeProvider>();
 
-          // Create and insert primary recipe association
-          final primaryMealRecipe = MealRecipe(
-            mealId: mealId,
-            recipeId: primaryRecipe.id,
-            isPrimaryDish: true,
-            notes: AppLocalizations.of(context)!.mainDish,
-          );
+      // Record the meal using the provider
+      final success = await mealProvider.recordMeal(meal);
+      if (!success) {
+        throw const GastrobrainException('Failed to record meal');
+      }
 
-          // Insert the primary junction record
-          await txn.insert('meal_recipes', primaryMealRecipe.toMap());
+      // Create and add primary recipe association
+      final primaryMealRecipe = MealRecipe(
+        mealId: mealId,
+        recipeId: primaryRecipe.id,
+        isPrimaryDish: true,
+        notes: AppLocalizations.of(context)!.mainDish,
+      );
+      await mealProvider.addMealRecipe(primaryMealRecipe);
 
-          // Insert all additional recipes as side dishes
-          for (final recipe in additionalRecipes) {
-            final sideDishMealRecipe = MealRecipe(
-              mealId: mealId,
-              recipeId: recipe.id,
-              isPrimaryDish: false,
-              notes: AppLocalizations.of(context)!.sideDish,
-            );
+      // Add all additional recipes as side dishes
+      for (final recipe in additionalRecipes) {
+        final sideDishMealRecipe = MealRecipe(
+          mealId: mealId,
+          recipeId: recipe.id,
+          isPrimaryDish: false,
+          notes: AppLocalizations.of(context)!.sideDish,
+        );
+        await mealProvider.addMealRecipe(sideDishMealRecipe);
+      }
 
-            await txn.insert('meal_recipes', sideDishMealRecipe.toMap());
-          }
-        });
-      });
+      // Refresh meal statistics in the RecipeProvider to reflect the new meal
+      await recipeProvider.refreshMealStats();
 
       if (mounted) {
         SnackbarService.showSuccess(context, AppLocalizations.of(context)!.mealRecordedSuccessfully);
