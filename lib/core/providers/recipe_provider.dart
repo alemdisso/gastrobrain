@@ -174,8 +174,13 @@ class RecipeProvider extends ChangeNotifier {
   /// Updates meal statistics for a recipe (called from MealProvider)
   void updateMealStats(String recipeId, int mealCount, DateTime? lastCooked) {
     _repository.updateMealStats(recipeId, mealCount, lastCooked);
-    // Note: We don't notify listeners here as this is just stats update
-    // The UI will get updated when it accesses the stats via getMealCount/getLastCookedDate
+    // Notify listeners so UI updates when meal statistics change
+    notifyListeners();
+  }
+
+  /// Refreshes meal statistics for all recipes from database
+  Future<void> refreshMealStats() async {
+    await loadRecipes(forceRefresh: true);
   }
 
   /// Refreshes the cache and reloads all data
