@@ -20,14 +20,28 @@ import '../models/recipe_recommendation.dart';
 import '../models/recommendation_results.dart';
 import '../core/validators/entity_validator.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
+import '../core/migration/migration_runner.dart';
+import '../core/migration/migration.dart';
+import '../core/migration/migrations/001_initial_schema.dart';
+import '../core/repositories/base_repository.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   static Database? _database;
+  static MigrationRunner? _migrationRunner;
 
   factory DatabaseHelper() => _instance;
 
   DatabaseHelper._internal();
+
+  /// Get all available migrations in order
+  static List<Migration> get _migrations => [
+    InitialSchemaMigration(),
+    // Future migrations will be added here
+  ];
+
+  /// Get the migration runner instance
+  MigrationRunner? get migrationRunner => _migrationRunner;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -37,9 +51,10 @@ class DatabaseHelper {
 
   Future<Database> _initDatabase() async {
     String path = join(await getDatabasesPath(), 'gastrobrain.db');
-    return await openDatabase(
+    
+    final db = await openDatabase(
       path,
-      version: 16, // Increment version number for new tables
+      version: 16, // Keep current version for backward compatibility
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: (db) async {
@@ -47,6 +62,82 @@ class DatabaseHelper {
         await db.execute('PRAGMA foreign_keys = ON');
       },
     );
+    
+    // Initialize migration system after database is opened
+    await _initializeMigrationSystem(db);
+    
+    return db;
+  }
+
+  /// Initialize the migration system
+  /// 
+  /// This sets up the migration runner and determines if we need to run migrations.
+  /// For existing databases, we'll transition them to use the migration system.
+  Future<void> _initializeMigrationSystem(Database db) async {
+    try {
+      // Create migration runner
+      _migrationRunner = MigrationRunner(db, _migrations);
+      
+      // Initialize migration system (creates schema_migrations table)
+      await _migrationRunner!.initialize();
+      
+      // Check if this is an existing database without migration tracking
+      await _handleLegacyDatabase(db);
+      
+      // Run any pending migrations
+      if (await _migrationRunner!.needsMigration()) {
+        print('Running pending migrations...');
+        final results = await _migrationRunner!.runPendingMigrations();
+        
+        for (final result in results) {
+          if (result.success) {
+            print('✓ ${result.toString()}');
+          } else {
+            print('✗ ${result.toString()}');
+          }
+        }
+      }
+      
+    } catch (e) {
+      print('Migration initialization failed: $e');
+      // Don't throw - let the app continue with current schema
+      // This ensures backward compatibility
+    }
+  }
+
+  /// Handle transition from legacy database to migration system
+  /// 
+  /// For existing databases that don't have migration tracking yet,
+  /// we'll mark the initial schema as already applied.
+  Future<void> _handleLegacyDatabase(Database db) async {
+    try {
+      // Check if any tables exist (indicating this is not a fresh database)
+      final existingTables = await db.rawQuery(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != 'schema_migrations'"
+      );
+      
+      // Check if migration tracking exists
+      final currentVersion = await _migrationRunner!.getCurrentVersion();
+      
+      // If we have tables but no migration tracking, this is a legacy database
+      if (existingTables.isNotEmpty && currentVersion == 0) {
+        print('Detected legacy database, marking initial schema as applied...');
+        
+        // Mark the initial schema migration as already applied
+        await db.insert('schema_migrations', {
+          'version': 1,
+          'applied_at': DateTime.now().toIso8601String(),
+          'description': 'Legacy database - initial schema marked as applied',
+          'duration_ms': 0,
+        });
+        
+        print('Legacy database successfully transitioned to migration system');
+      }
+      
+    } catch (e) {
+      print('Legacy database handling failed: $e');
+      // Continue without marking - fresh migration will handle it
+    }
   }
 
 
@@ -1421,5 +1512,140 @@ class DatabaseHelper {
       where: 'created_at < ?',
       whereArgs: [cutoffDate.toIso8601String()],
     );
+  }
+
+  // === MIGRATION MANAGEMENT METHODS ===
+
+  /// Check if migrations need to be run
+  Future<bool> needsMigration() async {
+    if (_migrationRunner == null) {
+      await database; // Initialize database and migration system
+    }
+    return _migrationRunner?.needsMigration() ?? false;
+  }
+
+  /// Get the current database schema version
+  Future<int> getCurrentVersion() async {
+    if (_migrationRunner == null) {
+      await database; // Initialize database and migration system
+    }
+    return _migrationRunner?.getCurrentVersion() ?? 0;
+  }
+
+  /// Get the latest available migration version
+  int getLatestVersion() {
+    return _migrations.isEmpty ? 0 : _migrations.last.version;
+  }
+
+  /// Get migration history
+  Future<List<Map<String, dynamic>>> getMigrationHistory() async {
+    if (_migrationRunner == null) {
+      await database; // Initialize database and migration system
+    }
+    return _migrationRunner?.getMigrationHistory() ?? [];
+  }
+
+  /// Run pending migrations manually
+  /// 
+  /// This is useful for UI-controlled migrations or debugging.
+  /// Normally migrations run automatically during database initialization.
+  Future<List<MigrationResult>> runPendingMigrations({
+    void Function(String status, double progress)? onProgress,
+    void Function(MigrationResult result)? onMigrationComplete,
+  }) async {
+    if (_migrationRunner == null) {
+      await database; // Initialize database and migration system
+    }
+
+    if (_migrationRunner == null) {
+      throw const GastrobrainException('Migration system not initialized');
+    }
+
+    // Create a new runner with progress callbacks if provided
+    if (onProgress != null || onMigrationComplete != null) {
+      final db = await database;
+      final runner = MigrationRunner(
+        db, 
+        _migrations,
+        onProgress: onProgress,
+        onMigrationComplete: onMigrationComplete,
+      );
+      
+      await runner.initialize();
+      final results = await runner.runPendingMigrations();
+      
+      // Notify repositories if any migrations were applied
+      if (results.isNotEmpty && results.every((r) => r.success)) {
+        notifyMigrationCompleted();
+      }
+      
+      return results;
+    }
+
+    final results = await _migrationRunner!.runPendingMigrations();
+    
+    // Notify repositories if any migrations were applied
+    if (results.isNotEmpty && results.every((r) => r.success)) {
+      notifyMigrationCompleted();
+    }
+    
+    return results;
+  }
+
+  /// Rollback to a specific version (USE WITH CAUTION)
+  /// 
+  /// This can cause data loss. Only use for development or recovery scenarios.
+  Future<List<MigrationResult>> rollbackToVersion(
+    int targetVersion, {
+    void Function(String status, double progress)? onProgress,
+    void Function(MigrationResult result)? onMigrationComplete,
+  }) async {
+    if (_migrationRunner == null) {
+      await database; // Initialize database and migration system
+    }
+
+    if (_migrationRunner == null) {
+      throw const GastrobrainException('Migration system not initialized');
+    }
+
+    // Create a new runner with progress callbacks if provided
+    if (onProgress != null || onMigrationComplete != null) {
+      final db = await database;
+      final runner = MigrationRunner(
+        db, 
+        _migrations,
+        onProgress: onProgress,
+        onMigrationComplete: onMigrationComplete,
+      );
+      
+      await runner.initialize();
+      final results = await runner.rollbackToVersion(targetVersion);
+      
+      // Notify repositories if any rollbacks were applied
+      if (results.isNotEmpty && results.every((r) => r.success)) {
+        notifyMigrationCompleted();
+      }
+      
+      return results;
+    }
+
+    final results = await _migrationRunner!.rollbackToVersion(targetVersion);
+    
+    // Notify repositories if any rollbacks were applied  
+    if (results.isNotEmpty && results.every((r) => r.success)) {
+      notifyMigrationCompleted();
+    }
+    
+    return results;
+  }
+
+  /// Force invalidate all repository caches after migration
+  /// 
+  /// This should be called by repositories after successful migrations
+  /// to ensure cached data is refreshed with the new schema.
+  void notifyMigrationCompleted() {
+    // Notify all registered repositories to invalidate their caches
+    print('Migration completed - notifying repositories to invalidate caches');
+    RepositoryRegistry.notifyMigrationCompleted();
   }
 }

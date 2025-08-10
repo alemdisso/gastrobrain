@@ -1461,6 +1461,102 @@
   "addFirstRecipe": "Add your first recipe to get started",
   "@addFirstRecipe": {
     "description": "Instruction text for adding first recipe"
+  },
+  "titleDatabaseMigration": "Database Migration",
+  "@titleDatabaseMigration": {
+    "description": "Title for database migration screen"
+  },
+  "buttonRefresh": "Refresh",
+  "@buttonRefresh": {
+    "description": "Button to refresh data"
+  },
+  "labelDatabaseStatus": "Database Status",
+  "@labelDatabaseStatus": {
+    "description": "Label for database status section"
+  },
+  "statusMigrationNeeded": "Migration needed",
+  "@statusMigrationNeeded": {
+    "description": "Status when database migration is needed"
+  },
+  "statusUpToDate": "Up to date",
+  "@statusUpToDate": {
+    "description": "Status when database is up to date"
+  },
+  "labelCurrentVersion": "Current version",
+  "@labelCurrentVersion": {
+    "description": "Label for current database version"
+  },
+  "labelLatestVersion": "Latest version",
+  "@labelLatestVersion": {
+    "description": "Label for latest available database version"
+  },
+  "labelMigrationProgress": "Migration Progress",
+  "@labelMigrationProgress": {
+    "description": "Label for migration progress section"
+  },
+  "errorMigrationFailed": "Migration Failed",
+  "@errorMigrationFailed": {
+    "description": "Error title when migration fails"
+  },
+  "buttonDismiss": "Dismiss",
+  "@buttonDismiss": {
+    "description": "Button to dismiss an error or message"
+  },
+  "labelMigrationResults": "Migration Results",
+  "@labelMigrationResults": {
+    "description": "Label for migration results section"
+  },
+  "buttonRunMigrations": "Run Migrations",
+  "@buttonRunMigrations": {
+    "description": "Button to start database migrations"
+  },
+  "buttonRollback": "Rollback",
+  "@buttonRollback": {
+    "description": "Button to rollback database changes"
+  },
+  "labelMigrationHistory": "Migration History",
+  "@labelMigrationHistory": {
+    "description": "Label for migration history section"
+  },
+  "messageNoMigrationHistory": "No migration history available",
+  "@messageNoMigrationHistory": {
+    "description": "Message when no migration history exists"
+  },
+  "labelVersion": "Version",
+  "@labelVersion": {
+    "description": "Label for version number"
+  },
+  "titleConfirmMigration": "Confirm Migration",
+  "@titleConfirmMigration": {
+    "description": "Title for migration confirmation dialog"
+  },
+  "messageMigrationWarning": "This will update your database schema. Make sure you have a backup.",
+  "@messageMigrationWarning": {
+    "description": "Warning message before running migrations"
+  },
+  "buttonContinue": "Continue",
+  "@buttonContinue": {
+    "description": "Button to continue with an action"
+  },
+  "messageMigrationSuccess": "Migration completed successfully",
+  "@messageMigrationSuccess": {
+    "description": "Success message after migration completes"
+  },
+  "titleRollbackDatabase": "Rollback Database",
+  "@titleRollbackDatabase": {
+    "description": "Title for database rollback dialog"
+  },
+  "messageRollbackWarning": "Warning: This will revert your database to an earlier version and may cause data loss.",
+  "@messageRollbackWarning": {
+    "description": "Warning message before database rollback"
+  },
+  "labelTargetVersion": "Target Version",
+  "@labelTargetVersion": {
+    "description": "Label for target version in rollback dialog"
+  },
+  "messageRollbackSuccess": "Rollback completed successfully",
+  "@messageRollbackSuccess": {
+    "description": "Success message after rollback completes"
   }
 
 }

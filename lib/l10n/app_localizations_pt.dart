@@ -1049,4 +1049,79 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get addFirstRecipe => 'Adicione sua primeira receita para começar';
+
+  @override
+  String get titleDatabaseMigration => 'Migração do Banco de Dados';
+
+  @override
+  String get buttonRefresh => 'Atualizar';
+
+  @override
+  String get labelDatabaseStatus => 'Status do Banco de Dados';
+
+  @override
+  String get statusMigrationNeeded => 'Migração necessária';
+
+  @override
+  String get statusUpToDate => 'Atualizado';
+
+  @override
+  String get labelCurrentVersion => 'Versão atual';
+
+  @override
+  String get labelLatestVersion => 'Versão mais recente';
+
+  @override
+  String get labelMigrationProgress => 'Progresso da Migração';
+
+  @override
+  String get errorMigrationFailed => 'Migração Falhou';
+
+  @override
+  String get buttonDismiss => 'Dispensar';
+
+  @override
+  String get labelMigrationResults => 'Resultados da Migração';
+
+  @override
+  String get buttonRunMigrations => 'Executar Migrações';
+
+  @override
+  String get buttonRollback => 'Reverter';
+
+  @override
+  String get labelMigrationHistory => 'Histórico de Migrações';
+
+  @override
+  String get messageNoMigrationHistory =>
+      'Nenhum histórico de migração disponível';
+
+  @override
+  String get labelVersion => 'Versão';
+
+  @override
+  String get titleConfirmMigration => 'Confirmar Migração';
+
+  @override
+  String get messageMigrationWarning =>
+      'Isso atualizará o esquema do seu banco de dados. Certifique-se de ter um backup.';
+
+  @override
+  String get buttonContinue => 'Continuar';
+
+  @override
+  String get messageMigrationSuccess => 'Migração concluída com sucesso';
+
+  @override
+  String get titleRollbackDatabase => 'Reverter Banco de Dados';
+
+  @override
+  String get messageRollbackWarning =>
+      'Aviso: Isso reverterá seu banco de dados para uma versão anterior e pode causar perda de dados.';
+
+  @override
+  String get labelTargetVersion => 'Versão de Destino';
+
+  @override
+  String get messageRollbackSuccess => 'Reversão concluída com sucesso';
 }

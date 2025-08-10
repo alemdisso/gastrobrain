@@ -8,7 +8,10 @@ import 'base_repository.dart';
 /// Repository for managing meal data with caching and state management
 class MealRepository extends BaseRepository<List<Meal>> {
   // Private constructor for singleton pattern
-  MealRepository._();
+  MealRepository._() {
+    // Register for migration notifications
+    RepositoryRegistry.register(this);
+  }
   static final MealRepository _instance = MealRepository._();
   factory MealRepository() => _instance;
 
@@ -187,7 +190,7 @@ class MealRepository extends BaseRepository<List<Meal>> {
           _cachedMealsByRecipe[meal.recipeId]!.removeWhere((m) => m.id == id);
         }
         
-        return RepositoryResult.success(true);
+        return const RepositoryResult.success(true);
       } else {
         throw NotFoundException('Meal with id $id not found');
       }
@@ -226,7 +229,7 @@ class MealRepository extends BaseRepository<List<Meal>> {
       _clearError();
       
       await _dbHelper.insertMealRecipe(mealRecipe);
-      return RepositoryResult.success(true);
+      return const RepositoryResult.success(true);
 
     } on GastrobrainException catch (e) {
       _lastError = e;
@@ -245,7 +248,7 @@ class MealRepository extends BaseRepository<List<Meal>> {
       
       final result = await _dbHelper.updateMealRecipe(mealRecipe);
       if (result > 0) {
-        return RepositoryResult.success(true);
+        return const RepositoryResult.success(true);
       } else {
         throw const GastrobrainException('Failed to update meal recipe');
       }
@@ -267,7 +270,7 @@ class MealRepository extends BaseRepository<List<Meal>> {
       
       final result = await _dbHelper.deleteMealRecipe(id);
       if (result > 0) {
-        return RepositoryResult.success(true);
+        return const RepositoryResult.success(true);
       } else {
         throw const GastrobrainException('Failed to delete meal recipe');
       }

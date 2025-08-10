@@ -7,7 +7,10 @@ import 'base_repository.dart';
 /// Repository for managing recipe data with caching and state management
 class RecipeRepository extends BaseRepository<List<Recipe>> {
   // Private constructor for singleton pattern
-  RecipeRepository._();
+  RecipeRepository._() {
+    // Register for migration notifications
+    RepositoryRegistry.register(this);
+  }
   static final RecipeRepository _instance = RecipeRepository._();
   factory RecipeRepository() => _instance;
 
@@ -194,7 +197,7 @@ class RecipeRepository extends BaseRepository<List<Recipe>> {
         _cachedMealCounts.remove(id);
         _cachedLastCookedDates.remove(id);
         
-        return RepositoryResult.success(true);
+        return const RepositoryResult.success(true);
       } else {
         throw NotFoundException('Recipe with id $id not found');
       }

@@ -14,6 +14,8 @@ import 'package:gastrobrain/models/meal_plan_item_recipe.dart';
 import 'package:gastrobrain/models/ingredient.dart';
 import 'package:gastrobrain/models/recipe_ingredient.dart';
 import 'package:gastrobrain/core/validators/entity_validator.dart';
+import 'package:gastrobrain/core/migration/migration.dart';
+import 'package:gastrobrain/core/migration/migration_runner.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// A partial mock implementation of DatabaseHelper for testing.
@@ -900,4 +902,39 @@ class MockDatabaseHelper implements DatabaseHelper {
       {List<String> excludeIds,
       List<ProteinType>? requiredProteinTypes,
       List<ProteinType>? excludedProteinTypes})? customGetCandidateRecipes;
+
+  // === MIGRATION METHODS (Mock Implementation) ===
+  
+  @override
+  Future<bool> needsMigration() async => false; // Mock: no migrations needed
+  
+  @override
+  Future<int> getCurrentVersion() async => 1; // Mock: current version
+  
+  @override
+  int getLatestVersion() => 1; // Mock: latest version
+  
+  @override
+  Future<List<Map<String, dynamic>>> getMigrationHistory() async => []; // Mock: empty history
+  
+  @override
+  Future<List<MigrationResult>> runPendingMigrations({
+    void Function(String status, double progress)? onProgress,
+    void Function(MigrationResult result)? onMigrationComplete,
+  }) async => []; // Mock: no migrations to run
+  
+  @override
+  Future<List<MigrationResult>> rollbackToVersion(
+    int targetVersion, {
+    void Function(String status, double progress)? onProgress,
+    void Function(MigrationResult result)? onMigrationComplete,
+  }) async => []; // Mock: no rollbacks
+  
+  @override
+  void notifyMigrationCompleted() {
+    // Mock: do nothing
+  }
+
+  @override
+  MigrationRunner? get migrationRunner => null; // Mock: no migration runner
 }

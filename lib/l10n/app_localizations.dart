@@ -1981,6 +1981,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add your first recipe to get started'**
   String get addFirstRecipe;
+
+  /// Title for database migration screen
+  ///
+  /// In en, this message translates to:
+  /// **'Database Migration'**
+  String get titleDatabaseMigration;
+
+  /// Button to refresh data
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get buttonRefresh;
+
+  /// Label for database status section
+  ///
+  /// In en, this message translates to:
+  /// **'Database Status'**
+  String get labelDatabaseStatus;
+
+  /// Status when database migration is needed
+  ///
+  /// In en, this message translates to:
+  /// **'Migration needed'**
+  String get statusMigrationNeeded;
+
+  /// Status when database is up to date
+  ///
+  /// In en, this message translates to:
+  /// **'Up to date'**
+  String get statusUpToDate;
+
+  /// Label for current database version
+  ///
+  /// In en, this message translates to:
+  /// **'Current version'**
+  String get labelCurrentVersion;
+
+  /// Label for latest available database version
+  ///
+  /// In en, this message translates to:
+  /// **'Latest version'**
+  String get labelLatestVersion;
+
+  /// Label for migration progress section
+  ///
+  /// In en, this message translates to:
+  /// **'Migration Progress'**
+  String get labelMigrationProgress;
+
+  /// Error title when migration fails
+  ///
+  /// In en, this message translates to:
+  /// **'Migration Failed'**
+  String get errorMigrationFailed;
+
+  /// Button to dismiss an error or message
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get buttonDismiss;
+
+  /// Label for migration results section
+  ///
+  /// In en, this message translates to:
+  /// **'Migration Results'**
+  String get labelMigrationResults;
+
+  /// Button to start database migrations
+  ///
+  /// In en, this message translates to:
+  /// **'Run Migrations'**
+  String get buttonRunMigrations;
+
+  /// Button to rollback database changes
+  ///
+  /// In en, this message translates to:
+  /// **'Rollback'**
+  String get buttonRollback;
+
+  /// Label for migration history section
+  ///
+  /// In en, this message translates to:
+  /// **'Migration History'**
+  String get labelMigrationHistory;
+
+  /// Message when no migration history exists
+  ///
+  /// In en, this message translates to:
+  /// **'No migration history available'**
+  String get messageNoMigrationHistory;
+
+  /// Label for version number
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get labelVersion;
+
+  /// Title for migration confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Migration'**
+  String get titleConfirmMigration;
+
+  /// Warning message before running migrations
+  ///
+  /// In en, this message translates to:
+  /// **'This will update your database schema. Make sure you have a backup.'**
+  String get messageMigrationWarning;
+
+  /// Button to continue with an action
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get buttonContinue;
+
+  /// Success message after migration completes
+  ///
+  /// In en, this message translates to:
+  /// **'Migration completed successfully'**
+  String get messageMigrationSuccess;
+
+  /// Title for database rollback dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Rollback Database'**
+  String get titleRollbackDatabase;
+
+  /// Warning message before database rollback
+  ///
+  /// In en, this message translates to:
+  /// **'Warning: This will revert your database to an earlier version and may cause data loss.'**
+  String get messageRollbackWarning;
+
+  /// Label for target version in rollback dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Target Version'**
+  String get labelTargetVersion;
+
+  /// Success message after rollback completes
+  ///
+  /// In en, this message translates to:
+  /// **'Rollback completed successfully'**
+  String get messageRollbackSuccess;
 }
 
 class _AppLocalizationsDelegate

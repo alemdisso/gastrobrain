@@ -1461,5 +1461,101 @@
   "addFirstRecipe": "Adicione sua primeira receita para começar",
   "@addFirstRecipe": {
     "description": "Texto de instrução para adicionar primeira receita"
+  },
+  "titleDatabaseMigration": "Migração do Banco de Dados",
+  "@titleDatabaseMigration": {
+    "description": "Título para a tela de migração do banco de dados"
+  },
+  "buttonRefresh": "Atualizar",
+  "@buttonRefresh": {
+    "description": "Botão para atualizar dados"
+  },
+  "labelDatabaseStatus": "Status do Banco de Dados",
+  "@labelDatabaseStatus": {
+    "description": "Rótulo para seção de status do banco de dados"
+  },
+  "statusMigrationNeeded": "Migração necessária",
+  "@statusMigrationNeeded": {
+    "description": "Status quando migração do banco de dados é necessária"
+  },
+  "statusUpToDate": "Atualizado",
+  "@statusUpToDate": {
+    "description": "Status quando banco de dados está atualizado"
+  },
+  "labelCurrentVersion": "Versão atual",
+  "@labelCurrentVersion": {
+    "description": "Rótulo para versão atual do banco de dados"
+  },
+  "labelLatestVersion": "Versão mais recente",
+  "@labelLatestVersion": {
+    "description": "Rótulo para versão mais recente disponível do banco de dados"
+  },
+  "labelMigrationProgress": "Progresso da Migração",
+  "@labelMigrationProgress": {
+    "description": "Rótulo para seção de progresso da migração"
+  },
+  "errorMigrationFailed": "Migração Falhou",
+  "@errorMigrationFailed": {
+    "description": "Título do erro quando migração falha"
+  },
+  "buttonDismiss": "Dispensar",
+  "@buttonDismiss": {
+    "description": "Botão para dispensar um erro ou mensagem"
+  },
+  "labelMigrationResults": "Resultados da Migração",
+  "@labelMigrationResults": {
+    "description": "Rótulo para seção de resultados da migração"
+  },
+  "buttonRunMigrations": "Executar Migrações",
+  "@buttonRunMigrations": {
+    "description": "Botão para iniciar migrações do banco de dados"
+  },
+  "buttonRollback": "Reverter",
+  "@buttonRollback": {
+    "description": "Botão para reverter mudanças no banco de dados"
+  },
+  "labelMigrationHistory": "Histórico de Migrações",
+  "@labelMigrationHistory": {
+    "description": "Rótulo para seção de histórico de migrações"
+  },
+  "messageNoMigrationHistory": "Nenhum histórico de migração disponível",
+  "@messageNoMigrationHistory": {
+    "description": "Mensagem quando não existe histórico de migração"
+  },
+  "labelVersion": "Versão",
+  "@labelVersion": {
+    "description": "Rótulo para número da versão"
+  },
+  "titleConfirmMigration": "Confirmar Migração",
+  "@titleConfirmMigration": {
+    "description": "Título para diálogo de confirmação de migração"
+  },
+  "messageMigrationWarning": "Isso atualizará o esquema do seu banco de dados. Certifique-se de ter um backup.",
+  "@messageMigrationWarning": {
+    "description": "Mensagem de aviso antes de executar migrações"
+  },
+  "buttonContinue": "Continuar",
+  "@buttonContinue": {
+    "description": "Botão para continuar com uma ação"
+  },
+  "messageMigrationSuccess": "Migração concluída com sucesso",
+  "@messageMigrationSuccess": {
+    "description": "Mensagem de sucesso após migração ser concluída"
+  },
+  "titleRollbackDatabase": "Reverter Banco de Dados",
+  "@titleRollbackDatabase": {
+    "description": "Título para diálogo de reversão do banco de dados"
+  },
+  "messageRollbackWarning": "Aviso: Isso reverterá seu banco de dados para uma versão anterior e pode causar perda de dados.",
+  "@messageRollbackWarning": {
+    "description": "Mensagem de aviso antes da reversão do banco de dados"
+  },
+  "labelTargetVersion": "Versão de Destino",
+  "@labelTargetVersion": {
+    "description": "Rótulo para versão de destino no diálogo de reversão"
+  },
+  "messageRollbackSuccess": "Reversão concluída com sucesso",
+  "@messageRollbackSuccess": {
+    "description": "Mensagem de sucesso após reversão ser concluída"
   }
 }

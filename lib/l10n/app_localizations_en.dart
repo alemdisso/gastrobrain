@@ -1037,4 +1037,78 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addFirstRecipe => 'Add your first recipe to get started';
+
+  @override
+  String get titleDatabaseMigration => 'Database Migration';
+
+  @override
+  String get buttonRefresh => 'Refresh';
+
+  @override
+  String get labelDatabaseStatus => 'Database Status';
+
+  @override
+  String get statusMigrationNeeded => 'Migration needed';
+
+  @override
+  String get statusUpToDate => 'Up to date';
+
+  @override
+  String get labelCurrentVersion => 'Current version';
+
+  @override
+  String get labelLatestVersion => 'Latest version';
+
+  @override
+  String get labelMigrationProgress => 'Migration Progress';
+
+  @override
+  String get errorMigrationFailed => 'Migration Failed';
+
+  @override
+  String get buttonDismiss => 'Dismiss';
+
+  @override
+  String get labelMigrationResults => 'Migration Results';
+
+  @override
+  String get buttonRunMigrations => 'Run Migrations';
+
+  @override
+  String get buttonRollback => 'Rollback';
+
+  @override
+  String get labelMigrationHistory => 'Migration History';
+
+  @override
+  String get messageNoMigrationHistory => 'No migration history available';
+
+  @override
+  String get labelVersion => 'Version';
+
+  @override
+  String get titleConfirmMigration => 'Confirm Migration';
+
+  @override
+  String get messageMigrationWarning =>
+      'This will update your database schema. Make sure you have a backup.';
+
+  @override
+  String get buttonContinue => 'Continue';
+
+  @override
+  String get messageMigrationSuccess => 'Migration completed successfully';
+
+  @override
+  String get titleRollbackDatabase => 'Rollback Database';
+
+  @override
+  String get messageRollbackWarning =>
+      'Warning: This will revert your database to an earlier version and may cause data loss.';
+
+  @override
+  String get labelTargetVersion => 'Target Version';
+
+  @override
+  String get messageRollbackSuccess => 'Rollback completed successfully';
 }
