@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/protein_type.dart';
 import '../models/meal.dart';
 import '../models/meal_recipe.dart';
@@ -14,6 +15,7 @@ import '../core/di/service_provider.dart';
 import '../core/services/recommendation_service.dart';
 import '../core/services/snackbar_service.dart';
 import '../core/services/meal_plan_analysis_service.dart';
+import '../core/providers/recipe_provider.dart';
 import '../widgets/weekly_calendar_widget.dart';
 import '../widgets/meal_recording_dialog.dart';
 import '../widgets/edit_meal_recording_dialog.dart';
@@ -789,6 +791,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       if (mounted) {
         SnackbarService.showSuccess(
             context, AppLocalizations.of(context)!.mealMarkedAsCooked);
+        // Refresh recipe statistics cache to reflect the new meal data
+        context.read<RecipeProvider>().refresh();
         // Refresh data to show updated meal history
         _loadData();
       }
@@ -1157,6 +1161,11 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         }
       });
     });
+
+    // Refresh recipe statistics cache to reflect the updated meal data
+    if (mounted) {
+      context.read<RecipeProvider>().refresh();
+    }
   }
 
   Future<void> _updateMealPlanItemRecipes(
