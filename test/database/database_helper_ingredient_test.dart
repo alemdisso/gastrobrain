@@ -1,5 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gastrobrain/models/ingredient.dart';
+import 'package:gastrobrain/models/ingredient_category.dart';
+import 'package:gastrobrain/models/measurement_unit.dart';
+import 'package:gastrobrain/models/protein_type.dart';
 import 'package:gastrobrain/core/errors/gastrobrain_exceptions.dart';
 import '../mocks/mock_database_helper.dart';
 
@@ -19,8 +22,8 @@ void main() {
       final ingredient = Ingredient(
         id: 'test-ingredient-1',
         name: 'Carrots',
-        category: 'vegetable',
-        unit: 'g',
+        category: IngredientCategory.vegetable,
+        unit: MeasurementUnit.gram,
       );
 
       // Insert the ingredient
@@ -34,8 +37,8 @@ void main() {
       expect(ingredients.length, 1);
       expect(ingredients.first.id, ingredient.id);
       expect(ingredients.first.name, 'Carrots');
-      expect(ingredients.first.category, 'vegetable');
-      expect(ingredients.first.unit, 'g');
+      expect(ingredients.first.category, IngredientCategory.vegetable);
+      expect(ingredients.first.unit, MeasurementUnit.gram);
     });
 
     test('can update existing ingredient', () async {
@@ -43,8 +46,8 @@ void main() {
       final ingredient = Ingredient(
         id: 'test-ingredient-1',
         name: 'Carrots',
-        category: 'vegetable',
-        unit: 'g',
+        category: IngredientCategory.vegetable,
+        unit: MeasurementUnit.gram,
       );
       await dbHelper.insertIngredient(ingredient);
 
@@ -52,8 +55,8 @@ void main() {
       final updatedIngredient = Ingredient(
         id: ingredient.id,
         name: 'Baby Carrots',
-        category: 'vegetable',
-        unit: 'kg',
+        category: IngredientCategory.vegetable,
+        unit: MeasurementUnit.kilogram,
       );
 
       // Update the ingredient
@@ -65,15 +68,15 @@ void main() {
       expect(ingredients.length, 1);
       expect(ingredients.first.id, updatedIngredient.id);
       expect(ingredients.first.name, 'Baby Carrots');
-      expect(ingredients.first.unit, 'kg');
+      expect(ingredients.first.unit, MeasurementUnit.kilogram);
     });
 
     test('updating non-existing ingredient returns 0', () async {
       final nonExistingIngredient = Ingredient(
         id: 'non-existing-id',
         name: 'Does Not Exist',
-        category: 'other',
-        unit: 'g',
+        category: IngredientCategory.other,
+        unit: MeasurementUnit.gram,
       );
 
       final result = await dbHelper.updateIngredient(nonExistingIngredient);
@@ -86,8 +89,8 @@ void main() {
         final ingredient = Ingredient(
           id: 'test-ingredient-1',
           name: 'Carrots',
-          category: 'vegetable',
-          unit: 'g',
+          category: IngredientCategory.vegetable,
+          unit: MeasurementUnit.gram,
         );
         await dbHelper.insertIngredient(ingredient);
 
@@ -120,8 +123,8 @@ void main() {
         final ingredient = Ingredient(
           id: 'test-ingredient-1',
           name: 'Carrots',
-          category: 'vegetable',
-          unit: 'g',
+          category: IngredientCategory.vegetable,
+          unit: MeasurementUnit.gram,
         );
         await dbHelper.insertIngredient(ingredient);
 
@@ -138,21 +141,21 @@ void main() {
           Ingredient(
             id: 'test-ingredient-1',
             name: 'Carrots',
-            category: 'vegetable',
-            unit: 'g',
+            category: IngredientCategory.vegetable,
+            unit: MeasurementUnit.gram,
           ),
           Ingredient(
             id: 'test-ingredient-2',
             name: 'Chicken Breast',
-            category: 'protein',
-            unit: 'kg',
-            proteinType: 'chicken',
+            category: IngredientCategory.protein,
+            unit: MeasurementUnit.kilogram,
+            proteinType: ProteinType.chicken,
           ),
           Ingredient(
             id: 'test-ingredient-3',
             name: 'Olive Oil',
-            category: 'oil',
-            unit: 'ml',
+            category: IngredientCategory.oil,
+            unit: MeasurementUnit.milliliter,
           ),
         ];
 
@@ -182,25 +185,25 @@ void main() {
     group('Validation', () {
       test('can insert ingredient with valid category', () async {
         final validCategories = [
-          'vegetable',
-          'fruit',
-          'protein',
-          'dairy',
-          'grain',
-          'pulse',
-          'nuts_and_seeds',
-          'seasoning',
-          'sugar products',
-          'other'
+          IngredientCategory.vegetable,
+          IngredientCategory.fruit,
+          IngredientCategory.protein,
+          IngredientCategory.dairy,
+          IngredientCategory.grain,
+          IngredientCategory.pulse,
+          IngredientCategory.nutsAndSeeds,
+          IngredientCategory.seasoning,
+          IngredientCategory.sugarProducts,
+          IngredientCategory.other,
         ];
 
         for (final category in validCategories) {
           final ingredient = Ingredient(
-            id: 'test-$category',
-            name: 'Test $category',
+            id: 'test-${category.value}',
+            name: 'Test ${category.value}',
             category: category,
             // Add protein type for protein category
-            proteinType: category == 'protein' ? 'chicken' : null,
+            proteinType: category == IngredientCategory.protein ? ProteinType.chicken : null,
           );
 
           final id = await dbHelper.insertIngredient(ingredient);
@@ -212,13 +215,13 @@ void main() {
       });
 
       test('protein ingredients require protein type', () async {
-        final proteinTypes = ['chicken', 'beef', 'pork', 'fish'];
+        final proteinTypes = [ProteinType.chicken, ProteinType.beef, ProteinType.pork, ProteinType.fish];
 
         for (final type in proteinTypes) {
           final ingredient = Ingredient(
-            id: 'test-$type',
-            name: 'Test $type',
-            category: 'protein',
+            id: 'test-${type.name}',
+            name: 'Test ${type.name}',
+            category: IngredientCategory.protein,
             proteinType: type,
           );
 
@@ -235,7 +238,7 @@ void main() {
         final ingredient = Ingredient(
           id: 'test-carrot',
           name: 'Carrot',
-          category: 'vegetable',
+          category: IngredientCategory.vegetable,
           proteinType: null, // Should be null for non-proteins
         );
 
@@ -251,7 +254,7 @@ void main() {
         final ingredient = Ingredient(
           id: 'test-empty-name',
           name: '', // Empty name
-          category: 'vegetable',
+          category: IngredientCategory.vegetable,
         );
 
         try {
@@ -265,29 +268,13 @@ void main() {
         expect(ingredients.length, 0);
       });
 
-      test('rejects ingredient with empty category', () async {
-        final ingredient = Ingredient(
-          id: 'test-empty-category',
-          name: 'Test Ingredient',
-          category: '', // Empty category
-        );
-
-        try {
-          await dbHelper.insertIngredient(ingredient);
-          fail('Should throw ValidationException');
-        } on ValidationException catch (e) {
-          expect(e.message, 'Category must be selected');
-        }
-
-        final ingredients = await dbHelper.getAllIngredients();
-        expect(ingredients.length, 0);
-      });
+      // Note: Empty category test removed since enum types enforce non-null category selection
 
       test('rejects protein ingredient without protein type', () async {
         final ingredient = Ingredient(
           id: 'test-no-protein-type',
           name: 'Generic Meat',
-          category: 'protein',
+          category: IngredientCategory.protein,
           proteinType: null, // Missing protein type
         );
 

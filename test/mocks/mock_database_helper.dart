@@ -29,7 +29,7 @@ class MockDatabaseHelper implements DatabaseHelper {
   @override
   Future<int> deleteMealPlan(String id) async {
     if (!_mealPlans.containsKey(id)) return 0;
-    
+
     _mealPlans.remove(id);
     return 1;
   }
@@ -46,16 +46,14 @@ class MockDatabaseHelper implements DatabaseHelper {
     // Find a plan that contains the given date within its week range
     try {
       return _mealPlans.values.firstWhere((plan) {
-        final planStart = DateTime(plan.weekStartDate.year, 
-                                  plan.weekStartDate.month, 
-                                  plan.weekStartDate.day);
-        final planEnd = DateTime(plan.weekEndDate.year, 
-                               plan.weekEndDate.month, 
-                               plan.weekEndDate.day);
-        
+        final planStart = DateTime(plan.weekStartDate.year,
+            plan.weekStartDate.month, plan.weekStartDate.day);
+        final planEnd = DateTime(plan.weekEndDate.year, plan.weekEndDate.month,
+            plan.weekEndDate.day);
+
         // Check if the date falls within the plan's week range (inclusive)
-        return !normalizedDate.isBefore(planStart) && 
-               !normalizedDate.isAfter(planEnd);
+        return !normalizedDate.isBefore(planStart) &&
+            !normalizedDate.isAfter(planEnd);
       });
     } catch (e) {
       // No matching plan found
@@ -101,7 +99,7 @@ class MockDatabaseHelper implements DatabaseHelper {
   @override
   Future<int> updateMealPlan(MealPlan mealPlan) async {
     if (!_mealPlans.containsKey(mealPlan.id)) return 0;
-    
+
     _mealPlans[mealPlan.id] = mealPlan;
     return 1;
   }
@@ -370,7 +368,6 @@ class MockDatabaseHelper implements DatabaseHelper {
     return Map.from(_mealCounts);
   }
 
-
   // INGREDIENT OPERATIONS
   @override
   Future<String> insertIngredient(Ingredient ingredient) async {
@@ -582,9 +579,9 @@ class MockDatabaseHelper implements DatabaseHelper {
     final currentMealRecipeEntries = _mealRecipes.values
         .where((mr) => mr.mealId == mealId && mr.recipeId == recipeId)
         .toList();
-    
+
     if (currentMealRecipeEntries.isEmpty) return false;
-    
+
     final mealRecipe = currentMealRecipeEntries.first;
     final updatedMealRecipe = mealRecipe.copyWith(isPrimaryDish: true);
     _mealRecipes[mealRecipe.id] = updatedMealRecipe;
@@ -698,7 +695,7 @@ class MockDatabaseHelper implements DatabaseHelper {
       RecommendationResults results, String contextType,
       {DateTime? targetDate, String? mealType}) async {
     final id = IdGenerator.generateId();
-    
+
     // Use the results.generatedAt timestamp
     final createdAt = results.generatedAt;
 
@@ -904,32 +901,35 @@ class MockDatabaseHelper implements DatabaseHelper {
       List<ProteinType>? excludedProteinTypes})? customGetCandidateRecipes;
 
   // === MIGRATION METHODS (Mock Implementation) ===
-  
+
   @override
   Future<bool> needsMigration() async => false; // Mock: no migrations needed
-  
+
   @override
   Future<int> getCurrentVersion() async => 1; // Mock: current version
-  
+
   @override
   int getLatestVersion() => 1; // Mock: latest version
-  
+
   @override
-  Future<List<Map<String, dynamic>>> getMigrationHistory() async => []; // Mock: empty history
-  
+  Future<List<Map<String, dynamic>>> getMigrationHistory() async =>
+      []; // Mock: empty history
+
   @override
   Future<List<MigrationResult>> runPendingMigrations({
     void Function(String status, double progress)? onProgress,
     void Function(MigrationResult result)? onMigrationComplete,
-  }) async => []; // Mock: no migrations to run
-  
+  }) async =>
+      []; // Mock: no migrations to run
+
   @override
   Future<List<MigrationResult>> rollbackToVersion(
     int targetVersion, {
     void Function(String status, double progress)? onProgress,
     void Function(MigrationResult result)? onMigrationComplete,
-  }) async => []; // Mock: no rollbacks
-  
+  }) async =>
+      []; // Mock: no rollbacks
+
   @override
   void notifyMigrationCompleted() {
     // Mock: do nothing

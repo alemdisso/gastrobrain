@@ -10,6 +10,7 @@ import 'package:gastrobrain/models/meal_plan.dart';
 import 'package:gastrobrain/models/meal_plan_item.dart';
 import 'package:gastrobrain/models/meal_plan_item_recipe.dart';
 import 'package:gastrobrain/models/ingredient.dart';
+import 'package:gastrobrain/models/ingredient_category.dart';
 import 'package:gastrobrain/models/recipe_ingredient.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/models/protein_type.dart';
@@ -127,29 +128,29 @@ void main() {
       final chickenIngredient = Ingredient(
         id: IdGenerator.generateId(),
         name: 'Chicken Breast',
-        category: 'protein',
-        proteinType: ProteinType.chicken.name,
+        category: IngredientCategory.protein,
+        proteinType: ProteinType.chicken,
       );
 
       final beefIngredient = Ingredient(
         id: IdGenerator.generateId(),
         name: 'Beef Chuck',
-        category: 'protein',
-        proteinType: ProteinType.beef.name,
+        category: IngredientCategory.protein,
+        proteinType: ProteinType.beef,
       );
 
       final fishIngredient = Ingredient(
         id: IdGenerator.generateId(),
         name: 'White Fish',
-        category: 'protein',
-        proteinType: ProteinType.fish.name,
+        category: IngredientCategory.protein,
+        proteinType: ProteinType.fish,
       );
 
       final porkIngredient = Ingredient(
         id: IdGenerator.generateId(),
         name: 'Pork Loin',
-        category: 'protein',
-        proteinType: ProteinType.pork.name,
+        category: IngredientCategory.protein,
+        proteinType: ProteinType.pork,
       );
 
       // Insert ingredients
@@ -480,22 +481,21 @@ void main() {
       final lambIngredient = Ingredient(
         id: IdGenerator.generateId(),
         name: 'Lamb Leg',
-        category: 'protein',
-        proteinType: ProteinType.lamb.name,
+        category: IngredientCategory.protein,
+        proteinType: ProteinType.lamb,
       );
 
       final seafoodIngredient = Ingredient(
         id: IdGenerator.generateId(),
         name: 'Mixed Seafood',
-        category: 'protein',
-        proteinType: ProteinType.seafood.name,
+        category: IngredientCategory.protein,
+        proteinType: ProteinType.seafood,
       );
       final turkeyIngredient = Ingredient(
         id: IdGenerator.generateId(),
         name: 'Turkey Breast',
-        category: 'protein',
-        proteinType:
-            ProteinType.other.name, // Use 'other' for turkey to avoid conflicts
+        category: IngredientCategory.protein,
+        proteinType: ProteinType.other, // Use 'other' for turkey to avoid conflicts
       );
 
       // Insert ingredients

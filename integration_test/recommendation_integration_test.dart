@@ -7,6 +7,7 @@ import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/models/meal.dart';
 import 'package:gastrobrain/models/protein_type.dart';
 import 'package:gastrobrain/models/ingredient.dart';
+import 'package:gastrobrain/models/ingredient_category.dart';
 import 'package:gastrobrain/models/recipe_ingredient.dart';
 import 'package:gastrobrain/core/services/recommendation_service.dart';
 import 'package:gastrobrain/core/services/recommendation_factors/frequency_factor.dart';
@@ -116,36 +117,36 @@ void main() {
           final beefIngredient = Ingredient(
             id: IdGenerator.generateId(),
             name: 'Test Beef',
-            category: 'protein',
-            proteinType: ProteinType.beef.name,
+            category: IngredientCategory.protein,
+            proteinType: ProteinType.beef,
           );
 
           final fishIngredient = Ingredient(
             id: IdGenerator.generateId(),
             name: 'Test Fish',
-            category: 'protein',
-            proteinType: ProteinType.fish.name,
+            category: IngredientCategory.protein,
+            proteinType: ProteinType.fish,
           );
 
           final chickenIngredient = Ingredient(
             id: IdGenerator.generateId(),
             name: 'Test Chicken',
-            category: 'protein',
-            proteinType: ProteinType.chicken.name,
+            category: IngredientCategory.protein,
+            proteinType: ProteinType.chicken,
           );
 
           final porkIngredient = Ingredient(
             id: IdGenerator.generateId(),
             name: 'Test Pork',
-            category: 'protein',
-            proteinType: ProteinType.pork.name,
+            category: IngredientCategory.protein,
+            proteinType: ProteinType.pork,
           );
 
           final plantBasedIngredient = Ingredient(
             id: IdGenerator.generateId(),
             name: 'Test Plant Protein',
-            category: 'protein',
-            proteinType: ProteinType.plantBased.name,
+            category: IngredientCategory.protein,
+            proteinType: ProteinType.plantBased,
           );
 
           // Add ingredients to database

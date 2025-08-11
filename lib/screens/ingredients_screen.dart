@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/ingredient.dart';
+import '../models/ingredient_category.dart';
+import '../models/measurement_unit.dart';
 import '../models/protein_type.dart';
 import '../database/database_helper.dart';
 import '../widgets/add_new_ingredient_dialog.dart';
@@ -22,75 +24,18 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
   String _searchQuery = '';
 
   /// Helper method to get localized protein type display name
-  String? _getLocalizedProteinType(BuildContext context, String? proteinTypeString) {
-    if (proteinTypeString == null) return null;
-    
-    // Convert string to ProteinType enum
-    try {
-      final proteinType = ProteinType.values.firstWhere(
-        (e) => e.name == proteinTypeString,
-      );
-      return proteinType.getLocalizedDisplayName(context);
-    } catch (e) {
-      // If conversion fails, return the original string
-      return proteinTypeString;
-    }
+  String? _getLocalizedProteinType(BuildContext context, ProteinType? proteinType) {
+    return proteinType?.getLocalizedDisplayName(context);
   }
 
   /// Helper method to get localized category display name
-  String _getLocalizedCategory(BuildContext context, String category) {
-    final l10n = AppLocalizations.of(context)!;
-    
-    // Map string categories to localized names
-    switch (category.toLowerCase()) {
-      case 'vegetable':
-        return l10n.ingredientCategoryVegetable;
-      case 'fruit':
-        return l10n.ingredientCategoryFruit;
-      case 'protein':
-        return l10n.ingredientCategoryProtein;
-      case 'dairy':
-        return l10n.ingredientCategoryDairy;
-      case 'grain':
-        return l10n.ingredientCategoryGrain;
-      case 'pulse':
-        return l10n.ingredientCategoryPulse;
-      case 'nuts_and_seeds':
-        return l10n.ingredientCategoryNutsAndSeeds;
-      case 'seasoning':
-        return l10n.ingredientCategorySeasoning;
-      case 'sugar products':
-        return l10n.ingredientCategorySugarProducts;
-      case 'oil':
-        return l10n.ingredientCategoryOil;
-      case 'other':
-        return l10n.ingredientCategoryOther;
-      default:
-        return category; // Fallback to original string
-    }
+  String _getLocalizedCategory(BuildContext context, IngredientCategory category) {
+    return category.getLocalizedDisplayName(context);
   }
 
   /// Helper method to get localized unit display name
-  String? _getLocalizedUnit(BuildContext context, String? unit) {
-    if (unit == null) return null;
-    
-    final l10n = AppLocalizations.of(context)!;
-    
-    // Localize descriptive units, keep abbreviations as-is
-    switch (unit.toLowerCase()) {
-      case 'cup':
-        return l10n.measurementUnitCup;
-      case 'piece':
-        return l10n.measurementUnitPiece;
-      case 'slice':
-        return l10n.measurementUnitSlice;
-      case 'tbsp':
-        return l10n.measurementUnitTablespoon;
-      case 'tsp':
-        return l10n.measurementUnitTeaspoon;
-      default:
-        return unit; // Keep abbreviations like 'g', 'ml', 'kg', etc.
-    }
+  String? _getLocalizedUnit(BuildContext context, MeasurementUnit? unit) {
+    return unit?.getLocalizedDisplayName(context);
   }
 
   /// Helper method to build localized ingredient subtitle

@@ -2,6 +2,9 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gastrobrain/models/ingredient.dart';
+import 'package:gastrobrain/models/ingredient_category.dart';
+import 'package:gastrobrain/models/measurement_unit.dart';
+import 'package:gastrobrain/models/protein_type.dart';
 
 void main() {
   group('Ingredient', () {
@@ -9,12 +12,12 @@ void main() {
       final ingredient = Ingredient(
         id: 'test_id',
         name: 'Carrot',
-        category: 'vegetable',
+        category: IngredientCategory.vegetable,
       );
 
       expect(ingredient.id, 'test_id');
       expect(ingredient.name, 'Carrot');
-      expect(ingredient.category, 'vegetable');
+      expect(ingredient.category, IngredientCategory.vegetable);
       expect(ingredient.unit, isNull);
       expect(ingredient.proteinType, isNull);
       expect(ingredient.notes, isNull);
@@ -24,18 +27,18 @@ void main() {
       final ingredient = Ingredient(
         id: 'test_id',
         name: 'Chicken Breast',
-        category: 'protein',
-        unit: 'g',
-        proteinType: 'chicken',
+        category: IngredientCategory.protein,
+        unit: MeasurementUnit.gram,
+        proteinType: ProteinType.chicken,
         notes: 'Boneless, skinless',
       );
 
       // Verify the fields are set correctly
       expect(ingredient.id, 'test_id');
       expect(ingredient.name, 'Chicken Breast');
-      expect(ingredient.category, 'protein');
-      expect(ingredient.unit, 'g');
-      expect(ingredient.proteinType, 'chicken');
+      expect(ingredient.category, IngredientCategory.protein);
+      expect(ingredient.unit, MeasurementUnit.gram);
+      expect(ingredient.proteinType, ProteinType.chicken);
       expect(ingredient.notes, 'Boneless, skinless');
 
       // Verify toMap creates the correct map representation
@@ -62,8 +65,8 @@ void main() {
 
       expect(ingredient.id, 'test_id');
       expect(ingredient.name, 'Olive Oil');
-      expect(ingredient.category, 'other');
-      expect(ingredient.unit, 'ml');
+      expect(ingredient.category, IngredientCategory.other);
+      expect(ingredient.unit, MeasurementUnit.milliliter);
       expect(ingredient.proteinType, null);
       expect(ingredient.notes, 'Extra virgin');
     });
@@ -80,30 +83,30 @@ void main() {
 
       expect(ingredient.id, 'test_id');
       expect(ingredient.name, 'Salt');
-      expect(ingredient.category, 'seasoning');
+      expect(ingredient.category, IngredientCategory.seasoning);
       expect(ingredient.unit, isNull);
       expect(ingredient.proteinType, isNull);
       expect(ingredient.notes, isNull);
     });
 
-    test('handles empty strings in optional fields', () {
+    test('handles null optional fields correctly', () {
       final ingredient = Ingredient(
         id: 'test_id',
         name: 'Sugar',
-        category: 'sugar products',
-        unit: '',
-        proteinType: '',
+        category: IngredientCategory.sugarProducts,
+        unit: null,
+        proteinType: null,
         notes: '',
       );
 
       final map = ingredient.toMap();
-      expect(map['unit'], '');
-      expect(map['protein_type'], '');
+      expect(map['unit'], null);
+      expect(map['protein_type'], null);
       expect(map['notes'], '');
 
       final recreatedIngredient = Ingredient.fromMap(map);
-      expect(recreatedIngredient.unit, '');
-      expect(recreatedIngredient.proteinType, '');
+      expect(recreatedIngredient.unit, null);
+      expect(recreatedIngredient.proteinType, null);
       expect(recreatedIngredient.notes, '');
     });
 
@@ -111,8 +114,8 @@ void main() {
       final original = Ingredient(
         id: 'test_id',
         name: 'Bell Pepper',
-        category: 'vegetable',
-        unit: 'piece',
+        category: IngredientCategory.vegetable,
+        unit: MeasurementUnit.piece,
         proteinType: null,
         notes: 'Red preferred',
       );
@@ -136,28 +139,28 @@ void main() {
       final proteinIngredient = Ingredient(
         id: 'test_id',
         name: 'Salmon',
-        category: 'protein',
-        proteinType: 'fish',
-        unit: 'g',
+        category: IngredientCategory.protein,
+        proteinType: ProteinType.fish,
+        unit: MeasurementUnit.gram,
       );
 
-      expect(proteinIngredient.category, 'protein');
-      expect(proteinIngredient.proteinType, 'fish');
+      expect(proteinIngredient.category, IngredientCategory.protein);
+      expect(proteinIngredient.proteinType, ProteinType.fish);
 
       final map = proteinIngredient.toMap();
       expect(map['category'], 'protein');
       expect(map['protein_type'], 'fish');
 
       final recreated = Ingredient.fromMap(map);
-      expect(recreated.category, 'protein');
-      expect(recreated.proteinType, 'fish');
+      expect(recreated.category, IngredientCategory.protein);
+      expect(recreated.proteinType, ProteinType.fish);
     });
 
     test('handles special characters in fields', () {
       final ingredient = Ingredient(
         id: 'test_id',
         name: 'Jalapeño',
-        category: 'vegetable',
+        category: IngredientCategory.vegetable,
         notes: 'Very hot! 🌶️',
       );
 
@@ -170,16 +173,16 @@ void main() {
 
     test('works with all known categories', () {
       final categories = [
-        'vegetable',
-        'fruit',
-        'protein',
-        'dairy',
-        'grain',
-        'pulse',
-        'nuts_and_seeds',
-        'seasoning',
-        'sugar products',
-        'other'
+        IngredientCategory.vegetable,
+        IngredientCategory.fruit,
+        IngredientCategory.protein,
+        IngredientCategory.dairy,
+        IngredientCategory.grain,
+        IngredientCategory.pulse,
+        IngredientCategory.nutsAndSeeds,
+        IngredientCategory.seasoning,
+        IngredientCategory.sugarProducts,
+        IngredientCategory.other,
       ];
 
       for (final category in categories) {

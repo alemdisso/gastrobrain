@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:gastrobrain/core/di/providers/database_provider.dart';
 import 'package:gastrobrain/models/ingredient.dart';
+import 'package:gastrobrain/models/ingredient_category.dart';
+import 'package:gastrobrain/models/protein_type.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/screens/add_recipe_screen.dart';
 import 'package:gastrobrain/l10n/app_localizations.dart';
@@ -96,14 +98,14 @@ void main() {
     mockDbHelper.ingredients['test-ing-1'] = Ingredient(
       id: 'test-ing-1',
       name: 'Test Ingredient 1',
-      category: 'vegetable',
+      category: IngredientCategory.vegetable,
     );
 
     mockDbHelper.ingredients['test-ing-2'] = Ingredient(
       id: 'test-ing-2',
       name: 'Test Ingredient 2',
-      category: 'protein',
-      proteinType: 'chicken',
+      category: IngredientCategory.protein,
+      proteinType: ProteinType.chicken,
     );
 
     // Verify ingredients are in the mock database

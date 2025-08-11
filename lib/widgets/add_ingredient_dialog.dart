@@ -569,7 +569,10 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                             border: const OutlineInputBorder(),
                                           ),
                                           child: Text(
-                                            _selectedIngredient?.unit ?? 'N/A',
+                                            _selectedIngredient?.unit
+                                                    ?.getLocalizedDisplayName(
+                                                        context) ??
+                                                'N/A',
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodyLarge,

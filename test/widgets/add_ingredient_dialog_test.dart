@@ -6,6 +6,9 @@ import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/widgets/add_ingredient_dialog.dart';
 import 'package:gastrobrain/models/ingredient.dart';
+import 'package:gastrobrain/models/ingredient_category.dart';
+import 'package:gastrobrain/models/measurement_unit.dart';
+import 'package:gastrobrain/models/protein_type.dart';
 import 'package:gastrobrain/models/recipe_ingredient.dart';
 import '../mocks/mock_database_helper.dart';
 import '../test_utils/test_app_wrapper.dart';
@@ -81,16 +84,16 @@ void main() {
       mockDbHelper.ingredients['test-ing-1'] = Ingredient(
         id: 'test-ing-1',
         name: 'Carrots',
-        category: 'vegetable',
-        unit: 'g',
+        category: IngredientCategory.vegetable,
+        unit: MeasurementUnit.gram,
       );
 
       mockDbHelper.ingredients['test-ing-2'] = Ingredient(
         id: 'test-ing-2',
         name: 'Chicken Breast',
-        category: 'protein',
-        proteinType: 'chicken',
-        unit: 'g',
+        category: IngredientCategory.protein,
+        proteinType: ProteinType.chicken,
+        unit: MeasurementUnit.gram,
       );
     });
 

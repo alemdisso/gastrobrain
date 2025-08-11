@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/ingredient.dart';
+import '../models/ingredient_category.dart';
+import '../models/measurement_unit.dart';
 import '../models/protein_type.dart';
 import '../database/database_helper.dart';
 import '../utils/id_generator.dart';
@@ -28,35 +30,14 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _notesController = TextEditingController();
-  String _selectedCategory = 'vegetable';
-  String? _selectedUnit;
+  IngredientCategory _selectedCategory = IngredientCategory.vegetable;
+  MeasurementUnit? _selectedUnit;
   ProteinType? _selectedProteinType;
   bool _isSaving = false;
 
-  final List<String> _categories = [
-    'vegetable',
-    'fruit',
-    'protein', // for meat, fish, eggs
-    'dairy',
-    'grain', // for cereals like wheat, rice
-    'pulse', // for legumes like lentils, beans
-    'nuts_and_seeds',
-    'seasoning',
-    'sugar products', // for sugar, honey, syrups, etc.
-    'other'
-  ];
+  final List<IngredientCategory> _categories = IngredientCategory.values;
 
-  final List<String> _units = [
-    'g',
-    'kg',
-    'ml',
-    'l',
-    'cup',
-    'tbsp',
-    'tsp',
-    'piece',
-    'slice'
-  ];
+  final List<MeasurementUnit> _units = MeasurementUnit.values;
 
   @override
   void initState() {
@@ -70,12 +51,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
       _notesController.text = widget.ingredient!.notes ?? '';
       _selectedCategory = widget.ingredient!.category;
       _selectedUnit = widget.ingredient!.unit;
-      if (widget.ingredient!.proteinType != null) {
-        _selectedProteinType = ProteinType.values.firstWhere(
-          (type) => type.name == widget.ingredient!.proteinType,
-          orElse: () => ProteinType.other,
-        );
-      }
+      _selectedProteinType = widget.ingredient!.proteinType;
     }
   }
 
@@ -94,7 +70,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
         name: _nameController.text,
         category: _selectedCategory,
         unit: _selectedUnit,
-        proteinType: _selectedProteinType?.name,
+        proteinType: _selectedProteinType,
       );
 
       final ingredient = Ingredient(
@@ -102,7 +78,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
         name: _nameController.text,
         category: _selectedCategory,
         unit: _selectedUnit,
-        proteinType: _selectedProteinType?.name,
+        proteinType: _selectedProteinType,
         notes: _notesController.text.isEmpty ? null : _notesController.text,
       );
 
@@ -141,65 +117,6 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
     }
   }
 
-  String formatCategoryName(String category) {
-    final l10n = AppLocalizations.of(context)!;
-    
-    // Map string categories to localized names
-    switch (category.toLowerCase()) {
-      case 'vegetable':
-        return l10n.ingredientCategoryVegetable;
-      case 'fruit':
-        return l10n.ingredientCategoryFruit;
-      case 'protein':
-        return l10n.ingredientCategoryProtein;
-      case 'dairy':
-        return l10n.ingredientCategoryDairy;
-      case 'grain':
-        return l10n.ingredientCategoryGrain;
-      case 'pulse':
-        return l10n.ingredientCategoryPulse;
-      case 'nuts_and_seeds':
-        return l10n.ingredientCategoryNutsAndSeeds;
-      case 'seasoning':
-        return l10n.ingredientCategorySeasoning;
-      case 'sugar products':
-        return l10n.ingredientCategorySugarProducts;
-      case 'oil':
-        return l10n.ingredientCategoryOil;
-      case 'other':
-        return l10n.ingredientCategoryOther;
-      default:
-        // Fallback to simple capitalization for unknown categories
-        if (category.contains('_')) {
-          return category
-              .split('_')
-              .map((word) => word[0].toUpperCase() + word.substring(1))
-              .join(' ');
-        }
-        return category[0].toUpperCase() + category.substring(1);
-    }
-  }
-
-  /// Helper method to get localized unit display name
-  String getLocalizedUnitName(String unit) {
-    final l10n = AppLocalizations.of(context)!;
-    
-    // Localize descriptive units, keep abbreviations as-is
-    switch (unit.toLowerCase()) {
-      case 'cup':
-        return l10n.measurementUnitCup;
-      case 'piece':
-        return l10n.measurementUnitPiece;
-      case 'slice':
-        return l10n.measurementUnitSlice;
-      case 'tbsp':
-        return l10n.measurementUnitTablespoon;
-      case 'tsp':
-        return l10n.measurementUnitTeaspoon;
-      default:
-        return unit; // Keep abbreviations like 'g', 'ml', 'kg', etc.
-    }
-  }
 
   @override
   void dispose() {
@@ -237,7 +154,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
               const SizedBox(height: 16),
 
               // Category Dropdown
-              DropdownButtonFormField<String>(
+              DropdownButtonFormField<IngredientCategory>(
                 value: _selectedCategory,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.categoryLabel,
@@ -246,13 +163,13 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
                 items: _categories.map((category) {
                   return DropdownMenuItem(
                     value: category,
-                    child: Text(formatCategoryName(category)),
+                    child: Text(category.getLocalizedDisplayName(context)),
                   );
                 }).toList(),
                 onChanged: (value) {
                   setState(() {
                     _selectedCategory = value!;
-                    if (value != 'protein') {
+                    if (value != IngredientCategory.protein) {
                       _selectedProteinType = null;
                     }
                   });
@@ -261,21 +178,21 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
               const SizedBox(height: 16),
 
               // Unit Dropdown
-              DropdownButtonFormField<String>(
+              DropdownButtonFormField<MeasurementUnit?>(
                 value: _selectedUnit,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.unitOptional,
                   border: const OutlineInputBorder(),
                 ),
                 items: [
-                  DropdownMenuItem<String>(
+                  DropdownMenuItem<MeasurementUnit?>(
                     value: null,
                     child: Text(AppLocalizations.of(context)!.noUnit),
                   ),
                   ..._units.map((unit) {
                     return DropdownMenuItem(
                       value: unit,
-                      child: Text(getLocalizedUnitName(unit)),
+                      child: Text(unit.getLocalizedDisplayName(context)),
                     );
                   }),
                 ],
@@ -288,7 +205,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
               const SizedBox(height: 16),
 
               // Protein Type (only shown for protein category)
-              if (_selectedCategory == 'protein')
+              if (_selectedCategory == IngredientCategory.protein)
                 DropdownButtonFormField<ProteinType>(
                   value: _selectedProteinType,
                   decoration: InputDecoration(
