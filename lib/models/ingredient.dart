@@ -1,10 +1,13 @@
+import 'ingredient_category.dart';
+import 'measurement_unit.dart';
+import 'protein_type.dart';
+
 class Ingredient {
   String id;
   String name;
-  String category; // 'protein', 'vegetable', 'grain', etc.
-  String? unit; // 'g', 'ml', 'piece', etc.
-  String?
-      proteinType; // 'fish', 'beef', 'pork', 'chicken', null for non-proteins
+  IngredientCategory category;
+  MeasurementUnit? unit;
+  ProteinType? proteinType; // null for non-proteins
   String? notes;
 
   Ingredient({
@@ -20,9 +23,9 @@ class Ingredient {
     return {
       'id': id,
       'name': name,
-      'category': category,
-      'unit': unit,
-      'protein_type': proteinType,
+      'category': category.value,
+      'unit': unit?.value,
+      'protein_type': proteinType?.name,
       'notes': notes,
     };
   }
@@ -31,9 +34,14 @@ class Ingredient {
     return Ingredient(
       id: map['id'],
       name: map['name'],
-      category: map['category'],
-      unit: map['unit'],
-      proteinType: map['protein_type'],
+      category: IngredientCategory.fromString(map['category']),
+      unit: MeasurementUnit.fromString(map['unit']),
+      proteinType: map['protein_type'] != null 
+          ? ProteinType.values.firstWhere(
+              (type) => type.name == map['protein_type'],
+              orElse: () => ProteinType.other,
+            )
+          : null,
       notes: map['notes'],
     );
   }

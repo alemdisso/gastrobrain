@@ -12,6 +12,9 @@ import '../models/recipe.dart';
 import '../models/meal.dart';
 import '../models/meal_recipe.dart';
 import '../models/ingredient.dart';
+import '../models/ingredient_category.dart';
+import '../models/measurement_unit.dart';
+import '../models/protein_type.dart';
 import '../models/recipe_ingredient.dart';
 import '../models/meal_plan.dart';
 import '../models/meal_plan_item.dart';
@@ -23,6 +26,7 @@ import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/migration/migration_runner.dart';
 import '../core/migration/migration.dart';
 import '../core/migration/migrations/001_initial_schema.dart';
+import '../core/migration/migrations/002_ingredient_enum_conversion.dart';
 import '../core/repositories/base_repository.dart';
 
 class DatabaseHelper {
@@ -37,6 +41,7 @@ class DatabaseHelper {
   /// Get all available migrations in order
   static List<Migration> get _migrations => [
     InitialSchemaMigration(),
+    IngredientEnumConversionMigration(),
     // Future migrations will be added here
   ];
 
@@ -787,9 +792,14 @@ class DatabaseHelper {
           final ingredient = Ingredient(
             id: IdGenerator.generateId(),
             name: ingredientJson['name'] as String,
-            category: ingredientJson['category'] as String,
-            unit: ingredientJson['unit'] as String?,
-            proteinType: ingredientJson['protein_type'] as String?,
+            category: IngredientCategory.fromString(ingredientJson['category'] as String),
+            unit: MeasurementUnit.fromString(ingredientJson['unit'] as String?),
+            proteinType: ingredientJson['protein_type'] != null
+                ? ProteinType.values.firstWhere(
+                    (type) => type.name == ingredientJson['protein_type'],
+                    orElse: () => ProteinType.other,
+                  )
+                : null,
           );
 
           await insertIngredient(ingredient);
@@ -867,7 +877,7 @@ class DatabaseHelper {
               final ingredient = Ingredient(
                 id: IdGenerator.generateId(),
                 name: ingredientName,
-                category: 'other',
+                category: IngredientCategory.other,
                 proteinType: null,
               );
               ingredientId = await insertIngredient(ingredient);

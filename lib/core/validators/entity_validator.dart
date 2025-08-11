@@ -3,6 +3,9 @@
 import '../errors/gastrobrain_exceptions.dart';
 import '../../models/meal_plan_item.dart';
 import '../../models/meal_plan_item_recipe.dart';
+import '../../models/ingredient_category.dart';
+import '../../models/measurement_unit.dart';
+import '../../models/protein_type.dart';
 
 class EntityValidator {
   static void validateRecipe({
@@ -53,17 +56,14 @@ class EntityValidator {
 
   static void validateIngredient({
     required String name,
-    required String category,
-    String? unit,
-    String? proteinType,
+    required IngredientCategory category,
+    MeasurementUnit? unit,
+    ProteinType? proteinType,
   }) {
     if (name.isEmpty) {
       throw ValidationException('Ingredient name cannot be empty');
     }
-    if (category.isEmpty) {
-      throw ValidationException('Category must be selected');
-    }
-    if (category == 'protein' && proteinType == null) {
+    if (category == IngredientCategory.protein && proteinType == null) {
       throw ValidationException(
           'Protein type must be selected for protein ingredients');
     }
