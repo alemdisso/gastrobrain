@@ -1695,6 +1695,27 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
         ),
         const SizedBox(height: 16),
 
+        // Show existing side dishes if any
+        if (_additionalRecipes.isNotEmpty) ...[
+          Text(
+            AppLocalizations.of(context)!.sideDishesLabel,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          ..._additionalRecipes.map((recipe) => ListTile(
+            leading: const Icon(Icons.restaurant_menu, color: Colors.grey),
+            title: Text(recipe.name),
+            trailing: IconButton(
+              icon: const Icon(Icons.remove_circle_outline),
+              onPressed: () => setState(() {
+                _additionalRecipes.remove(recipe);
+              }),
+            ),
+            contentPadding: EdgeInsets.zero,
+          )),
+          const SizedBox(height: 16),
+        ],
+
         // Menu options
         ListTile(
           leading: const Icon(Icons.save),
@@ -1702,14 +1723,15 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
           subtitle: Text(AppLocalizations.of(context)!.addThisRecipeToMealPlan),
           onTap: () => Navigator.pop(context, {
             'primaryRecipe': _selectedRecipe!,
-            'additionalRecipes': <Recipe>[],
+            'additionalRecipes': _additionalRecipes,
           }),
         ),
         ListTile(
           leading: const Icon(Icons.add),
-          title: Text(AppLocalizations.of(context)!.addSideDishes),
-          subtitle:
-              Text(AppLocalizations.of(context)!.addMoreRecipesToThisMeal),
+          title: Text(_additionalRecipes.isNotEmpty 
+              ? AppLocalizations.of(context)!.manageSideDishes 
+              : AppLocalizations.of(context)!.addSideDishes),
+          subtitle: Text(AppLocalizations.of(context)!.addMoreRecipesToThisMeal),
           onTap: () => _showEnhancedSideDishDialog(),
         ),
         ListTile(
