@@ -1422,7 +1422,6 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
   Recipe? _selectedRecipe;
   bool _showingMenu = false;
   List<Recipe> _additionalRecipes = [];
-  bool _showingMultiRecipeMode = false;
 
   @override
   void initState() {
@@ -1435,8 +1434,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
       // Pre-populate with existing meal data
       _selectedRecipe = widget.initialPrimaryRecipe;
       _additionalRecipes = List.from(widget.initialAdditionalRecipes ?? []);
-      _showingMultiRecipeMode = _additionalRecipes.isNotEmpty;
-      _showingMenu = !_showingMultiRecipeMode;
+      _showingMenu = true;
     } else {
       // Start on the Recommended tab if we have recommendations
       if (widget.detailedRecommendations.isNotEmpty) {
@@ -1550,19 +1548,15 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              _showingMultiRecipeMode
-                  ? AppLocalizations.of(context)!.addSideDishes
-                  : (_showingMenu
-                      ? AppLocalizations.of(context)!.mealOptions
-                      : AppLocalizations.of(context)!.selectRecipe),
+              _showingMenu
+                  ? AppLocalizations.of(context)!.mealOptions
+                  : AppLocalizations.of(context)!.selectRecipe,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
-            _showingMultiRecipeMode
-                ? _buildMultiRecipeMode()
-                : (_showingMenu
-                    ? _buildMenu()
-                    : Expanded(child: _buildRecipeSelection())),
+            _showingMenu
+                ? _buildMenu()
+                : Expanded(child: _buildRecipeSelection()),
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(AppLocalizations.of(context)!.cancel),
@@ -1716,9 +1710,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
           title: Text(AppLocalizations.of(context)!.addSideDishes),
           subtitle:
               Text(AppLocalizations.of(context)!.addMoreRecipesToThisMeal),
-          onTap: () => setState(() {
-            _showingMultiRecipeMode = true;
-          }),
+          onTap: () => _showEnhancedSideDishDialog(),
         ),
         ListTile(
           leading: const Icon(Icons.arrow_back),
@@ -1758,101 +1750,24 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
     );
   }
 
-  Widget _buildMultiRecipeMode() {
-    return Column(
-      children: [
-        // Show selected primary recipe (locked)
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.restaurant, color: Colors.green),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  '${_selectedRecipe!.name} (Main Dish)',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
 
-        // Show selected additional recipes
-        if (_additionalRecipes.isNotEmpty) ...[
-          Text(AppLocalizations.of(context)!.sideDishesLabel,
-              style: const TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          ..._additionalRecipes.map((recipe) => ListTile(
-                leading: const Icon(Icons.restaurant_menu, color: Colors.grey),
-                title: Text(recipe.name),
-                trailing: IconButton(
-                  icon: const Icon(Icons.remove_circle_outline),
-                  onPressed: () => setState(() {
-                    _additionalRecipes.remove(recipe);
-                  }),
-                ),
-              )),
-          const SizedBox(height: 16),
-        ],
 
-        // Add recipe button
-        ElevatedButton.icon(
-          onPressed: () => _showAddSideDishDialog(),
-          icon: const Icon(Icons.add),
-          label: Text(AppLocalizations.of(context)!.addSideDish),
-        ),
-        const SizedBox(height: 16),
-
-        // Action buttons
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            TextButton(
-              onPressed: () => setState(() {
-                _showingMultiRecipeMode = false;
-              }),
-              child: Text(AppLocalizations.of(context)!.back),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, {
-                'primaryRecipe': _selectedRecipe!,
-                'additionalRecipes': _additionalRecipes,
-              }),
-              child: Text(AppLocalizations.of(context)!.saveMeal),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Future<void> _showAddSideDishDialog() async {
-    // Create list of recipes to exclude (primary + already added)
-    final excludeRecipes = [
-      _selectedRecipe!,
-      ..._additionalRecipes,
-    ];
-
-    final selectedRecipe = await showDialog<Recipe>(
+  Future<void> _showEnhancedSideDishDialog() async {
+    final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (context) => AddSideDishDialog(
         availableRecipes: widget.recipes,
-        excludeRecipes: excludeRecipes,
+        excludeRecipes: [_selectedRecipe!],
         searchHint: 'Search side dishes...',
         enableSearch: true,
+        primaryRecipe: _selectedRecipe,
+        currentSideDishes: _additionalRecipes,
       ),
     );
 
-    if (selectedRecipe != null && mounted) {
-      setState(() {
-        _additionalRecipes.add(selectedRecipe);
-      });
+    if (result != null && mounted) {
+      // The enhanced dialog returns the complete meal composition
+      Navigator.pop(context, result);
     }
   }
 
