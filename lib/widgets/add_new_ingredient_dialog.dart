@@ -224,14 +224,14 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
                     });
                   },
                   validator: (value) {
-                    if (_selectedCategory == 'protein' && value == null) {
+                    if (_selectedCategory == IngredientCategory.protein && value == null) {
                       return AppLocalizations.of(context)!.pleaseSelectProteinType;
                     }
                     return null;
                   },
                 ),
 
-              if (_selectedCategory == 'protein') const SizedBox(height: 16),
+              if (_selectedCategory == IngredientCategory.protein) const SizedBox(height: 16),
 
               // Notes
               TextFormField(

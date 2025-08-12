@@ -3,6 +3,7 @@ import '../models/recipe.dart';
 //import '../models/ingredient.dart';
 //import '../models/recipe_ingredient.dart';
 import '../models/protein_type.dart';
+import '../models/measurement_unit.dart';
 import '../database/database_helper.dart';
 import '../widgets/add_ingredient_dialog.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
@@ -213,9 +214,13 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
                             : null;
 
                         // Get the effective unit (override or default)
-                        final effectiveUnit = ingredient['unit_override'] ??
+                        final effectiveUnitString = ingredient['unit_override'] ??
                             ingredient['unit'] ??
                             '';
+                        
+                        // Convert to MeasurementUnit enum and get localized name
+                        final measurementUnit = MeasurementUnit.fromString(effectiveUnitString);
+                        final localizedUnit = measurementUnit?.getLocalizedDisplayName(context) ?? effectiveUnitString;
 
                         return Card(
                           margin: const EdgeInsets.symmetric(
@@ -238,14 +243,17 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
                                 Row(
                                   children: [
                                     Text(
-                                      '${QuantityFormatter.format(ingredient['quantity'])} $effectiveUnit',
+                                      '${QuantityFormatter.format(ingredient['quantity'])} $localizedUnit',
                                     ),
                                     if (ingredient['unit_override'] != null)
                                       Padding(
                                         padding: const EdgeInsets.only(left: 4),
                                         child: Tooltip(
-                                          message:
-                                              AppLocalizations.of(context)!.unitOverridden(ingredient['unit'] ?? AppLocalizations.of(context)!.noUnit),
+                                          message: AppLocalizations.of(context)!.unitOverridden(
+                                            MeasurementUnit.fromString(ingredient['unit'])?.getLocalizedDisplayName(context) ?? 
+                                            ingredient['unit'] ?? 
+                                            AppLocalizations.of(context)!.noUnit
+                                          ),
                                           child: const Icon(Icons.edit_note,
                                               size: 16),
                                         ),

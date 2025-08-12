@@ -5,6 +5,7 @@ import '../models/ingredient.dart';
 import '../models/recipe_ingredient.dart';
 import '../models/frequency_type.dart';
 import '../models/recipe_category.dart';
+import '../models/measurement_unit.dart';
 import '../database/database_helper.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
@@ -131,16 +132,22 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                     if (snapshot.hasData) {
                       final ingredientName = snapshot.data?.name ??
                           AppLocalizations.of(context)!.unknown;
-                      final unit =
-                          ingredient.unitOverride ?? snapshot.data?.unit ?? '';
+                      final unitString =
+                          ingredient.unitOverride ?? snapshot.data?.unit?.value ?? '';
+                      final measurementUnit = MeasurementUnit.fromString(unitString);
+                      final localizedUnit = measurementUnit?.getLocalizedDisplayName(context) ?? unitString;
                       return Text(
-                          '$ingredientName: ${QuantityFormatter.format(ingredient.quantity)} $unit');
+                          '$ingredientName: ${QuantityFormatter.format(ingredient.quantity)} $localizedUnit');
                     }
                     return Text(AppLocalizations.of(context)!.loading);
                   },
                 )
-              : Text(
-                  '${ingredient.customName}: ${QuantityFormatter.format(ingredient.quantity)} ${ingredient.customUnit ?? ''}'),
+              : Text(() {
+                  final customUnitString = ingredient.customUnit ?? '';
+                  final measurementUnit = MeasurementUnit.fromString(customUnitString);
+                  final localizedUnit = measurementUnit?.getLocalizedDisplayName(context) ?? customUnitString;
+                  return '${ingredient.customName}: ${QuantityFormatter.format(ingredient.quantity)} $localizedUnit';
+                }()),
           subtitle: ingredient.notes != null ? Text(ingredient.notes!) : null,
           trailing: IconButton(
             icon: const Icon(Icons.delete),

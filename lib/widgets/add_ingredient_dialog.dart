@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../models/ingredient.dart';
 import '../models/recipe_ingredient.dart';
+import '../models/measurement_unit.dart';
+import '../models/ingredient_category.dart';
 import '../database/database_helper.dart';
 import 'add_new_ingredient_dialog.dart';
 import '../utils/id_generator.dart';
@@ -45,36 +47,15 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
   bool _isLoading = true;
   bool _isSaving = false;
 
-  final List<String> _units = [
-    'g',
-    'kg',
-    'ml',
-    'l',
-    'cup',
-    'tbsp',
-    'tsp',
-    'piece',
-    'slice'
-  ];
+  final List<MeasurementUnit> _units = MeasurementUnit.values;
 
-  final List<String> _categories = [
-    'vegetable',
-    'fruit',
-    'protein',
-    'dairy',
-    'grain',
-    'pulse',
-    'nuts_and_seeds',
-    'seasoning',
-    'sugar products',
-    'other'
-  ];
+  final List<IngredientCategory> _categories = IngredientCategory.values;
 
   // New controller for custom ingredients
   final _customNameController = TextEditingController();
 
   bool _isCustomIngredient = false;
-  String _selectedCategory = 'vegetable';
+  IngredientCategory _selectedCategory = IngredientCategory.vegetable;
 
   @override
   void initState() {
@@ -93,7 +74,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
           _isCustomIngredient = true;
           _customNameController.text =
               widget.existingIngredient!['custom_name'];
-          _selectedCategory = widget.existingIngredient!['custom_category'];
+          _selectedCategory = IngredientCategory.fromString(widget.existingIngredient!['custom_category'] ?? 'other');
           _selectedUnitOverride = widget.existingIngredient!['custom_unit'];
           _isLoading = false; // Set loading to false for custom ingredients
         });
@@ -134,17 +115,6 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
     }
   }
 
-  String _formatCategoryName(String category) {
-    // Convert snake_case to Title Case
-    if (category.contains('_')) {
-      return category
-          .split('_')
-          .map((word) => word[0].toUpperCase() + word.substring(1))
-          .join(' ');
-    }
-    // Simple capitalization for single words
-    return category[0].toUpperCase() + category.substring(1);
-  }
 
   Future<void> _addIngredientToRecipe() async {
     if (!_formKey.currentState!.validate() ||
@@ -168,7 +138,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
           quantity: double.parse(_quantityController.text),
           notes: _notesController.text.isEmpty ? null : _notesController.text,
           customName: _customNameController.text,
-          customCategory: _selectedCategory,
+          customCategory: _selectedCategory.value,
           customUnit: _selectedUnitOverride,
         );
       } else {
@@ -383,7 +353,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                       ),
                       const SizedBox(height: 16),
                       // Custom Ingredient Category
-                      DropdownButtonFormField<String>(
+                      DropdownButtonFormField<IngredientCategory>(
                         value: _selectedCategory,
                         decoration: InputDecoration(
                           labelText:
@@ -394,12 +364,12 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                           return DropdownMenuItem(
                             value: category,
                             child: Text(
-                              _formatCategoryName(category),
+                              category.getLocalizedDisplayName(context),
                               overflow: TextOverflow.ellipsis,
                             ),
                           );
                         }).toList(),
-                        onChanged: (String? value) {
+                        onChanged: (IngredientCategory? value) {
                           if (value != null) {
                             setState(() {
                               _selectedCategory = value;
@@ -522,8 +492,8 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                     ),
                                     ..._units.map((unit) {
                                       return DropdownMenuItem(
-                                        value: unit,
-                                        child: Text(unit),
+                                        value: unit.value,
+                                        child: Text(unit.getLocalizedDisplayName(context)),
                                       );
                                     }),
                                   ],
@@ -548,8 +518,8 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                         ),
                                         items: _units.map((unit) {
                                           return DropdownMenuItem(
-                                            value: unit,
-                                            child: Text(unit),
+                                            value: unit.value,
+                                            child: Text(unit.getLocalizedDisplayName(context)),
                                           );
                                         }).toList(),
                                         onChanged: (value) {
