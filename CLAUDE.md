@@ -358,6 +358,21 @@ git branch -d hotfix/{patch-version}-{short-description}
 - **Analyze code**: `flutter analyze`
 - **Format code**: `dart format lib/ test/ integration_test/`
 
+### WSL Environment Limitations
+**IMPORTANT**: This project runs in a WSL environment with the following limitations:
+
+- **DO NOT run `flutter build apk`** - APK building is not supported in WSL
+- **DO NOT run `flutter build ios`** - iOS building requires macOS
+- **DO NOT run `flutter run`** - Device connectivity is limited in WSL
+- **Use `flutter analyze` and `flutter test`** for code validation instead
+- **Physical device testing** should be done outside the WSL environment
+
+When verifying implementations:
+1. Use `flutter analyze` to check for compilation errors
+2. Use `flutter test` to run unit and widget tests  
+3. Validate logic through code review and testing
+4. Device testing should be done separately from development environment
+
 ## Architecture Overview
 
 ### Core Architecture
