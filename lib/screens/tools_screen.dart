@@ -133,7 +133,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Export all recipe data to JSON format for external enhancement with multi-ingredient compositions.',
+                      'Export all recipe data with current ingredients (quantities, units, categories) to JSON format for external enhancement.',
                     ),
                     const SizedBox(height: 16),
                     SizedBox(
@@ -180,7 +180,8 @@ class _ToolsScreenState extends State<ToolsScreen> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      '• Exported file includes recipe metadata and current ingredients\n'
+                      '• Exported file includes complete ingredient data (quantities, units, categories)\n'
+                      '• Current ingredients show existing recipe compositions\n'
                       '• Enhanced ingredients array is empty, ready for external editing\n'
                       '• File is saved to Downloads folder with timestamp\n'
                       '• Use this data with the import utility (Issue #154)',

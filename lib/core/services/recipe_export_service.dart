@@ -15,7 +15,7 @@ import '../errors/gastrobrain_exceptions.dart';
 /// The exported JSON structure includes:
 /// - recipe_id: Unique identifier
 /// - name: Recipe name
-/// - current_main_ingredient: First ingredient (if any)
+/// - current_ingredients: Array of existing ingredients with full data
 /// - enhanced_ingredients: Empty array ready for enhancement
 /// - metadata: All recipe metadata (difficulty, times, rating, etc.)
 class RecipeExportService {
@@ -35,17 +35,25 @@ class RecipeExportService {
       final exportData = <Map<String, dynamic>>[];
       
       for (final recipe in recipes) {
-        // Get current ingredient for the recipe (if any)
+        // Get current ingredients for the recipe (with complete data)
         final currentIngredients = await _databaseHelper.getRecipeIngredients(recipe.id);
-        final currentMainIngredient = currentIngredients.isNotEmpty 
-            ? currentIngredients.first['name'] as String
-            : '';
+        
+        // Convert current ingredients to structured format
+        final currentIngredientsData = currentIngredients.map((ingredient) => {
+          'ingredient_id': ingredient['ingredient_id'],
+          'name': ingredient['name'],
+          'quantity': ingredient['quantity'],
+          'unit': ingredient['unit'],
+          'category': ingredient['category'],
+          'protein_type': ingredient['protein_type'],
+          'preparation_notes': ingredient['preparation_notes'],
+        }).toList();
 
         // Create export structure for each recipe
         final recipeExport = {
           'recipe_id': recipe.id,
           'name': recipe.name,
-          'current_main_ingredient': currentMainIngredient,
+          'current_ingredients': currentIngredientsData,
           'enhanced_ingredients': <Map<String, dynamic>>[],
           'metadata': {
             'difficulty': recipe.difficulty,
@@ -102,12 +110,13 @@ class RecipeExportService {
       if (item is! Map<String, dynamic>) return false;
       
       // Check required fields
-      final requiredFields = ['recipe_id', 'name', 'current_main_ingredient', 'enhanced_ingredients', 'metadata'];
+      final requiredFields = ['recipe_id', 'name', 'current_ingredients', 'enhanced_ingredients', 'metadata'];
       for (final field in requiredFields) {
         if (!item.containsKey(field)) return false;
       }
       
-      // Check enhanced_ingredients is a list
+      // Check current_ingredients and enhanced_ingredients are lists
+      if (item['current_ingredients'] is! List) return false;
       if (item['enhanced_ingredients'] is! List) return false;
       
       // Check metadata structure
