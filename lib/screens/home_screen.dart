@@ -11,6 +11,7 @@ import 'edit_recipe_screen.dart';
 import 'cook_meal_screen.dart';
 import 'weekly_plan_screen.dart';
 import 'ingredients_screen.dart';
+import 'tools_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -425,6 +426,7 @@ class _HomePageState extends State<HomePage> {
       _buildRecipesScreen(),
       const WeeklyPlanScreen(),
       const IngredientsScreen(),
+      const ToolsScreen(),
     ];
 
     return Scaffold(
@@ -465,6 +467,10 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(
             icon: const Icon(Icons.restaurant_menu),
             label: AppLocalizations.of(context)!.ingredients,
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.build),
+            label: 'Tools',
           ),
         ],
       ),
