@@ -74,15 +74,15 @@ class RecipeExportService {
     }
   }
 
-  /// Write JSON string to file in assets directory
+  /// Write JSON string to file in Downloads directory
   Future<String> _writeJsonToFile(String jsonString) async {
     try {
-      // Export to assets directory for easy access
+      // Export to Downloads directory for easy access on device
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final fileName = 'recipe_export_$timestamp.json';
-      final file = File('assets/$fileName');
+      final file = File('/sdcard/Download/$fileName');
       
-      // Create assets directory if it doesn't exist
+      // Create Downloads directory if it doesn't exist
       await file.parent.create(recursive: true);
       
       // Write JSON to file

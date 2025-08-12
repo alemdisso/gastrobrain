@@ -64,7 +64,9 @@ class _ToolsScreenState extends State<ToolsScreen> {
           children: [
             const Text('Recipe data has been exported to JSON format.'),
             const SizedBox(height: 16),
-            const Text('File location:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('📁 Saved to Downloads folder', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            const Text('Full path:', style: TextStyle(fontWeight: FontWeight.bold)),
             SelectableText(
               filePath,
               style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
@@ -73,7 +75,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
             const Text('📋 File path copied to clipboard'),
             const SizedBox(height: 8),
             const Text(
-              'This JSON file is ready for external enhancement with multi-ingredient compositions.',
+              'You can find this file in your device\'s Downloads folder or file manager.',
               style: TextStyle(fontStyle: FontStyle.italic),
             ),
           ],
@@ -180,7 +182,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
                     const Text(
                       '• Exported file includes recipe metadata and current ingredients\n'
                       '• Enhanced ingredients array is empty, ready for external editing\n'
-                      '• File is saved with timestamp for easy identification\n'
+                      '• File is saved to Downloads folder with timestamp\n'
                       '• Use this data with the import utility (Issue #154)',
                       style: TextStyle(fontSize: 12),
                     ),
