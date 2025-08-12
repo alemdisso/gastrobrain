@@ -142,14 +142,6 @@ class _RecipeCardState extends State<RecipeCard> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.restaurant, size: 20),
-                      onPressed: widget.onCooked,
-                      tooltip: AppLocalizations.of(context)!.cookNow,
-                      padding: EdgeInsets.zero,
-                      constraints:
-                          const BoxConstraints(minWidth: 24, minHeight: 24),
-                    ),
-                    IconButton(
                       icon: Icon(
                         isExpanded ? Icons.expand_less : Icons.expand_more,
                         size: 20,
@@ -244,7 +236,7 @@ class _RecipeCardState extends State<RecipeCard> {
                         spacing: 8,
                         children: [
                           IconButton.outlined(
-                            icon: const Icon(Icons.food_bank, size: 20),
+                            icon: const Icon(Icons.list_alt, size: 20),
                             onPressed: () {
                               Navigator.push(
                                 context,
