@@ -96,62 +96,64 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _showSortingMenu() {
-    showModalBottomSheet(
+  void _showSortingDialog() {
+    final currentSortBy = context.read<RecipeProvider>().currentSortBy;
+    String? tempSortBy = currentSortBy;
+
+    showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
               title: Text(AppLocalizations.of(context)!.sortOptions),
-              dense: true,
-            ),
-            ListTile(
-              leading: Icon(
-                context.watch<RecipeProvider>().currentSortBy == 'name'
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_unchecked,
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  RadioListTile<String>(
+                    title: Text(AppLocalizations.of(context)!.name),
+                    value: 'name',
+                    groupValue: tempSortBy,
+                    onChanged: (value) => setState(() => tempSortBy = value),
+                  ),
+                  RadioListTile<String>(
+                    title: Text(AppLocalizations.of(context)!.rating),
+                    value: 'rating',
+                    groupValue: tempSortBy,
+                    onChanged: (value) => setState(() => tempSortBy = value),
+                  ),
+                  RadioListTile<String>(
+                    title: Text(AppLocalizations.of(context)!.difficulty),
+                    value: 'difficulty',
+                    groupValue: tempSortBy,
+                    onChanged: (value) => setState(() => tempSortBy = value),
+                  ),
+                ],
               ),
-              title: Text(AppLocalizations.of(context)!.name),
-              onTap: () {
-                context.read<RecipeProvider>().setSorting(
-                  sortBy: 'name',
-                  sortOrder: 'ASC',
-                );
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(
-                context.watch<RecipeProvider>().currentSortBy == 'rating'
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_unchecked,
-              ),
-              title: Text(AppLocalizations.of(context)!.rating),
-              onTap: () {
-                context.read<RecipeProvider>().setSorting(
-                  sortBy: 'rating',
-                  sortOrder: 'DESC', // Higher ratings first
-                );
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(
-                context.watch<RecipeProvider>().currentSortBy == 'difficulty'
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_unchecked,
-              ),
-              title: Text(AppLocalizations.of(context)!.difficulty),
-              onTap: () {
-                context.read<RecipeProvider>().setSorting(
-                  sortBy: 'difficulty'
-                );
-                Navigator.pop(context);
-              },
-            ),
-          ],
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(AppLocalizations.of(context)!.cancel),
+                ),
+                TextButton(
+                  onPressed: () {
+                    if (tempSortBy != null) {
+                      String sortOrder = 'ASC';
+                      if (tempSortBy == 'rating') {
+                        sortOrder = 'DESC'; // Higher ratings first
+                      }
+                      context.read<RecipeProvider>().setSorting(
+                        sortBy: tempSortBy!,
+                        sortOrder: sortOrder,
+                      );
+                    }
+                    Navigator.pop(context);
+                  },
+                  child: Text(AppLocalizations.of(context)!.apply),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -432,7 +434,7 @@ class _HomePageState extends State<HomePage> {
             ? [
                 IconButton(
                   icon: const Icon(Icons.sort),
-                  onPressed: _showSortingMenu,
+                  onPressed: _showSortingDialog,
                   tooltip: AppLocalizations.of(context)!.sortRecipes,
                 ),
                 IconButton(
