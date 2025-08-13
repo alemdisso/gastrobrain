@@ -18,6 +18,7 @@ import '../errors/gastrobrain_exceptions.dart';
 /// - current_ingredients: Array of existing ingredients with full data
 /// - enhanced_ingredients: Empty array ready for enhancement
 /// - metadata: All recipe metadata (difficulty, times, rating, etc.)
+/// - cooking_history: Usage statistics (times cooked, last cooked date)
 class RecipeExportService {
   final DatabaseHelper _databaseHelper;
 
@@ -49,6 +50,10 @@ class RecipeExportService {
           'preparation_notes': ingredient['preparation_notes'],
         }).toList();
 
+        // Get cooking history statistics
+        final lastCookedDate = await _databaseHelper.getLastCookedDate(recipe.id);
+        final timesCookedCount = await _databaseHelper.getTimesCookedCount(recipe.id);
+
         // Create export structure for each recipe
         final recipeExport = {
           'recipe_id': recipe.id,
@@ -64,6 +69,10 @@ class RecipeExportService {
             'desired_frequency': recipe.desiredFrequency.value,
             'notes': recipe.notes,
             'created_at': recipe.createdAt.toIso8601String(),
+          },
+          'cooking_history': {
+            'times_cooked': timesCookedCount,
+            'last_cooked_date': lastCookedDate?.toIso8601String(),
           }
         };
         
@@ -110,7 +119,7 @@ class RecipeExportService {
       if (item is! Map<String, dynamic>) return false;
       
       // Check required fields
-      final requiredFields = ['recipe_id', 'name', 'current_ingredients', 'enhanced_ingredients', 'metadata'];
+      final requiredFields = ['recipe_id', 'name', 'current_ingredients', 'enhanced_ingredients', 'metadata', 'cooking_history'];
       for (final field in requiredFields) {
         if (!item.containsKey(field)) return false;
       }
@@ -126,6 +135,15 @@ class RecipeExportService {
       final metadataFields = ['difficulty', 'prep_time_minutes', 'cook_time_minutes', 'rating', 'category', 'desired_frequency'];
       for (final field in metadataFields) {
         if (!metadata.containsKey(field)) return false;
+      }
+      
+      // Check cooking_history structure
+      final cookingHistory = item['cooking_history'];
+      if (cookingHistory is! Map<String, dynamic>) return false;
+      
+      final cookingHistoryFields = ['times_cooked', 'last_cooked_date'];
+      for (final field in cookingHistoryFields) {
+        if (!cookingHistory.containsKey(field)) return false;
       }
     }
     

@@ -12,13 +12,14 @@ class ToolsScreen extends StatefulWidget {
 }
 
 class _ToolsScreenState extends State<ToolsScreen> {
-  bool _isExporting = false;
+  bool _isExportingRecipes = false;
+  bool _isExportingIngredients = false;
 
   Future<void> _exportRecipes() async {
-    if (_isExporting) return;
+    if (_isExportingRecipes) return;
 
     setState(() {
-      _isExporting = true;
+      _isExportingRecipes = true;
     });
 
     try {
@@ -47,13 +48,52 @@ class _ToolsScreenState extends State<ToolsScreen> {
     } finally {
       if (mounted) {
         setState(() {
-          _isExporting = false;
+          _isExportingRecipes = false;
         });
       }
     }
   }
 
-  void _showExportSuccessDialog(String filePath) {
+  Future<void> _exportIngredients() async {
+    if (_isExportingIngredients) return;
+
+    setState(() {
+      _isExportingIngredients = true;
+    });
+
+    try {
+      final exportService = ServiceProvider.export.ingredientExport;
+      final filePath = await exportService.exportIngredientsToJson();
+      
+      if (mounted) {
+        SnackbarService.showSuccess(
+          context,
+          'Ingredients exported successfully!\nFile: $filePath',
+        );
+        
+        // Copy file path to clipboard for easy access
+        await Clipboard.setData(ClipboardData(text: filePath));
+        
+        // Show additional info
+        _showExportSuccessDialog(filePath, 'Ingredients');
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackbarService.showError(
+          context,
+          'Failed to export ingredients: ${e.toString()}',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isExportingIngredients = false;
+        });
+      }
+    }
+  }
+
+  void _showExportSuccessDialog(String filePath, [String type = 'Recipe']) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -62,7 +102,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Recipe data has been exported to JSON format.'),
+            Text('$type data has been exported to JSON format.'),
             const SizedBox(height: 16),
             const Text('📁 Saved to Downloads folder', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
@@ -139,15 +179,61 @@ class _ToolsScreenState extends State<ToolsScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: _isExporting ? null : _exportRecipes,
-                        icon: _isExporting
+                        onPressed: _isExportingRecipes ? null : _exportRecipes,
+                        icon: _isExportingRecipes
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
                                 child: CircularProgressIndicator(strokeWidth: 2),
                               )
                             : const Icon(Icons.download),
-                        label: Text(_isExporting ? 'Exporting...' : 'Export Recipes'),
+                        label: Text(_isExportingRecipes ? 'Exporting...' : 'Export Recipes'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Ingredient Export Section
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.local_grocery_store,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Ingredient Data Export',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Export all ingredient data including categories, units, protein types, and notes to JSON format for external management.',
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isExportingIngredients ? null : _exportIngredients,
+                        icon: _isExportingIngredients
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.download),
+                        label: Text(_isExportingIngredients ? 'Exporting...' : 'Export Ingredients'),
                       ),
                     ),
                   ],
@@ -180,11 +266,17 @@ class _ToolsScreenState extends State<ToolsScreen> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      '• Exported file includes complete ingredient data (quantities, units, categories)\n'
+                      'Recipe Export:\n'
+                      '• Complete ingredient data (quantities, units, categories)\n'
                       '• Current ingredients show existing recipe compositions\n'
-                      '• Enhanced ingredients array is empty, ready for external editing\n'
-                      '• File is saved to Downloads folder with timestamp\n'
-                      '• Use this data with the import utility (Issue #154)',
+                      '• Enhanced ingredients array ready for external editing\n\n'
+                      'Ingredient Export:\n'
+                      '• All ingredients with categories, units, protein types\n'
+                      '• Master ingredient list for external management\n'
+                      '• Useful for ingredient database maintenance\n\n'
+                      'General:\n'
+                      '• Files saved to Downloads folder with timestamp\n'
+                      '• Use exported data with import utilities',
                       style: TextStyle(fontSize: 12),
                     ),
                   ],
