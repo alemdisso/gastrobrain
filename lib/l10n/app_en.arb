@@ -894,6 +894,18 @@
   "@measurementUnitTeaspoon": {
     "description": "Measurement unit names"
   },
+  "measurementUnitBunch": "Bunch",
+  "@measurementUnitBunch": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitLeaves": "Leaves",
+  "@measurementUnitLeaves": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitPinch": "Pinch",
+  "@measurementUnitPinch": {
+    "description": "Measurement unit names"
+  },
   "unitOptional": "Unit (Optional)",
   "@unitOptional": {
     "description": "Label for unit field in ingredient forms"

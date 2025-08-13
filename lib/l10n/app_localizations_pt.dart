@@ -668,6 +668,15 @@ class AppLocalizationsPt extends AppLocalizations {
   String get measurementUnitTeaspoon => 'Colher de chá';
 
   @override
+  String get measurementUnitBunch => 'Maço';
+
+  @override
+  String get measurementUnitLeaves => 'Folhas';
+
+  @override
+  String get measurementUnitPinch => 'Pitada';
+
+  @override
   String get unitOptional => 'Unidade (Opcional)';
 
   @override

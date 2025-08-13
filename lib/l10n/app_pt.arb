@@ -876,6 +876,18 @@
   "@measurementUnitTeaspoon": {
     "description": "Nomes das unidades de medida"
   },
+  "measurementUnitBunch": "Maço",
+  "@measurementUnitBunch": {
+    "description": "Nomes das unidades de medida"
+  },
+  "measurementUnitLeaves": "Folhas",
+  "@measurementUnitLeaves": {
+    "description": "Nomes das unidades de medida"
+  },
+  "measurementUnitPinch": "Pitada",
+  "@measurementUnitPinch": {
+    "description": "Nomes das unidades de medida"
+  },
   "unitOptional": "Unidade (Opcional)",
   "@unitOptional": {
     "description": "Rótulo para campo de unidade em formulários de ingredientes"

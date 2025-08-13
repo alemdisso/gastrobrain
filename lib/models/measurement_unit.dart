@@ -9,7 +9,10 @@ enum MeasurementUnit {
   tablespoon('tbsp'),
   teaspoon('tsp'),
   piece('piece'),
-  slice('slice');
+  slice('slice'),
+  bunch('bunch'),
+  leaves('leaves'),
+  pinch('pinch');
 
   final String value;
   const MeasurementUnit(this.value);
@@ -46,6 +49,12 @@ enum MeasurementUnit {
         return 'Piece';
       case MeasurementUnit.slice:
         return 'Slice';
+      case MeasurementUnit.bunch:
+        return 'Bunch';
+      case MeasurementUnit.leaves:
+        return 'Leaves';
+      case MeasurementUnit.pinch:
+        return 'Pinch';
     }
   }
 
@@ -75,6 +84,12 @@ enum MeasurementUnit {
         return localizations.measurementUnitPiece;
       case MeasurementUnit.slice:
         return localizations.measurementUnitSlice;
+      case MeasurementUnit.bunch:
+        return localizations.measurementUnitBunch;
+      case MeasurementUnit.leaves:
+        return localizations.measurementUnitLeaves;
+      case MeasurementUnit.pinch:
+        return localizations.measurementUnitPinch;
     }
   }
 }

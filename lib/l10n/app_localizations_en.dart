@@ -662,6 +662,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get measurementUnitTeaspoon => 'Tsp';
 
   @override
+  String get measurementUnitBunch => 'Bunch';
+
+  @override
+  String get measurementUnitLeaves => 'Leaves';
+
+  @override
+  String get measurementUnitPinch => 'Pinch';
+
+  @override
   String get unitOptional => 'Unit (Optional)';
 
   @override

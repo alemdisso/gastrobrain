@@ -1298,6 +1298,24 @@ abstract class AppLocalizations {
   /// **'Tsp'**
   String get measurementUnitTeaspoon;
 
+  /// Measurement unit names
+  ///
+  /// In en, this message translates to:
+  /// **'Bunch'**
+  String get measurementUnitBunch;
+
+  /// Measurement unit names
+  ///
+  /// In en, this message translates to:
+  /// **'Leaves'**
+  String get measurementUnitLeaves;
+
+  /// Measurement unit names
+  ///
+  /// In en, this message translates to:
+  /// **'Pinch'**
+  String get measurementUnitPinch;
+
   /// Label for unit field in ingredient forms
   ///
   /// In en, this message translates to:
