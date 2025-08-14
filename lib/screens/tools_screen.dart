@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../core/di/service_provider.dart';
 import '../core/services/snackbar_service.dart';
+import '../core/services/ingredient_translation_service.dart';
 
 /// Temporary tools screen for development utilities
 class ToolsScreen extends StatefulWidget {
@@ -14,6 +15,7 @@ class ToolsScreen extends StatefulWidget {
 class _ToolsScreenState extends State<ToolsScreen> {
   bool _isExportingRecipes = false;
   bool _isExportingIngredients = false;
+  bool _isTranslatingIngredients = false;
 
   Future<void> _exportRecipes() async {
     if (_isExportingRecipes) return;
@@ -93,6 +95,52 @@ class _ToolsScreenState extends State<ToolsScreen> {
     }
   }
 
+  Future<void> _translateIngredients() async {
+    if (_isTranslatingIngredients) return;
+
+    setState(() {
+      _isTranslatingIngredients = true;
+    });
+
+    try {
+      final translationService = IngredientTranslationService();
+      final result = await translationService.translateIngredients();
+      
+      if (mounted) {
+        if (result.isSuccess) {
+          SnackbarService.showSuccess(
+            context,
+            'Translation successful!\n${result.summary}',
+          );
+          
+          // Show detailed success dialog
+          _showTranslationSuccessDialog(result);
+        } else {
+          SnackbarService.showError(
+            context,
+            'Translation completed with errors!\n${result.summary}',
+          );
+          
+          // Show error dialog with details
+          _showTranslationErrorDialog(result);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackbarService.showError(
+          context,
+          'Translation failed: ${e.toString()}',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isTranslatingIngredients = false;
+        });
+      }
+    }
+  }
+
   void _showExportSuccessDialog(String filePath, [String type = 'Recipe']) {
     showDialog(
       context: context,
@@ -118,6 +166,78 @@ class _ToolsScreenState extends State<ToolsScreen> {
               'You can find this file in your device\'s Downloads folder or file manager.',
               style: TextStyle(fontStyle: FontStyle.italic),
             ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showTranslationSuccessDialog(TranslationResult result) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Translation Successful'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('All ingredients have been translated to Portuguese!'),
+            const SizedBox(height: 16),
+            Text('📊 Summary:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text('• Total processed: ${result.totalProcessed}'),
+            Text('• Successfully updated: ${result.successCount}'),
+            Text('• Errors: ${result.errorCount}'),
+            const SizedBox(height: 16),
+            const Text('🎉 Your ingredient database is now in Portuguese!'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showTranslationErrorDialog(TranslationResult result) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Translation Completed with Errors'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Translation completed but some errors occurred.'),
+            const SizedBox(height: 16),
+            Text('📊 Summary:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text('• Total processed: ${result.totalProcessed}'),
+            Text('• Successfully updated: ${result.successCount}'),
+            Text('• Errors: ${result.errorCount}'),
+            if (result.errors.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Text('❌ Errors:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 200,
+                child: SingleChildScrollView(
+                  child: Text(
+                    result.errors.join('\n'),
+                    style: TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
         actions: [
@@ -243,6 +363,80 @@ class _ToolsScreenState extends State<ToolsScreen> {
             
             const SizedBox(height: 16),
             
+            // Ingredient Translation Section
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.translate,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Ingredient Translation',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Translate all ingredients from English to Portuguese using the reviewed translation data. This will update ingredient names, categories, units, and protein types.',
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.warning,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'This will permanently update your ingredient database. Make sure you have a backup.',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isTranslatingIngredients ? null : _translateIngredients,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                        icon: _isTranslatingIngredients
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              )
+                            : const Icon(Icons.translate),
+                        label: Text(_isTranslatingIngredients ? 'Translating...' : 'Translate to Portuguese'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
             // Info Section
             Card(
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
@@ -274,9 +468,15 @@ class _ToolsScreenState extends State<ToolsScreen> {
                       '• All ingredients with categories, units, protein types\n'
                       '• Master ingredient list for external management\n'
                       '• Useful for ingredient database maintenance\n\n'
+                      'Ingredient Translation:\n'
+                      '• Translates all ingredients from English to Portuguese\n'
+                      '• Updates names, categories, units, and protein types\n'
+                      '• Uses reviewed translation data (330+ ingredients)\n'
+                      '• Permanent operation - creates backup first\n\n'
                       'General:\n'
                       '• Files saved to Downloads folder with timestamp\n'
-                      '• Use exported data with import utilities',
+                      '• Use exported data with import utilities\n'
+                      '• Translation uses embedded CSV data for accuracy',
                       style: TextStyle(fontSize: 12),
                     ),
                   ],
