@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'database/database_helper.dart';
 import 'screens/home_screen.dart';
 import 'screens/bulk_recipe_entry_screen.dart';
+import 'screens/bulk_recipe_update_screen.dart';
 import 'l10n/app_localizations.dart';
 import 'core/providers/recipe_provider.dart';
 import 'core/providers/meal_provider.dart';
@@ -66,6 +67,7 @@ class GastrobrainApp extends StatelessWidget {
         home: const HomePage(),
         routes: {
           '/bulk-recipe-entry': (context) => const BulkRecipeEntryScreen(),
+          '/bulk-recipe-update': (context) => const BulkRecipeUpdateScreen(),
         },
       ),
     );
