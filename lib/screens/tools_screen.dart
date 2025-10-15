@@ -27,16 +27,16 @@ class _ToolsScreenState extends State<ToolsScreen> {
     try {
       final exportService = ServiceProvider.export.recipeExport;
       final filePath = await exportService.exportRecipesToJson();
-      
+
       if (mounted) {
         SnackbarService.showSuccess(
           context,
           'Recipes exported successfully!\nFile: $filePath',
         );
-        
+
         // Copy file path to clipboard for easy access
         await Clipboard.setData(ClipboardData(text: filePath));
-        
+
         // Show additional info
         _showExportSuccessDialog(filePath);
       }
@@ -66,16 +66,16 @@ class _ToolsScreenState extends State<ToolsScreen> {
     try {
       final exportService = ServiceProvider.export.ingredientExport;
       final filePath = await exportService.exportIngredientsToJson();
-      
+
       if (mounted) {
         SnackbarService.showSuccess(
           context,
           'Ingredients exported successfully!\nFile: $filePath',
         );
-        
+
         // Copy file path to clipboard for easy access
         await Clipboard.setData(ClipboardData(text: filePath));
-        
+
         // Show additional info
         _showExportSuccessDialog(filePath, 'Ingredients');
       }
@@ -105,14 +105,14 @@ class _ToolsScreenState extends State<ToolsScreen> {
     try {
       final translationService = IngredientTranslationService();
       final result = await translationService.translateIngredients();
-      
+
       if (mounted) {
         if (result.isSuccess) {
           SnackbarService.showSuccess(
             context,
             'Translation successful!\n${result.summary}',
           );
-          
+
           // Show detailed success dialog
           _showTranslationSuccessDialog(result);
         } else {
@@ -120,7 +120,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
             context,
             'Translation completed with errors!\n${result.summary}',
           );
-          
+
           // Show error dialog with details
           _showTranslationErrorDialog(result);
         }
@@ -152,9 +152,11 @@ class _ToolsScreenState extends State<ToolsScreen> {
           children: [
             Text('$type data has been exported to JSON format.'),
             const SizedBox(height: 16),
-            const Text('📁 Saved to Downloads folder', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('📁 Saved to Downloads folder',
+                style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            const Text('Full path:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('Full path:',
+                style: TextStyle(fontWeight: FontWeight.bold)),
             SelectableText(
               filePath,
               style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
@@ -187,9 +189,10 @@ class _ToolsScreenState extends State<ToolsScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('All ingredients have been translated to Portuguese!'),
+            const Text('All ingredients have been translated to Portuguese!'),
             const SizedBox(height: 16),
-            Text('📊 Summary:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('📊 Summary:',
+                style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Text('• Total processed: ${result.totalProcessed}'),
             Text('• Successfully updated: ${result.successCount}'),
@@ -217,23 +220,26 @@ class _ToolsScreenState extends State<ToolsScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Translation completed but some errors occurred.'),
+            const Text('Translation completed but some errors occurred.'),
             const SizedBox(height: 16),
-            Text('📊 Summary:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('📊 Summary:',
+                style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Text('• Total processed: ${result.totalProcessed}'),
             Text('• Successfully updated: ${result.successCount}'),
             Text('• Errors: ${result.errorCount}'),
             if (result.errors.isNotEmpty) ...[
               const SizedBox(height: 16),
-              Text('❌ Errors:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('❌ Errors:',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               SizedBox(
                 height: 200,
                 child: SingleChildScrollView(
                   child: Text(
                     result.errors.join('\n'),
-                    style: TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                    style:
+                        const TextStyle(fontSize: 12, fontFamily: 'monospace'),
                   ),
                 ),
               ),
@@ -266,11 +272,11 @@ class _ToolsScreenState extends State<ToolsScreen> {
             Text(
               'Temporary tools for development and testing purposes.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
             ),
             const SizedBox(height: 32),
-            
+
             // Recipe Export Section
             Card(
               child: Padding(
@@ -304,19 +310,22 @@ class _ToolsScreenState extends State<ToolsScreen> {
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               )
                             : const Icon(Icons.download),
-                        label: Text(_isExportingRecipes ? 'Exporting...' : 'Export Recipes'),
+                        label: Text(_isExportingRecipes
+                            ? 'Exporting...'
+                            : 'Export Recipes'),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Ingredient Export Section
             Card(
               child: Padding(
@@ -345,24 +354,28 @@ class _ToolsScreenState extends State<ToolsScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: _isExportingIngredients ? null : _exportIngredients,
+                        onPressed:
+                            _isExportingIngredients ? null : _exportIngredients,
                         icon: _isExportingIngredients
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               )
                             : const Icon(Icons.download),
-                        label: Text(_isExportingIngredients ? 'Exporting...' : 'Export Ingredients'),
+                        label: Text(_isExportingIngredients
+                            ? 'Exporting...'
+                            : 'Export Ingredients'),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Ingredient Translation Section
             Card(
               child: Padding(
@@ -391,14 +404,17 @@ class _ToolsScreenState extends State<ToolsScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
                         children: [
                           Icon(
                             Icons.warning,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                             size: 20,
                           ),
                           const SizedBox(width: 8),
@@ -415,28 +431,35 @@ class _ToolsScreenState extends State<ToolsScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: _isTranslatingIngredients ? null : _translateIngredients,
+                        onPressed: _isTranslatingIngredients
+                            ? null
+                            : _translateIngredients,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.primary,
-                          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
+                          foregroundColor:
+                              Theme.of(context).colorScheme.onPrimary,
                         ),
                         icon: _isTranslatingIngredients
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.white),
                               )
                             : const Icon(Icons.translate),
-                        label: Text(_isTranslatingIngredients ? 'Translating...' : 'Translate to Portuguese'),
+                        label: Text(_isTranslatingIngredients
+                            ? 'Translating...'
+                            : 'Translate to Portuguese'),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Info Section
             Card(
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
