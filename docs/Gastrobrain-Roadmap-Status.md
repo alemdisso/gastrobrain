@@ -1,3 +1,4 @@
+<!-- markdownlint-disable -->
 # Gastrobrain Development Roadmap & Status
 
 **Last Updated:** October 2025  
@@ -7,7 +8,7 @@
 
 | Milestone | Status | Progress | Issues | Focus |
 |-----------|--------|----------|---------|-------|
-| **0.1.0** | 🎯 **Current** | **95%** | 10 open, 20 closed | Personal meal planning excellence |
+| **0.1.0** | 🎯 **Current** | **90%** | 12 open, 22 closed | Personal meal planning excellence |
 | **0.1.1** | 📋 **Next** | 0% | 14 open | Stability & polish |
 | **0.2.0** | 🔮 **Planned** | 0% | 16 open | Beta-ready phase |
 | **0.3.0** | 🚀 **Future** | 0% | 10 open | Multi-user foundation |
@@ -53,23 +54,59 @@
 - Recipe card improvements and consistent patterns
 - Filter dialog fixes and responsive design
 
-### **🔧 Remaining Work (Final 5%)**
+### **🔧 Remaining Work (Final 10%)**
 
-#### **Data Enhancement Track (Priority 1)**
-- **#159** - Populate Enhanced Recipe Data with Multi-Ingredient Compositions
+#### **Bulk Recipe Entry System (Priority 1)**
+**Parent Issue:** **#160** - Build Bulk Recipe Entry System in ToolsScreen
+
+**Implementation Track (Sequential):**
+1. **#161** - Basic Screen & Database Integration (foundation) → 0.5-1 day
+2. **#162** - Ingredient Parsing & Editing (core functionality) → 1-1.5 days  
+3. **#163** - Instructions Field & Workflow Polish (finishing touches) → 0.5-1 day
+
+**Data Population:**
+- **#155** - Enhance Recipe Seeded Data with Multi-Ingredient Compositions (depends on #160)
+
+#### **Data Quality & Validation Track (Priority 2)**
 - **#158** - Validate Enhanced Recipe Data Quality
 - **#157** - Add Tests for Multi-Ingredient Recommendation Scenarios
 - **#156** - Review Multi-Ingredient Handling in Recommendation Engine
-- **#155** - Enhance Recipe Seeded Data with Multi-Ingredient Compositions
-- **#154** - Create Recipe Data Import/Update Utility
-- ~~#153~~ - Create Recipe Data Export Utility ✅ **COMPLETE**
 
-#### **Core Features (Priority 2)**
+#### **Core Features (Priority 3)**
 - **#89** - Add Retroactive Meal Planning from Cook Screen
 - **#122** - Refine Add Ingredient Dialog UI
 - **#16** - Add statistics summary for weekly meal plan
 
-**Estimated Completion:** 1-2 weeks
+#### **Recently Closed/Merged**
+- ~~#153~~ - Create Recipe Data Export Utility ✅ **COMPLETE**
+- ~~#154~~ - Create Recipe Data Import/Update Utility ❌ **CLOSED** (replaced by bulk entry screen)
+- ~~#159~~ - Populate Enhanced Recipe Data ❌ **CLOSED** (duplicate of #155)
+
+**Estimated Completion:** 2-3 weeks
+
+### **🔄 Recent Strategic Changes**
+
+#### **Implementation Approach Pivot**
+- **From**: External JSON editing workflow (#154 import utility + #159 population)
+- **To**: Bulk recipe entry screen directly in app (#160 + children)
+
+#### **Benefits of New Approach**
+- **Streamlined workflow**: Single-step process instead of export → edit → import
+- **Real-time validation**: Immediate feedback during data entry
+- **Better user experience**: Direct database manipulation with immediate testing
+- **Simplified development**: No external file management complexity
+
+#### **Issue Consolidation**
+- **#159 merged into #155**: Eliminated duplicate work
+- **#154 closed as wontfix**: Import utility no longer needed
+- **#160-163 created**: Structured parent-child implementation plan
+
+#### **Updated Dependencies**
+```
+#160 (Bulk Entry System) → #155 (Data Population)
+    ↓
+#161 → #162 → #163 (Sequential implementation)
+```
 
 ---
 
