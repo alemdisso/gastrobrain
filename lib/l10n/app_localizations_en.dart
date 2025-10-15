@@ -1120,4 +1120,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get messageRollbackSuccess => 'Rollback completed successfully';
+
+  @override
+  String get recipeSavedSuccessfully => 'Recipe saved successfully';
+
+  @override
+  String get instructions => 'Instructions';
 }

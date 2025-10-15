@@ -2143,6 +2143,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rollback completed successfully'**
   String get messageRollbackSuccess;
+
+  /// Success message when recipe is saved
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe saved successfully'**
+  String get recipeSavedSuccessfully;
+
+  /// Label for instructions section
+  ///
+  /// In en, this message translates to:
+  /// **'Instructions'**
+  String get instructions;
 }
 
 class _AppLocalizationsDelegate

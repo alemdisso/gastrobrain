@@ -1569,6 +1569,14 @@
   "messageRollbackSuccess": "Rollback completed successfully",
   "@messageRollbackSuccess": {
     "description": "Success message after rollback completes"
+  },
+  "recipeSavedSuccessfully": "Recipe saved successfully",
+  "@recipeSavedSuccessfully": {
+    "description": "Success message when recipe is saved"
+  },
+  "instructions": "Instructions",
+  "@instructions": {
+    "description": "Label for instructions section"
   }
 
 }

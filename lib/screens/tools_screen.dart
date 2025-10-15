@@ -460,6 +460,48 @@ class _ToolsScreenState extends State<ToolsScreen> {
 
             const SizedBox(height: 16),
 
+            // Bulk Recipe Entry Section
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.edit_note,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Bulk Recipe Entry',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Streamlined tool for quickly adding multiple recipes with metadata. Ingredients and instructions features coming in future iterations.',
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.of(context).pushNamed('/bulk-recipe-entry');
+                        },
+                        icon: const Icon(Icons.add_circle_outline),
+                        label: const Text('Open Bulk Entry'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
             // Info Section
             Card(
               color: Theme.of(context).colorScheme.surfaceContainerHighest,

@@ -1133,4 +1133,10 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get messageRollbackSuccess => 'Reversão concluída com sucesso';
+
+  @override
+  String get recipeSavedSuccessfully => 'Receita salva com sucesso';
+
+  @override
+  String get instructions => 'Instruções';
 }

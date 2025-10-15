@@ -1569,5 +1569,13 @@
   "messageRollbackSuccess": "Reversão concluída com sucesso",
   "@messageRollbackSuccess": {
     "description": "Mensagem de sucesso após reversão ser concluída"
+  },
+  "recipeSavedSuccessfully": "Receita salva com sucesso",
+  "@recipeSavedSuccessfully": {
+    "description": "Mensagem de sucesso quando receita é salva"
+  },
+  "instructions": "Instruções",
+  "@instructions": {
+    "description": "Rótulo para seção de instruções"
   }
 }
