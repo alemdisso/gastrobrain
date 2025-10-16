@@ -22,6 +22,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   int? _selectedRecipeIndex;
   bool _isLoading = true;
   String? _errorMessage;
+  bool _isMetadataExpanded = false;
 
   @override
   void initState() {
@@ -29,7 +30,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     _loadRecipesNeedingIngredients();
   }
 
-  /// Load recipes that need ingredient data (have 0 ingredients)
+  /// Load recipes that need ingredient data (have less than 3 ingredients)
   Future<void> _loadRecipesNeedingIngredients() async {
     setState(() {
       _isLoading = true;
@@ -40,11 +41,11 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       final dbHelper = ServiceProvider.database.dbHelper;
       final allRecipes = await dbHelper.getAllRecipes();
 
-      // Filter recipes that have no ingredients
+      // Filter recipes with less than 3 ingredients (incomplete data)
       final recipesNeedingUpdate = <Recipe>[];
       for (final recipe in allRecipes) {
         final ingredients = await dbHelper.getRecipeIngredients(recipe.id);
-        if (ingredients.isEmpty) {
+        if (ingredients.length < 3) {
           recipesNeedingUpdate.add(recipe);
         }
       }
@@ -169,7 +170,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                   size: 64, color: Colors.green),
               const SizedBox(height: 16),
               Text(
-                'All recipes have ingredients!',
+                'All recipes are complete!',
                 style: Theme.of(context).textTheme.headlineSmall,
                 textAlign: TextAlign.center,
               ),
@@ -271,7 +272,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '${_recipesNeedingIngredients.length} recipes need ingredients',
+                      '${_recipesNeedingIngredients.length} recipes need updates',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ),
@@ -284,7 +285,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     );
   }
 
-  /// Read-only recipe metadata display
+  /// Read-only recipe metadata display (collapsible)
   Widget _buildRecipeMetadataDisplay(
       BuildContext context, AppLocalizations localizations) {
     if (_selectedRecipe == null) return const SizedBox.shrink();
@@ -292,105 +293,158 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     final recipe = _selectedRecipe!;
 
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Recipe Name Header
-            Text(
-              recipe.name,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 16),
-
-            // Metadata Chips
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                // Category
-                Chip(
-                  avatar: const Icon(Icons.category, size: 18),
-                  label: Text(recipe.category.getLocalizedDisplayName(context)),
-                  backgroundColor: Theme.of(context)
-                      .colorScheme
-                      .primaryContainer
-                      .withValues(alpha: 0.5),
-                ),
-
-                // Difficulty
-                Chip(
-                  avatar: const Icon(Icons.signal_cellular_alt, size: 18),
-                  label: Text(
-                      '${localizations.difficulty}: ${recipe.difficulty}/5'),
-                  backgroundColor: Theme.of(context)
-                      .colorScheme
-                      .secondaryContainer
-                      .withValues(alpha: 0.5),
-                ),
-
-                // Rating
-                if (recipe.rating > 0)
-                  Chip(
-                    avatar: const Icon(Icons.star, size: 18),
-                    label: Text('${localizations.rating}: ${recipe.rating}/5'),
-                    backgroundColor: Colors.amber.withValues(alpha: 0.3),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // Times
-            Row(
-              children: [
-                Icon(Icons.schedule,
-                    size: 18, color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: 8),
-                Text(
-                  '${localizations.prepTimeLabel}: ${recipe.prepTimeMinutes} min  •  '
-                  '${localizations.cookTimeLabel}: ${recipe.cookTimeMinutes} min',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-
-            // Current Status
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .colorScheme
-                    .errorContainer
-                    .withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .error
-                      .withValues(alpha: 0.3),
-                ),
-              ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Compact header (always visible)
+          InkWell(
+            onTap: () {
+              setState(() {
+                _isMetadataExpanded = !_isMetadataExpanded;
+              });
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.warning_amber,
-                    color: Theme.of(context).colorScheme.error,
-                    size: 20,
+                  // Recipe name
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          recipe.name,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        // Category badge (compact)
+                        Chip(
+                          avatar: const Icon(Icons.category, size: 16),
+                          label: Text(
+                            recipe.category.getLocalizedDisplayName(context),
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          backgroundColor: Theme.of(context)
+                              .colorScheme
+                              .primaryContainer
+                              .withValues(alpha: 0.5),
+                          visualDensity: VisualDensity.compact,
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Status: No ingredients',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  // Expand/collapse button
+                  IconButton(
+                    icon: Icon(
+                      _isMetadataExpanded
+                          ? Icons.expand_less
+                          : Icons.expand_more,
+                    ),
+                    tooltip: _isMetadataExpanded
+                        ? 'Hide details'
+                        : 'Show details',
+                    onPressed: () {
+                      setState(() {
+                        _isMetadataExpanded = !_isMetadataExpanded;
+                      });
+                    },
                   ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+
+          // Expanded metadata (conditionally visible)
+          if (_isMetadataExpanded)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Divider(),
+                  const SizedBox(height: 12),
+
+                  // Metadata Chips
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      // Difficulty
+                      Chip(
+                        avatar: const Icon(Icons.signal_cellular_alt, size: 18),
+                        label: Text(
+                            '${localizations.difficulty}: ${recipe.difficulty}/5'),
+                        backgroundColor: Theme.of(context)
+                            .colorScheme
+                            .secondaryContainer
+                            .withValues(alpha: 0.5),
+                      ),
+
+                      // Rating
+                      if (recipe.rating > 0)
+                        Chip(
+                          avatar: const Icon(Icons.star, size: 18),
+                          label:
+                              Text('${localizations.rating}: ${recipe.rating}/5'),
+                          backgroundColor: Colors.amber.withValues(alpha: 0.3),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Times (compact format)
+                  Row(
+                    children: [
+                      Icon(Icons.schedule,
+                          size: 18, color: Theme.of(context).colorScheme.primary),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Prep: ${recipe.prepTimeMinutes}m  •  Cook: ${recipe.cookTimeMinutes}m',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Current Status
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .errorContainer
+                          .withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .error
+                            .withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.warning_amber,
+                          color: Theme.of(context).colorScheme.error,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Status: Incomplete recipe',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -566,7 +620,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Progress: ${(_selectedRecipeIndex ?? 0) + 1} of ${_recipesNeedingIngredients.length} recipes',
+              'Progress: ${(_selectedRecipeIndex ?? 0) + 1} of ${_recipesNeedingIngredients.length} incomplete recipes',
               style: Theme.of(context).textTheme.bodySmall,
               textAlign: TextAlign.center,
             ),
