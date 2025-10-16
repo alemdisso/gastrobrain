@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 import '../core/di/service_provider.dart';
 import '../models/recipe.dart';
+import '../models/recipe_ingredient.dart';
+import '../models/ingredient_category.dart';
 import '../l10n/app_localizations.dart';
 
 /// Bulk recipe update screen for efficiently adding ingredients and instructions
@@ -24,10 +27,21 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   String? _errorMessage;
   bool _isMetadataExpanded = false;
 
+  // Ingredient parsing state
+  final TextEditingController _rawIngredientsController = TextEditingController();
+  List<_ParsedIngredient> _parsedIngredients = [];
+  bool _isSaving = false;
+
   @override
   void initState() {
     super.initState();
     _loadRecipesNeedingIngredients();
+  }
+
+  @override
+  void dispose() {
+    _rawIngredientsController.dispose();
+    super.dispose();
   }
 
   /// Load recipes that need ingredient data (have less than 3 ingredients)
@@ -99,6 +113,272 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       _selectedRecipeIndex = _selectedRecipeIndex! + 1;
       _selectedRecipe = _recipesNeedingIngredients[_selectedRecipeIndex!];
     });
+  }
+
+  /// Parse raw ingredient text into structured ingredient list
+  void _parseIngredients() {
+    final rawText = _rawIngredientsController.text.trim();
+    if (rawText.isEmpty) {
+      setState(() {
+        _parsedIngredients = [];
+      });
+      return;
+    }
+
+    final lines = rawText.split('\n');
+    final parsedList = <_ParsedIngredient>[];
+
+    for (final line in lines) {
+      final trimmedLine = line.trim();
+      if (trimmedLine.isEmpty) continue;
+
+      final parsed = _parseIngredientLine(trimmedLine);
+      if (parsed != null) {
+        parsedList.add(parsed);
+      }
+    }
+
+    setState(() {
+      _parsedIngredients = parsedList;
+    });
+  }
+
+  /// Parse a single ingredient line
+  _ParsedIngredient? _parseIngredientLine(String line) {
+    // Regex patterns for parsing ingredients
+    // Supports formats like:
+    // - "200g farinha" / "200g flour"
+    // - "2 xícaras leite" / "2 cups milk"
+    // - "1 csp sal" / "1 tsp salt"
+    // - "3 ovos" / "3 eggs"
+    // - "Sal a gosto" / "Salt to taste"
+
+    // Pattern: [quantity] [unit] ingredient_name
+    final quantityUnitPattern = RegExp(
+      r'^(\d+(?:[.,]\d+)?)\s*([a-zA-Z]+)?\s+(.+)$',
+      caseSensitive: false,
+    );
+
+    // Pattern: just ingredient name (no quantity)
+    final nameOnlyPattern = RegExp(r'^([a-zA-Z\s]+)(?:\s+(?:a\s+)?gosto)?$', caseSensitive: false);
+
+    final match = quantityUnitPattern.firstMatch(line);
+    if (match != null) {
+      final quantityStr = match.group(1)!.replaceAll(',', '.');
+      final quantity = double.tryParse(quantityStr) ?? 1.0;
+      final unitStr = match.group(2)?.toLowerCase().trim();
+      final name = match.group(3)!.trim();
+
+      // Parse unit (convert Portuguese abbreviations to English)
+      final unit = _parseUnit(unitStr);
+
+      return _ParsedIngredient(
+        quantity: quantity,
+        unit: unit,
+        name: name,
+        category: IngredientCategory.other, // Default category
+      );
+    }
+
+    // Try name-only pattern
+    final nameMatch = nameOnlyPattern.firstMatch(line);
+    if (nameMatch != null) {
+      return _ParsedIngredient(
+        quantity: 0.0, // "to taste"
+        unit: null,
+        name: line.trim(),
+        category: IngredientCategory.other,
+      );
+    }
+
+    // Fallback: treat whole line as ingredient name
+    return _ParsedIngredient(
+      quantity: 1.0,
+      unit: null,
+      name: line.trim(),
+      category: IngredientCategory.other,
+    );
+  }
+
+  /// Parse unit string to custom unit string
+  /// Returns null if no valid unit found
+  String? _parseUnit(String? unitStr) {
+    if (unitStr == null || unitStr.isEmpty) return null;
+
+    // Map of common unit abbreviations (PT/EN) to standard units
+    final unitMap = {
+      // Weight
+      'g': 'g',
+      'kg': 'kg',
+      'gram': 'g',
+      'grama': 'g',
+      'gramas': 'g',
+      'quilograma': 'kg',
+      'kilogram': 'kg',
+
+      // Volume
+      'ml': 'ml',
+      'l': 'l',
+      'litro': 'l',
+      'liter': 'l',
+      'litros': 'l',
+      'liters': 'l',
+
+      // Culinary measures
+      'xícara': 'cup',
+      'xicara': 'cup',
+      'xícaras': 'cup',
+      'xicaras': 'cup',
+      'cup': 'cup',
+      'cups': 'cup',
+      'c': 'cup',
+
+      'colher': 'tbsp',
+      'col': 'tbsp',
+      'cs': 'tbsp',
+      'csp': 'tbsp',
+      'tbsp': 'tbsp',
+      'tablespoon': 'tbsp',
+      'colheres': 'tbsp',
+
+      'tsp': 'tsp',
+      'teaspoon': 'tsp',
+      'chá': 'tsp',
+      'cha': 'tsp',
+      'cc': 'tsp',
+
+      // Count
+      'unidade': 'piece',
+      'unidades': 'piece',
+      'piece': 'piece',
+      'pieces': 'piece',
+      'pç': 'piece',
+      'pc': 'piece',
+      'un': 'piece',
+
+      'fatia': 'slice',
+      'fatias': 'slice',
+      'slice': 'slice',
+      'slices': 'slice',
+
+      'maço': 'bunch',
+      'bunch': 'bunch',
+      'maco': 'bunch',
+
+      'folha': 'leaves',
+      'folhas': 'leaves',
+      'leaves': 'leaves',
+      'leaf': 'leaves',
+
+      'pitada': 'pinch',
+      'pinch': 'pinch',
+      'pitadas': 'pinch',
+    };
+
+    return unitMap[unitStr.toLowerCase()];
+  }
+
+  /// Add a new empty ingredient row
+  void _addIngredientRow() {
+    setState(() {
+      _parsedIngredients.add(_ParsedIngredient(
+        quantity: 1.0,
+        unit: null,
+        name: '',
+        category: IngredientCategory.other,
+      ));
+    });
+  }
+
+  /// Remove ingredient at index
+  void _removeIngredientAt(int index) {
+    setState(() {
+      _parsedIngredients.removeAt(index);
+    });
+  }
+
+  /// Update ingredient at index
+  void _updateIngredient(int index, {
+    double? quantity,
+    String? unit,
+    String? name,
+    IngredientCategory? category,
+  }) {
+    if (index < 0 || index >= _parsedIngredients.length) return;
+
+    setState(() {
+      final ingredient = _parsedIngredients[index];
+      _parsedIngredients[index] = _ParsedIngredient(
+        quantity: quantity ?? ingredient.quantity,
+        unit: unit ?? ingredient.unit,
+        name: name ?? ingredient.name,
+        category: category ?? ingredient.category,
+      );
+    });
+  }
+
+  /// Save ingredients to database
+  Future<void> _saveIngredients() async {
+    if (_selectedRecipe == null || _parsedIngredients.isEmpty) return;
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      final dbHelper = ServiceProvider.database.dbHelper;
+      const uuid = Uuid();
+
+      // Create RecipeIngredient objects
+      for (final parsed in _parsedIngredients) {
+        if (parsed.name.trim().isEmpty) continue;
+
+        final recipeIngredient = RecipeIngredient.custom(
+          id: uuid.v4(),
+          recipeId: _selectedRecipe!.id,
+          name: parsed.name,
+          category: parsed.category.value,
+          quantity: parsed.quantity,
+          unit: parsed.unit,
+        );
+
+        await dbHelper.addIngredientToRecipe(recipeIngredient);
+      }
+
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Saved ${_parsedIngredients.length} ingredients'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Clear the form
+        setState(() {
+          _rawIngredientsController.clear();
+          _parsedIngredients = [];
+        });
+
+        // Reload recipes list (this recipe should now have more ingredients)
+        await _loadRecipesNeedingIngredients();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving ingredients: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
   }
 
   @override
@@ -449,58 +729,173 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     );
   }
 
-  /// Placeholder for ingredients section (to be implemented in #162)
+  /// Ingredients section with parsing and editing (Issue #162)
   Widget _buildIngredientsPlaceholder(BuildContext context) {
     return Card(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header
             Row(
               children: [
-                Icon(Icons.list_alt,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant),
+                Icon(Icons.list_alt, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 8),
                 Text(
                   'Ingredients',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(24),
-              alignment: Alignment.center,
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.construction,
-                    size: 48,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Ingredient parsing and editing',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Will be implemented in issue #162',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          fontStyle: FontStyle.italic,
-                        ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+            const SizedBox(height: 16),
+
+            // Raw ingredient input
+            TextField(
+              controller: _rawIngredientsController,
+              maxLines: 6,
+              decoration: const InputDecoration(
+                labelText: 'Paste ingredient list (one per line)',
+                hintText: '200g flour\n2 cups milk\n3 eggs\nSalt to taste',
+                border: OutlineInputBorder(),
+                helperText: 'Supports PT/EN formats: "200g farinha", "2 xícaras leite", etc.',
+                helperMaxLines: 2,
               ),
+              onChanged: (_) => _parseIngredients(),
+            ),
+            const SizedBox(height: 16),
+
+            // Parse button
+            Row(
+              children: [
+                ElevatedButton.icon(
+                  onPressed: _parseIngredients,
+                  icon: const Icon(Icons.auto_fix_high),
+                  label: const Text('Parse Ingredients'),
+                ),
+                const SizedBox(width: 8),
+                TextButton.icon(
+                  onPressed: _addIngredientRow,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add Row'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Parsed ingredients table
+            if (_parsedIngredients.isNotEmpty) ...[
+              const Divider(),
+              const SizedBox(height: 12),
+              Text(
+                'Parsed Ingredients (${_parsedIngredients.length})',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 12),
+
+              // Ingredient rows
+              ..._parsedIngredients.asMap().entries.map((entry) {
+                final index = entry.key;
+                final ingredient = entry.value;
+                return _buildIngredientRow(context, index, ingredient);
+              }),
+              const SizedBox(height: 16),
+
+              // Save button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _isSaving ? null : _saveIngredients,
+                  icon: _isSaving
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.save),
+                  label: Text(_isSaving ? 'Saving...' : 'Save Ingredients'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Build a single ingredient row for editing
+  Widget _buildIngredientRow(BuildContext context, int index, _ParsedIngredient ingredient) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Quantity field
+            SizedBox(
+              width: 80,
+              child: TextField(
+                decoration: const InputDecoration(
+                  labelText: 'Qty',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                ),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                controller: TextEditingController(
+                  text: ingredient.quantity > 0 ? ingredient.quantity.toString() : '',
+                ),
+                onChanged: (value) {
+                  final qty = double.tryParse(value) ?? 0.0;
+                  _updateIngredient(index, quantity: qty);
+                },
+              ),
+            ),
+            const SizedBox(width: 8),
+
+            // Unit field
+            SizedBox(
+              width: 80,
+              child: TextField(
+                decoration: const InputDecoration(
+                  labelText: 'Unit',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                ),
+                controller: TextEditingController(text: ingredient.unit ?? ''),
+                onChanged: (value) {
+                  _updateIngredient(index, unit: value.isEmpty ? null : value);
+                },
+              ),
+            ),
+            const SizedBox(width: 8),
+
+            // Name field
+            Expanded(
+              child: TextField(
+                decoration: const InputDecoration(
+                  labelText: 'Ingredient Name',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                ),
+                controller: TextEditingController(text: ingredient.name),
+                onChanged: (value) {
+                  _updateIngredient(index, name: value);
+                },
+              ),
+            ),
+            const SizedBox(width: 8),
+
+            // Remove button
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () => _removeIngredientAt(index),
+              tooltip: 'Remove',
             ),
           ],
         ),
@@ -657,4 +1052,19 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       ),
     );
   }
+}
+
+/// Helper class to represent a parsed ingredient before saving to database
+class _ParsedIngredient {
+  double quantity;
+  String? unit;
+  String name;
+  IngredientCategory category;
+
+  _ParsedIngredient({
+    required this.quantity,
+    this.unit,
+    required this.name,
+    required this.category,
+  });
 }
