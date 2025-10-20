@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../core/di/service_provider.dart';
+import '../core/services/ingredient_matching_service.dart';
 import '../models/recipe.dart';
 import '../models/recipe_ingredient.dart';
 import '../models/ingredient.dart';
 import '../models/ingredient_category.dart';
+import '../models/ingredient_match.dart';
 import '../l10n/app_localizations.dart';
 
 /// Bulk recipe update screen for efficiently adding ingredients and instructions
@@ -40,6 +42,10 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   // All database ingredients for matching
   List<Ingredient> _allIngredients = [];
   bool _isLoadingAllIngredients = false;
+
+  // Ingredient matching service
+  final IngredientMatchingService _matchingService = IngredientMatchingService();
+  bool _isMatchingServiceReady = false;
 
   @override
   void initState() {
@@ -102,15 +108,20 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       final dbHelper = ServiceProvider.database.dbHelper;
       final allIngredients = await dbHelper.getAllIngredients();
 
+      // Initialize matching service with loaded ingredients
+      _matchingService.initialize(allIngredients);
+
       setState(() {
         _allIngredients = allIngredients;
         _isLoadingAllIngredients = false;
+        _isMatchingServiceReady = true;
       });
     } catch (e) {
       // Silently fail - matching will just not work if ingredients can't be loaded
       setState(() {
         _allIngredients = [];
         _isLoadingAllIngredients = false;
+        _isMatchingServiceReady = false;
       });
     }
   }
@@ -262,32 +273,66 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       // Parse unit (convert Portuguese abbreviations to English)
       final unit = _parseUnit(unitStr);
 
+      // Find ingredient matches
+      final matches = _findMatchesForName(name);
+      final selectedMatch = _getAutoSelectedMatch(matches);
+
       return _ParsedIngredient(
         quantity: quantity,
         unit: unit,
         name: name,
-        category: IngredientCategory.other, // Default category
+        category: selectedMatch?.ingredient.category ?? IngredientCategory.other,
+        matches: matches,
+        selectedMatch: selectedMatch,
       );
     }
 
     // Try name-only pattern
     final nameMatch = nameOnlyPattern.firstMatch(line);
     if (nameMatch != null) {
+      final name = line.trim();
+      final matches = _findMatchesForName(name);
+      final selectedMatch = _getAutoSelectedMatch(matches);
+
       return _ParsedIngredient(
         quantity: 0.0, // "to taste"
         unit: null,
-        name: line.trim(),
-        category: IngredientCategory.other,
+        name: name,
+        category: selectedMatch?.ingredient.category ?? IngredientCategory.other,
+        matches: matches,
+        selectedMatch: selectedMatch,
       );
     }
 
     // Fallback: treat whole line as ingredient name
+    final name = line.trim();
+    final matches = _findMatchesForName(name);
+    final selectedMatch = _getAutoSelectedMatch(matches);
+
     return _ParsedIngredient(
       quantity: 1.0,
       unit: null,
-      name: line.trim(),
-      category: IngredientCategory.other,
+      name: name,
+      category: selectedMatch?.ingredient.category ?? IngredientCategory.other,
+      matches: matches,
+      selectedMatch: selectedMatch,
     );
+  }
+
+  /// Find ingredient matches for a given name
+  List<IngredientMatch> _findMatchesForName(String name) {
+    if (!_isMatchingServiceReady || name.trim().isEmpty) {
+      return [];
+    }
+    return _matchingService.findMatches(name);
+  }
+
+  /// Get auto-selected match if applicable
+  IngredientMatch? _getAutoSelectedMatch(List<IngredientMatch> matches) {
+    if (!_isMatchingServiceReady || matches.isEmpty) {
+      return null;
+    }
+    return _matchingService.shouldAutoSelect(matches) ? matches.first : null;
   }
 
   /// Parse unit string to custom unit string
@@ -376,6 +421,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         unit: null,
         name: '',
         category: IngredientCategory.other,
+        matches: [],
+        selectedMatch: null,
       ));
     });
   }
@@ -393,16 +440,29 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     String? unit,
     String? name,
     IngredientCategory? category,
+    IngredientMatch? selectedMatch,
   }) {
     if (index < 0 || index >= _parsedIngredients.length) return;
 
     setState(() {
       final ingredient = _parsedIngredients[index];
+
+      // If name changed, re-run matching
+      List<IngredientMatch> matches = ingredient.matches;
+      IngredientMatch? newSelectedMatch = selectedMatch ?? ingredient.selectedMatch;
+
+      if (name != null && name != ingredient.name) {
+        matches = _findMatchesForName(name);
+        newSelectedMatch = _getAutoSelectedMatch(matches);
+      }
+
       _parsedIngredients[index] = _ParsedIngredient(
         quantity: quantity ?? ingredient.quantity,
         unit: unit ?? ingredient.unit,
         name: name ?? ingredient.name,
-        category: category ?? ingredient.category,
+        category: category ?? newSelectedMatch?.ingredient.category ?? ingredient.category,
+        matches: matches,
+        selectedMatch: newSelectedMatch,
       );
     });
   }
@@ -410,6 +470,27 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   /// Save ingredients to database
   Future<void> _saveIngredients() async {
     if (_selectedRecipe == null || _parsedIngredients.isEmpty) return;
+
+    // Validate: all ingredients must have matched ingredient IDs
+    final unmatchedIngredients = _parsedIngredients
+        .where((p) => p.name.trim().isNotEmpty && p.selectedMatch == null)
+        .toList();
+
+    if (unmatchedIngredients.isNotEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Cannot save: ${unmatchedIngredients.length} ingredient(s) not matched to database. '
+              'Please select a match or create new ingredients first.',
+            ),
+            backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+      return;
+    }
 
     setState(() {
       _isSaving = true;
@@ -419,27 +500,29 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       final dbHelper = ServiceProvider.database.dbHelper;
       const uuid = Uuid();
 
-      // Create RecipeIngredient objects
-      for (final parsed in _parsedIngredients) {
-        if (parsed.name.trim().isEmpty) continue;
+      int savedCount = 0;
 
-        final recipeIngredient = RecipeIngredient.custom(
+      // Create RecipeIngredient objects linked to database ingredients
+      for (final parsed in _parsedIngredients) {
+        if (parsed.name.trim().isEmpty || parsed.selectedMatch == null) continue;
+
+        final recipeIngredient = RecipeIngredient(
           id: uuid.v4(),
           recipeId: _selectedRecipe!.id,
-          name: parsed.name,
-          category: parsed.category.value,
+          ingredientId: parsed.selectedMatch!.ingredient.id,
           quantity: parsed.quantity,
-          unit: parsed.unit,
+          unitOverride: parsed.unit,
         );
 
         await dbHelper.addIngredientToRecipe(recipeIngredient);
+        savedCount++;
       }
 
       // Show success message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Saved ${_parsedIngredients.length} ingredients'),
+            content: Text('Saved $savedCount ingredients with database links'),
             backgroundColor: Colors.green,
           ),
         );
@@ -1075,77 +1158,222 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
 
   /// Build a single ingredient row for editing
   Widget _buildIngredientRow(BuildContext context, int index, _ParsedIngredient ingredient) {
+    // Determine match status colors
+    Color matchColor = Colors.grey;
+    IconData matchIcon = Icons.help_outline;
+    String matchText = 'No match';
+
+    if (ingredient.selectedMatch != null) {
+      switch (ingredient.selectedMatch!.confidenceLevel) {
+        case MatchConfidence.high:
+          matchColor = Colors.green;
+          matchIcon = Icons.check_circle;
+          matchText = 'High confidence';
+          break;
+        case MatchConfidence.medium:
+          matchColor = Colors.orange;
+          matchIcon = Icons.warning_amber;
+          matchText = 'Medium confidence';
+          break;
+        case MatchConfidence.low:
+          matchColor = Colors.red;
+          matchIcon = Icons.error_outline;
+          matchText = 'Low confidence';
+          break;
+      }
+    }
+
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: Padding(
         padding: const EdgeInsets.all(12.0),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Quantity field
-            SizedBox(
-              width: 80,
-              child: TextField(
-                decoration: const InputDecoration(
-                  labelText: 'Qty',
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            // Top row: Quantity, Unit, Name, Delete
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Quantity field
+                SizedBox(
+                  width: 80,
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'Qty',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    ),
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    controller: TextEditingController(
+                      text: ingredient.quantity > 0 ? ingredient.quantity.toString() : '',
+                    ),
+                    onChanged: (value) {
+                      final qty = double.tryParse(value) ?? 0.0;
+                      _updateIngredient(index, quantity: qty);
+                    },
+                  ),
                 ),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                controller: TextEditingController(
-                  text: ingredient.quantity > 0 ? ingredient.quantity.toString() : '',
-                ),
-                onChanged: (value) {
-                  final qty = double.tryParse(value) ?? 0.0;
-                  _updateIngredient(index, quantity: qty);
-                },
-              ),
-            ),
-            const SizedBox(width: 8),
+                const SizedBox(width: 8),
 
-            // Unit field
-            SizedBox(
-              width: 80,
-              child: TextField(
-                decoration: const InputDecoration(
-                  labelText: 'Unit',
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                // Unit field
+                SizedBox(
+                  width: 80,
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'Unit',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    ),
+                    controller: TextEditingController(text: ingredient.unit ?? ''),
+                    onChanged: (value) {
+                      _updateIngredient(index, unit: value.isEmpty ? null : value);
+                    },
+                  ),
                 ),
-                controller: TextEditingController(text: ingredient.unit ?? ''),
-                onChanged: (value) {
-                  _updateIngredient(index, unit: value.isEmpty ? null : value);
-                },
-              ),
-            ),
-            const SizedBox(width: 8),
+                const SizedBox(width: 8),
 
-            // Name field
-            Expanded(
-              child: TextField(
-                decoration: const InputDecoration(
-                  labelText: 'Ingredient Name',
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                // Name field
+                Expanded(
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'Ingredient Name',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    ),
+                    controller: TextEditingController(text: ingredient.name),
+                    onChanged: (value) {
+                      _updateIngredient(index, name: value);
+                    },
+                  ),
                 ),
-                controller: TextEditingController(text: ingredient.name),
-                onChanged: (value) {
-                  _updateIngredient(index, name: value);
-                },
-              ),
-            ),
-            const SizedBox(width: 8),
+                const SizedBox(width: 8),
 
-            // Remove button
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () => _removeIngredientAt(index),
-              tooltip: 'Remove',
+                // Remove button
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () => _removeIngredientAt(index),
+                  tooltip: 'Remove',
+                ),
+              ],
             ),
+
+            // Match indicator row
+            if (ingredient.name.trim().isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: matchColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: matchColor.withValues(alpha: 0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Match status indicator
+                    Row(
+                      children: [
+                        Icon(matchIcon, color: matchColor, size: 18),
+                        const SizedBox(width: 6),
+                        Text(
+                          matchText,
+                          style: TextStyle(
+                            color: matchColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                        if (ingredient.selectedMatch != null) ...[
+                          const SizedBox(width: 8),
+                          Text(
+                            '→ ${ingredient.selectedMatch!.ingredient.name}',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          const SizedBox(width: 8),
+                          Chip(
+                            label: Text(
+                              ingredient.selectedMatch!.ingredient.category.displayName,
+                              style: const TextStyle(fontSize: 10),
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            backgroundColor: Theme.of(context)
+                                .colorScheme
+                                .secondaryContainer
+                                .withValues(alpha: 0.5),
+                          ),
+                        ],
+                      ],
+                    ),
+
+                    // Dropdown for match selection if multiple matches
+                    if (ingredient.matches.length > 1) ...[
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<IngredientMatch>(
+                        value: ingredient.selectedMatch,
+                        decoration: const InputDecoration(
+                          labelText: 'Select match',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          isDense: true,
+                        ),
+                        items: ingredient.matches.map((match) {
+                          return DropdownMenuItem<IngredientMatch>(
+                            value: match,
+                            child: Row(
+                              children: [
+                                Icon(
+                                  _getMatchIcon(match.confidenceLevel),
+                                  size: 16,
+                                  color: _getMatchColor(match.confidenceLevel),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '${match.ingredient.name} (${match.ingredient.category.displayName}) - ${(match.confidence * 100).toStringAsFixed(0)}%',
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (match) {
+                          _updateIngredient(index, selectedMatch: match);
+                        },
+                        isExpanded: true,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),
     );
+  }
+
+  /// Helper to get match indicator color
+  Color _getMatchColor(MatchConfidence confidence) {
+    switch (confidence) {
+      case MatchConfidence.high:
+        return Colors.green;
+      case MatchConfidence.medium:
+        return Colors.orange;
+      case MatchConfidence.low:
+        return Colors.red;
+    }
+  }
+
+  /// Helper to get match indicator icon
+  IconData _getMatchIcon(MatchConfidence confidence) {
+    switch (confidence) {
+      case MatchConfidence.high:
+        return Icons.check_circle;
+      case MatchConfidence.medium:
+        return Icons.warning_amber;
+      case MatchConfidence.low:
+        return Icons.error_outline;
+    }
   }
 
   /// Placeholder for instructions section (to be implemented in #163)
@@ -1306,10 +1534,16 @@ class _ParsedIngredient {
   String name;
   IngredientCategory category;
 
+  // Matching information
+  List<IngredientMatch> matches;
+  IngredientMatch? selectedMatch; // User-selected or auto-selected match
+
   _ParsedIngredient({
     required this.quantity,
     this.unit,
     required this.name,
     required this.category,
+    this.matches = const [],
+    this.selectedMatch,
   });
 }
