@@ -500,29 +500,73 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       final dbHelper = ServiceProvider.database.dbHelper;
       const uuid = Uuid();
 
-      int savedCount = 0;
+      int addedCount = 0;
+      int updatedCount = 0;
 
-      // Create RecipeIngredient objects linked to database ingredients
+      // Load current recipe ingredients to check for duplicates
+      final existingIngredients = await dbHelper.getRecipeIngredients(_selectedRecipe!.id);
+
+      // Build map of existing ingredient_id -> recipe_ingredient data
+      final existingByIngredientId = <String, Map<String, dynamic>>{};
+      for (final existing in existingIngredients) {
+        final ingredientId = existing['ingredient_id'] as String?;
+        if (ingredientId != null) {
+          existingByIngredientId[ingredientId] = existing;
+        }
+      }
+
+      // Process each parsed ingredient
       for (final parsed in _parsedIngredients) {
         if (parsed.name.trim().isEmpty || parsed.selectedMatch == null) continue;
 
-        final recipeIngredient = RecipeIngredient(
-          id: uuid.v4(),
-          recipeId: _selectedRecipe!.id,
-          ingredientId: parsed.selectedMatch!.ingredient.id,
-          quantity: parsed.quantity,
-          unitOverride: parsed.unit,
-        );
+        final ingredientId = parsed.selectedMatch!.ingredient.id;
 
-        await dbHelper.addIngredientToRecipe(recipeIngredient);
-        savedCount++;
+        // Check if this ingredient already exists in the recipe
+        if (existingByIngredientId.containsKey(ingredientId)) {
+          // Update existing recipe ingredient
+          final existing = existingByIngredientId[ingredientId]!;
+          final recipeIngredientId = existing['recipe_ingredient_id'] as String;
+
+          final updatedRecipeIngredient = RecipeIngredient(
+            id: recipeIngredientId,
+            recipeId: _selectedRecipe!.id,
+            ingredientId: ingredientId,
+            quantity: parsed.quantity,
+            unitOverride: parsed.unit,
+          );
+
+          await dbHelper.updateRecipeIngredient(updatedRecipeIngredient);
+          updatedCount++;
+        } else {
+          // Add new recipe ingredient
+          final recipeIngredient = RecipeIngredient(
+            id: uuid.v4(),
+            recipeId: _selectedRecipe!.id,
+            ingredientId: ingredientId,
+            quantity: parsed.quantity,
+            unitOverride: parsed.unit,
+          );
+
+          await dbHelper.addIngredientToRecipe(recipeIngredient);
+          addedCount++;
+        }
       }
 
       // Show success message
       if (mounted) {
+        final message = StringBuffer();
+        if (addedCount > 0) {
+          message.write('Added $addedCount');
+        }
+        if (updatedCount > 0) {
+          if (message.isNotEmpty) message.write(', ');
+          message.write('Updated $updatedCount');
+        }
+        message.write(' ingredient(s)');
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Saved $savedCount ingredients with database links'),
+            content: Text(message.toString()),
             backgroundColor: Colors.green,
           ),
         );
@@ -531,6 +575,12 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         setState(() {
           _rawIngredientsController.clear();
           _parsedIngredients = [];
+        });
+
+        // Reload existing ingredients to show updated state
+        final refreshedIngredients = await dbHelper.getRecipeIngredients(_selectedRecipe!.id);
+        setState(() {
+          _existingIngredients = refreshedIngredients;
         });
 
         // Reload recipes list (this recipe should now have more ingredients)
