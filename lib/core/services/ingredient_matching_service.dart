@@ -123,11 +123,11 @@ class IngredientMatchingService {
     return matches;
   }
 
-  /// Normalize a string: lowercase, remove accents, trim
+  /// Normalize a string: lowercase, remove accents, normalize separators, trim
   String _normalize(String text) {
     if (text.isEmpty) return '';
 
-    // Convert to lowercase
+    // Convert to lowercase and trim
     String normalized = text.toLowerCase().trim();
 
     // Remove common accents/diacritics
@@ -138,6 +138,16 @@ class IngredientMatchingService {
     for (int i = 0; i < accents.length; i++) {
       normalized = normalized.replaceAll(accents[i], replacements[i]);
     }
+
+    // Normalize word separators: convert hyphens, underscores to spaces
+    normalized = normalized.replaceAll('-', ' ');
+    normalized = normalized.replaceAll('_', ' ');
+
+    // Collapse multiple spaces into single space
+    normalized = normalized.replaceAll(RegExp(r'\s+'), ' ');
+
+    // Final trim after normalization
+    normalized = normalized.trim();
 
     return normalized;
   }

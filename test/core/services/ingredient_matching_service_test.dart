@@ -213,6 +213,83 @@ void main() {
         // Could match both 'Açúcar' and 'açucar' at normalized level
         expect(matches, isNotEmpty);
       });
+
+      test('matches hyphenated ingredient to space-separated input', () {
+        // Add hyphenated ingredient
+        final extraIngredients = [
+          ...testIngredients,
+          Ingredient(
+            id: '11',
+            name: 'noz-moscada',
+            category: IngredientCategory.seasoning,
+            unit: MeasurementUnit.gram,
+          ),
+        ];
+        service.initialize(extraIngredients);
+
+        final matches = service.findMatches('noz moscada');
+
+        expect(matches, isNotEmpty);
+        expect(matches.first.ingredient.name, equals('noz-moscada'));
+        expect(matches.first.confidence, equals(0.90));
+        expect(matches.first.matchType, equals(MatchType.normalized));
+      });
+
+      test('matches space-separated ingredient to hyphenated input', () {
+        // Add space-separated ingredient
+        final extraIngredients = [
+          ...testIngredients,
+          Ingredient(
+            id: '11',
+            name: 'pimenta do reino',
+            category: IngredientCategory.seasoning,
+            unit: MeasurementUnit.gram,
+          ),
+        ];
+        service.initialize(extraIngredients);
+
+        final matches = service.findMatches('pimenta-do-reino');
+
+        expect(matches, isNotEmpty);
+        expect(matches.first.ingredient.name, equals('pimenta do reino'));
+        expect(matches.first.confidence, equals(0.90));
+      });
+
+      test('handles underscores as word separators', () {
+        final extraIngredients = [
+          ...testIngredients,
+          Ingredient(
+            id: '11',
+            name: 'azeite_oliva',
+            category: IngredientCategory.other,
+            unit: MeasurementUnit.milliliter,
+          ),
+        ];
+        service.initialize(extraIngredients);
+
+        final matches = service.findMatches('azeite oliva');
+
+        expect(matches, isNotEmpty);
+        expect(matches.first.ingredient.name, equals('azeite_oliva'));
+      });
+
+      test('collapses multiple spaces to single space', () {
+        final extraIngredients = [
+          ...testIngredients,
+          Ingredient(
+            id: '11',
+            name: 'queijo  ralado',
+            category: IngredientCategory.other,
+            unit: MeasurementUnit.gram,
+          ),
+        ];
+        service.initialize(extraIngredients);
+
+        final matches = service.findMatches('queijo ralado');
+
+        expect(matches, isNotEmpty);
+        expect(matches.first.ingredient.name, equals('queijo  ralado'));
+      });
     });
 
     group('no matches', () {
