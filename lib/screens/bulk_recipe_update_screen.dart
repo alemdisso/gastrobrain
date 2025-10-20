@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 import '../core/di/service_provider.dart';
 import '../models/recipe.dart';
 import '../models/recipe_ingredient.dart';
+import '../models/ingredient.dart';
 import '../models/ingredient_category.dart';
 import '../l10n/app_localizations.dart';
 
@@ -36,10 +37,15 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   List<Map<String, dynamic>> _existingIngredients = [];
   bool _isLoadingIngredients = false;
 
+  // All database ingredients for matching
+  List<Ingredient> _allIngredients = [];
+  bool _isLoadingAllIngredients = false;
+
   @override
   void initState() {
     super.initState();
     _loadRecipesNeedingIngredients();
+    _loadAllIngredients();
   }
 
   @override
@@ -82,6 +88,29 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       setState(() {
         _errorMessage = 'Error loading recipes: ${e.toString()}';
         _isLoading = false;
+      });
+    }
+  }
+
+  /// Load all ingredients from database for matching
+  Future<void> _loadAllIngredients() async {
+    setState(() {
+      _isLoadingAllIngredients = true;
+    });
+
+    try {
+      final dbHelper = ServiceProvider.database.dbHelper;
+      final allIngredients = await dbHelper.getAllIngredients();
+
+      setState(() {
+        _allIngredients = allIngredients;
+        _isLoadingAllIngredients = false;
+      });
+    } catch (e) {
+      // Silently fail - matching will just not work if ingredients can't be loaded
+      setState(() {
+        _allIngredients = [];
+        _isLoadingAllIngredients = false;
       });
     }
   }
