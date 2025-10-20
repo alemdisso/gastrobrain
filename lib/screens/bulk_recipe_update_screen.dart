@@ -32,6 +32,10 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   List<_ParsedIngredient> _parsedIngredients = [];
   bool _isSaving = false;
 
+  // Existing ingredients state (raw maps from database query)
+  List<Map<String, dynamic>> _existingIngredients = [];
+  bool _isLoadingIngredients = false;
+
   @override
   void initState() {
     super.initState();
@@ -83,36 +87,93 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   }
 
   /// Handle recipe selection from dropdown
-  void _onRecipeSelected(Recipe? recipe) {
+  void _onRecipeSelected(Recipe? recipe) async {
     if (recipe == null) return;
 
     setState(() {
       _selectedRecipe = recipe;
       _selectedRecipeIndex = _recipesNeedingIngredients.indexOf(recipe);
+      _isLoadingIngredients = true;
     });
+
+    // Load existing recipe ingredients
+    try {
+      final dbHelper = ServiceProvider.database.dbHelper;
+      final existingIngredients = await dbHelper.getRecipeIngredients(recipe.id);
+
+      setState(() {
+        _existingIngredients = existingIngredients;
+        _isLoadingIngredients = false;
+      });
+    } catch (e) {
+      setState(() {
+        _existingIngredients = [];
+        _isLoadingIngredients = false;
+      });
+    }
   }
 
   /// Navigate to previous recipe
-  void _navigateToPrevious() {
+  void _navigateToPrevious() async {
     if (_selectedRecipeIndex == null || _selectedRecipeIndex! <= 0) return;
 
+    final newIndex = _selectedRecipeIndex! - 1;
+    final newRecipe = _recipesNeedingIngredients[newIndex];
+
     setState(() {
-      _selectedRecipeIndex = _selectedRecipeIndex! - 1;
-      _selectedRecipe = _recipesNeedingIngredients[_selectedRecipeIndex!];
+      _selectedRecipeIndex = newIndex;
+      _selectedRecipe = newRecipe;
+      _isLoadingIngredients = true;
     });
+
+    // Load existing recipe ingredients
+    try {
+      final dbHelper = ServiceProvider.database.dbHelper;
+      final existingIngredients = await dbHelper.getRecipeIngredients(newRecipe.id);
+
+      setState(() {
+        _existingIngredients = existingIngredients;
+        _isLoadingIngredients = false;
+      });
+    } catch (e) {
+      setState(() {
+        _existingIngredients = [];
+        _isLoadingIngredients = false;
+      });
+    }
   }
 
   /// Navigate to next recipe
-  void _navigateToNext() {
+  void _navigateToNext() async {
     if (_selectedRecipeIndex == null ||
         _selectedRecipeIndex! >= _recipesNeedingIngredients.length - 1) {
       return;
     }
 
+    final newIndex = _selectedRecipeIndex! + 1;
+    final newRecipe = _recipesNeedingIngredients[newIndex];
+
     setState(() {
-      _selectedRecipeIndex = _selectedRecipeIndex! + 1;
-      _selectedRecipe = _recipesNeedingIngredients[_selectedRecipeIndex!];
+      _selectedRecipeIndex = newIndex;
+      _selectedRecipe = newRecipe;
+      _isLoadingIngredients = true;
     });
+
+    // Load existing recipe ingredients
+    try {
+      final dbHelper = ServiceProvider.database.dbHelper;
+      final existingIngredients = await dbHelper.getRecipeIngredients(newRecipe.id);
+
+      setState(() {
+        _existingIngredients = existingIngredients;
+        _isLoadingIngredients = false;
+      });
+    } catch (e) {
+      setState(() {
+        _existingIngredients = [];
+        _isLoadingIngredients = false;
+      });
+    }
   }
 
   /// Parse raw ingredient text into structured ingredient list
@@ -480,6 +541,12 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
             _buildRecipeMetadataDisplay(context, localizations),
           const SizedBox(height: 24),
 
+          // Existing Ingredients Display (Read-only)
+          if (_selectedRecipe != null)
+            _buildExistingIngredientsDisplay(context),
+          if (_selectedRecipe != null)
+            const SizedBox(height: 24),
+
           // Placeholder for Ingredients (Issue #162)
           _buildIngredientsPlaceholder(context),
           const SizedBox(height: 24),
@@ -727,6 +794,155 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         ],
       ),
     );
+  }
+
+  /// Display existing recipe ingredients (read-only)
+  Widget _buildExistingIngredientsDisplay(BuildContext context) {
+    if (_selectedRecipe == null) return const SizedBox.shrink();
+
+    // Show loading state
+    if (_isLoadingIngredients) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 12),
+              Text(
+                'Loading existing ingredients...',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // If no existing ingredients, show a message
+    if (_existingIngredients.isEmpty) {
+      return Card(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Icon(
+                Icons.info_outline,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'No ingredients yet. Add ingredients below to get started.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Display existing ingredients
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              children: [
+                const Icon(
+                  Icons.check_circle,
+                  color: Colors.green,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Current Ingredients (${_existingIngredients.length}) - Already in Recipe',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Ingredient list
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: Colors.green.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: _existingIngredients.map((ingredientMap) {
+                  final name = ingredientMap['name'] as String? ?? 'Unknown';
+                  final quantity = ingredientMap['quantity'] as double? ?? 0.0;
+                  final unit = ingredientMap['unit'] as String?;
+                  final category = ingredientMap['category'] as String? ?? 'other';
+
+                  // Format quantity display
+                  final quantityDisplay = quantity > 0
+                      ? '${quantity.toString().replaceAll(RegExp(r'\.0$'), '')}${unit != null ? ' $unit' : ''}'
+                      : 'to taste';
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.circle, size: 8, color: Colors.green),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            '$name ($quantityDisplay)',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ),
+                        // Category badge
+                        Chip(
+                          label: Text(
+                            _getCategoryDisplayName(category),
+                            style: const TextStyle(fontSize: 11),
+                          ),
+                          visualDensity: VisualDensity.compact,
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          backgroundColor: Theme.of(context)
+                              .colorScheme
+                              .secondaryContainer
+                              .withValues(alpha: 0.5),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Helper to get category display name from string value
+  String _getCategoryDisplayName(String categoryValue) {
+    try {
+      final category = IngredientCategory.values.firstWhere(
+        (c) => c.value == categoryValue,
+        orElse: () => IngredientCategory.other,
+      );
+      return category.displayName;
+    } catch (e) {
+      return 'Other';
+    }
   }
 
   /// Ingredients section with parsing and editing (Issue #162)
