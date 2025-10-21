@@ -322,21 +322,9 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   /// Find ingredient matches for a given name
   List<IngredientMatch> _findMatchesForName(String name) {
     if (!_isMatchingServiceReady || name.trim().isEmpty) {
-      print('[DEBUG] Matching service not ready or empty name: ready=$_isMatchingServiceReady, name="$name"');
       return [];
     }
-
-    print('[DEBUG] Finding matches for: "$name"');
-    print('[DEBUG] Total ingredients in database: ${_allIngredients.length}');
-
-    final matches = _matchingService.findMatches(name);
-
-    print('[DEBUG] Found ${matches.length} matches:');
-    for (final match in matches) {
-      print('[DEBUG]   - ${match.ingredient.name}: ${(match.confidence * 100).toStringAsFixed(0)}% (${match.matchType})');
-    }
-
-    return matches;
+    return _matchingService.findMatches(name);
   }
 
   /// Get auto-selected match if applicable
@@ -1243,6 +1231,12 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
           matchText = 'Low confidence';
           break;
       }
+    } else if (ingredient.matches.isNotEmpty) {
+      // Has matches but none auto-selected - show based on best match
+      final bestMatch = ingredient.matches.first;
+      matchColor = _getMatchColor(bestMatch.confidenceLevel);
+      matchIcon = _getMatchIcon(bestMatch.confidenceLevel);
+      matchText = '${ingredient.matches.length} match${ingredient.matches.length > 1 ? "es" : ""} found - select one';
     }
 
     return Card(
@@ -1368,11 +1362,17 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                       ],
                     ),
 
-                    // Dropdown for match selection if multiple matches
-                    if (ingredient.matches.length > 1) ...[
+                    // Dropdown for match selection if any matches found
+                    if (ingredient.matches.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       DropdownButtonFormField<IngredientMatch>(
                         value: ingredient.selectedMatch,
+                        hint: Text(
+                          ingredient.matches.length == 1
+                              ? 'Click to select this match'
+                              : 'Select one of ${ingredient.matches.length} matches',
+                          style: const TextStyle(fontSize: 12),
+                        ),
                         decoration: const InputDecoration(
                           labelText: 'Select match',
                           border: OutlineInputBorder(),
