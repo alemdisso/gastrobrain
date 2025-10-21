@@ -322,9 +322,21 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   /// Find ingredient matches for a given name
   List<IngredientMatch> _findMatchesForName(String name) {
     if (!_isMatchingServiceReady || name.trim().isEmpty) {
+      print('[DEBUG] Matching service not ready or empty name: ready=$_isMatchingServiceReady, name="$name"');
       return [];
     }
-    return _matchingService.findMatches(name);
+
+    print('[DEBUG] Finding matches for: "$name"');
+    print('[DEBUG] Total ingredients in database: ${_allIngredients.length}');
+
+    final matches = _matchingService.findMatches(name);
+
+    print('[DEBUG] Found ${matches.length} matches:');
+    for (final match in matches) {
+      print('[DEBUG]   - ${match.ingredient.name}: ${(match.confidence * 100).toStringAsFixed(0)}% (${match.matchType})');
+    }
+
+    return matches;
   }
 
   /// Get auto-selected match if applicable
