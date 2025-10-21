@@ -409,10 +409,12 @@ void main() {
       });
 
       test('skips very short strings (< 3 chars)', () {
-        final matches = service.findMatches('AB');
-
         // Should not crash, but might not find fuzzy matches for very short strings
         expect(() => service.findMatches('AB'), returnsNormally);
+
+        // Verify it returns a result (even if empty or non-fuzzy)
+        final matches = service.findMatches('AB');
+        expect(matches, isA<List<IngredientMatch>>());
       });
 
       test('fuzzy match confidence correlates with similarity', () {
