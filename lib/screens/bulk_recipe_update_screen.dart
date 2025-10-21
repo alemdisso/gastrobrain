@@ -4,7 +4,6 @@ import '../core/di/service_provider.dart';
 import '../core/services/ingredient_matching_service.dart';
 import '../models/recipe.dart';
 import '../models/recipe_ingredient.dart';
-import '../models/ingredient.dart';
 import '../models/ingredient_category.dart';
 import '../models/ingredient_match.dart';
 import '../l10n/app_localizations.dart';
@@ -38,10 +37,6 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   // Existing ingredients state (raw maps from database query)
   List<Map<String, dynamic>> _existingIngredients = [];
   bool _isLoadingIngredients = false;
-
-  // All database ingredients for matching
-  List<Ingredient> _allIngredients = [];
-  bool _isLoadingAllIngredients = false;
 
   // Ingredient matching service
   final IngredientMatchingService _matchingService = IngredientMatchingService();
@@ -100,10 +95,6 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
 
   /// Load all ingredients from database for matching
   Future<void> _loadAllIngredients() async {
-    setState(() {
-      _isLoadingAllIngredients = true;
-    });
-
     try {
       final dbHelper = ServiceProvider.database.dbHelper;
       final allIngredients = await dbHelper.getAllIngredients();
@@ -112,15 +103,11 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       _matchingService.initialize(allIngredients);
 
       setState(() {
-        _allIngredients = allIngredients;
-        _isLoadingAllIngredients = false;
         _isMatchingServiceReady = true;
       });
     } catch (e) {
       // Silently fail - matching will just not work if ingredients can't be loaded
       setState(() {
-        _allIngredients = [];
-        _isLoadingAllIngredients = false;
         _isMatchingServiceReady = false;
       });
     }
