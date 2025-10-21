@@ -671,6 +671,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get measurementUnitPinch => 'Pinch';
 
   @override
+  String get measurementUnitClove => 'Clove';
+
+  @override
+  String get measurementUnitHead => 'Head';
+
+  @override
   String get unitOptional => 'Unit (Optional)';
 
   @override

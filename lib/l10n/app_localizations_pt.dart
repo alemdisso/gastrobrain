@@ -677,6 +677,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get measurementUnitPinch => 'Pitada';
 
   @override
+  String get measurementUnitClove => 'Dente';
+
+  @override
+  String get measurementUnitHead => 'Cabeça';
+
+  @override
   String get unitOptional => 'Unidade (Opcional)';
 
   @override

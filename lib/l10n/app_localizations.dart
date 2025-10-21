@@ -1316,6 +1316,18 @@ abstract class AppLocalizations {
   /// **'Pinch'**
   String get measurementUnitPinch;
 
+  /// Measurement unit names
+  ///
+  /// In en, this message translates to:
+  /// **'Clove'**
+  String get measurementUnitClove;
+
+  /// Measurement unit names
+  ///
+  /// In en, this message translates to:
+  /// **'Head'**
+  String get measurementUnitHead;
+
   /// Label for unit field in ingredient forms
   ///
   /// In en, this message translates to:
