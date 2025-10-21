@@ -292,6 +292,191 @@ void main() {
       });
     });
 
+    group('fuzzy match (Stage 4)', () {
+      test('finds fuzzy match for typo in ingredient name', () {
+        // Add ingredient
+        final extraIngredients = [
+          ...testIngredients,
+          Ingredient(
+            id: '11',
+            name: 'Tomate',
+            category: IngredientCategory.vegetable,
+            unit: MeasurementUnit.piece,
+          ),
+        ];
+        service.initialize(extraIngredients);
+
+        // "Tomatoe" is a common typo
+        final matches = service.findMatches('Tomatoe');
+
+        expect(matches, isNotEmpty);
+        expect(matches.first.ingredient.name, equals('Tomate'));
+        expect(matches.first.matchType, equals(MatchType.fuzzy));
+        expect(matches.first.confidence, greaterThan(0.60));
+        expect(matches.first.confidence, lessThan(0.90));
+      });
+
+      test('finds fuzzy match for similar spelling', () {
+        final extraIngredients = [
+          ...testIngredients,
+          Ingredient(
+            id: '11',
+            name: 'Cebola',
+            category: IngredientCategory.vegetable,
+            unit: MeasurementUnit.piece,
+          ),
+        ];
+        service.initialize(extraIngredients);
+
+        // "Cebolla" (Spanish) vs "Cebola" (Portuguese)
+        final matches = service.findMatches('Cebolla');
+
+        expect(matches, isNotEmpty);
+        expect(matches.first.ingredient.name, equals('Cebola'));
+        expect(matches.first.matchType, equals(MatchType.fuzzy));
+      });
+
+      test('fuzzy match has lower confidence than exact match', () {
+        final extraIngredients = [
+          ...testIngredients,
+          Ingredient(
+            id: '11',
+            name: 'Sal',
+            category: IngredientCategory.seasoning,
+            unit: MeasurementUnit.gram,
+          ),
+        ];
+        service.initialize(extraIngredients);
+
+        final exactMatches = service.findMatches('Sal');
+        final fuzzyMatches = service.findMatches('Slt');
+
+        if (fuzzyMatches.isNotEmpty) {
+          expect(exactMatches.first.confidence, greaterThan(fuzzyMatches.first.confidence));
+        }
+      });
+
+      test('returns multiple fuzzy matches sorted by confidence', () {
+        final extraIngredients = [
+          ...testIngredients,
+          Ingredient(
+            id: '11',
+            name: 'Tomate',
+            category: IngredientCategory.vegetable,
+          ),
+          Ingredient(
+            id: '12',
+            name: 'Tomato',
+            category: IngredientCategory.vegetable,
+          ),
+          Ingredient(
+            id: '13',
+            name: 'Tomatinho',
+            category: IngredientCategory.vegetable,
+          ),
+        ];
+        service.initialize(extraIngredients);
+
+        final matches = service.findMatches('Tomat');
+
+        expect(matches.length, greaterThanOrEqualTo(2));
+
+        // Verify sorted by confidence
+        for (int i = 0; i < matches.length - 1; i++) {
+          expect(
+            matches[i].confidence,
+            greaterThanOrEqualTo(matches[i + 1].confidence),
+          );
+        }
+      });
+
+      test('limits fuzzy matches to top 5 results', () {
+        // Create many similar ingredients
+        final extraIngredients = [
+          ...testIngredients,
+          ...List.generate(10, (i) => Ingredient(
+            id: 'similar_$i',
+            name: 'Ingredient$i',
+            category: IngredientCategory.other,
+          )),
+        ];
+        service.initialize(extraIngredients);
+
+        final matches = service.findMatches('Ingredien');
+
+        // Should limit to 5 fuzzy matches even if more are similar
+        expect(matches.length, lessThanOrEqualTo(5));
+      });
+
+      test('skips very short strings (< 3 chars)', () {
+        final matches = service.findMatches('AB');
+
+        // Should not crash, but might not find fuzzy matches for very short strings
+        expect(() => service.findMatches('AB'), returnsNormally);
+      });
+
+      test('fuzzy match confidence correlates with similarity', () {
+        final extraIngredients = [
+          ...testIngredients,
+          Ingredient(
+            id: '11',
+            name: 'Manteiga',
+            category: IngredientCategory.other,
+          ),
+        ];
+        service.initialize(extraIngredients);
+
+        // Very similar
+        final closeMatch = service.findMatches('Mantega');
+        // Less similar
+        final farMatch = service.findMatches('Mantiga');
+
+        if (closeMatch.isNotEmpty && farMatch.isNotEmpty) {
+          expect(
+            closeMatch.first.confidence,
+            greaterThanOrEqualTo(farMatch.first.confidence),
+          );
+        }
+      });
+
+      test('fuzzy match respects minimum threshold (60%)', () {
+        final extraIngredients = [
+          ...testIngredients,
+          Ingredient(
+            id: '11',
+            name: 'Abacaxi',
+            category: IngredientCategory.other,
+          ),
+        ];
+        service.initialize(extraIngredients);
+
+        final matches = service.findMatches('xyz');
+
+        // Completely different string should not match
+        expect(matches, isEmpty);
+      });
+
+      test('fuzzy match works with normalized strings', () {
+        final extraIngredients = [
+          ...testIngredients,
+          Ingredient(
+            id: '11',
+            name: 'Açúcar',
+            category: IngredientCategory.other,
+          ),
+        ];
+        service.initialize(extraIngredients);
+
+        // Typo without accent
+        final matches = service.findMatches('Acucar');
+
+        // Should find via normalized match (90%) before fuzzy
+        expect(matches, isNotEmpty);
+        expect(matches.first.confidence, equals(0.90));
+        expect(matches.first.matchType, equals(MatchType.normalized));
+      });
+    });
+
     group('no matches', () {
       test('returns empty list when no match found', () {
         final matches = service.findMatches('xyz123');

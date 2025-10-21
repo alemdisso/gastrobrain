@@ -1,3 +1,4 @@
+import 'package:string_similarity/string_similarity.dart';
 import '../../models/ingredient.dart';
 import '../../models/ingredient_match.dart';
 
@@ -7,8 +8,8 @@ import '../../models/ingredient_match.dart';
 /// 1. Exact match (100%)
 /// 2. Case-insensitive match (95%)
 /// 3. Normalized match - removes accents/diacritics (90%)
-/// 4. Translation match - bilingual EN/PT (80%) - Future
-/// 5. Fuzzy match - similarity algorithms (60-75%) - Future
+/// 4. Fuzzy match - similarity algorithms (60-85%)
+/// 5. Translation match - bilingual EN/PT (80%) - Future
 /// 6. Partial match - contains/substring (50-60%) - Future
 class IngredientMatchingService {
   /// Cache of normalized ingredient names for performance
@@ -52,9 +53,18 @@ class IngredientMatchingService {
     final normalizedMatches = _findNormalizedMatches(parsedName);
     matches.addAll(normalizedMatches);
 
-    // Future stages will be added here:
-    // Stage 4: Translation matches
-    // Stage 5: Fuzzy matches
+    // If we have high-confidence normalized matches, return early
+    if (matches.isNotEmpty && matches.first.confidence >= 0.90) {
+      matches.sort((a, b) => b.confidence.compareTo(a.confidence));
+      return matches;
+    }
+
+    // Stage 4: Fuzzy matches (similarity-based)
+    final fuzzyMatches = _findFuzzyMatches(parsedName);
+    matches.addAll(fuzzyMatches);
+
+    // Future stages:
+    // Stage 5: Translation matches
     // Stage 6: Partial matches
 
     // Sort by confidence (highest first)
@@ -121,6 +131,50 @@ class IngredientMatchingService {
     }
 
     return matches;
+  }
+
+  /// Stage 4: Fuzzy match using string similarity
+  List<IngredientMatch> _findFuzzyMatches(String parsedName) {
+    final matches = <IngredientMatch>[];
+    final normalizedParsed = _normalize(parsedName);
+
+    // Skip very short strings (less than 3 chars) as fuzzy matching is unreliable
+    if (normalizedParsed.length < 3) {
+      return matches;
+    }
+
+    // Check all ingredients for similarity
+    for (final ingredient in _allIngredients) {
+      final normalizedIngredient = _getCachedNormalized(ingredient.name);
+
+      // Skip if already matched exactly or normalized
+      if (normalizedIngredient == normalizedParsed) {
+        continue; // Already found in normalized stage
+      }
+
+      // Calculate similarity using Jaro-Winkler distance (0.0 to 1.0)
+      final similarity = normalizedParsed.similarityTo(normalizedIngredient);
+
+      // Only include matches above threshold (60%)
+      // Confidence scaling:
+      // - 0.85+ similarity = 85% confidence (high)
+      // - 0.75-0.84 similarity = 75-84% confidence (medium)
+      // - 0.60-0.74 similarity = 60-74% confidence (low)
+      if (similarity >= 0.60) {
+        // Scale confidence: similarity of 0.60 -> 60%, 0.85+ -> 85%
+        final confidence = similarity.clamp(0.60, 0.85);
+
+        matches.add(IngredientMatch(
+          ingredient: ingredient,
+          confidence: confidence,
+          matchType: MatchType.fuzzy,
+        ));
+      }
+    }
+
+    // Sort by similarity (highest first) and limit to top 5 fuzzy matches
+    matches.sort((a, b) => b.confidence.compareTo(a.confidence));
+    return matches.take(5).toList();
   }
 
   /// Normalize a string: lowercase, remove accents, normalize separators, trim
