@@ -12,7 +12,9 @@ enum MeasurementUnit {
   slice('slice'),
   bunch('bunch'),
   leaves('leaves'),
-  pinch('pinch');
+  pinch('pinch'),
+  clove('clove'),
+  head('head');
 
   final String value;
   const MeasurementUnit(this.value);
@@ -55,16 +57,20 @@ enum MeasurementUnit {
         return 'Leaves';
       case MeasurementUnit.pinch:
         return 'Pinch';
+      case MeasurementUnit.clove:
+        return 'Clove';
+      case MeasurementUnit.head:
+        return 'Head';
     }
   }
 
   String getLocalizedDisplayName(context) {
     final localizations = context != null ? AppLocalizations.of(context)! : null;
-    
+
     if (localizations == null) {
       return displayName; // Fallback to English
     }
-    
+
     switch (this) {
       case MeasurementUnit.gram:
         return 'g'; // Keep abbreviations as-is
@@ -90,6 +96,10 @@ enum MeasurementUnit {
         return localizations.measurementUnitLeaves;
       case MeasurementUnit.pinch:
         return localizations.measurementUnitPinch;
+      case MeasurementUnit.clove:
+        return localizations.measurementUnitClove;
+      case MeasurementUnit.head:
+        return localizations.measurementUnitHead;
     }
   }
 }

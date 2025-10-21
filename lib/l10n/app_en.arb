@@ -906,6 +906,14 @@
   "@measurementUnitPinch": {
     "description": "Measurement unit names"
   },
+  "measurementUnitClove": "Clove",
+  "@measurementUnitClove": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitHead": "Head",
+  "@measurementUnitHead": {
+    "description": "Measurement unit names"
+  },
   "unitOptional": "Unit (Optional)",
   "@unitOptional": {
     "description": "Label for unit field in ingredient forms"

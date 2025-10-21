@@ -888,6 +888,14 @@
   "@measurementUnitPinch": {
     "description": "Nomes das unidades de medida"
   },
+  "measurementUnitClove": "Dente",
+  "@measurementUnitClove": {
+    "description": "Nomes das unidades de medida"
+  },
+  "measurementUnitHead": "Cabeça",
+  "@measurementUnitHead": {
+    "description": "Nomes das unidades de medida"
+  },
   "unitOptional": "Unidade (Opcional)",
   "@unitOptional": {
     "description": "Rótulo para campo de unidade em formulários de ingredientes"

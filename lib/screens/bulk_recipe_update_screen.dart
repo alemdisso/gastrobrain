@@ -434,6 +434,18 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       'pitada': 'pinch',
       'pinch': 'pinch',
       'pitadas': 'pinch',
+
+      'dente': 'clove',
+      'dentes': 'clove',
+      'clove': 'clove',
+      'cloves': 'clove',
+
+      'cabeça': 'head',
+      'cabeca': 'head',
+      'cabeças': 'head',
+      'cabecas': 'head',
+      'head': 'head',
+      'heads': 'head',
     };
 
     return unitMap[unitStr.toLowerCase()];
