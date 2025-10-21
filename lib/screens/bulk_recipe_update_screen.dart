@@ -1109,6 +1109,33 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     }
   }
 
+  /// Build summary text showing existing and new ingredient counts
+  String _buildIngredientSummary() {
+    final existingCount = _existingIngredients.length;
+    final newCount = _parsedIngredients.where((p) => p.selectedMatch != null).length;
+    final unmatchedCount = _parsedIngredients.where((p) => p.name.trim().isNotEmpty && p.selectedMatch == null).length;
+
+    final parts = <String>[];
+
+    if (existingCount > 0) {
+      parts.add('$existingCount existing ingredient${existingCount != 1 ? "s" : ""}');
+    }
+
+    if (newCount > 0) {
+      parts.add('adding $newCount new');
+    }
+
+    if (unmatchedCount > 0) {
+      parts.add('$unmatchedCount unmatched (need selection)');
+    }
+
+    if (parts.isEmpty) {
+      return 'No ingredients to save';
+    }
+
+    return parts.join(', ');
+  }
+
   /// Ingredients section with parsing and editing (Issue #162)
   Widget _buildIngredientsPlaceholder(BuildContext context) {
     return Card(
@@ -1179,6 +1206,32 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                 final ingredient = entry.value;
                 return _buildIngredientRow(context, index, ingredient);
               }),
+              const SizedBox(height: 16),
+
+              // Summary: existing and new ingredient counts
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.shade200),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _buildIngredientSummary(),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               const SizedBox(height: 16),
 
               // Save button
