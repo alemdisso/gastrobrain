@@ -56,7 +56,11 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   }
 
   /// Load recipes that need ingredient data (have less than 3 ingredients)
-  Future<void> _loadRecipesNeedingIngredients() async {
+  /// If [preserveCurrentRecipe] is true, tries to keep the current recipe selected
+  Future<void> _loadRecipesNeedingIngredients({bool preserveCurrentRecipe = false}) async {
+    // Remember current recipe ID if we want to preserve selection
+    final currentRecipeId = preserveCurrentRecipe ? _selectedRecipe?.id : null;
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -75,21 +79,36 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         }
       }
 
+      // Try to find the previously selected recipe in the updated list
+      Recipe? recipeToSelect;
+      int? indexToSelect;
+
+      if (currentRecipeId != null) {
+        // Try to find the current recipe in the new list
+        final index = recipesNeedingUpdate.indexWhere((r) => r.id == currentRecipeId);
+        if (index >= 0) {
+          recipeToSelect = recipesNeedingUpdate[index];
+          indexToSelect = index;
+        }
+      }
+
+      // If no recipe to preserve, or it's no longer in the list, select first
+      if (recipeToSelect == null && recipesNeedingUpdate.isNotEmpty) {
+        recipeToSelect = recipesNeedingUpdate[0];
+        indexToSelect = 0;
+      }
+
       setState(() {
         _recipesNeedingIngredients = recipesNeedingUpdate;
         _isLoading = false;
-
-        // Auto-select first recipe if available
-        if (_recipesNeedingIngredients.isNotEmpty) {
-          _selectedRecipe = _recipesNeedingIngredients[0];
-          _selectedRecipeIndex = 0;
-        }
+        _selectedRecipe = recipeToSelect;
+        _selectedRecipeIndex = indexToSelect;
       });
 
-      // Load existing ingredients for auto-selected recipe
-      if (_recipesNeedingIngredients.isNotEmpty) {
+      // Load existing ingredients for selected recipe
+      if (recipeToSelect != null) {
         try {
-          final existingIngredients = await dbHelper.getRecipeIngredients(_recipesNeedingIngredients[0].id);
+          final existingIngredients = await dbHelper.getRecipeIngredients(recipeToSelect.id);
           setState(() {
             _existingIngredients = existingIngredients;
           });
@@ -600,7 +619,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         });
 
         // Reload recipes list (this recipe should now have more ingredients)
-        await _loadRecipesNeedingIngredients();
+        // Preserve current recipe selection unless it's been removed from the list
+        await _loadRecipesNeedingIngredients(preserveCurrentRecipe: true);
       }
     } catch (e) {
       if (mounted) {
