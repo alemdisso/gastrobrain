@@ -85,6 +85,20 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
           _selectedRecipeIndex = 0;
         }
       });
+
+      // Load existing ingredients for auto-selected recipe
+      if (_recipesNeedingIngredients.isNotEmpty) {
+        try {
+          final existingIngredients = await dbHelper.getRecipeIngredients(_recipesNeedingIngredients[0].id);
+          setState(() {
+            _existingIngredients = existingIngredients;
+          });
+        } catch (e) {
+          setState(() {
+            _existingIngredients = [];
+          });
+        }
+      }
     } catch (e) {
       setState(() {
         _errorMessage = 'Error loading recipes: ${e.toString()}';
