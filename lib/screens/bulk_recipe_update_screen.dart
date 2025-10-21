@@ -267,7 +267,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       return _ParsedIngredient(
         quantity: quantity,
         unit: unit,
-        name: name,
+        name: selectedMatch?.ingredient.name ?? name, // Use matched name if available
         category: selectedMatch?.ingredient.category ?? IngredientCategory.other,
         matches: matches,
         selectedMatch: selectedMatch,
@@ -284,7 +284,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       return _ParsedIngredient(
         quantity: 0.0, // "to taste"
         unit: null,
-        name: name,
+        name: selectedMatch?.ingredient.name ?? name, // Use matched name if available
         category: selectedMatch?.ingredient.category ?? IngredientCategory.other,
         matches: matches,
         selectedMatch: selectedMatch,
@@ -299,7 +299,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     return _ParsedIngredient(
       quantity: 1.0,
       unit: null,
-      name: name,
+      name: selectedMatch?.ingredient.name ?? name, // Use matched name if available
       category: selectedMatch?.ingredient.category ?? IngredientCategory.other,
       matches: matches,
       selectedMatch: selectedMatch,
@@ -319,7 +319,13 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     if (!_isMatchingServiceReady || matches.isEmpty) {
       return null;
     }
-    return _matchingService.shouldAutoSelect(matches) ? matches.first : null;
+
+    // Auto-select if high confidence (>= 90%) OR if it's the only match
+    if (matches.length == 1 || _matchingService.shouldAutoSelect(matches)) {
+      return matches.first;
+    }
+
+    return null;
   }
 
   /// Parse unit string to custom unit string
@@ -443,10 +449,19 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         newSelectedMatch = _getAutoSelectedMatch(matches);
       }
 
+      // If selectedMatch is explicitly provided (user picked from dropdown), use it
+      if (selectedMatch != null) {
+        newSelectedMatch = selectedMatch;
+      }
+
+      // If we have a selected match, use the matched ingredient's name
+      // This ensures the field shows "alho-poró" instead of "alho porro"
+      final finalName = newSelectedMatch?.ingredient.name ?? (name ?? ingredient.name);
+
       _parsedIngredients[index] = _ParsedIngredient(
         quantity: quantity ?? ingredient.quantity,
         unit: unit ?? ingredient.unit,
-        name: name ?? ingredient.name,
+        name: finalName,
         category: category ?? newSelectedMatch?.ingredient.category ?? ingredient.category,
         matches: matches,
         selectedMatch: newSelectedMatch,
@@ -1349,15 +1364,14 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                       ],
                     ),
 
-                    // Dropdown for match selection if any matches found
-                    if (ingredient.matches.isNotEmpty) ...[
+                    // Dropdown for match selection if multiple matches
+                    // (single matches are auto-selected and shown in the name field)
+                    if (ingredient.matches.length > 1) ...[
                       const SizedBox(height: 8),
                       DropdownButtonFormField<IngredientMatch>(
                         value: ingredient.selectedMatch,
                         hint: Text(
-                          ingredient.matches.length == 1
-                              ? 'Click to select this match'
-                              : 'Select one of ${ingredient.matches.length} matches',
+                          'Select one of ${ingredient.matches.length} matches',
                           style: const TextStyle(fontSize: 12),
                         ),
                         decoration: const InputDecoration(
