@@ -264,7 +264,48 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     });
   }
 
+  /// Common descriptors that modify ingredients (size, state, preparation)
+  /// These are extracted and stored in the notes field, not the ingredient name
+  static const _descriptors = {
+    // Size (PT)
+    'pequena', 'pequeno', 'pequenas', 'pequenos',
+    'grande', 'grandes',
+    'média', 'medio', 'médias', 'medios',
+    // Size (EN)
+    'small', 'large', 'medium',
+    // State/ripeness (PT)
+    'maduro', 'madura', 'maduros', 'maduras',
+    'verde', 'verdes',
+    'fresco', 'fresca', 'frescos', 'frescas',
+    'seco', 'seca', 'secos', 'secas',
+    // State/ripeness (EN)
+    'ripe', 'green', 'fresh', 'dried',
+    // Preparation (PT)
+    'picado', 'picada', 'picados', 'picadas',
+    'ralado', 'ralada', 'ralados', 'raladas',
+    'fatiado', 'fatiada', 'fatiados', 'fatiadas',
+    'cortado', 'cortada', 'cortados', 'cortadas',
+    // Preparation (EN)
+    'chopped', 'diced', 'minced', 'grated', 'sliced', 'cut',
+    // Modifiers (PT)
+    'sem', 'com',
+    // Common combinations (PT)
+    'sem sementes', 'com casca', 'sem casca',
+  };
+
   /// Parse a single ingredient line
+  ///
+  /// Handles three refinements (Issue #166):
+  /// 1. Default unit: Quantities without units default to "piece"
+  /// 2. Descriptors: Extracted and stored in notes, not ingredient name
+  /// 3. "de" handling: Strips "de" after valid units (e.g., "2 fatias de pão" → "pão")
+  ///
+  /// Examples:
+  /// - "3 ovos" → 3 piece ovos, notes: null
+  /// - "1 cebola pequena" → 1 piece cebola, notes: "pequena"
+  /// - "2 tomates maduros" → 2 piece tomates, notes: "maduros"
+  /// - "2 fatias de pão" → 2 slice pão, notes: null
+  /// - "200g farinha" → 200 g farinha, notes: null
   _ParsedIngredient? _parseIngredientLine(String line) {
     // Regex patterns for parsing ingredients
     // Supports formats like:
@@ -272,6 +313,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     // - "2 xícaras leite" / "2 cups milk"
     // - "1 csp sal" / "1 tsp salt"
     // - "3 ovos" / "3 eggs"
+    // - "1 cebola pequena" / "1 small onion"
+    // - "2 fatias de pão" / "2 slices of bread"
     // - "Sal a gosto" / "Salt to taste"
 
     // Pattern: [quantity] [unit] ingredient_name
@@ -288,22 +331,66 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       final quantityStr = match.group(1)!.replaceAll(',', '.');
       final quantity = double.tryParse(quantityStr) ?? 1.0;
       final unitStr = match.group(2)?.toLowerCase().trim();
-      final name = match.group(3)!.trim();
+      var name = match.group(3)!.trim();
 
-      // Parse unit (convert Portuguese abbreviations to English)
-      final unit = _parseUnit(unitStr);
+      // Try to parse the captured unit word
+      var unit = _parseUnit(unitStr);
 
-      // Find ingredient matches
-      final matches = _findMatchesForName(name);
+      // Track descriptors for notes field
+      final descriptorParts = <String>[];
+
+      // If the captured word is not a valid unit, it's probably part of the ingredient name
+      if (unitStr != null && unit == null) {
+        // Check if it's a descriptor
+        if (_descriptors.contains(unitStr.toLowerCase())) {
+          descriptorParts.add(unitStr);
+          // Don't add descriptor to name, just default to "piece"
+        } else {
+          // Not a unit, not a descriptor - it's part of the ingredient name
+          name = '$unitStr $name';
+        }
+        unit = 'piece';
+      }
+
+      // If no unit word was captured at all, default to "piece"
+      if (unitStr == null) {
+        unit = 'piece';
+      }
+
+      // Handle "de" after unit words (e.g., "2 fatias de pão" → "pão")
+      if (unit != null && name.startsWith('de ')) {
+        name = name.substring(3); // Strip "de "
+      }
+
+      // Extract descriptors from the remaining name
+      // Split name and check each word
+      final nameParts = name.split(' ');
+      final cleanNameParts = <String>[];
+
+      for (final part in nameParts) {
+        if (_descriptors.contains(part.toLowerCase())) {
+          descriptorParts.add(part);
+        } else {
+          cleanNameParts.add(part);
+        }
+      }
+
+      // Rebuild clean name without descriptors
+      final cleanName = cleanNameParts.join(' ');
+      final notes = descriptorParts.isNotEmpty ? descriptorParts.join(' ') : null;
+
+      // Find ingredient matches using clean name (without descriptors)
+      final matches = _findMatchesForName(cleanName);
       final selectedMatch = _getAutoSelectedMatch(matches);
 
       return _ParsedIngredient(
         quantity: quantity,
         unit: unit,
-        name: selectedMatch?.ingredient.name ?? name, // Use matched name if available
+        name: selectedMatch?.ingredient.name ?? cleanName, // Use matched name if available
         category: selectedMatch?.ingredient.category ?? IngredientCategory.other,
         matches: matches,
         selectedMatch: selectedMatch,
+        notes: notes,
       );
     }
 
@@ -477,6 +564,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     double? quantity,
     String? unit,
     String? name,
+    String? notes,
     IngredientCategory? category,
     IngredientMatch? selectedMatch,
   }) {
@@ -507,6 +595,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         quantity: quantity ?? ingredient.quantity,
         unit: unit ?? ingredient.unit,
         name: finalName,
+        notes: notes ?? ingredient.notes,
         category: category ?? newSelectedMatch?.ingredient.category ?? ingredient.category,
         matches: matches,
         selectedMatch: newSelectedMatch,
@@ -579,6 +668,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
             recipeId: _selectedRecipe!.id,
             ingredientId: ingredientId,
             quantity: parsed.quantity,
+            notes: parsed.notes,
             unitOverride: parsed.unit,
           );
 
@@ -591,6 +681,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
             recipeId: _selectedRecipe!.id,
             ingredientId: ingredientId,
             quantity: parsed.quantity,
+            notes: parsed.notes,
             unitOverride: parsed.unit,
           );
 
@@ -1432,6 +1523,24 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
               ],
             ),
 
+            // Notes field (descriptors like "pequena", "maduro", etc.)
+            if (ingredient.notes != null || ingredient.selectedMatch != null) ...[
+              const SizedBox(height: 8),
+              TextField(
+                decoration: const InputDecoration(
+                  labelText: 'Notes (descriptors)',
+                  hintText: 'e.g., pequena, maduro, picado',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  isDense: true,
+                ),
+                controller: TextEditingController(text: ingredient.notes ?? ''),
+                onChanged: (value) {
+                  _updateIngredient(index, notes: value.isEmpty ? null : value);
+                },
+              ),
+            ],
+
             // Match indicator row
             if (ingredient.name.trim().isNotEmpty) ...[
               const SizedBox(height: 8),
@@ -1713,6 +1822,7 @@ class _ParsedIngredient {
   String? unit;
   String name;
   IngredientCategory category;
+  String? notes; // Descriptors like "pequena", "maduro", "picado"
 
   // Matching information
   List<IngredientMatch> matches;
@@ -1723,6 +1833,7 @@ class _ParsedIngredient {
     this.unit,
     required this.name,
     required this.category,
+    this.notes,
     this.matches = const [],
     this.selectedMatch,
   });
