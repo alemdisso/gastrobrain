@@ -1055,8 +1055,9 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                   final category = ingredientMap['category'] as String? ?? 'other';
 
                   // Format quantity display
-                  final quantityDisplay = quantity > 0
-                      ? '${quantity.toString().replaceAll(RegExp(r'\.0$'), '')}${unit != null ? ' $unit' : ''}'
+                  final quantityStr = formatQuantity(quantity);
+                  final quantityDisplay = quantityStr.isNotEmpty
+                      ? '$quantityStr${unit != null ? ' $unit' : ''}'
                       : 'to taste';
 
                   return Padding(
@@ -1107,6 +1108,23 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     } catch (e) {
       return 'Other';
     }
+  }
+
+  /// Format quantity for display
+  /// Whole numbers show without decimal (1 not 1.0)
+  /// Decimal numbers keep their decimals (1.5 stays 1.5)
+  String formatQuantity(double quantity) {
+    if (quantity == 0) {
+      return ''; // Empty for "to taste" ingredients
+    }
+
+    // Check if it's a whole number
+    if (quantity == quantity.toInt()) {
+      return quantity.toInt().toString(); // "1" not "1.0"
+    }
+
+    // Keep decimals for fractional quantities
+    return quantity.toString(); // "1.5" stays "1.5"
   }
 
   /// Build summary text showing existing and new ingredient counts
@@ -1316,7 +1334,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                     ),
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     controller: TextEditingController(
-                      text: ingredient.quantity > 0 ? ingredient.quantity.toString() : '',
+                      text: formatQuantity(ingredient.quantity),
                     ),
                     onChanged: (value) {
                       final qty = double.tryParse(value) ?? 0.0;
