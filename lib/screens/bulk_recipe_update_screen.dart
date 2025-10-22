@@ -1381,8 +1381,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   /// Build summary text showing existing and new ingredient counts
   String _buildIngredientSummary() {
     final existingCount = _existingIngredients.length;
-    final newCount = _parsedIngredients.where((p) => p.selectedMatch != null).length;
-    final unmatchedCount = _parsedIngredients.where((p) => p.name.trim().isNotEmpty && p.selectedMatch == null).length;
+    final newCount = _parsedIngredients.where((p) => p.selectedMatch != null || p.isNewIngredient).length;
+    final unmatchedCount = _parsedIngredients.where((p) => p.name.trim().isNotEmpty && p.selectedMatch == null && !p.isNewIngredient).length;
 
     final parts = <String>[];
 
