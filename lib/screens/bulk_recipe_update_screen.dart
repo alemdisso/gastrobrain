@@ -4,8 +4,10 @@ import '../core/di/service_provider.dart';
 import '../core/services/ingredient_matching_service.dart';
 import '../models/recipe.dart';
 import '../models/recipe_ingredient.dart';
+import '../models/ingredient.dart';
 import '../models/ingredient_category.dart';
 import '../models/ingredient_match.dart';
+import '../widgets/add_new_ingredient_dialog.dart';
 import '../l10n/app_localizations.dart';
 
 /// Bulk recipe update screen for efficiently adding ingredients and instructions
@@ -653,21 +655,65 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     });
   }
 
+  /// Show dialog to create a new ingredient from parsed data
+  Future<void> _showCreateIngredientDialog(int index) async {
+    if (index < 0 || index >= _parsedIngredients.length) return;
+
+    final parsed = _parsedIngredients[index];
+
+    // Pre-fill ingredient data from parsed values
+    final prefilledIngredient = Ingredient(
+      id: '', // Will be generated in dialog
+      name: parsed.name,
+      category: parsed.category,
+      unit: null, // User can set in dialog
+      notes: parsed.notes,
+    );
+
+    // Show dialog
+    final result = await showDialog<Ingredient>(
+      context: context,
+      builder: (context) => AddNewIngredientDialog(
+        ingredient: prefilledIngredient,
+      ),
+    );
+
+    // If user saved the ingredient, store it for later creation
+    if (result != null && mounted) {
+      setState(() {
+        _parsedIngredients[index] = _ParsedIngredient(
+          quantity: parsed.quantity,
+          unit: parsed.unit,
+          name: result.name, // Use the final name from dialog
+          category: result.category,
+          notes: result.notes,
+          matches: parsed.matches,
+          selectedMatch: null, // Clear any previous match
+          newIngredientToCreate: result, // Store for creation on save
+        );
+      });
+    }
+  }
+
   /// Save ingredients to database
   Future<void> _saveIngredients() async {
     if (_selectedRecipe == null || _parsedIngredients.isEmpty) return;
 
-    // Validate: all ingredients must have matched ingredient IDs
-    final unmatchedIngredients = _parsedIngredients
-        .where((p) => p.name.trim().isNotEmpty && p.selectedMatch == null)
+    // Separate new and unresolved ingredients
+    final newIngredients = _parsedIngredients
+        .where((p) => p.name.trim().isNotEmpty && p.isNewIngredient)
+        .toList();
+    final unresolvedIngredients = _parsedIngredients
+        .where((p) => p.name.trim().isNotEmpty && !p.isNewIngredient && p.selectedMatch == null)
         .toList();
 
-    if (unmatchedIngredients.isNotEmpty) {
+    // Validate: all ingredients must be either matched or marked as new
+    if (unresolvedIngredients.isNotEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Cannot save: ${unmatchedIngredients.length} ingredient(s) not matched to database. '
+              'Cannot save: ${unresolvedIngredients.length} ingredient(s) not matched to database. '
               'Please select a match or create new ingredients first.',
             ),
             backgroundColor: Colors.orange,
@@ -688,8 +734,15 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
 
       int addedCount = 0;
       int updatedCount = 0;
+      int createdCount = 0;
 
-      // Load current recipe ingredients to check for duplicates
+      // Step 1: Create new ingredients in the main ingredients table
+      for (final parsed in newIngredients) {
+        await dbHelper.insertIngredient(parsed.newIngredientToCreate!);
+        createdCount++;
+      }
+
+      // Step 2: Load current recipe ingredients to check for duplicates
       final existingIngredients = await dbHelper.getRecipeIngredients(_selectedRecipe!.id);
 
       // Build map of existing ingredient_id -> recipe_ingredient data
@@ -701,11 +754,19 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         }
       }
 
-      // Process each parsed ingredient
+      // Step 3: Process all parsed ingredients (matched + newly created)
       for (final parsed in _parsedIngredients) {
-        if (parsed.name.trim().isEmpty || parsed.selectedMatch == null) continue;
+        if (parsed.name.trim().isEmpty) continue;
 
-        final ingredientId = parsed.selectedMatch!.ingredient.id;
+        // Get ingredient ID (from match or from newly created ingredient)
+        String? ingredientId;
+        if (parsed.selectedMatch != null) {
+          ingredientId = parsed.selectedMatch!.ingredient.id;
+        } else if (parsed.isNewIngredient) {
+          ingredientId = parsed.newIngredientToCreate!.id;
+        } else {
+          continue; // Skip unresolved (shouldn't happen due to validation)
+        }
 
         // Check if this ingredient already exists in the recipe
         if (existingByIngredientId.containsKey(ingredientId)) {
@@ -725,7 +786,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
           await dbHelper.updateRecipeIngredient(updatedRecipeIngredient);
           updatedCount++;
         } else {
-          // Add new recipe ingredient
+          // Add new recipe ingredient link
           final recipeIngredient = RecipeIngredient(
             id: uuid.v4(),
             recipeId: _selectedRecipe!.id,
@@ -743,14 +804,17 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       // Show success message
       if (mounted) {
         final message = StringBuffer();
+        if (createdCount > 0) {
+          message.write('Created $createdCount new ingredient(s)');
+        }
         if (addedCount > 0) {
-          message.write('Added $addedCount');
+          if (message.isNotEmpty) message.write(', ');
+          message.write('Added $addedCount to recipe');
         }
         if (updatedCount > 0) {
           if (message.isNotEmpty) message.write(', ');
           message.write('Updated $updatedCount');
         }
-        message.write(' ingredient(s)');
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1473,7 +1537,12 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     IconData matchIcon = Icons.help_outline;
     String matchText = 'No match';
 
-    if (ingredient.selectedMatch != null) {
+    if (ingredient.isNewIngredient) {
+      // New ingredient ready to be created
+      matchColor = Colors.blue;
+      matchIcon = Icons.fiber_new;
+      matchText = 'New ingredient - will be created';
+    } else if (ingredient.selectedMatch != null) {
       switch (ingredient.selectedMatch!.confidenceLevel) {
         case MatchConfidence.high:
           matchColor = Colors.green;
@@ -1497,6 +1566,11 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       matchColor = _getMatchColor(bestMatch.confidenceLevel);
       matchIcon = _getMatchIcon(bestMatch.confidenceLevel);
       matchText = '${ingredient.matches.length} match${ingredient.matches.length > 1 ? "es" : ""} found - select one';
+    } else {
+      // No matches and not resolved yet - needs action
+      matchColor = Colors.red;
+      matchIcon = Icons.error;
+      matchText = 'No match - create new ingredient';
     }
 
     return Card(
@@ -1686,6 +1760,26 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                           _updateIngredient(index, selectedMatch: match);
                         },
                         isExpanded: true,
+                      ),
+                    ],
+
+                    // Create New Ingredient button for unmatched ingredients
+                    if (!ingredient.isNewIngredient &&
+                        ingredient.selectedMatch == null &&
+                        ingredient.matches.isEmpty) ...[
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () => _showCreateIngredientDialog(index),
+                          icon: const Icon(Icons.add, size: 18),
+                          label: const Text('Create New Ingredient'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                          ),
+                        ),
                       ),
                     ],
                   ],
@@ -1885,6 +1979,10 @@ class _ParsedIngredient {
   List<IngredientMatch> matches;
   IngredientMatch? selectedMatch; // User-selected or auto-selected match
 
+  // New ingredient creation
+  Ingredient? newIngredientToCreate; // Ingredient to be created on save
+  bool get isNewIngredient => newIngredientToCreate != null;
+
   _ParsedIngredient({
     required this.quantity,
     this.unit,
@@ -1893,5 +1991,6 @@ class _ParsedIngredient {
     this.notes,
     this.matches = const [],
     this.selectedMatch,
+    this.newIngredientToCreate,
   });
 }
