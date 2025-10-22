@@ -59,7 +59,7 @@ class DatabaseHelper {
     
     final db = await openDatabase(
       path,
-      version: 16, // Keep current version for backward compatibility
+      version: 17, // Bumped for instructions field addition
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: (db) async {
@@ -158,6 +158,7 @@ class DatabaseHelper {
         name TEXT NOT NULL,
         desired_frequency TEXT NOT NULL,
         notes TEXT,
+        instructions TEXT DEFAULT '',
         created_at TEXT NOT NULL,
         difficulty INTEGER DEFAULT 1,
         prep_time_minutes INTEGER DEFAULT 0,
@@ -347,6 +348,12 @@ class DatabaseHelper {
       final now = DateTime.now().toIso8601String();
       await db.execute(
           'UPDATE meals SET modified_at = ? WHERE modified_at IS NULL', [now]);
+    }
+
+    if (oldVersion < 17) {
+      // Add instructions column to recipes table
+      await db.execute(
+          'ALTER TABLE recipes ADD COLUMN instructions TEXT DEFAULT \'\'');
     }
   }
   // Meal Plan operations

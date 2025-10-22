@@ -6,6 +6,7 @@ class Recipe {
   String name;
   FrequencyType desiredFrequency;
   String notes;
+  String instructions; // Cooking instructions
   DateTime createdAt;
   int difficulty; // 1-5 scale
   int prepTimeMinutes; // Preparation time in minutes
@@ -18,6 +19,7 @@ class Recipe {
     required this.name,
     FrequencyType? desiredFrequency,
     this.notes = '',
+    this.instructions = '',
     required this.createdAt,
     this.difficulty = 1,
     this.prepTimeMinutes = 0,
@@ -33,6 +35,7 @@ class Recipe {
       'name': name,
       'desired_frequency': desiredFrequency.value,
       'notes': notes,
+      'instructions': instructions,
       'created_at': createdAt.toIso8601String(),
       'difficulty': difficulty,
       'prep_time_minutes': prepTimeMinutes,
@@ -49,6 +52,7 @@ class Recipe {
       desiredFrequency:
           FrequencyType.fromString(map['desired_frequency'] ?? 'monthly'),
       notes: map['notes'] ?? '',
+      instructions: map['instructions'] ?? '',
       createdAt: DateTime.parse(map['created_at']),
       difficulty: map['difficulty'] ?? 1,
       prepTimeMinutes: map['prep_time_minutes'] ?? 0,
