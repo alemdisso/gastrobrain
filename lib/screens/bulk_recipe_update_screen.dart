@@ -36,6 +36,11 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   List<_ParsedIngredient> _parsedIngredients = [];
   bool _isSaving = false;
 
+  // Instructions state
+  final TextEditingController _instructionsController = TextEditingController();
+  // ignore: unused_field
+  bool _hasUnsavedChanges = false; // Will be used in Phase 4 for unsaved changes detection
+
   // Existing ingredients state (raw maps from database query)
   List<Map<String, dynamic>> _existingIngredients = [];
   bool _isLoadingIngredients = false;
@@ -54,6 +59,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   @override
   void dispose() {
     _rawIngredientsController.dispose();
+    _instructionsController.dispose();
     super.dispose();
   }
 
@@ -107,12 +113,15 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         _selectedRecipeIndex = indexToSelect;
       });
 
-      // Load existing ingredients for selected recipe
-      if (recipeToSelect != null) {
+      // Load existing ingredients and instructions for selected recipe
+      final selectedRecipe = recipeToSelect;
+      if (selectedRecipe != null) {
         try {
-          final existingIngredients = await dbHelper.getRecipeIngredients(recipeToSelect.id);
+          final existingIngredients = await dbHelper.getRecipeIngredients(selectedRecipe.id);
           setState(() {
             _existingIngredients = existingIngredients;
+            _instructionsController.text = selectedRecipe.instructions;
+            _hasUnsavedChanges = false; // Reset unsaved changes when loading recipe (will be used in Phase 4)
           });
         } catch (e) {
           setState(() {
@@ -158,13 +167,15 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       _isLoadingIngredients = true;
     });
 
-    // Load existing recipe ingredients
+    // Load existing recipe ingredients and instructions
     try {
       final dbHelper = ServiceProvider.database.dbHelper;
       final existingIngredients = await dbHelper.getRecipeIngredients(recipe.id);
 
       setState(() {
         _existingIngredients = existingIngredients;
+        _instructionsController.text = recipe.instructions;
+        _hasUnsavedChanges = false; // Reset when loading new recipe
         _isLoadingIngredients = false;
       });
     } catch (e) {
@@ -188,13 +199,15 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       _isLoadingIngredients = true;
     });
 
-    // Load existing recipe ingredients
+    // Load existing recipe ingredients and instructions
     try {
       final dbHelper = ServiceProvider.database.dbHelper;
       final existingIngredients = await dbHelper.getRecipeIngredients(newRecipe.id);
 
       setState(() {
         _existingIngredients = existingIngredients;
+        _instructionsController.text = newRecipe.instructions;
+        _hasUnsavedChanges = false; // Reset when navigating
         _isLoadingIngredients = false;
       });
     } catch (e) {
@@ -221,13 +234,15 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       _isLoadingIngredients = true;
     });
 
-    // Load existing recipe ingredients
+    // Load existing recipe ingredients and instructions
     try {
       final dbHelper = ServiceProvider.database.dbHelper;
       final existingIngredients = await dbHelper.getRecipeIngredients(newRecipe.id);
 
       setState(() {
         _existingIngredients = existingIngredients;
+        _instructionsController.text = newRecipe.instructions;
+        _hasUnsavedChanges = false; // Reset when navigating
         _isLoadingIngredients = false;
       });
     } catch (e) {
@@ -1816,58 +1831,48 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     }
   }
 
-  /// Placeholder for instructions section (to be implemented in #163)
+  /// Instructions section for entering cooking instructions
   Widget _buildInstructionsPlaceholder(BuildContext context) {
     return Card(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header
             Row(
               children: [
-                Icon(Icons.description,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant),
+                Icon(Icons.description, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 8),
                 Text(
                   'Instructions',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const Spacer(),
+                // Character count
+                Text(
+                  '${_instructionsController.text.length} characters',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(24),
-              alignment: Alignment.center,
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.construction,
-                    size: 48,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Instructions field and workflow',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Will be implemented in issue #163',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          fontStyle: FontStyle.italic,
-                        ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+            // Instructions TextField
+            TextField(
+              controller: _instructionsController,
+              maxLines: 12,
+              decoration: const InputDecoration(
+                hintText: 'Enter cooking instructions here...\n\nExample:\n1. Preheat oven to 180°C\n2. Mix ingredients...',
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.all(12),
               ),
+              onChanged: (value) {
+                setState(() {
+                  _hasUnsavedChanges = true;
+                });
+              },
             ),
           ],
         ),
