@@ -364,31 +364,68 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         name = name.substring(3); // Strip "de "
       }
 
-      // Extract descriptors from the remaining name
-      // Split name and check each word
-      final nameParts = name.split(' ');
-      final cleanNameParts = <String>[];
+      // Smart matching: Try to find the longest ingredient name match first,
+      // then extract descriptors from what remains.
+      // This handles compound names like "pimentão verde" correctly.
+      String matchedName = name;
+      List<IngredientMatch> matches = [];
+      IngredientMatch? selectedMatch;
 
-      for (final part in nameParts) {
-        if (_descriptors.contains(part.toLowerCase())) {
-          descriptorParts.add(part);
-        } else {
-          cleanNameParts.add(part);
+      // Try progressively shorter prefixes (from right to left)
+      // to find the longest matching ingredient name
+      final nameParts = name.split(' ');
+      bool foundMatch = false;
+
+      for (int i = nameParts.length; i >= 1 && !foundMatch; i--) {
+        final prefixParts = nameParts.sublist(0, i);
+        final testName = prefixParts.join(' ');
+
+        matches = _findMatchesForName(testName);
+        selectedMatch = _getAutoSelectedMatch(matches);
+
+        // If we found a high-confidence match, use it
+        if (selectedMatch != null && selectedMatch.confidence >= 0.90) {
+          matchedName = testName;
+          foundMatch = true;
+
+          // Extract remaining words as potential descriptors
+          if (i < nameParts.length) {
+            final remainingParts = nameParts.sublist(i);
+            // Only keep remaining parts if they're actual descriptors
+            final validDescriptors = remainingParts.where(
+              (part) => _descriptors.contains(part.toLowerCase())
+            ).toList();
+
+            if (validDescriptors.isNotEmpty) {
+              descriptorParts.addAll(validDescriptors);
+            }
+          }
         }
       }
 
-      // Rebuild clean name without descriptors
-      final cleanName = cleanNameParts.join(' ');
-      final notes = descriptorParts.isNotEmpty ? descriptorParts.join(' ') : null;
+      // If no high-confidence match found, fall back to original descriptor extraction
+      if (!foundMatch) {
+        final cleanNameParts = <String>[];
 
-      // Find ingredient matches using clean name (without descriptors)
-      final matches = _findMatchesForName(cleanName);
-      final selectedMatch = _getAutoSelectedMatch(matches);
+        for (final part in nameParts) {
+          if (_descriptors.contains(part.toLowerCase())) {
+            descriptorParts.add(part);
+          } else {
+            cleanNameParts.add(part);
+          }
+        }
+
+        matchedName = cleanNameParts.join(' ');
+        matches = _findMatchesForName(matchedName);
+        selectedMatch = _getAutoSelectedMatch(matches);
+      }
+
+      final notes = descriptorParts.isNotEmpty ? descriptorParts.join(' ') : null;
 
       return _ParsedIngredient(
         quantity: quantity,
         unit: unit,
-        name: selectedMatch?.ingredient.name ?? cleanName, // Use matched name if available
+        name: selectedMatch?.ingredient.name ?? matchedName, // Use matched name if available
         category: selectedMatch?.ingredient.category ?? IngredientCategory.other,
         matches: matches,
         selectedMatch: selectedMatch,
