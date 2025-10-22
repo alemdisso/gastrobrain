@@ -383,21 +383,32 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         matches = _findMatchesForName(testName);
         selectedMatch = _getAutoSelectedMatch(matches);
 
-        // If we found a high-confidence match, use it
+        // If we found a high-confidence match, check if adding more words helps
         if (selectedMatch != null && selectedMatch.confidence >= 0.90) {
-          matchedName = testName;
-          foundMatch = true;
+          // Check if the next longer prefix gives any decent match
+          bool shouldAcceptThisMatch = true;
 
-          // Extract remaining words as potential descriptors
           if (i < nameParts.length) {
-            final remainingParts = nameParts.sublist(i);
-            // Only keep remaining parts if they're actual descriptors
-            final validDescriptors = remainingParts.where(
-              (part) => _descriptors.contains(part.toLowerCase())
-            ).toList();
+            // Try one word longer
+            final longerTestName = nameParts.sublist(0, i + 1).join(' ');
+            final longerMatches = _findMatchesForName(longerTestName);
+            final longerMatch = _getAutoSelectedMatch(longerMatches);
 
-            if (validDescriptors.isNotEmpty) {
-              descriptorParts.addAll(validDescriptors);
+            // If the longer version also has a high-confidence match, keep going
+            if (longerMatch != null && longerMatch.confidence >= 0.90) {
+              shouldAcceptThisMatch = false;
+            }
+          }
+
+          if (shouldAcceptThisMatch) {
+            matchedName = testName;
+            foundMatch = true;
+
+            // All remaining text becomes descriptors (not just validated ones)
+            if (i < nameParts.length) {
+              final remainingParts = nameParts.sublist(i);
+              final remainingText = remainingParts.join(' ');
+              descriptorParts.add(remainingText);
             }
           }
         }
@@ -1598,34 +1609,41 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                       children: [
                         Icon(matchIcon, color: matchColor, size: 18),
                         const SizedBox(width: 6),
-                        Text(
-                          matchText,
-                          style: TextStyle(
-                            color: matchColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                        Expanded(
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 4,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              Text(
+                                matchText,
+                                style: TextStyle(
+                                  color: matchColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              if (ingredient.selectedMatch != null) ...[
+                                Text(
+                                  '→ ${ingredient.selectedMatch!.ingredient.name}',
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                                Chip(
+                                  label: Text(
+                                    ingredient.selectedMatch!.ingredient.category.displayName,
+                                    style: const TextStyle(fontSize: 10),
+                                  ),
+                                  visualDensity: VisualDensity.compact,
+                                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                                  backgroundColor: Theme.of(context)
+                                      .colorScheme
+                                      .secondaryContainer
+                                      .withValues(alpha: 0.5),
+                                ),
+                              ],
+                            ],
                           ),
                         ),
-                        if (ingredient.selectedMatch != null) ...[
-                          const SizedBox(width: 8),
-                          Text(
-                            '→ ${ingredient.selectedMatch!.ingredient.name}',
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                          const SizedBox(width: 8),
-                          Chip(
-                            label: Text(
-                              ingredient.selectedMatch!.ingredient.category.displayName,
-                              style: const TextStyle(fontSize: 10),
-                            ),
-                            visualDensity: VisualDensity.compact,
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            backgroundColor: Theme.of(context)
-                                .colorScheme
-                                .secondaryContainer
-                                .withValues(alpha: 0.5),
-                          ),
-                        ],
                       ],
                     ),
 
