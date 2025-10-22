@@ -318,13 +318,15 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     // - "Sal a gosto" / "Salt to taste"
 
     // Pattern: [quantity] [unit] ingredient_name
+    // Note: Using [a-zA-ZÀ-ÿ] to support accented characters (e.g., xícara, colher)
     final quantityUnitPattern = RegExp(
-      r'^(\d+(?:[.,]\d+)?)\s*([a-zA-Z]+)?\s+(.+)$',
+      r'^(\d+(?:[.,]\d+)?)\s*([a-zA-ZÀ-ÿ]+)?\s+(.+)$',
       caseSensitive: false,
     );
 
     // Pattern: just ingredient name (no quantity)
-    final nameOnlyPattern = RegExp(r'^([a-zA-Z\s]+)(?:\s+(?:a\s+)?gosto)?$', caseSensitive: false);
+    // Note: Using [a-zA-ZÀ-ÿ] to support accented characters
+    final nameOnlyPattern = RegExp(r'^([a-zA-ZÀ-ÿ\s]+)(?:\s+(?:a\s+)?gosto)?$', caseSensitive: false);
 
     final match = quantityUnitPattern.firstMatch(line);
     if (match != null) {
