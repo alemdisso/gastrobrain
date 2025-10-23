@@ -904,6 +904,9 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   Future<void> _saveAndNext() async {
     if (_selectedRecipe == null) return;
 
+    // Remember current index before save (list will be reloaded during save)
+    final indexBeforeSave = _selectedRecipeIndex ?? 0;
+
     // Save ingredients and instructions
     await _saveIngredients(saveInstructions: true);
 
@@ -921,35 +924,36 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       return;
     }
 
-    // Load next recipe in the list
-    final currentIndex = _selectedRecipeIndex ?? 0;
-    if (currentIndex < _recipesNeedingIngredients.length) {
-      // Stay at same index (which now points to next recipe after reload)
-      final newRecipe = _recipesNeedingIngredients[currentIndex];
+    // Load next recipe: use saved index (which now points to next recipe after current one was removed)
+    // If index is out of bounds, wrap to first recipe
+    final nextIndex = indexBeforeSave < _recipesNeedingIngredients.length
+        ? indexBeforeSave
+        : 0;
+
+    final newRecipe = _recipesNeedingIngredients[nextIndex];
+
+    setState(() {
+      _selectedRecipe = newRecipe;
+      _selectedRecipeIndex = nextIndex;
+      _isLoadingIngredients = true;
+    });
+
+    // Load the next recipe's data
+    try {
+      final dbHelper = ServiceProvider.database.dbHelper;
+      final existingIngredients = await dbHelper.getRecipeIngredients(newRecipe.id);
 
       setState(() {
-        _selectedRecipe = newRecipe;
-        _selectedRecipeIndex = currentIndex;
-        _isLoadingIngredients = true;
+        _existingIngredients = existingIngredients;
+        _instructionsController.text = newRecipe.instructions;
+        _hasUnsavedChanges = false;
+        _isLoadingIngredients = false;
       });
-
-      // Load the next recipe's data
-      try {
-        final dbHelper = ServiceProvider.database.dbHelper;
-        final existingIngredients = await dbHelper.getRecipeIngredients(newRecipe.id);
-
-        setState(() {
-          _existingIngredients = existingIngredients;
-          _instructionsController.text = newRecipe.instructions;
-          _hasUnsavedChanges = false;
-          _isLoadingIngredients = false;
-        });
-      } catch (e) {
-        setState(() {
-          _existingIngredients = [];
-          _isLoadingIngredients = false;
-        });
-      }
+    } catch (e) {
+      setState(() {
+        _existingIngredients = [];
+        _isLoadingIngredients = false;
+      });
     }
   }
 
@@ -1722,13 +1726,13 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                   Row(
                     children: [
                       TextButton.icon(
-                        onPressed: _skipRecipe,
+                        onPressed: _isSaving ? null : _skipRecipe,
                         icon: const Icon(Icons.skip_next),
                         label: const Text('Skip Recipe'),
                       ),
                       const Spacer(),
                       TextButton.icon(
-                        onPressed: () => _saveIngredients(saveInstructions: false),
+                        onPressed: _isSaving ? null : () => _saveIngredients(saveInstructions: false),
                         icon: const Icon(Icons.list_alt),
                         label: const Text('Save Ingredients Only'),
                       ),
