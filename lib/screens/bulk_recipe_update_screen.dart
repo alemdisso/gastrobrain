@@ -892,7 +892,6 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   }
 
   /// Save current recipe (ingredients + instructions) and load next recipe
-  // ignore: unused_element
   Future<void> _saveAndNext() async {
     if (_selectedRecipe == null) return;
 
@@ -946,7 +945,6 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   }
 
   /// Save current recipe and close screen
-  // ignore: unused_element
   Future<void> _saveAndClose() async {
     if (_selectedRecipe == null) {
       Navigator.pop(context);
@@ -963,7 +961,6 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   }
 
   /// Skip current recipe without saving
-  // ignore: unused_element
   void _skipRecipe() {
     // Navigate to next recipe without saving
     _navigateToNext();
@@ -1615,25 +1612,57 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Save button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _isSaving ? null : _saveIngredients,
-                  icon: _isSaving
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.save),
-                  label: Text(_isSaving ? 'Saving...' : 'Save Ingredients'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+              // Workflow control buttons
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Primary actions row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _isSaving ? null : _saveAndNext,
+                          icon: const Icon(Icons.save_alt),
+                          label: const Text('Save & Next'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _isSaving ? null : _saveAndClose,
+                          icon: const Icon(Icons.check),
+                          label: const Text('Update & Close'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
+                  const SizedBox(height: 8),
+
+                  // Secondary actions
+                  Row(
+                    children: [
+                      TextButton.icon(
+                        onPressed: _skipRecipe,
+                        icon: const Icon(Icons.skip_next),
+                        label: const Text('Skip Recipe'),
+                      ),
+                      const Spacer(),
+                      TextButton.icon(
+                        onPressed: () => _saveIngredients(saveInstructions: false),
+                        icon: const Icon(Icons.list_alt),
+                        label: const Text('Save Ingredients Only'),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ],
