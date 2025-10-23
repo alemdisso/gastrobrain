@@ -970,7 +970,42 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
 
-    return Scaffold(
+    return PopScope(
+      canPop: !_hasUnsavedChanges,
+      onPopInvokedWithResult: (didPop, result) async {
+        // If already popped (no unsaved changes), nothing to do
+        if (didPop) return;
+
+        // Show confirmation dialog for unsaved changes
+        final shouldPop = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Unsaved Changes'),
+            content: const Text(
+              'You have unsaved changes to the instructions. Do you want to discard them?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Stay'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Discard'),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.red,
+                ),
+              ),
+            ],
+          ),
+        );
+
+        // If user confirmed, manually pop the screen
+        if (shouldPop == true && context.mounted) {
+          Navigator.pop(context);
+        }
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: const Text('Bulk Recipe Update'),
         actions: [
@@ -988,6 +1023,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         ],
       ),
       body: _buildBody(context, localizations),
+      ),
     );
   }
 
