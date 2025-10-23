@@ -9,6 +9,7 @@ import '../models/ingredient_category.dart';
 import '../models/ingredient_match.dart';
 import '../widgets/add_new_ingredient_dialog.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/id_generator.dart';
 
 /// Bulk recipe update screen for efficiently adding ingredients and instructions
 /// to existing recipes that have basic metadata but are missing detailed content.
@@ -693,7 +694,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
 
     // Pre-fill ingredient data from parsed values
     final prefilledIngredient = Ingredient(
-      id: '', // Will be generated in dialog
+      id: IdGenerator.generateId(),
       name: parsed.name,
       category: parsed.category,
       unit: null, // User can set in dialog
