@@ -636,14 +636,13 @@ gh project item-edit \
   --field-id PVTSSF_lAHOABLkTc4A5MPPzguCBuU \
   --project-id PVT_kwHOABLkTc4A5MPP \
   --single-select-option-id df73e18b
-
-# When merged and closed: Set to "Done"
-gh project item-edit \
-  --id {item-id} \
-  --field-id PVTSSF_lAHOABLkTc4A5MPPzguCBuU \
-  --project-id PVT_kwHOABLkTc4A5MPP \
-  --single-select-option-id 98236657
 ```
+
+**Important: GitHub Project Automation**
+
+When an issue is **closed**, GitHub Projects automatically moves it to "Done" status. **You do not need to manually update the status to "Done"** after closing an issue.
+
+Manual status update to "Done" is only needed in rare cases where you want to mark something as done without closing the issue.
 
 **Note**: You'll need to retrieve the item ID if you don't have it saved. Use:
 ```bash
