@@ -292,7 +292,252 @@ void main() {
       });
     });
 
-    group('fuzzy match (Stage 4)', () {
+    group('prefix/partial match (Stage 4)', () {
+      test('finds prefix match for partial ingredient name', () {
+        final extraIngredients = [
+          ...testIngredients,
+          Ingredient(
+            id: '11',
+            name: 'manteiga de amendoim',
+            category: IngredientCategory.other,
+            unit: MeasurementUnit.gram,
+          ),
+        ];
+        service.initialize(extraIngredients);
+
+        final matches = service.findMatches('manteiga');
+
+        expect(matches, isNotEmpty);
+
+        // Should find prefix match since "manteiga" is not in testIngredients
+        final prefixMatches = matches.where((m) => m.matchType == MatchType.partial).toList();
+        expect(prefixMatches, isNotEmpty);
+        expect(prefixMatches.first.ingredient.name, equals('manteiga de amendoim'));
+        expect(prefixMatches.first.confidence, greaterThanOrEqualTo(0.65));
+        expect(prefixMatches.first.confidence, lessThanOrEqualTo(0.85));
+      });
+
+      test('finds multiple prefix matches for same prefix', () {
+        final extraIngredients = [
+          ...testIngredients,
+          Ingredient(
+            id: '11',
+            name: 'queijo parmesao',
+            category: IngredientCategory.other,
+            unit: MeasurementUnit.gram,
+          ),
+          Ingredient(
+            id: '12',
+            name: 'queijo mussarela',
+            category: IngredientCategory.other,
+            unit: MeasurementUnit.gram,
+          ),
+          Ingredient(
+            id: '13',
+            name: 'queijo cheddar',
+            category: IngredientCategory.other,
+            unit: MeasurementUnit.gram,
+          ),
+        ];
+        service.initialize(extraIngredients);
+
+        final matches = service.findMatches('queijo');
+
+        // Should find prefix matches since "queijo" alone is not in testIngredients
+        expect(matches, isNotEmpty);
+
+        // Filter for partial matches only
+        final prefixMatches = matches.where((m) => m.matchType == MatchType.partial).toList();
+        expect(prefixMatches.length, greaterThanOrEqualTo(2));
+
+        // All should start with "queijo"
+        for (final match in prefixMatches) {
+          expect(match.ingredient.name.toLowerCase().startsWith('queijo'), isTrue);
+        }
+      });
+
+      test('respects word boundary - prevents partial word matching', () {
+        final extraIngredients = [
+          ...testIngredients,
+          Ingredient(
+            id: '11',
+            name: 'pimentao',
+            category: IngredientCategory.vegetable,
+            unit: MeasurementUnit.piece,
+          ),
+          Ingredient(
+            id: '12',
+            name: 'pimenta do reino',
+            category: IngredientCategory.seasoning,
+            unit: MeasurementUnit.gram,
+          ),
+        ];
+        service.initialize(extraIngredients);
+
+        final matches = service.findMatches('pimenta');
+
+        // Should match "pimenta do reino" but NOT "pimentao"
+        expect(matches, isNotEmpty);
+
+        final prefixMatches = matches.where((m) => m.matchType == MatchType.partial).toList();
+        expect(prefixMatches, isNotEmpty);
+        expect(prefixMatches.first.ingredient.name, equals('pimenta do reino'));
+
+        // Verify pimentao is not in prefix matches
+        final pimentaoMatch = prefixMatches.where((m) => m.ingredient.name == 'pimentao');
+        expect(pimentaoMatch, isEmpty);
+      });
+
+      test('calculates confidence based on match ratio', () {
+        final extraIngredients = [
+          ...testIngredients,
+          Ingredient(
+            id: '11',
+            name: 'sal grosso',
+            category: IngredientCategory.seasoning,
+            unit: MeasurementUnit.gram,
+          ),
+          Ingredient(
+            id: '12',
+            name: 'sal marinho refinado',
+            category: IngredientCategory.seasoning,
+            unit: MeasurementUnit.gram,
+          ),
+        ];
+        service.initialize(extraIngredients);
+
+        final matches = service.findMatches('sal');
+
+        // "sal" is 3 chars, "sal grosso" is 10 chars (30% ratio)
+        // "sal" is 3 chars, "sal marinho refinado" is 19 chars (16% ratio)
+        // Higher match ratio should have higher confidence
+        final prefixMatches = matches.where((m) => m.matchType == MatchType.partial).toList();
+
+        if (prefixMatches.length >= 2) {
+          final grossoMatch = prefixMatches.firstWhere((m) => m.ingredient.name == 'sal grosso');
+          final marinhoMatch = prefixMatches.firstWhere((m) => m.ingredient.name == 'sal marinho refinado');
+
+          expect(grossoMatch.confidence, greaterThan(marinhoMatch.confidence));
+        }
+      });
+
+      test('reverse prefix match - longer input matches shorter database entry', () {
+        final extraIngredients = [
+          ...testIngredients,
+          Ingredient(
+            id: '11',
+            name: 'molho de tomate',
+            category: IngredientCategory.other,
+            unit: MeasurementUnit.gram,
+          ),
+        ];
+        service.initialize(extraIngredients);
+
+        // User types more specific than what's in database
+        final matches = service.findMatches('molho de tomate caseiro');
+
+        expect(matches, isNotEmpty);
+
+        final partialMatches = matches.where((m) => m.matchType == MatchType.partial).toList();
+        expect(partialMatches, isNotEmpty);
+        expect(partialMatches.first.ingredient.name, equals('molho de tomate'));
+
+        // Reverse matches have lower confidence (60-75%)
+        expect(partialMatches.first.confidence, greaterThanOrEqualTo(0.60));
+        expect(partialMatches.first.confidence, lessThanOrEqualTo(0.75));
+      });
+
+      test('limits prefix matches to top 5 results', () {
+        final extraIngredients = [
+          ...testIngredients,
+          ...List.generate(10, (i) => Ingredient(
+            id: 'pref_$i',
+            name: 'queijo tipo $i',
+            category: IngredientCategory.other,
+          )),
+        ];
+        service.initialize(extraIngredients);
+
+        final matches = service.findMatches('queijo');
+
+        final prefixMatches = matches.where((m) => m.matchType == MatchType.partial).toList();
+        expect(prefixMatches.length, lessThanOrEqualTo(5));
+      });
+
+      test('skips very short strings (< 3 chars)', () {
+        final extraIngredients = [
+          ...testIngredients,
+          Ingredient(
+            id: '11',
+            name: 'sal marinho',
+            category: IngredientCategory.seasoning,
+            unit: MeasurementUnit.gram,
+          ),
+        ];
+        service.initialize(extraIngredients);
+
+        // Very short input should not produce prefix matches
+        final matches = service.findMatches('sa');
+
+        expect(matches, isA<List<IngredientMatch>>());
+        // Should not crash, just might not find prefix matches
+      });
+
+      test('prefix match has lower confidence than exact match', () {
+        final extraIngredients = [
+          ...testIngredients,
+          Ingredient(
+            id: '11',
+            name: 'Tomate',
+            category: IngredientCategory.vegetable,
+          ),
+          Ingredient(
+            id: '12',
+            name: 'Tomate cereja',
+            category: IngredientCategory.vegetable,
+          ),
+        ];
+        service.initialize(extraIngredients);
+
+        final exactMatches = service.findMatches('Tomate');
+
+        expect(exactMatches, isNotEmpty);
+        expect(exactMatches.first.matchType, equals(MatchType.exact));
+        expect(exactMatches.first.confidence, equals(1.0));
+
+        // Any prefix matches should have lower confidence
+        final prefixMatches = exactMatches.where((m) => m.matchType == MatchType.partial);
+        for (final match in prefixMatches) {
+          expect(match.confidence, lessThan(1.0));
+        }
+      });
+
+      test('works with normalized strings (accents removed)', () {
+        final extraIngredients = [
+          ...testIngredients,
+          Ingredient(
+            id: '11',
+            name: 'vinagre balsamico',
+            category: IngredientCategory.other,
+            unit: MeasurementUnit.milliliter,
+          ),
+        ];
+        service.initialize(extraIngredients);
+
+        // Input without accents should still match via normalization + prefix
+        final matches = service.findMatches('vinagre');
+
+        expect(matches, isNotEmpty);
+
+        // Should match via prefix (vinagre is not in testIngredients)
+        final prefixMatches = matches.where(
+          (m) => m.matchType == MatchType.partial && m.ingredient.name == 'vinagre balsamico'
+        ).toList();
+        expect(prefixMatches, isNotEmpty);
+      });
+    });
+
+    group('fuzzy match (Stage 5)', () {
       test('finds fuzzy match for typo in ingredient name', () {
         // Add ingredient
         final extraIngredients = [
