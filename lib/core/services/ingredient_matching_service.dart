@@ -8,9 +8,9 @@ import '../../models/ingredient_match.dart';
 /// 1. Exact match (100%)
 /// 2. Case-insensitive match (95%)
 /// 3. Normalized match - removes accents/diacritics (90%)
-/// 4. Fuzzy match - similarity algorithms (60-85%)
-/// 5. Translation match - bilingual EN/PT (80%) - Future
-/// 6. Partial match - contains/substring (50-60%) - Future
+/// 4. Prefix/Partial match - substring/prefix matching (65-85%)
+/// 5. Fuzzy match - similarity algorithms (60-85%)
+/// 6. Translation match - bilingual EN/PT (80%) - Future
 class IngredientMatchingService {
   /// Cache of normalized ingredient names for performance
   final Map<String, String> _normalizedCache = {};
@@ -59,13 +59,22 @@ class IngredientMatchingService {
       return matches;
     }
 
-    // Stage 4: Fuzzy matches (similarity-based)
+    // Stage 4: Prefix/Partial matches (substring matching)
+    final prefixMatches = _findPrefixMatches(parsedName);
+    matches.addAll(prefixMatches);
+
+    // If we have prefix matches, include them before fuzzy
+    if (matches.isNotEmpty && matches.first.confidence >= 0.80) {
+      matches.sort((a, b) => b.confidence.compareTo(a.confidence));
+      return matches;
+    }
+
+    // Stage 5: Fuzzy matches (similarity-based)
     final fuzzyMatches = _findFuzzyMatches(parsedName);
     matches.addAll(fuzzyMatches);
 
     // Future stages:
-    // Stage 5: Translation matches
-    // Stage 6: Partial matches
+    // Stage 6: Translation matches
 
     // Sort by confidence (highest first)
     matches.sort((a, b) => b.confidence.compareTo(a.confidence));
@@ -133,7 +142,80 @@ class IngredientMatchingService {
     return matches;
   }
 
-  /// Stage 4: Fuzzy match using string similarity
+  /// Stage 4: Prefix/Partial match (substring matching)
+  /// Handles cases like "azeite" matching "azeite de oliva"
+  List<IngredientMatch> _findPrefixMatches(String parsedName) {
+    final matches = <IngredientMatch>[];
+    final normalizedParsed = _normalize(parsedName);
+
+    // Skip very short strings (less than 3 chars) as prefix matching is unreliable
+    if (normalizedParsed.length < 3) {
+      return matches;
+    }
+
+    // Search through all ingredients
+    for (final ingredient in _allIngredients) {
+      final normalizedIngredient = _getCachedNormalized(ingredient.name);
+
+      // Skip if already matched exactly or normalized
+      if (normalizedIngredient == normalizedParsed) {
+        continue; // Already found in earlier stages
+      }
+
+      // Check if parsed name is a prefix of the ingredient name
+      // Example: "azeite" matches "azeite de oliva"
+      if (normalizedIngredient.startsWith(normalizedParsed)) {
+        // Check if it's a word boundary (followed by space or end of string)
+        // This prevents "tom" from matching "tomate" but allows "tomate" to match "tomate cereja"
+        final nextCharIndex = normalizedParsed.length;
+        if (nextCharIndex >= normalizedIngredient.length ||
+            normalizedIngredient[nextCharIndex] == ' ') {
+
+          // Calculate confidence based on how much of the ingredient name was matched
+          // Higher match ratio = higher confidence
+          final matchRatio = normalizedParsed.length / normalizedIngredient.length;
+
+          // Scale confidence:
+          // - 100% match ratio = 0.85 confidence (very high but not exact)
+          // - 50% match ratio = 0.75 confidence (medium-high)
+          // - 33% match ratio = 0.65 confidence (medium)
+          final confidence = 0.65 + (matchRatio * 0.20);
+
+          matches.add(IngredientMatch(
+            ingredient: ingredient,
+            confidence: confidence.clamp(0.65, 0.85),
+            matchType: MatchType.partial,
+          ));
+        }
+      }
+
+      // Also check reverse: if ingredient name is a prefix of parsed name
+      // Less common but useful for cases like parsing "azeite de oliva extra virgem"
+      // when only "azeite de oliva" exists in database
+      else if (normalizedParsed.startsWith(normalizedIngredient)) {
+        final nextCharIndex = normalizedIngredient.length;
+        if (nextCharIndex >= normalizedParsed.length ||
+            normalizedParsed[nextCharIndex] == ' ') {
+
+          // Lower confidence for reverse matches
+          final matchRatio = normalizedIngredient.length / normalizedParsed.length;
+          final confidence = 0.60 + (matchRatio * 0.15);
+
+          matches.add(IngredientMatch(
+            ingredient: ingredient,
+            confidence: confidence.clamp(0.60, 0.75),
+            matchType: MatchType.partial,
+          ));
+        }
+      }
+    }
+
+    // Sort by confidence (highest first) and limit to top 5 prefix matches
+    matches.sort((a, b) => b.confidence.compareTo(a.confidence));
+    return matches.take(5).toList();
+  }
+
+  /// Stage 5: Fuzzy match using string similarity
   List<IngredientMatch> _findFuzzyMatches(String parsedName) {
     final matches = <IngredientMatch>[];
     final normalizedParsed = _normalize(parsedName);
