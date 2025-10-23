@@ -725,8 +725,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     }
   }
 
-  /// Save ingredients and optionally instructions to database
-  Future<void> _saveIngredients({bool saveInstructions = false}) async {
+  /// Save ingredients and instructions to database
+  Future<void> _saveIngredients() async {
     if (_selectedRecipe == null || _parsedIngredients.isEmpty) return;
 
     // Separate new and unresolved ingredients
@@ -831,23 +831,21 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         }
       }
 
-      // Step 4: Optionally save instructions
-      if (saveInstructions) {
-        final updatedRecipe = Recipe(
-          id: _selectedRecipe!.id,
-          name: _selectedRecipe!.name,
-          desiredFrequency: _selectedRecipe!.desiredFrequency,
-          notes: _selectedRecipe!.notes,
-          instructions: _instructionsController.text,
-          createdAt: _selectedRecipe!.createdAt,
-          difficulty: _selectedRecipe!.difficulty,
-          prepTimeMinutes: _selectedRecipe!.prepTimeMinutes,
-          cookTimeMinutes: _selectedRecipe!.cookTimeMinutes,
-          rating: _selectedRecipe!.rating,
-          category: _selectedRecipe!.category,
-        );
-        await dbHelper.updateRecipe(updatedRecipe);
-      }
+      // Step 4: Save instructions
+      final updatedRecipe = Recipe(
+        id: _selectedRecipe!.id,
+        name: _selectedRecipe!.name,
+        desiredFrequency: _selectedRecipe!.desiredFrequency,
+        notes: _selectedRecipe!.notes,
+        instructions: _instructionsController.text,
+        createdAt: _selectedRecipe!.createdAt,
+        difficulty: _selectedRecipe!.difficulty,
+        prepTimeMinutes: _selectedRecipe!.prepTimeMinutes,
+        cookTimeMinutes: _selectedRecipe!.cookTimeMinutes,
+        rating: _selectedRecipe!.rating,
+        category: _selectedRecipe!.category,
+      );
+      await dbHelper.updateRecipe(updatedRecipe);
 
       // Show success message
       if (mounted) {
@@ -888,12 +886,10 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         // Preserve current recipe selection unless it's been removed from the list
         await _loadRecipesNeedingIngredients(preserveCurrentRecipe: true);
 
-        // Increment session counter if instructions were also saved (full update)
-        if (saveInstructions) {
-          setState(() {
-            _recipesUpdatedInSession++;
-          });
-        }
+        // Increment session counter for completed recipe update
+        setState(() {
+          _recipesUpdatedInSession++;
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -921,7 +917,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     final indexBeforeSave = _selectedRecipeIndex ?? 0;
 
     // Save ingredients and instructions
-    await _saveIngredients(saveInstructions: true);
+    await _saveIngredients();
 
     // After save, check if there are more recipes
     if (_recipesNeedingIngredients.isEmpty) {
@@ -978,7 +974,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     }
 
     // Save ingredients and instructions
-    await _saveIngredients(saveInstructions: true);
+    await _saveIngredients();
 
     // Show session summary and return to previous screen
     if (mounted) {
@@ -997,12 +993,6 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
 
       Navigator.pop(context);
     }
-  }
-
-  /// Skip current recipe without saving
-  void _skipRecipe() {
-    // Navigate to next recipe without saving
-    _navigateToNext();
   }
 
   @override
@@ -1162,10 +1152,6 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
 
           // Placeholder for Ingredients (Issue #162)
           _buildIngredientsPlaceholder(context),
-          const SizedBox(height: 24),
-
-          // Placeholder for Instructions (Issue #163)
-          _buildInstructionsPlaceholder(context),
           const SizedBox(height: 24),
 
           // Navigation Controls
@@ -1699,57 +1685,72 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                   ],
                 ),
               ),
+              const SizedBox(height: 24),
+
+              // Instructions section
+              const Divider(),
               const SizedBox(height: 16),
+              Row(
+                children: [
+                  Icon(Icons.description, color: Theme.of(context).colorScheme.primary),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Instructions',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${_instructionsController.text.length} characters',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _instructionsController,
+                maxLines: 12,
+                decoration: const InputDecoration(
+                  hintText: 'Enter cooking instructions here...\n\nExample:\n1. Preheat oven to 180°C\n2. Mix ingredients...',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.all(12),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    _hasUnsavedChanges = true;
+                  });
+                },
+              ),
+              const SizedBox(height: 24),
 
               // Workflow control buttons
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              Row(
                 children: [
-                  // Primary actions row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: _isSaving ? null : _saveAndNext,
-                          icon: const Icon(Icons.save_alt),
-                          label: const Text('Save & Next'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            foregroundColor: Colors.white,
-                          ),
-                        ),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _isSaving ? null : _saveAndNext,
+                      icon: const Icon(Icons.save_alt),
+                      label: const Text('Save & Next'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: _isSaving ? null : _saveAndClose,
-                          icon: const Icon(Icons.check),
-                          label: const Text('Update & Close'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 8),
-
-                  // Secondary actions
-                  Row(
-                    children: [
-                      TextButton.icon(
-                        onPressed: _isSaving ? null : _skipRecipe,
-                        icon: const Icon(Icons.skip_next),
-                        label: const Text('Skip Recipe'),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _isSaving ? null : _saveAndClose,
+                      icon: const Icon(Icons.check),
+                      label: const Text('Update & Close'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      const Spacer(),
-                      TextButton.icon(
-                        onPressed: _isSaving ? null : () => _saveIngredients(saveInstructions: false),
-                        icon: const Icon(Icons.list_alt),
-                        label: const Text('Save Ingredients Only'),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -2047,54 +2048,6 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   }
 
   /// Instructions section for entering cooking instructions
-  Widget _buildInstructionsPlaceholder(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              children: [
-                Icon(Icons.description, color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: 8),
-                Text(
-                  'Instructions',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const Spacer(),
-                // Character count
-                Text(
-                  '${_instructionsController.text.length} characters',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            // Instructions TextField
-            TextField(
-              controller: _instructionsController,
-              maxLines: 12,
-              decoration: const InputDecoration(
-                hintText: 'Enter cooking instructions here...\n\nExample:\n1. Preheat oven to 180°C\n2. Mix ingredients...',
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.all(12),
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _hasUnsavedChanges = true;
-                });
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   /// Navigation controls (Previous/Next buttons and progress)
   Widget _buildNavigationControls(
       BuildContext context, AppLocalizations localizations) {
