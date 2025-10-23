@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'database/database_helper.dart';
 import 'screens/home_screen.dart';
-import 'screens/bulk_recipe_entry_screen.dart';
 import 'screens/bulk_recipe_update_screen.dart';
 import 'l10n/app_localizations.dart';
 import 'core/providers/recipe_provider.dart';
@@ -66,7 +65,6 @@ class GastrobrainApp extends StatelessWidget {
         locale: const Locale('pt', 'BR'), // Set Portuguese Brazil as default
         home: const HomePage(),
         routes: {
-          '/bulk-recipe-entry': (context) => const BulkRecipeEntryScreen(),
           '/bulk-recipe-update': (context) => const BulkRecipeUpdateScreen(),
         },
       ),
