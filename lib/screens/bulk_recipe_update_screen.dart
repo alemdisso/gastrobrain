@@ -38,8 +38,10 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
 
   // Instructions state
   final TextEditingController _instructionsController = TextEditingController();
-  // ignore: unused_field
-  bool _hasUnsavedChanges = false; // Will be used in Phase 4 for unsaved changes detection
+  bool _hasUnsavedChanges = false;
+
+  // Session tracking (Phase 5)
+  int _recipesUpdatedInSession = 0;
 
   // Existing ingredients state (raw maps from database query)
   List<Map<String, dynamic>> _existingIngredients = [];
@@ -872,6 +874,13 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         // Reload recipes list (this recipe should now have more ingredients)
         // Preserve current recipe selection unless it's been removed from the list
         await _loadRecipesNeedingIngredients(preserveCurrentRecipe: true);
+
+        // Increment session counter if instructions were also saved (full update)
+        if (saveInstructions) {
+          setState(() {
+            _recipesUpdatedInSession++;
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -954,8 +963,21 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     // Save ingredients and instructions
     await _saveIngredients(saveInstructions: true);
 
-    // Return to previous screen
+    // Show session summary and return to previous screen
     if (mounted) {
+      // Show session summary SnackBar
+      if (_recipesUpdatedInSession > 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Session complete: $_recipesUpdatedInSession recipe${_recipesUpdatedInSession != 1 ? "s" : ""} updated!',
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+
       Navigator.pop(context);
     }
   }
@@ -1014,9 +1036,23 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  'Recipe ${(_selectedRecipeIndex ?? 0) + 1} of ${_recipesNeedingIngredients.length}',
-                  style: Theme.of(context).textTheme.titleSmall,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Recipe ${(_selectedRecipeIndex ?? 0) + 1} of ${_recipesNeedingIngredients.length}',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    if (_recipesUpdatedInSession > 0)
+                      Text(
+                        '$_recipesUpdatedInSession updated',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.green,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),
