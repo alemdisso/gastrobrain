@@ -338,8 +338,9 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
 
     // Pattern: [quantity] [unit] ingredient_name
     // Note: Using [a-zA-ZÀ-ÿ] to support accented characters (e.g., xícara, colher)
+    // Updated to capture compound units like "colher de sopa", "colher de chá"
     final quantityUnitPattern = RegExp(
-      r'^(\d+(?:[.,]\d+)?)\s*([a-zA-ZÀ-ÿ]+)?\s+(.+)$',
+      r'^(\d+(?:[.,]\d+)?)\s*([a-zA-ZÀ-ÿ]+(?:\s+de\s+[a-zA-ZÀ-ÿ]+)?)?\s+(.+)$',
       caseSensitive: false,
     );
 
@@ -550,6 +551,18 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       'cups': 'cup',
       'c': 'cup',
 
+      // Compound units - must be checked before simple "colher"
+      'colher de sopa': 'tbsp',
+      'colheres de sopa': 'tbsp',
+      'colher de sobremesa': 'tbsp', // dessert spoon (≈ tbsp)
+      'colheres de sobremesa': 'tbsp',
+
+      'colher de chá': 'tsp',
+      'colheres de chá': 'tsp',
+      'colher de cha': 'tsp', // without accent
+      'colheres de cha': 'tsp',
+
+      // Simple forms (fallback)
       'colher': 'tbsp',
       'col': 'tbsp',
       'cs': 'tbsp',
