@@ -710,8 +710,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     }
   }
 
-  /// Save ingredients to database
-  Future<void> _saveIngredients() async {
+  /// Save ingredients and optionally instructions to database
+  Future<void> _saveIngredients({bool saveInstructions = false}) async {
     if (_selectedRecipe == null || _parsedIngredients.isEmpty) return;
 
     // Separate new and unresolved ingredients
@@ -816,6 +816,24 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         }
       }
 
+      // Step 4: Optionally save instructions
+      if (saveInstructions) {
+        final updatedRecipe = Recipe(
+          id: _selectedRecipe!.id,
+          name: _selectedRecipe!.name,
+          desiredFrequency: _selectedRecipe!.desiredFrequency,
+          notes: _selectedRecipe!.notes,
+          instructions: _instructionsController.text,
+          createdAt: _selectedRecipe!.createdAt,
+          difficulty: _selectedRecipe!.difficulty,
+          prepTimeMinutes: _selectedRecipe!.prepTimeMinutes,
+          cookTimeMinutes: _selectedRecipe!.cookTimeMinutes,
+          rating: _selectedRecipe!.rating,
+          category: _selectedRecipe!.category,
+        );
+        await dbHelper.updateRecipe(updatedRecipe);
+      }
+
       // Show success message
       if (mounted) {
         final message = StringBuffer();
@@ -842,6 +860,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         setState(() {
           _rawIngredientsController.clear();
           _parsedIngredients = [];
+          _hasUnsavedChanges = false; // Reset unsaved changes flag
         });
 
         // Reload existing ingredients to show updated state
@@ -870,6 +889,84 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         });
       }
     }
+  }
+
+  /// Save current recipe (ingredients + instructions) and load next recipe
+  // ignore: unused_element
+  Future<void> _saveAndNext() async {
+    if (_selectedRecipe == null) return;
+
+    // Save ingredients and instructions
+    await _saveIngredients(saveInstructions: true);
+
+    // After save, check if there are more recipes
+    if (_recipesNeedingIngredients.isEmpty) {
+      // No more recipes to update
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('All recipes updated!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+      return;
+    }
+
+    // Load next recipe in the list
+    final currentIndex = _selectedRecipeIndex ?? 0;
+    if (currentIndex < _recipesNeedingIngredients.length) {
+      // Stay at same index (which now points to next recipe after reload)
+      final newRecipe = _recipesNeedingIngredients[currentIndex];
+
+      setState(() {
+        _selectedRecipe = newRecipe;
+        _selectedRecipeIndex = currentIndex;
+        _isLoadingIngredients = true;
+      });
+
+      // Load the next recipe's data
+      try {
+        final dbHelper = ServiceProvider.database.dbHelper;
+        final existingIngredients = await dbHelper.getRecipeIngredients(newRecipe.id);
+
+        setState(() {
+          _existingIngredients = existingIngredients;
+          _instructionsController.text = newRecipe.instructions;
+          _hasUnsavedChanges = false;
+          _isLoadingIngredients = false;
+        });
+      } catch (e) {
+        setState(() {
+          _existingIngredients = [];
+          _isLoadingIngredients = false;
+        });
+      }
+    }
+  }
+
+  /// Save current recipe and close screen
+  // ignore: unused_element
+  Future<void> _saveAndClose() async {
+    if (_selectedRecipe == null) {
+      Navigator.pop(context);
+      return;
+    }
+
+    // Save ingredients and instructions
+    await _saveIngredients(saveInstructions: true);
+
+    // Return to previous screen
+    if (mounted) {
+      Navigator.pop(context);
+    }
+  }
+
+  /// Skip current recipe without saving
+  // ignore: unused_element
+  void _skipRecipe() {
+    // Navigate to next recipe without saving
+    _navigateToNext();
   }
 
   @override
