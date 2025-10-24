@@ -1915,45 +1915,56 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Match status indicator
-                    Row(
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(matchIcon, color: matchColor, size: 18),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Wrap(
-                            spacing: 8,
-                            runSpacing: 4,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              Text(
+                        Row(
+                          children: [
+                            Icon(matchIcon, color: matchColor, size: 18),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
                                 matchText,
                                 style: TextStyle(
                                   color: matchColor,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12,
                                 ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
-                              if (ingredient.selectedMatch != null) ...[
-                                Text(
+                            ),
+                          ],
+                        ),
+                        if (ingredient.selectedMatch != null) ...[
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
                                   '→ ${ingredient.selectedMatch!.ingredient.name}',
                                   style: const TextStyle(fontSize: 12),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
                                 ),
-                                Chip(
-                                  label: Text(
-                                    ingredient.selectedMatch!.ingredient.category.displayName,
-                                    style: const TextStyle(fontSize: 10),
-                                  ),
-                                  visualDensity: VisualDensity.compact,
-                                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                                  backgroundColor: Theme.of(context)
-                                      .colorScheme
-                                      .secondaryContainer
-                                      .withValues(alpha: 0.5),
+                              ),
+                              const SizedBox(width: 8),
+                              Chip(
+                                label: Text(
+                                  ingredient.selectedMatch!.ingredient.category.displayName,
+                                  style: const TextStyle(fontSize: 10),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ],
+                                visualDensity: VisualDensity.compact,
+                                padding: const EdgeInsets.symmetric(horizontal: 4),
+                                backgroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .secondaryContainer
+                                    .withValues(alpha: 0.5),
+                              ),
                             ],
                           ),
-                        ),
+                        ],
                       ],
                     ),
 
