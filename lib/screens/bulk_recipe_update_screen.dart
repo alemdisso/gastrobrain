@@ -1819,6 +1819,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                 SizedBox(
                   width: 50,
                   child: TextFormField(
+                    key: ValueKey('qty_${index}_${ingredient.quantity}'),
                     decoration: const InputDecoration(
                       labelText: 'Qty',
                       border: OutlineInputBorder(),
@@ -1838,6 +1839,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                 SizedBox(
                   width: 70,
                   child: TextFormField(
+                    key: ValueKey('unit_${index}_${ingredient.unit}'),
                     decoration: const InputDecoration(
                       labelText: 'Unit',
                       border: OutlineInputBorder(),
@@ -1854,6 +1856,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                 // Name field
                 Expanded(
                   child: TextFormField(
+                    key: ValueKey('name_${index}_${ingredient.name}'),
                     decoration: const InputDecoration(
                       labelText: 'Ingredient Name',
                       border: OutlineInputBorder(),
@@ -1880,6 +1883,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
             if (ingredient.notes != null || ingredient.selectedMatch != null) ...[
               const SizedBox(height: 8),
               TextFormField(
+                key: ValueKey('notes_${index}_${ingredient.notes}'),
                 decoration: const InputDecoration(
                   labelText: 'Notes (descriptors)',
                   hintText: 'e.g., pequena, maduro, picado',
