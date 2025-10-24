@@ -35,6 +35,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   // Ingredient parsing state
   final TextEditingController _rawIngredientsController = TextEditingController();
   List<_ParsedIngredient> _parsedIngredients = [];
+  int _parseGeneration = 0; // Increments on re-parse to force field recreation
   bool _isSaving = false;
 
   // Instructions state
@@ -262,6 +263,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     if (rawText.isEmpty) {
       setState(() {
         _parsedIngredients = [];
+        _parseGeneration++; // Increment to force field recreation
       });
       return;
     }
@@ -281,6 +283,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
 
     setState(() {
       _parsedIngredients = parsedList;
+      _parseGeneration++; // Increment to force field recreation
     });
   }
 
@@ -1819,7 +1822,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                 SizedBox(
                   width: 50,
                   child: TextFormField(
-                    key: ValueKey('qty_${index}_${ingredient.quantity}'),
+                    key: ValueKey('qty_${index}_$_parseGeneration'),
                     decoration: const InputDecoration(
                       labelText: 'Qty',
                       border: OutlineInputBorder(),
@@ -1839,7 +1842,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                 SizedBox(
                   width: 70,
                   child: TextFormField(
-                    key: ValueKey('unit_${index}_${ingredient.unit}'),
+                    key: ValueKey('unit_${index}_$_parseGeneration'),
                     decoration: const InputDecoration(
                       labelText: 'Unit',
                       border: OutlineInputBorder(),
@@ -1856,7 +1859,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                 // Name field
                 Expanded(
                   child: TextFormField(
-                    key: ValueKey('name_${index}_${ingredient.name}'),
+                    key: ValueKey('name_${index}_$_parseGeneration'),
                     decoration: const InputDecoration(
                       labelText: 'Ingredient Name',
                       border: OutlineInputBorder(),
@@ -1883,7 +1886,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
             if (ingredient.notes != null || ingredient.selectedMatch != null) ...[
               const SizedBox(height: 8),
               TextFormField(
-                key: ValueKey('notes_${index}_${ingredient.notes}'),
+                key: ValueKey('notes_${index}_$_parseGeneration'),
                 decoration: const InputDecoration(
                   labelText: 'Notes (descriptors)',
                   hintText: 'e.g., pequena, maduro, picado',
