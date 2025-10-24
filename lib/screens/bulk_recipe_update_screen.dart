@@ -1619,10 +1619,9 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                 labelText: 'Paste ingredient list (one per line)',
                 hintText: '200g flour\n2 cups milk\n3 eggs\nSalt to taste',
                 border: OutlineInputBorder(),
-                helperText: 'Supports PT/EN formats: "200g farinha", "2 xícaras leite", etc.',
+                helperText: 'Click "Parse Ingredients" button when ready. Supports PT/EN formats.',
                 helperMaxLines: 2,
               ),
-              onChanged: (_) => _parseIngredients(),
             ),
             const SizedBox(height: 16),
 
