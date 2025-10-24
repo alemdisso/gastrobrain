@@ -1820,7 +1820,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
               children: [
                 // Quantity field
                 SizedBox(
-                  width: 50,
+                  width: 40,
                   child: TextFormField(
                     key: ValueKey('qty_${index}_$_parseGeneration'),
                     decoration: const InputDecoration(
@@ -1840,7 +1840,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
 
                 // Unit field
                 SizedBox(
-                  width: 70,
+                  width: 60,
                   child: TextFormField(
                     key: ValueKey('unit_${index}_$_parseGeneration'),
                     decoration: const InputDecoration(
