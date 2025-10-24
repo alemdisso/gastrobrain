@@ -1819,16 +1819,14 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                 // Quantity field
                 SizedBox(
                   width: 80,
-                  child: TextField(
+                  child: TextFormField(
                     decoration: const InputDecoration(
                       labelText: 'Qty',
                       border: OutlineInputBorder(),
                       contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     ),
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    controller: TextEditingController(
-                      text: formatQuantity(ingredient.quantity),
-                    ),
+                    initialValue: formatQuantity(ingredient.quantity),
                     onChanged: (value) {
                       final qty = double.tryParse(value) ?? 0.0;
                       _updateIngredient(index, quantity: qty);
@@ -1840,13 +1838,13 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                 // Unit field
                 SizedBox(
                   width: 80,
-                  child: TextField(
+                  child: TextFormField(
                     decoration: const InputDecoration(
                       labelText: 'Unit',
                       border: OutlineInputBorder(),
                       contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     ),
-                    controller: TextEditingController(text: ingredient.unit ?? ''),
+                    initialValue: ingredient.unit ?? '',
                     onChanged: (value) {
                       _updateIngredient(index, unit: value.isEmpty ? null : value);
                     },
@@ -1856,13 +1854,13 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
 
                 // Name field
                 Expanded(
-                  child: TextField(
+                  child: TextFormField(
                     decoration: const InputDecoration(
                       labelText: 'Ingredient Name',
                       border: OutlineInputBorder(),
                       contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     ),
-                    controller: TextEditingController(text: ingredient.name),
+                    initialValue: ingredient.name,
                     onChanged: (value) {
                       _updateIngredient(index, name: value);
                     },
@@ -1882,7 +1880,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
             // Notes field (descriptors like "pequena", "maduro", etc.)
             if (ingredient.notes != null || ingredient.selectedMatch != null) ...[
               const SizedBox(height: 8),
-              TextField(
+              TextFormField(
                 decoration: const InputDecoration(
                   labelText: 'Notes (descriptors)',
                   hintText: 'e.g., pequena, maduro, picado',
@@ -1890,7 +1888,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                   contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                   isDense: true,
                 ),
-                controller: TextEditingController(text: ingredient.notes ?? ''),
+                initialValue: ingredient.notes ?? '',
                 onChanged: (value) {
                   _updateIngredient(index, notes: value.isEmpty ? null : value);
                 },
