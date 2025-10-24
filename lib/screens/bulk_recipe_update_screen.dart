@@ -1817,7 +1817,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
               children: [
                 // Quantity field
                 SizedBox(
-                  width: 80,
+                  width: 50,
                   child: TextFormField(
                     decoration: const InputDecoration(
                       labelText: 'Qty',
@@ -1836,7 +1836,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
 
                 // Unit field
                 SizedBox(
-                  width: 80,
+                  width: 70,
                   child: TextFormField(
                     decoration: const InputDecoration(
                       labelText: 'Unit',
@@ -1869,7 +1869,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
 
                 // Remove button
                 IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
+                  icon: const Icon(Icons.delete, color: Colors.grey, size: 20),
                   onPressed: () => _removeIngredientAt(index),
                   tooltip: 'Remove',
                 ),
