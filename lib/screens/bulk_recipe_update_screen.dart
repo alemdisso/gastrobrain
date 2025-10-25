@@ -2011,9 +2011,16 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                     ],
 
                     // Create New Ingredient button
-                    // Shows when no match is selected (either no matches or user hasn't picked one)
+                    // Shows when:
+                    // 1. No match selected, OR
+                    // 2. Single non-exact match (user might want to reject fuzzy/partial matches)
+                    // Exception: Don't show for exact/caseInsensitive matches (clearly correct)
                     if (!ingredient.isNewIngredient &&
-                        ingredient.selectedMatch == null) ...[
+                        (ingredient.selectedMatch == null ||
+                         (ingredient.matches.length == 1 &&
+                          ingredient.selectedMatch != null &&
+                          ingredient.selectedMatch!.matchType != MatchType.exact &&
+                          ingredient.selectedMatch!.matchType != MatchType.caseInsensitive))) ...[
                       const SizedBox(height: 8),
                       SizedBox(
                         width: double.infinity,
