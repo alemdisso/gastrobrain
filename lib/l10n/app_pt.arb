@@ -1585,5 +1585,9 @@
   "instructions": "Instruções",
   "@instructions": {
     "description": "Rótulo para seção de instruções"
+  },
+  "noneOfTheseCreateNew": "Nenhuma destas - Criar Novo Ingrediente",
+  "@noneOfTheseCreateNew": {
+    "description": "Texto do botão quando o usuário deseja criar um novo ingrediente em vez de selecionar das correspondências"
   }
 }

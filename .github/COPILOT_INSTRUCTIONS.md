@@ -11,6 +11,59 @@ This file provides reusable instruction templates for assigning issues to GitHub
 
 ---
 
+## Common Issues & Prevention
+
+Based on previous Copilot implementations, avoid these common mistakes:
+
+### ❌ Issue: Firewall Blocks Flutter SDK Downloads
+
+**Problem**: Copilot cannot access Google Cloud Storage to download Flutter/Dart SDK, preventing `flutter analyze` from running.
+
+**Solution**: Configure [Actions setup steps](https://gh.io/copilot/actions-setup-steps) in repository settings to pre-install Flutter before the firewall activates.
+
+**How to detect**: Look for warnings in PR description about blocked URLs (storage.googleapis.com).
+
+### ❌ Issue: Empty "Initial plan" Commits
+
+**Problem**: Copilot creates empty commits with message "Initial plan" that add no value.
+
+**Prevention**: Add this to instructions:
+```markdown
+- Make ONLY ONE commit with your implementation
+- Do NOT create separate "Initial plan" or "docs" commits
+- Include all changes in a single, well-formatted commit
+```
+
+### ❌ Issue: Modified Generated Files
+
+**Problem**: Copilot modifies files marked "Generated file. Do not edit." (e.g., `GeneratedPluginRegistrant.swift`, `app_localizations.dart`)
+
+**Files to NEVER manually edit**:
+- `macos/Flutter/GeneratedPluginRegistrant.swift`
+- `lib/l10n/app_localizations.dart`
+- `lib/l10n/app_localizations_*.dart` (except when running `flutter gen-l10n`)
+- Any file with "Generated file. Do not edit." comment
+
+**Prevention**: Add this to instructions:
+```markdown
+- NEVER manually edit files marked "Generated file. Do not edit."
+- When updating .arb files, run `flutter gen-l10n` to regenerate localization files
+- Do NOT commit changes to generated files unless they result from running official Flutter commands
+```
+
+### ❌ Issue: Misleading Commit Messages
+
+**Problem**: Commit messages don't accurately describe changes (e.g., "docs: final implementation summary" when modifying code)
+
+**Prevention**: Add this to instructions:
+```markdown
+- Commit message MUST accurately describe what was changed
+- Use correct type prefix (feature/bugfix/ui, not "docs" for code changes)
+- Keep commit count minimal - ideally ONE commit per issue
+```
+
+---
+
 ## Generic Template
 
 Use this for any issue. Replace placeholders in `{braces}`:
@@ -30,7 +83,7 @@ REQUIRED STEPS:
 3. Plan your implementation approach (small, focused changes)
 4. Implement the solution following existing patterns
 5. VALIDATE: Run `flutter analyze` (must pass with no errors)
-6. Create commit with proper format
+6. Create ONE commit with proper format
 
 CRITICAL NOTES:
 - Follow existing code patterns and conventions
@@ -38,6 +91,9 @@ CRITICAL NOTES:
 - If user-facing strings are added: update lib/l10n/app_en.arb and app_pt.arb, then run `flutter gen-l10n`
 - Keep changes minimal and focused on the issue requirements
 - Test that your changes don't break existing functionality
+- Make ONLY ONE commit - do NOT create separate "Initial plan" or "docs" commits
+- NEVER manually edit files marked "Generated file. Do not edit."
+- Commit message MUST accurately describe what was changed
 
 Review acceptance criteria in the issue before considering the work complete.
 ```
@@ -63,7 +119,7 @@ REQUIRED STEPS:
 4. Plan minimal UI changes (avoid over-engineering)
 5. Implement following Material Design and existing patterns
 6. VALIDATE: Run `flutter analyze` (must pass with no errors)
-7. Create commit with proper format
+7. Create ONE commit with proper format
 
 CRITICAL NOTES:
 - Follow existing UI patterns in the screen
@@ -72,6 +128,8 @@ CRITICAL NOTES:
 - Add overflow protection: TextOverflow.ellipsis, maxLines, Expanded/Flexible
 - If text is added: update lib/l10n/app_en.arb and app_pt.arb, then run `flutter gen-l10n`
 - Use `flutter analyze` for validation (required before commit)
+- Make ONLY ONE commit - do NOT create separate "Initial plan" or "docs" commits
+- NEVER manually edit files marked "Generated file. Do not edit."
 
 Review acceptance criteria and test cases in the issue before completing.
 ```
@@ -98,7 +156,7 @@ REQUIRED STEPS:
 5. Implement minimal fix following existing patterns
 6. VALIDATE: Run `flutter analyze` (must pass with no errors)
 7. Test that fix resolves the issue without breaking other features
-8. Create commit with proper format
+8. Create ONE commit with proper format
 
 CRITICAL NOTES:
 - Keep fix minimal - don't refactor unnecessarily
@@ -106,6 +164,8 @@ CRITICAL NOTES:
 - If fix changes error handling, ensure proper exception types used
 - Use `flutter analyze` for validation (required before commit)
 - Verify test cases from issue acceptance criteria
+- Make ONLY ONE commit - do NOT create separate "Initial plan" or "docs" commits
+- NEVER manually edit files marked "Generated file. Do not edit."
 
 Document what was changed and why in the commit message.
 ```
@@ -134,7 +194,7 @@ REQUIRED STEPS:
 4. Implement feature incrementally
 5. VALIDATE: Run `flutter analyze` (must pass with no errors)
 6. Test feature with various inputs and edge cases
-7. Create commit with proper format
+7. Create ONE commit with proper format
 
 CRITICAL NOTES:
 - Follow dependency injection pattern via ServiceProvider
@@ -143,6 +203,8 @@ CRITICAL NOTES:
 - Keep implementation focused - avoid scope creep
 - Use `flutter analyze` for validation (required before commit)
 - Document any new patterns or conventions introduced
+- Make ONLY ONE commit - do NOT create separate "Initial plan" or "docs" commits
+- NEVER manually edit files marked "Generated file. Do not edit."
 
 Review all acceptance criteria before considering complete.
 ```
@@ -199,7 +261,7 @@ REQUIRED STEPS:
 3. Plan your implementation approach (small, focused changes)
 4. Implement the solution: add "Create New Ingredient" button below match dropdown
 5. VALIDATE: Run `flutter analyze` (must pass with no errors)
-6. Create commit with format above
+6. Create ONE commit with format above
 
 CRITICAL NOTES:
 - Follow existing code patterns for button styling (OutlinedButton.icon recommended per issue)
@@ -208,6 +270,8 @@ CRITICAL NOTES:
 - Button should be visible when ingredient.matches.isNotEmpty
 - Place button below the existing match dropdown with appropriate spacing
 - Use `flutter analyze` for validation (required before commit)
+- Make ONLY ONE commit - do NOT create separate "Initial plan" or "docs" commits
+- NEVER manually edit files marked "Generated file. Do not edit."
 
 VALIDATION CHECKLIST:
 - [ ] `flutter analyze` passes with no errors
@@ -238,15 +302,37 @@ Review acceptance criteria in issue #182 before considering the work complete.
 
 After Copilot completes the work, verify:
 
-1. ✅ Branch name follows convention
-2. ✅ Commit message follows format
-3. ✅ `flutter analyze` was run and passed
-4. ✅ Changes are minimal and focused
-5. ✅ All acceptance criteria are met
-6. ✅ No hardcoded strings (if UI changes)
-7. ✅ No unnecessary files changed
+### ✅ Code Quality
+1. Branch name follows convention (`{type}/{issue-number}-{short-description}`)
+2. Commit message follows format and accurately describes changes
+3. Changes are minimal and focused on the issue
+4. All acceptance criteria are met
+5. Code follows existing patterns and conventions
 
-If any checks fail, provide feedback to Copilot and request corrections.
+### ✅ Validation
+6. `flutter analyze` was run and passed (check PR description for firewall warnings)
+7. No hardcoded user-facing strings (all in .arb files)
+8. Localization files regenerated if .arb files were modified
+
+### ✅ Commit Hygiene
+9. **ONLY ONE meaningful commit** (not counting merge commits)
+10. **NO "Initial plan" empty commits**
+11. **NO unnecessary "docs" commits after implementation**
+12. Commit type prefix matches the actual changes
+
+### ✅ Generated Files
+13. **NO manual edits to generated files**:
+    - `macos/Flutter/GeneratedPluginRegistrant.swift`
+    - `lib/l10n/app_localizations*.dart` (unless via `flutter gen-l10n`)
+    - Files marked "Generated file. Do not edit."
+14. Only generated files from official Flutter commands should be committed
+
+### ✅ Common Issues
+15. Check PR description for firewall warnings about blocked URLs
+16. No unrelated file changes (e.g., IDE config, build artifacts)
+17. No scope creep - implementation matches issue requirements
+
+If any checks fail, provide feedback to Copilot and request corrections before merging.
 
 ---
 

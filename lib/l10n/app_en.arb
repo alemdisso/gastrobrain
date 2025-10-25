@@ -1585,6 +1585,10 @@
   "instructions": "Instructions",
   "@instructions": {
     "description": "Label for instructions section"
+  },
+  "noneOfTheseCreateNew": "None of these - Create New Ingredient",
+  "@noneOfTheseCreateNew": {
+    "description": "Button text when user wants to create new ingredient instead of selecting from matches"
   }
 
 }

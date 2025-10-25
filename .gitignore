@@ -99,6 +99,9 @@ app.*.map.json
 docs/Issue #*.md
 lib/l10n/untranslated_messages.txt
 
+# Generated localization files (regenerated from .arb files via flutter gen-l10n)
+lib/l10n/app_localizations*.dart
+
 # Test coverage reports (generated files, not source controlled)
 coverage/
 *.lcov
