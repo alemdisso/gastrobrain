@@ -2010,23 +2010,34 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                       ),
                     ],
 
-                    // Create New Ingredient button for unmatched ingredients
+                    // Create New Ingredient button
+                    // Shows when no match is selected (either no matches or user hasn't picked one)
                     if (!ingredient.isNewIngredient &&
-                        ingredient.selectedMatch == null &&
-                        ingredient.matches.isEmpty) ...[
+                        ingredient.selectedMatch == null) ...[
                       const SizedBox(height: 8),
                       SizedBox(
                         width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () => _showCreateIngredientDialog(index),
-                          icon: const Icon(Icons.add, size: 18),
-                          label: const Text('Create New Ingredient'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                          ),
-                        ),
+                        child: ingredient.matches.isEmpty
+                            ? ElevatedButton.icon(
+                                onPressed: () => _showCreateIngredientDialog(index),
+                                icon: const Icon(Icons.add, size: 18),
+                                label: Text(AppLocalizations.of(context)!.createNewIngredient),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                ),
+                              )
+                            : OutlinedButton.icon(
+                                onPressed: () => _showCreateIngredientDialog(index),
+                                icon: const Icon(Icons.add, size: 18),
+                                label: Text(AppLocalizations.of(context)!.noneOfTheseCreateNew),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.blue,
+                                  side: const BorderSide(color: Colors.blue),
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                ),
+                              ),
                       ),
                     ],
                   ],

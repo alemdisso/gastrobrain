@@ -808,6 +808,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get createNewIngredient => 'Criar Novo Ingrediente';
 
   @override
+  String get noneOfTheseCreateNew => 'Nenhuma destas - Criar Novo Ingrediente';
+
+  @override
   String get pleaseEnterQuantity => 'Por favor, informe uma quantidade';
 
   @override

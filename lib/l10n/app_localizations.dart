@@ -1562,6 +1562,12 @@ abstract class AppLocalizations {
   /// **'Create New Ingredient'**
   String get createNewIngredient;
 
+  /// No description provided for @noneOfTheseCreateNew.
+  ///
+  /// In en, this message translates to:
+  /// **'None of these - Create New Ingredient'**
+  String get noneOfTheseCreateNew;
+
   /// Validation message for entering quantity
   ///
   /// In en, this message translates to:
