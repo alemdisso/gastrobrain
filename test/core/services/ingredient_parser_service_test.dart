@@ -6,7 +6,6 @@ import 'package:gastrobrain/models/ingredient_category.dart';
 import 'package:gastrobrain/models/measurement_unit.dart';
 import 'package:gastrobrain/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() {
   group('IngredientParserService', () {
@@ -15,25 +14,8 @@ void main() {
     late AppLocalizations localizations;
 
     setUp(() async {
-      // Initialize localizations
-      final widget = MaterialApp(
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          Locale('en'),
-          Locale('pt'),
-        ],
-        locale: const Locale('pt'),
-        home: Container(),
-      );
-
       // Get localizations for Portuguese
-      final context = await _getContext(widget);
-      localizations = AppLocalizations.of(context)!;
+      localizations = await _getLocalizations();
 
       // Create test ingredients for matching
       final testIngredients = [
@@ -307,24 +289,7 @@ void main() {
   });
 }
 
-/// Helper to get BuildContext with localizations
-Future<BuildContext> _getContext(Widget widget) async {
-  late BuildContext capturedContext;
-  await pumpWidget(
-    Builder(
-      builder: (context) {
-        capturedContext = context;
-        return widget;
-      },
-    ),
-  );
-  return capturedContext;
-}
-
-/// Helper to pump a widget and wait for it to build
-Future<void> pumpWidget(Widget widget) async {
-  final binding = TestWidgetsFlutterBinding.ensureInitialized();
-  await binding.runAsync(() async {
-    await Future.delayed(Duration.zero);
-  });
+/// Helper to get AppLocalizations for Portuguese
+Future<AppLocalizations> _getLocalizations() async {
+  return await AppLocalizations.delegate.load(const Locale('pt'));
 }
