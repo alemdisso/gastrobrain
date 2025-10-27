@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../core/di/service_provider.dart';
 import '../core/services/ingredient_matching_service.dart';
+import '../core/services/ingredient_parser_service.dart';
 import '../models/recipe.dart';
 import '../models/recipe_ingredient.dart';
 import '../models/ingredient.dart';
@@ -53,11 +54,33 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   final IngredientMatchingService _matchingService = IngredientMatchingService();
   bool _isMatchingServiceReady = false;
 
+  // Ingredient parser service
+  final IngredientParserService _parserService = IngredientParserService();
+  bool _isParserServiceReady = false;
+
   @override
   void initState() {
     super.initState();
     _loadRecipesNeedingIngredients();
     _loadAllIngredients();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Initialize parser service with localized strings (requires context)
+    if (!_isParserServiceReady && mounted) {
+      final localizations = AppLocalizations.of(context);
+      if (localizations != null) {
+        _parserService.initialize(
+          localizations,
+          matchingService: _matchingService,
+        );
+        setState(() {
+          _isParserServiceReady = true;
+        });
+      }
+    }
   }
 
   @override
@@ -287,341 +310,44 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     });
   }
 
-  /// Common descriptors that modify ingredients (size, state, preparation)
-  /// These are extracted and stored in the notes field, not the ingredient name
-  static const _descriptors = {
-    // Size (PT)
-    'pequena', 'pequeno', 'pequenas', 'pequenos',
-    'grande', 'grandes',
-    'média', 'medio', 'médias', 'medios',
-    // Size (EN)
-    'small', 'large', 'medium',
-    // State/ripeness (PT)
-    'maduro', 'madura', 'maduros', 'maduras',
-    'verde', 'verdes',
-    'fresco', 'fresca', 'frescos', 'frescas',
-    'seco', 'seca', 'secos', 'secas',
-    // State/ripeness (EN)
-    'ripe', 'green', 'fresh', 'dried',
-    // Preparation (PT)
-    'picado', 'picada', 'picados', 'picadas',
-    'ralado', 'ralada', 'ralados', 'raladas',
-    'fatiado', 'fatiada', 'fatiados', 'fatiadas',
-    'cortado', 'cortada', 'cortados', 'cortadas',
-    // Preparation (EN)
-    'chopped', 'diced', 'minced', 'grated', 'sliced', 'cut',
-    // Modifiers (PT)
-    'sem', 'com',
-    // Common combinations (PT)
-    'sem sementes', 'com casca', 'sem casca',
-  };
-
-  /// Parse a single ingredient line
+  /// Parse a single ingredient line using the parser service
   ///
-  /// Handles three refinements (Issue #166):
-  /// 1. Default unit: Quantities without units default to "piece"
-  /// 2. Descriptors: Extracted and stored in notes, not ingredient name
-  /// 3. "de" handling: Strips "de" after valid units (e.g., "2 fatias de pão" → "pão")
+  /// Now delegates to IngredientParserService for context-aware parsing
+  /// that properly handles Portuguese "de" in multiple contexts.
   ///
   /// Examples:
   /// - "3 ovos" → 3 piece ovos, notes: null
-  /// - "1 cebola pequena" → 1 piece cebola, notes: "pequena"
-  /// - "2 tomates maduros" → 2 piece tomates, notes: "maduros"
-  /// - "2 fatias de pão" → 2 slice pão, notes: null
-  /// - "200g farinha" → 200 g farinha, notes: null
+  /// - "2 kg de mangas" → 2 kg mangas, notes: null
+  /// - "2 colheres de sopa de pasta de tamarindo" → 2 tbsp pasta de tamarindo
+  /// - "Sal a gosto" → 0 null sal, notes: a gosto
   _ParsedIngredient? _parseIngredientLine(String line) {
-    // Regex patterns for parsing ingredients
-    // Supports formats like:
-    // - "200g farinha" / "200g flour"
-    // - "2 xícaras leite" / "2 cups milk"
-    // - "1 csp sal" / "1 tsp salt"
-    // - "3 ovos" / "3 eggs"
-    // - "1 cebola pequena" / "1 small onion"
-    // - "2 fatias de pão" / "2 slices of bread"
-    // - "Sal a gosto" / "Salt to taste"
-
-    // Pattern: [quantity] [unit] ingredient_name
-    // Note: Using [a-zA-ZÀ-ÿ] to support accented characters (e.g., xícara, colher)
-    // Updated to capture compound units like "colher de sopa", "colher de chá"
-    final quantityUnitPattern = RegExp(
-      r'^(\d+(?:[.,]\d+)?)\s*([a-zA-ZÀ-ÿ]+(?:\s+de\s+[a-zA-ZÀ-ÿ]+)?)?\s+(.+)$',
-      caseSensitive: false,
-    );
-
-    // Pattern: just ingredient name (no quantity)
-    // Note: Using [a-zA-ZÀ-ÿ] to support accented characters
-    final nameOnlyPattern = RegExp(r'^([a-zA-ZÀ-ÿ\s]+)(?:\s+(?:a\s+)?gosto)?$', caseSensitive: false);
-
-    final match = quantityUnitPattern.firstMatch(line);
-    if (match != null) {
-      final quantityStr = match.group(1)!.replaceAll(',', '.');
-      final quantity = double.tryParse(quantityStr) ?? 1.0;
-      final unitStr = match.group(2)?.toLowerCase().trim();
-      var name = match.group(3)!.trim();
-
-      // Try to parse the captured unit word
-      var unit = _parseUnit(unitStr);
-
-      // Track descriptors for notes field
-      final descriptorParts = <String>[];
-
-      // If the captured word is not a valid unit, it's probably part of the ingredient name
-      if (unitStr != null && unit == null) {
-        // Check if it's a descriptor
-        if (_descriptors.contains(unitStr.toLowerCase())) {
-          descriptorParts.add(unitStr);
-          // Don't add descriptor to name, just default to "piece"
-        } else {
-          // Not a unit, not a descriptor - it's part of the ingredient name
-          name = '$unitStr $name';
-        }
-        unit = 'piece';
-      }
-
-      // If no unit word was captured at all, default to "piece"
-      if (unitStr == null) {
-        unit = 'piece';
-      }
-
-      // Handle "de" after unit words (e.g., "2 fatias de pão" → "pão")
-      if (unit != null && name.startsWith('de ')) {
-        name = name.substring(3); // Strip "de "
-      }
-
-      // Smart matching: Try to find the longest ingredient name match first,
-      // then extract descriptors from what remains.
-      // This handles compound names like "pimentão verde" correctly.
-      String matchedName = name;
-      List<IngredientMatch> matches = [];
-      IngredientMatch? selectedMatch;
-
-      // Try progressively shorter prefixes (from right to left)
-      // to find the longest matching ingredient name
-      final nameParts = name.split(' ');
-      bool foundMatch = false;
-
-      for (int i = nameParts.length; i >= 1 && !foundMatch; i--) {
-        final prefixParts = nameParts.sublist(0, i);
-        final testName = prefixParts.join(' ');
-
-        matches = _findMatchesForName(testName);
-        selectedMatch = _getAutoSelectedMatch(matches);
-
-        // If we found a high-confidence match, check if adding more words helps
-        if (selectedMatch != null && selectedMatch.confidence >= 0.90) {
-          // Check if the next longer prefix gives any decent match
-          bool shouldAcceptThisMatch = true;
-
-          if (i < nameParts.length) {
-            // Try one word longer
-            final longerTestName = nameParts.sublist(0, i + 1).join(' ');
-            final longerMatches = _findMatchesForName(longerTestName);
-            final longerMatch = _getAutoSelectedMatch(longerMatches);
-
-            // If the longer version also has a high-confidence match, keep going
-            if (longerMatch != null && longerMatch.confidence >= 0.90) {
-              shouldAcceptThisMatch = false;
-            }
-          }
-
-          if (shouldAcceptThisMatch) {
-            matchedName = testName;
-            foundMatch = true;
-
-            // All remaining text becomes descriptors (not just validated ones)
-            if (i < nameParts.length) {
-              final remainingParts = nameParts.sublist(i);
-              final remainingText = remainingParts.join(' ');
-              descriptorParts.add(remainingText);
-            }
-          }
-        }
-      }
-
-      // If no high-confidence match found, fall back to original descriptor extraction
-      if (!foundMatch) {
-        final cleanNameParts = <String>[];
-
-        for (final part in nameParts) {
-          if (_descriptors.contains(part.toLowerCase())) {
-            descriptorParts.add(part);
-          } else {
-            cleanNameParts.add(part);
-          }
-        }
-
-        matchedName = cleanNameParts.join(' ');
-        matches = _findMatchesForName(matchedName);
-        selectedMatch = _getAutoSelectedMatch(matches);
-      }
-
-      final notes = descriptorParts.isNotEmpty ? descriptorParts.join(' ') : null;
-
-      return _ParsedIngredient(
-        quantity: quantity,
-        unit: unit,
-        name: selectedMatch?.ingredient.name ?? matchedName, // Use matched name if available
-        category: selectedMatch?.ingredient.category ?? IngredientCategory.other,
-        matches: matches,
-        selectedMatch: selectedMatch,
-        notes: notes,
-      );
-    }
-
-    // Try name-only pattern
-    final nameMatch = nameOnlyPattern.firstMatch(line);
-    if (nameMatch != null) {
+    if (!_isParserServiceReady) {
+      // Fallback: treat whole line as ingredient name
       final name = line.trim();
-      final matches = _findMatchesForName(name);
-      final selectedMatch = _getAutoSelectedMatch(matches);
-
       return _ParsedIngredient(
-        quantity: 0.0, // "to taste"
+        quantity: 1.0,
         unit: null,
-        name: selectedMatch?.ingredient.name ?? name, // Use matched name if available
-        category: selectedMatch?.ingredient.category ?? IngredientCategory.other,
-        matches: matches,
-        selectedMatch: selectedMatch,
+        name: name,
+        category: IngredientCategory.other,
+        matches: [],
+        selectedMatch: null,
       );
     }
 
-    // Fallback: treat whole line as ingredient name
-    final name = line.trim();
-    final matches = _findMatchesForName(name);
-    final selectedMatch = _getAutoSelectedMatch(matches);
-
+    final result = _parserService.parseIngredientLine(line);
+    
+    // Convert parser result to _ParsedIngredient format
+    final selectedMatch = result.matches.isNotEmpty ? result.matches.first : null;
+    
     return _ParsedIngredient(
-      quantity: 1.0,
-      unit: null,
-      name: selectedMatch?.ingredient.name ?? name, // Use matched name if available
+      quantity: result.quantity,
+      unit: result.unit,
+      name: result.ingredientName,
       category: selectedMatch?.ingredient.category ?? IngredientCategory.other,
-      matches: matches,
+      matches: result.matches,
       selectedMatch: selectedMatch,
+      notes: result.notes,
     );
-  }
-
-  /// Find ingredient matches for a given name
-  List<IngredientMatch> _findMatchesForName(String name) {
-    if (!_isMatchingServiceReady || name.trim().isEmpty) {
-      return [];
-    }
-    return _matchingService.findMatches(name);
-  }
-
-  /// Get auto-selected match if applicable
-  IngredientMatch? _getAutoSelectedMatch(List<IngredientMatch> matches) {
-    if (!_isMatchingServiceReady || matches.isEmpty) {
-      return null;
-    }
-
-    // Auto-select if high confidence (>= 90%) OR if it's the only match
-    if (matches.length == 1 || _matchingService.shouldAutoSelect(matches)) {
-      return matches.first;
-    }
-
-    return null;
-  }
-
-  /// Parse unit string to custom unit string
-  /// Returns null if no valid unit found
-  String? _parseUnit(String? unitStr) {
-    if (unitStr == null || unitStr.isEmpty) return null;
-
-    // Map of common unit abbreviations (PT/EN) to standard units
-    final unitMap = {
-      // Weight
-      'g': 'g',
-      'kg': 'kg',
-      'gram': 'g',
-      'grama': 'g',
-      'gramas': 'g',
-      'quilograma': 'kg',
-      'kilogram': 'kg',
-
-      // Volume
-      'ml': 'ml',
-      'l': 'l',
-      'litro': 'l',
-      'liter': 'l',
-      'litros': 'l',
-      'liters': 'l',
-
-      // Culinary measures
-      'xícara': 'cup',
-      'xicara': 'cup',
-      'xícaras': 'cup',
-      'xicaras': 'cup',
-      'cup': 'cup',
-      'cups': 'cup',
-      'c': 'cup',
-
-      // Compound units - must be checked before simple "colher"
-      'colher de sopa': 'tbsp',
-      'colheres de sopa': 'tbsp',
-      'colher de sobremesa': 'tbsp', // dessert spoon (≈ tbsp)
-      'colheres de sobremesa': 'tbsp',
-
-      'colher de chá': 'tsp',
-      'colheres de chá': 'tsp',
-      'colher de cha': 'tsp', // without accent
-      'colheres de cha': 'tsp',
-
-      // Simple forms (fallback)
-      'colher': 'tbsp',
-      'col': 'tbsp',
-      'cs': 'tbsp',
-      'csp': 'tbsp',
-      'tbsp': 'tbsp',
-      'tablespoon': 'tbsp',
-      'colheres': 'tbsp',
-
-      'tsp': 'tsp',
-      'teaspoon': 'tsp',
-      'chá': 'tsp',
-      'cha': 'tsp',
-      'cc': 'tsp',
-
-      // Count
-      'unidade': 'piece',
-      'unidades': 'piece',
-      'piece': 'piece',
-      'pieces': 'piece',
-      'pç': 'piece',
-      'pc': 'piece',
-      'un': 'piece',
-
-      'fatia': 'slice',
-      'fatias': 'slice',
-      'slice': 'slice',
-      'slices': 'slice',
-
-      'maço': 'bunch',
-      'bunch': 'bunch',
-      'maco': 'bunch',
-
-      'folha': 'leaves',
-      'folhas': 'leaves',
-      'leaves': 'leaves',
-      'leaf': 'leaves',
-
-      'pitada': 'pinch',
-      'pinch': 'pinch',
-      'pitadas': 'pinch',
-
-      'dente': 'clove',
-      'dentes': 'clove',
-      'clove': 'clove',
-      'cloves': 'clove',
-
-      'cabeça': 'head',
-      'cabeca': 'head',
-      'cabeças': 'head',
-      'cabecas': 'head',
-      'head': 'head',
-      'heads': 'head',
-    };
-
-    return unitMap[unitStr.toLowerCase()];
   }
 
   /// Add a new empty ingredient row
