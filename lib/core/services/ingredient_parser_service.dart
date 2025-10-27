@@ -137,14 +137,22 @@ class IngredientParserService {
     _unitStringMap['col'] = 'tbsp';
     _unitStringMap['cs'] = 'tbsp';
     _unitStringMap['csp'] = 'tbsp';
+    // Compound forms (primary Portuguese forms)
+    _unitStringMap['colher de sopa'] = 'tbsp';
+    _unitStringMap['colheres de sopa'] = 'tbsp';
     _unitStringMap['colher de sobremesa'] = 'tbsp'; // dessert spoon (≈ tbsp)
     _unitStringMap['colheres de sobremesa'] = 'tbsp';
     
     // Teaspoon variants (including compound forms)
     _unitStringMap['teaspoon'] = 'tsp';
     _unitStringMap['teaspoons'] = 'tsp';
-    _unitStringMap['colher de cha'] = 'tsp'; // without accent
+    // Compound forms with accent (primary Portuguese forms)
+    _unitStringMap['colher de chá'] = 'tsp';
+    _unitStringMap['colheres de chá'] = 'tsp';
+    // Compound forms without accent (variant)
+    _unitStringMap['colher de cha'] = 'tsp';
     _unitStringMap['colheres de cha'] = 'tsp';
+    // Simple forms
     _unitStringMap['chá'] = 'tsp';
     _unitStringMap['cha'] = 'tsp';
     _unitStringMap['cc'] = 'tsp';

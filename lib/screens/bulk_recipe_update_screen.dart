@@ -69,7 +69,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Initialize parser service with localized strings (requires context)
-    if (!_isParserServiceReady && mounted) {
+    // This may run before matching service is ready, so we also try in _loadAllIngredients
+    if (!_isParserServiceReady && _isMatchingServiceReady && mounted) {
       final localizations = AppLocalizations.of(context);
       if (localizations != null) {
         _parserService.initialize(
@@ -176,6 +177,21 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       setState(() {
         _isMatchingServiceReady = true;
       });
+      
+      // Initialize parser service now that matching service is ready
+      // (only if we have localizations context available)
+      if (mounted) {
+        final localizations = AppLocalizations.of(context);
+        if (localizations != null && !_isParserServiceReady) {
+          _parserService.initialize(
+            localizations,
+            matchingService: _matchingService,
+          );
+          setState(() {
+            _isParserServiceReady = true;
+          });
+        }
+      }
     } catch (e) {
       // Silently fail - matching will just not work if ingredients can't be loaded
       setState(() {
