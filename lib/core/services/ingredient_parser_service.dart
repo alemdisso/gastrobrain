@@ -32,6 +32,11 @@ class IngredientParserService {
   /// Initialize the service with localized strings
   /// Must be called before using the service
   void initialize(AppLocalizations localizations, {IngredientMatchingService? matchingService}) {
+    // Guard against double initialization
+    if (_isInitialized) {
+      return;
+    }
+    
     _matchingService = matchingService;
     _unitStringMap.clear();
     
