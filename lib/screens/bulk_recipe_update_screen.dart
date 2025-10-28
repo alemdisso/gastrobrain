@@ -1376,16 +1376,20 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
             // Parse button
             Row(
               children: [
-                ElevatedButton.icon(
-                  onPressed: _parseIngredients,
-                  icon: const Icon(Icons.auto_fix_high),
-                  label: const Text('Parse Ingredients'),
+                Flexible(
+                  child: ElevatedButton.icon(
+                    onPressed: _parseIngredients,
+                    icon: const Icon(Icons.auto_fix_high),
+                    label: const Text('Parse Ingredients'),
+                  ),
                 ),
                 const SizedBox(width: 8),
-                TextButton.icon(
-                  onPressed: _addIngredientRow,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add Row'),
+                Flexible(
+                  child: TextButton.icon(
+                    onPressed: _addIngredientRow,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add Row'),
+                  ),
                 ),
               ],
             ),
@@ -1584,7 +1588,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                     },
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
 
                 // Unit field
                 SizedBox(
@@ -1602,7 +1606,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                     },
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
 
                 // Name field
                 Expanded(
@@ -1619,11 +1623,16 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                     },
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
 
                 // Remove button
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.grey, size: 20),
+                  padding: const EdgeInsets.all(8),
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
                   onPressed: () => _removeIngredientAt(index),
                   tooltip: 'Remove',
                 ),
