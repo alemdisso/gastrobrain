@@ -1,3 +1,4 @@
+<!-- markdownlint-disable -->
 # GitHub Copilot Instructions Template
 
 This file provides reusable instruction templates for assigning issues to GitHub Copilot. These templates ensure Copilot follows our project conventions and workflow.
