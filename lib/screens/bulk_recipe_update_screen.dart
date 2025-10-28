@@ -1376,16 +1376,20 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
             // Parse button
             Row(
               children: [
-                ElevatedButton.icon(
-                  onPressed: _parseIngredients,
-                  icon: const Icon(Icons.auto_fix_high),
-                  label: const Text('Parse Ingredients'),
+                Flexible(
+                  child: ElevatedButton.icon(
+                    onPressed: _parseIngredients,
+                    icon: const Icon(Icons.auto_fix_high),
+                    label: const Text('Parse Ingredients'),
+                  ),
                 ),
                 const SizedBox(width: 8),
-                TextButton.icon(
-                  onPressed: _addIngredientRow,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add Row'),
+                Flexible(
+                  child: TextButton.icon(
+                    onPressed: _addIngredientRow,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add Row'),
+                  ),
                 ),
               ],
             ),
