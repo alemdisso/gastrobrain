@@ -298,10 +298,11 @@ class IngredientParserService {
         final testName = nameParts.sublist(0, i).join(' ');
         final testMatches = _matchingService!.findMatches(testName);
         
-        // Accept if high confidence (≥90%) or only match
+        // Accept if high confidence (≥90%)
+        // For single-word matches (i==1), also accept if it's the only match
         if (testMatches.isNotEmpty) {
           final bestMatch = testMatches.first;
-          if (bestMatch.confidence >= 0.90 || testMatches.length == 1) {
+          if (bestMatch.confidence >= 0.90 || (i == 1 && testMatches.length == 1)) {
             ingredientName = bestMatch.ingredient.name;
             matches = testMatches;
             foundMatch = true;
