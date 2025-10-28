@@ -11,6 +11,46 @@ This file provides reusable instruction templates for assigning issues to GitHub
 
 ---
 
+## 🚫🚫🚫 CRITICAL RULES FOR COPILOT - READ FIRST 🚫🚫🚫
+
+### ❌ ABSOLUTELY NO "Initial plan" COMMITS
+
+**This is the #1 most important rule. You have violated this rule in EVERY previous PR.**
+
+- ❌ **DO NOT** create commits with message "Initial plan"
+- ❌ **DO NOT** create empty commits
+- ❌ **DO NOT** create separate planning commits
+- ❌ **DO NOT** create multiple commits for documentation
+- ✅ **CREATE EXACTLY ONE COMMIT** with all your changes
+- ✅ **USE PROPER FORMAT**: `{type}: description (#{issue-number})`
+
+**Why this matters:**
+- Empty commits clutter git history and create maintenance overhead
+- You waste reviewer time by forcing them to squash your commits
+- GitHub Actions will now **BLOCK** your PR if you create empty commits
+- Your PR will be **AUTOMATICALLY REJECTED** by CI if you violate this rule
+
+**Verification before pushing:**
+```bash
+git log --oneline
+```
+**Expected result:** EXACTLY ONE commit with meaningful file changes
+
+**Examples:**
+- ✅ GOOD: `bugfix: fix Row overflow at line 1460 (#187)` (1 commit, files changed)
+- ❌ BAD: `Initial plan` followed by `bugfix: fix Row overflow (#187)` (2 commits)
+- ❌ BAD: Empty commit with no file changes
+
+**GitHub Actions enforcement:**
+A workflow (`check-commits.yml`) will automatically check every PR and **FAIL** the build if:
+1. Any commit has message containing "initial plan" (case insensitive)
+2. Any commit has zero file changes (empty commit)
+
+**If your PR fails this check:**
+You must squash or remove the offending commits before your PR can be merged.
+
+---
+
 ## CI/CD Workflow Awareness
 
 **IMPORTANT**: All pull requests trigger automated checks via GitHub Actions:
@@ -56,11 +96,19 @@ Based on previous Copilot implementations, avoid these common mistakes:
 
 **Problem**: Copilot creates empty commits with message "Initial plan" that add no value.
 
-**Prevention**: Add this to instructions:
+**Status**: ✅ **NOW ENFORCED BY GITHUB ACTIONS**
+- A workflow (`check-commits.yml`) automatically blocks PRs with empty or "Initial plan" commits
+- CI will fail if any commit violates this rule
+- Copilot MUST squash/remove these commits before PR can be merged
+
+**Prevention**: Add this to instructions (now included in all templates):
 ```markdown
+🚫 DO NOT create "Initial plan" commits - GitHub Actions will BLOCK your PR
+🚫 CREATE EXACTLY ONE COMMIT with all your changes
 - Make ONLY ONE commit with your implementation
 - Do NOT create separate "Initial plan" or "docs" commits
 - Include all changes in a single, well-formatted commit
+- GitHub Actions will automatically reject PRs with empty commits
 ```
 
 ### ❌ Issue: Modified Generated Files
@@ -109,7 +157,11 @@ Based on previous Copilot implementations, avoid these common mistakes:
 Use this for any issue. Replace placeholders in `{braces}`:
 
 ```markdown
-Please implement issue #{issue-number} following our project workflow:
+@copilot-swe-agent Please implement issue #{issue-number} following our project workflow:
+
+🚫 CRITICAL: Read the "CRITICAL RULES FOR COPILOT" section at the top of .github/COPILOT_INSTRUCTIONS.md
+🚫 DO NOT create "Initial plan" commits - GitHub Actions will BLOCK your PR if you do
+🚫 CREATE EXACTLY ONE COMMIT with all your changes
 
 WORKFLOW CONVENTIONS (see docs/ISSUE_WORKFLOW.md):
 - Branch: {type}/{issue-number}-{short-description}
@@ -153,7 +205,10 @@ Review acceptance criteria in the issue before considering the work complete.
 Optimized for UI-related issues:
 
 ```markdown
-Please implement issue #{issue-number} following our project workflow:
+@copilot-swe-agent Please implement issue #{issue-number} following our project workflow:
+
+🚫 CRITICAL: DO NOT create "Initial plan" commits - GitHub Actions will BLOCK your PR
+🚫 CREATE EXACTLY ONE COMMIT with all your changes
 
 WORKFLOW CONVENTIONS (see docs/ISSUE_WORKFLOW.md):
 - Branch: ui/{issue-number}-{short-description}
@@ -196,7 +251,10 @@ Review acceptance criteria and test cases in the issue before completing.
 Optimized for bug fixes:
 
 ```markdown
-Please implement issue #{issue-number} following our project workflow:
+@copilot-swe-agent Please implement issue #{issue-number} following our project workflow:
+
+🚫 CRITICAL: DO NOT create "Initial plan" commits - GitHub Actions will BLOCK your PR
+🚫 CREATE EXACTLY ONE COMMIT with all your changes
 
 WORKFLOW CONVENTIONS (see docs/ISSUE_WORKFLOW.md):
 - Branch: bugfix/{issue-number}-{short-description}
@@ -240,7 +298,10 @@ Document what was changed and why in the commit message.
 Optimized for new features:
 
 ```markdown
-Please implement issue #{issue-number} following our project workflow:
+@copilot-swe-agent Please implement issue #{issue-number} following our project workflow:
+
+🚫 CRITICAL: DO NOT create "Initial plan" commits - GitHub Actions will BLOCK your PR
+🚫 CREATE EXACTLY ONE COMMIT with all your changes
 
 WORKFLOW CONVENTIONS (see docs/ISSUE_WORKFLOW.md):
 - Branch: feature/{issue-number}-{short-description}

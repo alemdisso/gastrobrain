@@ -1,0 +1,72 @@
+name: Check Commit Quality
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  check-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for empty or "Initial plan" commits
+        run: |
+          echo "🔍 Checking commits in PR..."
+          echo ""
+
+          # Get commits in this PR
+          git fetch origin ${{ github.base_ref }}
+          COMMITS=$(git rev-list origin/${{ github.base_ref }}..${{ github.sha }})
+
+          FOUND_ISSUES=0
+
+          for commit in $COMMITS; do
+            MSG=$(git log -1 --format=%s $commit)
+
+            # Check for "Initial plan" commits
+            if echo "$MSG" | grep -qi "initial plan"; then
+              echo "❌ ERROR: Found 'Initial plan' commit"
+              echo "   Commit: $commit"
+              echo "   Message: $MSG"
+              echo ""
+              echo "   'Initial plan' commits are not allowed."
+              echo "   Please squash this commit with your implementation commit."
+              echo ""
+              FOUND_ISSUES=1
+            fi
+
+            # Check for empty commits (allow merge commits)
+            CHANGES=$(git show --format='' --name-only $commit | wc -l)
+            if [ $CHANGES -eq 0 ]; then
+              PARENTS=$(git rev-list --parents -n 1 $commit | wc -w)
+              # Non-merge commit (has 2 entries in parents: commit + parent)
+              if [ $PARENTS -eq 2 ]; then
+                echo "❌ ERROR: Found empty commit"
+                echo "   Commit: $commit"
+                echo "   Message: $MSG"
+                echo ""
+                echo "   Empty commits are not allowed."
+                echo "   Please remove or squash this commit."
+                echo ""
+                FOUND_ISSUES=1
+              fi
+            fi
+          done
+
+          if [ $FOUND_ISSUES -eq 1 ]; then
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "❌ Commit quality check FAILED"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            echo "Please squash empty/planning commits before merging."
+            echo "Use 'Squash and merge' option on GitHub when merging."
+            echo ""
+            exit 1
+          fi
+
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ All commits look good!"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
