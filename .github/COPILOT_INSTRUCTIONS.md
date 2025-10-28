@@ -11,6 +11,33 @@ This file provides reusable instruction templates for assigning issues to GitHub
 
 ---
 
+## CI/CD Workflow Awareness
+
+**IMPORTANT**: All pull requests trigger automated checks via GitHub Actions:
+
+### What Runs Automatically on PRs
+1. **Flutter Setup** - Installs Flutter 3.32.5
+2. **Dependency Installation** - Runs `flutter pub get`
+3. **Code Analysis** - `flutter analyze` (MUST pass, CI will fail if it doesn't)
+4. **Test Suite** - `flutter test --coverage` (runs all tests)
+5. **Coverage Generation** - Creates lcov.info (Codecov upload currently disabled)
+6. **Build Validation** - `flutter build apk --debug` (verifies code builds)
+
+### CI Implications for Copilot
+- **Code MUST pass `flutter analyze`** - CI will catch any issues
+- **Tests MUST not fail** - CI runs full test suite
+- **Code MUST build** - CI attempts APK build
+- **No syntax errors tolerated** - CI is stricter than local checks
+
+### Firewall Issue (Known Problem)
+If you see warnings about blocked URLs (storage.googleapis.com) in PR description:
+- This is expected - repository firewall blocks some downloads
+- Does NOT indicate a problem with your implementation
+- Flutter SDK is pre-installed before firewall activates
+- `flutter analyze` can still run successfully
+
+---
+
 ## Common Issues & Prevention
 
 Based on previous Copilot implementations, avoid these common mistakes:
@@ -22,6 +49,8 @@ Based on previous Copilot implementations, avoid these common mistakes:
 **Solution**: Configure [Actions setup steps](https://gh.io/copilot/actions-setup-steps) in repository settings to pre-install Flutter before the firewall activates.
 
 **How to detect**: Look for warnings in PR description about blocked URLs (storage.googleapis.com).
+
+**Status**: ✅ Already configured - firewall warnings are expected and harmless
 
 ### ❌ Issue: Empty "Initial plan" Commits
 
@@ -62,6 +91,17 @@ Based on previous Copilot implementations, avoid these common mistakes:
 - Keep commit count minimal - ideally ONE commit per issue
 ```
 
+### ❌ Issue: Breaking Existing Tests
+
+**Problem**: Changes break existing tests, causing CI to fail
+
+**Prevention**: Add this to instructions:
+```markdown
+- Run `flutter test` locally before committing
+- CI will run ALL tests - ensure none break
+- If tests need updates, include test changes in your commit
+```
+
 ---
 
 ## Generic Template
@@ -82,12 +122,20 @@ REQUIRED STEPS:
 2. Analyze relevant code in {primary-file-path}
 3. Plan your implementation approach (small, focused changes)
 4. Implement the solution following existing patterns
-5. VALIDATE: Run `flutter analyze` (must pass with no errors)
+5. VALIDATE LOCALLY: 
+   - Run `flutter analyze` (MUST pass - CI will check)
+   - Run `flutter test` (MUST pass - CI will check)
+   - Verify `flutter build apk --debug` succeeds
 6. Create ONE commit with proper format
+
+CI/CD AWARENESS:
+- Your PR will automatically trigger GitHub Actions workflow
+- CI runs: flutter analyze, flutter test, flutter build apk --debug
+- ALL checks MUST pass for PR to be merged
+- Fix any CI failures before requesting review
 
 CRITICAL NOTES:
 - Follow existing code patterns and conventions
-- Use `flutter analyze` for validation (required before commit)
 - If user-facing strings are added: update lib/l10n/app_en.arb and app_pt.arb, then run `flutter gen-l10n`
 - Keep changes minimal and focused on the issue requirements
 - Test that your changes don't break existing functionality
@@ -118,8 +166,16 @@ REQUIRED STEPS:
 3. Identify existing UI patterns and widgets to reuse
 4. Plan minimal UI changes (avoid over-engineering)
 5. Implement following Material Design and existing patterns
-6. VALIDATE: Run `flutter analyze` (must pass with no errors)
+6. VALIDATE LOCALLY:
+   - Run `flutter analyze` (MUST pass - CI will check)
+   - Run `flutter test` (MUST pass - CI will check)
+   - Verify `flutter build apk --debug` succeeds
 7. Create ONE commit with proper format
+
+CI/CD AWARENESS:
+- Your PR will automatically trigger GitHub Actions workflow
+- CI runs: flutter analyze, flutter test, flutter build apk --debug
+- ALL checks MUST pass for PR to be merged
 
 CRITICAL NOTES:
 - Follow existing UI patterns in the screen
@@ -127,7 +183,6 @@ CRITICAL NOTES:
 - Test on narrow screens (360px width) - use MediaQuery for responsive layouts
 - Add overflow protection: TextOverflow.ellipsis, maxLines, Expanded/Flexible
 - If text is added: update lib/l10n/app_en.arb and app_pt.arb, then run `flutter gen-l10n`
-- Use `flutter analyze` for validation (required before commit)
 - Make ONLY ONE commit - do NOT create separate "Initial plan" or "docs" commits
 - NEVER manually edit files marked "Generated file. Do not edit."
 
@@ -154,15 +209,23 @@ REQUIRED STEPS:
 3. Reproduce the issue conditions (if possible)
 4. Identify root cause (don't just treat symptoms)
 5. Implement minimal fix following existing patterns
-6. VALIDATE: Run `flutter analyze` (must pass with no errors)
+6. VALIDATE LOCALLY:
+   - Run `flutter analyze` (MUST pass - CI will check)
+   - Run `flutter test` (MUST pass - CI will check)
+   - Run affected tests specifically to verify fix
+   - Verify `flutter build apk --debug` succeeds
 7. Test that fix resolves the issue without breaking other features
 8. Create ONE commit with proper format
+
+CI/CD AWARENESS:
+- Your PR will automatically trigger GitHub Actions workflow
+- Bug fix MUST NOT break existing tests
+- CI will catch any regressions in test suite
 
 CRITICAL NOTES:
 - Keep fix minimal - don't refactor unnecessarily
 - Test edge cases mentioned in the issue
 - If fix changes error handling, ensure proper exception types used
-- Use `flutter analyze` for validation (required before commit)
 - Verify test cases from issue acceptance criteria
 - Make ONLY ONE commit - do NOT create separate "Initial plan" or "docs" commits
 - NEVER manually edit files marked "Generated file. Do not edit."
@@ -192,16 +255,24 @@ REQUIRED STEPS:
    - Use DatabaseHelper for data operations
    - Follow existing error handling patterns
 4. Implement feature incrementally
-5. VALIDATE: Run `flutter analyze` (must pass with no errors)
+5. VALIDATE LOCALLY:
+   - Run `flutter analyze` (MUST pass - CI will check)
+   - Run `flutter test` (MUST pass - CI will check)
+   - Add tests for new functionality if needed
+   - Verify `flutter build apk --debug` succeeds
 6. Test feature with various inputs and edge cases
 7. Create ONE commit with proper format
+
+CI/CD AWARENESS:
+- Your PR will automatically trigger GitHub Actions workflow
+- New features should include tests (CI runs full test suite)
+- CI will verify code builds and analyzes cleanly
 
 CRITICAL NOTES:
 - Follow dependency injection pattern via ServiceProvider
 - Use proper error handling (NotFoundException, ValidationException, GastrobrainException)
 - Add user-facing strings to lib/l10n/app_en.arb and app_pt.arb, run `flutter gen-l10n`
 - Keep implementation focused - avoid scope creep
-- Use `flutter analyze` for validation (required before commit)
 - Document any new patterns or conventions introduced
 - Make ONLY ONE commit - do NOT create separate "Initial plan" or "docs" commits
 - NEVER manually edit files marked "Generated file. Do not edit."
@@ -231,57 +302,75 @@ Quick reference for choosing the right branch type:
 Include this checklist in your Copilot instruction for complex issues:
 
 ```markdown
-VALIDATION CHECKLIST:
-- [ ] `flutter analyze` passes with no errors
+LOCAL VALIDATION CHECKLIST:
+- [ ] `flutter analyze` passes with no errors (CI will check)
+- [ ] `flutter test` passes all tests (CI will check)
+- [ ] `flutter build apk --debug` succeeds (CI will check)
 - [ ] All acceptance criteria from issue are met
 - [ ] No hardcoded user-facing strings (all in .arb files)
 - [ ] Existing functionality not broken
 - [ ] Code follows existing patterns in the file
 - [ ] Commit message follows format: "{type}: description (#{issue-number})"
 - [ ] No unnecessary changes or scope creep
+
+CI/CD CHECKS (will run automatically on PR):
+- [ ] GitHub Actions workflow passes all steps
+- [ ] Flutter analyze check passes
+- [ ] Test suite check passes
+- [ ] Build APK check passes
 ```
 
 ---
 
-## Example: Issue #182
+## Example: Issue #179
 
-Here's a complete example for issue #182:
+Here's a complete example for issue #179 with CI/CD awareness:
 
 ```markdown
-Please implement issue #182 following our project workflow:
+Please implement issue #179 following our project workflow:
 
 WORKFLOW CONVENTIONS (see docs/ISSUE_WORKFLOW.md):
-- Branch: enhancement/182-create-new-ingredient-option
-- Commits: "enhancement: add create new ingredient option for low/medium matches (#182)"
+- Branch: enhancement/179-{short-description-from-issue}
+- Commits: "enhancement: brief description (#179)"
 - Read CLAUDE.md and docs/Gastrobrain-Codebase-Overview.md for architecture patterns
 
 REQUIRED STEPS:
-1. Read issue #182 completely - understand requirements and acceptance criteria
-2. Analyze relevant code in lib/screens/bulk_recipe_update_screen.dart (_buildIngredientRow method, around lines 1800-2000)
+1. Read issue #179 completely - understand all requirements and acceptance criteria
+2. Analyze relevant code files mentioned in the issue
 3. Plan your implementation approach (small, focused changes)
-4. Implement the solution: add "Create New Ingredient" button below match dropdown
-5. VALIDATE: Run `flutter analyze` (must pass with no errors)
-6. Create ONE commit with format above
+4. Implement the solution following existing patterns
+5. VALIDATE LOCALLY:
+   - Run `flutter analyze` (MUST pass - CI will check this)
+   - Run `flutter test` (MUST pass - CI will check this)
+   - Verify `flutter build apk --debug` succeeds (CI will check this)
+6. Create ONE commit with proper format
+
+CI/CD AWARENESS:
+- Your PR will automatically trigger GitHub Actions
+- CI runs: flutter analyze, flutter test --coverage, flutter build apk --debug
+- ALL checks MUST pass for PR to be merged
+- Firewall warnings about storage.googleapis.com are expected and harmless
 
 CRITICAL NOTES:
-- Follow existing code patterns for button styling (OutlinedButton.icon recommended per issue)
-- Use existing _showCreateIngredientDialog() method - don't recreate it
-- Keep changes minimal and focused on the issue requirements
-- Button should be visible when ingredient.matches.isNotEmpty
-- Place button below the existing match dropdown with appropriate spacing
-- Use `flutter analyze` for validation (required before commit)
+- Follow existing code patterns and conventions
+- Keep changes minimal and focused on issue #179 requirements
+- If user-facing strings are added: update lib/l10n/app_en.arb and app_pt.arb, then run `flutter gen-l10n`
+- Test that your changes don't break existing functionality
 - Make ONLY ONE commit - do NOT create separate "Initial plan" or "docs" commits
 - NEVER manually edit files marked "Generated file. Do not edit."
+- Commit message MUST accurately describe what was changed
 
-VALIDATION CHECKLIST:
+LOCAL VALIDATION CHECKLIST:
 - [ ] `flutter analyze` passes with no errors
-- [ ] "Create New" button appears when matches exist
-- [ ] Button triggers _showCreateIngredientDialog() correctly
-- [ ] Works for all confidence levels (low, medium, high)
-- [ ] Doesn't break existing "no matches" scenario
-- [ ] Clear visual distinction between dropdown and button
+- [ ] `flutter test` passes all tests
+- [ ] `flutter build apk --debug` succeeds
+- [ ] All acceptance criteria from issue #179 are met
+- [ ] No hardcoded user-facing strings
+- [ ] Existing functionality not broken
+- [ ] Code follows existing patterns
+- [ ] Commit message follows format
 
-Review acceptance criteria in issue #182 before considering the work complete.
+Review all acceptance criteria in issue #179 before considering the work complete.
 ```
 
 ---
@@ -289,12 +378,13 @@ Review acceptance criteria in issue #182 before considering the work complete.
 ## Tips for Success
 
 1. **Be Specific**: Include exact file paths and approximate line numbers when known
-2. **Emphasize Validation**: Always require `flutter analyze` to pass
-3. **Reference Documentation**: Point to CLAUDE.md, ISSUE_WORKFLOW.md, and Gastrobrain-Codebase-Overview.md
-4. **Focus on Requirements**: Keep instructions focused on what TO do rather than restrictions
-5. **Review Acceptance Criteria**: Always remind Copilot to check issue acceptance criteria
-6. **Monitor Progress**: Check that Copilot shows a plan before implementing
-7. **Verify Output**: Review commits to ensure format compliance
+2. **Emphasize CI/CD**: Always remind that checks will run automatically
+3. **Require Local Validation**: Copilot should run all CI checks locally first
+4. **Reference Documentation**: Point to CLAUDE.md, ISSUE_WORKFLOW.md, and Gastrobrain-Codebase-Overview.md
+5. **Focus on Requirements**: Keep instructions focused on what TO do rather than restrictions
+6. **Review Acceptance Criteria**: Always remind Copilot to check issue acceptance criteria
+7. **Monitor Progress**: Check that Copilot shows a plan before implementing
+8. **Verify Output**: Review commits to ensure format compliance
 
 ---
 
@@ -309,30 +399,70 @@ After Copilot completes the work, verify:
 4. All acceptance criteria are met
 5. Code follows existing patterns and conventions
 
-### ✅ Validation
-6. `flutter analyze` was run and passed (check PR description for firewall warnings)
-7. No hardcoded user-facing strings (all in .arb files)
-8. Localization files regenerated if .arb files were modified
+### ✅ Local Validation
+6. `flutter analyze` was run and passed
+7. `flutter test` was run and passed
+8. No hardcoded user-facing strings (all in .arb files)
+9. Localization files regenerated if .arb files were modified
+
+### ✅ CI/CD Checks
+10. **GitHub Actions workflow completed successfully**
+11. **Flutter analyze step passed** (green checkmark)
+12. **Test suite step passed** (green checkmark)
+13. **Build APK step passed** (green checkmark)
+14. Check PR for firewall warnings (expected, not a problem)
 
 ### ✅ Commit Hygiene
-9. **ONLY ONE meaningful commit** (not counting merge commits)
-10. **NO "Initial plan" empty commits**
-11. **NO unnecessary "docs" commits after implementation**
-12. Commit type prefix matches the actual changes
+15. **ONLY ONE meaningful commit** (not counting merge commits)
+16. **NO "Initial plan" empty commits**
+17. **NO unnecessary "docs" commits after implementation**
+18. Commit type prefix matches the actual changes
 
 ### ✅ Generated Files
-13. **NO manual edits to generated files**:
+19. **NO manual edits to generated files**:
     - `macos/Flutter/GeneratedPluginRegistrant.swift`
     - `lib/l10n/app_localizations*.dart` (unless via `flutter gen-l10n`)
     - Files marked "Generated file. Do not edit."
-14. Only generated files from official Flutter commands should be committed
+20. Only generated files from official Flutter commands should be committed
 
 ### ✅ Common Issues
-15. Check PR description for firewall warnings about blocked URLs
-16. No unrelated file changes (e.g., IDE config, build artifacts)
-17. No scope creep - implementation matches issue requirements
+21. No unrelated file changes (e.g., IDE config, build artifacts)
+22. No scope creep - implementation matches issue requirements
+23. CI passed without requiring fixes
+
+### 🔴 If CI Fails
+- Review the failed step in GitHub Actions logs
+- Copilot must fix issues and push updates
+- Do NOT merge until all CI checks are green
 
 If any checks fail, provide feedback to Copilot and request corrections before merging.
+
+---
+
+## Understanding CI Failures
+
+Common CI failure scenarios and how to address them:
+
+### Flutter Analyze Failures
+**Symptom**: `flutter analyze` step fails with errors
+**Causes**: Syntax errors, unused imports, type mismatches
+**Fix**: Review analyze output in CI logs, fix locally, push update
+
+### Test Failures
+**Symptom**: `flutter test` step fails
+**Causes**: Broken tests, new code breaks existing functionality
+**Fix**: Run tests locally, identify broken tests, fix and push update
+
+### Build Failures
+**Symptom**: `flutter build apk --debug` step fails
+**Causes**: Missing dependencies, compilation errors
+**Fix**: Try building locally, resolve dependency/compilation issues
+
+### Firewall Warnings
+**Symptom**: PR description shows blocked URLs (storage.googleapis.com)
+**Status**: **This is NORMAL** - not a failure
+**Reason**: Flutter SDK is pre-installed before firewall activates
+**Action**: Ignore these warnings
 
 ---
 
@@ -344,5 +474,6 @@ As you learn what works best with GitHub Copilot:
 2. **Add common pitfalls** to the CRITICAL NOTES sections
 3. **Refine templates** based on Copilot's typical mistakes
 4. **Share improvements** with the team
+5. **Update CI/CD section** if workflow changes
 
 This is a living document - improve it based on experience!
