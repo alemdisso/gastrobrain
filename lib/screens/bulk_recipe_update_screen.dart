@@ -1447,10 +1447,13 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const Spacer(),
-                  Text(
-                    '${_instructionsController.text.length} characters',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  Flexible(
+                    child: Text(
+                      '${_instructionsController.text.length} characters',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
