@@ -1584,7 +1584,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                     },
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
 
                 // Unit field
                 SizedBox(
@@ -1602,7 +1602,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                     },
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
 
                 // Name field
                 Expanded(
@@ -1619,11 +1619,16 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                     },
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
 
                 // Remove button
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.grey, size: 20),
+                  padding: const EdgeInsets.all(8),
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
                   onPressed: () => _removeIngredientAt(index),
                   tooltip: 'Remove',
                 ),
