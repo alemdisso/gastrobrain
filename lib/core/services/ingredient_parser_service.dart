@@ -1,6 +1,5 @@
 import '../../l10n/app_localizations.dart';
 import '../../models/measurement_unit.dart';
-import '../../models/ingredient.dart';
 import '../../models/ingredient_match.dart';
 import 'ingredient_matching_service.dart';
 

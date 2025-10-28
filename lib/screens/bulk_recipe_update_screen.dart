@@ -406,8 +406,11 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       IngredientMatch? newSelectedMatch = selectedMatch ?? ingredient.selectedMatch;
 
       if (name != null && name != ingredient.name) {
-        matches = _findMatchesForName(name);
-        newSelectedMatch = _getAutoSelectedMatch(matches);
+        matches = _isMatchingServiceReady ? _matchingService.findMatches(name) : [];
+        newSelectedMatch = _isMatchingServiceReady && matches.isNotEmpty &&
+            (_matchingService.shouldAutoSelect(matches) || matches.length == 1)
+            ? matches.first
+            : null;
       }
 
       // If selectedMatch is explicitly provided (user picked from dropdown), use it

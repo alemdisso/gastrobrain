@@ -46,7 +46,7 @@ void main() {
         Ingredient(
           id: '5',
           name: 'azeite',
-          category: IngredientCategory.fat,
+          category: IngredientCategory.oil,
           unit: MeasurementUnit.tablespoon,
         ),
         Ingredient(
