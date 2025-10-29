@@ -277,6 +277,48 @@ class _ToolsScreenState extends State<ToolsScreen> {
             ),
             const SizedBox(height: 32),
 
+            // Bulk Recipe Update Section
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.edit_note,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Bulk Recipe Update',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Update existing recipes with ingredient data and cooking instructions. Efficiently add missing details to recipes.',
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.of(context).pushNamed('/bulk-recipe-update');
+                        },
+                        icon: const Icon(Icons.edit_outlined),
+                        label: const Text('Open Bulk Update'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
             // Recipe Export Section
             Card(
               child: Padding(
@@ -451,48 +493,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
                         label: Text(_isTranslatingIngredients
                             ? 'Translating...'
                             : 'Translate to Portuguese'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Bulk Recipe Update Section
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.edit_note,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Bulk Recipe Update',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Update existing recipes with ingredient data and cooking instructions. Efficiently add missing details to recipes.',
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.of(context).pushNamed('/bulk-recipe-update');
-                        },
-                        icon: const Icon(Icons.edit_outlined),
-                        label: const Text('Open Bulk Update'),
                       ),
                     ),
                   ],

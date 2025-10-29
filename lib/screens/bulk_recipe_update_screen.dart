@@ -115,6 +115,9 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         }
       }
 
+      // Sort recipes alphabetically by name for easier selection
+      recipesNeedingUpdate.sort((a, b) => a.name.compareTo(b.name));
+
       // Try to find the previously selected recipe in the updated list
       Recipe? recipeToSelect;
       int? indexToSelect;
@@ -418,14 +421,17 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         newSelectedMatch = selectedMatch;
       }
 
-      // If we have a selected match, use the matched ingredient's name
+      // If we have a selected match, use the matched ingredient's name for display
       // This ensures the field shows "alho-poró" instead of "alho porro"
+      // But preserve the original parsed name for creating new ingredients
       final finalName = newSelectedMatch?.ingredient.name ?? (name ?? ingredient.name);
+      final finalOriginalName = name != null ? name : ingredient.originalName;
 
       _parsedIngredients[index] = _ParsedIngredient(
         quantity: quantity ?? ingredient.quantity,
         unit: unit ?? ingredient.unit,
         name: finalName,
+        originalName: finalOriginalName,
         notes: notes ?? ingredient.notes,
         category: category ?? newSelectedMatch?.ingredient.category ?? ingredient.category,
         matches: matches,
@@ -441,9 +447,10 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     final parsed = _parsedIngredients[index];
 
     // Pre-fill ingredient data from parsed values
+    // Use originalName (not name) to preserve the user's input, not the matched ingredient's name
     final prefilledIngredient = Ingredient(
       id: IdGenerator.generateId(),
-      name: parsed.name,
+      name: parsed.originalName,
       category: parsed.category,
       unit: null, // User can set in dialog
       notes: parsed.notes,
@@ -464,6 +471,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
           quantity: parsed.quantity,
           unit: parsed.unit,
           name: result.name, // Use the final name from dialog
+          originalName: parsed.originalName, // Preserve original parsed name
           category: result.category,
           notes: result.notes,
           matches: parsed.matches,
@@ -1210,10 +1218,12 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                   size: 20,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  'Current Ingredients (${_existingIngredients.length}) - Already in Recipe',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    'Current Ingredients (${_existingIngredients.length}) - Already in Recipe',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -1380,7 +1390,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                   child: ElevatedButton.icon(
                     onPressed: _parseIngredients,
                     icon: const Icon(Icons.auto_fix_high),
-                    label: const Text('Parse Ingredients'),
+                    label: const Text('Parse'),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -1908,6 +1918,7 @@ class _ParsedIngredient {
   double quantity;
   String? unit;
   String name;
+  String originalName; // Original parsed name (preserved even when match is selected)
   IngredientCategory category;
   String? notes; // Descriptors like "pequena", "maduro", "picado"
 
@@ -1923,10 +1934,11 @@ class _ParsedIngredient {
     required this.quantity,
     this.unit,
     required this.name,
+    String? originalName,
     required this.category,
     this.notes,
     this.matches = const [],
     this.selectedMatch,
     this.newIngredientToCreate,
-  });
+  }) : originalName = originalName ?? name;
 }
