@@ -46,7 +46,18 @@ Gastrobrain is a comprehensive meal planning and recipe management application b
 - **DatabaseQueries**: Optimized queries for recommendation data fetching
 - **ProteinPenaltyStrategy**: Sophisticated protein rotation with graduated scoring
 
-### Data Export & Translation Services
+### Ingredient Management Services
+- **IngredientMatchingService**: Multi-stage ingredient matching with confidence scoring
+  - 6-stage matching pipeline: exact → case-insensitive → normalized → prefix → fuzzy → translation
+  - Plural form singularization for Portuguese and English
+  - Handles 23+ irregular plurals (ovos→ovo, tomatoes→tomato, knives→knife)
+  - Pattern-based singularization:
+    - Portuguese: -ões/-ães/-ãos→-ão, -ns→-m, -is→-l, -res→-r, -zes→-z, regular -s
+    - English: -ies→-y, -ves→-f/-fe, -oes→-o, -es (after sibilants), regular -s
+  - Compound word support (batatas doces → batata doce)
+  - Smart disambiguation (Portuguese -ões vs English -oes by consonant/vowel detection)
+  - Achieves 90%+ confidence for plural-to-singular matches
+  - First-letter indexing for performance optimization
 - **IngredientExportService**: Exports ingredient data to JSON format
 - **RecipeExportService**: Exports recipes with full ingredient data to JSON
 - **IngredientTranslationService**: Translates ingredients from English to Portuguese using reviewed translation data
@@ -162,6 +173,7 @@ The application maintains comprehensive test coverage with **55 unit/widget test
 - **Service Layer Tests**:
   - `meal_plan_analysis_service_test.dart`: Meal planning analysis
   - `ingredient_export_service_test.dart`: Data export functionality
+  - `ingredient_matching_service_test.dart`: Multi-stage matching with 91 tests including 28 plural form tests
 
 #### UI Component Testing
 - **Screen Tests** (`test/screens/`):
@@ -239,6 +251,114 @@ flutter test test/models/                 # Model tests
 - **User Experience Testing**: Complete user journeys validated through integration tests
 
 The testing infrastructure ensures code quality, prevents regressions, and validates both individual components and complete user workflows. The mock-based approach allows for fast, reliable test execution while integration tests verify real-world functionality.
+
+## Development Tools & Utilities
+
+### Bulk Recipe Update Screen (Temporary)
+A development utility screen located at `lib/screens/bulk_recipe_update_screen.dart` for bulk ingredient updates. This is a temporary tool that will eventually be deleted, but contains reusable parsing logic.
+
+**Current Status:** ~1,400 lines mixing UI, parsing, matching, and database operations
+
+**Planned Refactoring:** Extract reusable components while keeping temporary screen functional
+
+### Planned Component Extraction
+
+#### Phase 1: IngredientParserService (Priority: High)
+**Goal:** Create production-ready parsing infrastructure
+
+**New Service:** `lib/core/services/ingredient_parser_service.dart`
+- Parse raw ingredient strings into structured data
+- Context-aware parsing (handle "de" in Portuguese)
+- Use MeasurementUnit model instead of hardcoded mappings
+- Integration with IngredientMatchingService
+
+**API Design:**
+```dart
+class IngredientParserService {
+  void initialize(AppLocalizations localizations);
+  ParsedIngredientResult parseIngredientLine(String line);
+  (MeasurementUnit?, String) matchUnitAtStart(String text);
+}
+
+class ParsedIngredientResult {
+  final double quantity;
+  final MeasurementUnit? unit;
+  final String name;
+  final String? notes;
+  final List<IngredientMatch> matches;
+  final IngredientMatch? selectedMatch;
+}
+```
+
+**Benefits:**
+- Reusable in Add/Edit Recipe screens
+- Unit testable independently
+- Single source of truth for parsing rules
+- Eliminates hardcoded unit mappings
+
+#### Phase 2: ParsedIngredientRow Widget (Priority: Medium)
+**Goal:** Create reusable UI component with proper lifecycle
+
+**New Widget:** `lib/widgets/parsed_ingredient_row.dart`
+- Display and edit single parsed ingredient
+- Proper StatefulWidget with TextEditingController lifecycle
+- Fixes cursor jumping issues
+- Match selection and ingredient creation triggers
+
+**Benefits:**
+- Fixes TextEditingController anti-pattern
+- Fixes cursor jumping bugs
+- Reusable across ingredient editing features
+- Easier to test
+
+#### Phase 3: Bug Fixes (Priority: As Needed)
+**Temporary Screen Improvements:**
+- Fix overflow issues at lines 1460 and 1632
+- Add "Create New" option for low confidence matches
+- Implement full replace strategy on re-parse
+- Keep screen functional without over-engineering
+
+### Components to Keep in Temporary Screen
+These are specific to bulk update workflow and won't be extracted:
+- Recipe selection UI
+- Recipe metadata display (collapsible preview)
+- Existing ingredients display
+- Navigation controls (Previous/Next)
+- Session tracking for bulk updates
+
+### Refactoring Strategy
+**Philosophy:** Extract what will be reused, fix what's broken, keep temporary code "good enough"
+
+**Implementation Order:**
+1. Extract IngredientParserService (reusable, production-ready)
+2. Extract ParsedIngredientRow widget (optional, fixes bugs)
+3. Fix remaining screen-specific bugs (quick wins)
+
+**Success Metrics:**
+- IngredientParserService ready for production use
+- Parsing uses MeasurementUnit model (not hardcoded)
+- Context-aware parsing works correctly
+- Temporary screen reduced to <900 lines
+- Clear path to delete screen later without losing valuable code
+
+**Future Usage:**
+```dart
+// In Add/Edit Recipe screens:
+final parserService = IngredientParserService(
+  matchingService: matchingService,
+);
+parserService.initialize(localizations);
+
+final result = parserService.parseIngredientLine(userInput);
+
+// Use with extracted widget
+ParsedIngredientRow(
+  ingredient: result.toParsedIngredient(),
+  onUpdate: (index, {...}) => handleUpdate(),
+  onRemove: () => handleRemove(),
+  onCreateNew: () => showCreateDialog(),
+)
+```
 
 The application follows clean architecture principles with clear separation between data models, business logic, and presentation layers, making it extensible for future feature additions.
 
