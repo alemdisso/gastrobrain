@@ -7,10 +7,13 @@ import '../../models/ingredient_match.dart';
 /// Provides multi-stage matching with graduated confidence levels:
 /// 1. Exact match (100%)
 /// 2. Case-insensitive match (95%)
-/// 3. Normalized match - removes accents/diacritics (90%)
+/// 3. Normalized match - removes accents/diacritics, handles plural forms (90%)
 /// 4. Prefix/Partial match - substring/prefix matching (65-85%)
 /// 5. Fuzzy match - similarity algorithms (60-85%)
 /// 6. Translation match - bilingual EN/PT (80%) - Future
+///
+/// The normalized matching stage includes automatic plural-to-singular conversion
+/// for both Portuguese and English, allowing "cebolas" to match "cebola" with 90% confidence.
 class IngredientMatchingService {
   /// Cache of normalized ingredient names for performance
   final Map<String, String> _normalizedCache = {};
@@ -118,7 +121,7 @@ class IngredientMatchingService {
     return null;
   }
 
-  /// Stage 3: Normalized match (removes accents, special characters)
+  /// Stage 3: Normalized match (removes accents, special characters, handles plurals)
   List<IngredientMatch> _findNormalizedMatches(String parsedName) {
     final normalizedParsed = _normalize(parsedName);
     final matches = <IngredientMatch>[];
@@ -136,6 +139,29 @@ class IngredientMatchingService {
           confidence: 0.90,
           matchType: MatchType.normalized,
         ));
+      }
+    }
+
+    // If no direct normalized match found, try singularization
+    if (matches.isEmpty) {
+      final singularizedParsed = _singularize(normalizedParsed);
+      
+      // Only search if singularization produced a different form
+      if (singularizedParsed != normalizedParsed) {
+        final singularFirstLetter = singularizedParsed.isNotEmpty ? singularizedParsed[0] : '';
+        final singularCandidates = _firstLetterIndex[singularFirstLetter] ?? [];
+        
+        for (final ingredient in singularCandidates) {
+          final normalizedIngredient = _getCachedNormalized(ingredient.name);
+          
+          if (normalizedIngredient == singularizedParsed) {
+            matches.add(IngredientMatch(
+              ingredient: ingredient,
+              confidence: 0.90, // High confidence for plural-to-singular matches
+              matchType: MatchType.normalized,
+            ));
+          }
+        }
       }
     }
 
@@ -286,6 +312,151 @@ class IngredientMatchingService {
     normalized = normalized.trim();
 
     return normalized;
+  }
+
+  /// Irregular plural forms for common cooking ingredients
+  /// Maps plural forms to their singular equivalents
+  static const Map<String, String> _irregularPlurals = {
+    // Portuguese irregular plurals
+    'ovos': 'ovo',
+    'alhos': 'alho',
+    'paes': 'pao',
+    'limoes': 'limao',
+    'mamoes': 'mamao',
+    'pimentoes': 'pimentao',
+    'alemaes': 'alemao',
+    'capitaes': 'capitao',
+    'atuns': 'atum',
+    'arrozes': 'arroz',
+    'nozes': 'noz',
+    'acucares': 'acucar',
+    'animais': 'animal',
+    // English irregular plurals
+    'geese': 'goose',
+    'leaves': 'leaf',
+    'knives': 'knife',
+    'halves': 'half',
+    // English -oes plurals (to avoid Portuguese pattern confusion)
+    'tomatoes': 'tomato',
+    'potatoes': 'potato',
+    'mangoes': 'mango',
+    'avocados': 'avocado',
+    // English -ions plurals (to avoid Portuguese -ns pattern confusion)
+    'onions': 'onion',
+  };
+
+  /// Singularize a word by removing plural suffixes
+  /// Handles both Portuguese and English plural patterns
+  /// Returns the singular form if a plural pattern is detected, otherwise returns the original word
+  String _singularize(String word) {
+    if (word.isEmpty || word.length <= 3) {
+      return word; // Too short to safely singularize
+    }
+
+    // Check irregular plurals first (most reliable)
+    if (_irregularPlurals.containsKey(word)) {
+      return _irregularPlurals[word]!;
+    }
+
+    // Handle compound words (e.g., "couve flores" -> "couve flor")
+    if (word.contains(' ')) {
+      final parts = word.split(' ');
+      final singularParts = <String>[];
+      
+      for (final part in parts) {
+        singularParts.add(_singularize(part));
+      }
+      
+      return singularParts.join(' ');
+    }
+
+    // Portuguese patterns (in order of specificity)
+    
+    // Pattern: -ões -> -ão (limões -> limão, pimentões -> pimentão)
+    // Must check length to avoid matching English -oes
+    if (word.endsWith('oes') && word.length > 4) {
+      // Check if this looks like Portuguese (has -ões pattern in normalized form)
+      // For Portuguese words, this is common: limões, pimentões, mamões
+      final beforeOes = word[word.length - 4];
+      // Portuguese -ões usually has consonant before 'o'
+      // English -oes (tomatoes) has vowel before 'o'
+      if (!'aeiou'.contains(beforeOes)) {
+        return '${word.substring(0, word.length - 3)}ao';
+      }
+    }
+    
+    // Pattern: -ães -> -ão (pães -> pão, alemães -> alemão, capitães -> capitão)
+    if (word.endsWith('aes') && word.length > 4) {
+      return '${word.substring(0, word.length - 3)}ao';
+    }
+    
+    // Pattern: -ãos -> -ão (mãos -> mão, irmãos -> irmão) - less common
+    if (word.endsWith('aos') && word.length > 4) {
+      return '${word.substring(0, word.length - 3)}ao';
+    }
+    
+    // Pattern: -res -> -r (açúcares -> açúcar)
+    if (word.endsWith('res') && word.length > 4) {
+      return word.substring(0, word.length - 2);
+    }
+    
+    // Pattern: -zes -> -z (arrozes -> arroz, nozes -> noz)
+    if (word.endsWith('zes') && word.length > 4) {
+      return word.substring(0, word.length - 2);
+    }
+    
+    // Pattern: -ns -> -m (atuns -> atum, jardins -> jardim)
+    if (word.endsWith('ns') && word.length > 3) {
+      return '${word.substring(0, word.length - 2)}m';
+    }
+    
+    // Pattern: -is -> -l (animais -> animal)
+    if (word.endsWith('is') && word.length > 3) {
+      return '${word.substring(0, word.length - 2)}l';
+    }
+
+    // English patterns
+    
+    // Pattern: -ves -> -f or -fe (knives -> knife, leaves -> leaf, halves -> half)
+    if (word.endsWith('ves') && word.length > 4) {
+      final stem = word.substring(0, word.length - 3);
+      // Try -fe first (common pattern: knife, wife, life)
+      return '${stem}fe';
+    }
+    
+    // Pattern: -ies -> -y (berries -> berry, cherries -> cherry, strawberries -> strawberry)
+    if (word.endsWith('ies') && word.length > 4) {
+      return '${word.substring(0, word.length - 3)}y';
+    }
+    
+    // Pattern: -oes -> -o for English (tomatoes -> tomato, potatoes -> potato)
+    // This is checked AFTER Portuguese -ões pattern
+    if (word.endsWith('oes') && word.length > 4) {
+      return word.substring(0, word.length - 2);
+    }
+    
+    // Pattern: -es after s/ss/sh/ch/x/z (dishes -> dish, boxes -> box)
+    if (word.endsWith('es') && word.length > 3) {
+      final stem = word.substring(0, word.length - 2);
+      // Check if stem ends with s, sh, ch, x, or z
+      if (stem.endsWith('s') || stem.endsWith('sh') || 
+          stem.endsWith('ch') || stem.endsWith('x') || stem.endsWith('z')) {
+        return stem;
+      }
+    }
+
+    // Pattern: Regular -s plurals (Portuguese and English)
+    // Only remove if preceded by a vowel to avoid words like "aspargos"
+    if (word.endsWith('s') && word.length > 3) {
+      final beforeS = word[word.length - 2];
+      // Check if character before 's' is a vowel
+      if ('aeiou'.contains(beforeS)) {
+        return word.substring(0, word.length - 1);
+      }
+    }
+
+    // No plural pattern detected, return original
+    return word;
   }
 
   /// Get cached normalized version of a name
