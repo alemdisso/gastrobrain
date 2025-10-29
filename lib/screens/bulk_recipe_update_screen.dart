@@ -34,7 +34,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   bool _isMetadataExpanded = false;
 
   // Ingredient parsing state
-  final TextEditingController _rawIngredientsController = TextEditingController();
+  final TextEditingController _rawIngredientsController =
+      TextEditingController();
   List<_ParsedIngredient> _parsedIngredients = [];
   int _parseGeneration = 0; // Increments on re-parse to force field recreation
   bool _isSaving = false;
@@ -51,7 +52,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   bool _isLoadingIngredients = false;
 
   // Ingredient matching service
-  final IngredientMatchingService _matchingService = IngredientMatchingService();
+  final IngredientMatchingService _matchingService =
+      IngredientMatchingService();
   bool _isMatchingServiceReady = false;
 
   // Ingredient parser service
@@ -93,7 +95,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
 
   /// Load recipes that need ingredient data (have less than 3 ingredients)
   /// If [preserveCurrentRecipe] is true, tries to keep the current recipe selected
-  Future<void> _loadRecipesNeedingIngredients({bool preserveCurrentRecipe = false}) async {
+  Future<void> _loadRecipesNeedingIngredients(
+      {bool preserveCurrentRecipe = false}) async {
     // Remember current recipe ID if we want to preserve selection
     final currentRecipeId = preserveCurrentRecipe ? _selectedRecipe?.id : null;
 
@@ -116,7 +119,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       }
 
       // Sort recipes alphabetically by name for easier selection
-      recipesNeedingUpdate.sort((a, b) => a.name.compareTo(b.name));
+      recipesNeedingUpdate
+          .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
       // Try to find the previously selected recipe in the updated list
       Recipe? recipeToSelect;
@@ -124,7 +128,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
 
       if (currentRecipeId != null) {
         // Try to find the current recipe in the new list
-        final index = recipesNeedingUpdate.indexWhere((r) => r.id == currentRecipeId);
+        final index =
+            recipesNeedingUpdate.indexWhere((r) => r.id == currentRecipeId);
         if (index >= 0) {
           recipeToSelect = recipesNeedingUpdate[index];
           indexToSelect = index;
@@ -148,11 +153,13 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       final selectedRecipe = recipeToSelect;
       if (selectedRecipe != null) {
         try {
-          final existingIngredients = await dbHelper.getRecipeIngredients(selectedRecipe.id);
+          final existingIngredients =
+              await dbHelper.getRecipeIngredients(selectedRecipe.id);
           setState(() {
             _existingIngredients = existingIngredients;
             _instructionsController.text = selectedRecipe.instructions;
-            _hasUnsavedChanges = false; // Reset unsaved changes when loading recipe (will be used in Phase 4)
+            _hasUnsavedChanges =
+                false; // Reset unsaved changes when loading recipe (will be used in Phase 4)
           });
         } catch (e) {
           setState(() {
@@ -180,7 +187,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       setState(() {
         _isMatchingServiceReady = true;
       });
-      
+
       // Initialize parser service now that matching service is ready
       // (only if we have localizations context available)
       if (mounted) {
@@ -216,7 +223,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     // Load existing recipe ingredients and instructions
     try {
       final dbHelper = ServiceProvider.database.dbHelper;
-      final existingIngredients = await dbHelper.getRecipeIngredients(recipe.id);
+      final existingIngredients =
+          await dbHelper.getRecipeIngredients(recipe.id);
 
       setState(() {
         _existingIngredients = existingIngredients;
@@ -248,7 +256,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     // Load existing recipe ingredients and instructions
     try {
       final dbHelper = ServiceProvider.database.dbHelper;
-      final existingIngredients = await dbHelper.getRecipeIngredients(newRecipe.id);
+      final existingIngredients =
+          await dbHelper.getRecipeIngredients(newRecipe.id);
 
       setState(() {
         _existingIngredients = existingIngredients;
@@ -283,7 +292,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     // Load existing recipe ingredients and instructions
     try {
       final dbHelper = ServiceProvider.database.dbHelper;
-      final existingIngredients = await dbHelper.getRecipeIngredients(newRecipe.id);
+      final existingIngredients =
+          await dbHelper.getRecipeIngredients(newRecipe.id);
 
       setState(() {
         _existingIngredients = existingIngredients;
@@ -354,10 +364,11 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     }
 
     final result = _parserService.parseIngredientLine(line);
-    
+
     // Convert parser result to _ParsedIngredient format
-    final selectedMatch = result.matches.isNotEmpty ? result.matches.first : null;
-    
+    final selectedMatch =
+        result.matches.isNotEmpty ? result.matches.first : null;
+
     return _ParsedIngredient(
       quantity: result.quantity,
       unit: result.unit,
@@ -391,7 +402,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   }
 
   /// Update ingredient at index
-  void _updateIngredient(int index, {
+  void _updateIngredient(
+    int index, {
     double? quantity,
     String? unit,
     String? name,
@@ -406,12 +418,16 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
 
       // If name changed, re-run matching
       List<IngredientMatch> matches = ingredient.matches;
-      IngredientMatch? newSelectedMatch = selectedMatch ?? ingredient.selectedMatch;
+      IngredientMatch? newSelectedMatch =
+          selectedMatch ?? ingredient.selectedMatch;
 
       if (name != null && name != ingredient.name) {
-        matches = _isMatchingServiceReady ? _matchingService.findMatches(name) : [];
-        newSelectedMatch = _isMatchingServiceReady && matches.isNotEmpty &&
-            (_matchingService.shouldAutoSelect(matches) || matches.length == 1)
+        matches =
+            _isMatchingServiceReady ? _matchingService.findMatches(name) : [];
+        newSelectedMatch = _isMatchingServiceReady &&
+                matches.isNotEmpty &&
+                (_matchingService.shouldAutoSelect(matches) ||
+                    matches.length == 1)
             ? matches.first
             : null;
       }
@@ -424,7 +440,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       // If we have a selected match, use the matched ingredient's name for display
       // This ensures the field shows "alho-poró" instead of "alho porro"
       // But preserve the original parsed name for creating new ingredients
-      final finalName = newSelectedMatch?.ingredient.name ?? (name ?? ingredient.name);
+      final finalName =
+          newSelectedMatch?.ingredient.name ?? (name ?? ingredient.name);
       final finalOriginalName = name != null ? name : ingredient.originalName;
 
       _parsedIngredients[index] = _ParsedIngredient(
@@ -433,7 +450,9 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         name: finalName,
         originalName: finalOriginalName,
         notes: notes ?? ingredient.notes,
-        category: category ?? newSelectedMatch?.ingredient.category ?? ingredient.category,
+        category: category ??
+            newSelectedMatch?.ingredient.category ??
+            ingredient.category,
         matches: matches,
         selectedMatch: newSelectedMatch,
       );
@@ -491,7 +510,10 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         .where((p) => p.name.trim().isNotEmpty && p.isNewIngredient)
         .toList();
     final unresolvedIngredients = _parsedIngredients
-        .where((p) => p.name.trim().isNotEmpty && !p.isNewIngredient && p.selectedMatch == null)
+        .where((p) =>
+            p.name.trim().isNotEmpty &&
+            !p.isNewIngredient &&
+            p.selectedMatch == null)
         .toList();
 
     // Validate: all ingredients must be either matched or marked as new
@@ -530,7 +552,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       }
 
       // Step 2: Load current recipe ingredients to check for duplicates
-      final existingIngredients = await dbHelper.getRecipeIngredients(_selectedRecipe!.id);
+      final existingIngredients =
+          await dbHelper.getRecipeIngredients(_selectedRecipe!.id);
 
       // Build map of existing ingredient_id -> recipe_ingredient data
       final existingByIngredientId = <String, Map<String, dynamic>>{};
@@ -634,7 +657,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         });
 
         // Reload existing ingredients to show updated state
-        final refreshedIngredients = await dbHelper.getRecipeIngredients(_selectedRecipe!.id);
+        final refreshedIngredients =
+            await dbHelper.getRecipeIngredients(_selectedRecipe!.id);
         setState(() {
           _existingIngredients = refreshedIngredients;
         });
@@ -707,7 +731,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     // Load the next recipe's data
     try {
       final dbHelper = ServiceProvider.database.dbHelper;
-      final existingIngredients = await dbHelper.getRecipeIngredients(newRecipe.id);
+      final existingIngredients =
+          await dbHelper.getRecipeIngredients(newRecipe.id);
 
       setState(() {
         _existingIngredients = existingIngredients;
@@ -792,37 +817,38 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         }
       },
       child: Scaffold(
-      appBar: AppBar(
-        title: const Text('Bulk Recipe Update'),
-        actions: [
-          // Progress indicator in app bar
-          if (_recipesNeedingIngredients.isNotEmpty)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      'Recipe ${(_selectedRecipeIndex ?? 0) + 1} of ${_recipesNeedingIngredients.length}',
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    if (_recipesUpdatedInSession > 0)
+        appBar: AppBar(
+          title: const Text('Bulk Recipe Update'),
+          actions: [
+            // Progress indicator in app bar
+            if (_recipesNeedingIngredients.isNotEmpty)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
                       Text(
-                        '$_recipesUpdatedInSession updated',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.green,
-                          fontWeight: FontWeight.w500,
-                        ),
+                        'Recipe ${(_selectedRecipeIndex ?? 0) + 1} of ${_recipesNeedingIngredients.length}',
+                        style: Theme.of(context).textTheme.titleSmall,
                       ),
-                  ],
+                      if (_recipesUpdatedInSession > 0)
+                        Text(
+                          '$_recipesUpdatedInSession updated',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-        ],
-      ),
-      body: _buildBody(context, localizations),
+          ],
+        ),
+        body: _buildBody(context, localizations),
       ),
     );
   }
@@ -904,8 +930,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
           // Existing Ingredients Display (Read-only)
           if (_selectedRecipe != null)
             _buildExistingIngredientsDisplay(context),
-          if (_selectedRecipe != null)
-            const SizedBox(height: 24),
+          if (_selectedRecipe != null) const SizedBox(height: 24),
 
           // Placeholder for Ingredients (Issue #162)
           _buildIngredientsPlaceholder(context),
@@ -1047,9 +1072,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                           ? Icons.expand_less
                           : Icons.expand_more,
                     ),
-                    tooltip: _isMetadataExpanded
-                        ? 'Hide details'
-                        : 'Show details',
+                    tooltip:
+                        _isMetadataExpanded ? 'Hide details' : 'Show details',
                     onPressed: () {
                       setState(() {
                         _isMetadataExpanded = !_isMetadataExpanded;
@@ -1091,8 +1115,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                       if (recipe.rating > 0)
                         Chip(
                           avatar: const Icon(Icons.star, size: 18),
-                          label:
-                              Text('${localizations.rating}: ${recipe.rating}/5'),
+                          label: Text(
+                              '${localizations.rating}: ${recipe.rating}/5'),
                           backgroundColor: Colors.amber.withValues(alpha: 0.3),
                         ),
                     ],
@@ -1103,7 +1127,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                   Row(
                     children: [
                       Icon(Icons.schedule,
-                          size: 18, color: Theme.of(context).colorScheme.primary),
+                          size: 18,
+                          color: Theme.of(context).colorScheme.primary),
                       const SizedBox(width: 8),
                       Text(
                         'Prep: ${recipe.prepTimeMinutes}m  •  Cook: ${recipe.cookTimeMinutes}m',
@@ -1192,8 +1217,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                 child: Text(
                   'No ingredients yet. Add ingredients below to get started.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                 ),
               ),
             ],
@@ -1222,8 +1247,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                   child: Text(
                     'Current Ingredients (${_existingIngredients.length}) - Already in Recipe',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                 ),
               ],
@@ -1246,7 +1271,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                   final name = ingredientMap['name'] as String? ?? 'Unknown';
                   final quantity = ingredientMap['quantity'] as double? ?? 0.0;
                   final unit = ingredientMap['unit'] as String?;
-                  final category = ingredientMap['category'] as String? ?? 'other';
+                  final category =
+                      ingredientMap['category'] as String? ?? 'other';
 
                   // Format quantity display
                   final quantityStr = formatQuantity(quantity);
@@ -1324,13 +1350,21 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   /// Build summary text showing existing and new ingredient counts
   String _buildIngredientSummary() {
     final existingCount = _existingIngredients.length;
-    final newCount = _parsedIngredients.where((p) => p.selectedMatch != null || p.isNewIngredient).length;
-    final unmatchedCount = _parsedIngredients.where((p) => p.name.trim().isNotEmpty && p.selectedMatch == null && !p.isNewIngredient).length;
+    final newCount = _parsedIngredients
+        .where((p) => p.selectedMatch != null || p.isNewIngredient)
+        .length;
+    final unmatchedCount = _parsedIngredients
+        .where((p) =>
+            p.name.trim().isNotEmpty &&
+            p.selectedMatch == null &&
+            !p.isNewIngredient)
+        .length;
 
     final parts = <String>[];
 
     if (existingCount > 0) {
-      parts.add('$existingCount existing ingredient${existingCount != 1 ? "s" : ""}');
+      parts.add(
+          '$existingCount existing ingredient${existingCount != 1 ? "s" : ""}');
     }
 
     if (newCount > 0) {
@@ -1359,7 +1393,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
             // Header
             Row(
               children: [
-                Icon(Icons.list_alt, color: Theme.of(context).colorScheme.primary),
+                Icon(Icons.list_alt,
+                    color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 8),
                 Text(
                   'Ingredients',
@@ -1377,7 +1412,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                 labelText: 'Paste ingredient list (one per line)',
                 hintText: '200g flour\n2 cups milk\n3 eggs\nSalt to taste',
                 border: OutlineInputBorder(),
-                helperText: 'Click "Parse Ingredients" button when ready. Supports PT/EN formats.',
+                helperText:
+                    'Click "Parse Ingredients" button when ready. Supports PT/EN formats.',
                 helperMaxLines: 2,
               ),
             ),
@@ -1433,7 +1469,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                    const Icon(Icons.info_outline,
+                        color: Colors.blue, size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -1454,7 +1491,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Icon(Icons.description, color: Theme.of(context).colorScheme.primary),
+                  Icon(Icons.description,
+                      color: Theme.of(context).colorScheme.primary),
                   const SizedBox(width: 8),
                   Text(
                     'Instructions',
@@ -1465,8 +1503,9 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                     child: Text(
                       '${_instructionsController.text.length} characters',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -1477,7 +1516,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                 controller: _instructionsController,
                 maxLines: 12,
                 decoration: const InputDecoration(
-                  hintText: 'Enter cooking instructions here...\n\nExample:\n1. Preheat oven to 180°C\n2. Mix ingredients...',
+                  hintText:
+                      'Enter cooking instructions here...\n\nExample:\n1. Preheat oven to 180°C\n2. Mix ingredients...',
                   border: OutlineInputBorder(),
                   contentPadding: EdgeInsets.all(12),
                 ),
@@ -1527,7 +1567,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   }
 
   /// Build a single ingredient row for editing
-  Widget _buildIngredientRow(BuildContext context, int index, _ParsedIngredient ingredient) {
+  Widget _buildIngredientRow(
+      BuildContext context, int index, _ParsedIngredient ingredient) {
     // Determine match status colors
     Color matchColor = Colors.grey;
     IconData matchIcon = Icons.help_outline;
@@ -1561,7 +1602,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       final bestMatch = ingredient.matches.first;
       matchColor = _getMatchColor(bestMatch.confidenceLevel);
       matchIcon = _getMatchIcon(bestMatch.confidenceLevel);
-      matchText = '${ingredient.matches.length} match${ingredient.matches.length > 1 ? "es" : ""} found - select one';
+      matchText =
+          '${ingredient.matches.length} match${ingredient.matches.length > 1 ? "es" : ""} found - select one';
     } else {
       // No matches and not resolved yet - needs action
       matchColor = Colors.red;
@@ -1588,9 +1630,11 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                     decoration: const InputDecoration(
                       labelText: 'Qty',
                       border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     ),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
                     initialValue: formatQuantity(ingredient.quantity),
                     onChanged: (value) {
                       final qty = double.tryParse(value) ?? 0.0;
@@ -1608,11 +1652,13 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                     decoration: const InputDecoration(
                       labelText: 'Unit',
                       border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     ),
                     initialValue: ingredient.unit ?? '',
                     onChanged: (value) {
-                      _updateIngredient(index, unit: value.isEmpty ? null : value);
+                      _updateIngredient(index,
+                          unit: value.isEmpty ? null : value);
                     },
                   ),
                 ),
@@ -1625,7 +1671,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                     decoration: const InputDecoration(
                       labelText: 'Ingredient Name',
                       border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     ),
                     initialValue: ingredient.name,
                     onChanged: (value) {
@@ -1650,7 +1697,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
             ),
 
             // Notes field (descriptors like "pequena", "maduro", etc.)
-            if (ingredient.notes != null || ingredient.selectedMatch != null) ...[
+            if (ingredient.notes != null ||
+                ingredient.selectedMatch != null) ...[
               const SizedBox(height: 8),
               TextFormField(
                 key: ValueKey('notes_${index}_$_parseGeneration'),
@@ -1658,7 +1706,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                   labelText: 'Notes (descriptors)',
                   hintText: 'e.g., pequena, maduro, picado',
                   border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                   isDense: true,
                 ),
                 initialValue: ingredient.notes ?? '',
@@ -1718,12 +1767,14 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                               const SizedBox(width: 8),
                               Chip(
                                 label: Text(
-                                  ingredient.selectedMatch!.ingredient.category.displayName,
+                                  ingredient.selectedMatch!.ingredient.category
+                                      .displayName,
                                   style: const TextStyle(fontSize: 10),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 visualDensity: VisualDensity.compact,
-                                padding: const EdgeInsets.symmetric(horizontal: 4),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 4),
                                 backgroundColor: Theme.of(context)
                                     .colorScheme
                                     .secondaryContainer
@@ -1748,7 +1799,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                         decoration: const InputDecoration(
                           labelText: 'Select match',
                           border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           isDense: true,
                         ),
                         items: ingredient.matches.map((match) {
@@ -1784,32 +1836,40 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                     // Exception: Don't show for exact/caseInsensitive matches (clearly correct)
                     if (!ingredient.isNewIngredient &&
                         (ingredient.selectedMatch == null ||
-                         (ingredient.matches.length == 1 &&
-                          ingredient.selectedMatch != null &&
-                          ingredient.selectedMatch!.matchType != MatchType.exact &&
-                          ingredient.selectedMatch!.matchType != MatchType.caseInsensitive))) ...[
+                            (ingredient.matches.length == 1 &&
+                                ingredient.selectedMatch != null &&
+                                ingredient.selectedMatch!.matchType !=
+                                    MatchType.exact &&
+                                ingredient.selectedMatch!.matchType !=
+                                    MatchType.caseInsensitive))) ...[
                       const SizedBox(height: 8),
                       SizedBox(
                         width: double.infinity,
                         child: ingredient.matches.isEmpty
                             ? ElevatedButton.icon(
-                                onPressed: () => _showCreateIngredientDialog(index),
+                                onPressed: () =>
+                                    _showCreateIngredientDialog(index),
                                 icon: const Icon(Icons.add, size: 18),
-                                label: Text(AppLocalizations.of(context)!.createNewIngredient),
+                                label: Text(AppLocalizations.of(context)!
+                                    .createNewIngredient),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue,
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8),
                                 ),
                               )
                             : OutlinedButton.icon(
-                                onPressed: () => _showCreateIngredientDialog(index),
+                                onPressed: () =>
+                                    _showCreateIngredientDialog(index),
                                 icon: const Icon(Icons.add, size: 18),
-                                label: Text(AppLocalizations.of(context)!.noneOfTheseCreateNew),
+                                label: Text(AppLocalizations.of(context)!
+                                    .noneOfTheseCreateNew),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: Colors.blue,
                                   side: const BorderSide(color: Colors.blue),
-                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8),
                                 ),
                               ),
                       ),
@@ -1918,7 +1978,8 @@ class _ParsedIngredient {
   double quantity;
   String? unit;
   String name;
-  String originalName; // Original parsed name (preserved even when match is selected)
+  String
+      originalName; // Original parsed name (preserved even when match is selected)
   IngredientCategory category;
   String? notes; // Descriptors like "pequena", "maduro", "picado"
 

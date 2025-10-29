@@ -55,12 +55,14 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
       });
     } on GastrobrainException catch (e) {
       setState(() {
-        _errorMessage = '${AppLocalizations.of(context)!.errorLoadingIngredients} ${e.message}';
+        _errorMessage =
+            '${AppLocalizations.of(context)!.errorLoadingIngredients} ${e.message}';
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _errorMessage = AppLocalizations.of(context)!.unexpectedErrorLoadingIngredients;
+        _errorMessage =
+            AppLocalizations.of(context)!.unexpectedErrorLoadingIngredients;
         _isLoading = false;
       });
     }
@@ -83,8 +85,8 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(AppLocalizations.of(context)!.deleteIngredient),
-          content: Text(
-              AppLocalizations.of(context)!.deleteIngredientConfirmation(ingredient['name'])),
+          content: Text(AppLocalizations.of(context)!
+              .deleteIngredientConfirmation(ingredient['name'])),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -107,8 +109,8 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
         await _dbHelper
             .deleteRecipeIngredient(ingredient['recipe_ingredient_id']);
         if (mounted) {
-          SnackbarService.showSuccess(
-              context, AppLocalizations.of(context)!.ingredientDeletedSuccessfully);
+          SnackbarService.showSuccess(context,
+              AppLocalizations.of(context)!.ingredientDeletedSuccessfully);
           _loadIngredients();
         }
         _loadIngredients(); // Reload the ingredients list
@@ -189,7 +191,8 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.ingredientsTitle(widget.recipe.name)),
+        title: Text(
+            AppLocalizations.of(context)!.ingredientsTitle(widget.recipe.name)),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -214,13 +217,17 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
                             : null;
 
                         // Get the effective unit (override or default)
-                        final effectiveUnitString = ingredient['unit_override'] ??
-                            ingredient['unit'] ??
-                            '';
-                        
+                        final effectiveUnitString =
+                            ingredient['unit_override'] ??
+                                ingredient['unit'] ??
+                                '';
+
                         // Convert to MeasurementUnit enum and get localized name
-                        final measurementUnit = MeasurementUnit.fromString(effectiveUnitString);
-                        final localizedUnit = measurementUnit?.getLocalizedDisplayName(context) ?? effectiveUnitString;
+                        final measurementUnit =
+                            MeasurementUnit.fromString(effectiveUnitString);
+                        final localizedUnit =
+                            measurementUnit?.getLocalizedDisplayName(context) ??
+                                effectiveUnitString;
 
                         return Card(
                           margin: const EdgeInsets.symmetric(
@@ -249,13 +256,16 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
                                       Padding(
                                         padding: const EdgeInsets.only(left: 4),
                                         child: Tooltip(
-                                          message: AppLocalizations.of(context)!.unitOverridden(
-                                            MeasurementUnit.fromString(ingredient['unit'])?.getLocalizedDisplayName(context) ?? 
-                                            ingredient['unit'] ?? 
-                                            AppLocalizations.of(context)!.noUnit
-                                          ),
-                                          child: const Icon(Icons.edit_note,
-                                              size: 16),
+                                          message: AppLocalizations.of(context)!
+                                              .unitOverridden(MeasurementUnit
+                                                          .fromString(
+                                                              ingredient[
+                                                                  'unit'])
+                                                      ?.getLocalizedDisplayName(
+                                                          context) ??
+                                                  ingredient['unit'] ??
+                                                  AppLocalizations.of(context)!
+                                                      .noUnit),
                                         ),
                                       ),
                                   ],
@@ -296,7 +306,8 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
                                     children: [
                                       const Icon(Icons.delete),
                                       const SizedBox(width: 8),
-                                      Text(AppLocalizations.of(context)!.delete),
+                                      Text(
+                                          AppLocalizations.of(context)!.delete),
                                     ],
                                   ),
                                 ),
