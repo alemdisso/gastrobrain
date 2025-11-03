@@ -299,6 +299,50 @@ void main() {
       });
     });
 
+    group('Slash Fraction Parsing', () {
+      test('parses: 1/2 xícara de farinha', () {
+        final result = parserService.parseIngredientLine('1/2 xícara de farinha');
+        expect(result.quantity, equals(0.5));
+        expect(result.unit, equals('cup'));
+      });
+
+      test('parses: 3/4 colher de sopa de mel', () {
+        final result = parserService.parseIngredientLine('3/4 colher de sopa de mel');
+        expect(result.quantity, equals(0.75));
+        expect(result.unit, equals('tbsp'));
+      });
+
+      test('parses: 1/4 kg de açúcar', () {
+        final result = parserService.parseIngredientLine('1/4 kg de açúcar');
+        expect(result.quantity, equals(0.25));
+        expect(result.unit, equals('kg'));
+      });
+
+      test('parses: 2/3 xícara de leite', () {
+        final result = parserService.parseIngredientLine('2/3 xícara de leite');
+        expect(result.quantity, closeTo(0.667, 0.001));
+        expect(result.unit, equals('cup'));
+      });
+
+      test('parses: 1/3 colher de chá de canela', () {
+        final result = parserService.parseIngredientLine('1/3 colher de chá de canela');
+        expect(result.quantity, closeTo(0.333, 0.001));
+        expect(result.unit, equals('tsp'));
+      });
+
+      test('parses: 5/4 xícara de farinha (fraction > 1)', () {
+        final result = parserService.parseIngredientLine('5/4 xícara de farinha');
+        expect(result.quantity, equals(1.25));
+        expect(result.unit, equals('cup'));
+      });
+
+      test('handles invalid fraction: 1/0 (divide by zero)', () {
+        final result = parserService.parseIngredientLine('1/0 xícara de farinha');
+        expect(result.quantity, equals(1.0)); // Falls back to default
+        expect(result.unit, equals('cup'));
+      });
+    });
+
     group('Localization Support', () {
       test('recognizes Portuguese unit names', () {
         final result = parserService.parseIngredientLine('2 xícaras de farinha');

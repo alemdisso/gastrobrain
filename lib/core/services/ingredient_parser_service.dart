@@ -238,6 +238,7 @@ class IngredientParserService {
   /// 
   /// Supports:
   /// - Unicode fractions: ½ → 0.5, ¼ → 0.25, etc.
+  /// - Slash fractions: 1/2 → 0.5, 3/4 → 0.75, etc.
   /// - Regular decimals: 1.5, 2,5
   /// - Integers: 1, 2, 3
   double _parseFraction(String fractionStr) {
@@ -265,6 +266,22 @@ class IngredientParserService {
       return unicodeFractions[fractionStr]!;
     }
     
+    // Check if it's a slash fraction (e.g., "1/2", "3/4")
+    if (fractionStr.contains('/')) {
+      final parts = fractionStr.split('/');
+      if (parts.length == 2) {
+        final numerator = int.tryParse(parts[0]);
+        final denominator = int.tryParse(parts[1]);
+        
+        // Handle invalid fractions gracefully
+        if (numerator != null && denominator != null && denominator != 0) {
+          return numerator / denominator;
+        }
+      }
+      // Invalid fraction format, return default
+      return 1.0;
+    }
+    
     // Regular decimal/integer (handle both . and , as decimal separator)
     return double.tryParse(fractionStr.replaceAll(',', '.')) ?? 1.0;
   }
@@ -278,6 +295,7 @@ class IngredientParserService {
   /// - Integers: 1, 2, 3
   /// - Decimals: 1.5, 2,5
   /// - Unicode fractions: ½, ¼, ¾, ⅓, ⅔, etc.
+  /// - Slash fractions: 1/2, 3/4, 1/3, etc.
   ParsedIngredientResult parseIngredientLine(String line) {
     if (!_isInitialized) {
       throw StateError('IngredientParserService must be initialized before use');
@@ -295,8 +313,8 @@ class IngredientParserService {
     }
     
     // Step 1: Extract quantity from beginning
-    // Match: integer, decimal, or unicode fraction
-    final quantityPattern = RegExp(r'^([½⅓¼⅔¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\d+(?:[.,]\d+)?)\s*');
+    // Match: integer, decimal, unicode fraction, or slash fraction
+    final quantityPattern = RegExp(r'^(\d+/\d+|[½⅓¼⅔¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\d+(?:[.,]\d+)?)\s*');
     final quantityMatch = quantityPattern.firstMatch(trimmedLine);
     
     double quantity = 1.0;
