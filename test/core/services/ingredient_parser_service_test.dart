@@ -389,6 +389,58 @@ void main() {
       });
     });
 
+    group('Portuguese "de" with Fractions', () {
+      test('parses: 1/4 de xícara de farinha', () {
+        final result = parserService.parseIngredientLine('1/4 de xícara de farinha');
+        expect(result.quantity, equals(0.25));
+        expect(result.unit, equals('cup'));
+      });
+
+      test('parses: 1/3 de colher de chá de sal', () {
+        final result = parserService.parseIngredientLine('1/3 de colher de chá de sal');
+        expect(result.quantity, closeTo(0.333, 0.001));
+        expect(result.unit, equals('tsp'));
+        expect(result.ingredientName, equals('sal'));
+      });
+
+      test('parses: ½ de xícara de azeite', () {
+        final result = parserService.parseIngredientLine('½ de xícara de azeite');
+        expect(result.quantity, equals(0.5));
+        expect(result.unit, equals('cup'));
+        expect(result.ingredientName, equals('azeite'));
+      });
+
+      test('parses: 1 1/2 de colheres de sopa de mel', () {
+        final result = parserService.parseIngredientLine('1 1/2 de colheres de sopa de mel');
+        expect(result.quantity, equals(1.5));
+        expect(result.unit, equals('tbsp'));
+      });
+
+      test('parses: ¾ de colher de chá de canela', () {
+        final result = parserService.parseIngredientLine('¾ de colher de chá de canela');
+        expect(result.quantity, equals(0.75));
+        expect(result.unit, equals('tsp'));
+      });
+
+      test('parses: 2/3 de xícara de leite', () {
+        final result = parserService.parseIngredientLine('2/3 de xícara de leite');
+        expect(result.quantity, closeTo(0.667, 0.001));
+        expect(result.unit, equals('cup'));
+      });
+
+      test('verifies compound units still work: 1/2 colher de sopa de mel', () {
+        final result = parserService.parseIngredientLine('1/2 colher de sopa de mel');
+        expect(result.quantity, equals(0.5));
+        expect(result.unit, equals('tbsp'));
+      });
+
+      test('verifies mixed numbers with compound units: 1 1/2 colheres de chá de canela', () {
+        final result = parserService.parseIngredientLine('1 1/2 colheres de chá de canela');
+        expect(result.quantity, equals(1.5));
+        expect(result.unit, equals('tsp'));
+      });
+    });
+
     group('Localization Support', () {
       test('recognizes Portuguese unit names', () {
         final result = parserService.parseIngredientLine('2 xícaras de farinha');

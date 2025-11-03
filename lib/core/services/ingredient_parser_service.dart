@@ -362,13 +362,22 @@ class IngredientParserService {
     
     // Step 2: Try to match unit at the start of remaining text
     String? unit;
-    final unitMatch = matchUnitAtStart(remaining);
+    
+    // Handle Portuguese "de" between quantity and unit (e.g., "1/4 de xícara")
+    // Strip "de" before attempting unit match
+    String unitSearchText = remaining;
+    if (remaining.toLowerCase().startsWith('de ')) {
+      unitSearchText = remaining.substring(3).trim();
+    }
+    
+    final unitMatch = matchUnitAtStart(unitSearchText);
     
     if (unitMatch != null) {
       unit = unitMatch.unit;
       remaining = unitMatch.remaining;
       
       // Step 3: Strip "de" ONLY if it immediately follows the matched unit
+      // This handles patterns like "2 kg de mangas" or "2 colheres de sopa de azeite"
       if (remaining.toLowerCase().startsWith('de ')) {
         remaining = remaining.substring(3).trim();
       }
