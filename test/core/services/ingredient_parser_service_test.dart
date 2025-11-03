@@ -343,6 +343,52 @@ void main() {
       });
     });
 
+    group('Mixed Number Parsing', () {
+      test('parses: 2 1/2 kg de mangas', () {
+        final result = parserService.parseIngredientLine('2 1/2 kg de mangas');
+        expect(result.quantity, equals(2.5));
+        expect(result.unit, equals('kg'));
+        expect(result.ingredientName, equals('mangas'));
+      });
+
+      test('parses: 1 ½ xícara de açúcar', () {
+        final result = parserService.parseIngredientLine('1 ½ xícara de açúcar');
+        expect(result.quantity, equals(1.5));
+        expect(result.unit, equals('cup'));
+      });
+
+      test('parses: 1 1/4 colheres de sopa de azeite', () {
+        final result = parserService.parseIngredientLine('1 1/4 colheres de sopa de azeite');
+        expect(result.quantity, equals(1.25));
+        expect(result.unit, equals('tbsp'));
+        expect(result.ingredientName, equals('azeite'));
+      });
+
+      test('parses: 3 3/4 xícaras de farinha', () {
+        final result = parserService.parseIngredientLine('3 3/4 xícaras de farinha');
+        expect(result.quantity, equals(3.75));
+        expect(result.unit, equals('cup'));
+      });
+
+      test('parses: 2 ⅔ kg de tomates', () {
+        final result = parserService.parseIngredientLine('2 ⅔ kg de tomates');
+        expect(result.quantity, closeTo(2.667, 0.001));
+        expect(result.unit, equals('kg'));
+      });
+
+      test('parses: 5 1/3 colheres de chá de canela', () {
+        final result = parserService.parseIngredientLine('5 1/3 colheres de chá de canela');
+        expect(result.quantity, closeTo(5.333, 0.001));
+        expect(result.unit, equals('tsp'));
+      });
+
+      test('parses: 10 ¼ xícaras de leite', () {
+        final result = parserService.parseIngredientLine('10 ¼ xícaras de leite');
+        expect(result.quantity, equals(10.25));
+        expect(result.unit, equals('cup'));
+      });
+    });
+
     group('Localization Support', () {
       test('recognizes Portuguese unit names', () {
         final result = parserService.parseIngredientLine('2 xícaras de farinha');

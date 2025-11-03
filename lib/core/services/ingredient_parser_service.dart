@@ -234,6 +234,36 @@ class IngredientParserService {
     return null;
   }
   
+  /// Parse a quantity string that may include mixed numbers
+  /// 
+  /// Supports:
+  /// - Mixed numbers with slash fractions: 1 1/2 → 1.5, 2 3/4 → 2.75
+  /// - Mixed numbers with unicode fractions: 1 ½ → 1.5, 2 ¾ → 2.75
+  /// - Single fractions: 1/2 → 0.5, ½ → 0.5
+  /// - Decimals: 1.5, 2,5
+  /// - Integers: 1, 2, 3
+  double _parseQuantity(String quantityStr) {
+    // Check for mixed number pattern: "2 1/2" or "1 ½"
+    final mixedPattern = RegExp(r'^(\d+)\s+(.+)$');
+    final mixedMatch = mixedPattern.firstMatch(quantityStr);
+    
+    if (mixedMatch != null) {
+      final wholePart = mixedMatch.group(1)!;
+      final fractionPart = mixedMatch.group(2)!;
+      
+      // Check if the second part is a fraction (unicode or slash)
+      if (fractionPart.contains('/') || 
+          RegExp(r'^[½⅓¼⅔¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]$').hasMatch(fractionPart)) {
+        final whole = double.tryParse(wholePart) ?? 0;
+        final fraction = _parseFraction(fractionPart);
+        return whole + fraction;
+      }
+    }
+    
+    // Not a mixed number, parse as single fraction/number
+    return _parseFraction(quantityStr);
+  }
+  
   /// Parse a fraction string to decimal
   /// 
   /// Supports:
@@ -296,6 +326,7 @@ class IngredientParserService {
   /// - Decimals: 1.5, 2,5
   /// - Unicode fractions: ½, ¼, ¾, ⅓, ⅔, etc.
   /// - Slash fractions: 1/2, 3/4, 1/3, etc.
+  /// - Mixed numbers: 1 1/2, 2 3/4, 1 ½, etc.
   ParsedIngredientResult parseIngredientLine(String line) {
     if (!_isInitialized) {
       throw StateError('IngredientParserService must be initialized before use');
@@ -313,8 +344,11 @@ class IngredientParserService {
     }
     
     // Step 1: Extract quantity from beginning
-    // Match: integer, decimal, unicode fraction, or slash fraction
-    final quantityPattern = RegExp(r'^(\d+/\d+|[½⅓¼⅔¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\d+(?:[.,]\d+)?)\s*');
+    // Match: mixed number, slash fraction, unicode fraction, decimal, or integer
+    // Pattern explanation:
+    // - (\d+\s+)?(\d+/\d+|[½⅓¼⅔¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]) : optional whole number + space + fraction
+    // - |\d+(?:[.,]\d+)? : OR decimal/integer
+    final quantityPattern = RegExp(r'^((?:\d+\s+)?(?:\d+/\d+|[½⅓¼⅔¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])|\d+(?:[.,]\d+)?)\s*');
     final quantityMatch = quantityPattern.firstMatch(trimmedLine);
     
     double quantity = 1.0;
@@ -322,7 +356,7 @@ class IngredientParserService {
     
     if (quantityMatch != null) {
       final quantityStr = quantityMatch.group(1)!;
-      quantity = _parseFraction(quantityStr);
+      quantity = _parseQuantity(quantityStr);
       remaining = trimmedLine.substring(quantityMatch.end).trim();
     }
     
