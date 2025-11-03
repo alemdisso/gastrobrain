@@ -235,6 +235,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     try {
       // Validate recipe data
       EntityValidator.validateRecipe(
+        id: _tempRecipeId,
         name: _nameController.text,
         ingredients: _pendingIngredients.map((i) => i.toMap()).toList(),
         instructions: [],

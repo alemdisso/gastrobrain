@@ -560,6 +560,7 @@ class DatabaseHelper {
         for (var item in mealPlan.items) {
           // Validate each item before inserting
           EntityValidator.validateMealPlanItem(
+            id: item.id,
             mealPlanId: item.mealPlanId,
             plannedDate: item.plannedDate,
             mealType: item.mealType,
@@ -616,6 +617,7 @@ class DatabaseHelper {
     try {
       // Validate item before inserting
       EntityValidator.validateMealPlanItem(
+        id: item.id,
         mealPlanId: item.mealPlanId,
         plannedDate: item.plannedDate,
         mealType: item.mealType,
