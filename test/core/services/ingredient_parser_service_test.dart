@@ -252,6 +252,62 @@ void main() {
       });
     });
 
+    group('Fraction Edge Cases', () {
+      test('handles fraction greater than 1: 5/3', () {
+        final result = parserService.parseIngredientLine('5/3 xícara de farinha');
+        expect(result.quantity, closeTo(1.667, 0.001));
+        expect(result.unit, equals('cup'));
+      });
+
+      test('handles fraction without unit', () {
+        final result = parserService.parseIngredientLine('1/2 mangas');
+        expect(result.quantity, equals(0.5));
+        expect(result.unit, equals('piece'));
+      });
+
+      test('handles fraction without space before ingredient', () {
+        final result = parserService.parseIngredientLine('½mangas');
+        expect(result.quantity, equals(0.5));
+        expect(result.unit, equals('piece'));
+      });
+
+      test('handles mixed number without unit', () {
+        final result = parserService.parseIngredientLine('2 1/2 ovos');
+        expect(result.quantity, equals(2.5));
+        expect(result.unit, equals('piece'));
+      });
+
+      test('handles very large fraction', () {
+        final result = parserService.parseIngredientLine('10/3 kg de tomates');
+        expect(result.quantity, closeTo(3.333, 0.001));
+        expect(result.unit, equals('kg'));
+      });
+
+      test('handles unicode fraction at start of line', () {
+        final result = parserService.parseIngredientLine('⅛colher de chá de pimenta');
+        expect(result.quantity, equals(0.125));
+        expect(result.unit, equals('tsp'));
+      });
+
+      test('handles mixed number with large whole part', () {
+        final result = parserService.parseIngredientLine('25 1/2 kg de farinha');
+        expect(result.quantity, equals(25.5));
+        expect(result.unit, equals('kg'));
+      });
+
+      test('verifies backward compatibility with decimals', () {
+        final result = parserService.parseIngredientLine('1.5 xícara de açúcar');
+        expect(result.quantity, equals(1.5));
+        expect(result.unit, equals('cup'));
+      });
+
+      test('verifies backward compatibility with integers', () {
+        final result = parserService.parseIngredientLine('3 kg de carne');
+        expect(result.quantity, equals(3.0));
+        expect(result.unit, equals('kg'));
+      });
+    });
+
     group('Unicode Fraction Parsing', () {
       test('parses: ½ xícara de farinha', () {
         final result = parserService.parseIngredientLine('½ xícara de farinha');
