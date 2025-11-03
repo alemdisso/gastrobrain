@@ -234,10 +234,50 @@ class IngredientParserService {
     return null;
   }
   
+  /// Parse a fraction string to decimal
+  /// 
+  /// Supports:
+  /// - Unicode fractions: ½ → 0.5, ¼ → 0.25, etc.
+  /// - Regular decimals: 1.5, 2,5
+  /// - Integers: 1, 2, 3
+  double _parseFraction(String fractionStr) {
+    // Unicode fraction map
+    const unicodeFractions = {
+      '½': 0.5,
+      '⅓': 0.333,
+      '¼': 0.25,
+      '⅔': 0.667,
+      '¾': 0.75,
+      '⅕': 0.2,
+      '⅖': 0.4,
+      '⅗': 0.6,
+      '⅘': 0.8,
+      '⅙': 0.167,
+      '⅚': 0.833,
+      '⅛': 0.125,
+      '⅜': 0.375,
+      '⅝': 0.625,
+      '⅞': 0.875,
+    };
+    
+    // Check if it's a unicode fraction
+    if (unicodeFractions.containsKey(fractionStr)) {
+      return unicodeFractions[fractionStr]!;
+    }
+    
+    // Regular decimal/integer (handle both . and , as decimal separator)
+    return double.tryParse(fractionStr.replaceAll(',', '.')) ?? 1.0;
+  }
+  
   /// Parse a single ingredient line into structured data
   /// 
   /// Returns a parsed ingredient with quantity, unit, name, and notes
   /// Uses context-aware "de" stripping and fuzzy ingredient matching
+  /// 
+  /// Supports various quantity formats:
+  /// - Integers: 1, 2, 3
+  /// - Decimals: 1.5, 2,5
+  /// - Unicode fractions: ½, ¼, ¾, ⅓, ⅔, etc.
   ParsedIngredientResult parseIngredientLine(String line) {
     if (!_isInitialized) {
       throw StateError('IngredientParserService must be initialized before use');
@@ -255,15 +295,16 @@ class IngredientParserService {
     }
     
     // Step 1: Extract quantity from beginning
-    final quantityPattern = RegExp(r'^(\d+(?:[.,]\d+)?)\s*');
+    // Match: integer, decimal, or unicode fraction
+    final quantityPattern = RegExp(r'^([½⅓¼⅔¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\d+(?:[.,]\d+)?)\s*');
     final quantityMatch = quantityPattern.firstMatch(trimmedLine);
     
     double quantity = 1.0;
     String remaining = trimmedLine;
     
     if (quantityMatch != null) {
-      final quantityStr = quantityMatch.group(1)!.replaceAll(',', '.');
-      quantity = double.tryParse(quantityStr) ?? 1.0;
+      final quantityStr = quantityMatch.group(1)!;
+      quantity = _parseFraction(quantityStr);
       remaining = trimmedLine.substring(quantityMatch.end).trim();
     }
     
