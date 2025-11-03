@@ -9,10 +9,14 @@ import '../../models/protein_type.dart';
 
 class EntityValidator {
   static void validateRecipe({
+    required String id,
     required String name,
     required List<Map<String, dynamic>> ingredients,
     required List<String> instructions,
   }) {
+    if (id.isEmpty) {
+      throw ValidationException('Recipe ID cannot be empty');
+    }
     if (name.isEmpty) {
       throw ValidationException('Recipe name cannot be empty');
     }
@@ -55,11 +59,15 @@ class EntityValidator {
   }
 
   static void validateIngredient({
+    required String id,
     required String name,
     required IngredientCategory category,
     MeasurementUnit? unit,
     ProteinType? proteinType,
   }) {
+    if (id.isEmpty) {
+      throw ValidationException('Ingredient ID cannot be empty');
+    }
     if (name.isEmpty) {
       throw ValidationException('Ingredient name cannot be empty');
     }
@@ -101,11 +109,15 @@ class EntityValidator {
   }
 
   static void validateMealPlanItem({
+    required String id,
     required String mealPlanId,
     required String plannedDate,
     required String mealType,
     List<MealPlanItemRecipe>? mealPlanItemRecipes,
   }) {
+    if (id.isEmpty) {
+      throw ValidationException('Meal Plan Item ID cannot be empty');
+    }
     if (mealPlanId.isEmpty) {
       throw ValidationException('Meal plan ID cannot be empty');
     }

@@ -67,6 +67,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
     try {
       // Validate ingredient data
       EntityValidator.validateIngredient(
+        id: widget.ingredient?.id ?? IdGenerator.generateId(),
         name: _nameController.text,
         category: _selectedCategory,
         unit: _selectedUnit,

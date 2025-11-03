@@ -373,6 +373,7 @@ class MockDatabaseHelper implements DatabaseHelper {
   Future<String> insertIngredient(Ingredient ingredient) async {
     // Validate the ingredient
     EntityValidator.validateIngredient(
+      id: ingredient.id,
       name: ingredient.name,
       category: ingredient.category,
       unit: ingredient.unit,
@@ -396,6 +397,7 @@ class MockDatabaseHelper implements DatabaseHelper {
 
     // Validate the ingredient
     EntityValidator.validateIngredient(
+      id: ingredient.id,
       name: ingredient.name,
       category: ingredient.category,
       unit: ingredient.unit,

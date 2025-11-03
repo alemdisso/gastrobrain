@@ -130,6 +130,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     try {
       // Validate recipe data
       EntityValidator.validateRecipe(
+        id: widget.recipe.id,
         name: _nameController.text,
         ingredients: [],
         instructions: [],
