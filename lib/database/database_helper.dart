@@ -973,13 +973,16 @@ class DatabaseHelper {
   Future<int> getEnrichedRecipeCount() async {
     final Database db = await database;
     final result = await db.rawQuery('''
-      SELECT COUNT(DISTINCT r.id) as count
-      FROM recipes r
-      INNER JOIN recipe_ingredients ri ON r.id = ri.recipe_id
-      GROUP BY r.id
-      HAVING COUNT(ri.ingredient_id) >= 3
+      SELECT COUNT(*) as count
+      FROM (
+        SELECT r.id
+        FROM recipes r
+        INNER JOIN recipe_ingredients ri ON r.id = ri.recipe_id
+        GROUP BY r.id
+        HAVING COUNT(ri.ingredient_id) >= 3
+      )
     ''');
-    return result.length;
+    return Sqflite.firstIntValue(result) ?? 0;
   }
 
   /// Get recipe statistics for progress tracking

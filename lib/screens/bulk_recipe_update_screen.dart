@@ -12,6 +12,12 @@ import '../widgets/add_new_ingredient_dialog.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/id_generator.dart';
 
+/// Milestone target for enriched recipes (recipes with 3+ ingredients)
+const int kEnrichedRecipesMilestoneTarget = 50;
+
+/// Warning threshold for enriched recipes (halfway to milestone)
+const int kEnrichedRecipesWarningThreshold = 25;
+
 /// Bulk recipe update screen for efficiently adding ingredients and instructions
 /// to existing recipes that have basic metadata but are missing detailed content.
 ///
@@ -1011,7 +1017,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     final enrichedCount = stats['enriched'] ?? 0;
     final incompleteCount = stats['incomplete'] ?? 0;
     final totalCount = stats['total'] ?? 0;
-    final milestoneTarget = 50;
+    final milestoneTarget = kEnrichedRecipesMilestoneTarget;
     final progressPercent =
         totalCount > 0 ? ((enrichedCount / totalCount) * 100).round() : 0;
     final isTargetReached = enrichedCount >= milestoneTarget;
@@ -1022,7 +1028,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     Color? cardColor;
     if (isTargetReached) {
       cardColor = Colors.green.withOpacity(0.1);
-    } else if (enrichedCount >= 25) {
+    } else if (enrichedCount >= kEnrichedRecipesWarningThreshold) {
       cardColor = Colors.orange.withOpacity(0.1);
     }
 
