@@ -510,6 +510,16 @@ class MockDatabaseHelper implements DatabaseHelper {
   }
 
   @override
+  Future<int> getEnrichedRecipeCount() {
+    throw UnimplementedError('Method not implemented for tests');
+  }
+
+  @override
+  Future<Map<String, int>> getRecipeEnrichmentStats() {
+    throw UnimplementedError('Method not implemented for tests');
+  }
+
+  @override
   Future<int> getIngredientsCount() {
     throw UnimplementedError('Method not implemented for tests');
   }
