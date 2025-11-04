@@ -497,6 +497,66 @@ void main() {
       });
     });
 
+    group('Fraction + "de" + Ingredient (No Unit)', () {
+      test('parses: 1/4 de pimenta dedo-de-moça', () {
+        final result = parserService.parseIngredientLine('1/4 de pimenta dedo-de-moça');
+        expect(result.quantity, equals(0.25));
+        expect(result.unit, equals('piece'));
+        expect(result.ingredientName, equals('pimenta dedo-de-moça'));
+        // Ensure "de" is NOT part of ingredient name
+        expect(result.ingredientName.toLowerCase().startsWith('de '), isFalse);
+      });
+
+      test('parses: 1/2 de cebola', () {
+        final result = parserService.parseIngredientLine('1/2 de cebola');
+        expect(result.quantity, equals(0.5));
+        expect(result.unit, equals('piece'));
+        expect(result.ingredientName, equals('cebola'));
+        expect(result.ingredientName.toLowerCase().startsWith('de '), isFalse);
+      });
+
+      test('parses: ½ de abacate', () {
+        final result = parserService.parseIngredientLine('½ de abacate');
+        expect(result.quantity, equals(0.5));
+        expect(result.unit, equals('piece'));
+        expect(result.ingredientName, equals('abacate'));
+        expect(result.ingredientName.toLowerCase().startsWith('de '), isFalse);
+      });
+
+      test('parses: 1 1/2 de tomate', () {
+        final result = parserService.parseIngredientLine('1 1/2 de tomate');
+        expect(result.quantity, equals(1.5));
+        expect(result.unit, equals('piece'));
+        expect(result.ingredientName, equals('tomate'));
+        expect(result.ingredientName.toLowerCase().startsWith('de '), isFalse);
+      });
+
+      test('parses: 2/3 de laranja', () {
+        final result = parserService.parseIngredientLine('2/3 de laranja');
+        expect(result.quantity, closeTo(0.667, 0.001));
+        expect(result.unit, equals('piece'));
+        expect(result.ingredientName, equals('laranja'));
+        expect(result.ingredientName.toLowerCase().startsWith('de '), isFalse);
+      });
+
+      test('parses: ¼ de limão', () {
+        final result = parserService.parseIngredientLine('¼ de limão');
+        expect(result.quantity, equals(0.25));
+        expect(result.unit, equals('piece'));
+        expect(result.ingredientName, equals('limão'));
+        expect(result.ingredientName.toLowerCase().startsWith('de '), isFalse);
+      });
+
+      test('preserves "de" in compound ingredient names: 1/2 de pimenta-do-reino', () {
+        final result = parserService.parseIngredientLine('1/2 de pimenta-do-reino');
+        expect(result.quantity, equals(0.5));
+        expect(result.unit, equals('piece'));
+        // The first "de" should be stripped, but hyphens in the ingredient name preserved
+        expect(result.ingredientName.contains('-'), isTrue);
+        expect(result.ingredientName.toLowerCase().startsWith('de '), isFalse);
+      });
+    });
+
     group('Localization Support', () {
       test('recognizes Portuguese unit names', () {
         final result = parserService.parseIngredientLine('2 xícaras de farinha');
