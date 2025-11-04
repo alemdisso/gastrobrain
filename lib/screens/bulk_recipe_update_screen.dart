@@ -47,6 +47,10 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
   // Session tracking (Phase 5)
   int _recipesUpdatedInSession = 0;
 
+  // Recipe enrichment stats
+  Map<String, int>? _enrichmentStats;
+  bool _isLoadingStats = false;
+
   // Existing ingredients state (raw maps from database query)
   List<Map<String, dynamic>> _existingIngredients = [];
   bool _isLoadingIngredients = false;
@@ -65,6 +69,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     super.initState();
     _loadRecipesNeedingIngredients();
     _loadAllIngredients();
+    _loadEnrichmentStats();
   }
 
   @override
@@ -207,6 +212,32 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       setState(() {
         _isMatchingServiceReady = false;
       });
+    }
+  }
+
+  /// Load recipe enrichment statistics
+  Future<void> _loadEnrichmentStats() async {
+    setState(() {
+      _isLoadingStats = true;
+    });
+
+    try {
+      final dbHelper = ServiceProvider.database.dbHelper;
+      final stats = await dbHelper.getRecipeEnrichmentStats();
+
+      if (mounted) {
+        setState(() {
+          _enrichmentStats = stats;
+          _isLoadingStats = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _enrichmentStats = null;
+          _isLoadingStats = false;
+        });
+      }
     }
   }
 
@@ -667,6 +698,9 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
         // Preserve current recipe selection unless it's been removed from the list
         await _loadRecipesNeedingIngredients(preserveCurrentRecipe: true);
 
+        // Refresh enrichment stats to reflect the update
+        await _loadEnrichmentStats();
+
         // Increment session counter for completed recipe update
         setState(() {
           _recipesUpdatedInSession++;
@@ -918,6 +952,10 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Recipe Enrichment Progress Card
+          _buildEnrichmentProgressCard(context, localizations),
+          const SizedBox(height: 16),
+
           // Recipe Selector Section
           _buildRecipeSelector(context, localizations),
           const SizedBox(height: 24),
@@ -940,6 +978,225 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
           _buildNavigationControls(context, localizations),
         ],
       ),
+    );
+  }
+
+  /// Recipe enrichment progress card widget
+  Widget _buildEnrichmentProgressCard(
+      BuildContext context, AppLocalizations localizations) {
+    // Show loading state
+    if (_isLoadingStats || _enrichmentStats == null) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                localizations.recipeDatabaseStatus,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final stats = _enrichmentStats!;
+    final enrichedCount = stats['enriched'] ?? 0;
+    final incompleteCount = stats['incomplete'] ?? 0;
+    final totalCount = stats['total'] ?? 0;
+    final milestoneTarget = 50;
+    final progressPercent =
+        totalCount > 0 ? ((enrichedCount / totalCount) * 100).round() : 0;
+    final isTargetReached = enrichedCount >= milestoneTarget;
+    final recipesNeeded =
+        isTargetReached ? 0 : milestoneTarget - enrichedCount;
+
+    // Determine card color based on progress
+    Color? cardColor;
+    if (isTargetReached) {
+      cardColor = Colors.green.withOpacity(0.1);
+    } else if (enrichedCount >= 25) {
+      cardColor = Colors.orange.withOpacity(0.1);
+    }
+
+    return Card(
+      color: cardColor,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Title
+            Row(
+              children: [
+                Icon(
+                  isTargetReached ? Icons.check_circle : Icons.bar_chart,
+                  color: isTargetReached
+                      ? Colors.green
+                      : Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    localizations.recipeDatabaseStatus,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Stats Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildStatColumn(
+                  context,
+                  localizations.enrichedRecipes,
+                  enrichedCount.toString(),
+                  Colors.green,
+                  Icons.check_circle_outline,
+                ),
+                _buildStatColumn(
+                  context,
+                  localizations.needEnrichment,
+                  incompleteCount.toString(),
+                  Colors.orange,
+                  Icons.warning_amber_outlined,
+                ),
+                _buildStatColumn(
+                  context,
+                  localizations.totalRecipes,
+                  totalCount.toString(),
+                  Theme.of(context).colorScheme.primary,
+                  Icons.restaurant_menu,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Progress Bar
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: totalCount > 0 ? enrichedCount / totalCount : 0,
+                minHeight: 8,
+                backgroundColor: Colors.grey.withOpacity(0.2),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  isTargetReached ? Colors.green : Colors.blue,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            // Progress Text
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  localizations.progressPercent(progressPercent),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                Text(
+                  '$enrichedCount / $totalCount',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // Milestone Info
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isTargetReached
+                    ? Colors.green.withOpacity(0.1)
+                    : Colors.blue.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isTargetReached
+                      ? Colors.green.withOpacity(0.3)
+                      : Colors.blue.withOpacity(0.2),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    isTargetReached ? Icons.emoji_events : Icons.flag,
+                    size: 20,
+                    color: isTargetReached ? Colors.green : Colors.blue,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          localizations.milestoneTarget,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                        ),
+                        Text(
+                          isTargetReached
+                              ? localizations.milestoneAchieved
+                              : localizations.recipesNeededForMilestone(
+                                  recipesNeeded),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: isTargetReached
+                                        ? Colors.green
+                                        : Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.color,
+                                  ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Helper widget for stat columns in progress card
+  Widget _buildStatColumn(BuildContext context, String label, String value,
+      Color color, IconData icon) {
+    return Column(
+      children: [
+        Icon(icon, color: color, size: 24),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall,
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 
