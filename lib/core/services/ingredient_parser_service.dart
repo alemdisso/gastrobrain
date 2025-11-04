@@ -234,10 +234,132 @@ class IngredientParserService {
     return null;
   }
   
+  /// Parse a quantity string that may include mixed numbers
+  /// 
+  /// Handles mixed numbers where a whole number is followed by a fraction,
+  /// separated by a space (e.g., "2 1/2" or "1 ½").
+  /// 
+  /// Supports:
+  /// - Mixed numbers with slash fractions: 1 1/2 → 1.5, 2 3/4 → 2.75
+  /// - Mixed numbers with unicode fractions: 1 ½ → 1.5, 2 ¾ → 2.75
+  /// - Single fractions: 1/2 → 0.5, ½ → 0.5
+  /// - Decimals: 1.5, 2,5
+  /// - Integers: 1, 2, 3
+  /// 
+  /// For mixed numbers, the whole and fractional parts are added together.
+  /// If the string is not a mixed number, delegates to [_parseFraction].
+  double _parseQuantity(String quantityStr) {
+    // Check for mixed number pattern: "2 1/2" or "1 ½"
+    // Captures: (whole number) (space) (fraction part)
+    final mixedPattern = RegExp(r'^(\d+)\s+(.+)$');
+    final mixedMatch = mixedPattern.firstMatch(quantityStr);
+    
+    if (mixedMatch != null) {
+      final wholePart = mixedMatch.group(1)!;
+      final fractionPart = mixedMatch.group(2)!;
+      
+      // Check if the second part is a fraction (unicode or slash)
+      // Only treat as mixed number if second part is actually a fraction
+      if (fractionPart.contains('/') || 
+          RegExp(r'^[½⅓¼⅔¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]$').hasMatch(fractionPart)) {
+        final whole = double.tryParse(wholePart) ?? 0;
+        final fraction = _parseFraction(fractionPart);
+        return whole + fraction;
+      }
+    }
+    
+    // Not a mixed number, parse as single fraction/number
+    return _parseFraction(quantityStr);
+  }
+  
+  /// Parse a fraction string to decimal
+  /// 
+  /// Converts various fraction formats to their decimal equivalents.
+  /// Handles unicode fractions, slash fractions, decimals, and integers.
+  /// 
+  /// Supports:
+  /// - Unicode fractions: ½ → 0.5, ¼ → 0.25, etc.
+  /// - Slash fractions: 1/2 → 0.5, 3/4 → 0.75, 5/3 → 1.667, etc.
+  /// - Regular decimals: 1.5, 2,5 (both . and , as decimal separator)
+  /// - Integers: 1, 2, 3
+  /// 
+  /// Invalid fractions (e.g., divide by zero) return 1.0 as a safe default.
+  double _parseFraction(String fractionStr) {
+    // Unicode fraction map - maps common fraction characters to decimal values
+    // Values are approximations for repeating decimals (e.g., 1/3 ≈ 0.333)
+    const unicodeFractions = {
+      '½': 0.5,      // 1/2
+      '⅓': 0.333,    // 1/3 (approximation)
+      '¼': 0.25,     // 1/4
+      '⅔': 0.667,    // 2/3 (approximation)
+      '¾': 0.75,     // 3/4
+      '⅕': 0.2,      // 1/5
+      '⅖': 0.4,      // 2/5
+      '⅗': 0.6,      // 3/5
+      '⅘': 0.8,      // 4/5
+      '⅙': 0.167,    // 1/6 (approximation)
+      '⅚': 0.833,    // 5/6 (approximation)
+      '⅛': 0.125,    // 1/8
+      '⅜': 0.375,    // 3/8
+      '⅝': 0.625,    // 5/8
+      '⅞': 0.875,    // 7/8
+    };
+    
+    // Check if it's a unicode fraction
+    if (unicodeFractions.containsKey(fractionStr)) {
+      return unicodeFractions[fractionStr]!;
+    }
+    
+    // Check if it's a slash fraction (e.g., "1/2", "3/4", "5/3")
+    if (fractionStr.contains('/')) {
+      final parts = fractionStr.split('/');
+      if (parts.length == 2) {
+        final numerator = int.tryParse(parts[0]);
+        final denominator = int.tryParse(parts[1]);
+        
+        // Handle invalid fractions gracefully (divide by zero, invalid numbers)
+        if (numerator != null && denominator != null && denominator != 0) {
+          return numerator / denominator;
+        }
+      }
+      // Invalid fraction format (e.g., "1/0", "a/b"), return safe default
+      return 1.0;
+    }
+    
+    // Regular decimal/integer (handle both . and , as decimal separator)
+    // Portuguese uses comma as decimal separator, so we normalize to period
+    return double.tryParse(fractionStr.replaceAll(',', '.')) ?? 1.0;
+  }
+  
   /// Parse a single ingredient line into structured data
   /// 
   /// Returns a parsed ingredient with quantity, unit, name, and notes
   /// Uses context-aware "de" stripping and fuzzy ingredient matching
+  /// 
+  /// Supports various quantity formats:
+  /// - Integers: 1, 2, 3
+  /// - Decimals: 1.5, 2,5 (both . and , as decimal separator)
+  /// - Unicode fractions: ½, ¼, ¾, ⅓, ⅔, ⅛, ⅜, ⅝, ⅞, ⅕, ⅖, ⅗, ⅘, ⅙, ⅚
+  /// - Slash fractions: 1/2, 3/4, 1/3, 2/3, 5/4 (any valid fraction)
+  /// - Mixed numbers: 1 1/2, 2 3/4, 1 ½, 10 ¼ (with slash or unicode fractions)
+  /// 
+  /// Portuguese "de" pattern handling:
+  /// - Strips "de" between quantity and unit: "1/4 de xícara" → 0.25 cup
+  /// - Strips "de" after unit: "2 kg de mangas" → 2 kg, mangas
+  /// - Preserves "de" in compound units: "colher de sopa" → tbsp
+  /// - Preserves "de" in ingredient names: "pasta de tamarindo"
+  /// 
+  /// Examples:
+  /// ```dart
+  /// parseIngredientLine('½ xícara de farinha')
+  ///   → quantity: 0.5, unit: "cup", name: "farinha"
+  /// 
+  /// parseIngredientLine('2 1/2 kg de mangas')
+  ///   → quantity: 2.5, unit: "kg", name: "mangas"
+  /// 
+  /// parseIngredientLine('1/4 de xícara de açúcar')
+  ///   → quantity: 0.25, unit: "cup", name: "açúcar"
+  /// ```
   ParsedIngredientResult parseIngredientLine(String line) {
     if (!_isInitialized) {
       throw StateError('IngredientParserService must be initialized before use');
@@ -255,27 +377,40 @@ class IngredientParserService {
     }
     
     // Step 1: Extract quantity from beginning
-    final quantityPattern = RegExp(r'^(\d+(?:[.,]\d+)?)\s*');
+    // Match: mixed number, slash fraction, unicode fraction, decimal, or integer
+    // Pattern explanation:
+    // - (\d+\s+)?(\d+/\d+|[½⅓¼⅔¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]) : optional whole number + space + fraction
+    // - |\d+(?:[.,]\d+)? : OR decimal/integer
+    final quantityPattern = RegExp(r'^((?:\d+\s+)?(?:\d+/\d+|[½⅓¼⅔¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])|\d+(?:[.,]\d+)?)\s*');
     final quantityMatch = quantityPattern.firstMatch(trimmedLine);
     
     double quantity = 1.0;
     String remaining = trimmedLine;
     
     if (quantityMatch != null) {
-      final quantityStr = quantityMatch.group(1)!.replaceAll(',', '.');
-      quantity = double.tryParse(quantityStr) ?? 1.0;
+      final quantityStr = quantityMatch.group(1)!;
+      quantity = _parseQuantity(quantityStr);
       remaining = trimmedLine.substring(quantityMatch.end).trim();
     }
     
     // Step 2: Try to match unit at the start of remaining text
     String? unit;
-    final unitMatch = matchUnitAtStart(remaining);
+    
+    // Handle Portuguese "de" between quantity and unit (e.g., "1/4 de xícara")
+    // Strip "de" before attempting unit match
+    String unitSearchText = remaining;
+    if (remaining.toLowerCase().startsWith('de ')) {
+      unitSearchText = remaining.substring(3).trim();
+    }
+    
+    final unitMatch = matchUnitAtStart(unitSearchText);
     
     if (unitMatch != null) {
       unit = unitMatch.unit;
       remaining = unitMatch.remaining;
       
       // Step 3: Strip "de" ONLY if it immediately follows the matched unit
+      // This handles patterns like "2 kg de mangas" or "2 colheres de sopa de azeite"
       if (remaining.toLowerCase().startsWith('de ')) {
         remaining = remaining.substring(3).trim();
       }
