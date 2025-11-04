@@ -1155,6 +1155,16 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                                     fontWeight: FontWeight.w600,
                                   ),
                         ),
+                        const SizedBox(height: 2),
+                        Text(
+                          localizations.enrichedRecipesTarget,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontSize: 11,
+                                    color: Colors.grey[600],
+                                  ),
+                        ),
+                        const SizedBox(height: 4),
                         Text(
                           isTargetReached
                               ? localizations.milestoneAchieved
