@@ -284,35 +284,6 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Toggle between regular and custom ingredient
-                    Row(
-                      children: [
-                        Expanded(
-                          child: SegmentedButton<bool>(
-                            segments: [
-                              ButtonSegment(
-                                value: false,
-                                label: Text(
-                                    AppLocalizations.of(context)!.fromDatabase),
-                              ),
-                              ButtonSegment(
-                                value: true,
-                                label:
-                                    Text(AppLocalizations.of(context)!.custom),
-                              ),
-                            ],
-                            selected: {_isCustomIngredient},
-                            onSelectionChanged: (Set<bool> selected) {
-                              setState(() {
-                                _isCustomIngredient = selected.first;
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
                     // Show either custom ingredient form or regular ingredient selector
                     if (_isCustomIngredient) ...[
                       // Custom Ingredient Name
@@ -604,6 +575,23 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                       ),
                       maxLines: 2,
                     ),
+
+                    // Progressive disclosure: Link to switch to custom ingredient mode
+                    if (!_isCustomIngredient)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16.0),
+                        child: TextButton.icon(
+                          icon: const Icon(Icons.settings, size: 20),
+                          label: Text(
+                            AppLocalizations.of(context)!.useCustomIngredient,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isCustomIngredient = true;
+                            });
+                          },
+                        ),
+                      ),
                   ],
                 ),
               ),
