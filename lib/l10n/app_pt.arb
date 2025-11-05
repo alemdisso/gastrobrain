@@ -1589,5 +1589,51 @@
   "noneOfTheseCreateNew": "Criar Novo Ingrediente",
   "@noneOfTheseCreateNew": {
     "description": "Texto do botão quando o usuário deseja criar um novo ingrediente em vez de selecionar das correspondências"
+  },
+  "recipeDatabaseStatus": "Estado da Base de Receitas",
+  "@recipeDatabaseStatus": {
+    "description": "Título do cartão de progresso de enriquecimento de receitas"
+  },
+  "enrichedRecipes": "Receitas Enriquecidas",
+  "@enrichedRecipes": {
+    "description": "Rótulo para contagem de receitas enriquecidas (3+ ingredientes)"
+  },
+  "needEnrichment": "Precisam Enriquecer",
+  "@needEnrichment": {
+    "description": "Rótulo para contagem de receitas que precisam enriquecer (<3 ingredientes)"
+  },
+  "totalRecipes": "Total de Receitas",
+  "@totalRecipes": {
+    "description": "Rótulo para contagem total de receitas"
+  },
+  "milestoneTarget": "Meta do Marco",
+  "@milestoneTarget": {
+    "description": "Rótulo para texto da meta do marco"
+  },
+  "enrichedRecipesTarget": "50+ receitas enriquecidas",
+  "@enrichedRecipesTarget": {
+    "description": "Texto descrevendo a meta do marco"
+  },
+  "progressPercent": "{percent}% completo",
+  "@progressPercent": {
+    "description": "Exibição da porcentagem de progresso",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "milestoneAchieved": "Marco Alcançado!",
+  "@milestoneAchieved": {
+    "description": "Mensagem mostrada quando a meta de 50+ receitas enriquecidas é alcançada"
+  },
+  "recipesNeededForMilestone": "{count} faltam para o marco",
+  "@recipesNeededForMilestone": {
+    "description": "Mensagem mostrando quantas receitas mais são necessárias para alcançar o marco",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }
