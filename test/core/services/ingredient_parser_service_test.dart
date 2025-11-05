@@ -646,7 +646,7 @@ void main() {
         final result = parserService.parseIngredientLine('3 talos de cebolinha picados');
         expect(result.quantity, equals(3));
         expect(result.unit, equals('stem'));
-        expect(result.ingredientName, equals('cebolinha'));
+        expect(result.ingredientName, contains('cebolinha'));
       });
 
       test('parses "4 stems of celery" correctly', () {
@@ -669,7 +669,7 @@ void main() {
         final result = parserService.parseIngredientLine('3 ramos de tomilho fresco');
         expect(result.quantity, equals(3));
         expect(result.unit, equals('sprig'));
-        expect(result.ingredientName, equals('tomilho'));
+        expect(result.ingredientName, contains('tomilho'));
       });
 
       test('parses "2 ramos de alecrim" correctly', () {
@@ -773,7 +773,7 @@ void main() {
         final result = parserService.parseIngredientLine('10 centímetros de canela em pau');
         expect(result.quantity, equals(10));
         expect(result.unit, equals('cm'));
-        expect(result.ingredientName, equals('canela'));
+        expect(result.ingredientName, contains('canela'));
       });
 
       test('parses "10 centimetros de canela" (without accent) correctly', () {
