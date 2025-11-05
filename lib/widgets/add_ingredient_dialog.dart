@@ -40,7 +40,6 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
   final _notesController = TextEditingController();
   final _searchController = TextEditingController();
   String? _selectedUnitOverride;
-  bool _useCustomUnit = false;
   List<Ingredient> _availableIngredients = [];
   Ingredient? _selectedIngredient;
   bool _isLoading = true;
@@ -80,7 +79,6 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
       } else {
         // Initialize unit override if it exists
         if (widget.existingIngredient!['unit_override'] != null) {
-          _useCustomUnit = true;
           _selectedUnitOverride = widget.existingIngredient!['unit_override'];
         }
 
@@ -149,13 +147,20 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
           quantity: double.parse(_quantityController.text),
         );
 
+        // Detect if unit was changed from ingredient's default
+        final defaultUnit = _selectedIngredient!.unit?.value;
+        final selectedUnit = _selectedUnitOverride;
+        final unitOverride = (selectedUnit != null && selectedUnit != defaultUnit)
+            ? selectedUnit
+            : null;
+
         recipeIngredient = RecipeIngredient(
           id: widget.recipeIngredientId ?? IdGenerator.generateId(),
           recipeId: widget.recipe.id,
           ingredientId: _selectedIngredient!.id,
           quantity: double.parse(_quantityController.text),
           notes: _notesController.text.isEmpty ? null : _notesController.text,
-          unitOverride: _useCustomUnit ? _selectedUnitOverride : null,
+          unitOverride: unitOverride,
         );
       }
 
@@ -460,7 +465,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                         // Unit Section
                         Expanded(
                           child: _isCustomIngredient
-                              // Custom ingredient unit selection
+                              // Custom ingredient: optional unit selection
                               ? DropdownButtonFormField<String>(
                                   value: _selectedUnitOverride,
                                   decoration: InputDecoration(
@@ -487,80 +492,28 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                     });
                                   },
                                 )
-                              // Regular ingredient unit with override option
-                              : Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    if (_useCustomUnit)
-                                      DropdownButtonFormField<String>(
-                                        value: _selectedUnitOverride,
-                                        decoration: InputDecoration(
-                                          labelText:
-                                              AppLocalizations.of(context)!
-                                                  .unit,
-                                          border: const OutlineInputBorder(),
-                                        ),
-                                        items: _units.map((unit) {
-                                          return DropdownMenuItem(
-                                            value: unit.value,
-                                            child: Text(unit.getLocalizedDisplayName(context)),
-                                          );
-                                        }).toList(),
-                                        onChanged: (value) {
-                                          setState(() {
-                                            _selectedUnitOverride = value;
-                                          });
-                                        },
-                                      )
-                                    else if (_selectedIngredient != null)
-                                      SizedBox(
-                                        height: 56,
-                                        child: InputDecorator(
-                                          decoration: InputDecoration(
-                                            labelText:
-                                                AppLocalizations.of(context)!
-                                                    .unit,
-                                            border: const OutlineInputBorder(),
-                                          ),
-                                          child: Text(
-                                            _selectedIngredient?.unit
-                                                    ?.getLocalizedDisplayName(
-                                                        context) ??
-                                                'N/A',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyLarge,
-                                          ),
-                                        ),
-                                      ),
-                                  ],
+                              // Database ingredient: always show dropdown, pre-filled with default
+                              : DropdownButtonFormField<String>(
+                                  value: _selectedUnitOverride ?? _selectedIngredient?.unit?.value,
+                                  decoration: InputDecoration(
+                                    labelText: AppLocalizations.of(context)!.unit,
+                                    border: const OutlineInputBorder(),
+                                  ),
+                                  items: _units.map((unit) {
+                                    return DropdownMenuItem(
+                                      value: unit.value,
+                                      child: Text(unit.getLocalizedDisplayName(context)),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _selectedUnitOverride = value;
+                                    });
+                                  },
                                 ),
                         ),
                       ],
                     ),
-
-                    // Unit Override Option (only for regular ingredients)
-                    if (!_isCustomIngredient)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Row(
-                          children: [
-                            Checkbox(
-                              value: _useCustomUnit,
-                              onChanged: (bool? value) {
-                                setState(() {
-                                  _useCustomUnit = value ?? false;
-                                  if (!_useCustomUnit) {
-                                    _selectedUnitOverride = null;
-                                  }
-                                });
-                              },
-                            ),
-                            Text(AppLocalizations.of(context)!
-                                .overrideDefaultUnit),
-                          ],
-                        ),
-                      ),
 
                     const SizedBox(height: 16),
                     // Notes Field
