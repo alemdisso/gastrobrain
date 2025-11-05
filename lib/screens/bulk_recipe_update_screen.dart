@@ -1065,26 +1065,32 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildStatColumn(
-                  context,
-                  localizations.enrichedRecipes,
-                  enrichedCount.toString(),
-                  Colors.green,
-                  Icons.check_circle_outline,
+                Expanded(
+                  child: _buildStatColumn(
+                    context,
+                    localizations.enrichedRecipes,
+                    enrichedCount.toString(),
+                    Colors.green,
+                    Icons.check_circle_outline,
+                  ),
                 ),
-                _buildStatColumn(
-                  context,
-                  localizations.needEnrichment,
-                  incompleteCount.toString(),
-                  Colors.orange,
-                  Icons.warning_amber_outlined,
+                Expanded(
+                  child: _buildStatColumn(
+                    context,
+                    localizations.needEnrichment,
+                    incompleteCount.toString(),
+                    Colors.orange,
+                    Icons.warning_amber_outlined,
+                  ),
                 ),
-                _buildStatColumn(
-                  context,
-                  localizations.totalRecipes,
-                  totalCount.toString(),
-                  Theme.of(context).colorScheme.primary,
-                  Icons.restaurant_menu,
+                Expanded(
+                  child: _buildStatColumn(
+                    context,
+                    localizations.totalRecipes,
+                    totalCount.toString(),
+                    Theme.of(context).colorScheme.primary,
+                    Icons.restaurant_menu,
+                  ),
                 ),
               ],
             ),
@@ -1205,12 +1211,15 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                 fontWeight: FontWeight.bold,
                 color: color,
               ),
+          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 2),
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall,
           textAlign: TextAlign.center,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 2,
         ),
       ],
     );
