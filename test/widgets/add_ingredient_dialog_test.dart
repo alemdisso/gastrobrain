@@ -141,5 +141,135 @@ void main() {
         (WidgetTester tester) async {
       // Test body as in the artifact
     });
+
+    testWidgets('shows autocomplete search field for database ingredients',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(wrapWithLocalizations(Scaffold(
+        body: Builder(
+          builder: (BuildContext context) {
+            return TextButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AddIngredientDialog(
+                    recipe: testRecipe,
+                    databaseHelper: mockDbHelper,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            );
+          },
+        ),
+      )));
+
+      // Open dialog
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      // Verify autocomplete search field is shown
+      expect(find.byType(Autocomplete<Ingredient>), findsOneWidget);
+
+      // Verify search icon is present
+      expect(find.byIcon(Icons.search), findsOneWidget);
+    });
+
+    testWidgets('shows progressive disclosure link for custom ingredient',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(wrapWithLocalizations(Scaffold(
+        body: Builder(
+          builder: (BuildContext context) {
+            return TextButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AddIngredientDialog(
+                    recipe: testRecipe,
+                    databaseHelper: mockDbHelper,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            );
+          },
+        ),
+      )));
+
+      // Open dialog
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      // Verify progressive disclosure link is shown (Portuguese)
+      expect(find.text('Usar ingrediente personalizado'), findsOneWidget);
+
+      // Verify settings icon is present
+      expect(find.byIcon(Icons.settings), findsOneWidget);
+    });
+
+    testWidgets('unit dropdown is always visible for database ingredients',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(wrapWithLocalizations(Scaffold(
+        body: Builder(
+          builder: (BuildContext context) {
+            return TextButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AddIngredientDialog(
+                    recipe: testRecipe,
+                    databaseHelper: mockDbHelper,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            );
+          },
+        ),
+      )));
+
+      // Open dialog
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      // Unit dropdown should be visible (finds at least one)
+      expect(find.byType(DropdownButtonFormField<String>), findsWidgets);
+
+      // Old checkbox should NOT be present
+      expect(find.text('Substituir unidade padrão'), findsNothing);
+      expect(find.byType(Checkbox), findsNothing);
+    });
+
+    testWidgets('no segmented button for database/custom toggle',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(wrapWithLocalizations(Scaffold(
+        body: Builder(
+          builder: (BuildContext context) {
+            return TextButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AddIngredientDialog(
+                    recipe: testRecipe,
+                    databaseHelper: mockDbHelper,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            );
+          },
+        ),
+      )));
+
+      // Open dialog
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      // Verify SegmentedButton is NOT present
+      expect(find.byType(SegmentedButton<bool>), findsNothing);
+
+      // Old labels should not be present
+      expect(find.text('Do Banco de Dados'), findsNothing);
+      expect(find.text('Personalizado'), findsNothing);
+    });
   });
 }
