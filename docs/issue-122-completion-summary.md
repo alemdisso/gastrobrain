@@ -67,6 +67,16 @@ final unitOverride = (selectedUnit != defaultUnit) ? selectedUnit : null;
 
 **Commits**: `f1faf74`
 
+### Phase 6: Layout Reorganization ✅
+- Accomplished incrementally through Phases 3-4
+- Final layout matches planned structure:
+  1. Autocomplete search OR Custom fields (conditional)
+  2. Quantity + Unit row (simplified)
+  3. Preparation notes (kept)
+  4. Progressive disclosure link at bottom (only if not custom)
+- All conditional rendering properly organized
+- Clean, logical flow from top to bottom
+
 ### Phase 7: Testing Updates ✅
 - Added 4 new comprehensive tests
 - Verified autocomplete, progressive disclosure, unit dropdown
