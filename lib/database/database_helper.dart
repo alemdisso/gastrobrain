@@ -969,6 +969,35 @@ class DatabaseHelper {
     return Sqflite.firstIntValue(result) ?? 0;
   }
 
+  /// Get count of recipes with 3+ ingredients (enriched recipes)
+  Future<int> getEnrichedRecipeCount() async {
+    final Database db = await database;
+    final result = await db.rawQuery('''
+      SELECT COUNT(*) as count
+      FROM (
+        SELECT r.id
+        FROM recipes r
+        INNER JOIN recipe_ingredients ri ON r.id = ri.recipe_id
+        GROUP BY r.id
+        HAVING COUNT(ri.ingredient_id) >= 3
+      )
+    ''');
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  /// Get recipe statistics for progress tracking
+  Future<Map<String, int>> getRecipeEnrichmentStats() async {
+    final totalRecipes = await getRecipesCount();
+    final enrichedRecipes = await getEnrichedRecipeCount();
+    final incompleteRecipes = totalRecipes - enrichedRecipes;
+    
+    return {
+      'total': totalRecipes,
+      'enriched': enrichedRecipes,
+      'incomplete': incompleteRecipes,
+    };
+  }
+
   // Meal CRUD operations
   Future<int> insertMeal(Meal meal) async {
     final Database db = await database;

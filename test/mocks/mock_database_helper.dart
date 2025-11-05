@@ -419,8 +419,11 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   // Not implemented methods - these would need to be added as needed
   @override
-  Future<void> addIngredientToRecipe(RecipeIngredient recipeIngredient) {
-    throw UnimplementedError('Method not implemented for tests');
+  Future<void> addIngredientToRecipe(RecipeIngredient recipeIngredient) async {
+    // Store the recipe ingredient in the map
+    // Use a combination of recipe_id and ingredient_id as the key
+    final key = '${recipeIngredient.recipeId}_${recipeIngredient.ingredientId}';
+    _recipeIngredients[key] = recipeIngredient;
   }
 
   @override
@@ -501,12 +504,60 @@ class MockDatabaseHelper implements DatabaseHelper {
               })
           .toList();
     }
-    return [];
+    
+    // Return recipe ingredients from our mock data
+    final recipeIngredients = _recipeIngredients.values
+        .where((ri) => ri.recipeId == recipeId)
+        .toList();
+    
+    // Convert to map format expected by the code
+    return recipeIngredients.map((ri) {
+      final ingredient = _ingredients[ri.ingredientId];
+      return {
+        'recipe_id': ri.recipeId,
+        'ingredient_id': ri.ingredientId,
+        'quantity': ri.quantity,
+        'name': ingredient?.name ?? 'Unknown',
+        'category': ingredient?.category.name ?? 'other',
+      };
+    }).toList();
   }
 
   @override
-  Future<int> getRecipesCount() {
-    throw UnimplementedError('Method not implemented for tests');
+  Future<int> getRecipesCount() async {
+    return _recipes.length;
+  }
+
+  @override
+  Future<int> getEnrichedRecipeCount() async {
+    // Count recipes that have 3 or more ingredients
+    int enrichedCount = 0;
+    
+    for (final recipeId in _recipes.keys) {
+      // Count ingredients for this recipe
+      final ingredientCount = _recipeIngredients.values
+          .where((ri) => ri.recipeId == recipeId)
+          .length;
+      
+      if (ingredientCount >= 3) {
+        enrichedCount++;
+      }
+    }
+    
+    return enrichedCount;
+  }
+
+  @override
+  Future<Map<String, int>> getRecipeEnrichmentStats() async {
+    final totalRecipes = await getRecipesCount();
+    final enrichedRecipes = await getEnrichedRecipeCount();
+    final incompleteRecipes = totalRecipes - enrichedRecipes;
+    
+    return {
+      'total': totalRecipes,
+      'enriched': enrichedRecipes,
+      'incomplete': incompleteRecipes,
+    };
   }
 
   @override

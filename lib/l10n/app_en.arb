@@ -914,6 +914,34 @@
   "@measurementUnitHead": {
     "description": "Measurement unit names"
   },
+  "measurementUnitCan": "Can",
+  "@measurementUnitCan": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitBox": "Box",
+  "@measurementUnitBox": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitStem": "Stem",
+  "@measurementUnitStem": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitSprig": "Sprig",
+  "@measurementUnitSprig": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitSeed": "Seed",
+  "@measurementUnitSeed": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitGrain": "Grain",
+  "@measurementUnitGrain": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitCm": "cm",
+  "@measurementUnitCm": {
+    "description": "Measurement unit names"
+  },
   "unitOptional": "Unit (Optional)",
   "@unitOptional": {
     "description": "Label for unit field in ingredient forms"
@@ -1589,6 +1617,52 @@
   "noneOfTheseCreateNew": "Create New Ingredient",
   "@noneOfTheseCreateNew": {
     "description": "Button text when user wants to create new ingredient instead of selecting from matches"
+  },
+  "recipeDatabaseStatus": "Recipe Database Status",
+  "@recipeDatabaseStatus": {
+    "description": "Title for recipe enrichment progress card"
+  },
+  "enrichedRecipes": "Enriched Recipes",
+  "@enrichedRecipes": {
+    "description": "Label for count of enriched recipes (3+ ingredients)"
+  },
+  "needEnrichment": "Need Enrichment",
+  "@needEnrichment": {
+    "description": "Label for count of recipes needing enrichment (<3 ingredients)"
+  },
+  "totalRecipes": "Total Recipes",
+  "@totalRecipes": {
+    "description": "Label for total recipe count"
+  },
+  "milestoneTarget": "Milestone Target",
+  "@milestoneTarget": {
+    "description": "Label for milestone target text"
+  },
+  "enrichedRecipesTarget": "50+ enriched recipes",
+  "@enrichedRecipesTarget": {
+    "description": "Text describing the milestone target"
+  },
+  "progressPercent": "{percent}% complete",
+  "@progressPercent": {
+    "description": "Progress percentage display",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "milestoneAchieved": "Milestone Achieved!",
+  "@milestoneAchieved": {
+    "description": "Message shown when 50+ enriched recipes milestone is reached"
+  },
+  "recipesNeededForMilestone": "{count} more needed for milestone",
+  "@recipesNeededForMilestone": {
+    "description": "Message showing how many more recipes needed to reach milestone",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 
 }

@@ -89,6 +89,27 @@ class IngredientParserService {
         case MeasurementUnit.head:
           portugueseName = localizations.measurementUnitHead.toLowerCase();
           break;
+        case MeasurementUnit.can:
+          portugueseName = localizations.measurementUnitCan.toLowerCase();
+          break;
+        case MeasurementUnit.box:
+          portugueseName = localizations.measurementUnitBox.toLowerCase();
+          break;
+        case MeasurementUnit.stem:
+          portugueseName = localizations.measurementUnitStem.toLowerCase();
+          break;
+        case MeasurementUnit.sprig:
+          portugueseName = localizations.measurementUnitSprig.toLowerCase();
+          break;
+        case MeasurementUnit.seed:
+          portugueseName = localizations.measurementUnitSeed.toLowerCase();
+          break;
+        case MeasurementUnit.grain:
+          portugueseName = localizations.measurementUnitGrain.toLowerCase();
+          break;
+        case MeasurementUnit.centimeter:
+          portugueseName = localizations.measurementUnitCm.toLowerCase();
+          break;
         default:
           portugueseName = null;
       }
@@ -201,6 +222,53 @@ class IngredientParserService {
     _unitStringMap['cabeças'] = 'head';
     _unitStringMap['cabecas'] = 'head';
     _unitStringMap['heads'] = 'head';
+    
+    // Can variants
+    _unitStringMap['lata'] = 'can';
+    _unitStringMap['latas'] = 'can';
+    _unitStringMap['can'] = 'can';
+    _unitStringMap['cans'] = 'can';
+    
+    // Box variants
+    _unitStringMap['caixa'] = 'box';
+    _unitStringMap['caixas'] = 'box';
+    _unitStringMap['box'] = 'box';
+    _unitStringMap['boxes'] = 'box';
+    
+    // Stem variants
+    _unitStringMap['talo'] = 'stem';
+    _unitStringMap['talos'] = 'stem';
+    _unitStringMap['stem'] = 'stem';
+    _unitStringMap['stems'] = 'stem';
+    
+    // Sprig variants
+    _unitStringMap['ramo'] = 'sprig';
+    _unitStringMap['ramos'] = 'sprig';
+    _unitStringMap['sprig'] = 'sprig';
+    _unitStringMap['sprigs'] = 'sprig';
+    
+    // Seed variants
+    _unitStringMap['semente'] = 'seed';
+    _unitStringMap['sementes'] = 'seed';
+    _unitStringMap['seed'] = 'seed';
+    _unitStringMap['seeds'] = 'seed';
+    
+    // Grain variants (for peppercorns, cardamom, etc.)
+    _unitStringMap['grão'] = 'grain';
+    _unitStringMap['grao'] = 'grain'; // without tilde
+    _unitStringMap['grãos'] = 'grain';
+    _unitStringMap['graos'] = 'grain'; // without tilde
+    _unitStringMap['grain'] = 'grain';
+    _unitStringMap['grains'] = 'grain';
+    
+    // Centimeter variants
+    _unitStringMap['cm'] = 'cm';
+    _unitStringMap['centímetro'] = 'cm';
+    _unitStringMap['centimetro'] = 'cm'; // without accent
+    _unitStringMap['centímetros'] = 'cm';
+    _unitStringMap['centimetros'] = 'cm'; // without accent
+    _unitStringMap['centimeter'] = 'cm';
+    _unitStringMap['centimeters'] = 'cm';
   }
   
   /// Match a unit string at the start of the text
@@ -395,28 +463,37 @@ class IngredientParserService {
     
     // Step 2: Try to match unit at the start of remaining text
     String? unit;
-    
+
     // Handle Portuguese "de" between quantity and unit (e.g., "1/4 de xícara")
-    // Strip "de" before attempting unit match
+    // Also handles "de" without unit (e.g., "1/4 de pimenta")
     String unitSearchText = remaining;
+    bool strippedDe = false;
     if (remaining.toLowerCase().startsWith('de ')) {
       unitSearchText = remaining.substring(3).trim();
+      strippedDe = true;
     }
-    
+
     final unitMatch = matchUnitAtStart(unitSearchText);
-    
+
     if (unitMatch != null) {
       unit = unitMatch.unit;
       remaining = unitMatch.remaining;
-      
+
       // Step 3: Strip "de" ONLY if it immediately follows the matched unit
       // This handles patterns like "2 kg de mangas" or "2 colheres de sopa de azeite"
       if (remaining.toLowerCase().startsWith('de ')) {
         remaining = remaining.substring(3).trim();
       }
-    } else if (quantityMatch != null) {
-      // Quantity but no unit → default to "piece"
-      unit = 'piece';
+    } else {
+      // No unit found - but if we stripped "de", use the stripped version
+      // This handles: "1/4 de pimenta" → quantity=0.25, ingredient="pimenta"
+      if (strippedDe) {
+        remaining = unitSearchText;
+      }
+      if (quantityMatch != null) {
+        // Quantity but no unit → default to "piece"
+        unit = 'piece';
+      }
     }
     
     // Step 4: Extract ingredient name + descriptors from remaining text
