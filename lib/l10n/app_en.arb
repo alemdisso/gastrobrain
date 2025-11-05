@@ -914,6 +914,34 @@
   "@measurementUnitHead": {
     "description": "Measurement unit names"
   },
+  "measurementUnitCan": "Can",
+  "@measurementUnitCan": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitBox": "Box",
+  "@measurementUnitBox": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitStem": "Stem",
+  "@measurementUnitStem": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitSprig": "Sprig",
+  "@measurementUnitSprig": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitSeed": "Seed",
+  "@measurementUnitSeed": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitGrain": "Grain",
+  "@measurementUnitGrain": {
+    "description": "Measurement unit names"
+  },
+  "measurementUnitCm": "cm",
+  "@measurementUnitCm": {
+    "description": "Measurement unit names"
+  },
   "unitOptional": "Unit (Optional)",
   "@unitOptional": {
     "description": "Label for unit field in ingredient forms"

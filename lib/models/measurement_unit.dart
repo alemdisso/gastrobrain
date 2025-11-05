@@ -14,7 +14,14 @@ enum MeasurementUnit {
   leaves('leaves'),
   pinch('pinch'),
   clove('clove'),
-  head('head');
+  head('head'),
+  can('can'),
+  box('box'),
+  stem('stem'),
+  sprig('sprig'),
+  seed('seed'),
+  grain('grain'),
+  centimeter('cm');
 
   final String value;
   const MeasurementUnit(this.value);
@@ -61,6 +68,20 @@ enum MeasurementUnit {
         return 'Clove';
       case MeasurementUnit.head:
         return 'Head';
+      case MeasurementUnit.can:
+        return 'Can';
+      case MeasurementUnit.box:
+        return 'Box';
+      case MeasurementUnit.stem:
+        return 'Stem';
+      case MeasurementUnit.sprig:
+        return 'Sprig';
+      case MeasurementUnit.seed:
+        return 'Seed';
+      case MeasurementUnit.grain:
+        return 'Grain';
+      case MeasurementUnit.centimeter:
+        return 'cm';
     }
   }
 
@@ -100,6 +121,20 @@ enum MeasurementUnit {
         return localizations.measurementUnitClove;
       case MeasurementUnit.head:
         return localizations.measurementUnitHead;
+      case MeasurementUnit.can:
+        return localizations.measurementUnitCan;
+      case MeasurementUnit.box:
+        return localizations.measurementUnitBox;
+      case MeasurementUnit.stem:
+        return localizations.measurementUnitStem;
+      case MeasurementUnit.sprig:
+        return localizations.measurementUnitSprig;
+      case MeasurementUnit.seed:
+        return localizations.measurementUnitSeed;
+      case MeasurementUnit.grain:
+        return localizations.measurementUnitGrain;
+      case MeasurementUnit.centimeter:
+        return localizations.measurementUnitCm;
     }
   }
 }

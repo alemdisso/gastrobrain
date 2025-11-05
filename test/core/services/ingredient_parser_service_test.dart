@@ -574,6 +574,230 @@ void main() {
       });
     });
 
+    group('New Measurement Units - Cans', () {
+      test('parses "1 lata de tomate pelado" correctly', () {
+        final result = parserService.parseIngredientLine('1 lata de tomate pelado');
+        expect(result.quantity, equals(1));
+        expect(result.unit, equals('can'));
+        expect(result.ingredientName, equals('tomate pelado'));
+      });
+
+      test('parses "2 latas de atum" correctly', () {
+        final result = parserService.parseIngredientLine('2 latas de atum');
+        expect(result.quantity, equals(2));
+        expect(result.unit, equals('can'));
+        expect(result.ingredientName, equals('atum'));
+      });
+
+      test('parses "1 can of coconut milk" correctly', () {
+        final result = parserService.parseIngredientLine('1 can of coconut milk');
+        expect(result.quantity, equals(1));
+        expect(result.unit, equals('can'));
+        expect(result.ingredientName, contains('coconut milk'));
+      });
+
+      test('parses "2 cans of chickpeas" correctly', () {
+        final result = parserService.parseIngredientLine('2 cans of chickpeas');
+        expect(result.quantity, equals(2));
+        expect(result.unit, equals('can'));
+        expect(result.ingredientName, contains('chickpeas'));
+      });
+    });
+
+    group('New Measurement Units - Boxes', () {
+      test('parses "1 caixa de creme de leite" correctly', () {
+        final result = parserService.parseIngredientLine('1 caixa de creme de leite');
+        expect(result.quantity, equals(1));
+        expect(result.unit, equals('box'));
+        expect(result.ingredientName, equals('creme de leite'));
+      });
+
+      test('parses "2 caixas de gelatina" correctly', () {
+        final result = parserService.parseIngredientLine('2 caixas de gelatina');
+        expect(result.quantity, equals(2));
+        expect(result.unit, equals('box'));
+        expect(result.ingredientName, equals('gelatina'));
+      });
+
+      test('parses "1 box of cream" correctly', () {
+        final result = parserService.parseIngredientLine('1 box of cream');
+        expect(result.quantity, equals(1));
+        expect(result.unit, equals('box'));
+        expect(result.ingredientName, contains('cream'));
+      });
+
+      test('parses "2 boxes of gelatin" correctly', () {
+        final result = parserService.parseIngredientLine('2 boxes of gelatin');
+        expect(result.quantity, equals(2));
+        expect(result.unit, equals('box'));
+        expect(result.ingredientName, contains('gelatin'));
+      });
+    });
+
+    group('New Measurement Units - Stems', () {
+      test('parses "2 talos de salsão" correctly', () {
+        final result = parserService.parseIngredientLine('2 talos de salsão');
+        expect(result.quantity, equals(2));
+        expect(result.unit, equals('stem'));
+        expect(result.ingredientName, equals('salsão'));
+      });
+
+      test('parses "3 talos de cebolinha picados" correctly', () {
+        final result = parserService.parseIngredientLine('3 talos de cebolinha picados');
+        expect(result.quantity, equals(3));
+        expect(result.unit, equals('stem'));
+        expect(result.ingredientName, contains('cebolinha'));
+      });
+
+      test('parses "4 stems of celery" correctly', () {
+        final result = parserService.parseIngredientLine('4 stems of celery');
+        expect(result.quantity, equals(4));
+        expect(result.unit, equals('stem'));
+        expect(result.ingredientName, contains('celery'));
+      });
+
+      test('parses "2 stems of lemongrass" correctly', () {
+        final result = parserService.parseIngredientLine('2 stems of lemongrass');
+        expect(result.quantity, equals(2));
+        expect(result.unit, equals('stem'));
+        expect(result.ingredientName, contains('lemongrass'));
+      });
+    });
+
+    group('New Measurement Units - Sprigs', () {
+      test('parses "3 ramos de tomilho fresco" correctly', () {
+        final result = parserService.parseIngredientLine('3 ramos de tomilho fresco');
+        expect(result.quantity, equals(3));
+        expect(result.unit, equals('sprig'));
+        expect(result.ingredientName, contains('tomilho'));
+      });
+
+      test('parses "2 ramos de alecrim" correctly', () {
+        final result = parserService.parseIngredientLine('2 ramos de alecrim');
+        expect(result.quantity, equals(2));
+        expect(result.unit, equals('sprig'));
+        expect(result.ingredientName, equals('alecrim'));
+      });
+
+      test('parses "4 sprigs of thyme" correctly', () {
+        final result = parserService.parseIngredientLine('4 sprigs of thyme');
+        expect(result.quantity, equals(4));
+        expect(result.unit, equals('sprig'));
+        expect(result.ingredientName, contains('thyme'));
+      });
+
+      test('parses "2 sprigs of fresh parsley" correctly', () {
+        final result = parserService.parseIngredientLine('2 sprigs of fresh parsley');
+        expect(result.quantity, equals(2));
+        expect(result.unit, equals('sprig'));
+        expect(result.ingredientName, contains('parsley'));
+      });
+    });
+
+    group('New Measurement Units - Seeds', () {
+      test('parses "4 sementes de cardamomo" correctly', () {
+        final result = parserService.parseIngredientLine('4 sementes de cardamomo');
+        expect(result.quantity, equals(4));
+        expect(result.unit, equals('seed'));
+        expect(result.ingredientName, equals('cardamomo'));
+      });
+
+      test('parses "6 sementes de coentro" correctly', () {
+        final result = parserService.parseIngredientLine('6 sementes de coentro');
+        expect(result.quantity, equals(6));
+        expect(result.unit, equals('seed'));
+        expect(result.ingredientName, equals('coentro'));
+      });
+
+      test('parses "5 seeds of fennel" correctly', () {
+        final result = parserService.parseIngredientLine('5 seeds of fennel');
+        expect(result.quantity, equals(5));
+        expect(result.unit, equals('seed'));
+        expect(result.ingredientName, contains('fennel'));
+      });
+
+      test('parses "3 seeds of star anise" correctly', () {
+        final result = parserService.parseIngredientLine('3 seeds of star anise');
+        expect(result.quantity, equals(3));
+        expect(result.unit, equals('seed'));
+        expect(result.ingredientName, contains('star anise'));
+      });
+    });
+
+    group('New Measurement Units - Grains', () {
+      test('parses "6 grãos de pimenta-do-reino" correctly', () {
+        final result = parserService.parseIngredientLine('6 grãos de pimenta-do-reino');
+        expect(result.quantity, equals(6));
+        expect(result.unit, equals('grain'));
+        expect(result.ingredientName, equals('pimenta-do-reino'));
+      });
+
+      test('parses "8 grãos de pimenta rosa" correctly', () {
+        final result = parserService.parseIngredientLine('8 grãos de pimenta rosa');
+        expect(result.quantity, equals(8));
+        expect(result.unit, equals('grain'));
+        expect(result.ingredientName, equals('pimenta rosa'));
+      });
+
+      test('parses "6 graos de pimenta" (without tilde) correctly', () {
+        final result = parserService.parseIngredientLine('6 graos de pimenta');
+        expect(result.quantity, equals(6));
+        expect(result.unit, equals('grain'));
+        expect(result.ingredientName, equals('pimenta'));
+      });
+
+      test('parses "10 grains of black pepper" correctly', () {
+        final result = parserService.parseIngredientLine('10 grains of black pepper');
+        expect(result.quantity, equals(10));
+        expect(result.unit, equals('grain'));
+        expect(result.ingredientName, contains('black pepper'));
+      });
+
+      test('parses "5 grains of cardamom" correctly', () {
+        final result = parserService.parseIngredientLine('5 grains of cardamom');
+        expect(result.quantity, equals(5));
+        expect(result.unit, equals('grain'));
+        expect(result.ingredientName, contains('cardamom'));
+      });
+    });
+
+    group('New Measurement Units - Centimeters', () {
+      test('parses "5cm de gengibre" correctly', () {
+        final result = parserService.parseIngredientLine('5cm de gengibre');
+        expect(result.quantity, equals(5));
+        expect(result.unit, equals('cm'));
+        expect(result.ingredientName, equals('gengibre'));
+      });
+
+      test('parses "10 centímetros de canela em pau" correctly', () {
+        final result = parserService.parseIngredientLine('10 centímetros de canela em pau');
+        expect(result.quantity, equals(10));
+        expect(result.unit, equals('cm'));
+        expect(result.ingredientName, contains('canela'));
+      });
+
+      test('parses "10 centimetros de canela" (without accent) correctly', () {
+        final result = parserService.parseIngredientLine('10 centimetros de canela');
+        expect(result.quantity, equals(10));
+        expect(result.unit, equals('cm'));
+        expect(result.ingredientName, equals('canela'));
+      });
+
+      test('parses "3 cm of ginger root" correctly', () {
+        final result = parserService.parseIngredientLine('3 cm of ginger root');
+        expect(result.quantity, equals(3));
+        expect(result.unit, equals('cm'));
+        expect(result.ingredientName, contains('ginger'));
+      });
+
+      test('parses "2 centimeters of turmeric" correctly', () {
+        final result = parserService.parseIngredientLine('2 centimeters of turmeric');
+        expect(result.quantity, equals(2));
+        expect(result.unit, equals('cm'));
+        expect(result.ingredientName, contains('turmeric'));
+      });
+    });
+
     group('Initialization', () {
       test('throws StateError if not initialized', () {
         final uninitializedService = IngredientParserService();

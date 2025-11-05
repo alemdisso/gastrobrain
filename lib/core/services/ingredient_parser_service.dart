@@ -89,6 +89,27 @@ class IngredientParserService {
         case MeasurementUnit.head:
           portugueseName = localizations.measurementUnitHead.toLowerCase();
           break;
+        case MeasurementUnit.can:
+          portugueseName = localizations.measurementUnitCan.toLowerCase();
+          break;
+        case MeasurementUnit.box:
+          portugueseName = localizations.measurementUnitBox.toLowerCase();
+          break;
+        case MeasurementUnit.stem:
+          portugueseName = localizations.measurementUnitStem.toLowerCase();
+          break;
+        case MeasurementUnit.sprig:
+          portugueseName = localizations.measurementUnitSprig.toLowerCase();
+          break;
+        case MeasurementUnit.seed:
+          portugueseName = localizations.measurementUnitSeed.toLowerCase();
+          break;
+        case MeasurementUnit.grain:
+          portugueseName = localizations.measurementUnitGrain.toLowerCase();
+          break;
+        case MeasurementUnit.centimeter:
+          portugueseName = localizations.measurementUnitCm.toLowerCase();
+          break;
         default:
           portugueseName = null;
       }
@@ -201,6 +222,53 @@ class IngredientParserService {
     _unitStringMap['cabeças'] = 'head';
     _unitStringMap['cabecas'] = 'head';
     _unitStringMap['heads'] = 'head';
+    
+    // Can variants
+    _unitStringMap['lata'] = 'can';
+    _unitStringMap['latas'] = 'can';
+    _unitStringMap['can'] = 'can';
+    _unitStringMap['cans'] = 'can';
+    
+    // Box variants
+    _unitStringMap['caixa'] = 'box';
+    _unitStringMap['caixas'] = 'box';
+    _unitStringMap['box'] = 'box';
+    _unitStringMap['boxes'] = 'box';
+    
+    // Stem variants
+    _unitStringMap['talo'] = 'stem';
+    _unitStringMap['talos'] = 'stem';
+    _unitStringMap['stem'] = 'stem';
+    _unitStringMap['stems'] = 'stem';
+    
+    // Sprig variants
+    _unitStringMap['ramo'] = 'sprig';
+    _unitStringMap['ramos'] = 'sprig';
+    _unitStringMap['sprig'] = 'sprig';
+    _unitStringMap['sprigs'] = 'sprig';
+    
+    // Seed variants
+    _unitStringMap['semente'] = 'seed';
+    _unitStringMap['sementes'] = 'seed';
+    _unitStringMap['seed'] = 'seed';
+    _unitStringMap['seeds'] = 'seed';
+    
+    // Grain variants (for peppercorns, cardamom, etc.)
+    _unitStringMap['grão'] = 'grain';
+    _unitStringMap['grao'] = 'grain'; // without tilde
+    _unitStringMap['grãos'] = 'grain';
+    _unitStringMap['graos'] = 'grain'; // without tilde
+    _unitStringMap['grain'] = 'grain';
+    _unitStringMap['grains'] = 'grain';
+    
+    // Centimeter variants
+    _unitStringMap['cm'] = 'cm';
+    _unitStringMap['centímetro'] = 'cm';
+    _unitStringMap['centimetro'] = 'cm'; // without accent
+    _unitStringMap['centímetros'] = 'cm';
+    _unitStringMap['centimetros'] = 'cm'; // without accent
+    _unitStringMap['centimeter'] = 'cm';
+    _unitStringMap['centimeters'] = 'cm';
   }
   
   /// Match a unit string at the start of the text
