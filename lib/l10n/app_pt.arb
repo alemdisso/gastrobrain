@@ -1086,6 +1086,28 @@
   "@createNewIngredient": {
     "description": "Texto do botão para criar novo ingrediente"
   },
+  "searchOrCreateIngredient": "Buscar ou criar ingrediente...",
+  "@searchOrCreateIngredient": {
+    "description": "Placeholder para campo de busca unificado de ingredientes"
+  },
+  "createAsNew": "Criar \"{term}\" como novo",
+  "@createAsNew": {
+    "description": "Opção para criar um novo ingrediente a partir do termo de busca",
+    "placeholders": {
+      "term": {
+        "type": "String",
+        "example": "tomate"
+      }
+    }
+  },
+  "useCustomIngredient": "Usar ingrediente personalizado",
+  "@useCustomIngredient": {
+    "description": "Link para mudar para modo de ingrediente personalizado"
+  },
+  "ingredientLabel": "Ingrediente",
+  "@ingredientLabel": {
+    "description": "Rótulo para campo de seleção de ingrediente"
+  },
   "pleaseEnterQuantity": "Por favor, informe uma quantidade",
   "@pleaseEnterQuantity": {
     "description": "Mensagem de validação para inserir quantidade"

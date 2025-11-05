@@ -1104,6 +1104,28 @@
   "@createNewIngredient": {
     "description": "Button text for creating new ingredient"
   },
+  "searchOrCreateIngredient": "Search or create ingredient...",
+  "@searchOrCreateIngredient": {
+    "description": "Placeholder for unified ingredient search field"
+  },
+  "createAsNew": "Create \"{term}\" as new",
+  "@createAsNew": {
+    "description": "Option to create a new ingredient from search term",
+    "placeholders": {
+      "term": {
+        "type": "String",
+        "example": "tomato"
+      }
+    }
+  },
+  "useCustomIngredient": "Use custom ingredient",
+  "@useCustomIngredient": {
+    "description": "Link to switch to custom ingredient mode"
+  },
+  "ingredientLabel": "Ingredient",
+  "@ingredientLabel": {
+    "description": "Label for ingredient selection field"
+  },
   "pleaseEnterQuantity": "Please enter a quantity",
   "@pleaseEnterQuantity": {
     "description": "Validation message for entering quantity"
