@@ -39,7 +39,6 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
   final _quantityController = TextEditingController();
   final _notesController = TextEditingController();
   final _searchController = TextEditingController();
-  List<Ingredient> _filteredIngredients = [];
   String? _selectedUnitOverride;
   bool _useCustomUnit = false;
   List<Ingredient> _availableIngredients = [];
@@ -97,15 +96,12 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
 
               if (foundIngredient != null) {
                 _selectedIngredient = foundIngredient;
+                // Pre-fill search field with ingredient name for autocomplete
+                _searchController.text = foundIngredient.name;
               } else {
                 // If ingredient not found, leave _selectedIngredient as null
-                // The dropdown will show no selection, which is better than wrong selection
                 _selectedIngredient = null;
               }
-
-              _filteredIngredients = List.from(_availableIngredients);
-              // Clear the search field to ensure the selected ingredient is visible
-              _searchController.clear();
             });
           }
         });
@@ -217,21 +213,6 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
     );
   }
 
-  void _filterIngredients(String query) {
-    setState(() {
-      if (query.isEmpty) {
-        // If search is empty, show all ingredients (but maintain sorting)
-        _filteredIngredients = List.from(_availableIngredients);
-      } else {
-        // Filter ingredients that contain the query (case insensitive)
-        _filteredIngredients = _availableIngredients
-            .where((ingredient) =>
-                ingredient.name.toLowerCase().contains(query.toLowerCase()))
-            .toList();
-      }
-    });
-  }
-
   Future<void> _loadIngredients() async {
     setState(() => _isLoading = true);
     try {
@@ -243,7 +224,6 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
 
         setState(() {
           _availableIngredients = ingredients;
-          _filteredIngredients = List.from(ingredients);
           _isLoading = false;
         });
       }
@@ -378,69 +358,102 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                         },
                       ),
                     ] else ...[
-                      Column(
-                        children: [
-                          // Search field
-                          TextField(
-                            controller: _searchController,
+                      // Unified ingredient search with autocomplete
+                      Autocomplete<Ingredient>(
+                        displayStringForOption: (Ingredient ingredient) => ingredient.name,
+                        optionsBuilder: (TextEditingValue textEditingValue) {
+                          if (textEditingValue.text.isEmpty) {
+                            return _availableIngredients;
+                          }
+                          return _availableIngredients.where((ingredient) {
+                            return ingredient.name
+                                .toLowerCase()
+                                .contains(textEditingValue.text.toLowerCase());
+                          });
+                        },
+                        onSelected: (Ingredient selection) {
+                          setState(() {
+                            _selectedIngredient = selection;
+                          });
+                        },
+                        fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                          // Sync with our search controller
+                          if (_searchController.text != controller.text) {
+                            _searchController.text = controller.text;
+                          }
+                          return TextFormField(
+                            controller: controller,
+                            focusNode: focusNode,
                             decoration: InputDecoration(
-                              labelText: AppLocalizations.of(context)!
-                                  .searchIngredients,
+                              labelText: AppLocalizations.of(context)!.ingredientLabel,
+                              hintText: AppLocalizations.of(context)!.searchOrCreateIngredient,
                               border: const OutlineInputBorder(),
                               prefixIcon: const Icon(Icons.search),
-                              hintText:
-                                  AppLocalizations.of(context)!.typeToSearch,
                             ),
-                            onChanged: _filterIngredients,
-                          ),
-                          const SizedBox(height: 16),
-                          // Dropdown with filtered ingredients
-                          DropdownButtonFormField<Ingredient>(
-                            value: _filteredIngredients
-                                    .contains(_selectedIngredient)
-                                ? _selectedIngredient
-                                : null,
-                            decoration: InputDecoration(
-                              labelText: AppLocalizations.of(context)!
-                                  .selectIngredient,
-                              border: const OutlineInputBorder(),
-                            ),
-                            isExpanded: true, // Prevent overflow
-                            items: _filteredIngredients.map((ingredient) {
-                              return DropdownMenuItem(
-                                value: ingredient,
-                                child: Container(
-                                  constraints:
-                                      const BoxConstraints(maxWidth: 200),
-                                  child: Text(
-                                    ingredient.name,
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedIngredient = value;
-                              });
-                            },
                             validator: (value) {
-                              if (!_isCustomIngredient && value == null) {
-                                return AppLocalizations.of(context)!
-                                    .pleaseSelectAnIngredient;
+                              if (_selectedIngredient == null) {
+                                return AppLocalizations.of(context)!.pleaseSelectAnIngredient;
                               }
                               return null;
                             },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      TextButton.icon(
-                        icon: const Icon(Icons.add),
-                        label: Text(
-                            AppLocalizations.of(context)!.createNewIngredient),
-                        onPressed: _createNewIngredient,
+                          );
+                        },
+                        optionsViewBuilder: (context, onSelected, options) {
+                          final optionsList = options.toList();
+                          final searchTerm = _searchController.text;
+                          final hasExactMatch = optionsList.any(
+                            (ing) => ing.name.toLowerCase() == searchTerm.toLowerCase()
+                          );
+
+                          return Align(
+                            alignment: Alignment.topLeft,
+                            child: Material(
+                              elevation: 4.0,
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(maxHeight: 200, maxWidth: 300),
+                                child: ListView.builder(
+                                  padding: EdgeInsets.zero,
+                                  shrinkWrap: true,
+                                  itemCount: optionsList.length + (searchTerm.isNotEmpty && !hasExactMatch ? 2 : 0),
+                                  itemBuilder: (context, index) {
+                                    // Show ingredients first
+                                    if (index < optionsList.length) {
+                                      final ingredient = optionsList[index];
+                                      return ListTile(
+                                        title: Text(ingredient.name),
+                                        onTap: () {
+                                          onSelected(ingredient);
+                                        },
+                                      );
+                                    }
+                                    // Show divider
+                                    else if (index == optionsList.length) {
+                                      return const Divider();
+                                    }
+                                    // Show "Create new" option
+                                    else {
+                                      return ListTile(
+                                        leading: const Icon(Icons.add, size: 20),
+                                        title: Text(
+                                          AppLocalizations.of(context)!.createAsNew(searchTerm),
+                                          style: TextStyle(
+                                            color: Theme.of(context).primaryColor,
+                                          ),
+                                        ),
+                                        onTap: () async {
+                                          // Close autocomplete
+                                          FocusScope.of(context).unfocus();
+                                          // Open create new dialog
+                                          await _createNewIngredient();
+                                        },
+                                      );
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ],
                     const SizedBox(height: 16),
