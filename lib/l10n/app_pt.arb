@@ -896,6 +896,34 @@
   "@measurementUnitHead": {
     "description": "Nomes das unidades de medida"
   },
+  "measurementUnitCan": "Lata",
+  "@measurementUnitCan": {
+    "description": "Nomes das unidades de medida"
+  },
+  "measurementUnitBox": "Caixa",
+  "@measurementUnitBox": {
+    "description": "Nomes das unidades de medida"
+  },
+  "measurementUnitStem": "Talo",
+  "@measurementUnitStem": {
+    "description": "Nomes das unidades de medida"
+  },
+  "measurementUnitSprig": "Ramo",
+  "@measurementUnitSprig": {
+    "description": "Nomes das unidades de medida"
+  },
+  "measurementUnitSeed": "Semente",
+  "@measurementUnitSeed": {
+    "description": "Nomes das unidades de medida"
+  },
+  "measurementUnitGrain": "Grão",
+  "@measurementUnitGrain": {
+    "description": "Nomes das unidades de medida"
+  },
+  "measurementUnitCm": "cm",
+  "@measurementUnitCm": {
+    "description": "Nomes das unidades de medida"
+  },
   "unitOptional": "Unidade (Opcional)",
   "@unitOptional": {
     "description": "Rótulo para campo de unidade em formulários de ingredientes"
