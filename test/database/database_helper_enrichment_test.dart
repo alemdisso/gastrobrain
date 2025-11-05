@@ -4,6 +4,7 @@ import 'package:gastrobrain/models/ingredient.dart';
 import 'package:gastrobrain/models/ingredient_category.dart';
 import 'package:gastrobrain/models/measurement_unit.dart';
 import 'package:gastrobrain/models/recipe_ingredient.dart';
+import 'package:gastrobrain/utils/id_generator.dart';
 import '../mocks/mock_database_helper.dart';
 
 void main() {
@@ -30,19 +31,19 @@ void main() {
         id: 'ing-1',
         name: 'Tomato',
         category: IngredientCategory.vegetable,
-        unit: MeasurementUnit.unit,
+        unit: MeasurementUnit.piece,
       );
       final ingredient2 = Ingredient(
         id: 'ing-2',
         name: 'Onion',
         category: IngredientCategory.vegetable,
-        unit: MeasurementUnit.unit,
+        unit: MeasurementUnit.piece,
       );
       final ingredient3 = Ingredient(
         id: 'ing-3',
         name: 'Garlic',
         category: IngredientCategory.vegetable,
-        unit: MeasurementUnit.unit,
+        unit: MeasurementUnit.piece,
       );
       final ingredient4 = Ingredient(
         id: 'ing-4',
@@ -62,18 +63,21 @@ void main() {
         name: 'Enriched Recipe 1',
         difficulty: 2,
         instructions: 'Test',
+        createdAt: DateTime.now(),
       );
       final recipe2 = Recipe(
         id: 'recipe-2',
         name: 'Incomplete Recipe',
         difficulty: 1,
         instructions: 'Test',
+        createdAt: DateTime.now(),
       );
       final recipe3 = Recipe(
         id: 'recipe-3',
         name: 'Enriched Recipe 2',
         difficulty: 3,
         instructions: 'Test',
+        createdAt: DateTime.now(),
       );
 
       await dbHelper.insertRecipe(recipe1);
@@ -82,16 +86,19 @@ void main() {
 
       // Add 3 ingredients to recipe1 (enriched)
       await dbHelper.addIngredientToRecipe(RecipeIngredient(
+        id: IdGenerator.generateId(),
         recipeId: recipe1.id,
         ingredientId: ingredient1.id,
         quantity: 1,
       ));
       await dbHelper.addIngredientToRecipe(RecipeIngredient(
+        id: IdGenerator.generateId(),
         recipeId: recipe1.id,
         ingredientId: ingredient2.id,
         quantity: 1,
       ));
       await dbHelper.addIngredientToRecipe(RecipeIngredient(
+        id: IdGenerator.generateId(),
         recipeId: recipe1.id,
         ingredientId: ingredient3.id,
         quantity: 1,
@@ -99,11 +106,13 @@ void main() {
 
       // Add only 2 ingredients to recipe2 (incomplete)
       await dbHelper.addIngredientToRecipe(RecipeIngredient(
+        id: IdGenerator.generateId(),
         recipeId: recipe2.id,
         ingredientId: ingredient1.id,
         quantity: 1,
       ));
       await dbHelper.addIngredientToRecipe(RecipeIngredient(
+        id: IdGenerator.generateId(),
         recipeId: recipe2.id,
         ingredientId: ingredient2.id,
         quantity: 1,
@@ -111,21 +120,25 @@ void main() {
 
       // Add 4 ingredients to recipe3 (enriched)
       await dbHelper.addIngredientToRecipe(RecipeIngredient(
+        id: IdGenerator.generateId(),
         recipeId: recipe3.id,
         ingredientId: ingredient1.id,
         quantity: 1,
       ));
       await dbHelper.addIngredientToRecipe(RecipeIngredient(
+        id: IdGenerator.generateId(),
         recipeId: recipe3.id,
         ingredientId: ingredient2.id,
         quantity: 1,
       ));
       await dbHelper.addIngredientToRecipe(RecipeIngredient(
+        id: IdGenerator.generateId(),
         recipeId: recipe3.id,
         ingredientId: ingredient3.id,
         quantity: 1,
       ));
       await dbHelper.addIngredientToRecipe(RecipeIngredient(
+        id: IdGenerator.generateId(),
         recipeId: recipe3.id,
         ingredientId: ingredient4.id,
         quantity: 1,
@@ -142,19 +155,19 @@ void main() {
         id: 'ing-1',
         name: 'Tomato',
         category: IngredientCategory.vegetable,
-        unit: MeasurementUnit.unit,
+        unit: MeasurementUnit.piece,
       );
       final ingredient2 = Ingredient(
         id: 'ing-2',
         name: 'Onion',
         category: IngredientCategory.vegetable,
-        unit: MeasurementUnit.unit,
+        unit: MeasurementUnit.piece,
       );
       final ingredient3 = Ingredient(
         id: 'ing-3',
         name: 'Garlic',
         category: IngredientCategory.vegetable,
-        unit: MeasurementUnit.unit,
+        unit: MeasurementUnit.piece,
       );
 
       await dbHelper.insertIngredient(ingredient1);
@@ -167,18 +180,21 @@ void main() {
         name: 'Enriched Recipe',
         difficulty: 2,
         instructions: 'Test',
+        createdAt: DateTime.now(),
       );
       final incompleteRecipe1 = Recipe(
         id: 'incomplete1',
         name: 'Incomplete Recipe 1',
         difficulty: 1,
         instructions: 'Test',
+        createdAt: DateTime.now(),
       );
       final incompleteRecipe2 = Recipe(
         id: 'incomplete2',
         name: 'Incomplete Recipe 2',
         difficulty: 1,
         instructions: 'Test',
+        createdAt: DateTime.now(),
       );
 
       await dbHelper.insertRecipe(enrichedRecipe);
@@ -187,16 +203,19 @@ void main() {
 
       // Add 3 ingredients to enriched recipe
       await dbHelper.addIngredientToRecipe(RecipeIngredient(
+        id: IdGenerator.generateId(),
         recipeId: enrichedRecipe.id,
         ingredientId: ingredient1.id,
         quantity: 1,
       ));
       await dbHelper.addIngredientToRecipe(RecipeIngredient(
+        id: IdGenerator.generateId(),
         recipeId: enrichedRecipe.id,
         ingredientId: ingredient2.id,
         quantity: 1,
       ));
       await dbHelper.addIngredientToRecipe(RecipeIngredient(
+        id: IdGenerator.generateId(),
         recipeId: enrichedRecipe.id,
         ingredientId: ingredient3.id,
         quantity: 1,
@@ -204,6 +223,7 @@ void main() {
 
       // Add 1 ingredient to first incomplete recipe
       await dbHelper.addIngredientToRecipe(RecipeIngredient(
+        id: IdGenerator.generateId(),
         recipeId: incompleteRecipe1.id,
         ingredientId: ingredient1.id,
         quantity: 1,

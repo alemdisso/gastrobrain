@@ -1027,9 +1027,9 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     // Determine card color based on progress
     Color? cardColor;
     if (isTargetReached) {
-      cardColor = Colors.green.withOpacity(0.1);
+      cardColor = Colors.green.withValues(alpha: 0.1);
     } else if (enrichedCount >= kEnrichedRecipesWarningThreshold) {
-      cardColor = Colors.orange.withOpacity(0.1);
+      cardColor = Colors.orange.withValues(alpha: 0.1);
     }
 
     return Card(
@@ -1096,7 +1096,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
               child: LinearProgressIndicator(
                 value: totalCount > 0 ? enrichedCount / totalCount : 0,
                 minHeight: 8,
-                backgroundColor: Colors.grey.withOpacity(0.2),
+                backgroundColor: Colors.grey.withValues(alpha: 0.2),
                 valueColor: AlwaysStoppedAnimation<Color>(
                   isTargetReached ? Colors.green : Colors.blue,
                 ),
@@ -1127,13 +1127,13 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isTargetReached
-                    ? Colors.green.withOpacity(0.1)
-                    : Colors.blue.withOpacity(0.05),
+                    ? Colors.green.withValues(alpha: 0.1)
+                    : Colors.blue.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: isTargetReached
-                      ? Colors.green.withOpacity(0.3)
-                      : Colors.blue.withOpacity(0.2),
+                      ? Colors.green.withValues(alpha: 0.3)
+                      : Colors.blue.withValues(alpha: 0.2),
                 ),
               ),
               child: Row(
