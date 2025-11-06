@@ -473,16 +473,22 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                         .unitOptional,
                                     border: const OutlineInputBorder(),
                                   ),
+                                  isExpanded: true,
                                   items: [
                                     DropdownMenuItem(
                                       value: null,
                                       child: Text(
-                                          AppLocalizations.of(context)!.noUnit),
+                                          AppLocalizations.of(context)!.noUnit,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                     ),
                                     ..._units.map((unit) {
                                       return DropdownMenuItem(
                                         value: unit.value,
-                                        child: Text(unit.getLocalizedDisplayName(context)),
+                                        child: Text(
+                                          unit.getLocalizedDisplayName(context),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       );
                                     }),
                                   ],
@@ -499,10 +505,14 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                     labelText: AppLocalizations.of(context)!.unit,
                                     border: const OutlineInputBorder(),
                                   ),
+                                  isExpanded: true,
                                   items: _units.map((unit) {
                                     return DropdownMenuItem(
                                       value: unit.value,
-                                      child: Text(unit.getLocalizedDisplayName(context)),
+                                      child: Text(
+                                        unit.getLocalizedDisplayName(context),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     );
                                   }).toList(),
                                   onChanged: (value) {
