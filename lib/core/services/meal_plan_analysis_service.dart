@@ -103,8 +103,9 @@ class MealPlanAnalysisService {
       final Set<String> recipeIds = {};
 
       for (final meal in recentMeals) {
-        // Only include meals within the day window (inclusive of cutoff date)
-        if (meal.cookedAt.isAfter(cutoffDate) || meal.cookedAt.isAtSameMomentAs(cutoffDate)) {
+        // Only include meals within the day window (exclusive of cutoff date boundary)
+        // A dayWindow of 1 means "within the last day", excluding meals from exactly 1 day ago
+        if (meal.cookedAt.isAfter(cutoffDate)) {
           // Get recipes from junction table
           final mealRecipes = await _dbHelper.getMealRecipesForMeal(meal.id);
           for (final mealRecipe in mealRecipes) {
@@ -156,7 +157,8 @@ class MealPlanAnalysisService {
       final Map<DateTime, List<String>> recipesByDate = {};
 
       for (final meal in recentMeals) {
-        if (meal.cookedAt.isAfter(cutoffDate) || meal.cookedAt.isAtSameMomentAs(cutoffDate)) {
+        // Only include meals within the day window (exclusive of cutoff date boundary)
+        if (meal.cookedAt.isAfter(cutoffDate)) {
           final date = DateTime(
             meal.cookedAt.year,
             meal.cookedAt.month,

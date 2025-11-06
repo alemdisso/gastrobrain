@@ -129,9 +129,25 @@ class MockDatabaseHelper implements DatabaseHelper {
   Map<String, Ingredient> get ingredients => _ingredients;
 
   // Database property implementation
+  // Note: For integration tests that need direct database access,
+  // they should use a real DatabaseHelper instance instead of the mock.
+  // This mock is primarily for unit testing recommendation algorithms.
+  Database? _mockDatabase;
+
   @override
-  Future<Database> get database => throw UnimplementedError(
-      'The database property is not implemented in MockDatabaseHelper');
+  Future<Database> get database async {
+    if (_mockDatabase != null) {
+      return _mockDatabase!;
+    }
+    throw UnimplementedError(
+        'The database property is not implemented in MockDatabaseHelper. '
+        'For integration tests requiring direct database access, use a real DatabaseHelper instance.');
+  }
+
+  /// Set a database instance for tests that need direct database access
+  void setDatabase(Database db) {
+    _mockDatabase = db;
+  }
 
   // Reset all data
   void resetAllData() {
@@ -433,6 +449,17 @@ class MockDatabaseHelper implements DatabaseHelper {
       throw Exception('Meal not found');
     }
 
+    // Check if this recipe is already associated with this meal
+    final existingMealRecipe = _mealRecipes.values.firstWhere(
+      (mr) => mr.mealId == mealId && mr.recipeId == recipeId,
+      orElse: () => MealRecipe(mealId: '', recipeId: ''),
+    );
+
+    // If already exists, return the existing ID (prevent duplicates)
+    if (existingMealRecipe.mealId.isNotEmpty) {
+      return existingMealRecipe.id;
+    }
+
     final mealRecipe = MealRecipe(
       mealId: mealId,
       recipeId: recipeId,
@@ -466,8 +493,16 @@ class MockDatabaseHelper implements DatabaseHelper {
   }
 
   @override
-  Future<int> deleteMealPlanItem(String id) {
-    throw UnimplementedError('Method not implemented for tests');
+  Future<int> deleteMealPlanItem(String id) async {
+    // Find and remove the item from all meal plans
+    for (final plan in _mealPlans.values) {
+      final itemIndex = plan.items.indexWhere((item) => item.id == id);
+      if (itemIndex != -1) {
+        plan.items.removeAt(itemIndex);
+        return 1; // Success
+      }
+    }
+    return 0; // Item not found
   }
 
   @override
