@@ -149,23 +149,20 @@ void main() {
       final updatedCookedAt = DateTime.now().subtract(const Duration(hours: 1));
       final modifiedAt = DateTime.now();
 
-      // Update meal properties
-      final db = await mockDbHelper.database;
-      await db.update(
-        'meals',
-        {
-          'cooked_at': updatedCookedAt.toIso8601String(),
-          'servings': 4, // Changed from 3 to 4
-          'notes': 'Updated meal notes', // Changed notes
-          'was_successful': 0, // Changed from successful to unsuccessful
-          'actual_prep_time': 30.0, // Changed from 25.0
-          'actual_cook_time': 40.0, // Changed from 35.0
-          'modified_at':
-              modifiedAt.toIso8601String(), // Added modification timestamp
-        },
-        where: 'id = ?',
-        whereArgs: [mealId],
+      // Update meal properties using updateMeal method
+      final mealToUpdate = Meal(
+        id: mealId,
+        recipeId: null, // Using junction table approach
+        cookedAt: updatedCookedAt,
+        servings: 4, // Changed from 3 to 4
+        notes: 'Updated meal notes', // Changed notes
+        wasSuccessful: false, // Changed from successful to unsuccessful
+        actualPrepTime: 30.0, // Changed from 25.0
+        actualCookTime: 40.0, // Changed from 35.0
+        modifiedAt: modifiedAt, // Added modification timestamp
       );
+
+      await mockDbHelper.updateMeal(mealToUpdate);
 
       // Verify the basic properties were updated
       final updatedMeal = await mockDbHelper.getMeal(mealId);
@@ -233,12 +230,9 @@ void main() {
 
       // === PHASE 4: Remove one side dish (simulating recipe removal) ===
 
-      // Remove first side dish
-      await db.delete(
-        'meal_recipes',
-        where: 'meal_id = ? AND recipe_id = ?',
-        whereArgs: [mealId, sideDish1Id],
-      );
+      // Remove first side dish using removeRecipeFromMeal method
+      final removed = await mockDbHelper.removeRecipeFromMeal(mealId, sideDish1Id);
+      expect(removed, true, reason: "Should successfully remove the side dish");
 
       // Verify removal
       final mealRecipesAfterRemoval =
@@ -386,20 +380,20 @@ void main() {
 
       // Simulate editing the meal (what EditMealRecordingDialog would do)
       final modifiedAt = DateTime.now();
-      final db = await mockDbHelper.database;
 
-      await db.update(
-        'meals',
-        {
-          'servings': 4, // Changed from 2 to 4
-          'notes': 'Edited meal from plan',
-          'actual_prep_time': 25.0, // Changed from 20.0
-          'actual_cook_time': 35.0, // Changed from 30.0
-          'modified_at': modifiedAt.toIso8601String(),
-        },
-        where: 'id = ?',
-        whereArgs: [mealId],
+      final mealToUpdate = Meal(
+        id: mealId,
+        recipeId: null,
+        cookedAt: originalMeal.cookedAt, // Keep original cooked time
+        servings: 4, // Changed from 2 to 4
+        notes: 'Edited meal from plan',
+        wasSuccessful: originalMeal.wasSuccessful, // Keep original success status
+        actualPrepTime: 25.0, // Changed from 20.0
+        actualCookTime: 35.0, // Changed from 30.0
+        modifiedAt: modifiedAt,
       );
+
+      await mockDbHelper.updateMeal(mealToUpdate);
 
       // === VERIFY EDIT RESULTS ===
 
@@ -480,19 +474,20 @@ void main() {
       // === EDIT MEAL AND ADD MODIFIED TIMESTAMP ===
 
       final modifiedAt = DateTime.now();
-      final db = await mockDbHelper.database;
 
-      await db.update(
-        'meals',
-        {
-          'servings': 3, // Change servings
-          'notes': 'Edited notes',
-          'modified_at':
-              modifiedAt.toIso8601String(), // Add modification timestamp
-        },
-        where: 'id = ?',
-        whereArgs: [mealId],
+      final mealToUpdate = Meal(
+        id: mealId,
+        recipeId: null,
+        cookedAt: originalMeal.cookedAt, // Keep original cooked time
+        servings: 3, // Change servings
+        notes: 'Edited notes',
+        wasSuccessful: originalMeal.wasSuccessful, // Keep original success status
+        actualPrepTime: originalMeal.actualPrepTime, // Keep original prep time
+        actualCookTime: originalMeal.actualCookTime, // Keep original cook time
+        modifiedAt: modifiedAt, // Add modification timestamp
       );
+
+      await mockDbHelper.updateMeal(mealToUpdate);
 
       // === VERIFY MODIFIED TIMESTAMP ===
 
@@ -516,15 +511,19 @@ void main() {
           const Duration(milliseconds: 100)); // Ensure different timestamp
       final secondModifiedAt = DateTime.now();
 
-      await db.update(
-        'meals',
-        {
-          'servings': 4, // Change servings again
-          'modified_at': secondModifiedAt.toIso8601String(),
-        },
-        where: 'id = ?',
-        whereArgs: [mealId],
+      final secondMealUpdate = Meal(
+        id: mealId,
+        recipeId: null,
+        cookedAt: originalMeal.cookedAt, // Keep original cooked time
+        servings: 4, // Change servings again
+        notes: editedMeal.notes, // Keep previous notes
+        wasSuccessful: originalMeal.wasSuccessful, // Keep original success status
+        actualPrepTime: originalMeal.actualPrepTime, // Keep original prep time
+        actualCookTime: originalMeal.actualCookTime, // Keep original cook time
+        modifiedAt: secondModifiedAt, // Update modification timestamp
       );
+
+      await mockDbHelper.updateMeal(secondMealUpdate);
 
       // Verify second edit
       final secondEditedMeal = await mockDbHelper.getMeal(mealId);
