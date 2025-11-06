@@ -1,0 +1,240 @@
+================================================================================
+RECOMMENDATION ENGINE: PLANNED VS COOKED MEALS INVESTIGATION
+================================================================================
+
+KEY FINDINGS:
+=============
+
+1. getRecentMeals() - ONLY COOKED MEALS
+   Location: lib/core/services/recommendation_database_queries.dart:243
+   Problem:  Only queries 'meals' table, never queries 'meal_plan_items'
+   Impact:   No awareness of planned meals during planning workflows
+
+2. ProteinRotationFactor - IGNORES PLANNED MEALS
+   Location: lib/core/services/recommendation_factors/protein_rotation_factor.dart
+   Problem:  Uses context['recentMeals'] which doesn't include planned meals
+   Impact:   Can recommend chicken recipes when chicken is already planned
+
+3. VarietyEncouragementFactor - IGNORES PLANNED MEALS
+   Location: lib/core/services/recommendation_factors/variety_encouragement_factor.dart
+   Problem:  Uses context['mealCounts'] which only counts cooked meals
+   Impact:   Planned recipes don't reduce variety scores
+
+4. FrequencyFactor - NO PLANNED AWARENESS
+   Location: lib/core/services/recommendation_factors/frequency_factor.dart
+   Problem:  Only uses lastCooked date, ignores planned dates
+   Impact:   Can over-recommend recipes already in the plan
+
+5. Context Building - NO PLANNED MEAL DATA
+   Location: lib/core/services/recommendation_service.dart:470-587
+   Problem:  _buildContext() loads no planned meal data
+   Impact:   No mechanism to pass planned meals to factors
+
+6. hasBeenCooked Flag - UNUSED
+   Location: lib/models/meal_plan_item.dart:9
+   Problem:  Flag exists but never used by recommendation engine
+   Impact:   Cannot track planned-then-cooked transitions
+
+7. Database Tables - TWO SEPARATE SYSTEMS
+   Location: lib/database/database_helper.dart
+   Tables Used:    meals + meal_recipes (cooked history)
+   Tables Ignored: meal_plan_items + meal_plan_item_recipes (planned meals)
+   Problem:  No integration between meal planning and recommendations
+
+8. MealPlanAnalysisService - CORRECT BUT DISCONNECTED
+   Location: lib/core/services/meal_plan_analysis_service.dart
+   Status:   Correctly handles both planned and cooked meals
+   Problem:  NOT integrated into RecommendationService
+   Evidence: Used only in integration tests, not production code
+
+================================================================================
+IMPACT SEVERITY:
+================================================================================
+
+High (Planning Workflows):
+  - Recommendations don't avoid already-planned meals
+  - Protein rotation ignores current week plans
+  - User sees duplicate suggestions for same proteins
+  - Variety metrics don't account for planned meals
+
+Medium (Frequency Maintenance):
+  - Planned meals don't get frequency credit
+  - May over-recommend recipes already scheduled
+  - Weekly rotations don't benefit from planning
+
+Low (Normal Recommendations):
+  - Pure history-based system works as designed
+  - No interference with non-planning workflows
+  - Only problematic in meal planning context
+
+================================================================================
+ROOT CAUSES:
+================================================================================
+
+1. Architecture Separation
+   - Recommendation service (history-focused) separate from planning service
+   - No communication channel between them
+
+2. Data Model Mismatch
+   - Recommendations use Meal (cooked) model
+   - Planning uses MealPlanItem (future) model
+   - No integration in factors
+
+3. Design Philosophy
+   - All factors are RETROSPECTIVE (past-based)
+   - System was built for "suggest next recipe"
+   - Not designed for "plan a week" workflows
+
+4. Query Gaps
+   - getRecentMeals() doesn't query meal_plan_items
+   - getMealCounts() doesn't count meal_plan_item_recipes
+   - No planned meal query methods
+
+5. Feature Integration
+   - MealPlanAnalysisService works correctly but unused
+   - Integration test shows correct pattern not used in production
+   - Parallel systems instead of unified approach
+
+================================================================================
+CODE REFERENCES:
+================================================================================
+
+getRecentMeals (only cooked):
+  recommendation_database_queries.dart:243-292
+  database_helper.dart:1119-1127
+
+ProteinRotationFactor (ignores plans):
+  protein_rotation_factor.dart:53-90
+  Uses: context['recentMeals']
+
+VarietyEncouragementFactor (ignores plans):
+  variety_encouragement_factor.dart:26-27
+  Uses: context['mealCounts']
+
+FrequencyFactor (no plan awareness):
+  frequency_factor.dart:37-46
+  Uses: context['lastCooked']
+
+Context Building (missing planned data):
+  recommendation_service.dart:559-565
+  No: plannedMeals loading
+
+hasBeenCooked (unused flag):
+  meal_plan_item.dart:9
+  Not referenced anywhere in recommendation engine
+
+MealPlanAnalysisService (correct but disconnected):
+  meal_plan_analysis_service.dart:21-244
+  getPlannedRecipeIds() - works
+  getRecentlyCookedRecipeIds() - works
+  calculateProteinPenaltyStrategy() - works
+
+Integration Test Pattern (shows what should happen):
+  meal_plan_analysis_integration_test.dart:965-1005
+  _buildRecommendationContext() demonstrates correct approach
+  Used only in tests, NOT in production
+
+================================================================================
+EXAMPLE SCENARIOS:
+================================================================================
+
+SCENARIO 1: Protein Rotation During Planning
+Setup:
+  - "Chicken Curry" planned for Wednesday lunch
+  - Last 7 days: beef (5d), pork (3d)
+Current Behavior:
+  - System recommends chicken recipes for other days
+  - Ignores the planned chicken curry
+Should Be:
+  - Penalty on chicken to avoid duplicate
+
+SCENARIO 2: Variety During Planning
+Setup:
+  - "Spaghetti Carbonara" planned (never cooked)
+  - History: 0 cooks
+Current Behavior:
+  - Gets 100/100 variety score
+  - No consideration of planned status
+Should Be:
+  - Reduced variety boost since we're cooking it soon
+
+SCENARIO 3: Frequency During Planning
+Setup:
+  - "Roast Chicken" (weekly), last cooked 9 days ago
+  - Scheduled for next Sunday (6 days away)
+Current Behavior:
+  - System over-emphasizes it (1.28x overdue)
+  - Doesn't recognize it's already scheduled
+Should Be:
+  - No over-emphasis since it's in the plan
+
+================================================================================
+GAPS IDENTIFIED:
+================================================================================
+
+Gap 1: No Planned-Meal-Aware Recommendation Context
+  Missing: MealPlanAnalysisService integration into _buildContext()
+
+Gap 2: Factors Don't Know About Current Week Plans
+  Missing: Meal plan parameter in factor calculations
+
+Gap 3: Database Queries Ignore Meal Plan Tables
+  Missing: getMealPlanRecipeIds(), getMealPlanProteinTypes()
+
+Gap 4: No Temporal Awareness in Factors
+  Missing: Distinction between past/present/future meals
+
+Gap 5: hasBeenCooked Flag Not Utilized
+  Missing: Tracking planned-to-cooked transitions
+
+Gap 6: No Planning Workflow Support
+  Missing: Optional mealPlan parameter in getRecommendations()
+
+================================================================================
+CORRECT APPROACH IDENTIFIED:
+================================================================================
+
+The integration test shows the pattern that SHOULD be used:
+
+1. Get current meal plan:
+   plannedRecipeIds = await MealPlanAnalysisService.getPlannedRecipeIds()
+
+2. Get recently cooked:
+   recentRecipeIds = await MealPlanAnalysisService.getRecentlyCookedRecipeIds()
+
+3. Calculate penalties:
+   penaltyStrategy = await MealPlanAnalysisService.calculateProteinPenaltyStrategy()
+
+4. Pass to recommendation:
+   excludeIds = plannedRecipeIds
+   avoidProteinTypes = penaltyStrategy.highPenaltyProteins
+
+5. System respects both contexts
+   Planned meals are excluded
+   Planned proteins get penalties
+   Recent cooking history is honored
+
+This pattern is PROVEN CORRECT (in tests) but NOT USED IN PRODUCTION.
+
+================================================================================
+CONCLUSION:
+================================================================================
+
+The recommendation engine is:
+  ✓ Fully functional for PURE HISTORY-BASED recommendations
+  ✗ Lacking planned-meal awareness for PLANNING WORKFLOWS
+
+The MealPlanAnalysisService provides a correct implementation that should be:
+  - Integrated into RecommendationService
+  - Used during meal planning requests
+  - Passed as context to recommendation factors
+  - Referenced in database queries
+
+To fix this:
+  1. Add MealPlan parameter to getRecommendations()
+  2. Integrate MealPlanAnalysisService into _buildContext()
+  3. Load planned meal data into recommendation context
+  4. Update factors to use planned meal information
+  5. Update database queries to include meal_plan_items tables
+
+================================================================================
