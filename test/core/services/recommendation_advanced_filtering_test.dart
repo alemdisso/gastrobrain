@@ -128,8 +128,9 @@ void main() {
       recommendationService = RecommendationService(
         dbHelper: mockDbHelper,
         registerDefaultFactors: true,
-        proteinTypesOverride:
-            mockDbHelper.recipeProteinTypes, // Pass the override directly
+        proteinTypesOverride: mockDbHelper.recipeProteinTypes.map(
+          (key, value) => MapEntry(key, value.toSet()),
+        ),
       );
 
 // Act: Get recommendations avoiding beef and chicken
@@ -188,8 +189,9 @@ void main() {
       recommendationService = RecommendationService(
         dbHelper: mockDbHelper,
         registerDefaultFactors: true,
-        proteinTypesOverride:
-            mockDbHelper.recipeProteinTypes, // Pass the override directly
+        proteinTypesOverride: mockDbHelper.recipeProteinTypes.map(
+          (key, value) => MapEntry(key, value.toSet()),
+        ),
       );
 
       // Act: Get recommendations requiring fish
@@ -490,11 +492,14 @@ void main() {
       recommendationService = RecommendationService(
         dbHelper: mockDbHelper,
         registerDefaultFactors: true,
-        proteinTypesOverride:
-            mockDbHelper.recipeProteinTypes, // Pass the override directly
+        proteinTypesOverride: mockDbHelper.recipeProteinTypes.map(
+          (key, value) => MapEntry(key, value.toSet()),
+        ),
       );
       Map<String, Set<ProteinType>> proteinTypes =
-          Map<String, Set<ProteinType>>.from(mockDbHelper.recipeProteinTypes);
+          mockDbHelper.recipeProteinTypes.map(
+            (key, value) => MapEntry(key, value.toSet()),
+          );
 
       recommendationService.overrideTestContext = {
         'lastCooked': {
