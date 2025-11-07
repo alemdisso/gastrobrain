@@ -52,7 +52,7 @@ class RecommendationDatabaseQueries {
 
         // Apply protein type filters
         recipes = recipes.where((recipe) {
-          final proteinTypes = recipeProteinTypes[recipe.id] ?? [];
+          final proteinTypes = recipeProteinTypes[recipe.id] ?? {};
 
           // If required types are specified, recipe must contain at least one
           if (requiredProteinTypes != null && requiredProteinTypes.isNotEmpty) {
@@ -228,7 +228,7 @@ class RecommendationDatabaseQueries {
           'recipe': recipe,
           'lastCooked': lastCookedDates[recipe.id],
           'timesCooked': mealCounts[recipe.id] ?? 0,
-          if (includeProteinInfo) 'proteinTypes': proteinTypes[recipe.id] ?? [],
+          if (includeProteinInfo) 'proteinTypes': proteinTypes[recipe.id] ?? {},
         };
       }).toList();
     } catch (e) {
