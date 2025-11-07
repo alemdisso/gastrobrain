@@ -12,7 +12,7 @@ import 'localized_error_messages.dart';
 class RecommendationDatabaseQueries {
   final DatabaseHelper _dbHelper;
 
-  Map<String, List<ProteinType>>? proteinTypesOverride;
+  Map<String, Set<ProteinType>>? proteinTypesOverride;
 
   RecommendationDatabaseQueries({
     required DatabaseHelper dbHelper,

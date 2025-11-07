@@ -351,10 +351,10 @@ void main() {
       // Set up identical last cooked dates to isolate difficulty effect
       final twoWeeksAgo = now.subtract(const Duration(days: 14));
 
-      Map<String, List<ProteinType>> proteinTypes = {
-        'easy-recipe': <ProteinType>[],
-        'medium-recipe': <ProteinType>[],
-        'hard-recipe': <ProteinType>[],
+      Map<String, Set<ProteinType>> proteinTypes = {
+        'easy-recipe': <ProteinType>{},
+        'medium-recipe': <ProteinType>{},
+        'hard-recipe': <ProteinType>{},
       };
 
       recommendationService.overrideTestContext = {
@@ -493,8 +493,8 @@ void main() {
         proteinTypesOverride:
             mockDbHelper.recipeProteinTypes, // Pass the override directly
       );
-      Map<String, List<ProteinType>> proteinTypes =
-          Map<String, List<ProteinType>>.from(mockDbHelper.recipeProteinTypes);
+      Map<String, Set<ProteinType>> proteinTypes =
+          Map<String, Set<ProteinType>>.from(mockDbHelper.recipeProteinTypes);
 
       recommendationService.overrideTestContext = {
         'lastCooked': {
