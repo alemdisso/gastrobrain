@@ -67,7 +67,7 @@ void main() {
       recommendationService.overrideTestContext = {
         'lastCooked': <String, DateTime>{},
         'mealCounts': <String, int>{},
-        'proteinTypes': <String, List<ProteinType>>{},
+        'proteinTypes': <String, Set<ProteinType>>{},
         'recentMeals': <Map<String, dynamic>>[],
       };
 
@@ -243,7 +243,7 @@ void main() {
       recommendationService.overrideTestContext = {
         'lastCooked': <String, DateTime>{},
         'mealCounts': <String, int>{},
-        'proteinTypes': <String, List<ProteinType>>{},
+        'proteinTypes': <String, Set<ProteinType>>{},
         'recentMeals': <Map<String, dynamic>>[],
       };
 
@@ -298,7 +298,7 @@ void main() {
       recommendationService.overrideTestContext = {
         'lastCooked': <String, DateTime>{},
         'mealCounts': <String, int>{},
-        'proteinTypes': <String, List<ProteinType>>{},
+        'proteinTypes': <String, Set<ProteinType>>{},
         'recentMeals': <Map<String, dynamic>>[],
       };
 

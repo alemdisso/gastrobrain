@@ -218,7 +218,7 @@ class RecommendationDatabaseQueries {
       final mealCounts = await getMealCounts(recipeIds: recipeIds);
 
       // Get protein information if requested
-      final Map<String, List<ProteinType>> proteinTypes = includeProteinInfo
+      final Map<String, Set<ProteinType>> proteinTypes = includeProteinInfo
           ? await getRecipeProteinTypes(recipeIds: recipeIds)
           : {};
 
