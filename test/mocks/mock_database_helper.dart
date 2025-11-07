@@ -180,24 +180,24 @@ class MockDatabaseHelper implements DatabaseHelper {
     return _recipes[id];
   }
 
-  Future<Map<String, List<ProteinType>>> getRecipeProteinTypes({
+  Future<Map<String, Set<ProteinType>>> getRecipeProteinTypes({
     required List<String> recipeIds,
   }) async {
-    // Create a result map - recipeId -> list of protein types
-    final Map<String, List<ProteinType>> result = {};
+    // Create a result map - recipeId -> set of protein types (deduplicated)
+    final Map<String, Set<ProteinType>> result = {};
 
-    // Initialize with empty lists
+    // Initialize with empty sets
     for (final id in recipeIds) {
-      result[id] = [];
+      result[id] = {};
     }
 
     // If we have protein types defined in our map, use those
     for (final id in recipeIds) {
       if (recipeProteinTypes.containsKey(id)) {
-        result[id] = recipeProteinTypes[id]!;
+        result[id] = Set<ProteinType>.from(recipeProteinTypes[id]!);
       } else {
         // Fall back to default behavior for recipes without defined types
-        result[id] = [ProteinType.chicken];
+        result[id] = {ProteinType.chicken};
       }
     }
     return result;

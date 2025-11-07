@@ -88,30 +88,30 @@ class RecommendationDatabaseQueries {
 
   /// Get the protein types for the given recipe IDs
   ///
-  /// Returns a map of recipe ID -> list of protein types
-  Future<Map<String, List<ProteinType>>> getRecipeProteinTypes({
+  /// Returns a map of recipe ID -> set of protein types (deduplicated)
+  Future<Map<String, Set<ProteinType>>> getRecipeProteinTypes({
     required List<String> recipeIds,
   }) async {
     try {
       if (proteinTypesOverride != null) {
-        final result = <String, List<ProteinType>>{};
+        final result = <String, Set<ProteinType>>{};
 
-        // Initialize all recipe IDs with empty lists
+        // Initialize all recipe IDs with empty sets
         for (final id in recipeIds) {
-          // Use the override if available for this ID, otherwise empty list
+          // Use the override if available for this ID, otherwise empty set
           result[id] = proteinTypesOverride!.containsKey(id)
-              ? List<ProteinType>.from(proteinTypesOverride![id]!)
-              : [];
+              ? Set<ProteinType>.from(proteinTypesOverride![id]!)
+              : {};
         }
 
         return result;
       }
 
-      final result = <String, List<ProteinType>>{};
+      final result = <String, Set<ProteinType>>{};
 
-      // Initialize empty lists for all recipe IDs
+      // Initialize empty sets for all recipe IDs
       for (final id in recipeIds) {
-        result[id] = [];
+        result[id] = {};
       }
 
       // For each recipe, get its ingredients and check protein types

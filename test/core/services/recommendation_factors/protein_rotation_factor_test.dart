@@ -36,8 +36,8 @@ void main() {
       );
 
       final context = {
-        'proteinTypes': <String, List<ProteinType>>{
-          recipe.id: [], // No proteins
+        'proteinTypes': <String, Set<ProteinType>>{
+          recipe.id: {}, // No proteins
         },
         'recentMeals': <Map<String, dynamic>>[],
       };
@@ -59,8 +59,8 @@ void main() {
       );
 
       final context = {
-        'proteinTypes': <String, List<ProteinType>>{
-          recipe.id: [ProteinType.plantBased], // Non-main protein
+        'proteinTypes': <String, Set<ProteinType>>{
+          recipe.id: {ProteinType.plantBased}, // Non-main protein
         },
         'recentMeals': <Map<String, dynamic>>[],
       };
@@ -81,8 +81,8 @@ void main() {
       );
 
       final context = {
-        'proteinTypes': <String, List<ProteinType>>{
-          recipe.id: [ProteinType.chicken], // Main protein
+        'proteinTypes': <String, Set<ProteinType>>{
+          recipe.id: {ProteinType.chicken}, // Main protein
         },
         'recentMeals': <Map<String, dynamic>>[], // No recent meals
       };
@@ -111,11 +111,11 @@ void main() {
       );
 
       final context = {
-        'proteinTypes': <String, List<ProteinType>>{
-          recipeId: [ProteinType.beef], // Today's recipe has beef
-          yesterdayRecipeId: [
+        'proteinTypes': <String, Set<ProteinType>>{
+          recipeId: {ProteinType.beef}, // Today's recipe has beef
+          yesterdayRecipeId: {
             ProteinType.beef
-          ], // Yesterday's recipe also had beef
+          }, // Yesterday's recipe also had beef
         },
         'recentMeals': <Map<String, dynamic>>[
           {
@@ -150,9 +150,9 @@ void main() {
       );
 
       final context = {
-        'proteinTypes': <String, List<ProteinType>>{
-          recipeId: [ProteinType.chicken], // Today's recipe has chicken
-          oldRecipeId: [ProteinType.chicken], // 3 days ago also had chicken
+        'proteinTypes': <String, Set<ProteinType>>{
+          recipeId: {ProteinType.chicken}, // Today's recipe has chicken
+          oldRecipeId: {ProteinType.chicken}, // 3 days ago also had chicken
         },
         'recentMeals': <Map<String, dynamic>>[
           {
@@ -193,13 +193,13 @@ void main() {
       );
 
       final context = {
-        'proteinTypes': <String, List<ProteinType>>{
-          recipeId: [
+        'proteinTypes': <String, Set<ProteinType>>{
+          recipeId: {
             ProteinType.beef,
             ProteinType.seafood
-          ], // Today's recipe has both beef and seafood
-          beefRecipeId: [ProteinType.beef], // 1 day ago had beef
-          seafoodRecipeId: [ProteinType.seafood], // 2 days ago had seafood
+          }, // Today's recipe has both beef and seafood
+          beefRecipeId: {ProteinType.beef}, // 1 day ago had beef
+          seafoodRecipeId: {ProteinType.seafood}, // 2 days ago had seafood
         },
         'recentMeals': <Map<String, dynamic>>[
           {
@@ -237,9 +237,9 @@ void main() {
       );
 
       final context = {
-        'proteinTypes': <String, List<ProteinType>>{
-          recipeId: [ProteinType.pork], // Today's recipe has pork
-          oldRecipeId: [ProteinType.pork], // 5 days ago also had pork
+        'proteinTypes': <String, Set<ProteinType>>{
+          recipeId: {ProteinType.pork}, // Today's recipe has pork
+          oldRecipeId: {ProteinType.pork}, // 5 days ago also had pork
         },
         'recentMeals': <Map<String, dynamic>>[
           {
@@ -280,10 +280,10 @@ void main() {
       );
 
       final context = {
-        'proteinTypes': <String, List<ProteinType>>{
-          recipeId: [ProteinType.fish], // Today's recipe has fish
-          recentFishId: [ProteinType.fish], // 1 day ago was fish
-          olderFishId: [ProteinType.fish], // 3 days ago was also fish
+        'proteinTypes': <String, Set<ProteinType>>{
+          recipeId: {ProteinType.fish}, // Today's recipe has fish
+          recentFishId: {ProteinType.fish}, // 1 day ago was fish
+          olderFishId: {ProteinType.fish}, // 3 days ago was also fish
         },
         'recentMeals': <Map<String, dynamic>>[
           {
@@ -301,6 +301,86 @@ void main() {
       final score = await factor.calculateScore(recipe, context);
 
       // Assert - Should use the 1-day penalty (100%) not the 3-day penalty
+      expect(score, equals(0.0));
+    });
+
+    test('should count duplicate proteins only once in the same recipe',
+        () async {
+      // Arrange - Recipe with multiple ingredients containing the same protein
+      // (e.g., "Beef" and "Beef Stock" both contain beef)
+      final recipeId = IdGenerator.generateId();
+      final recipe = Recipe(
+        id: recipeId,
+        name: 'Beef Ragù',
+        createdAt: DateTime.now(),
+      );
+
+      final yesterdayRecipeId = IdGenerator.generateId();
+      final yesterdayRecipe = Recipe(
+        id: yesterdayRecipeId,
+        name: 'Grilled Chicken',
+        createdAt: DateTime.now(),
+      );
+
+      final context = {
+        'proteinTypes': <String, Set<ProteinType>>{
+          // The Set automatically deduplicates if beef appears multiple times
+          recipeId: {ProteinType.beef}, // Contains beef (from both "Beef" and "Beef Stock")
+          yesterdayRecipeId: {ProteinType.chicken}, // Had chicken yesterday
+        },
+        'recentMeals': <Map<String, dynamic>>[
+          {
+            'recipe': yesterdayRecipe,
+            'cookedAt': DateTime.now().subtract(const Duration(days: 1)),
+          },
+        ],
+      };
+
+      // Act
+      final score = await factor.calculateScore(recipe, context);
+
+      // Assert - Should get perfect score since beef wasn't used recently
+      // If duplicates were counted separately, the score calculation would be wrong
+      expect(score, equals(100.0));
+    });
+
+    test('should handle beef ragù with beef used yesterday (duplicate protein edge case)',
+        () async {
+      // Arrange - This tests the exact scenario from the issue
+      final recipeId = IdGenerator.generateId();
+      final recipe = Recipe(
+        id: recipeId,
+        name: 'Beef Ragù',
+        createdAt: DateTime.now(),
+      );
+
+      final yesterdayRecipeId = IdGenerator.generateId();
+      final yesterdayRecipe = Recipe(
+        id: yesterdayRecipeId,
+        name: 'Beef Tacos',
+        createdAt: DateTime.now(),
+      );
+
+      final context = {
+        'proteinTypes': <String, Set<ProteinType>>{
+          // Even if ingredients list has [beef, beef] from "Beef + Beef Stock",
+          // the Set ensures we only have one beef entry
+          recipeId: {ProteinType.beef},
+          yesterdayRecipeId: {ProteinType.beef},
+        },
+        'recentMeals': <Map<String, dynamic>>[
+          {
+            'recipe': yesterdayRecipe,
+            'cookedAt': DateTime.now().subtract(const Duration(days: 1)),
+          },
+        ],
+      };
+
+      // Act
+      final score = await factor.calculateScore(recipe, context);
+
+      // Assert - Should apply 100% penalty once (not twice)
+      // Score = 100 - (100% penalty) = 0.0
       expect(score, equals(0.0));
     });
   });

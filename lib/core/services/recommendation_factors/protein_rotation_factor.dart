@@ -31,10 +31,10 @@ class ProteinRotationFactor implements RecommendationFactor {
   Future<double> calculateScore(
       Recipe recipe, Map<String, dynamic> context) async {
     // Get the protein types for this recipe
-    final Map<String, List<ProteinType>> proteinTypesMap =
-        context['proteinTypes'] as Map<String, List<ProteinType>>;
+    final Map<String, Set<ProteinType>> proteinTypesMap =
+        context['proteinTypes'] as Map<String, Set<ProteinType>>;
 
-    final recipeProteinTypes = proteinTypesMap[recipe.id] ?? [];
+    final recipeProteinTypes = proteinTypesMap[recipe.id] ?? {};
 
     // If this recipe has no proteins, give it a neutral score
     if (recipeProteinTypes.isEmpty) {
@@ -74,7 +74,7 @@ class ProteinRotationFactor implements RecommendationFactor {
       final recipe = meal['recipe'] as Recipe;
 
       // Look up protein types for this recipe
-      final mealProteinTypes = proteinTypesMap[recipe.id] ?? [];
+      final mealProteinTypes = proteinTypesMap[recipe.id] ?? {};
 
       // Update the most recent usage for each protein type
       for (var proteinType in mealProteinTypes) {
