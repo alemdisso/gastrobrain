@@ -137,7 +137,9 @@ void main() {
       ];
 // Direct modification of the context the factor will receive
       recommendationService.overrideTestContext = {
-        'proteinTypes': mockDbHelper.recipeProteinTypes,
+        'proteinTypes': mockDbHelper.recipeProteinTypes.map(
+          (key, value) => MapEntry(key, value.toSet()),
+        ),
         'recentMeals': [
           {
             'recipe': beefRecipe,
@@ -265,7 +267,7 @@ void main() {
       for (var i = 0; i < mealDates.length; i++) {
         contexts.add({
           'proteinTypes': {
-            'beef-recipe-id': [ProteinType.beef],
+            'beef-recipe-id': {ProteinType.beef},
           },
           'recentMeals': [
             {

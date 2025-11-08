@@ -79,7 +79,9 @@ void main() {
       recommendationService.overrideTestContext = <String, dynamic>{
         'lastCooked': lastCookedDates,
         'mealCounts': mealCounts,
-        'proteinTypes': proteinTypes,
+        'proteinTypes': proteinTypes.map(
+          (key, value) => MapEntry(key, value.toSet()),
+        ),
         'recentMeals': <Map<String, dynamic>>[],
         'randomSeed': 42, // Fixed seed
       };
@@ -92,7 +94,9 @@ void main() {
       recommendationService.overrideTestContext = <String, dynamic>{
         'lastCooked': lastCookedDates,
         'mealCounts': mealCounts,
-        'proteinTypes': proteinTypes,
+        'proteinTypes': proteinTypes.map(
+          (key, value) => MapEntry(key, value.toSet()),
+        ),
         'recentMeals': <Map<String, dynamic>>[],
         'randomSeed': 43, // Different seed
       };
@@ -150,7 +154,7 @@ void main() {
       isolatedService.overrideTestContext = {
         'lastCooked': <String, DateTime?>{},
         'mealCounts': <String, int>{},
-        'proteinTypes': <String, List<ProteinType>>{recipe.id: []},
+        'proteinTypes': <String, Set<ProteinType>>{recipe.id: {}},
         'recentMeals': <Map<String, dynamic>>[],
         'randomSeed': 42, // First seed
       };
@@ -167,7 +171,7 @@ void main() {
       isolatedService.overrideTestContext = {
         'lastCooked': <String, DateTime?>{},
         'mealCounts': <String, int>{},
-        'proteinTypes': <String, List<ProteinType>>{recipe.id: []},
+        'proteinTypes': <String, Set<ProteinType>>{recipe.id: {}},
         'recentMeals': <Map<String, dynamic>>[],
         'randomSeed': 43, // Different seed
       };

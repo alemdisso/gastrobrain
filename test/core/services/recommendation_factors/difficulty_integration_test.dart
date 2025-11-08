@@ -80,7 +80,9 @@ void main() {
 
       // Override the test context with our mock data
       recommendationService.overrideTestContext = {
-        'proteinTypes': mockDbHelper.recipeProteinTypes,
+        'proteinTypes': mockDbHelper.recipeProteinTypes.map(
+          (key, value) => MapEntry(key, value.toSet()),
+        ),
         'recentMeals': [],
         'lastCooked': {
           easyRecipe.id: fourWeeksAgo,
@@ -169,7 +171,9 @@ void main() {
 
       // Override the test context
       recommendationService.overrideTestContext = {
-        'proteinTypes': mockDbHelper.recipeProteinTypes,
+        'proteinTypes': mockDbHelper.recipeProteinTypes.map(
+          (key, value) => MapEntry(key, value.toSet()),
+        ),
         'recentMeals': [],
         'lastCooked': {
           easyRecentRecipe.id: recentDate,

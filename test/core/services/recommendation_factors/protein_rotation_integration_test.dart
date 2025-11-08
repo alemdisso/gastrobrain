@@ -76,9 +76,9 @@ void main() {
       // Create test context manually with the data needed by the factor
       final testContext = {
         'proteinTypes': {
-          'beef-recipe-id': [ProteinType.beef],
-          'chicken-recipe-id': [ProteinType.chicken],
-          'fish-recipe-id': [ProteinType.fish]
+          'beef-recipe-id': {ProteinType.beef},
+          'chicken-recipe-id': {ProteinType.chicken},
+          'fish-recipe-id': {ProteinType.fish}
         },
         'recentMeals': [
           {
@@ -161,7 +161,7 @@ void main() {
       for (var i = 0; i < mealDates.length; i++) {
         contexts.add({
           'proteinTypes': {
-            'beef-recipe-id': [ProteinType.beef],
+            'beef-recipe-id': {ProteinType.beef},
           },
           'recentMeals': [
             {

@@ -130,7 +130,9 @@ void main() {
       // This is important - we're verifying that protein information is included in the context
       // and used for scoring
       recommendationService.overrideTestContext = {
-        'proteinTypes': mockDbHelper.recipeProteinTypes,
+        'proteinTypes': mockDbHelper.recipeProteinTypes.map(
+          (key, value) => MapEntry(key, value.toSet()),
+        ),
         'recentMeals': [
           {
             'recipe': beefRecipe,
@@ -205,7 +207,7 @@ void main() {
 
       // Set up context with no data
       recommendationService.overrideTestContext = {
-        'proteinTypes': <String, List<ProteinType>>{},
+        'proteinTypes': <String, Set<ProteinType>>{},
         'recentMeals': <Map<String, dynamic>>[],
         'lastCooked': <String, DateTime>{},
         'mealCounts': <String, int>{},
@@ -307,7 +309,9 @@ void main() {
 
       // Set up the context with recent cooking data
       recommendationService.overrideTestContext = {
-        'proteinTypes': mockDbHelper.recipeProteinTypes,
+        'proteinTypes': mockDbHelper.recipeProteinTypes.map(
+          (key, value) => MapEntry(key, value.toSet()),
+        ),
         'recentMeals': [
           {
             'recipe': recipe1,
@@ -535,7 +539,9 @@ void main() {
       }
 
       recommendationService.overrideTestContext = {
-        'proteinTypes': proteinTypes,
+        'proteinTypes': proteinTypes.map(
+          (key, value) => MapEntry(key, value.toSet()),
+        ),
         'lastCooked': lastCookedDates,
         'recentMeals': recentMeals,
         'mealCounts': mealCounts,
@@ -597,7 +603,9 @@ void main() {
       recommendationService.overrideTestContext = {
         'lastCooked': lastCookedDates,
         'mealCounts': mealCounts,
-        'proteinTypes': proteinTypes,
+        'proteinTypes': proteinTypes.map(
+          (key, value) => MapEntry(key, value.toSet()),
+        ),
         'recentMeals': recentMeals,
         'randomSeed': fixedSeed, // Fixed seed for deterministic results
         'feedbackHistory': <String, List<Map<String, dynamic>>>{},
@@ -611,7 +619,9 @@ void main() {
       recommendationService.overrideTestContext = {
         'lastCooked': lastCookedDates,
         'mealCounts': mealCounts,
-        'proteinTypes': proteinTypes,
+        'proteinTypes': proteinTypes.map(
+          (key, value) => MapEntry(key, value.toSet()),
+        ),
         'recentMeals': recentMeals,
         'randomSeed': fixedSeed, // Same seed as before
         'feedbackHistory': <String, List<Map<String, dynamic>>>{},
@@ -662,7 +672,9 @@ void main() {
       recommendationService.overrideTestContext = {
         'lastCooked': lastCookedDates,
         'mealCounts': mealCounts,
-        'proteinTypes': proteinTypes,
+        'proteinTypes': proteinTypes.map(
+          (key, value) => MapEntry(key, value.toSet()),
+        ),
         'recentMeals': recentMeals,
         'randomSeed': fixedSeed + 1, // Different seed
         'feedbackHistory': <String, List<Map<String, dynamic>>>{},

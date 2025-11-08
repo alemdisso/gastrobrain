@@ -109,7 +109,9 @@ void main() {
 
       // Set up the context with beef protein used recently
       recommendationService.overrideTestContext = {
-        'proteinTypes': mockDbHelper.recipeProteinTypes,
+        'proteinTypes': mockDbHelper.recipeProteinTypes.map(
+          (key, value) => MapEntry(key, value.toSet()),
+        ),
         'recentMeals': [
           {
             'recipe': otherBeefRecipe,
@@ -258,7 +260,9 @@ void main() {
 
 // Add fixed seed for any remaining randomness
       recommendationService.overrideTestContext = {
-        'proteinTypes': mockDbHelper.recipeProteinTypes,
+        'proteinTypes': mockDbHelper.recipeProteinTypes.map(
+          (key, value) => MapEntry(key, value.toSet()),
+        ),
         'recentMeals': [
           {
             'recipe': yesterdayBeefRecipe,

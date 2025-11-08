@@ -108,10 +108,10 @@ void main() {
 
       // Override the test context with our mock data
 // Create a map of protein types for each recipe (empty for this test)
-      final proteinTypes = <String, List<ProteinType>>{
-        neverCookedRecipe.id: [],
-        cookedOnceRecipe.id: [],
-        cookedOftenRecipe.id: [],
+      final proteinTypes = <String, Set<ProteinType>>{
+        neverCookedRecipe.id: {},
+        cookedOnceRecipe.id: {},
+        cookedOftenRecipe.id: {},
       };
 
 // Also need to add 'recentMeals' for the protein rotation factor
@@ -222,9 +222,9 @@ void main() {
       };
 
       // Empty protein types for simplicity
-      final proteinTypes = <String, List<ProteinType>>{
-        neverCookedRecipe.id: [],
-        overdueRecipe.id: [],
+      final proteinTypes = <String, Set<ProteinType>>{
+        neverCookedRecipe.id: {},
+        overdueRecipe.id: {},
       };
 
       // Recent meals for protein factor
