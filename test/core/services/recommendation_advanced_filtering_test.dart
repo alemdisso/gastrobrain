@@ -67,7 +67,7 @@ void main() {
       recommendationService.overrideTestContext = {
         'lastCooked': <String, DateTime>{},
         'mealCounts': <String, int>{},
-        'proteinTypes': <String, List<ProteinType>>{},
+        'proteinTypes': <String, Set<ProteinType>>{},
         'recentMeals': <Map<String, dynamic>>[],
       };
 
@@ -128,8 +128,9 @@ void main() {
       recommendationService = RecommendationService(
         dbHelper: mockDbHelper,
         registerDefaultFactors: true,
-        proteinTypesOverride:
-            mockDbHelper.recipeProteinTypes, // Pass the override directly
+        proteinTypesOverride: mockDbHelper.recipeProteinTypes.map(
+          (key, value) => MapEntry(key, value.toSet()),
+        ),
       );
 
 // Act: Get recommendations avoiding beef and chicken
@@ -188,8 +189,9 @@ void main() {
       recommendationService = RecommendationService(
         dbHelper: mockDbHelper,
         registerDefaultFactors: true,
-        proteinTypesOverride:
-            mockDbHelper.recipeProteinTypes, // Pass the override directly
+        proteinTypesOverride: mockDbHelper.recipeProteinTypes.map(
+          (key, value) => MapEntry(key, value.toSet()),
+        ),
       );
 
       // Act: Get recommendations requiring fish
@@ -243,7 +245,7 @@ void main() {
       recommendationService.overrideTestContext = {
         'lastCooked': <String, DateTime>{},
         'mealCounts': <String, int>{},
-        'proteinTypes': <String, List<ProteinType>>{},
+        'proteinTypes': <String, Set<ProteinType>>{},
         'recentMeals': <Map<String, dynamic>>[],
       };
 
@@ -298,7 +300,7 @@ void main() {
       recommendationService.overrideTestContext = {
         'lastCooked': <String, DateTime>{},
         'mealCounts': <String, int>{},
-        'proteinTypes': <String, List<ProteinType>>{},
+        'proteinTypes': <String, Set<ProteinType>>{},
         'recentMeals': <Map<String, dynamic>>[],
       };
 
@@ -351,10 +353,10 @@ void main() {
       // Set up identical last cooked dates to isolate difficulty effect
       final twoWeeksAgo = now.subtract(const Duration(days: 14));
 
-      Map<String, List<ProteinType>> proteinTypes = {
-        'easy-recipe': <ProteinType>[],
-        'medium-recipe': <ProteinType>[],
-        'hard-recipe': <ProteinType>[],
+      Map<String, Set<ProteinType>> proteinTypes = {
+        'easy-recipe': <ProteinType>{},
+        'medium-recipe': <ProteinType>{},
+        'hard-recipe': <ProteinType>{},
       };
 
       recommendationService.overrideTestContext = {
@@ -490,11 +492,14 @@ void main() {
       recommendationService = RecommendationService(
         dbHelper: mockDbHelper,
         registerDefaultFactors: true,
-        proteinTypesOverride:
-            mockDbHelper.recipeProteinTypes, // Pass the override directly
+        proteinTypesOverride: mockDbHelper.recipeProteinTypes.map(
+          (key, value) => MapEntry(key, value.toSet()),
+        ),
       );
-      Map<String, List<ProteinType>> proteinTypes =
-          Map<String, List<ProteinType>>.from(mockDbHelper.recipeProteinTypes);
+      Map<String, Set<ProteinType>> proteinTypes =
+          mockDbHelper.recipeProteinTypes.map(
+            (key, value) => MapEntry(key, value.toSet()),
+          );
 
       recommendationService.overrideTestContext = {
         'lastCooked': {
