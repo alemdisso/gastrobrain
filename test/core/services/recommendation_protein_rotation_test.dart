@@ -121,17 +121,17 @@ void main() {
       mockDbHelper.returnCustomMealsForRecommendations = [
         {
           'meal': beefMeal,
-          'recipe': beefRecipe,
+          'recipes': [beefRecipe],
           'cookedAt': oneDayAgo,
         },
         {
           'meal': chickenMeal,
-          'recipe': chickenRecipe,
+          'recipes': [chickenRecipe],
           'cookedAt': oneWeekAgo,
         },
         {
           'meal': fishMeal,
-          'recipe': fishRecipe,
+          'recipes': [fishRecipe],
           'cookedAt': oneWeekAgo,
         }
       ];
@@ -142,15 +142,15 @@ void main() {
         ),
         'recentMeals': [
           {
-            'recipe': beefRecipe,
+            'recipes': [beefRecipe],
             'cookedAt': oneDayAgo,
           },
           {
-            'recipe': chickenRecipe,
+            'recipes': [chickenRecipe],
             'cookedAt': oneWeekAgo,
           },
           {
-            'recipe': fishRecipe,
+            'recipes': [fishRecipe],
             'cookedAt': oneWeekAgo,
           }
         ],
@@ -271,7 +271,7 @@ void main() {
           },
           'recentMeals': [
             {
-              'recipe': beefRecipe,
+              'recipes': [beefRecipe],
               'cookedAt': mealDates[i],
             }
           ]

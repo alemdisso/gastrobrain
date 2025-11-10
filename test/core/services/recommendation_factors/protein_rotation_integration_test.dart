@@ -82,7 +82,7 @@ void main() {
         },
         'recentMeals': [
           {
-            'recipe': beefRecipe,
+            'recipes': [beefRecipe],
             'cookedAt': oneDayAgo,
           }
         ]
@@ -165,7 +165,7 @@ void main() {
           },
           'recentMeals': [
             {
-              'recipe': beefRecipe,
+              'recipes': [beefRecipe],
               'cookedAt': mealDates[i],
             }
           ]

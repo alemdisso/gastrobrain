@@ -114,7 +114,7 @@ void main() {
         ),
         'recentMeals': [
           {
-            'recipe': otherBeefRecipe,
+            'recipes': [otherBeefRecipe],
             'cookedAt': now.subtract(const Duration(days: 1)), // Yesterday
           }
         ],
@@ -265,7 +265,7 @@ void main() {
         ),
         'recentMeals': [
           {
-            'recipe': yesterdayBeefRecipe,
+            'recipes': [yesterdayBeefRecipe],
             'cookedAt': now.subtract(const Duration(days: 1)), // Yesterday
           }
         ],

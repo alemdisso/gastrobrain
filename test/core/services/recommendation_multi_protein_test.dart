@@ -72,7 +72,7 @@ void main() {
           mockDb: mockDbHelper,
           recentMeals: [
             {
-              'recipe': chickenOnlyRecipe,
+              'recipes': [chickenOnlyRecipe],
               'cookedAt': now.subtract(const Duration(days: 1)),
             }
           ],
@@ -132,7 +132,7 @@ void main() {
           mockDb: mockDbHelper,
           recentMeals: [
             {
-              'recipe': beefRecipe,
+              'recipes': [beefRecipe],
               'cookedAt': now.subtract(const Duration(days: 1)),
             }
           ],
@@ -187,7 +187,7 @@ void main() {
           mockDb: mockDbHelper,
           recentMeals: [
             {
-              'recipe': chickenRecipe,
+              'recipes': [chickenRecipe],
               'cookedAt': now.subtract(const Duration(days: 1)),
             }
           ],
@@ -238,7 +238,7 @@ void main() {
           mockDb: mockDbHelper,
           recentMeals: [
             {
-              'recipe': singleBeefRecipe,
+              'recipes': [singleBeefRecipe],
               'cookedAt': now.subtract(const Duration(days: 1)),
             }
           ],
@@ -287,7 +287,7 @@ void main() {
           mockDb: mockDbHelper,
           recentMeals: [
             {
-              'recipe': singleChickenRecipe,
+              'recipes': [singleChickenRecipe],
               'cookedAt': now.subtract(const Duration(days: 2)),
             }
           ],
@@ -334,7 +334,7 @@ void main() {
           mockDb: mockDbHelper,
           recentMeals: [
             {
-              'recipe': proteinRecipe,
+              'recipes': [proteinRecipe],
               'cookedAt': now.subtract(const Duration(days: 1)),
             }
           ],
@@ -388,11 +388,11 @@ void main() {
           mockDb: mockDbHelper,
           recentMeals: [
             {
-              'recipe': vegetarianRecipe,
+              'recipes': [vegetarianRecipe],
               'cookedAt': now.subtract(const Duration(days: 1)),
             },
             {
-              'recipe': chickenRecipe1,
+              'recipes': [chickenRecipe1],
               'cookedAt': now.subtract(const Duration(days: 5)),
             }
           ],
@@ -450,7 +450,7 @@ void main() {
           mockDb: mockDbHelper,
           recentMeals: [
             {
-              'recipe': chickenOnlyRecipe,
+              'recipes': [chickenOnlyRecipe],
               'cookedAt': now.subtract(const Duration(days: 1)),
             }
           ],
@@ -509,7 +509,7 @@ void main() {
           mockDb: mockDbHelper,
           recentMeals: [
             {
-              'recipe': plantBasedRecipe,
+              'recipes': [plantBasedRecipe],
               'cookedAt': now.subtract(const Duration(days: 1)),
             }
           ],

@@ -70,21 +70,24 @@ class ProteinRotationFactor implements RecommendationFactor {
       // We only care about proteins used in the last 4 days
       if (daysAgo > 4) continue;
 
-      // Get the recipe for this meal
-      final recipe = meal['recipe'] as Recipe;
+      // Get ALL recipes for this meal (primary + secondary)
+      final recipes = (meal['recipes'] as List).cast<Recipe>();
 
-      // Look up protein types for this recipe
-      final mealProteinTypes = proteinTypesMap[recipe.id] ?? {};
+      // Process each recipe in the meal
+      for (final recipe in recipes) {
+        // Look up protein types for this recipe
+        final mealProteinTypes = proteinTypesMap[recipe.id] ?? {};
 
-      // Update the most recent usage for each protein type
-      for (var proteinType in mealProteinTypes) {
-        // Only consider main proteins for rotation
-        if (!proteinType.isMainProtein) continue;
+        // Update the most recent usage for each protein type
+        for (var proteinType in mealProteinTypes) {
+          // Only consider main proteins for rotation
+          if (!proteinType.isMainProtein) continue;
 
-        // If this is the most recent usage of this protein, update the map
-        if (!recentProteinUsage.containsKey(proteinType) ||
-            recentProteinUsage[proteinType]! > daysAgo) {
-          recentProteinUsage[proteinType] = daysAgo;
+          // If this is the most recent usage of this protein, update the map
+          if (!recentProteinUsage.containsKey(proteinType) ||
+              recentProteinUsage[proteinType]! > daysAgo) {
+            recentProteinUsage[proteinType] = daysAgo;
+          }
         }
       }
     }

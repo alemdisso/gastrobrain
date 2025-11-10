@@ -117,14 +117,14 @@ void main() {
 // Also need to add 'recentMeals' for the protein rotation factor
       final recentMeals = <Map<String, dynamic>>[
         {
-          'recipe': cookedOnceRecipe,
+          'recipes': [cookedOnceRecipe],
           'cookedAt': sixWeeksAgo,
         },
       ];
 
       for (int i = 0; i < 10; i++) {
         recentMeals.add({
-          'recipe': cookedOftenRecipe,
+          'recipes': [cookedOftenRecipe],
           'cookedAt': sixWeeksAgo,
         });
       }

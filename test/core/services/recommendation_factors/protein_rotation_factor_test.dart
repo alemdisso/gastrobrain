@@ -119,7 +119,7 @@ void main() {
         },
         'recentMeals': <Map<String, dynamic>>[
           {
-            'recipe': yesterdayRecipe,
+            'recipes': [yesterdayRecipe],
             'cookedAt': DateTime.now().subtract(const Duration(days: 1)),
           },
         ],
@@ -156,7 +156,7 @@ void main() {
         },
         'recentMeals': <Map<String, dynamic>>[
           {
-            'recipe': oldRecipe,
+            'recipes': [oldRecipe],
             'cookedAt': DateTime.now().subtract(const Duration(days: 3)),
           },
         ],
@@ -203,11 +203,11 @@ void main() {
         },
         'recentMeals': <Map<String, dynamic>>[
           {
-            'recipe': beefRecipe,
+            'recipes': [beefRecipe],
             'cookedAt': DateTime.now().subtract(const Duration(days: 1)),
           },
           {
-            'recipe': seafoodRecipe,
+            'recipes': [seafoodRecipe],
             'cookedAt': DateTime.now().subtract(const Duration(days: 2)),
           },
         ],
@@ -243,7 +243,7 @@ void main() {
         },
         'recentMeals': <Map<String, dynamic>>[
           {
-            'recipe': oldRecipe,
+            'recipes': [oldRecipe],
             'cookedAt': DateTime.now().subtract(const Duration(days: 5)),
           },
         ],
@@ -287,11 +287,11 @@ void main() {
         },
         'recentMeals': <Map<String, dynamic>>[
           {
-            'recipe': recentFish,
+            'recipes': [recentFish],
             'cookedAt': DateTime.now().subtract(const Duration(days: 1)),
           },
           {
-            'recipe': olderFish,
+            'recipes': [olderFish],
             'cookedAt': DateTime.now().subtract(const Duration(days: 3)),
           },
         ],
@@ -330,7 +330,7 @@ void main() {
         },
         'recentMeals': <Map<String, dynamic>>[
           {
-            'recipe': yesterdayRecipe,
+            'recipes': [yesterdayRecipe],
             'cookedAt': DateTime.now().subtract(const Duration(days: 1)),
           },
         ],
@@ -370,7 +370,7 @@ void main() {
         },
         'recentMeals': <Map<String, dynamic>>[
           {
-            'recipe': yesterdayRecipe,
+            'recipes': [yesterdayRecipe],
             'cookedAt': DateTime.now().subtract(const Duration(days: 1)),
           },
         ],
@@ -382,6 +382,121 @@ void main() {
       // Assert - Should apply 100% penalty once (not twice)
       // Score = 100 - (100% penalty) = 0.0
       expect(score, equals(0.0));
+    });
+
+    test('should track proteins from secondary recipes in multi-recipe meals',
+        () async {
+      // Arrange
+      final recipeId = IdGenerator.generateId();
+      final recipe = Recipe(
+        id: recipeId,
+        name: 'Beef Tacos',
+        createdAt: DateTime.now(),
+      );
+
+      // Yesterday's meal had chicken curry (primary) + beef empanadas (side)
+      final chickenCurryId = IdGenerator.generateId();
+      final chickenCurry = Recipe(
+        id: chickenCurryId,
+        name: 'Chicken Curry',
+        createdAt: DateTime.now(),
+      );
+
+      final beefEmpanadasId = IdGenerator.generateId();
+      final beefEmpanadas = Recipe(
+        id: beefEmpanadasId,
+        name: 'Beef Empanadas',
+        createdAt: DateTime.now(),
+      );
+
+      final context = {
+        'proteinTypes': <String, Set<ProteinType>>{
+          recipeId: {ProteinType.beef}, // Today's recipe has beef
+          chickenCurryId: {ProteinType.chicken}, // Yesterday's primary dish
+          beefEmpanadasId: {ProteinType.beef}, // Yesterday's side dish
+        },
+        'recentMeals': <Map<String, dynamic>>[
+          {
+            // Multi-recipe meal with both chicken (primary) and beef (secondary)
+            'recipes': [chickenCurry, beefEmpanadas],
+            'cookedAt': DateTime.now().subtract(const Duration(days: 1)),
+          },
+        ],
+      };
+
+      // Act
+      final score = await factor.calculateScore(recipe, context);
+
+      // Assert - Should apply 100% penalty for beef from the side dish
+      // This proves that secondary recipe proteins are tracked
+      expect(score, equals(0.0));
+    });
+
+    test(
+        'should track multiple proteins from multi-recipe meals with different penalties',
+        () async {
+      // Arrange
+      final recipeId = IdGenerator.generateId();
+      final recipe = Recipe(
+        id: recipeId,
+        name: 'Surf and Turf', // Has both beef and seafood
+        createdAt: DateTime.now(),
+      );
+
+      // Two days ago: Chicken (primary) + Beef side
+      final chickenId = IdGenerator.generateId();
+      final chicken = Recipe(
+        id: chickenId,
+        name: 'Grilled Chicken',
+        createdAt: DateTime.now(),
+      );
+
+      final beefSideId = IdGenerator.generateId();
+      final beefSide = Recipe(
+        id: beefSideId,
+        name: 'Beef Skewers',
+        createdAt: DateTime.now(),
+      );
+
+      // Three days ago: Seafood Paella (single recipe)
+      final paellaId = IdGenerator.generateId();
+      final paella = Recipe(
+        id: paellaId,
+        name: 'Seafood Paella',
+        createdAt: DateTime.now(),
+      );
+
+      final context = {
+        'proteinTypes': <String, Set<ProteinType>>{
+          recipeId: {
+            ProteinType.beef,
+            ProteinType.seafood
+          }, // Today has both
+          chickenId: {ProteinType.chicken},
+          beefSideId: {ProteinType.beef}, // Beef from side dish 2 days ago
+          paellaId: {ProteinType.seafood}, // Seafood 3 days ago
+        },
+        'recentMeals': <Map<String, dynamic>>[
+          {
+            'recipes': [chicken, beefSide], // Multi-recipe meal 2 days ago
+            'cookedAt': DateTime.now().subtract(const Duration(days: 2)),
+          },
+          {
+            'recipes': [paella], // Single recipe 3 days ago
+            'cookedAt': DateTime.now().subtract(const Duration(days: 3)),
+          },
+        ],
+      };
+
+      // Act
+      final score = await factor.calculateScore(recipe, context);
+
+      // Assert
+      // Beef: 2 days ago = 75% penalty
+      // Seafood: 3 days ago = 50% penalty
+      // Average: (75% + 50%) / 2 = 62.5% penalty
+      // Score: 100 - 62.5 = 37.5
+      expect(score, equals(37.5));
     });
   });
 }

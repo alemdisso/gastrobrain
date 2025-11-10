@@ -239,7 +239,7 @@ class RecommendationDatabaseQueries {
 
   /// Get meals cooked in a specific date range
   ///
-  /// Returns a list of meal data with recipe information
+  /// Returns a list of meal data with ALL recipe information (primary + secondary)
   Future<List<Map<String, dynamic>>> getRecentMeals({
     required DateTime startDate,
     DateTime? endDate,
@@ -253,33 +253,47 @@ class RecommendationDatabaseQueries {
         return [];
       }
 
-      // For each meal, get the associated recipes
+      // For each meal, get ALL associated recipes (not just primary)
       final result = <Map<String, dynamic>>[];
 
       for (final meal in meals) {
+        final recipesList = <Recipe>[];
+
         // First try to get recipes from junction table
         final mealRecipes = await _dbHelper.getMealRecipesForMeal(meal.id);
 
-        Recipe? primaryRecipe;
-
         if (mealRecipes.isNotEmpty) {
-          // Find the primary recipe if one is marked as primary
-          final primaryMealRecipe = mealRecipes.firstWhere(
-            (mr) => mr.isPrimaryDish,
-            orElse: () => mealRecipes.first,
-          );
-
-          primaryRecipe = await _dbHelper.getRecipe(primaryMealRecipe.recipeId);
+          // Get ALL recipes for this meal (primary + secondary)
+          for (final mealRecipe in mealRecipes) {
+            try {
+              final recipe = await _dbHelper.getRecipe(mealRecipe.recipeId);
+              if (recipe != null) {
+                recipesList.add(recipe);
+              }
+            } catch (e) {
+              // Skip recipes that can't be loaded (e.g., deleted recipes)
+              continue;
+            }
+          }
         }
         // Fallback to direct recipe_id if available and no recipes found in junction
         else if (meal.recipeId != null) {
-          primaryRecipe = await _dbHelper.getRecipe(meal.recipeId!);
+          try {
+            final recipe = await _dbHelper.getRecipe(meal.recipeId!);
+            if (recipe != null) {
+              recipesList.add(recipe);
+            }
+          } catch (e) {
+            // Skip if recipe can't be loaded
+            continue;
+          }
         }
 
-        if (primaryRecipe != null) {
+        // Only include meals that have at least one valid recipe
+        if (recipesList.isNotEmpty) {
           result.add({
             'meal': meal,
-            'recipe': primaryRecipe,
+            'recipes': recipesList, // Changed from 'recipe' to 'recipes' (list)
             'cookedAt': meal.cookedAt,
           });
         }

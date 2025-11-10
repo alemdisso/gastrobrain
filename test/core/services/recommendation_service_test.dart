@@ -135,7 +135,7 @@ void main() {
         ),
         'recentMeals': [
           {
-            'recipe': beefRecipe,
+            'recipes': [beefRecipe],
             'cookedAt': now.subtract(const Duration(days: 1)), // Yesterday
           }
         ],
@@ -314,15 +314,15 @@ void main() {
         ),
         'recentMeals': [
           {
-            'recipe': recipe1,
+            'recipes': [recipe1],
             'cookedAt': yesterday,
           },
           {
-            'recipe': recipe2,
+            'recipes': [recipe2],
             'cookedAt': yesterday,
           },
           {
-            'recipe': recipe3,
+            'recipes': [recipe3],
             'cookedAt': dayBeforeYesterday,
           },
         ],
@@ -514,7 +514,7 @@ void main() {
       for (final recentRecipeId in sortedRecipeIds) {
         final recipe = await mockDbHelper.getRecipe(recentRecipeId);
         recentMeals.add({
-          'recipe': recipe,
+          'recipes': [recipe],
           'cookedAt': lastCookedDates[
               recentRecipeId]!, // Use the actual last cooked date
         });
@@ -526,7 +526,7 @@ void main() {
         if (recipeIds.isNotEmpty) {
           final someRecipeId = recipeIds.first;
           recentMeals.add({
-            'recipe': await mockDbHelper.getRecipe(someRecipeId),
+            'recipes': [await mockDbHelper.getRecipe(someRecipeId)],
             'cookedAt': now.subtract(const Duration(days: 1)), // Yesterday
           });
         }
