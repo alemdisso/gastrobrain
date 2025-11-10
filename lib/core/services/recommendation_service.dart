@@ -557,9 +557,19 @@ class RecommendationService {
 
     // For more advanced recommendations, load recent meals for context
     if (requiredData.contains('recentMeals')) {
+      // Calculate meal history limits based on protein rotation penalty window
+      // Protein rotation penalty: 4 days (from ProteinRotationFactor._daysPenalty)
+      // We add a margin to ensure we capture enough history for accurate scoring
+      const proteinPenaltyWindow = 4; // Days with protein rotation penalty
+      const marginDays = 3;            // Safety margin for edge cases
+      const mealsPerDay = 3;           // Assume breakfast, lunch, dinner
+      
+      final daysBack = proteinPenaltyWindow + marginDays;  // 7 days total
+      final mealLimit = daysBack * mealsPerDay;            // 21 meals
+      
       final recentMeals = await _dbQueries.getRecentMeals(
-          startDate: DateTime.now().subtract(const Duration(days: 14)),
-          limit: 20);
+          startDate: DateTime.now().subtract(Duration(days: daysBack)),
+          limit: mealLimit);
 
       context['recentMeals'] = recentMeals;
     }
