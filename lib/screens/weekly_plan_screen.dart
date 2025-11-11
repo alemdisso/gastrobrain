@@ -421,6 +421,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       count: 999, // Get all recommendations for selection
       excludeIds: recommendationContext['excludeIds'] ?? [],
       avoidProteinTypes: recommendationContext['avoidProteinTypes'],
+      mealPlan: _currentMealPlan, // Pass meal plan for protein rotation
       forDate: date,
       mealType: mealType,
       weekdayMeal: isWeekday,
