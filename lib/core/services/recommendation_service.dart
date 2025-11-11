@@ -530,28 +530,18 @@ class RecommendationService {
 
     // Add planned meal data when meal plan provided
     if (mealPlan != null && _mealPlanAnalysis != null) {
-      print('[RecommendationService] Building context with meal plan (ID: ${mealPlan.id})');
-
       context['plannedRecipeIds'] =
           await _mealPlanAnalysis.getPlannedRecipeIds(mealPlan);
-      print('[RecommendationService] Planned recipe IDs: ${context['plannedRecipeIds']}');
-
       context['plannedProteins'] =
           await _mealPlanAnalysis.getPlannedProteinsForWeek(mealPlan);
-      print('[RecommendationService] Planned proteins: ${context['plannedProteins']}');
-
       context['plannedProteinsByDate'] =
           await _mealPlanAnalysis.getPlannedProteinsByDate(mealPlan);
-
       context['penaltyStrategy'] =
           await _mealPlanAnalysis.calculateProteinPenaltyStrategy(
         mealPlan,
         forDate ?? DateTime.now(),
         mealType ?? 'lunch',
       );
-      print('[RecommendationService] Penalty strategy penalties: ${(context['penaltyStrategy'] as ProteinPenaltyStrategy).penalties}');
-    } else {
-      print('[RecommendationService] NO MEAL PLAN PROVIDED - mealPlan: ${mealPlan != null ? "not null" : "null"}, _mealPlanAnalysis: ${_mealPlanAnalysis != null ? "not null" : "null"}');
     }
 
     // Load meal history data if required

@@ -54,35 +54,24 @@ class ProteinRotationFactor implements RecommendationFactor {
     // NEW: Check for penalty strategy from meal plan analysis
     // This strategy considers BOTH planned and cooked meals
     if (context.containsKey('penaltyStrategy')) {
-      print('[ProteinRotationFactor] Using penalty strategy for recipe: ${recipe.name}');
       final strategy = context['penaltyStrategy'] as ProteinPenaltyStrategy;
-      print('[ProteinRotationFactor] Recipe main proteins: $mainProteins');
 
       double totalPenalty = 0.0;
       int penaltyCount = 0;
 
       for (var proteinType in mainProteins) {
         if (strategy.penalties.containsKey(proteinType)) {
-          final penalty = strategy.penalties[proteinType]! * 100;
-          print('[ProteinRotationFactor] Protein $proteinType has penalty: $penalty%');
-          totalPenalty += penalty;
+          totalPenalty += strategy.penalties[proteinType]! * 100;
           penaltyCount++;
-        } else {
-          print('[ProteinRotationFactor] Protein $proteinType has NO penalty');
         }
       }
 
       if (penaltyCount > 0) {
         final avgPenalty = totalPenalty / penaltyCount;
-        final score = (100 - avgPenalty).clamp(0.0, 100.0);
-        print('[ProteinRotationFactor] Final score for ${recipe.name}: $score (avg penalty: $avgPenalty%)');
-        return score;
+        return (100 - avgPenalty).clamp(0.0, 100.0);
       }
 
-      print('[ProteinRotationFactor] No penalties applied, returning 100.0');
       return 100.0; // No penalties for this recipe's proteins
-    } else {
-      print('[ProteinRotationFactor] NO penalty strategy in context, using fallback');
     }
 
     // FALLBACK: Existing behavior with recentMeals (backward compatibility)
