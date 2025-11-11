@@ -326,7 +326,9 @@ void main() {
       final context = {
         'proteinTypes': <String, Set<ProteinType>>{
           // The Set automatically deduplicates if beef appears multiple times
-          recipeId: {ProteinType.beef}, // Contains beef (from both "Beef" and "Beef Stock")
+          recipeId: {
+            ProteinType.beef
+          }, // Contains beef (from both "Beef" and "Beef Stock")
           yesterdayRecipeId: {ProteinType.chicken}, // Had chicken yesterday
         },
         'recentMeals': <Map<String, dynamic>>[
@@ -345,7 +347,8 @@ void main() {
       expect(score, equals(100.0));
     });
 
-    test('should handle beef ragù with beef used yesterday (duplicate protein edge case)',
+    test(
+        'should handle beef ragù with beef used yesterday (duplicate protein edge case)',
         () async {
       // Arrange - This tests the exact scenario from the issue
       final recipeId = IdGenerator.generateId();
@@ -469,10 +472,7 @@ void main() {
 
       final context = {
         'proteinTypes': <String, Set<ProteinType>>{
-          recipeId: {
-            ProteinType.beef,
-            ProteinType.seafood
-          }, // Today has both
+          recipeId: {ProteinType.beef, ProteinType.seafood}, // Today has both
           chickenId: {ProteinType.chicken},
           beefSideId: {ProteinType.beef}, // Beef from side dish 2 days ago
           paellaId: {ProteinType.seafood}, // Seafood 3 days ago
@@ -511,7 +511,7 @@ void main() {
         );
 
         // Create penalty strategy with chicken heavily penalized
-        final penaltyStrategy = ProteinPenaltyStrategy(
+        final penaltyStrategy = const ProteinPenaltyStrategy(
           penalties: {
             ProteinType.chicken: 0.8, // 80% penalty (planned + recently cooked)
             ProteinType.beef: 0.3, // 30% penalty
@@ -545,7 +545,7 @@ void main() {
         );
 
         // Create penalty strategy with only chicken penalized
-        final penaltyStrategy = ProteinPenaltyStrategy(
+        final penaltyStrategy = const ProteinPenaltyStrategy(
           penalties: {
             ProteinType.chicken: 0.6, // 60% penalty
           },
@@ -577,7 +577,7 @@ void main() {
         );
 
         // Create penalty strategy with different penalties
-        final penaltyStrategy = ProteinPenaltyStrategy(
+        final penaltyStrategy = const ProteinPenaltyStrategy(
           penalties: {
             ProteinType.beef: 0.6, // 60% penalty
             ProteinType.seafood: 0.4, // 40% penalty
@@ -649,7 +649,7 @@ void main() {
         );
 
         // Create penalty strategy with extreme penalty (clamped to 1.0 max)
-        final penaltyStrategy = ProteinPenaltyStrategy(
+        final penaltyStrategy = const ProteinPenaltyStrategy(
           penalties: {
             ProteinType.chicken: 1.0, // 100% penalty (maximum)
           },
