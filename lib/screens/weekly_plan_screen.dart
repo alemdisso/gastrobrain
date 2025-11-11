@@ -323,14 +323,12 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     // Determine if this is a weekday
     final isWeekday = date.weekday >= 1 && date.weekday <= 5;
 
-// Get recommendations with enhanced dual-context filtering
+// Get recommendations with meal plan integration
     final recommendations = await _recommendationService.getRecommendations(
       count: count,
       excludeIds: context['plannedRecipeIds'] ?? [],
-      // Note: We'll need to update RecommendationService to use penalty strategy
-      // For now, use high penalty proteins as avoidProteinTypes
-      avoidProteinTypes: (context['penaltyStrategy'] as ProteinPenaltyStrategy?)
-          ?.highPenaltyProteins,
+      // Pass meal plan for integrated protein rotation and variety scoring
+      mealPlan: _currentMealPlan,
       forDate: date,
       mealType: mealType,
       weekdayMeal: isWeekday,
@@ -355,13 +353,13 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     // Determine if this is a weekday
     final isWeekday = date.weekday >= 1 && date.weekday <= 5;
 
-    // Get detailed recommendations with scores
+    // Get detailed recommendations with scores and meal plan integration
     final recommendations =
         await _recommendationService.getDetailedRecommendations(
       count: count,
       excludeIds: context['plannedRecipeIds'] ?? [],
-      avoidProteinTypes: (context['penaltyStrategy'] as ProteinPenaltyStrategy?)
-          ?.highPenaltyProteins,
+      // Pass meal plan for integrated protein rotation and variety scoring
+      mealPlan: _currentMealPlan,
       forDate: date,
       mealType: mealType,
       weekdayMeal: isWeekday,

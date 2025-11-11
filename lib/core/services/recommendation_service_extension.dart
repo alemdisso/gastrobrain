@@ -3,6 +3,7 @@
 import '../../database/database_helper.dart';
 import '../../models/recipe.dart';
 import 'recommendation_service.dart';
+import 'meal_plan_analysis_service.dart';
 
 /// Extension methods for DatabaseHelper to easily create recommendation services
 extension RecommendationServiceExtension on DatabaseHelper {
@@ -12,6 +13,7 @@ extension RecommendationServiceExtension on DatabaseHelper {
   }) {
     return RecommendationService(
       dbHelper: this,
+      mealPlanAnalysis: MealPlanAnalysisService(this),
       registerDefaultFactors: registerDefaultFactors,
     );
   }
