@@ -1553,9 +1553,11 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
-            _showingMenu
-                ? _buildMenu()
-                : Expanded(child: _buildRecipeSelection()),
+            Expanded(
+              child: _showingMenu
+                  ? _buildMenu()
+                  : _buildRecipeSelection(),
+            ),
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(AppLocalizations.of(context)!.cancel),
@@ -1669,9 +1671,10 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
   }
 
   Widget _buildMenu() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
         // Show selected recipe
         Container(
           padding: const EdgeInsets.all(12),
@@ -1743,6 +1746,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
           }),
         ),
       ],
+      ),
     );
   }
 
