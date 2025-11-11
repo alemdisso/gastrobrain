@@ -4,6 +4,7 @@ import 'dart:math';
 import '../../../models/recipe.dart';
 import '../../../models/protein_type.dart';
 import '../recommendation_service.dart';
+import '../meal_plan_analysis_service.dart';
 
 /// A scoring factor that encourages protein variety in meal recommendations.
 ///
@@ -50,7 +51,30 @@ class ProteinRotationFactor implements RecommendationFactor {
       return 90.0; // Good score for recipes with no main proteins
     }
 
-    // Get recent meals
+    // NEW: Check for penalty strategy from meal plan analysis
+    // This strategy considers BOTH planned and cooked meals
+    if (context.containsKey('penaltyStrategy')) {
+      final strategy = context['penaltyStrategy'] as ProteinPenaltyStrategy;
+
+      double totalPenalty = 0.0;
+      int penaltyCount = 0;
+
+      for (var proteinType in mainProteins) {
+        if (strategy.penalties.containsKey(proteinType)) {
+          totalPenalty += strategy.penalties[proteinType]! * 100;
+          penaltyCount++;
+        }
+      }
+
+      if (penaltyCount > 0) {
+        final avgPenalty = totalPenalty / penaltyCount;
+        return (100 - avgPenalty).clamp(0.0, 100.0);
+      }
+
+      return 100.0; // No penalties for this recipe's proteins
+    }
+
+    // FALLBACK: Existing behavior with recentMeals (backward compatibility)
     final recentMeals = context['recentMeals'] as List<Map<String, dynamic>>;
     if (recentMeals.isEmpty) {
       return 100.0; // No recent meals, so no penalties

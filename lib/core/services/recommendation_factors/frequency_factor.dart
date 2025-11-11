@@ -34,7 +34,16 @@ class FrequencyFactor implements RecommendationFactor {
   @override
   Future<double> calculateScore(
       Recipe recipe, Map<String, dynamic> context) async {
-    // Get the last cooked date for this recipe
+    // NEW: Check if recipe is already planned
+    if (context.containsKey('plannedRecipeIds')) {
+      final plannedRecipeIds = context['plannedRecipeIds'] as List<String>;
+      if (plannedRecipeIds.contains(recipe.id)) {
+        // Recipe is already in meal plan - treat as recently cooked
+        return 0.0;
+      }
+    }
+
+    // EXISTING: Get the last cooked date for this recipe
     final Map<String, DateTime?> lastCooked =
         context['lastCooked'] as Map<String, DateTime?>;
     final lastCookedDate = lastCooked[recipe.id];

@@ -308,6 +308,7 @@ class MockRecommendationService implements RecommendationService {
     int? maxDifficulty,
     FrequencyType? preferredFrequency,
     bool? weekdayMeal,
+    MealPlan? mealPlan,
   }) async {
     // Simply return our mock recommendations regardless of parameters
     // In a more sophisticated test, we could filter based on the parameters
@@ -347,6 +348,7 @@ class MockRecommendationService implements RecommendationService {
     int? maxDifficulty,
     FrequencyType? preferredFrequency,
     bool? weekdayMeal,
+    MealPlan? mealPlan,
   }) async {
     // Filter recipes the same way as getRecommendations
     List<Recipe> filtered = List.from(_mockRecommendations);

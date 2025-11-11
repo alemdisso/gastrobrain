@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/protein_type.dart';
 import 'package:gastrobrain/core/services/recommendation_factors/protein_rotation_factor.dart';
+import 'package:gastrobrain/core/services/meal_plan_analysis_service.dart';
 import 'package:gastrobrain/utils/id_generator.dart';
 
 void main() {
@@ -497,6 +498,177 @@ void main() {
       // Average: (75% + 50%) / 2 = 62.5% penalty
       // Score: 100 - 62.5 = 37.5
       expect(score, equals(37.5));
+    });
+
+    group('With Meal Plan (Penalty Strategy)', () {
+      test('should use penalty strategy when provided in context', () async {
+        // Arrange
+        final recipeId = IdGenerator.generateId();
+        final recipe = Recipe(
+          id: recipeId,
+          name: 'Chicken Curry',
+          createdAt: DateTime.now(),
+        );
+
+        // Create penalty strategy with chicken heavily penalized
+        final penaltyStrategy = ProteinPenaltyStrategy(
+          penalties: {
+            ProteinType.chicken: 0.8, // 80% penalty (planned + recently cooked)
+            ProteinType.beef: 0.3, // 30% penalty
+          },
+        );
+
+        final context = {
+          'proteinTypes': <String, Set<ProteinType>>{
+            recipeId: {ProteinType.chicken},
+          },
+          'penaltyStrategy': penaltyStrategy,
+          'recentMeals': <Map<String, dynamic>>[], // Should be ignored
+        };
+
+        // Act
+        final score = await factor.calculateScore(recipe, context);
+
+        // Assert - Should apply 80% penalty from strategy
+        // Score = 100 - 80 = 20.0
+        expect(score, equals(20.0));
+      });
+
+      test('should give perfect score when protein has no penalty in strategy',
+          () async {
+        // Arrange
+        final recipeId = IdGenerator.generateId();
+        final recipe = Recipe(
+          id: recipeId,
+          name: 'Beef Tacos',
+          createdAt: DateTime.now(),
+        );
+
+        // Create penalty strategy with only chicken penalized
+        final penaltyStrategy = ProteinPenaltyStrategy(
+          penalties: {
+            ProteinType.chicken: 0.6, // 60% penalty
+          },
+        );
+
+        final context = {
+          'proteinTypes': <String, Set<ProteinType>>{
+            recipeId: {ProteinType.beef}, // Beef not in penalty map
+          },
+          'penaltyStrategy': penaltyStrategy,
+          'recentMeals': <Map<String, dynamic>>[],
+        };
+
+        // Act
+        final score = await factor.calculateScore(recipe, context);
+
+        // Assert - No penalty for beef
+        expect(score, equals(100.0));
+      });
+
+      test('should average penalties when recipe has multiple proteins',
+          () async {
+        // Arrange
+        final recipeId = IdGenerator.generateId();
+        final recipe = Recipe(
+          id: recipeId,
+          name: 'Surf and Turf',
+          createdAt: DateTime.now(),
+        );
+
+        // Create penalty strategy with different penalties
+        final penaltyStrategy = ProteinPenaltyStrategy(
+          penalties: {
+            ProteinType.beef: 0.6, // 60% penalty
+            ProteinType.seafood: 0.4, // 40% penalty
+          },
+        );
+
+        final context = {
+          'proteinTypes': <String, Set<ProteinType>>{
+            recipeId: {ProteinType.beef, ProteinType.seafood},
+          },
+          'penaltyStrategy': penaltyStrategy,
+          'recentMeals': <Map<String, dynamic>>[],
+        };
+
+        // Act
+        final score = await factor.calculateScore(recipe, context);
+
+        // Assert - Average penalty: (60 + 40) / 2 = 50
+        // Score = 100 - 50 = 50.0
+        expect(score, equals(50.0));
+      });
+
+      test('should fallback to recentMeals when no penalty strategy provided',
+          () async {
+        // Arrange
+        final recipeId = IdGenerator.generateId();
+        final recipe = Recipe(
+          id: recipeId,
+          name: 'Chicken Curry',
+          createdAt: DateTime.now(),
+        );
+
+        final yesterdayRecipeId = IdGenerator.generateId();
+        final yesterdayRecipe = Recipe(
+          id: yesterdayRecipeId,
+          name: 'Chicken Stir Fry',
+          createdAt: DateTime.now(),
+        );
+
+        final context = {
+          'proteinTypes': <String, Set<ProteinType>>{
+            recipeId: {ProteinType.chicken},
+            yesterdayRecipeId: {ProteinType.chicken},
+          },
+          // No penaltyStrategy - should use recentMeals
+          'recentMeals': <Map<String, dynamic>>[
+            {
+              'recipes': [yesterdayRecipe],
+              'cookedAt': DateTime.now().subtract(const Duration(days: 1)),
+            },
+          ],
+        };
+
+        // Act
+        final score = await factor.calculateScore(recipe, context);
+
+        // Assert - Should use fallback behavior (100% penalty)
+        expect(score, equals(0.0));
+      });
+
+      test('should clamp score to valid range when penalty exceeds 100%',
+          () async {
+        // Arrange
+        final recipeId = IdGenerator.generateId();
+        final recipe = Recipe(
+          id: recipeId,
+          name: 'Chicken Curry',
+          createdAt: DateTime.now(),
+        );
+
+        // Create penalty strategy with extreme penalty (clamped to 1.0 max)
+        final penaltyStrategy = ProteinPenaltyStrategy(
+          penalties: {
+            ProteinType.chicken: 1.0, // 100% penalty (maximum)
+          },
+        );
+
+        final context = {
+          'proteinTypes': <String, Set<ProteinType>>{
+            recipeId: {ProteinType.chicken},
+          },
+          'penaltyStrategy': penaltyStrategy,
+          'recentMeals': <Map<String, dynamic>>[],
+        };
+
+        // Act
+        final score = await factor.calculateScore(recipe, context);
+
+        // Assert - Score should be clamped to 0.0
+        expect(score, equals(0.0));
+      });
     });
   });
 }

@@ -22,7 +22,16 @@ class VarietyEncouragementFactor implements RecommendationFactor {
   @override
   Future<double> calculateScore(
       Recipe recipe, Map<String, dynamic> context) async {
-    // Get meal counts for all recipes
+    // NEW: Check if recipe is already planned
+    if (context.containsKey('plannedRecipeIds')) {
+      final plannedRecipeIds = context['plannedRecipeIds'] as List<String>;
+      if (plannedRecipeIds.contains(recipe.id)) {
+        // Recipe is already in meal plan - penalize heavily
+        return 0.0;
+      }
+    }
+
+    // EXISTING: Get meal counts for all recipes
     final Map<String, int> mealCounts =
         context['mealCounts'] as Map<String, int>;
 

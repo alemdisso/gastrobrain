@@ -132,5 +132,131 @@ void main() {
       expect(scores['recipe-10']!, lessThan(scores['recipe-5']!));
       expect(scores['recipe-20']!, lessThan(scores['recipe-10']!));
     });
+
+    group('With Meal Plan (Planned Recipes)', () {
+      test('should return 0.0 for recipe already in meal plan', () async {
+        // Arrange
+        final recipe = Recipe(
+          id: 'recipe-1',
+          name: 'Chicken Curry',
+          createdAt: DateTime.now(),
+        );
+
+        final context = {
+          'plannedRecipeIds': ['recipe-1', 'recipe-2'], // recipe-1 is planned
+          'mealCounts': <String, int>{
+            'recipe-1': 0, // Never cooked before
+          },
+        };
+
+        // Act
+        final score = await factor.calculateScore(recipe, context);
+
+        // Assert - Should get 0.0 even though never cooked
+        expect(score, equals(0.0));
+      });
+
+      test('should score normally for recipe NOT in meal plan', () async {
+        // Arrange
+        final recipe = Recipe(
+          id: 'recipe-3',
+          name: 'Beef Tacos',
+          createdAt: DateTime.now(),
+        );
+
+        final context = {
+          'plannedRecipeIds': ['recipe-1', 'recipe-2'], // recipe-3 not planned
+          'mealCounts': <String, int>{
+            'recipe-3': 0, // Never cooked
+          },
+        };
+
+        // Act
+        final score = await factor.calculateScore(recipe, context);
+
+        // Assert - Should get normal score for never-cooked recipe
+        expect(score, equals(100.0));
+      });
+
+      test('should penalize planned recipe even if never cooked', () async {
+        // Arrange
+        final plannedRecipe = Recipe(
+          id: 'planned-recipe',
+          name: 'Planned but Never Cooked',
+          createdAt: DateTime.now(),
+        );
+
+        final unplannedRecipe = Recipe(
+          id: 'unplanned-recipe',
+          name: 'Not Planned but Cooked 10 Times',
+          createdAt: DateTime.now(),
+        );
+
+        final context = {
+          'plannedRecipeIds': ['planned-recipe'],
+          'mealCounts': <String, int>{
+            'planned-recipe': 0, // Planned, never cooked
+            'unplanned-recipe': 10, // Not planned, cooked 10 times
+          },
+        };
+
+        // Act
+        final plannedScore =
+            await factor.calculateScore(plannedRecipe, context);
+        final unplannedScore =
+            await factor.calculateScore(unplannedRecipe, context);
+
+        // Assert - Planned recipe should score lower than frequently cooked one
+        expect(plannedScore, equals(0.0));
+        expect(unplannedScore, greaterThan(0.0)); // Should have some score
+        expect(plannedScore, lessThan(unplannedScore));
+      });
+
+      test('should work when plannedRecipeIds is empty', () async {
+        // Arrange
+        final recipe = Recipe(
+          id: 'recipe-1',
+          name: 'Chicken Curry',
+          createdAt: DateTime.now(),
+        );
+
+        final context = {
+          'plannedRecipeIds': <String>[], // Empty list
+          'mealCounts': <String, int>{
+            'recipe-1': 0,
+          },
+        };
+
+        // Act
+        final score = await factor.calculateScore(recipe, context);
+
+        // Assert - Should score normally
+        expect(score, equals(100.0));
+      });
+
+      test('should fallback to normal behavior when no plannedRecipeIds',
+          () async {
+        // Arrange
+        final recipe = Recipe(
+          id: 'recipe-1',
+          name: 'Chicken Curry',
+          createdAt: DateTime.now(),
+        );
+
+        final context = {
+          // No plannedRecipeIds in context
+          'mealCounts': <String, int>{
+            'recipe-1': 5, // Cooked 5 times
+          },
+        };
+
+        // Act
+        final score = await factor.calculateScore(recipe, context);
+
+        // Assert - Should use normal variety scoring
+        expect(score, lessThan(100.0)); // Penalized for being cooked 5 times
+        expect(score, greaterThan(0.0)); // But not zero
+      });
+    });
   });
 }

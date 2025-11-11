@@ -140,5 +140,126 @@ void main() {
       // a monthly recipe cooked 3 days ago
       expect(weeklyScore, greaterThan(monthlyScore));
     });
+
+    group('With Meal Plan (Planned Recipes)', () {
+      test('should return 0.0 for recipe already in meal plan', () async {
+        // Arrange
+        final recipe = Recipe(
+          id: 'recipe-1',
+          name: 'Chicken Curry',
+          desiredFrequency: FrequencyType.weekly,
+          createdAt: DateTime.now(),
+        );
+
+        final context = {
+          'plannedRecipeIds': ['recipe-1'], // recipe-1 is planned
+          'lastCooked': <String, DateTime?>{
+            'recipe-1': null, // Never cooked
+          },
+        };
+
+        // Act
+        final score = await factor.calculateScore(recipe, context);
+
+        // Assert - Should get 0.0 even though never cooked
+        expect(score, equals(0.0));
+      });
+
+      test('should score normally for recipe NOT in meal plan', () async {
+        // Arrange
+        final recipe = Recipe(
+          id: 'recipe-2',
+          name: 'Beef Tacos',
+          desiredFrequency: FrequencyType.weekly,
+          createdAt: DateTime.now(),
+        );
+
+        final context = {
+          'plannedRecipeIds': ['recipe-1'], // recipe-2 not planned
+          'lastCooked': <String, DateTime?>{
+            'recipe-2': null, // Never cooked
+          },
+        };
+
+        // Act
+        final score = await factor.calculateScore(recipe, context);
+
+        // Assert - Should get normal score for never-cooked recipe
+        expect(score, equals(85.0));
+      });
+
+      test('should penalize planned recipe even if overdue', () async {
+        // Arrange
+        final recipe = Recipe(
+          id: 'recipe-1',
+          name: 'Weekly Recipe',
+          desiredFrequency: FrequencyType.weekly,
+          createdAt: DateTime.now(),
+        );
+
+        final context = {
+          'plannedRecipeIds': ['recipe-1'],
+          'lastCooked': <String, DateTime?>{
+            'recipe-1':
+                DateTime.now().subtract(const Duration(days: 14)), // 2 weeks ago
+          },
+        };
+
+        // Act
+        final score = await factor.calculateScore(recipe, context);
+
+        // Assert - Should get 0.0 even though overdue
+        expect(score, equals(0.0));
+      });
+
+      test('should work when plannedRecipeIds is empty', () async {
+        // Arrange
+        final recipe = Recipe(
+          id: 'recipe-1',
+          name: 'Chicken Curry',
+          desiredFrequency: FrequencyType.weekly,
+          createdAt: DateTime.now(),
+        );
+
+        final context = {
+          'plannedRecipeIds': <String>[], // Empty list
+          'lastCooked': <String, DateTime?>{
+            'recipe-1': null,
+          },
+        };
+
+        // Act
+        final score = await factor.calculateScore(recipe, context);
+
+        // Assert - Should score normally
+        expect(score, equals(85.0));
+      });
+
+      test('should fallback to normal behavior when no plannedRecipeIds',
+          () async {
+        // Arrange
+        final recipe = Recipe(
+          id: 'recipe-1',
+          name: 'Weekly Recipe',
+          desiredFrequency: FrequencyType.weekly,
+          createdAt: DateTime.now(),
+        );
+
+        final context = {
+          // No plannedRecipeIds in context
+          'lastCooked': <String, DateTime?>{
+            'recipe-1':
+                DateTime.now().subtract(const Duration(days: 3)), // 3 days ago
+          },
+        };
+
+        // Act
+        final score = await factor.calculateScore(recipe, context);
+
+        // Assert - Should use normal frequency scoring
+        expect(score, greaterThan(0.0));
+        expect(score, lessThan(85.0)); // Not yet due (3 days < 7 days)
+      });
+    });
   });
 }

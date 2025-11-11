@@ -7,9 +7,11 @@ import '../../models/recipe.dart';
 import '../../models/protein_type.dart';
 import '../../models/frequency_type.dart';
 import '../../models/recipe_recommendation.dart';
+import '../../models/meal_plan.dart';
 import '../errors/gastrobrain_exceptions.dart';
 import 'localized_error_messages.dart';
 import 'recommendation_database_queries.dart';
+import 'meal_plan_analysis_service.dart';
 import 'recommendation_factors/frequency_factor.dart';
 import 'recommendation_factors/protein_rotation_factor.dart';
 import 'recommendation_factors/rating_factor.dart';
@@ -102,6 +104,7 @@ abstract class RecommendationFactor {
 /// This ensures no permanent state changes while enabling temporal adaptation.
 class RecommendationService {
   final RecommendationDatabaseQueries _dbQueries;
+  final MealPlanAnalysisService? _mealPlanAnalysis;
   final Random _random = Random();
   Map<String, dynamic>? overrideTestContext;
 
@@ -114,12 +117,14 @@ class RecommendationService {
   /// Default constructor with DatabaseHelper injection
   RecommendationService({
     required DatabaseHelper dbHelper,
+    MealPlanAnalysisService? mealPlanAnalysis,
     bool registerDefaultFactors = false,
     Map<String, Set<ProteinType>>? proteinTypesOverride,
-  }) : _dbQueries = RecommendationDatabaseQueries(
+  })  : _dbQueries = RecommendationDatabaseQueries(
           dbHelper: dbHelper,
           proteinTypesOverride: proteinTypesOverride,
-        ) {
+        ),
+        _mealPlanAnalysis = mealPlanAnalysis {
     if (registerDefaultFactors) {
       registerStandardFactors();
     }
@@ -259,6 +264,7 @@ class RecommendationService {
     int? maxDifficulty,
     FrequencyType? preferredFrequency,
     bool? weekdayMeal,
+    MealPlan? mealPlan,
   }) async {
     try {
       // Validate inputs
@@ -281,6 +287,7 @@ class RecommendationService {
         maxDifficulty: maxDifficulty,
         preferredFrequency: preferredFrequency,
         weekdayMeal: weekdayMeal,
+        mealPlan: mealPlan,
       );
 
       // Get candidate recipes with filtering applied
@@ -361,6 +368,7 @@ class RecommendationService {
     int? maxDifficulty,
     FrequencyType? preferredFrequency,
     bool? weekdayMeal,
+    MealPlan? mealPlan,
   }) async {
     try {
       // Validate inputs
@@ -383,6 +391,7 @@ class RecommendationService {
         maxDifficulty: maxDifficulty,
         preferredFrequency: preferredFrequency,
         weekdayMeal: weekdayMeal,
+        mealPlan: mealPlan,
       );
 
       // Get candidate recipes with filtering applied
@@ -476,6 +485,7 @@ class RecommendationService {
     int? maxDifficulty,
     FrequencyType? preferredFrequency,
     bool? weekdayMeal,
+    MealPlan? mealPlan,
   }) async {
     // For testing, override the context if provided
     if (overrideTestContext != null) {
@@ -516,6 +526,22 @@ class RecommendationService {
       final isWeekday = _isWeekday(forDate);
       context['dayType'] = isWeekday ? 'weekday' : 'weekend';
       context['isWeekday'] = isWeekday;
+    }
+
+    // Add planned meal data when meal plan provided
+    if (mealPlan != null && _mealPlanAnalysis != null) {
+      context['plannedRecipeIds'] =
+          await _mealPlanAnalysis.getPlannedRecipeIds(mealPlan);
+      context['plannedProteins'] =
+          await _mealPlanAnalysis.getPlannedProteinsForWeek(mealPlan);
+      context['plannedProteinsByDate'] =
+          await _mealPlanAnalysis.getPlannedProteinsByDate(mealPlan);
+      context['penaltyStrategy'] =
+          await _mealPlanAnalysis.calculateProteinPenaltyStrategy(
+        mealPlan,
+        forDate ?? DateTime.now(),
+        mealType ?? 'lunch',
+      );
     }
 
     // Load meal history data if required
