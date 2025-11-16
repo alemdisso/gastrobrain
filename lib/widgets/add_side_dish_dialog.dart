@@ -114,13 +114,16 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
 
   Widget _buildCurrentSideDishesSection() {
     if (_currentSideDishes.isEmpty) return const SizedBox.shrink();
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           AppLocalizations.of(context)!.sideDishesLabel,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+          ),
         ),
         const SizedBox(height: 8),
         ..._currentSideDishes.map((recipe) => ListTile(
@@ -156,47 +159,59 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Primary recipe section (only in multi-recipe mode)
-            if (isMultiRecipeMode) _buildPrimaryRecipeSection(),
-            
-            // Current side dishes section (only in multi-recipe mode)
-            if (isMultiRecipeMode) _buildCurrentSideDishesSection(),
-            
-            // Add side dish section
-            Text(
-              AppLocalizations.of(context)!.addSideDish,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            
-            if (widget.enableSearch) ...[
-              TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: widget.searchHint ?? AppLocalizations.of(context)!.searchSideDishesHint,
-                  prefixIcon: const Icon(Icons.search),
-                  border: const OutlineInputBorder(),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            setState(() {
-                              _searchQuery = '';
-                              _searchController.clear();
-                            });
-                          },
-                        )
-                      : null,
+            // Upper sections (scrollable when needed)
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Primary recipe section (only in multi-recipe mode)
+                    if (isMultiRecipeMode) _buildPrimaryRecipeSection(),
+
+                    // Current side dishes section (only in multi-recipe mode)
+                    if (isMultiRecipeMode) _buildCurrentSideDishesSection(),
+
+                    // Add side dish section
+                    Text(
+                      AppLocalizations.of(context)!.addSideDish,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+
+                    if (widget.enableSearch) ...[
+                      TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: widget.searchHint ?? AppLocalizations.of(context)!.searchSideDishesHint,
+                          prefixIcon: const Icon(Icons.search),
+                          border: const OutlineInputBorder(),
+                          suffixIcon: _searchQuery.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear),
+                                  onPressed: () {
+                                    setState(() {
+                                      _searchQuery = '';
+                                      _searchController.clear();
+                                    });
+                                  },
+                                )
+                              : null,
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            _searchQuery = value;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ],
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    _searchQuery = value;
-                  });
-                },
               ),
-              const SizedBox(height: 16),
-            ],
-            
+            ),
+
+            // Recipe list (always visible, takes remaining space)
             Expanded(
               child: filteredRecipes.isEmpty
                   ? Center(
