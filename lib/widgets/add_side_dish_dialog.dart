@@ -154,7 +154,6 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
         width: double.maxFinite,
         height: 500,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Primary recipe section (only in multi-recipe mode)
