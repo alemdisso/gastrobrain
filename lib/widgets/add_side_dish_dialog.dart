@@ -49,7 +49,7 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
       ...widget.excludeRecipes.map((r) => r.id),
       ..._currentSideDishes.map((r) => r.id),
     ];
-    
+
     final availableRecipes = widget.availableRecipes.where((recipe) {
       return !excludedIds.contains(recipe.id);
     }).toList();
@@ -89,7 +89,7 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
 
   Widget _buildPrimaryRecipeSection() {
     if (widget.primaryRecipe == null) return const SizedBox.shrink();
-    
+
     return Container(
       padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.only(bottom: 16),
@@ -122,19 +122,19 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
           AppLocalizations.of(context)!.sideDishesLabel,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 13,
+            fontSize: 14,
           ),
         ),
         const SizedBox(height: 8),
         ..._currentSideDishes.map((recipe) => ListTile(
-          leading: const Icon(Icons.restaurant_menu, color: Colors.grey),
-          title: Text(recipe.name),
-          trailing: IconButton(
-            icon: const Icon(Icons.remove_circle_outline),
-            onPressed: () => _removeSideDish(recipe),
-          ),
-          contentPadding: EdgeInsets.zero,
-        )),
+              leading: const Icon(Icons.restaurant_menu, color: Colors.grey),
+              title: Text(recipe.name),
+              trailing: IconButton(
+                icon: const Icon(Icons.remove_circle_outline),
+                onPressed: () => _removeSideDish(recipe),
+              ),
+              contentPadding: EdgeInsets.zero,
+            )),
         const SizedBox(height: 16),
       ],
     );
@@ -147,12 +147,15 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
 
     // Determine if this is for multiple recipe management or single selection
     final isMultiRecipeMode = widget.primaryRecipe != null;
-    final dialogTitle = isMultiRecipeMode 
-        ? AppLocalizations.of(context)!.manageSideDishes 
+    final dialogTitle = isMultiRecipeMode
+        ? AppLocalizations.of(context)!.manageSideDishes
         : AppLocalizations.of(context)!.addSideDish;
 
     return AlertDialog(
-      title: Text(dialogTitle),
+      title: Text(
+        dialogTitle,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+      ),
       content: SizedBox(
         width: double.maxFinite,
         height: 500,
@@ -183,7 +186,9 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
                       TextField(
                         controller: _searchController,
                         decoration: InputDecoration(
-                          hintText: widget.searchHint ?? AppLocalizations.of(context)!.searchSideDishesHint,
+                          hintText: widget.searchHint ??
+                              AppLocalizations.of(context)!
+                                  .searchSideDishesHint,
                           prefixIcon: const Icon(Icons.search),
                           border: const OutlineInputBorder(),
                           suffixIcon: _searchQuery.isNotEmpty
@@ -226,8 +231,10 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
                           const SizedBox(height: 16),
                           Text(
                             _searchQuery.isNotEmpty
-                                ? AppLocalizations.of(context)!.noRecipesFoundMatching(_searchQuery)
-                                : AppLocalizations.of(context)!.noAvailableSideDishes,
+                                ? AppLocalizations.of(context)!
+                                    .noRecipesFoundMatching(_searchQuery)
+                                : AppLocalizations.of(context)!
+                                    .noAvailableSideDishes,
                             style:
                                 Theme.of(context).textTheme.bodyLarge?.copyWith(
                                       color: Colors.grey[600],
@@ -244,7 +251,8 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
                                 });
                               },
                               icon: const Icon(Icons.clear),
-                              label: Text(AppLocalizations.of(context)!.clearSearch),
+                              label: Text(
+                                  AppLocalizations.of(context)!.clearSearch),
                             ),
                           ],
                         ],
@@ -265,7 +273,7 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
                             'Difficulty: ${recipe.difficulty}/5',
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
-                          onTap: () => isMultiRecipeMode 
+                          onTap: () => isMultiRecipeMode
                               ? _handleRecipeSelection(recipe)
                               : Navigator.of(context).pop(recipe),
                           contentPadding: const EdgeInsets.symmetric(
