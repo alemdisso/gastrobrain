@@ -84,7 +84,8 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
       if (mounted) {
         setState(() {
           _availableRecipes =
-              recipes.where((r) => r.id != widget.primaryRecipe.id).toList();
+              recipes.where((r) => r.id != widget.primaryRecipe.id).toList()
+                ..sort((a, b) => a.name.compareTo(b.name));
           _isLoadingRecipes = false;
         });
       }
