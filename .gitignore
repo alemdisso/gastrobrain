@@ -105,3 +105,4 @@ lib/l10n/app_localizations*.dart
 # Test coverage reports (generated files, not source controlled)
 coverage/
 *.lcov
+devtools_options.yaml
