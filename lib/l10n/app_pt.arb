@@ -1128,7 +1128,7 @@
   "@addRecipeDialog": {
     "description": "Título do diálogo para adicionar receita"
   },
-  "selectRecipeToAddAsSideDish": "Selecione uma receita para adicionar como acompanhamento:",
+  "selectRecipeToAddAsSideDish": "Selecione um acompanhamento:",
   "@selectRecipeToAddAsSideDish": {
     "description": "Texto de instrução para selecionar acompanhamento"
   },
