@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:gastrobrain/main.dart' as app;
+import 'package:gastrobrain/main.dart';
 
 /// Baby Step 1: Minimal E2E Test - App Launch
 ///
@@ -14,11 +14,14 @@ void main() {
 
   group('E2E - App Launch (Baby Step 1)', () {
     testWidgets('App launches and home screen appears', (WidgetTester tester) async {
-      // SETUP: Launch the app
-      app.main();
+      // SETUP: Initialize Flutter bindings
+      WidgetsFlutterBinding.ensureInitialized();
 
-      // Wait for the app to initialize (database seeding, etc.)
-      await tester.pumpAndSettle(const Duration(seconds: 5));
+      // SETUP: Pump the app widget into the test framework
+      await tester.pumpWidget(const GastrobrainApp());
+
+      // Wait for the app to initialize and render
+      await tester.pumpAndSettle(const Duration(seconds: 10));
 
       // DEBUG: Print what widgets are actually rendered
       print('=== WIDGETS FOUND ===');
