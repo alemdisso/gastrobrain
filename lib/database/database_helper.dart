@@ -1384,6 +1384,9 @@ class DatabaseHelper {
       }
 
       if (filters.containsKey('name')) {
+        // Using parameterized query with LIKE for safe text search
+        // The % wildcards are part of the argument value, not the SQL string
+        // SQLite's parameterization handles all escaping automatically
         whereConditions.add('name LIKE ? COLLATE NOCASE');
         arguments.add('%${filters['name']}%');
       }

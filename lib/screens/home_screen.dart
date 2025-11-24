@@ -336,7 +336,10 @@ class _HomePageState extends State<HomePage> {
           },
         );
       },
-    );
+    ).then((_) {
+      // Dispose the controller after dialog closes to prevent memory leaks
+      nameController.dispose();
+    });
   }
 
   Widget _buildRecipesScreen() {
