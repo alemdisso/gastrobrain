@@ -16,10 +16,20 @@ void main() {
     testWidgets('App launches and home screen appears', (WidgetTester tester) async {
       // SETUP: Launch the app
       app.main();
-      await tester.pumpAndSettle();
+
+      // Wait for the app to initialize (database seeding, etc.)
+      await tester.pumpAndSettle(const Duration(seconds: 5));
+
+      // DEBUG: Print what widgets are actually rendered
+      print('=== WIDGETS FOUND ===');
+      print('MaterialApp: ${find.byType(MaterialApp).evaluate().length}');
+      print('Scaffold: ${find.byType(Scaffold).evaluate().length}');
+      print('BottomNavigationBar: ${find.byType(BottomNavigationBar).evaluate().length}');
+      print('CircularProgressIndicator: ${find.byType(CircularProgressIndicator).evaluate().length}');
 
       // VERIFY: Bottom navigation bar appears
-      expect(find.byType(BottomNavigationBar), findsOneWidget);
+      expect(find.byType(BottomNavigationBar), findsOneWidget,
+          reason: 'Expected to find BottomNavigationBar on home screen');
 
       // VERIFY: The "Tools" tab is visible (hardcoded text, no localization)
       expect(find.text('Tools'), findsOneWidget);
