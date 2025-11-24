@@ -1383,6 +1383,11 @@ class DatabaseHelper {
         arguments.add(filters['category']);
       }
 
+      if (filters.containsKey('name')) {
+        whereConditions.add('name LIKE ? COLLATE NOCASE');
+        arguments.add('%${filters['name']}%');
+      }
+
       if (whereConditions.isNotEmpty) {
         query += ' WHERE ${whereConditions.join(' AND ')}';
       }

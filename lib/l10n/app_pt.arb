@@ -78,6 +78,14 @@
   "@category": {
     "description": "Rótulo para filtro de categoria"
   },
+  "searchRecipeByName": "Pesquisar por nome...",
+  "@searchRecipeByName": {
+    "description": "Espaço reservado para campo de pesquisa de nome de receita"
+  },
+  "noMatchingRecipes": "Nenhuma receita encontrada correspondente à sua pesquisa",
+  "@noMatchingRecipes": {
+    "description": "Mensagem exibida quando nenhuma receita corresponde aos critérios de pesquisa"
+  },
   "any": "Qualquer",
   "@any": {
     "description": "Opção para qualquer/sem filtro"

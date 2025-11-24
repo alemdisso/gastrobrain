@@ -78,6 +78,14 @@
   "@category": {
     "description": "Label for category filter"
   },
+  "searchRecipeByName": "Search by name...",
+  "@searchRecipeByName": {
+    "description": "Placeholder for recipe name search field"
+  },
+  "noMatchingRecipes": "No recipes found matching your search",
+  "@noMatchingRecipes": {
+    "description": "Message shown when no recipes match the search criteria"
+  },
   "any": "Any",
   "@any": {
     "description": "Option for any/no filter"

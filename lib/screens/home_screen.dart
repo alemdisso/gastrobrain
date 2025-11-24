@@ -166,6 +166,10 @@ class _HomePageState extends State<HomePage> {
     int? selectedRating = currentFilters['rating'];
     String? selectedFrequency = currentFilters['desired_frequency'];
     String? selectedCategory = currentFilters['category'];
+    String? nameFilter = currentFilters['name'];
+
+    // Create a controller for the name search field
+    final nameController = TextEditingController(text: nameFilter);
 
     showDialog(
       context: context,
@@ -182,6 +186,21 @@ class _HomePageState extends State<HomePage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                    // Name search field
+                    TextField(
+                      controller: nameController,
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.searchRecipeByName,
+                        prefixIcon: const Icon(Icons.search),
+                        border: const OutlineInputBorder(),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          nameFilter = value.isEmpty ? null : value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
                     Text(AppLocalizations.of(context)!.difficulty),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -284,6 +303,8 @@ class _HomePageState extends State<HomePage> {
                       selectedRating = null;
                       selectedFrequency = null;
                       selectedCategory = null;
+                      nameFilter = null;
+                      nameController.clear();
                     });
                   },
                   child: Text(AppLocalizations.of(context)!.clear),
@@ -302,6 +323,8 @@ class _HomePageState extends State<HomePage> {
                         'desired_frequency': selectedFrequency,
                       if (selectedCategory != null)
                         'category': selectedCategory,
+                      if (nameFilter != null && nameFilter!.isNotEmpty)
+                        'name': nameFilter,
                     };
                     context.read<RecipeProvider>().setFilters(newFilters);
                     Navigator.pop(context);
