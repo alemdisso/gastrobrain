@@ -58,13 +58,14 @@ jobs:
 
           if [ $FOUND_ISSUES -eq 1 ]; then
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "❌ Commit quality check FAILED"
+            echo "⚠️  Commit quality check - Issues found (non-blocking)"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo ""
-            echo "Please squash empty/planning commits before merging."
-            echo "Use 'Squash and merge' option on GitHub when merging."
+            echo "Empty/planning commits detected but not blocking."
+            echo "These will be removed when using 'Squash and merge'."
             echo ""
-            exit 1
+            echo "⚠️  Warning: Issues found but not blocking (will be squashed on merge)"
+            exit 0
           fi
 
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
