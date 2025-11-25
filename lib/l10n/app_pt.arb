@@ -220,6 +220,10 @@
   "@searchIngredients": {
     "description": "Texto da dica do campo de busca de ingredientes"
   },
+  "searchRecipes": "Buscar receitas...",
+  "@searchRecipes": {
+    "description": "Texto da dica do campo de busca de receitas"
+  },
   "refresh": "Atualizar",
   "@refresh": {
     "description": "Dica do botão atualizar"

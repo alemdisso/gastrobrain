@@ -22,6 +22,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -316,107 +317,141 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  List<Recipe> _getFilteredRecipes(List<Recipe> recipes) {
+    if (_searchQuery.isEmpty) {
+      return recipes;
+    }
+    return recipes
+        .where((recipe) =>
+            recipe.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList();
+  }
+
   Widget _buildRecipesScreen() {
-    return Consumer<RecipeProvider>(
-      builder: (context, recipeProvider, child) {
-        // Handle loading state
-        if (recipeProvider.isLoading) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextField(
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context)!.searchRecipes,
+              prefixIcon: const Icon(Icons.search),
+              border: const OutlineInputBorder(),
+            ),
+            onChanged: (value) {
+              setState(() {
+                _searchQuery = value;
+              });
+            },
+          ),
+        ),
+        Expanded(
+          child: Consumer<RecipeProvider>(
+            builder: (context, recipeProvider, child) {
+              // Handle loading state
+              if (recipeProvider.isLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
 
-        // Handle error state
-        if (recipeProvider.hasError) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: Colors.red[300],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  AppLocalizations.of(context)!.errorOccurred,
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  recipeProvider.error?.message ?? '',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    recipeProvider.clearError();
-                    recipeProvider.loadRecipes(forceRefresh: true);
+              // Handle error state
+              if (recipeProvider.hasError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: Colors.red[300],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        AppLocalizations.of(context)!.errorOccurred,
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        recipeProvider.error?.message ?? '',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          recipeProvider.clearError();
+                          recipeProvider.loadRecipes(forceRefresh: true);
+                        },
+                        child: Text(AppLocalizations.of(context)!.retry),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              // Handle empty state
+              if (!recipeProvider.hasData) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.restaurant_menu,
+                        size: 64,
+                        color: Colors.grey[400],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        AppLocalizations.of(context)!.noRecipesFound,
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        AppLocalizations.of(context)!.addFirstRecipe,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              // Get filtered recipes
+              final filteredRecipes = _getFilteredRecipes(recipeProvider.recipes);
+
+              // Build recipes list
+              return RefreshIndicator(
+                onRefresh: () => recipeProvider.loadRecipes(forceRefresh: true),
+                child: ListView.builder(
+                  itemCount: filteredRecipes.length,
+                  itemBuilder: (context, index) {
+                    final recipe = filteredRecipes[index];
+                    return RecipeCard(
+                      recipe: recipe,
+                      onEdit: () => _editRecipe(recipe),
+                      onDelete: () => _deleteRecipe(recipe),
+                      onCooked: () {
+                        Navigator.push<bool>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CookMealScreen(recipe: recipe),
+                          ),
+                        ).then((value) {
+                          if (value == true) {
+                            recipeProvider.loadRecipes(forceRefresh: true);
+                          }
+                        });
+                      },
+                      mealCount: recipeProvider.getMealCount(recipe.id),
+                      lastCooked: recipeProvider.getLastCookedDate(recipe.id),
+                    );
                   },
-                  child: Text(AppLocalizations.of(context)!.retry),
                 ),
-              ],
-            ),
-          );
-        }
-
-        // Handle empty state
-        if (!recipeProvider.hasData) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.restaurant_menu,
-                  size: 64,
-                  color: Colors.grey[400],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  AppLocalizations.of(context)!.noRecipesFound,
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  AppLocalizations.of(context)!.addFirstRecipe,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ],
-            ),
-          );
-        }
-
-        // Build recipes list
-        return RefreshIndicator(
-          onRefresh: () => recipeProvider.loadRecipes(forceRefresh: true),
-          child: ListView.builder(
-            itemCount: recipeProvider.recipes.length,
-            itemBuilder: (context, index) {
-              final recipe = recipeProvider.recipes[index];
-              return RecipeCard(
-                recipe: recipe,
-                onEdit: () => _editRecipe(recipe),
-                onDelete: () => _deleteRecipe(recipe),
-                onCooked: () {
-                  Navigator.push<bool>(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => CookMealScreen(recipe: recipe),
-                    ),
-                  ).then((value) {
-                    if (value == true) {
-                      recipeProvider.loadRecipes(forceRefresh: true);
-                    }
-                  });
-                },
-                mealCount: recipeProvider.getMealCount(recipe.id),
-                lastCooked: recipeProvider.getLastCookedDate(recipe.id),
               );
             },
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 
