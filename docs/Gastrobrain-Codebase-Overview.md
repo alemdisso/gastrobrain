@@ -252,6 +252,155 @@ flutter test test/models/                 # Model tests
 
 The testing infrastructure ensures code quality, prevents regressions, and validates both individual components and complete user workflows. The mock-based approach allows for fast, reliable test execution while integration tests verify real-world functionality.
 
+## Development Standards
+
+### Form Field Keys
+
+**Status:** Adopted standard as of 2025-11-25 | **Tracking:** [#219 - Form Field Key Refactoring](https://github.com/alemdisso/gastrobrain/issues/219)
+
+All form fields should have explicit keys for improved testability, debugging, and state management. This is a general development best practice that provides benefits beyond testing.
+
+#### Why Use Form Field Keys?
+
+- **Testing Reliability**: E2E and widget tests can deterministically find specific fields
+- **Accessibility**: Improves screen reader and assistive technology support
+- **Debugging**: Easier widget identification in Flutter DevTools
+- **State Preservation**: Helps Flutter maintain form state correctly during rebuilds
+- **Code Clarity**: Self-documenting code that explicitly identifies fields
+
+#### Naming Convention
+
+Use descriptive, snake_case keys that identify the form and field:
+
+**Pattern:** `{screen}_{field}_field`
+
+**Examples:**
+```dart
+// Add Recipe Screen
+Key('add_recipe_name_field')
+Key('add_recipe_notes_field')
+Key('add_recipe_instructions_field')
+Key('add_recipe_prep_time_field')
+Key('add_recipe_cook_time_field')
+
+// Edit Recipe Screen
+Key('edit_recipe_name_field')
+Key('edit_recipe_notes_field')
+
+// Meal Planning
+Key('meal_plan_notes_field')
+Key('meal_plan_date_field')
+```
+
+#### Implementation Examples
+
+**TextFormField with Key:**
+```dart
+TextFormField(
+  key: const Key('add_recipe_name_field'),
+  controller: _nameController,
+  decoration: InputDecoration(
+    labelText: AppLocalizations.of(context)!.recipeName,
+    border: const OutlineInputBorder(),
+  ),
+  validator: (value) {
+    if (value == null || value.isEmpty) {
+      return AppLocalizations.of(context)!.pleaseEnterRecipeName;
+    }
+    return null;
+  },
+)
+```
+
+**DropdownButtonFormField with Key:**
+```dart
+DropdownButtonFormField<RecipeCategory>(
+  key: const Key('add_recipe_category_field'),
+  value: _selectedCategory,
+  decoration: InputDecoration(
+    labelText: AppLocalizations.of(context)!.category,
+  ),
+  items: RecipeCategory.values.map((category) {
+    return DropdownMenuItem(
+      value: category,
+      child: Text(category.getLocalizedDisplayName(context)),
+    );
+  }).toList(),
+  onChanged: (value) {
+    setState(() => _selectedCategory = value!);
+  },
+)
+```
+
+#### Testing with Keys
+
+**Finding Fields in Tests:**
+```dart
+// E2E Test
+await tester.enterText(
+  find.byKey(const Key('add_recipe_name_field')),
+  'Test Recipe Name'
+);
+
+// Widget Test
+final nameField = find.byKey(const Key('add_recipe_name_field'));
+expect(nameField, findsOneWidget);
+
+// Verify field content
+final textField = tester.widget<TextFormField>(nameField);
+expect(textField.controller?.text, equals('Test Recipe Name'));
+```
+
+#### When to Use Keys
+
+**Always use keys for:**
+- ✅ All form input fields (TextFormField, DropdownButtonFormField, etc.)
+- ✅ Interactive buttons in forms (save, cancel, add, remove)
+- ✅ Dynamic form sections that can be added/removed
+- ✅ Fields that will be tested in E2E or widget tests
+
+**Optional for:**
+- ⚪ Static display widgets (Text, Icon)
+- ⚪ Simple layout widgets (Row, Column, Container)
+- ⚪ Navigation elements already identified by other means
+
+#### Adoption Strategy
+
+**For New Code (Immediate):**
+- All new forms and fields MUST include keys
+- Code reviews should verify key presence
+- Follow naming convention strictly
+
+**For Existing Code (Gradual + Planned):**
+- Add keys opportunistically when touching existing forms
+- Planned refactoring tracked in [issue #219](https://github.com/alemdisso/gastrobrain/issues/219)
+- Priority: Forms with E2E tests > Forms without tests
+
+**Migration Checklist per Form:**
+- [ ] Add keys to all TextFormField widgets
+- [ ] Add keys to all DropdownButtonFormField widgets
+- [ ] Add keys to save/submit buttons
+- [ ] Add keys to any dynamic field collections
+- [ ] Update associated tests to use keys instead of indices
+- [ ] Document any non-standard key patterns
+
+#### Current Status
+
+**Forms with Keys:** None (as of 2025-11-25)
+
+**Forms needing keys:**
+- `lib/screens/add_recipe_screen.dart`
+- `lib/screens/edit_recipe_screen.dart`
+- `lib/widgets/add_new_ingredient_dialog.dart`
+- `lib/widgets/add_ingredient_dialog.dart`
+- `lib/widgets/edit_meal_plan_item_dialog.dart`
+- Additional forms to be cataloged in tracking issue
+
+**Testing Impact:**
+- Current E2E tests use index-based field access (`.at(0)`, `.at(1)`)
+- Tests are fragile to form layout changes
+- Keys will enable more robust, maintainable tests
+
 ## Development Tools & Utilities
 
 ### Bulk Recipe Update Screen (Temporary)
