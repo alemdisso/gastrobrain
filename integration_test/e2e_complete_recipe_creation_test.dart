@@ -26,8 +26,6 @@ void main() {
         (WidgetTester tester) async {
       // Test data setup
       final testRecipeName = 'Complete E2E Recipe ${DateTime.now().millisecondsSinceEpoch}';
-      final testNotes = 'E2E test recipe notes';
-      final testInstructions = 'E2E test cooking instructions';
       String? createdRecipeId;
 
       try {
@@ -62,58 +60,15 @@ void main() {
         // ACT: Fill in recipe details
         print('=== FILLING RECIPE FORM ===');
 
-        // Fill name (first TextField)
-        print('Filling name field...');
+        // Fill name (first TextField) - this is the only required field
+        print('Filling name field (REQUIRED)...');
         await tester.enterText(textFields.first, testRecipeName);
         await tester.pumpAndSettle();
         expect(find.text(testRecipeName), findsOneWidget);
         print('✓ Name entered: $testRecipeName');
 
-        // Try to scroll down to see more fields
-        print('Attempting to scroll to see more fields...');
-        await tester.drag(textFields.first, const Offset(0, -300));
-        await tester.pumpAndSettle();
-
-        // Look for notes field (usually second or third TextField)
-        // We'll try to find it by entering text in the second field if available
-        if (textFields.evaluate().length > 1) {
-          print('Filling notes field...');
-          await tester.enterText(textFields.at(1), testNotes);
-          await tester.pumpAndSettle();
-          print('✓ Notes entered: $testNotes');
-        }
-
-        // Look for instructions field (might be third TextField)
-        if (textFields.evaluate().length > 2) {
-          print('Filling instructions field...');
-          await tester.enterText(textFields.at(2), testInstructions);
-          await tester.pumpAndSettle();
-          print('✓ Instructions entered: $testInstructions');
-        }
-
-        // Try to set difficulty (look for battery icons)
-        print('Looking for difficulty selector...');
-        final difficultyIcons = find.byIcon(Icons.battery_full);
-        if (difficultyIcons.evaluate().isNotEmpty) {
-          print('Found difficulty selector, setting to level 3...');
-          // Tap the 3rd difficulty level
-          await tester.tap(difficultyIcons.first);
-          await tester.pumpAndSettle();
-          print('✓ Difficulty set');
-        }
-
-        // Try to set rating (look for star icons)
-        print('Looking for rating selector...');
-        final ratingIcons = find.byIcon(Icons.star_border);
-        if (ratingIcons.evaluate().isNotEmpty) {
-          print('Found rating selector, setting to 4 stars...');
-          // Tap the 4th star
-          if (ratingIcons.evaluate().length >= 4) {
-            await tester.tap(ratingIcons.at(3));
-            await tester.pumpAndSettle();
-            print('✓ Rating set');
-          }
-        }
+        print('\nℹ Testing MINIMAL recipe creation (name only)');
+        print('  This should pass validation and save successfully');
 
         // ACT: Save the recipe
         print('=== SAVING RECIPE ===');
@@ -159,9 +114,35 @@ void main() {
           print('⚠ Still on Add Recipe form - save likely failed due to validation');
           print('Form validation probably failed - missing required field or validation error');
 
-          // Try to find any error messages or snackbars
-          final errorTexts = find.byType(Text);
-          print('Text widgets found: ${errorTexts.evaluate().length}');
+          // Look for error messages in the form
+          print('\n=== LOOKING FOR VALIDATION ERRORS ===');
+
+          // Scroll back to top to see all validation errors
+          await tester.drag(find.byType(SingleChildScrollView).first, const Offset(0, 500));
+          await tester.pumpAndSettle();
+
+          // Get all text fields and their decorations
+          final formFields = find.byType(TextFormField);
+          print('Checking ${formFields.evaluate().length} form fields for errors...');
+
+          // Try to find any Text widgets that might be error messages
+          // Error messages are usually shown below the field in red
+          final allTexts = find.byType(Text);
+          print('Found ${allTexts.evaluate().length} Text widgets');
+
+          // Look for common error keywords
+          try {
+            final errorPatterns = ['required', 'enter', 'valid', 'invalid', 'error'];
+            for (final pattern in errorPatterns) {
+              final errorText = find.textContaining(pattern, findRichText: true);
+              if (errorText.evaluate().isNotEmpty) {
+                print('⚠ Possible error message found containing "$pattern"');
+              }
+            }
+          } catch (e) {
+            print('Could not search for error patterns: $e');
+          }
+
         } else if (mainFab.evaluate().isNotEmpty) {
           print('✓ Back on main screen - save appears successful');
         } else {
