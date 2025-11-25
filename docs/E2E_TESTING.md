@@ -9,13 +9,14 @@ This document outlines best practices for writing end-to-end (E2E) integration t
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [When to Write E2E Tests](#when-to-write-e2e-tests)
-3. [Test Structure](#test-structure)
-4. [Best Practices](#best-practices)
-5. [Helper Methods](#helper-methods)
-6. [Widget Finding Strategies](#widget-finding-strategies)
-7. [Common Patterns](#common-patterns)
-8. [Troubleshooting](#troubleshooting)
+2. [Types of Integration Tests](#types-of-integration-tests)
+3. [When to Write E2E Tests](#when-to-write-e2e-tests)
+4. [Test Structure](#test-structure)
+5. [Best Practices](#best-practices)
+6. [Helper Methods](#helper-methods)
+7. [Widget Finding Strategies](#widget-finding-strategies)
+8. [Common Patterns](#common-patterns)
+9. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -32,6 +33,112 @@ E2E tests verify complete user workflows by:
 - Include app initialization time for database migrations and asset loading
 - Test from user perspective, not internal implementation
 - Always clean up test data to prevent pollution
+
+---
+
+## Types of Integration Tests
+
+Gastrobrain uses two types of integration tests that serve different purposes:
+
+### Service Integration Tests
+
+**Location:** `integration_test/*_flow_test.dart`, `integration_test/*_integration_test.dart`
+
+**Purpose:** Test business logic and service layer interactions without UI
+
+**Characteristics:**
+- Use `MockDatabaseHelper` from test mocks
+- No UI interaction or rendering
+- Fast execution (~100-500ms per test)
+- Can run in CI/CD pipelines (Linux/WSL compatible)
+- Focus on data operations, state management, and business rules
+
+**Example:**
+```dart
+testWidgets('Test database operations for meal plans', (tester) async {
+  late MockDatabaseHelper mockDbHelper;
+  mockDbHelper = TestSetup.setupMockDatabase();
+
+  // Test business logic without UI
+  await mockDbHelper.insertMealPlan(mealPlan);
+  final result = await mockDbHelper.getMealPlanForWeek(weekStart);
+  expect(result, isNotNull);
+});
+```
+
+**When to use:**
+- Testing database operations and data validation
+- Testing service layer logic (recommendations, calculations)
+- Testing state management without UI
+- Quick feedback during development
+
+### E2E Integration Tests
+
+**Location:** `integration_test/e2e_*.dart`
+
+**Purpose:** Test complete user workflows from UI to database and back
+
+**Characteristics:**
+- Use real `DatabaseHelper` (not mocked)
+- Test actual UI interactions (taps, text entry, navigation)
+- Slower execution (~20-60 seconds per test)
+- Require windowing system (currently run manually on Windows)
+- Focus on user experience and end-to-end workflows
+
+**Example:**
+```dart
+testWidgets('Create a minimal recipe and verify full workflow', (tester) async {
+  await E2ETestHelpers.launchApp(tester);
+
+  // User opens form
+  await E2ETestHelpers.openAddRecipeForm(tester);
+
+  // User fills fields
+  await E2ETestHelpers.fillTextFieldByKey(
+    tester,
+    const Key('add_recipe_name_field'),
+    'Test Recipe',
+  );
+
+  // User saves
+  await E2ETestHelpers.tapSaveButton(tester);
+
+  // Verify UI and database
+  expect(find.text('Test Recipe'), findsOneWidget);
+  final recipe = await dbHelper.getRecipe(id);
+  expect(recipe, isNotNull);
+});
+```
+
+**When to use:**
+- Testing critical user workflows (recipe creation, meal planning, editing)
+- Testing multi-screen navigation flows
+- Verifying UI reflects database changes
+- Testing complete feature integration
+
+### Testing Strategy
+
+Both types of tests are valuable and complementary:
+
+**Testing Pyramid:**
+```
+     /\
+    /  \    ← E2E Tests (Few, slow, high-level)
+   /----\
+  /      \  ← Service Integration Tests (Some, fast, mid-level)
+ /--------\
+/          \ ← Unit Tests (Many, very fast, low-level)
+```
+
+**Guidelines:**
+- Write **many** unit tests for individual functions and classes
+- Write **some** service integration tests for business logic flows
+- Write **few** E2E tests for critical user workflows
+- Service integration tests run in CI; E2E tests run manually
+- Both test types should clean up test data in `finally` blocks
+
+**Current test organization:**
+See [Issue #221](https://github.com/alemdisso/gastrobrain/issues/221) for planned reorganization into `e2e/` and `services/` directories.
 
 ---
 
