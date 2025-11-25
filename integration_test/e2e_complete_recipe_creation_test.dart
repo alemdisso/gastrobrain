@@ -146,10 +146,26 @@ void main() {
         // VERIFY: Check if we're back on the recipes screen
         print('=== VERIFYING RECIPE CREATION ===');
 
-        // Check if we're back on the main screen (FAB should be visible)
+        // Check if we're still on the form or back on main screen
+        final addRecipeAppBar = find.byType(AppBar);
         final mainFab = find.byType(FloatingActionButton);
-        if (mainFab.evaluate().isNotEmpty) {
-          print('✓ Back on main screen');
+        final textFieldsAfterSave = find.byType(TextFormField);
+
+        print('AppBars found: ${addRecipeAppBar.evaluate().length}');
+        print('FABs found: ${mainFab.evaluate().length}');
+        print('TextFormFields found: ${textFieldsAfterSave.evaluate().length}');
+
+        if (textFieldsAfterSave.evaluate().isNotEmpty) {
+          print('⚠ Still on Add Recipe form - save likely failed due to validation');
+          print('Form validation probably failed - missing required field or validation error');
+
+          // Try to find any error messages or snackbars
+          final errorTexts = find.byType(Text);
+          print('Text widgets found: ${errorTexts.evaluate().length}');
+        } else if (mainFab.evaluate().isNotEmpty) {
+          print('✓ Back on main screen - save appears successful');
+        } else {
+          print('? Uncertain state - neither form nor main screen clearly visible');
         }
 
         // VERIFY: Check database
