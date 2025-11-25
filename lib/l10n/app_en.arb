@@ -220,6 +220,10 @@
   "@searchIngredients": {
     "description": "Search field hint text for ingredients"
   },
+  "searchRecipes": "Search recipes...",
+  "@searchRecipes": {
+    "description": "Search field hint text for recipes"
+  },
   "refresh": "Refresh",
   "@refresh": {
     "description": "Refresh button tooltip"
