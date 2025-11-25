@@ -118,20 +118,29 @@ void main() {
         // ACT: Save the recipe
         print('=== SAVING RECIPE ===');
 
-        // Look for save FAB at the bottom
-        final saveFabs = find.byType(FloatingActionButton);
-        print('Found ${saveFabs.evaluate().length} FAB(s)');
+        // Scroll down to find the save button (ElevatedButton at bottom)
+        print('Scrolling down to find save button...');
+        await tester.drag(find.byType(SingleChildScrollView).first, const Offset(0, -500));
+        await tester.pumpAndSettle();
 
-        if (saveFabs.evaluate().isNotEmpty) {
-          // Usually the last FAB is the save button
-          final saveFab = saveFabs.last;
+        // Look for ElevatedButton (the save button)
+        final saveButtons = find.byType(ElevatedButton);
+        print('Found ${saveButtons.evaluate().length} ElevatedButton(s)');
+
+        if (saveButtons.evaluate().isNotEmpty) {
+          // The save button should be the one that's visible
+          final saveButton = saveButtons.last;
           print('Tapping save button...');
-          await tester.tap(saveFab);
+          await tester.ensureVisible(saveButton);
+          await tester.pumpAndSettle();
+          await tester.tap(saveButton);
           await tester.pumpAndSettle(const Duration(seconds: 3));
           print('✓ Save button tapped');
 
           // Give time for database operation and navigation
           await Future.delayed(const Duration(seconds: 2));
+        } else {
+          print('⚠ No ElevatedButton found - cannot save');
         }
 
         // VERIFY: Check if we're back on the recipes screen
