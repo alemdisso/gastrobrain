@@ -1,5 +1,6 @@
 // integration_test/e2e_complete_recipe_creation_test.dart
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:gastrobrain/database/database_helper.dart';
@@ -9,13 +10,14 @@ import 'helpers/e2e_test_helpers.dart';
 ///
 /// This test verifies the complete recipe creation workflow:
 /// 1. Navigate to Add Recipe screen
-/// 2. Fill required field (name)
+/// 2. Fill required field (name) using key-based field access
 /// 3. Save the recipe
 /// 4. Verify it appears in the recipe list UI
 /// 5. Verify it exists in the database with correct data
 /// 6. Clean up test data
 ///
 /// This is a complete end-to-end test of the recipe creation feature.
+/// Uses key-based form field access for deterministic field selection.
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -49,7 +51,11 @@ void main() {
 
         // ACT: Fill in recipe name (required field)
         print('\n=== FILLING RECIPE FORM ===');
-        await E2ETestHelpers.fillTextFieldByIndex(tester, 0, testRecipeName);
+        await E2ETestHelpers.fillTextFieldByKey(
+          tester,
+          const Key('add_recipe_name_field'),
+          testRecipeName,
+        );
         expect(find.text(testRecipeName), findsOneWidget);
         print('✓ Name entered: $testRecipeName');
 
