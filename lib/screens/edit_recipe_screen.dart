@@ -87,8 +87,9 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     );
   }
 
-  Widget _buildTimeField(String label, TextEditingController controller) {
+  Widget _buildTimeField(String label, TextEditingController controller, {Key? key}) {
     return TextFormField(
+      key: key,
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
@@ -205,6 +206,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextFormField(
+                  key: const Key('edit_recipe_name_field'),
                   controller: _nameController,
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.recipeName,
@@ -220,6 +222,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<FrequencyType>(
+                  key: const Key('edit_recipe_frequency_field'),
                   value: _selectedFrequency,
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.desiredFrequency,
@@ -241,6 +244,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<RecipeCategory>(
+                  key: const Key('edit_recipe_category_field'),
                   value: _selectedCategory,
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.category,
@@ -267,11 +271,15 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                   setState(() => _difficulty = value);
                 }),
                 const SizedBox(height: 16),
-                _buildTimeField(AppLocalizations.of(context)!.preparationTime,
-                    _prepTimeController),
+                _buildTimeField(
+                    AppLocalizations.of(context)!.preparationTime,
+                    _prepTimeController,
+                    key: const Key('edit_recipe_prep_time_field')),
                 const SizedBox(height: 16),
-                _buildTimeField(AppLocalizations.of(context)!.cookingTime,
-                    _cookTimeController),
+                _buildTimeField(
+                    AppLocalizations.of(context)!.cookingTime,
+                    _cookTimeController,
+                    key: const Key('edit_recipe_cook_time_field')),
                 const SizedBox(height: 16),
                 _buildRatingField(AppLocalizations.of(context)!.rating, _rating,
                     (value) {
@@ -279,6 +287,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                 }),
                 const SizedBox(height: 16),
                 TextFormField(
+                  key: const Key('edit_recipe_notes_field'),
                   controller: _notesController,
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.notes,
