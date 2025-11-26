@@ -80,12 +80,21 @@ void main() {
         // ======================================================================
 
         print('\n=== NAVIGATING TO MEAL HISTORY SCREEN ===');
-        // Navigate to Recipes tab using semantic key
+        // Navigate away and back to Recipes tab to force UI refresh
+        // (App starts on Recipes tab, so we need to trigger a reload)
+        await E2ETestHelpers.tapBottomNavTab(
+          tester,
+          const Key('meal_plan_tab_icon'),
+        );
+        await tester.pumpAndSettle();
+
         await E2ETestHelpers.tapBottomNavTab(
           tester,
           const Key('recipes_tab_icon'),
         );
-        print('✓ On Recipes tab');
+        await tester.pumpAndSettle();
+        await E2ETestHelpers.waitForAsyncOperations();
+        print('✓ On Recipes tab (refreshed)');
 
         // Find and tap the recipe to expand it
         final recipeName = find.text(testRecipeName);
@@ -345,11 +354,19 @@ void main() {
         // ======================================================================
 
         print('\n=== NAVIGATING TO MEAL HISTORY SCREEN ===');
-        // Navigate to Recipes tab using semantic key
+        // Navigate away and back to Recipes tab to force UI refresh
+        await E2ETestHelpers.tapBottomNavTab(
+          tester,
+          const Key('meal_plan_tab_icon'),
+        );
+        await tester.pumpAndSettle();
+
         await E2ETestHelpers.tapBottomNavTab(
           tester,
           const Key('recipes_tab_icon'),
         );
+        await tester.pumpAndSettle();
+        await E2ETestHelpers.waitForAsyncOperations();
 
         // Find the recipe
         final recipeName = find.text(testRecipeName);
