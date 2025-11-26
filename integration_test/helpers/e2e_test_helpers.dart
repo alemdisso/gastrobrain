@@ -316,6 +316,152 @@ class E2ETestHelpers {
     }
   }
 
+  /// Delete a test meal from the database
+  ///
+  /// Usage:
+  /// ```dart
+  /// await E2ETestHelpers.deleteTestMeal(dbHelper, mealId);
+  /// ```
+  static Future<void> deleteTestMeal(
+    DatabaseHelper dbHelper,
+    String mealId,
+  ) async {
+    try {
+      await dbHelper.deleteMeal(mealId);
+    } catch (e) {
+      // Ignore errors during cleanup
+      print('⚠ Error cleaning up test meal $mealId: $e');
+    }
+  }
+
+  // ============================================================================
+  // MEAL RECORDING HELPERS
+  // ============================================================================
+
+  /// Open the meal recording dialog from CookMealScreen
+  ///
+  /// Taps the "Registrar Detalhes da Refeição" button to open the dialog.
+  ///
+  /// Usage:
+  /// ```dart
+  /// await E2ETestHelpers.openMealRecordingDialog(tester);
+  /// ```
+  static Future<void> openMealRecordingDialog(WidgetTester tester) async {
+    // Find and tap the "Registrar Detalhes da Refeição" button
+    final recordButton = find.byIcon(Icons.restaurant);
+    expect(recordButton, findsOneWidget,
+        reason: 'Meal recording button should exist');
+    await tester.tap(recordButton);
+    await tester.pumpAndSettle();
+  }
+
+  /// Fill in the meal recording dialog fields
+  ///
+  /// Uses the form field keys added to MealRecordingDialog.
+  ///
+  /// Usage:
+  /// ```dart
+  /// await E2ETestHelpers.fillMealRecordingDialog(
+  ///   tester,
+  ///   servings: '2',
+  ///   prepTime: '15',
+  ///   cookTime: '30',
+  ///   notes: 'Test notes',
+  /// );
+  /// ```
+  static Future<void> fillMealRecordingDialog(
+    WidgetTester tester, {
+    String? servings,
+    String? prepTime,
+    String? cookTime,
+    String? notes,
+    bool? toggleSuccess,
+  }) async {
+    if (servings != null) {
+      final servingsField = find.byKey(const Key('meal_recording_servings_field'));
+      expect(servingsField, findsOneWidget);
+      await tester.enterText(servingsField, servings);
+      await tester.pumpAndSettle();
+    }
+
+    if (prepTime != null) {
+      final prepTimeField = find.byKey(const Key('meal_recording_prep_time_field'));
+      expect(prepTimeField, findsOneWidget);
+      await tester.enterText(prepTimeField, prepTime);
+      await tester.pumpAndSettle();
+    }
+
+    if (cookTime != null) {
+      final cookTimeField = find.byKey(const Key('meal_recording_cook_time_field'));
+      expect(cookTimeField, findsOneWidget);
+      await tester.enterText(cookTimeField, cookTime);
+      await tester.pumpAndSettle();
+    }
+
+    if (notes != null) {
+      final notesField = find.byKey(const Key('meal_recording_notes_field'));
+      expect(notesField, findsOneWidget);
+      await tester.enterText(notesField, notes);
+      await tester.pumpAndSettle();
+    }
+
+    if (toggleSuccess != null) {
+      final successSwitch = find.byKey(const Key('meal_recording_success_switch'));
+      expect(successSwitch, findsOneWidget);
+      await tester.tap(successSwitch);
+      await tester.pumpAndSettle();
+    }
+  }
+
+  /// Save the meal recording dialog
+  ///
+  /// Taps the save button in the dialog.
+  ///
+  /// Usage:
+  /// ```dart
+  /// await E2ETestHelpers.saveMealRecordingDialog(tester);
+  /// ```
+  static Future<void> saveMealRecordingDialog(WidgetTester tester) async {
+    final saveButton = find.byKey(const Key('meal_recording_save_button'));
+    expect(saveButton, findsOneWidget, reason: 'Save button should exist');
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle(standardSettleDuration);
+  }
+
+  /// Verify a meal exists in the database for a specific recipe
+  ///
+  /// Returns the meal ID if found, null otherwise.
+  ///
+  /// Usage:
+  /// ```dart
+  /// final mealId = await E2ETestHelpers.verifyMealInDatabase(
+  ///   dbHelper,
+  ///   recipeId,
+  ///   expectedServings: 2,
+  /// );
+  /// ```
+  static Future<String?> verifyMealInDatabase(
+    DatabaseHelper dbHelper,
+    String recipeId, {
+    int? expectedServings,
+  }) async {
+    final meals = await dbHelper.getMealsForRecipe(recipeId);
+
+    if (meals.isEmpty) {
+      return null;
+    }
+
+    // Get the most recent meal
+    final meal = meals.first;
+
+    if (expectedServings != null) {
+      expect(meal.servings, equals(expectedServings),
+          reason: 'Meal servings should match expected value');
+    }
+
+    return meal.id;
+  }
+
   // ============================================================================
   // DIAGNOSTIC HELPERS
   // ============================================================================
