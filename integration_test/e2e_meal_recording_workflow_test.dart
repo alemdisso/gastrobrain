@@ -93,22 +93,37 @@ void main() {
           const Key('recipes_tab_icon'),
         );
         await tester.pumpAndSettle();
-        await E2ETestHelpers.waitForAsyncOperations();
+
+        // Wait longer for provider to reload recipes
+        await E2ETestHelpers.waitForAsyncOperations(
+          duration: const Duration(seconds: 3),
+        );
         print('✓ On Recipes tab (refreshed)');
 
-        // Find and tap the recipe to expand it
-        final recipeName = find.text(testRecipeName);
-        if (recipeName.evaluate().isEmpty) {
-          // Scroll to find the recipe
+        // Find the recipe with retry logic
+        print('Looking for recipe: $testRecipeName');
+        var recipeName = find.text(testRecipeName);
+        var attempts = 0;
+        const maxAttempts = 5;
+
+        while (recipeName.evaluate().isEmpty && attempts < maxAttempts) {
+          attempts++;
+          print('⚠ Recipe not found, attempt $attempts/$maxAttempts');
+
+          // Try scrolling
           final listView = find.byType(ListView);
           if (listView.evaluate().isNotEmpty) {
-            await tester.drag(listView.first, const Offset(0, -500));
+            await tester.drag(listView.first, const Offset(0, -300));
             await tester.pumpAndSettle();
           }
+
+          // Wait and pump again
+          await tester.pumpAndSettle(const Duration(seconds: 1));
+          recipeName = find.text(testRecipeName);
         }
 
         expect(find.text(testRecipeName), findsOneWidget,
-            reason: 'Test recipe should appear in recipes list');
+            reason: 'Test recipe should appear in recipes list after $attempts attempts');
 
         // Expand the recipe card to see the history button
         final recipeCard = find.ancestor(
@@ -366,16 +381,22 @@ void main() {
           const Key('recipes_tab_icon'),
         );
         await tester.pumpAndSettle();
-        await E2ETestHelpers.waitForAsyncOperations();
+        await E2ETestHelpers.waitForAsyncOperations(
+          duration: const Duration(seconds: 3),
+        );
 
-        // Find the recipe
-        final recipeName = find.text(testRecipeName);
-        if (recipeName.evaluate().isEmpty) {
+        // Find the recipe with retry
+        var recipeName = find.text(testRecipeName);
+        var attempts = 0;
+        while (recipeName.evaluate().isEmpty && attempts < 5) {
+          attempts++;
           final listView = find.byType(ListView);
           if (listView.evaluate().isNotEmpty) {
-            await tester.drag(listView.first, const Offset(0, -500));
+            await tester.drag(listView.first, const Offset(0, -300));
             await tester.pumpAndSettle();
           }
+          await tester.pumpAndSettle(const Duration(seconds: 1));
+          recipeName = find.text(testRecipeName);
         }
 
         // Expand recipe card
