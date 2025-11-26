@@ -75,55 +75,27 @@ void main() {
             reason: 'Recipe should exist in database');
         print('✓ Recipe verified in database');
 
+        // Force RecipeProvider to refresh and pick up the new recipe
+        print('\n=== REFRESHING RECIPE PROVIDER ===');
+        await E2ETestHelpers.refreshRecipeProvider(tester);
+        print('✓ RecipeProvider refreshed');
+
         // ======================================================================
         // ACT: Navigate to MealHistoryScreen and then to CookMealScreen
         // ======================================================================
 
         print('\n=== NAVIGATING TO MEAL HISTORY SCREEN ===');
-        // Navigate away and back to Recipes tab to force UI refresh
-        // (App starts on Recipes tab, so we need to trigger a reload)
-        await E2ETestHelpers.tapBottomNavTab(
-          tester,
-          const Key('meal_plan_tab_icon'),
-        );
-        await tester.pumpAndSettle();
-
+        // Navigate to Recipes tab (app starts on Recipes tab)
         await E2ETestHelpers.tapBottomNavTab(
           tester,
           const Key('recipes_tab_icon'),
         );
         await tester.pumpAndSettle();
+        print('✓ On Recipes tab');
 
-        // Wait longer for provider to reload recipes
-        await E2ETestHelpers.waitForAsyncOperations(
-          duration: const Duration(seconds: 3),
-        );
-        print('✓ On Recipes tab (refreshed)');
-
-        // Find the recipe with retry logic
-        print('Looking for recipe: $testRecipeName');
-        var recipeName = find.text(testRecipeName);
-        var attempts = 0;
-        const maxAttempts = 5;
-
-        while (recipeName.evaluate().isEmpty && attempts < maxAttempts) {
-          attempts++;
-          print('⚠ Recipe not found, attempt $attempts/$maxAttempts');
-
-          // Try scrolling
-          final listView = find.byType(ListView);
-          if (listView.evaluate().isNotEmpty) {
-            await tester.drag(listView.first, const Offset(0, -300));
-            await tester.pumpAndSettle();
-          }
-
-          // Wait and pump again
-          await tester.pumpAndSettle(const Duration(seconds: 1));
-          recipeName = find.text(testRecipeName);
-        }
-
+        // Find the recipe (should be present after provider refresh)
         expect(find.text(testRecipeName), findsOneWidget,
-            reason: 'Test recipe should appear in recipes list after $attempts attempts');
+            reason: 'Test recipe should appear in recipes list');
 
         // Expand the recipe card to see the history button
         final recipeCard = find.ancestor(
@@ -364,40 +336,22 @@ void main() {
         createdRecipeId = testRecipe.id;
         print('✓ Test recipe created: $testRecipeName (ID: $createdRecipeId)');
 
+        // Force RecipeProvider to refresh
+        print('\n=== REFRESHING RECIPE PROVIDER ===');
+        await E2ETestHelpers.refreshRecipeProvider(tester);
+        print('✓ RecipeProvider refreshed');
+
         // ======================================================================
         // ACT: Navigate to MealHistoryScreen and then to CookMealScreen
         // ======================================================================
 
         print('\n=== NAVIGATING TO MEAL HISTORY SCREEN ===');
-        // Navigate away and back to Recipes tab to force UI refresh
-        await E2ETestHelpers.tapBottomNavTab(
-          tester,
-          const Key('meal_plan_tab_icon'),
-        );
-        await tester.pumpAndSettle();
-
         await E2ETestHelpers.tapBottomNavTab(
           tester,
           const Key('recipes_tab_icon'),
         );
         await tester.pumpAndSettle();
-        await E2ETestHelpers.waitForAsyncOperations(
-          duration: const Duration(seconds: 3),
-        );
-
-        // Find the recipe with retry
-        var recipeName = find.text(testRecipeName);
-        var attempts = 0;
-        while (recipeName.evaluate().isEmpty && attempts < 5) {
-          attempts++;
-          final listView = find.byType(ListView);
-          if (listView.evaluate().isNotEmpty) {
-            await tester.drag(listView.first, const Offset(0, -300));
-            await tester.pumpAndSettle();
-          }
-          await tester.pumpAndSettle(const Duration(seconds: 1));
-          recipeName = find.text(testRecipeName);
-        }
+        print('✓ On Recipes tab');
 
         // Expand recipe card
         final recipeCard = find.ancestor(

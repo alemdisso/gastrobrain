@@ -2,8 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 import 'package:gastrobrain/main.dart';
 import 'package:gastrobrain/database/database_helper.dart';
+import 'package:gastrobrain/core/providers/recipe_provider.dart';
 
 /// E2E Test Helper Methods
 ///
@@ -336,6 +338,32 @@ class E2ETestHelpers {
       // Ignore errors during cleanup
       print('⚠ Error cleaning up test meal $mealId: $e');
     }
+  }
+
+  // ============================================================================
+  // PROVIDER REFRESH HELPERS
+  // ============================================================================
+
+  /// Force RecipeProvider to refresh after direct database operations
+  ///
+  /// Use this when creating/modifying recipes via database in tests
+  /// to ensure the UI reflects the changes. The RecipeProvider uses
+  /// a 5-minute cache that must be explicitly invalidated when data
+  /// is modified outside the normal UI flow.
+  ///
+  /// Usage:
+  /// ```dart
+  /// await dbHelper.insertRecipe(testRecipe);
+  /// await E2ETestHelpers.refreshRecipeProvider(tester);
+  /// // Recipe now appears in UI
+  /// ```
+  static Future<void> refreshRecipeProvider(WidgetTester tester) async {
+    await tester.runAsync(() async {
+      final context = tester.element(find.byType(MaterialApp));
+      final recipeProvider = Provider.of<RecipeProvider>(context, listen: false);
+      await recipeProvider.loadRecipes(forceRefresh: true);
+    });
+    await tester.pumpAndSettle();
   }
 
   // ============================================================================
