@@ -6,8 +6,6 @@ import 'package:integration_test/integration_test.dart';
 import 'package:gastrobrain/database/database_helper.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
-import 'package:gastrobrain/screens/cook_meal_screen.dart';
-import 'package:gastrobrain/screens/meal_history_screen.dart';
 import 'helpers/e2e_test_helpers.dart';
 
 /// Complete Meal Recording Workflow Test
@@ -77,22 +75,75 @@ void main() {
             reason: 'Recipe should exist in database');
         print('✓ Recipe verified in database');
 
+        // Force RecipeProvider to refresh and pick up the new recipe
+        print('\n=== REFRESHING RECIPE PROVIDER ===');
+        await E2ETestHelpers.refreshRecipeProvider(tester);
+        print('✓ RecipeProvider refreshed');
+
         // ======================================================================
-        // ACT: Navigate to CookMealScreen
+        // ACT: Navigate to MealHistoryScreen and then to CookMealScreen
+        // ======================================================================
+
+        print('\n=== NAVIGATING TO MEAL HISTORY SCREEN ===');
+        // Navigate to Recipes tab (app starts on Recipes tab)
+        await E2ETestHelpers.tapBottomNavTab(
+          tester,
+          const Key('recipes_tab_icon'),
+        );
+        await tester.pumpAndSettle();
+        print('✓ On Recipes tab');
+
+        // Find the recipe (should be present after provider refresh)
+        expect(find.text(testRecipeName), findsOneWidget,
+            reason: 'Test recipe should appear in recipes list');
+
+        // Expand the recipe card to see the history button
+        final recipeCard = find.ancestor(
+          of: find.text(testRecipeName),
+          matching: find.byType(Card),
+        );
+        expect(recipeCard, findsOneWidget);
+
+        // Find and tap the expand button
+        final expandButton = find.descendant(
+          of: recipeCard,
+          matching: find.byIcon(Icons.expand_more),
+        );
+
+        if (expandButton.evaluate().isNotEmpty) {
+          await tester.tap(expandButton);
+          await tester.pumpAndSettle();
+          print('✓ Recipe card expanded');
+        }
+
+        // Find and tap the history button (icon: Icons.history)
+        final historyButton = find.descendant(
+          of: recipeCard,
+          matching: find.byIcon(Icons.history),
+        );
+        expect(historyButton, findsOneWidget,
+            reason: 'History button should be visible in expanded recipe card');
+
+        await tester.tap(historyButton);
+        await tester.pumpAndSettle();
+        print('✓ Navigated to Meal History Screen');
+
+        // Verify we're on the meal history screen
+        expect(find.textContaining(testRecipeName), findsWidgets,
+            reason: 'Recipe name should appear in history screen title');
+
+        // ======================================================================
+        // ACT: Navigate to CookMealScreen via FAB
         // ======================================================================
 
         print('\n=== NAVIGATING TO COOK MEAL SCREEN ===');
-        await tester.pumpWidget(
-          MaterialApp(
-            home: CookMealScreen(recipe: testRecipe),
-          ),
-        );
-        await tester.pumpAndSettle();
-        print('✓ Navigated to CookMealScreen');
+        final fab = find.byType(FloatingActionButton);
+        expect(fab, findsOneWidget,
+            reason: 'FAB should be visible on meal history screen');
 
-        // Verify we're on the Cook Meal screen
-        expect(find.textContaining(testRecipeName), findsWidgets,
-            reason: 'Recipe name should appear on Cook Meal screen');
+        await tester.tap(fab);
+        await tester.pumpAndSettle();
+        print('✓ Navigated to CookMealScreen via FAB');
 
         // ======================================================================
         // ACT: Open Meal Recording Dialog
@@ -174,20 +225,14 @@ void main() {
           print('✓ Success: ${meal.wasSuccessful}');
 
           // ====================================================================
-          // VERIFY: Navigate to Meal History and Check UI
+          // VERIFY: Check Meal Appears in History UI
           // ====================================================================
 
-          print('\n=== NAVIGATING TO MEAL HISTORY ===');
-          await tester.pumpWidget(
-            MaterialApp(
-              home: MealHistoryScreen(recipe: testRecipe),
-            ),
-          );
-          await tester.pumpAndSettle(const Duration(seconds: 3));
-          print('✓ Navigated to MealHistoryScreen');
-
-          // Wait for meals to load
-          await E2ETestHelpers.waitForAsyncOperations();
+          print('\n=== VERIFYING MEAL IN HISTORY UI ===');
+          // After saving, CookMealScreen should have navigated back to MealHistoryScreen
+          // Wait for the screen to reload with the new meal
+          await E2ETestHelpers.waitForAsyncOperations(
+              duration: const Duration(seconds: 2));
 
           // Verify meal appears in the history UI
           print('\n=== VERIFYING UI ===');
@@ -224,6 +269,10 @@ void main() {
         // ======================================================================
         // CLEANUP: Remove Test Data
         // ======================================================================
+
+        // Dispose of the widget tree to prevent rebuild errors during cleanup
+        await tester.pumpWidget(Container());
+        await tester.pumpAndSettle();
 
         if (createdMealId != null || createdRecipeId != null) {
           print('\n=== CLEANUP ===');
@@ -287,18 +336,55 @@ void main() {
         createdRecipeId = testRecipe.id;
         print('✓ Test recipe created: $testRecipeName (ID: $createdRecipeId)');
 
+        // Force RecipeProvider to refresh
+        print('\n=== REFRESHING RECIPE PROVIDER ===');
+        await E2ETestHelpers.refreshRecipeProvider(tester);
+        print('✓ RecipeProvider refreshed');
+
         // ======================================================================
-        // ACT: Navigate to CookMealScreen
+        // ACT: Navigate to MealHistoryScreen and then to CookMealScreen
+        // ======================================================================
+
+        print('\n=== NAVIGATING TO MEAL HISTORY SCREEN ===');
+        await E2ETestHelpers.tapBottomNavTab(
+          tester,
+          const Key('recipes_tab_icon'),
+        );
+        await tester.pumpAndSettle();
+        print('✓ On Recipes tab');
+
+        // Expand recipe card
+        final recipeCard = find.ancestor(
+          of: find.text(testRecipeName),
+          matching: find.byType(Card),
+        );
+        final expandButton = find.descendant(
+          of: recipeCard,
+          matching: find.byIcon(Icons.expand_more),
+        );
+        if (expandButton.evaluate().isNotEmpty) {
+          await tester.tap(expandButton);
+          await tester.pumpAndSettle();
+        }
+
+        // Tap history button
+        final historyButton = find.descendant(
+          of: recipeCard,
+          matching: find.byIcon(Icons.history),
+        );
+        await tester.tap(historyButton);
+        await tester.pumpAndSettle();
+        print('✓ Navigated to Meal History Screen');
+
+        // ======================================================================
+        // ACT: Navigate to CookMealScreen via FAB
         // ======================================================================
 
         print('\n=== NAVIGATING TO COOK MEAL SCREEN ===');
-        await tester.pumpWidget(
-          MaterialApp(
-            home: CookMealScreen(recipe: testRecipe),
-          ),
-        );
+        final fab = find.byType(FloatingActionButton);
+        await tester.tap(fab);
         await tester.pumpAndSettle();
-        print('✓ Navigated to CookMealScreen');
+        print('✓ Navigated to CookMealScreen via FAB');
 
         // ======================================================================
         // ACT: Open Meal Recording Dialog
@@ -333,6 +419,9 @@ void main() {
         if (cancelButton.evaluate().isNotEmpty) {
           await tester.tap(cancelButton);
           await tester.pumpAndSettle();
+          // Extra wait to ensure modal barriers are fully dismissed
+          await E2ETestHelpers.waitForAsyncOperations(
+              duration: const Duration(milliseconds: 500));
           print('✓ Date picker closed (keeping default date)');
         }
 
@@ -392,6 +481,10 @@ void main() {
         // ======================================================================
         // CLEANUP
         // ======================================================================
+
+        // Dispose of the widget tree to prevent rebuild errors during cleanup
+        await tester.pumpWidget(Container());
+        await tester.pumpAndSettle();
 
         if (createdMealId != null || createdRecipeId != null) {
           print('\n=== CLEANUP ===');

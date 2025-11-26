@@ -85,7 +85,7 @@ void main() {
         // ==================================================================
 
         print('\n=== NAVIGATING TO MEAL PLAN TAB ===');
-        await E2ETestHelpers.tapBottomNavTab(tester, Icons.calendar_today);
+        await E2ETestHelpers.tapBottomNavTab(tester, const Key('meal_plan_tab_icon'));
         print('✓ Tapped Meal Plan tab');
 
         // Wait for meal plan screen to load
@@ -152,9 +152,9 @@ void main() {
 
         print('\n=== REFRESHING UI ===');
         // Navigate away and back to trigger reload
-        await E2ETestHelpers.tapBottomNavTab(tester, Icons.menu_book);
+        await E2ETestHelpers.tapBottomNavTab(tester, const Key('recipes_tab_icon'));
         await tester.pumpAndSettle();
-        await E2ETestHelpers.tapBottomNavTab(tester, Icons.calendar_today);
+        await E2ETestHelpers.tapBottomNavTab(tester, const Key('meal_plan_tab_icon'));
         await E2ETestHelpers.waitForAsyncOperations();
         print('✓ UI refreshed');
 

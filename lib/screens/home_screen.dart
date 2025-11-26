@@ -493,19 +493,19 @@ class _HomePageState extends State<HomePage> {
         },
         items: [
           BottomNavigationBarItem(
-            icon: const Icon(Icons.menu_book),
+            icon: const Icon(Icons.menu_book, key: Key('recipes_tab_icon')),
             label: AppLocalizations.of(context)!.recipes,
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.calendar_today),
+            icon: const Icon(Icons.calendar_today, key: Key('meal_plan_tab_icon')),
             label: AppLocalizations.of(context)!.mealPlan,
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.restaurant_menu),
+            icon: const Icon(Icons.restaurant_menu, key: Key('ingredients_tab_icon')),
             label: AppLocalizations.of(context)!.ingredients,
           ),
           const BottomNavigationBarItem(
-            icon: Icon(Icons.build),
+            icon: Icon(Icons.build, key: Key('tools_tab_icon')),
             label: 'Tools',
           ),
         ],
