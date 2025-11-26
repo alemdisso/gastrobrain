@@ -80,8 +80,11 @@ void main() {
         // ======================================================================
 
         print('\n=== NAVIGATING TO MEAL HISTORY SCREEN ===');
-        // Navigate to Recipes tab first
-        await E2ETestHelpers.tapBottomNavTab(tester, Icons.restaurant);
+        // Navigate to Recipes tab using semantic key
+        await E2ETestHelpers.tapBottomNavTab(
+          tester,
+          const Key('recipes_tab_icon'),
+        );
         print('✓ On Recipes tab');
 
         // Find and tap the recipe to expand it
@@ -342,8 +345,11 @@ void main() {
         // ======================================================================
 
         print('\n=== NAVIGATING TO MEAL HISTORY SCREEN ===');
-        // Navigate to Recipes tab
-        await E2ETestHelpers.tapBottomNavTab(tester, Icons.restaurant);
+        // Navigate to Recipes tab using semantic key
+        await E2ETestHelpers.tapBottomNavTab(
+          tester,
+          const Key('recipes_tab_icon'),
+        );
 
         // Find the recipe
         final recipeName = find.text(testRecipeName);

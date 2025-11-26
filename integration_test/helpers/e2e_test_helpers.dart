@@ -42,22 +42,26 @@ class E2ETestHelpers {
   // NAVIGATION HELPERS
   // ============================================================================
 
-  /// Tap a bottom navigation tab by its icon
+  /// Tap a bottom navigation tab by its semantic key
   ///
   /// Usage:
   /// ```dart
-  /// await E2ETestHelpers.tapBottomNavTab(tester, Icons.calendar_today);
+  /// await E2ETestHelpers.tapBottomNavTab(
+  ///   tester,
+  ///   const Key('recipes_tab_icon')
+  /// );
   /// ```
   static Future<void> tapBottomNavTab(
     WidgetTester tester,
-    IconData icon,
+    Key tabKey,
   ) async {
     final bottomNavBar = find.byType(BottomNavigationBar);
     final tab = find.descendant(
       of: bottomNavBar,
-      matching: find.byIcon(icon),
+      matching: find.byKey(tabKey),
     );
-    expect(tab, findsOneWidget, reason: 'Tab with icon $icon should exist');
+    expect(tab, findsOneWidget,
+        reason: 'Tab with key $tabKey should exist in bottom navigation');
     await tester.tap(tab);
     await tester.pumpAndSettle();
   }
