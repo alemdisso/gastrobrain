@@ -419,6 +419,9 @@ void main() {
         if (cancelButton.evaluate().isNotEmpty) {
           await tester.tap(cancelButton);
           await tester.pumpAndSettle();
+          // Extra wait to ensure modal barriers are fully dismissed
+          await E2ETestHelpers.waitForAsyncOperations(
+              duration: const Duration(milliseconds: 500));
           print('✓ Date picker closed (keeping default date)');
         }
 

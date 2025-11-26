@@ -456,6 +456,11 @@ class E2ETestHelpers {
   static Future<void> saveMealRecordingDialog(WidgetTester tester) async {
     final saveButton = find.byKey(const Key('meal_recording_save_button'));
     expect(saveButton, findsOneWidget, reason: 'Save button should exist');
+
+    // Ensure button is visible and not obscured by overlays
+    await tester.ensureVisible(saveButton);
+    await tester.pumpAndSettle();
+
     await tester.tap(saveButton);
     await tester.pumpAndSettle(standardSettleDuration);
   }
