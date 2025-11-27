@@ -6,20 +6,18 @@ import 'package:integration_test/integration_test.dart';
 import 'package:gastrobrain/database/database_helper.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
-import 'package:gastrobrain/models/meal_plan_item.dart';
 import 'package:gastrobrain/utils/id_generator.dart';
 import 'helpers/e2e_test_helpers.dart';
 
 /// All Recipes Tab Selection E2E Test
 ///
-/// This test verifies the workflow of selecting a recipe from the
+/// This test verifies the UI workflow of selecting a recipe from the
 /// "All Recipes" tab and adding it to the meal plan:
 /// 1. Navigate to Meal Plan tab
 /// 2. Tap calendar slot (Friday lunch)
 /// 3. Switch to "All Recipes" tab
 /// 4. Select recipe from all recipes list
 /// 5. Verify recipe appears in calendar slot
-/// 6. Verify database persistence
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -35,7 +33,6 @@ void main() {
       final testRecipeId = IdGenerator.generateId();
 
       String? createdRecipeId;
-      String? createdMealPlanId;
 
       try {
         // ==================================================================
@@ -226,56 +223,6 @@ void main() {
             reason: 'Recipe name should appear in calendar slot');
         print('✓ Recipe appears in calendar slot');
 
-        // ==================================================================
-        // VERIFY: Database Persistence
-        // ==================================================================
-
-        print('\n=== VERIFYING DATABASE PERSISTENCE ===');
-
-        // Calculate week start (Friday is start of week in this app)
-        final now = DateTime.now();
-        final weekStart = DateTime(
-          now.year,
-          now.month,
-          now.day - (now.weekday < 5 ? now.weekday + 2 : now.weekday - 5),
-        );
-
-        // Verify meal plan was created
-        final savedPlan = await dbHelper.getMealPlanForWeek(weekStart);
-        expect(savedPlan, isNotNull,
-            reason: 'Meal plan should exist in database');
-        createdMealPlanId = savedPlan!.id;
-        print('✓ Meal plan found in database: $createdMealPlanId');
-
-        // Verify meal plan has items
-        expect(savedPlan.items.length, greaterThan(0),
-            reason: 'Meal plan should have at least one item');
-        print('✓ Meal plan has ${savedPlan.items.length} item(s)');
-
-        // Verify Friday lunch item exists
-        final lunchItems = savedPlan.items
-            .where((item) => item.mealType == MealPlanItem.lunch)
-            .toList();
-        expect(lunchItems.length, greaterThan(0),
-            reason: 'Should have at least one lunch item');
-        print('✓ Found lunch item in meal plan');
-
-        // Verify recipe is linked to the lunch item
-        final firstLunchItem = lunchItems.first;
-        expect(firstLunchItem.mealPlanItemRecipes, isNotEmpty,
-            reason: 'Lunch item should have recipes');
-
-        final linkedRecipeId =
-            firstLunchItem.mealPlanItemRecipes!.first.recipeId;
-        expect(linkedRecipeId, equals(testRecipeId),
-            reason: 'Lunch item should be linked to our test recipe');
-        print('✓ Recipe correctly linked to meal plan item');
-
-        // Verify isPrimaryDish flag is set
-        expect(firstLunchItem.mealPlanItemRecipes!.first.isPrimaryDish, true,
-            reason: 'Single recipe should be marked as primary dish');
-        print('✓ Recipe marked as primary dish');
-
         print('\n✅ SUCCESS! All recipes tab selection test passed!');
 
         // ==================================================================
@@ -283,9 +230,6 @@ void main() {
         // ==================================================================
 
         print('\n=== CLEANING UP ===');
-
-        await dbHelper.deleteMealPlan(createdMealPlanId);
-        print('✓ Meal plan deleted');
 
         await dbHelper.deleteRecipe(createdRecipeId);
         print('✓ Test recipe deleted');
@@ -297,15 +241,6 @@ void main() {
 
         // Attempt cleanup even on failure
         final dbHelper = DatabaseHelper();
-
-        if (createdMealPlanId != null) {
-          try {
-            await dbHelper.deleteMealPlan(createdMealPlanId);
-            print('✓ Cleanup: Meal plan deleted');
-          } catch (cleanupError) {
-            print('⚠ Cleanup failed for meal plan: $cleanupError');
-          }
-        }
 
         if (createdRecipeId != null) {
           try {

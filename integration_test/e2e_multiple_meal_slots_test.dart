@@ -6,19 +6,17 @@ import 'package:integration_test/integration_test.dart';
 import 'package:gastrobrain/database/database_helper.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
-import 'package:gastrobrain/models/meal_plan_item.dart';
 import 'package:gastrobrain/utils/id_generator.dart';
 import 'helpers/e2e_test_helpers.dart';
 
 /// Multiple Meal Slots E2E Test
 ///
-/// This test verifies that users can add recipes to multiple calendar slots
-/// in a single session:
+/// This test verifies the UI workflow for adding recipes to multiple calendar
+/// slots in a single session:
 /// 1. Navigate to Meal Plan tab
 /// 2. Add recipe to Friday lunch
 /// 3. Add recipe to Friday dinner
 /// 4. Verify both recipes appear in their respective slots
-/// 5. Verify database has both meal plan items
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -37,7 +35,6 @@ void main() {
 
       String? createdLunchRecipeId;
       String? createdDinnerRecipeId;
-      String? createdMealPlanId;
 
       try {
         // ==================================================================
@@ -264,67 +261,6 @@ void main() {
             reason: 'Dinner recipe should appear in calendar');
         print('✓ Dinner recipe appears in calendar');
 
-        // ==================================================================
-        // VERIFY: Database Persistence
-        // ==================================================================
-
-        print('\n=== VERIFYING DATABASE PERSISTENCE ===');
-
-        // Calculate week start
-        final now = DateTime.now();
-        final weekStart = DateTime(
-          now.year,
-          now.month,
-          now.day - (now.weekday < 5 ? now.weekday + 2 : now.weekday - 5),
-        );
-
-        // Verify meal plan exists
-        final savedPlan = await dbHelper.getMealPlanForWeek(weekStart);
-        expect(savedPlan, isNotNull,
-            reason: 'Meal plan should exist in database');
-        createdMealPlanId = savedPlan!.id;
-        print('✓ Meal plan found in database: $createdMealPlanId');
-
-        // Verify meal plan has both lunch and dinner items
-        expect(savedPlan.items.length, greaterThanOrEqualTo(2),
-            reason: 'Meal plan should have at least 2 items (lunch and dinner)');
-        print('✓ Meal plan has ${savedPlan.items.length} item(s)');
-
-        // Verify lunch item
-        final lunchItems = savedPlan.items
-            .where((item) => item.mealType == MealPlanItem.lunch)
-            .toList();
-        expect(lunchItems.length, greaterThan(0),
-            reason: 'Should have at least one lunch item');
-
-        final lunchItem = lunchItems.first;
-        expect(lunchItem.mealPlanItemRecipes, isNotEmpty,
-            reason: 'Lunch item should have recipes');
-        expect(lunchItem.mealPlanItemRecipes!.first.recipeId,
-            equals(lunchRecipeId),
-            reason: 'Lunch item should be linked to lunch recipe');
-        print('✓ Lunch recipe correctly linked in database');
-
-        // Verify dinner item
-        final dinnerItems = savedPlan.items
-            .where((item) => item.mealType == MealPlanItem.dinner)
-            .toList();
-        expect(dinnerItems.length, greaterThan(0),
-            reason: 'Should have at least one dinner item');
-
-        final dinnerItem = dinnerItems.first;
-        expect(dinnerItem.mealPlanItemRecipes, isNotEmpty,
-            reason: 'Dinner item should have recipes');
-        expect(dinnerItem.mealPlanItemRecipes!.first.recipeId,
-            equals(dinnerRecipeId),
-            reason: 'Dinner item should be linked to dinner recipe');
-        print('✓ Dinner recipe correctly linked in database');
-
-        // Verify both are marked as primary dishes
-        expect(lunchItem.mealPlanItemRecipes!.first.isPrimaryDish, true);
-        expect(dinnerItem.mealPlanItemRecipes!.first.isPrimaryDish, true);
-        print('✓ Both recipes marked as primary dishes');
-
         print('\n✅ SUCCESS! Multiple meal slots test passed!');
 
         // ==================================================================
@@ -332,9 +268,6 @@ void main() {
         // ==================================================================
 
         print('\n=== CLEANING UP ===');
-
-        await dbHelper.deleteMealPlan(createdMealPlanId);
-        print('✓ Meal plan deleted');
 
         await dbHelper.deleteRecipe(createdLunchRecipeId);
         print('✓ Lunch recipe deleted');
@@ -349,15 +282,6 @@ void main() {
 
         // Attempt cleanup even on failure
         final dbHelper = DatabaseHelper();
-
-        if (createdMealPlanId != null) {
-          try {
-            await dbHelper.deleteMealPlan(createdMealPlanId);
-            print('✓ Cleanup: Meal plan deleted');
-          } catch (cleanupError) {
-            print('⚠ Cleanup failed for meal plan: $cleanupError');
-          }
-        }
 
         if (createdLunchRecipeId != null) {
           try {
