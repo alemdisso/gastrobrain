@@ -166,9 +166,9 @@ void main() {
         print('✓ Still on meal plan screen');
 
         // Verify slot is still empty (no recipe added)
-        // The slot should show "Adicionar Refeição" (Add Meal) text
+        // The slot should show "Adicionar refeição" (Add Meal) text
         expect(
-          find.text('Adicionar Refeição'),
+          find.text('Adicionar refeição'),
           findsWidgets,
           reason: 'Empty slots should show "Add Meal" text',
         );
