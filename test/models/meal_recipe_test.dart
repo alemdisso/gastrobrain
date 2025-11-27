@@ -184,5 +184,158 @@ void main() {
       final fromMapEmptyNotes = MealRecipe.fromMap(mapWithEmptyNotes);
       expect(fromMapEmptyNotes.notes, '');
     });
+
+    test('round-trip serialization preserves all data', () {
+      final original = MealRecipe(
+        id: 'round_trip_test',
+        mealId: 'meal_123',
+        recipeId: 'recipe_456',
+        isPrimaryDish: true,
+        notes: 'Round trip test notes',
+      );
+
+      // Convert to map and back
+      final map = original.toMap();
+      final recovered = MealRecipe.fromMap(map);
+
+      // Convert recovered back to map
+      final secondMap = recovered.toMap();
+
+      // Both maps should be identical
+      expect(secondMap['id'], map['id']);
+      expect(secondMap['meal_id'], map['meal_id']);
+      expect(secondMap['recipe_id'], map['recipe_id']);
+      expect(secondMap['is_primary_dish'], map['is_primary_dish']);
+      expect(secondMap['notes'], map['notes']);
+    });
+
+    test('copyWith with no changes returns same values', () {
+      final original = MealRecipe(
+        id: 'test_id',
+        mealId: 'meal_123',
+        recipeId: 'recipe_456',
+        isPrimaryDish: true,
+        notes: 'Original notes',
+      );
+
+      // Copy with no changes
+      final copy = original.copyWith();
+
+      expect(copy.id, original.id);
+      expect(copy.mealId, original.mealId);
+      expect(copy.recipeId, original.recipeId);
+      expect(copy.isPrimaryDish, original.isPrimaryDish);
+      expect(copy.notes, original.notes);
+    });
+
+    test('copyWith can change all fields at once', () {
+      final original = MealRecipe(
+        id: 'original_id',
+        mealId: 'original_meal',
+        recipeId: 'original_recipe',
+        isPrimaryDish: false,
+        notes: 'Original notes',
+      );
+
+      // Change all fields
+      final modified = original.copyWith(
+        id: 'new_id',
+        mealId: 'new_meal',
+        recipeId: 'new_recipe',
+        isPrimaryDish: true,
+        notes: 'New notes',
+      );
+
+      expect(modified.id, 'new_id');
+      expect(modified.mealId, 'new_meal');
+      expect(modified.recipeId, 'new_recipe');
+      expect(modified.isPrimaryDish, true);
+      expect(modified.notes, 'New notes');
+
+      // Original should remain unchanged
+      expect(original.id, 'original_id');
+      expect(original.mealId, 'original_meal');
+      expect(original.recipeId, 'original_recipe');
+      expect(original.isPrimaryDish, false);
+      expect(original.notes, 'Original notes');
+    });
+
+    test('copyWith preserves original notes when null is passed', () {
+      final original = MealRecipe(
+        id: 'test_id',
+        mealId: 'meal_123',
+        recipeId: 'recipe_456',
+        isPrimaryDish: true,
+        notes: 'Original notes',
+      );
+
+      // Passing null for notes preserves the original value
+      // (This is the current behavior of the copyWith implementation)
+      final modified = original.copyWith(notes: null);
+
+      expect(modified.notes, 'Original notes'); // Preserves original
+      expect(original.notes, 'Original notes'); // Original unchanged
+    });
+
+    test('auto-generated UUID is valid format', () {
+      final mealRecipe = MealRecipe(
+        mealId: 'meal_123',
+        recipeId: 'recipe_456',
+        // id not provided, should be auto-generated
+      );
+
+      // UUID v4 format: 8-4-4-4-12 hexadecimal characters
+      final uuidPattern = RegExp(
+        r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+      );
+
+      expect(mealRecipe.id, matches(uuidPattern));
+      expect(mealRecipe.id.length, 36); // Standard UUID length
+    });
+
+    test('auto-generated UUIDs are unique', () {
+      final mealRecipe1 = MealRecipe(
+        mealId: 'meal_123',
+        recipeId: 'recipe_456',
+      );
+
+      final mealRecipe2 = MealRecipe(
+        mealId: 'meal_123',
+        recipeId: 'recipe_456',
+      );
+
+      // Even with the same data, IDs should be different
+      expect(mealRecipe1.id, isNot(equals(mealRecipe2.id)));
+    });
+
+    test('handles special characters in notes', () {
+      final specialNotes = 'Test with special chars: !@#\$%^&*()_+-=[]{}|;:\'",.<>?/\\~`\n\tNew line and tab';
+      final mealRecipe = MealRecipe(
+        mealId: 'meal_123',
+        recipeId: 'recipe_456',
+        notes: specialNotes,
+      );
+
+      final map = mealRecipe.toMap();
+      final recovered = MealRecipe.fromMap(map);
+
+      expect(recovered.notes, specialNotes);
+    });
+
+    test('handles very long notes strings', () {
+      final longNotes = 'B' * 10000; // 10,000 character string
+
+      final mealRecipe = MealRecipe(
+        mealId: 'meal_123',
+        recipeId: 'recipe_456',
+        notes: longNotes,
+      );
+
+      final map = mealRecipe.toMap();
+      final recovered = MealRecipe.fromMap(map);
+
+      expect(recovered.notes, longNotes);
+      expect(recovered.notes!.length, 10000);
+    });
   });
 }
