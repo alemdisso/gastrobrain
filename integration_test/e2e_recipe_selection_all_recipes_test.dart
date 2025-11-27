@@ -132,42 +132,49 @@ void main() {
         await tester.pumpAndSettle();
         print('✓ Tapped All Recipes tab');
 
+        // Wait for all recipes list to load
+        await E2ETestHelpers.waitForAsyncOperations();
+
         // ==================================================================
         // VERIFY: Test Recipe Appears in All Recipes List
         // ==================================================================
 
         print('\n=== VERIFYING TEST RECIPE IN ALL RECIPES LIST ===');
 
-        // The recipe card should be findable by its key
-        final recipeCardKey = Key('recipe_card_$testRecipeId');
-        final recipeCardFinder = find.byKey(recipeCardKey);
+        // First, try to find the recipe by name (more reliable than key)
+        final recipeNameFinder = find.text(testRecipeName);
+        var foundRecipe = recipeNameFinder.evaluate().isNotEmpty;
 
-        // The recipe might not be immediately visible - try scrolling
-        var foundRecipeCard = recipeCardFinder.evaluate().isNotEmpty;
-
-        if (!foundRecipeCard) {
-          print('⚠ Recipe card not immediately visible, trying to scroll');
+        if (!foundRecipe) {
+          print('⚠ Recipe not immediately visible, trying to scroll');
 
           // Try to find the scrollable list and scroll
           final scrollables = find.byType(Scrollable);
           if (scrollables.evaluate().isNotEmpty) {
             // Scroll down to find the recipe
-            await tester.drag(scrollables.last, const Offset(0, -300));
-            await tester.pumpAndSettle();
-            foundRecipeCard = recipeCardFinder.evaluate().isNotEmpty;
-
-            // If still not found, try scrolling more
-            if (!foundRecipeCard) {
+            for (int i = 0; i < 5 && !foundRecipe; i++) {
               await tester.drag(scrollables.last, const Offset(0, -300));
               await tester.pumpAndSettle();
-              foundRecipeCard = recipeCardFinder.evaluate().isNotEmpty;
+              foundRecipe = recipeNameFinder.evaluate().isNotEmpty;
+              if (foundRecipe) {
+                print('✓ Found recipe after ${i + 1} scroll(s)');
+                break;
+              }
             }
           }
         }
 
-        expect(foundRecipeCard, true,
-            reason: 'Recipe card should be present in all recipes list');
+        expect(foundRecipe, true,
+            reason: 'Test recipe should appear in all recipes list');
         print('✓ Test recipe found in all recipes list');
+
+        // Now find the recipe card by key for tapping
+        final recipeCardKey = Key('recipe_card_$testRecipeId');
+        final recipeCardFinder = find.byKey(recipeCardKey);
+
+        expect(recipeCardFinder, findsOneWidget,
+            reason: 'Recipe card with key should exist');
+        print('✓ Recipe card key found');
 
         // ==================================================================
         // ACT: Select Recipe
@@ -200,8 +207,8 @@ void main() {
         await E2ETestHelpers.waitForAsyncOperations();
 
         // Look for the recipe name in the UI
-        final recipeNameFinder = find.text(testRecipeName);
-        var foundInUI = recipeNameFinder.evaluate().isNotEmpty;
+        final calendarRecipeNameFinder = find.text(testRecipeName);
+        var foundInUI = calendarRecipeNameFinder.evaluate().isNotEmpty;
 
         if (!foundInUI) {
           print('⚠ Recipe name not immediately visible, trying to scroll');
@@ -211,7 +218,7 @@ void main() {
           if (scrollables.evaluate().isNotEmpty) {
             await tester.drag(scrollables.first, const Offset(0, -100));
             await tester.pumpAndSettle();
-            foundInUI = recipeNameFinder.evaluate().isNotEmpty;
+            foundInUI = calendarRecipeNameFinder.evaluate().isNotEmpty;
           }
         }
 

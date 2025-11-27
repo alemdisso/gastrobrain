@@ -129,19 +129,31 @@ void main() {
             reason: 'Recipe selection dialog should be open');
         print('✓ Recipe selection dialog opened');
 
-        // Find and tap lunch recipe card
-        final lunchRecipeCardKey = Key('recipe_card_$lunchRecipeId');
-        var lunchRecipeCardFinder = find.byKey(lunchRecipeCardKey);
+        // Wait for recommendations to load
+        await E2ETestHelpers.waitForAsyncOperations();
 
-        // Scroll if needed to find the recipe
-        if (lunchRecipeCardFinder.evaluate().isEmpty) {
+        // Find lunch recipe by name first
+        var lunchRecipeNameFinder = find.text(lunchRecipeName);
+        var foundLunchRecipe = lunchRecipeNameFinder.evaluate().isNotEmpty;
+
+        if (!foundLunchRecipe) {
           print('⚠ Lunch recipe not immediately visible, scrolling...');
           final scrollables = find.byType(Scrollable);
           if (scrollables.evaluate().isNotEmpty) {
-            await tester.drag(scrollables.last, const Offset(0, -200));
-            await tester.pumpAndSettle();
+            for (int i = 0; i < 3 && !foundLunchRecipe; i++) {
+              await tester.drag(scrollables.last, const Offset(0, -300));
+              await tester.pumpAndSettle();
+              foundLunchRecipe = lunchRecipeNameFinder.evaluate().isNotEmpty;
+            }
           }
         }
+
+        expect(foundLunchRecipe, true,
+            reason: 'Lunch recipe should appear in list');
+
+        // Now find and tap the recipe card by key
+        final lunchRecipeCardKey = Key('recipe_card_$lunchRecipeId');
+        final lunchRecipeCardFinder = find.byKey(lunchRecipeCardKey);
 
         expect(lunchRecipeCardFinder, findsOneWidget,
             reason: 'Lunch recipe card should be present');
@@ -180,19 +192,31 @@ void main() {
             reason: 'Recipe selection dialog should be open');
         print('✓ Recipe selection dialog opened');
 
-        // Find and tap dinner recipe card
-        final dinnerRecipeCardKey = Key('recipe_card_$dinnerRecipeId');
-        var dinnerRecipeCardFinder = find.byKey(dinnerRecipeCardKey);
+        // Wait for recommendations to load
+        await E2ETestHelpers.waitForAsyncOperations();
 
-        // Scroll if needed to find the recipe
-        if (dinnerRecipeCardFinder.evaluate().isEmpty) {
+        // Find dinner recipe by name first
+        var dinnerRecipeNameFinder = find.text(dinnerRecipeName);
+        var foundDinnerRecipe = dinnerRecipeNameFinder.evaluate().isNotEmpty;
+
+        if (!foundDinnerRecipe) {
           print('⚠ Dinner recipe not immediately visible, scrolling...');
           final scrollables = find.byType(Scrollable);
           if (scrollables.evaluate().isNotEmpty) {
-            await tester.drag(scrollables.last, const Offset(0, -200));
-            await tester.pumpAndSettle();
+            for (int i = 0; i < 3 && !foundDinnerRecipe; i++) {
+              await tester.drag(scrollables.last, const Offset(0, -300));
+              await tester.pumpAndSettle();
+              foundDinnerRecipe = dinnerRecipeNameFinder.evaluate().isNotEmpty;
+            }
           }
         }
+
+        expect(foundDinnerRecipe, true,
+            reason: 'Dinner recipe should appear in list');
+
+        // Now find and tap the recipe card by key
+        final dinnerRecipeCardKey = Key('recipe_card_$dinnerRecipeId');
+        final dinnerRecipeCardFinder = find.byKey(dinnerRecipeCardKey);
 
         expect(dinnerRecipeCardFinder, findsOneWidget,
             reason: 'Dinner recipe card should be present');
