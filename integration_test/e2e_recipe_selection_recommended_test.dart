@@ -179,14 +179,34 @@ void main() {
         print('✓ Tapped recipe card');
 
         // ==================================================================
+        // ACT: Confirm Selection (Tap Save Button)
+        // ==================================================================
+
+        print('\n=== CONFIRMING SELECTION ===');
+
+        // After tapping recipe, a menu appears with a Save button
+        // The dialog title changes to "Meal Options" (Opções da Refeição)
+        expect(find.text('Opções da Refeição'), findsOneWidget,
+            reason: 'Menu should be showing after recipe selection');
+        print('✓ Menu is showing');
+
+        // Find and tap the Save button
+        final saveButton = find.text('Salvar');
+        expect(saveButton, findsOneWidget, reason: 'Save button should exist');
+
+        await tester.tap(saveButton);
+        await tester.pumpAndSettle();
+        print('✓ Tapped Save button');
+
+        // ==================================================================
         // VERIFY: Dialog Closed
         // ==================================================================
 
         print('\n=== VERIFYING DIALOG CLOSED ===');
         expect(
-          find.text('Selecionar Receita'),
+          find.text('Opções da Refeição'),
           findsNothing,
-          reason: 'Recipe selection dialog should be closed',
+          reason: 'Menu dialog should be closed',
         );
         print('✓ Dialog is closed');
 
