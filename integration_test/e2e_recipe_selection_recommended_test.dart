@@ -224,6 +224,9 @@ void main() {
 
         print('\n=== VERIFYING DATABASE PERSISTENCE ===');
 
+        // Wait for database operations to complete
+        await E2ETestHelpers.waitForAsyncOperations();
+
         // Calculate week start (Friday is start of week in this app)
         final now = DateTime.now();
         final weekStart = DateTime(
@@ -231,21 +234,40 @@ void main() {
           now.month,
           now.day - (now.weekday < 5 ? now.weekday + 2 : now.weekday - 5),
         );
+        print('Looking for meal plan with week start: ${weekStart.toIso8601String().split('T')[0]}');
+        print('Today is: ${now.toIso8601String().split('T')[0]} (weekday: ${now.weekday})');
 
         // Verify meal plan was created
         final savedPlan = await dbHelper.getMealPlanForWeek(weekStart);
-        expect(savedPlan, isNotNull,
-            reason: 'Meal plan should exist in database');
-        createdMealPlanId = savedPlan!.id;
+
+        if (savedPlan == null) {
+          // Try to debug - list all meal plans
+          print('⚠ Meal plan not found for calculated week start');
+          print('Attempting to find meal plan by querying database directly...');
+
+          // Wait a bit more in case it's still saving
+          await Future.delayed(const Duration(seconds: 3));
+          final retryPlan = await dbHelper.getMealPlanForWeek(weekStart);
+
+          expect(retryPlan, isNotNull,
+              reason: 'Meal plan should exist in database after retry');
+          createdMealPlanId = retryPlan!.id;
+        } else {
+          createdMealPlanId = savedPlan.id;
+        }
+
         print('✓ Meal plan found in database: $createdMealPlanId');
 
+        // Get the final plan (either from first query or retry)
+        final finalPlan = savedPlan ?? await dbHelper.getMealPlanForWeek(weekStart);
+
         // Verify meal plan has items
-        expect(savedPlan.items.length, greaterThan(0),
+        expect(finalPlan!.items.length, greaterThan(0),
             reason: 'Meal plan should have at least one item');
-        print('✓ Meal plan has ${savedPlan.items.length} item(s)');
+        print('✓ Meal plan has ${finalPlan.items.length} item(s)');
 
         // Verify Friday lunch item exists
-        final lunchItems = savedPlan.items
+        final lunchItems = finalPlan.items
             .where((item) => item.mealType == MealPlanItem.lunch)
             .toList();
         expect(lunchItems.length, greaterThan(0),
