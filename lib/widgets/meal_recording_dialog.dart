@@ -70,7 +70,8 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
   }
 
   String _formatDate(DateTime date) {
-    return DateFormat('yyyy-MM-dd').format(date);
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat.yMd(locale).format(date);
   }
 
   Future<void> _loadAvailableRecipes() async {

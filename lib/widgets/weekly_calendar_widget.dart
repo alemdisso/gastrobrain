@@ -1,6 +1,7 @@
 // lib/widgets/weekly_calendar_widget.dart
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../models/meal_plan.dart';
 import '../models/meal_plan_item.dart';
 import '../models/recipe.dart';
@@ -214,7 +215,8 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
   }
 
   String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat.yMd(locale).format(date);
   }
 
   /// Gets the context-specific background color (subtle styling)

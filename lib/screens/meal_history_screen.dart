@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/recipe.dart';
 import '../models/meal.dart';
@@ -81,7 +82,8 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
   }
 
   String _formatDateTime(DateTime dateTime) {
-    return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat.yMd(locale).format(dateTime);
   }
 
   Widget _buildErrorView() {
