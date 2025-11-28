@@ -242,6 +242,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
 
               // Servings
               TextFormField(
+                key: const Key('edit_meal_recording_servings_field'),
                 controller: _servingsController,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.numberOfServings,
@@ -323,6 +324,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
                 children: [
                   Expanded(
                     child: TextFormField(
+                      key: const Key('edit_meal_recording_prep_time_field'),
                       controller: _prepTimeController,
                       decoration: InputDecoration(
                         labelText: AppLocalizations.of(context)!.prepTimeLabel,
@@ -344,6 +346,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: TextFormField(
+                      key: const Key('edit_meal_recording_cook_time_field'),
                       controller: _cookTimeController,
                       decoration: InputDecoration(
                         labelText: AppLocalizations.of(context)!.cookTimeLabel,
@@ -372,6 +375,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
                   Text(AppLocalizations.of(context)!.wasItSuccessful),
                   const Spacer(),
                   Switch(
+                    key: const Key('edit_meal_recording_success_switch'),
                     value: _wasSuccessful,
                     onChanged: (bool value) {
                       setState(() {
@@ -385,6 +389,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
 
               // Notes
               TextFormField(
+                key: const Key('edit_meal_recording_notes_field'),
                 controller: _notesController,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.notesOptional,

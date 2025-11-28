@@ -140,6 +140,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
+                key: const Key('add_new_ingredient_name_field'),
                 controller: _nameController,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.ingredientName,
@@ -156,6 +157,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
 
               // Category Dropdown
               DropdownButtonFormField<IngredientCategory>(
+                key: const Key('add_new_ingredient_category_field'),
                 value: _selectedCategory,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.categoryLabel,
@@ -180,6 +182,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
 
               // Unit Dropdown
               DropdownButtonFormField<MeasurementUnit?>(
+                key: const Key('add_new_ingredient_unit_field'),
                 value: _selectedUnit,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.unitOptional,
@@ -208,6 +211,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
               // Protein Type (only shown for protein category)
               if (_selectedCategory == IngredientCategory.protein)
                 DropdownButtonFormField<ProteinType>(
+                  key: const Key('add_new_ingredient_protein_type_field'),
                   value: _selectedProteinType,
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.proteinTypeLabel,
@@ -236,6 +240,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
 
               // Notes
               TextFormField(
+                key: const Key('add_new_ingredient_notes_field'),
                 controller: _notesController,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.notesOptional,
