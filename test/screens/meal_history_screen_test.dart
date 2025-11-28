@@ -488,5 +488,65 @@ void main() {
       // Should display date in Portuguese format (DD/MM/YYYY) WITHOUT time
       expect(find.textContaining('25/12/2023'), findsOneWidget);
     });
+
+    testWidgets(
+        'displays recipe when it was used as a side dish (not primary)',
+        (WidgetTester tester) async {
+      // This tests the use case where we're viewing the history of a recipe
+      // that's often used as a SIDE DISH (like Rice or Salad)
+      // In this case, we WANT to see it listed in the meal card
+
+      final meal = Meal(
+        id: 'side-dish-view-meal',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 3,
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+
+      // sideRecipe1 is the PRIMARY dish this time
+      final primaryMealRecipe = MealRecipe(
+        mealId: meal.id,
+        recipeId: sideRecipe1.id,
+        isPrimaryDish: true,
+        notes: 'Main dish',
+      );
+
+      // testRecipe (the one we're viewing) is used as a SIDE dish
+      final sideMealRecipe = MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: false,
+        notes: 'Side dish',
+      );
+
+      await mockDbHelper.insertMealRecipe(primaryMealRecipe);
+      await mockDbHelper.insertMealRecipe(sideMealRecipe);
+
+      // View the history for testRecipe (which was used as a side dish)
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Should show testRecipe in app bar
+      expect(find.text(testRecipe.name), findsAtLeastNWidgets(1));
+
+      // IMPORTANT: Should also show testRecipe in the side dishes list
+      // because it was used as a side dish (not primary) in this meal
+      // This provides context about which meal it was part of
+      expect(find.text(sideRecipe1.name), findsOneWidget);
+
+      // Should show side dish count (1 side dish: testRecipe)
+      expect(find.text('1 side dish'), findsOneWidget);
+    });
   });
 }

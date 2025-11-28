@@ -347,7 +347,7 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                     ),
                                   ],
                                 ),
-                                // Display side dishes (exclude the primary recipe being viewed)
+                                // Display side dishes (exclude only when this recipe is the primary dish)
                                 if (meal.mealRecipes != null &&
                                     meal.mealRecipes!.length > 1) ...[
                                   const SizedBox(height: 8),
@@ -356,8 +356,10 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                         CrossAxisAlignment.start,
                                     children: meal.mealRecipes!
                                         .where((mealRecipe) =>
-                                            mealRecipe.recipeId !=
-                                            widget.recipe.id)
+                                            // Only exclude if this recipe was the PRIMARY dish
+                                            // If it was a side dish, show it (important context)
+                                            !(mealRecipe.recipeId == widget.recipe.id &&
+                                              mealRecipe.isPrimaryDish))
                                         .map((mealRecipe) {
                                       return FutureBuilder<Recipe?>(
                                         future: _dbHelper
