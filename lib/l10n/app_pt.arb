@@ -294,7 +294,7 @@
   "@fromMealPlan": {
     "description": "Dica do indicador de planejamento de refeições"
   },
-  "actualTimes": "Tempos reais - Preparo: {prepTime}min, Cozimento: {cookTime}min",
+  "actualTimes": "Preparo: {prepTime}min, Cozimento: {cookTime}min",
   "@actualTimes": {
     "description": "Exibição dos tempos reais de cozimento",
     "placeholders": {

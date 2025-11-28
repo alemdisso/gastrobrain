@@ -87,8 +87,8 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
 
-      // Should show app bar with recipe name
-      expect(find.text('History: ${testRecipe.name}'), findsOneWidget);
+      // Should show app bar with recipe name (without "History:" prefix)
+      expect(find.text(testRecipe.name), findsOneWidget);
 
       // Should show floating action button
       expect(find.byIcon(Icons.add), findsOneWidget);
@@ -146,7 +146,7 @@ void main() {
       expect(find.text('4'), findsOneWidget);
       expect(find.byIcon(Icons.people), findsOneWidget);
 
-      // Should show recipe name
+      // Should show recipe name in app bar (not in card body)
       expect(find.text(testRecipe.name), findsOneWidget);
 
       // Should NOT show recipe count badge for single recipe
@@ -206,11 +206,10 @@ void main() {
       // Should show recipe count badge for multiple recipes
       expect(find.text('3 recipes'), findsOneWidget);
 
-      // Should show primary recipe with main dish icon
+      // Should show primary recipe name in app bar (not in card body)
       expect(find.text(testRecipe.name), findsOneWidget);
-      expect(find.byIcon(Icons.restaurant), findsOneWidget);
 
-      // Should show side recipes with side dish icons
+      // Should show ONLY side recipes in card (not primary recipe)
       expect(find.text(sideRecipe1.name), findsOneWidget);
       expect(find.text(sideRecipe2.name), findsOneWidget);
       expect(find.byIcon(Icons.restaurant_menu), findsNWidgets(2));
@@ -257,11 +256,10 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Should show primary recipe with bold text and green icon
+      // Should show primary recipe name in app bar only (not in card)
       expect(find.text(testRecipe.name), findsOneWidget);
-      expect(find.byIcon(Icons.restaurant), findsOneWidget);
 
-      // Should show side recipe with normal text and grey icon
+      // Should show side recipe in card with grey icon
       expect(find.text(sideRecipe1.name), findsOneWidget);
       expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
 
@@ -281,15 +279,24 @@ void main() {
 
       await mockDbHelper.insertMeal(meal);
 
-      // Add meal recipe with plan origin note
-      final mealRecipe = MealRecipe(
+      // Add primary recipe
+      final primaryMealRecipe = MealRecipe(
         mealId: meal.id,
         recipeId: testRecipe.id,
         isPrimaryDish: true,
+        notes: 'Main dish',
+      );
+
+      // Add side dish with plan origin note (this will be displayed)
+      final sideMealRecipe = MealRecipe(
+        mealId: meal.id,
+        recipeId: sideRecipe1.id,
+        isPrimaryDish: false,
         notes: 'From planned meal', // This should trigger the plan indicator
       );
 
-      await mockDbHelper.insertMealRecipe(mealRecipe);
+      await mockDbHelper.insertMealRecipe(primaryMealRecipe);
+      await mockDbHelper.insertMealRecipe(sideMealRecipe);
 
       await tester.pumpWidget(
         createTestableWidget(
@@ -302,15 +309,14 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Should show meal plan origin indicator
+      // Should show meal plan origin indicator on side dish
       expect(find.byIcon(Icons.event_available), findsOneWidget);
 
-      // Should show recipe name
+      // Should show primary recipe name in app bar
       expect(find.text(testRecipe.name), findsOneWidget);
 
-      // Verify tooltip exists for the plan indicator
-      final planIndicator = find.byIcon(Icons.event_available);
-      expect(planIndicator, findsOneWidget);
+      // Should show side dish name in card
+      expect(find.text(sideRecipe1.name), findsOneWidget);
     });
     testWidgets('handles mixed single and multi-recipe meals in history',
         (WidgetTester tester) async {

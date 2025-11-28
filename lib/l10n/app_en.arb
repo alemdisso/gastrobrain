@@ -294,7 +294,7 @@
   "@fromMealPlan": {
     "description": "Tooltip for meal plan indicator"
   },
-  "actualTimes": "Actual times - Prep: {prepTime}min, Cook: {cookTime}min",
+  "actualTimes": "Prep: {prepTime}min, Cook: {cookTime}min",
   "@actualTimes": {
     "description": "Display for actual cooking times",
     "placeholders": {
