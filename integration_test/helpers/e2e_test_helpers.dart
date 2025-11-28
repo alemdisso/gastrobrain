@@ -506,6 +506,179 @@ class E2ETestHelpers {
   }
 
   // ============================================================================
+  // MEAL PLANNING HELPERS
+  // ============================================================================
+
+  /// Tap a meal plan calendar slot by day and meal type
+  ///
+  /// Uses the key pattern: meal_plan_{day}_{mealtype}_slot
+  ///
+  /// Usage:
+  /// ```dart
+  /// await E2ETestHelpers.tapMealPlanSlot(tester, 'friday', 'lunch');
+  /// ```
+  static Future<void> tapMealPlanSlot(
+    WidgetTester tester,
+    String day,
+    String mealType,
+  ) async {
+    final slotKey = Key('meal_plan_${day}_${mealType}_slot');
+    final slotFinder = find.byKey(slotKey);
+
+    expect(slotFinder, findsOneWidget,
+        reason: '$day $mealType slot should exist');
+
+    await tester.tap(slotFinder);
+    await tester.pumpAndSettle();
+  }
+
+  /// Verify the recipe selection dialog is open
+  ///
+  /// Checks for the dialog title "Selecionar Receita" and tab buttons.
+  ///
+  /// Usage:
+  /// ```dart
+  /// E2ETestHelpers.verifyRecipeSelectionDialogOpen();
+  /// ```
+  static void verifyRecipeSelectionDialogOpen() {
+    expect(find.text('Selecionar Receita'), findsOneWidget,
+        reason: 'Recipe selection dialog should be open');
+
+    expect(find.byKey(const Key('recipe_selection_recommended_tab')),
+        findsOneWidget,
+        reason: 'Recommended tab should exist');
+
+    expect(find.byKey(const Key('recipe_selection_all_tab')), findsOneWidget,
+        reason: 'All Recipes tab should exist');
+
+    expect(find.byKey(const Key('recipe_selection_cancel_button')),
+        findsOneWidget,
+        reason: 'Cancel button should exist');
+  }
+
+  /// Select a recipe from the recommended tab
+  ///
+  /// Assumes the recipe selection dialog is already open and the
+  /// recommended tab is active. Will scroll if needed to find the recipe.
+  ///
+  /// Usage:
+  /// ```dart
+  /// await E2ETestHelpers.selectRecipeFromRecommended(tester, recipeId);
+  /// ```
+  static Future<void> selectRecipeFromRecommended(
+    WidgetTester tester,
+    String recipeId,
+  ) async {
+    final recipeCardKey = Key('recipe_card_$recipeId');
+    var recipeCardFinder = find.byKey(recipeCardKey);
+
+    // Scroll if needed to find the recipe
+    if (recipeCardFinder.evaluate().isEmpty) {
+      final scrollables = find.byType(Scrollable);
+      if (scrollables.evaluate().isNotEmpty) {
+        await tester.drag(scrollables.last, const Offset(0, -200));
+        await tester.pumpAndSettle();
+        recipeCardFinder = find.byKey(recipeCardKey);
+      }
+    }
+
+    expect(recipeCardFinder, findsOneWidget,
+        reason: 'Recipe card should be present in recommended list');
+
+    await tester.tap(recipeCardFinder);
+    await tester.pumpAndSettle();
+  }
+
+  /// Select a recipe from the all recipes tab
+  ///
+  /// Assumes the recipe selection dialog is already open. This method will:
+  /// 1. Switch to the "All Recipes" tab
+  /// 2. Find and tap the recipe card
+  ///
+  /// Will scroll if needed to find the recipe.
+  ///
+  /// Usage:
+  /// ```dart
+  /// await E2ETestHelpers.selectRecipeFromAllRecipes(tester, recipeId);
+  /// ```
+  static Future<void> selectRecipeFromAllRecipes(
+    WidgetTester tester,
+    String recipeId,
+  ) async {
+    // Switch to All Recipes tab
+    final allRecipesTab = find.byKey(const Key('recipe_selection_all_tab'));
+    expect(allRecipesTab, findsOneWidget,
+        reason: 'All Recipes tab should exist');
+
+    await tester.tap(allRecipesTab);
+    await tester.pumpAndSettle();
+
+    // Find and tap recipe card
+    final recipeCardKey = Key('recipe_card_$recipeId');
+    var recipeCardFinder = find.byKey(recipeCardKey);
+
+    // Scroll if needed to find the recipe
+    if (recipeCardFinder.evaluate().isEmpty) {
+      final scrollables = find.byType(Scrollable);
+      if (scrollables.evaluate().isNotEmpty) {
+        // May need to scroll more for all recipes list
+        await tester.drag(scrollables.last, const Offset(0, -300));
+        await tester.pumpAndSettle();
+        recipeCardFinder = find.byKey(recipeCardKey);
+
+        // Try scrolling more if still not found
+        if (recipeCardFinder.evaluate().isEmpty) {
+          await tester.drag(scrollables.last, const Offset(0, -300));
+          await tester.pumpAndSettle();
+        }
+      }
+    }
+
+    expect(recipeCardFinder, findsOneWidget,
+        reason: 'Recipe card should be present in all recipes list');
+
+    await tester.tap(recipeCardFinder);
+    await tester.pumpAndSettle();
+  }
+
+  /// Verify a recipe appears in a specific calendar slot
+  ///
+  /// Checks that the recipe name is visible in the UI.
+  /// May scroll to find the recipe.
+  ///
+  /// Usage:
+  /// ```dart
+  /// await E2ETestHelpers.verifyRecipeInCalendarSlot(
+  ///   tester,
+  ///   'friday',
+  ///   'lunch',
+  ///   'Test Recipe'
+  /// );
+  /// ```
+  static Future<bool> verifyRecipeInCalendarSlot(
+    WidgetTester tester,
+    String day,
+    String mealType,
+    String recipeName,
+  ) async {
+    // Look for the recipe name in the UI
+    var recipeNameFinder = find.text(recipeName);
+    var foundInUI = recipeNameFinder.evaluate().isNotEmpty;
+
+    if (!foundInUI) {
+      // Try scrolling to find the recipe
+      final scrollables = find.byType(Scrollable);
+      if (scrollables.evaluate().isNotEmpty) {
+        await tester.drag(scrollables.first, const Offset(0, -100));
+        await tester.pumpAndSettle();
+        foundInUI = recipeNameFinder.evaluate().isNotEmpty;
+      }
+    }
+
+    return foundInUI;
+  }
+
+  // ============================================================================
   // DIAGNOSTIC HELPERS
   // ============================================================================
 

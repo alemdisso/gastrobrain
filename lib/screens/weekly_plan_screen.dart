@@ -1652,6 +1652,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
                           itemBuilder: (context, index) {
                             final recommendation = _recommendations[index];
                             return RecipeSelectionCard(
+                              key: Key('recipe_card_${recommendation.recipe.id}'),
                               recommendation: recommendation,
                               onTap: () =>
                                   _handleRecipeSelection(recommendation.recipe),
