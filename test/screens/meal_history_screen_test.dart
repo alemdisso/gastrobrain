@@ -17,8 +17,10 @@ void main() {
   late Recipe sideRecipe1;
   late Recipe sideRecipe2;
 
-  Widget createTestableWidget(Widget child) {
+  Widget createTestableWidget(Widget child,
+      {Locale locale = const Locale('en', '')}) {
     return MaterialApp(
+      locale: locale,
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -405,6 +407,80 @@ void main() {
 
       // Just verify that an edit icon/button exists
       expect(find.byIcon(Icons.edit), findsOneWidget);
+    });
+
+    testWidgets(
+        'meal history displays date in English locale format (MM/DD/YYYY)',
+        (WidgetTester tester) async {
+      final cookedDate = DateTime(
+          2023, 12, 25, 14, 30); // Includes time that should NOT be displayed
+
+      final meal = Meal(
+        id: 'date-test-meal-en',
+        recipeId: null,
+        cookedAt: cookedDate,
+        servings: 2,
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+          locale: const Locale('en', 'US'),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Should display date in English format (MM/DD/YYYY) WITHOUT time
+      expect(find.textContaining('12/25/2023'), findsOneWidget);
+    });
+
+    testWidgets(
+        'meal history displays date in Portuguese locale format (DD/MM/YYYY)',
+        (WidgetTester tester) async {
+      final cookedDate = DateTime(
+          2023, 12, 25, 14, 30); // Includes time that should NOT be displayed
+
+      final meal = Meal(
+        id: 'date-test-meal-pt',
+        recipeId: null,
+        cookedAt: cookedDate,
+        servings: 2,
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+          locale: const Locale('pt', 'BR'),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Should display date in Portuguese format (DD/MM/YYYY) WITHOUT time
+      expect(find.textContaining('25/12/2023'), findsOneWidget);
     });
   });
 }
