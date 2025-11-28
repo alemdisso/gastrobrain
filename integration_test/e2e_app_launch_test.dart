@@ -5,15 +5,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:gastrobrain/main.dart';
 
-/// Baby Step 1: Minimal E2E Test - App Launch
+/// Minimal E2E Test - App Launch
 ///
 /// This test verifies that the app can launch and render the home screen.
 /// This is the foundation for more complex E2E tests.
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  group('E2E - App Launch (Baby Step 1)', () {
-    testWidgets('App launches and home screen appears', (WidgetTester tester) async {
+  group('E2E - App Launch', () {
+    testWidgets('App launches and home screen appears',
+        (WidgetTester tester) async {
       // SETUP: Initialize Flutter bindings
       WidgetsFlutterBinding.ensureInitialized();
 
@@ -27,8 +28,10 @@ void main() {
       print('=== WIDGETS FOUND ===');
       print('MaterialApp: ${find.byType(MaterialApp).evaluate().length}');
       print('Scaffold: ${find.byType(Scaffold).evaluate().length}');
-      print('BottomNavigationBar: ${find.byType(BottomNavigationBar).evaluate().length}');
-      print('CircularProgressIndicator: ${find.byType(CircularProgressIndicator).evaluate().length}');
+      print(
+          'BottomNavigationBar: ${find.byType(BottomNavigationBar).evaluate().length}');
+      print(
+          'CircularProgressIndicator: ${find.byType(CircularProgressIndicator).evaluate().length}');
 
       // VERIFY: Bottom navigation bar appears
       expect(find.byType(BottomNavigationBar), findsOneWidget,

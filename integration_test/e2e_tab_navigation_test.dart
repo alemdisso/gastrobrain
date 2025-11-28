@@ -5,15 +5,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:gastrobrain/main.dart';
 
-/// Baby Step 2: Simple Tab Navigation
+/// Simple Tab Navigation
 ///
 /// This test verifies that tapping bottom navigation tabs changes screens.
 /// This establishes the foundation for testing navigation flows.
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  group('E2E - Tab Navigation (Baby Step 2)', () {
-    testWidgets('Tap Meal Plan tab and verify screen changes', (WidgetTester tester) async {
+  group('E2E - Tab Navigation', () {
+    testWidgets('Tap Meal Plan tab and verify screen changes',
+        (WidgetTester tester) async {
       // SETUP: Launch the app
       WidgetsFlutterBinding.ensureInitialized();
       await tester.pumpWidget(const GastrobrainApp());
@@ -33,7 +34,8 @@ void main() {
         matching: find.byIcon(Icons.calendar_today),
       );
 
-      print('Meal Plan tab (calendar_today icon) found: ${mealPlanTab.evaluate().length}');
+      print(
+          'Meal Plan tab (calendar_today icon) found: ${mealPlanTab.evaluate().length}');
 
       // ACT: Tap the Meal Plan tab
       await tester.tap(mealPlanTab);
@@ -44,7 +46,6 @@ void main() {
 
       // VERIFY: The tab was selected (we can verify by checking if different content appears)
       // Note: We're just verifying the tap worked and UI updated
-      // In Baby Step 3, we'll verify specific content on the new screen
 
       // The test passes if:
       // 1. We could find the tab
@@ -55,7 +56,8 @@ void main() {
           reason: 'Meal Plan tab should still be visible after tap');
     });
 
-    testWidgets('Tap Ingredients tab and verify screen changes', (WidgetTester tester) async {
+    testWidgets('Tap Ingredients tab and verify screen changes',
+        (WidgetTester tester) async {
       // SETUP: Launch the app
       WidgetsFlutterBinding.ensureInitialized();
       await tester.pumpWidget(const GastrobrainApp());
@@ -77,7 +79,8 @@ void main() {
           reason: 'Ingredients tab should still be visible after tap');
     });
 
-    testWidgets('Tap Tools tab and verify screen changes', (WidgetTester tester) async {
+    testWidgets('Tap Tools tab and verify screen changes',
+        (WidgetTester tester) async {
       // SETUP: Launch the app
       WidgetsFlutterBinding.ensureInitialized();
       await tester.pumpWidget(const GastrobrainApp());
