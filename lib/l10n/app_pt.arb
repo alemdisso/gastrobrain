@@ -282,6 +282,16 @@
       }
     }
   },
+  "sideDishCount": "{count, plural, =1{1 acompanhamento} other{{count} acompanhamentos}}",
+  "@sideDishCount": {
+    "description": "Exibição da contagem de acompanhamentos",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Número de acompanhamentos"
+      }
+    }
+  },
   "editMeal": "Editar refeição",
   "@editMeal": {
     "description": "Dica do botão editar refeição"

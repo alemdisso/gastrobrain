@@ -203,8 +203,8 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Should show recipe count badge for multiple recipes
-      expect(find.text('3 recipes'), findsOneWidget);
+      // Should show side dish count badge for multiple recipes
+      expect(find.text('2 side dishes'), findsOneWidget);
 
       // Should show primary recipe name in app bar (not in card body)
       expect(find.text(testRecipe.name), findsOneWidget);
@@ -263,8 +263,8 @@ void main() {
       expect(find.text(sideRecipe1.name), findsOneWidget);
       expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
 
-      // Should show correct badge count
-      expect(find.text('2 recipes'), findsOneWidget);
+      // Should show correct side dish count badge
+      expect(find.text('1 side dish'), findsOneWidget);
     });
     testWidgets('displays meal plan origin indicator correctly',
         (WidgetTester tester) async {
@@ -373,8 +373,8 @@ void main() {
           find.byIcon(Icons.check_circle), findsOneWidget); // Success indicator
       expect(find.byIcon(Icons.warning), findsOneWidget); // Failure indicator
 
-      // Should show recipe count badge only for multi-recipe meal
-      expect(find.text('2 recipes'), findsOneWidget);
+      // Should show side dish count badge only for multi-recipe meal
+      expect(find.text('1 side dish'), findsOneWidget);
 
       // Should show both serving counts
       expect(find.text('2'), findsOneWidget); // Single meal servings

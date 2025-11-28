@@ -282,6 +282,16 @@
       }
     }
   },
+  "sideDishCount": "{count, plural, =1{1 side dish} other{{count} side dishes}}",
+  "@sideDishCount": {
+    "description": "Side dish count display",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of side dishes"
+      }
+    }
+  },
   "editMeal": "Edit meal",
   "@editMeal": {
     "description": "Tooltip for edit meal button"

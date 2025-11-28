@@ -305,7 +305,7 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                       ),
                                     ),
                                     const Spacer(),
-                                    // Show recipe count if more than one
+                                    // Show side dish count if there are any
                                     if (meal.mealRecipes != null &&
                                         meal.mealRecipes!.length > 1) ...[
                                       Container(
@@ -319,7 +319,7 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                               BorderRadius.circular(10),
                                         ),
                                         child: Text(
-                                          AppLocalizations.of(context)!.recipesCount(meal.mealRecipes!.length),
+                                          AppLocalizations.of(context)!.sideDishCount(meal.mealRecipes!.length - 1),
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Theme.of(context)
