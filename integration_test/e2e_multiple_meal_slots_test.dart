@@ -156,11 +156,25 @@ void main() {
             reason: 'Lunch recipe card should be present');
         await tester.tap(lunchRecipeCardFinder);
         await tester.pumpAndSettle();
-        print('✓ Selected lunch recipe');
+        print('✓ Tapped lunch recipe card');
+
+        // Verify menu appears
+        expect(find.text('Opções de Refeição'), findsOneWidget,
+            reason: 'Menu should be showing after recipe selection');
+        print('✓ Menu is showing');
+
+        // Find and tap the Save button
+        final lunchSaveButton = find.text('Salvar');
+        expect(lunchSaveButton, findsOneWidget,
+            reason: 'Save button should exist');
+
+        await tester.tap(lunchSaveButton, warnIfMissed: false);
+        await tester.pumpAndSettle();
+        print('✓ Tapped Save button');
 
         // Verify dialog closed
-        expect(find.text('Selecionar Receita'), findsNothing,
-            reason: 'Dialog should be closed');
+        expect(find.text('Opções de Refeição'), findsNothing,
+            reason: 'Menu dialog should be closed');
         print('✓ Dialog closed');
 
         // Wait for UI to update
@@ -180,7 +194,7 @@ void main() {
             reason: 'Friday dinner slot should exist');
         print('✓ Found Friday dinner slot');
 
-        await tester.tap(dinnerSlotFinder);
+        await tester.tap(dinnerSlotFinder, warnIfMissed: false);
         await tester.pumpAndSettle();
         print('✓ Tapped Friday dinner slot');
 
@@ -219,11 +233,25 @@ void main() {
             reason: 'Dinner recipe card should be present');
         await tester.tap(dinnerRecipeCardFinder);
         await tester.pumpAndSettle();
-        print('✓ Selected dinner recipe');
+        print('✓ Tapped dinner recipe card');
+
+        // Verify menu appears
+        expect(find.text('Opções de Refeição'), findsOneWidget,
+            reason: 'Menu should be showing after recipe selection');
+        print('✓ Menu is showing');
+
+        // Find and tap the Save button
+        final dinnerSaveButton = find.text('Salvar');
+        expect(dinnerSaveButton, findsOneWidget,
+            reason: 'Save button should exist');
+
+        await tester.tap(dinnerSaveButton, warnIfMissed: false);
+        await tester.pumpAndSettle();
+        print('✓ Tapped Save button');
 
         // Verify dialog closed
-        expect(find.text('Selecionar Receita'), findsNothing,
-            reason: 'Dialog should be closed');
+        expect(find.text('Opções de Refeição'), findsNothing,
+            reason: 'Menu dialog should be closed');
         print('✓ Dialog closed');
 
         // Wait for UI to update
@@ -243,7 +271,8 @@ void main() {
           print('⚠ Lunch recipe not immediately visible, scrolling...');
           final scrollables = find.byType(Scrollable);
           if (scrollables.evaluate().isNotEmpty) {
-            await tester.drag(scrollables.first, const Offset(0, -100));
+            await tester.drag(scrollables.first, const Offset(0, -100),
+                warnIfMissed: false);
             await tester.pumpAndSettle();
             foundLunchInUI = lunchNameFinder.evaluate().isNotEmpty;
           }
