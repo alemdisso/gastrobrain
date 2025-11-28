@@ -454,7 +454,8 @@ void main() {
   group('MealRecordingDialog Date Selection Tests', () {
     testWidgets('displays current date by default', (WidgetTester tester) async {
       final now = DateTime.now();
-      final formattedDate = '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      // Date is now displayed in locale format (Portuguese: DD/MM/YYYY)
+      final formattedDate = '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
 
       await tester.pumpWidget(
         wrapWithLocalizations(CookMealScreen(recipe: testRecipe)),
@@ -466,7 +467,7 @@ void main() {
       await tester.tap(find.text('Registrar Detalhes da Refeição'));
       await tester.pumpAndSettle();
 
-      // Should display current date
+      // Should display current date in Portuguese format (DD/MM/YYYY)
       expect(find.textContaining(formattedDate), findsOneWidget);
     });
 
@@ -501,9 +502,9 @@ void main() {
       await tester.tap(find.text('Registrar Detalhes da Refeição'));
       await tester.pumpAndSettle();
 
-      // Record the original date
+      // Record the original date in Portuguese format (DD/MM/YYYY)
       final now = DateTime.now();
-      final formattedToday = '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      final formattedToday = '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
       expect(find.textContaining(formattedToday), findsOneWidget);
 
       // Tap the date selector
@@ -552,7 +553,8 @@ void main() {
 
     testWidgets('can close date picker and preserve original date', (WidgetTester tester) async {
       final now = DateTime.now();
-      final formattedToday = '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      // Date is now displayed in Portuguese format (DD/MM/YYYY)
+      final formattedToday = '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
 
       await tester.pumpWidget(
         wrapWithLocalizations(CookMealScreen(recipe: testRecipe)),
@@ -564,7 +566,7 @@ void main() {
       await tester.tap(find.text('Registrar Detalhes da Refeição'));
       await tester.pumpAndSettle();
 
-      // Verify current date is shown
+      // Verify current date is shown in Portuguese format
       expect(find.textContaining(formattedToday), findsOneWidget);
 
       // Tap the date selector
@@ -575,7 +577,7 @@ void main() {
       await tester.tap(find.text('OK'));
       await tester.pumpAndSettle();
 
-      // Should still show today's date
+      // Should still show today's date in Portuguese format
       expect(find.textContaining(formattedToday), findsOneWidget);
     });
   });
