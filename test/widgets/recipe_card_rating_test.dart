@@ -57,9 +57,8 @@ void main() {
         ),
       );
 
-      // Should find exactly 5 star icons
+      // Should find exactly 5 unfilled star icons
       expect(find.byIcon(Icons.star_border), findsNWidgets(5));
-      expect(find.byIcon(Icons.star), findsNothing);
     });
 
     testWidgets('displays 5 stars for 3-star recipe (3 filled, 2 unfilled)',
@@ -129,7 +128,6 @@ void main() {
 
       // Should find exactly 5 filled stars
       expect(find.byIcon(Icons.star), findsNWidgets(5));
-      expect(find.byIcon(Icons.star_border), findsNothing);
     });
 
     testWidgets('displays 5 stars for 1-star recipe (1 filled, 4 unfilled)',

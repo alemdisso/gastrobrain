@@ -1,6 +1,7 @@
 // lib/widgets/weekly_calendar_widget.dart
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../models/meal_plan.dart';
 import '../models/meal_plan_item.dart';
 import '../models/recipe.dart';
@@ -56,6 +57,29 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
     final l10n = AppLocalizations.of(context)!;
     return mealType == MealPlanItem.lunch ? l10n.lunch : l10n.dinner;
   }
+
+  /// Returns English day name for key generation (not localized)
+  /// Index 0 = Friday, 1 = Saturday, ..., 6 = Thursday
+  String _getEnglishDayName(int dayIndex) {
+    const days = [
+      'friday',
+      'saturday',
+      'sunday',
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+    ];
+    return days[dayIndex];
+  }
+
+  /// Generates a consistent key for meal plan slots
+  /// Pattern: meal_plan_{day}_{mealtype}_slot
+  Key _generateSlotKey(int dayIndex, String mealType) {
+    final day = _getEnglishDayName(dayIndex);
+    return Key('meal_plan_${day}_${mealType}_slot');
+  }
+
   late List<DateTime> _weekDates;
   late DatabaseHelper _dbHelper;
   late AnimationController _animationController;
@@ -191,7 +215,8 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
   }
 
   String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat.yMd(locale).format(date);
   }
 
   /// Gets the context-specific background color (subtle styling)
@@ -330,6 +355,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
 
     return _buildContextualCard(
       child: InkWell(
+        key: _generateSlotKey(dayIndex, mealType),
         onTap: () => _handleTap(date, mealType, plannedMeal, hasPlannedMeal),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -486,19 +512,19 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
             const Divider(),
 
             // Lunch section
-            _buildMealSection(date, MealPlanItem.lunch),
+            _buildMealSection(date, MealPlanItem.lunch, dayIndex),
 
             const SizedBox(height: 8),
 
             // Dinner section
-            _buildMealSection(date, MealPlanItem.dinner),
+            _buildMealSection(date, MealPlanItem.dinner, dayIndex),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMealSection(DateTime date, String mealType) {
+  Widget _buildMealSection(DateTime date, String mealType, int dayIndex) {
     final MealPlanItem? plannedMeal =
         widget.mealPlan?.getItemsForDateAndMealType(date, mealType).firstOrNull;
 
@@ -532,6 +558,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
         screenWidth < 360 ? const EdgeInsets.all(8) : const EdgeInsets.all(12);
 
     return InkWell(
+      key: _generateSlotKey(dayIndex, mealType),
       onTap: () => _handleTap(date, mealType, plannedMeal, hasPlannedMeal),
       borderRadius: BorderRadius.circular(8),
       child: Container(

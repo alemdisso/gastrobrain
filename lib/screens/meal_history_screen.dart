@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/recipe.dart';
 import '../models/meal.dart';
@@ -81,7 +82,8 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
   }
 
   String _formatDateTime(DateTime dateTime) {
-    return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat.yMd(locale).format(dateTime);
   }
 
   Widget _buildErrorView() {
@@ -256,7 +258,7 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.historyTitle(widget.recipe.name)),
+        title: Text(widget.recipe.name),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -303,7 +305,7 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                       ),
                                     ),
                                     const Spacer(),
-                                    // Show recipe count if more than one
+                                    // Show side dish count if there are any
                                     if (meal.mealRecipes != null &&
                                         meal.mealRecipes!.length > 1) ...[
                                       Container(
@@ -317,7 +319,7 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                               BorderRadius.circular(10),
                                         ),
                                         child: Text(
-                                          AppLocalizations.of(context)!.recipesCount(meal.mealRecipes!.length),
+                                          AppLocalizations.of(context)!.sideDishCount(meal.mealRecipes!.length - 1),
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Theme.of(context)
@@ -345,15 +347,20 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                     ),
                                   ],
                                 ),
-                                // Display recipes using junction table information
+                                // Display side dishes (exclude only when this recipe is the primary dish)
                                 if (meal.mealRecipes != null &&
-                                    meal.mealRecipes!.isNotEmpty) ...[
+                                    meal.mealRecipes!.length > 1) ...[
                                   const SizedBox(height: 8),
                                   Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
-                                    children:
-                                        meal.mealRecipes!.map((mealRecipe) {
+                                    children: meal.mealRecipes!
+                                        .where((mealRecipe) =>
+                                            // Only exclude if this recipe was the PRIMARY dish
+                                            // If it was a side dish, show it (important context)
+                                            !(mealRecipe.recipeId == widget.recipe.id &&
+                                              mealRecipe.isPrimaryDish))
+                                        .map((mealRecipe) {
                                       return FutureBuilder<Recipe?>(
                                         future: _dbHelper
                                             .getRecipe(mealRecipe.recipeId),
@@ -367,26 +374,13 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                                 bottom: 4),
                                             child: Row(
                                               children: [
-                                                if (mealRecipe.isPrimaryDish)
-                                                  const Icon(Icons.restaurant,
-                                                      size: 16,
-                                                      color: Colors.green)
-                                                else
-                                                  const Icon(
-                                                      Icons.restaurant_menu,
-                                                      size: 16,
-                                                      color: Colors.grey),
+                                                const Icon(
+                                                    Icons.restaurant_menu,
+                                                    size: 16,
+                                                    color: Colors.grey),
                                                 const SizedBox(width: 4),
                                                 Expanded(
-                                                  child: Text(
-                                                    recipe.name,
-                                                    style: TextStyle(
-                                                      fontWeight: mealRecipe
-                                                              .isPrimaryDish
-                                                          ? FontWeight.bold
-                                                          : FontWeight.normal,
-                                                    ),
-                                                  ),
+                                                  child: Text(recipe.name),
                                                 ),
                                                 // Add note if this was from a plan
                                                 if (mealRecipe.notes?.contains(
@@ -407,30 +401,6 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                         },
                                       );
                                     }).toList(),
-                                  ),
-                                ]
-                                // For backward compatibility, also show direct recipe reference if junction is empty
-                                else if (meal.recipeId != null) ...[
-                                  const SizedBox(height: 8),
-                                  FutureBuilder<Recipe?>(
-                                    future: _dbHelper.getRecipe(meal.recipeId!),
-                                    builder: (context, snapshot) {
-                                      if (!snapshot.hasData) {
-                                        return const SizedBox.shrink();
-                                      }
-                                      return Row(
-                                        children: [
-                                          const Icon(Icons.restaurant,
-                                              size: 16, color: Colors.green),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            snapshot.data!.name,
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      );
-                                    },
                                   ),
                                 ],
 

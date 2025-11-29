@@ -220,6 +220,10 @@
   "@searchIngredients": {
     "description": "Texto da dica do campo de busca de ingredientes"
   },
+  "searchRecipes": "Buscar receitas...",
+  "@searchRecipes": {
+    "description": "Texto da dica do campo de busca de receitas"
+  },
   "refresh": "Atualizar",
   "@refresh": {
     "description": "Dica do botão atualizar"
@@ -278,6 +282,16 @@
       }
     }
   },
+  "sideDishCount": "{count, plural, =1{1 acompanhamento} other{{count} acompanhamentos}}",
+  "@sideDishCount": {
+    "description": "Exibição da contagem de acompanhamentos",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Número de acompanhamentos"
+      }
+    }
+  },
   "editMeal": "Editar refeição",
   "@editMeal": {
     "description": "Dica do botão editar refeição"
@@ -290,7 +304,7 @@
   "@fromMealPlan": {
     "description": "Dica do indicador de planejamento de refeições"
   },
-  "actualTimes": "Tempos reais - Preparo: {prepTime}min, Cozimento: {cookTime}min",
+  "actualTimes": "Preparo: {prepTime}min, Cozimento: {cookTime}min",
   "@actualTimes": {
     "description": "Exibição dos tempos reais de cozimento",
     "placeholders": {

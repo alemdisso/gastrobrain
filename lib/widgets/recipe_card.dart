@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../models/recipe.dart';
 import '../screens/recipe_ingredients_screen.dart';
 import '../screens/meal_history_screen.dart';
@@ -41,7 +42,8 @@ class _RecipeCardState extends State<RecipeCard> {
 
   String _formatDateTime(DateTime? dateTime, BuildContext context) {
     if (dateTime == null) return AppLocalizations.of(context)!.never;
-    return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat.yMd(locale).format(dateTime);
   }
 
   void _toggleExpanded() {

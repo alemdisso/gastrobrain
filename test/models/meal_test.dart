@@ -253,4 +253,137 @@ void main() {
 
     expect(recoveredEmptyMeal.notes, '');
   });
+
+  test('round-trip serialization preserves all data', () {
+    final now = DateTime.now();
+    final modifiedDate = now.subtract(const Duration(hours: 2));
+
+    final original = Meal(
+      id: 'round_trip_test',
+      recipeId: 'recipe_123',
+      cookedAt: now,
+      servings: 3,
+      notes: 'Round trip test notes',
+      wasSuccessful: false,
+      actualPrepTime: 12.5,
+      actualCookTime: 25.75,
+      modifiedAt: modifiedDate,
+    );
+
+    // Convert to map and back
+    final map = original.toMap();
+    final recovered = Meal.fromMap(map);
+
+    // Convert recovered back to map
+    final secondMap = recovered.toMap();
+
+    // Both maps should be identical
+    expect(secondMap['id'], map['id']);
+    expect(secondMap['recipe_id'], map['recipe_id']);
+    expect(secondMap['cooked_at'], map['cooked_at']);
+    expect(secondMap['servings'], map['servings']);
+    expect(secondMap['notes'], map['notes']);
+    expect(secondMap['was_successful'], map['was_successful']);
+    expect(secondMap['actual_prep_time'], map['actual_prep_time']);
+    expect(secondMap['actual_cook_time'], map['actual_cook_time']);
+    expect(secondMap['modified_at'], map['modified_at']);
+  });
+
+  test('handles zero values correctly', () {
+    final now = DateTime.now();
+
+    final meal = Meal(
+      id: 'zero_test',
+      cookedAt: now,
+      servings: 1, // Minimum servings
+      actualPrepTime: 0,
+      actualCookTime: 0,
+    );
+
+    expect(meal.actualPrepTime, 0);
+    expect(meal.actualCookTime, 0);
+
+    final map = meal.toMap();
+    expect(map['actual_prep_time'], 0);
+    expect(map['actual_cook_time'], 0);
+
+    final recovered = Meal.fromMap(map);
+    expect(recovered.actualPrepTime, 0);
+    expect(recovered.actualCookTime, 0);
+  });
+
+  test('handles special characters in notes', () {
+    final now = DateTime.now();
+
+    final specialNotes = 'Test with special chars: !@#\$%^&*()_+-=[]{}|;:\'",.<>?/\\~`\n\tNew line and tab';
+    final meal = Meal(
+      id: 'special_chars_test',
+      cookedAt: now,
+      notes: specialNotes,
+    );
+
+    final map = meal.toMap();
+    final recovered = Meal.fromMap(map);
+
+    expect(recovered.notes, specialNotes);
+  });
+
+  test('handles very long notes strings', () {
+    final now = DateTime.now();
+    final longNotes = 'A' * 10000; // 10,000 character string
+
+    final meal = Meal(
+      id: 'long_notes_test',
+      cookedAt: now,
+      notes: longNotes,
+    );
+
+    final map = meal.toMap();
+    final recovered = Meal.fromMap(map);
+
+    expect(recovered.notes, longNotes);
+    expect(recovered.notes.length, 10000);
+  });
+
+  test('preserves date precision through serialization', () {
+    // Create a date with milliseconds
+    final preciseDate = DateTime(2024, 1, 15, 14, 30, 45, 123);
+
+    final meal = Meal(
+      id: 'precision_test',
+      cookedAt: preciseDate,
+    );
+
+    final map = meal.toMap();
+    final recovered = Meal.fromMap(map);
+
+    // ISO 8601 string should preserve milliseconds
+    expect(recovered.cookedAt.toIso8601String(), preciseDate.toIso8601String());
+  });
+
+  test('handles different time zones correctly', () {
+    // Create dates in UTC and local time
+    final utcDate = DateTime.utc(2024, 1, 15, 12, 0, 0);
+    final localDate = DateTime(2024, 1, 15, 12, 0, 0);
+
+    final utcMeal = Meal(
+      id: 'utc_test',
+      cookedAt: utcDate,
+    );
+
+    final localMeal = Meal(
+      id: 'local_test',
+      cookedAt: localDate,
+    );
+
+    // Verify both can be serialized and deserialized
+    final utcMap = utcMeal.toMap();
+    final localMap = localMeal.toMap();
+
+    final recoveredUtc = Meal.fromMap(utcMap);
+    final recoveredLocal = Meal.fromMap(localMap);
+
+    expect(recoveredUtc.cookedAt.toIso8601String(), utcDate.toIso8601String());
+    expect(recoveredLocal.cookedAt.toIso8601String(), localDate.toIso8601String());
+  });
 }

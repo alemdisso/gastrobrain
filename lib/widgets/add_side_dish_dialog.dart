@@ -184,6 +184,7 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
 
                     if (widget.enableSearch) ...[
                       TextField(
+                        key: const Key('add_side_dish_search_field'),
                         controller: _searchController,
                         decoration: InputDecoration(
                           hintText: widget.searchHint ??

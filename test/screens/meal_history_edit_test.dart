@@ -183,8 +183,8 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Should show recipe count badge for multi-recipe meal
-      expect(find.text('2 recipes'), findsOneWidget);
+      // Should show side dish count badge for multi-recipe meal
+      expect(find.text('1 side dish'), findsOneWidget);
 
       // Should still show edit button
       expect(find.byIcon(Icons.edit), findsOneWidget);
@@ -239,11 +239,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify the multi-recipe meal is displayed correctly
-      expect(find.text('2 recipes'), findsOneWidget);
+      expect(find.text('1 side dish'), findsOneWidget);
 
-      // Check for restaurant icons (allowing for duplicates due to meal appearing multiple times)
-      expect(
-          find.byIcon(Icons.restaurant), findsWidgets); // Primary dish icon(s)
+      // Check for side dish icons (primary dish not shown in cards)
       expect(find.byIcon(Icons.restaurant_menu),
           findsWidgets); // Side dish icon(s)
 
@@ -304,14 +302,24 @@ void main() {
 
       await mockDbHelper.insertMeal(planMeal);
 
-      // Add meal recipe with plan origin note
-      final planMealRecipe = MealRecipe(
+      // Add primary recipe
+      final primaryMealRecipe = MealRecipe(
         mealId: planMeal.id,
         recipeId: testRecipe.id,
         isPrimaryDish: true,
+        notes: 'Main dish',
+      );
+
+      // Add side dish with plan origin note (this will be displayed)
+      final sideMealRecipe = MealRecipe(
+        mealId: planMeal.id,
+        recipeId: sideRecipe.id,
+        isPrimaryDish: false,
         notes: 'From planned meal', // This should trigger the plan indicator
       );
-      await mockDbHelper.insertMealRecipe(planMealRecipe);
+
+      await mockDbHelper.insertMealRecipe(primaryMealRecipe);
+      await mockDbHelper.insertMealRecipe(sideMealRecipe);
 
       await tester.pumpWidget(
         createTestableWidget(
@@ -324,7 +332,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Should show meal plan origin indicator
+      // Should show meal plan origin indicator on side dish
       expect(find.byIcon(Icons.event_available), findsOneWidget);
 
       // Should still show edit button

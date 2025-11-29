@@ -293,6 +293,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                     if (_isCustomIngredient) ...[
                       // Custom Ingredient Name
                       TextFormField(
+                        key: const Key('add_ingredient_custom_name_field'),
                         controller: _customNameController,
                         decoration: InputDecoration(
                           labelText:
@@ -310,6 +311,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                       const SizedBox(height: 16),
                       // Custom Ingredient Category
                       DropdownButtonFormField<IngredientCategory>(
+                        key: const Key('add_ingredient_custom_category_field'),
                         value: _selectedCategory,
                         decoration: InputDecoration(
                           labelText:
@@ -358,6 +360,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                             _searchController.text = controller.text;
                           }
                           return TextFormField(
+                            key: const Key('add_ingredient_search_field'),
                             controller: controller,
                             focusNode: focusNode,
                             decoration: InputDecoration(
@@ -441,6 +444,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                         // Quantity Field
                         Expanded(
                           child: TextFormField(
+                            key: const Key('add_ingredient_quantity_field'),
                             controller: _quantityController,
                             decoration: InputDecoration(
                               labelText: AppLocalizations.of(context)!.quantity,
@@ -467,6 +471,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                           child: _isCustomIngredient
                               // Custom ingredient: optional unit selection
                               ? DropdownButtonFormField<String>(
+                                  key: const Key('add_ingredient_custom_unit_field'),
                                   value: _selectedUnitOverride,
                                   decoration: InputDecoration(
                                     labelText: AppLocalizations.of(context)!
@@ -500,6 +505,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                 )
                               // Database ingredient: always show dropdown, pre-filled with default
                               : DropdownButtonFormField<String>(
+                                  key: const Key('add_ingredient_unit_field'),
                                   value: _selectedUnitOverride ?? _selectedIngredient?.unit?.value,
                                   decoration: InputDecoration(
                                     labelText: AppLocalizations.of(context)!.unit,
@@ -528,6 +534,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                     const SizedBox(height: 16),
                     // Notes Field
                     TextFormField(
+                      key: const Key('add_ingredient_notes_field'),
                       controller: _notesController,
                       decoration: InputDecoration(
                         labelText: AppLocalizations.of(context)!

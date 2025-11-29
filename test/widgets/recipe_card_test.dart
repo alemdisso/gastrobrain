@@ -123,5 +123,97 @@ void main() {
       // Should display Portuguese category name
       expect(find.text('Pratos principais'), findsOneWidget);
     });
+
+    testWidgets('recipe card displays date in English locale format (MM/DD/YYYY)',
+        (WidgetTester tester) async {
+      final testDate = DateTime(2023, 12, 25);
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          RecipeCard(
+            recipe: testRecipe,
+            onEdit: () {},
+            onDelete: () {},
+            onCooked: () {},
+            mealCount: 5,
+            lastCooked: testDate,
+          ),
+          locale: const Locale('en', 'US'),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Expand the card to see the last cooked date
+      final expandButton = find.byIcon(Icons.expand_more);
+      if (expandButton.evaluate().isNotEmpty) {
+        await tester.tap(expandButton);
+        await tester.pumpAndSettle();
+      }
+
+      // Should display date in English format (MM/DD/YYYY)
+      // DateFormat.yMd('en_US') formats 2023-12-25 as "12/25/2023"
+      expect(find.textContaining('12/25/2023'), findsOneWidget);
+    });
+
+    testWidgets('recipe card displays date in Portuguese locale format (DD/MM/YYYY)',
+        (WidgetTester tester) async {
+      final testDate = DateTime(2023, 12, 25);
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          RecipeCard(
+            recipe: testRecipe,
+            onEdit: () {},
+            onDelete: () {},
+            onCooked: () {},
+            mealCount: 5,
+            lastCooked: testDate,
+          ),
+          locale: const Locale('pt', 'BR'),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Expand the card to see the last cooked date
+      final expandButton = find.byIcon(Icons.expand_more);
+      if (expandButton.evaluate().isNotEmpty) {
+        await tester.tap(expandButton);
+        await tester.pumpAndSettle();
+      }
+
+      // Should display date in Portuguese format (DD/MM/YYYY)
+      // DateFormat.yMd('pt_BR') formats 2023-12-25 as "25/12/2023"
+      expect(find.textContaining('25/12/2023'), findsOneWidget);
+    });
+
+    testWidgets('recipe card displays "Never cooked" when lastCooked is null and mealCount is 0',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(
+          RecipeCard(
+            recipe: testRecipe,
+            onEdit: () {},
+            onDelete: () {},
+            onCooked: () {},
+            mealCount: 0,
+            lastCooked: null,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Expand the card
+      final expandButton = find.byIcon(Icons.expand_more);
+      if (expandButton.evaluate().isNotEmpty) {
+        await tester.tap(expandButton);
+        await tester.pumpAndSettle();
+      }
+
+      // Should display "Never cooked" (combines mealCount and lastCooked null state)
+      expect(find.text('Never cooked'), findsOneWidget);
+    });
   });
 }

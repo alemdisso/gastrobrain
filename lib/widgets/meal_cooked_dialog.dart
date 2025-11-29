@@ -141,6 +141,7 @@ class _MealCookedDialogState extends State<MealCookedDialog> {
 
               // Servings
               TextFormField(
+                key: const Key('meal_cooked_servings_field'),
                 controller: _servingsController,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.numberOfServings,
@@ -165,6 +166,7 @@ class _MealCookedDialogState extends State<MealCookedDialog> {
                 children: [
                   Expanded(
                     child: TextFormField(
+                      key: const Key('meal_cooked_prep_time_field'),
                       controller: _prepTimeController,
                       decoration: InputDecoration(
                         labelText: AppLocalizations.of(context)!.actualPrepTimeMin,
@@ -186,6 +188,7 @@ class _MealCookedDialogState extends State<MealCookedDialog> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: TextFormField(
+                      key: const Key('meal_cooked_cook_time_field'),
                       controller: _cookTimeController,
                       decoration: InputDecoration(
                         labelText: AppLocalizations.of(context)!.actualCookTimeMin,
@@ -214,6 +217,7 @@ class _MealCookedDialogState extends State<MealCookedDialog> {
                   Text(AppLocalizations.of(context)!.wasItSuccessful),
                   const Spacer(),
                   Switch(
+                    key: const Key('meal_cooked_success_switch'),
                     value: _wasSuccessful,
                     onChanged: (bool value) {
                       setState(() {
@@ -227,6 +231,7 @@ class _MealCookedDialogState extends State<MealCookedDialog> {
 
               // Notes
               TextFormField(
+                key: const Key('meal_cooked_notes_field'),
                 controller: _notesController,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.notesOptional,

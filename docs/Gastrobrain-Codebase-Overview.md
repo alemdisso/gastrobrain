@@ -86,6 +86,9 @@ Gastrobrain is a comprehensive meal planning and recipe management application b
 - **EditRecipeScreen**: Recipe modification with validation
 - **RecipeIngredientsScreen**: Detailed ingredient view with editing capabilities
 - **MealHistoryScreen**: Tracks cooking history for each recipe with edit capabilities
+  - Improved layout with recipe name prominently displayed in app bar
+  - Streamlined meal cards without redundant information
+  - Compact time display for better space efficiency on mobile devices
 - **IngredientsScreen**: Comprehensive ingredient management interface
 
 ### Meal Planning
@@ -109,6 +112,7 @@ Gastrobrain is a comprehensive meal planning and recipe management application b
 
 ### Recipe Management
 - Create, edit, and delete recipes with full localization support
+- Search and filter recipes by name for quick access
 - Manage ingredients with categories, protein types, and measurement units
 - Track difficulty, cooking times, and personal ratings
 - Maintain cooking history with actual vs. expected times
@@ -133,6 +137,7 @@ Gastrobrain is a comprehensive meal planning and recipe management application b
 ### Internationalization
 - Full bilingual support (English/Portuguese)
 - Localized UI strings and error messages
+- Proper date and time localization with locale-aware formatting
 - Ingredient translation capabilities with reviewed translation data
 - ARB-based localization system with Flutter's built-in i18n
 
@@ -153,7 +158,7 @@ Gastrobrain is a comprehensive meal planning and recipe management application b
 ## Testing Infrastructure
 
 ### Test Coverage Overview
-The application maintains comprehensive test coverage with **55 unit/widget tests** and **4 integration tests**, ensuring reliability and maintainability across all application layers.
+The application maintains comprehensive test coverage with **60+ unit/widget tests** and **8+ end-to-end/integration tests**, ensuring reliability and maintainability across all application layers. The testing infrastructure includes a robust E2E testing framework with helper methods, best practices documentation, and comprehensive coverage of critical user workflows.
 
 ### Unit & Widget Tests (`test/` directory)
 
@@ -185,6 +190,7 @@ The application maintains comprehensive test coverage with **55 unit/widget test
 - **Widget Tests** (`test/widgets/`):
   - `weekly_calendar_widget_test.dart`: Calendar functionality
   - `recipe_card_test.dart`: Recipe display components
+  - `recipe_card_rating_test.dart`: Recipe rating display and interactions
   - `add_ingredient_dialog_test.dart`: Ingredient management
   - `edit_meal_recording_dialog_test.dart`: Meal editing interface
 
@@ -198,10 +204,26 @@ The application maintains comprehensive test coverage with **55 unit/widget test
 ### Integration Tests (`integration_test/` directory)
 
 #### End-to-End Workflows
-- **`meal_planning_flow_test.dart`**: Complete meal planning workflow from start to finish
-- **`edit_meal_flow_test.dart`**: Meal modification and tracking workflows
+The application features a comprehensive E2E testing framework with reusable helper methods, best practices documentation, and coverage of critical user workflows.
+
+**Core Workflow Tests:**
+- **`app_launch_test.dart`**: Basic app initialization and home screen rendering
+- **`tab_navigation_test.dart`**: Navigation between main app tabs
+- **`recipe_creation_test.dart`**: Complete recipe creation workflow with form validation
+- **`recipe_editing_test.dart`**: Recipe modification and update workflows
+- **`meal_recording_test.dart`**: End-to-end meal recording workflow including navigation and data persistence
+- **`meal_planning_ui_test.dart`**: Comprehensive meal planning UI interactions including calendar slots, recipe selection, and multi-recipe meals
+- **`weekly_meal_planning_test.dart`**: Complete weekly meal planning workflow from start to finish
+
+**System Integration Tests:**
 - **`recommendation_integration_test.dart`**: Full recommendation system integration
 - **`meal_plan_analysis_integration_test.dart`**: Meal plan analysis system testing
+
+**E2E Testing Infrastructure:**
+- Reusable helper methods for common operations (navigation, form filling, recipe creation)
+- Comprehensive best practices guide (`docs/E2E_TESTING.md`)
+- Form field keys for reliable test selectors
+- Diagnostic utilities for debugging test failures
 
 ### Testing Architecture & Patterns
 
@@ -231,8 +253,11 @@ flutter test
 # Run specific test file
 flutter test test/path/to/test_file.dart
 
-# Run integration tests
+# Run all E2E/integration tests
 flutter test integration_test/
+
+# Run specific E2E test
+flutter test integration_test/meal_planning_ui_test.dart
 
 # Run tests with coverage
 flutter test --coverage
@@ -251,6 +276,160 @@ flutter test test/models/                 # Model tests
 - **User Experience Testing**: Complete user journeys validated through integration tests
 
 The testing infrastructure ensures code quality, prevents regressions, and validates both individual components and complete user workflows. The mock-based approach allows for fast, reliable test execution while integration tests verify real-world functionality.
+
+## Development Standards
+
+### Form Field Keys
+
+**Status:** Adopted standard as of 2025-11-25 | **Tracking:** [#219 - Form Field Key Refactoring](https://github.com/alemdisso/gastrobrain/issues/219)
+
+All form fields should have explicit keys for improved testability, debugging, and state management. This is a general development best practice that provides benefits beyond testing.
+
+#### Why Use Form Field Keys?
+
+- **Testing Reliability**: E2E and widget tests can deterministically find specific fields
+- **Accessibility**: Improves screen reader and assistive technology support
+- **Debugging**: Easier widget identification in Flutter DevTools
+- **State Preservation**: Helps Flutter maintain form state correctly during rebuilds
+- **Code Clarity**: Self-documenting code that explicitly identifies fields
+
+#### Naming Convention
+
+Use descriptive, snake_case keys that identify the form and field:
+
+**Pattern:** `{screen}_{field}_field`
+
+**Examples:**
+```dart
+// Add Recipe Screen
+Key('add_recipe_name_field')
+Key('add_recipe_notes_field')
+Key('add_recipe_instructions_field')
+Key('add_recipe_prep_time_field')
+Key('add_recipe_cook_time_field')
+
+// Edit Recipe Screen
+Key('edit_recipe_name_field')
+Key('edit_recipe_notes_field')
+
+// Meal Planning
+Key('meal_plan_notes_field')
+Key('meal_plan_date_field')
+```
+
+#### Implementation Examples
+
+**TextFormField with Key:**
+```dart
+TextFormField(
+  key: const Key('add_recipe_name_field'),
+  controller: _nameController,
+  decoration: InputDecoration(
+    labelText: AppLocalizations.of(context)!.recipeName,
+    border: const OutlineInputBorder(),
+  ),
+  validator: (value) {
+    if (value == null || value.isEmpty) {
+      return AppLocalizations.of(context)!.pleaseEnterRecipeName;
+    }
+    return null;
+  },
+)
+```
+
+**DropdownButtonFormField with Key:**
+```dart
+DropdownButtonFormField<RecipeCategory>(
+  key: const Key('add_recipe_category_field'),
+  value: _selectedCategory,
+  decoration: InputDecoration(
+    labelText: AppLocalizations.of(context)!.category,
+  ),
+  items: RecipeCategory.values.map((category) {
+    return DropdownMenuItem(
+      value: category,
+      child: Text(category.getLocalizedDisplayName(context)),
+    );
+  }).toList(),
+  onChanged: (value) {
+    setState(() => _selectedCategory = value!);
+  },
+)
+```
+
+#### Testing with Keys
+
+**Finding Fields in Tests:**
+```dart
+// E2E Test
+await tester.enterText(
+  find.byKey(const Key('add_recipe_name_field')),
+  'Test Recipe Name'
+);
+
+// Widget Test
+final nameField = find.byKey(const Key('add_recipe_name_field'));
+expect(nameField, findsOneWidget);
+
+// Verify field content
+final textField = tester.widget<TextFormField>(nameField);
+expect(textField.controller?.text, equals('Test Recipe Name'));
+```
+
+#### When to Use Keys
+
+**Always use keys for:**
+- ✅ All form input fields (TextFormField, DropdownButtonFormField, etc.)
+- ✅ Interactive buttons in forms (save, cancel, add, remove)
+- ✅ Dynamic form sections that can be added/removed
+- ✅ Fields that will be tested in E2E or widget tests
+
+**Optional for:**
+- ⚪ Static display widgets (Text, Icon)
+- ⚪ Simple layout widgets (Row, Column, Container)
+- ⚪ Navigation elements already identified by other means
+
+#### Adoption Strategy
+
+**Current Standard (v0.1.1+):**
+- All new forms and fields MUST include keys
+- All major existing forms have been updated with keys
+- Code reviews verify key presence and naming convention compliance
+- Follow snake_case naming convention: `{screen}_{field}_field`
+
+**Completed Migration (v0.1.1):**
+- ✅ Added keys to all major form screens and dialogs
+- ✅ Updated E2E tests to use key-based selectors
+- ✅ Added semantic keys to navigation elements
+- ✅ Documented best practices and naming conventions
+
+**Migration Checklist per Form:**
+- [x] Add keys to all TextFormField widgets
+- [x] Add keys to all DropdownButtonFormField widgets
+- [x] Add keys to save/submit buttons
+- [x] Add keys to any dynamic field collections
+- [x] Update associated tests to use keys instead of indices
+- [x] Document any non-standard key patterns
+
+#### Current Status
+
+**Forms with Keys:** Implemented across major forms (as of v0.1.1 - 2025-11-28)
+
+**Forms with form field keys:**
+- `lib/screens/add_recipe_screen.dart`
+- `lib/screens/edit_recipe_screen.dart`
+- `lib/widgets/add_new_ingredient_dialog.dart`
+- `lib/widgets/add_ingredient_dialog.dart`
+- `lib/widgets/edit_meal_plan_item_dialog.dart`
+- `lib/widgets/meal_recording_dialog.dart`
+- `lib/widgets/edit_meal_recording_dialog.dart`
+- Bottom navigation tabs with semantic keys
+
+**Testing Impact:**
+- E2E tests now use key-based field access for reliable test execution
+- Tests are robust to form layout changes
+- Improved test maintainability and debugging capabilities
+- Enhanced accessibility support
 
 ## Development Tools & Utilities
 

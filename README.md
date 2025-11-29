@@ -11,6 +11,7 @@ Gastrobrain is a Flutter-based mobile application designed to assist home cooks 
 ### Recipe Management
 
 - **Comprehensive Recipe Library** - Store recipes with difficulty ratings, cook times, and serving sizes
+- **Recipe Search & Filtering** - Quickly find recipes by name with real-time search
 - **Multi-Ingredient Support** - Track recipes with multiple protein sources and complex ingredient lists
 - **Protein Type Tracking** - Monitor and rotate protein usage for dietary variety
 - **Rating System** - Rate recipes from 1-5 stars to improve recommendations
@@ -30,8 +31,9 @@ Gastrobrain is a Flutter-based mobile application designed to assist home cooks 
 
 - **Weekly Meal Planning** - Plan meals with multi-recipe support (main dishes + sides)
 - **Cooking Session Tracking** - Log when recipes are cooked with notes
-- **Meal History Analytics** - Track cooking patterns, success rates, and frequency
+- **Meal History Analytics** - Track cooking patterns, success rates, and frequency with improved UI layout
 - **Retroactive Planning** - Plan meals after cooking for accurate history
+- **Optimized Display** - Clean, information-dense interface optimized for mobile screens
 
 ### Ingredients & Shopping
 
@@ -43,6 +45,7 @@ Gastrobrain is a Flutter-based mobile application designed to assist home cooks 
 ### Localization
 
 - **Bilingual Support** - Full English and Portuguese localization
+- **Date & Time Formatting** - Proper locale-aware date and time display
 - **Ingredient Translation** - Built-in translation system for ingredient names and categories
 
 ### Data Management
@@ -90,14 +93,20 @@ Gastrobrain is a Flutter-based mobile application designed to assist home cooks 
 ### Running Tests
 
 ```bash
-# Run all tests
+# Run all unit and widget tests
 flutter test
 
-# Run integration tests
+# Run all E2E/integration tests
 flutter test integration_test/
+
+# Run specific E2E test
+flutter test integration_test/meal_planning_ui_test.dart
 
 # Run with coverage
 flutter test --coverage
+
+# Analyze code quality
+flutter analyze
 ```
 
 ## Project Structure
@@ -120,34 +129,52 @@ docs/                     # Documentation
 ├── RECOMMENDATION_ENGINE.md  # Recommendation system docs
 ├── ISSUE_WORKFLOW.md        # Development workflow
 ├── L10N_PROTOCOL.md         # Localization guidelines
+├── E2E_TESTING.md           # End-to-end testing guide
 └── Gastrobrain-Codebase-Overview.md  # Architecture overview
 ```
 
 ## Development Status
 
-**Current Version: v0.1.0** - Personal Meal Planning Excellence
+**Current Version: v0.1.1** - Stability & Polish
 
 ### Major Achievements
 
 - ✅ Modern architecture with dependency injection
-- ✅ Comprehensive testing infrastructure (55+ tests)
-- ✅ Full bilingual support (English/Portuguese)
+- ✅ Comprehensive testing infrastructure (60+ unit/widget tests, 8+ E2E tests)
+- ✅ Full bilingual support (English/Portuguese) with proper date localization
 - ✅ Advanced recommendation engine with 6 scoring factors
 - ✅ Database migration system
 - ✅ CI/CD pipeline with GitHub Actions
 - ✅ Multi-ingredient and multi-recipe meal support
+- ✅ End-to-end testing framework with best practices guide
+- ✅ Form field keys for improved testability and accessibility
+- ✅ Recipe search and filtering capabilities
+- ✅ Polished UI with improved information density
 
-### What's Next (v0.1.1 - Stability & Polish)
+### What's Next (v0.1.2 - Stability & Polish Completion)
 
-- Performance optimization and profiling
-- Enhanced test coverage
-- UI polish and animations
-- Release preparation and deployment readiness
+**Testing Foundation:**
+- Complete widget test coverage for core screens (MealHistoryScreen, dialogs)
+- Database layer testing for meal operations
+- End-to-end workflow testing for meal editing
+- Dialog and state management testing
+- Edge case test suite and test refactoring
+
+**Features & Polish:**
+- Shopping list generation
+- Recipe usage view for ingredients
+- Improved "to taste" ingredient handling (zero quantity)
+- Meal type selection when recording cooked meals
+
+**Technical Improvements:**
+- Refactor ingredient parser for localized measurement units
+- Test organization improvements (e2e/ and services/ directories)
 
 ### Future Milestones
 
-- **v0.2.0** - Beta-ready phase with multi-user foundations
-- **v0.3.0** - Server-client architecture for broader user base
+- **v0.2.0** - Advanced features (enhanced meal planning, analytics)
+- **v0.3.0** - Beta-ready phase with multi-user foundations
+- **v0.4.0** - Server-client architecture for broader user base
 - **v1.0.0** - Community platform with recipe sharing
 
 ## Tech Stack
@@ -165,7 +192,9 @@ docs/                     # Documentation
 - [**Recommendation Engine**](docs/RECOMMENDATION_ENGINE.md) - Complete guide to the recommendation system
 - [**Issue Workflow**](docs/ISSUE_WORKFLOW.md) - Development workflow and Git Flow practices
 - [**L10N Protocol**](docs/L10N_PROTOCOL.md) - Localization guidelines
+- [**E2E Testing Guide**](docs/E2E_TESTING.md) - End-to-end testing best practices
 - [**Codebase Overview**](docs/Gastrobrain-Codebase-Overview.md) - Architecture and patterns
+- [**Changelog**](CHANGELOG.md) - Release notes and version history
 
 ## Contributing
 

@@ -70,7 +70,8 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
   }
 
   String _formatDate(DateTime date) {
-    return DateFormat('yyyy-MM-dd').format(date);
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat.yMd(locale).format(date);
   }
 
   Future<void> _loadAvailableRecipes() async {
@@ -254,6 +255,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
             children: [
               // Date and Time section
               ListTile(
+                key: const Key('meal_recording_date_selector'),
                 leading: const Icon(Icons.calendar_today),
                 title: Text(
                   AppLocalizations.of(context)!.cookedOnDate(_formatDate(_cookedAt)),
@@ -271,6 +273,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
 
               // Servings
               TextFormField(
+                key: const Key('meal_recording_servings_field'),
                 controller: _servingsController,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.numberOfServings,
@@ -357,6 +360,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
                 children: [
                   Expanded(
                     child: TextFormField(
+                      key: const Key('meal_recording_prep_time_field'),
                       controller: _prepTimeController,
                       decoration: InputDecoration(
                         labelText: AppLocalizations.of(context)!.actualPrepTimeMin,
@@ -378,6 +382,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: TextFormField(
+                      key: const Key('meal_recording_cook_time_field'),
                       controller: _cookTimeController,
                       decoration: InputDecoration(
                         labelText: AppLocalizations.of(context)!.actualCookTimeMin,
@@ -406,6 +411,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
                   Text(AppLocalizations.of(context)!.wasItSuccessful),
                   const Spacer(),
                   Switch(
+                    key: const Key('meal_recording_success_switch'),
                     value: _wasSuccessful,
                     onChanged: (bool value) {
                       setState(() {
@@ -419,6 +425,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
 
               // Notes
               TextFormField(
+                key: const Key('meal_recording_notes_field'),
                 controller: _notesController,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.notesOptional,
@@ -433,10 +440,12 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
       ),
       actions: [
         TextButton(
+          key: const Key('meal_recording_cancel_button'),
           onPressed: () => Navigator.pop(context),
           child: Text(AppLocalizations.of(context)!.buttonCancel),
         ),
         ElevatedButton(
+          key: const Key('meal_recording_save_button'),
           onPressed: _saveMeal,
           child: Text(AppLocalizations.of(context)!.save),
         ),

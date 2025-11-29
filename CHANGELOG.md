@@ -76,6 +76,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.1] - 2025-11-28
+
+### Added
+
+#### Testing Infrastructure
+- End-to-end testing framework with helper methods and best practices guide (#36)
+- Comprehensive meal planning UI interaction tests (#220)
+- Integration tests for full meal recording workflow (#78)
+- Widget tests for CookMealScreen (#75)
+- Unit tests for Meal and MealRecipe models with comprehensive edge cases (#74)
+- Form field keys across all forms for improved testability and debugging (#219)
+- Semantic keys to bottom navigation for maintainable E2E tests
+
+#### Features
+- Recipe name search/filter in Recipes tab (#212)
+- Proper date localization in formatting methods with locale-aware display (#146)
+
+### Changed
+
+#### UI/UX Improvements
+- Improved meal history screen layout and information density (#222)
+  - Display recipe name clearly in app bar title
+  - Removed redundant recipe names from meal cards
+  - Shortened time display labels for better space efficiency
+  - Enhanced layout for narrow mobile screens
+- Sorted available recipes by name in meal recording dialogs
+- Enhanced AddSideDishDialog layout with scrollable sections
+
+
+### Fixed
+- Show recipe names in meal cards when used as side dish (#222)
+- Display side dish count instead of total recipe count (#222)
+- Handle missing keystore properties gracefully in build.gradle.kts
+- Update cook_meal_screen tests for locale-aware date formatting (#146)
+
+
+### Documentation
+- Added comprehensive E2E testing best practices guide
+- Added development standards for form field keys
+
+---
+
 ## [Unreleased]
 
 ---

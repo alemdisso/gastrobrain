@@ -1559,6 +1559,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
                   : _buildRecipeSelection(),
             ),
             TextButton(
+              key: const Key('recipe_selection_cancel_button'),
               onPressed: () => Navigator.pop(context),
               child: Text(AppLocalizations.of(context)!.cancel),
             ),
@@ -1582,6 +1583,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
           controller: _tabController,
           tabs: [
             Tab(
+              key: const Key('recipe_selection_recommended_tab'),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1604,7 +1606,10 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
                 ],
               ),
             ),
-            Tab(text: AppLocalizations.of(context)!.allRecipes),
+            Tab(
+              key: const Key('recipe_selection_all_tab'),
+              text: AppLocalizations.of(context)!.allRecipes,
+            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -1647,6 +1652,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
                           itemBuilder: (context, index) {
                             final recommendation = _recommendations[index];
                             return RecipeSelectionCard(
+                              key: Key('recipe_card_${recommendation.recipe.id}'),
                               recommendation: recommendation,
                               onTap: () =>
                                   _handleRecipeSelection(recommendation.recipe),
@@ -1770,6 +1776,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
         );
 
     return RecipeSelectionCard(
+      key: Key('recipe_card_${recipe.id}'),
       recommendation: recommendation,
       onTap: () => _handleRecipeSelection(recipe),
     );

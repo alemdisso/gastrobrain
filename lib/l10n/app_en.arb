@@ -220,6 +220,10 @@
   "@searchIngredients": {
     "description": "Search field hint text for ingredients"
   },
+  "searchRecipes": "Search recipes...",
+  "@searchRecipes": {
+    "description": "Search field hint text for recipes"
+  },
   "refresh": "Refresh",
   "@refresh": {
     "description": "Refresh button tooltip"
@@ -278,6 +282,16 @@
       }
     }
   },
+  "sideDishCount": "{count, plural, =1{1 side dish} other{{count} side dishes}}",
+  "@sideDishCount": {
+    "description": "Side dish count display",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "description": "Number of side dishes"
+      }
+    }
+  },
   "editMeal": "Edit meal",
   "@editMeal": {
     "description": "Tooltip for edit meal button"
@@ -290,7 +304,7 @@
   "@fromMealPlan": {
     "description": "Tooltip for meal plan indicator"
   },
-  "actualTimes": "Actual times - Prep: {prepTime}min, Cook: {cookTime}min",
+  "actualTimes": "Prep: {prepTime}min, Cook: {cookTime}min",
   "@actualTimes": {
     "description": "Display for actual cooking times",
     "placeholders": {
