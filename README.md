@@ -151,18 +151,30 @@ docs/                     # Documentation
 - ✅ Recipe search and filtering capabilities
 - ✅ Polished UI with improved information density
 
-### What's Next (v0.2.0 - Beta-Ready Phase)
+### What's Next (v0.1.2 - Stability & Polish Completion)
 
-- App icon and splash screen finalization
-- Performance optimization and profiling
-- Advanced meal planning features
+**Testing Foundation:**
+- Complete widget test coverage for core screens (MealHistoryScreen, dialogs)
+- Database layer testing for meal operations
+- End-to-end workflow testing for meal editing
+- Dialog and state management testing
+- Edge case test suite and test refactoring
+
+**Features & Polish:**
 - Shopping list generation
-- Multi-user foundations and data sharing capabilities
+- Recipe usage view for ingredients
+- Improved "to taste" ingredient handling (zero quantity)
+- Meal type selection when recording cooked meals
+
+**Technical Improvements:**
+- Refactor ingredient parser for localized measurement units
+- Test organization improvements (e2e/ and services/ directories)
 
 ### Future Milestones
 
-- **v0.2.0** - Beta-ready phase with multi-user foundations
-- **v0.3.0** - Server-client architecture for broader user base
+- **v0.2.0** - Advanced features (enhanced meal planning, analytics)
+- **v0.3.0** - Beta-ready phase with multi-user foundations
+- **v0.4.0** - Server-client architecture for broader user base
 - **v1.0.0** - Community platform with recipe sharing
 
 ## Tech Stack
