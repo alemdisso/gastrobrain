@@ -10,9 +10,10 @@
 |-----------|--------|----------|---------|-------|
 | **0.1.0** | ✅ **Complete** | **100%** | 0 open, 60 closed | Personal meal planning excellence |
 | **0.1.1** | ✅ **Complete** | **100%** | 0 open, 9 closed | Stability & polish |
-| **0.1.2** | 🎯 **Current** | **0%** | 15 open, 0 closed | Stability & polish completion |
-| **0.2.0** | 📋 **Next** | 0% | 25 open, 0 closed | Beta-ready phase |
-| **0.3.0** | 🔮 **Planned** | 0% | 11 open, 0 closed | Multi-user foundation |
+| **0.1.2** | 🎯 **Current** | **0%** | 11 open, 0 closed | Polish & data safety |
+| **0.1.3** | 📋 **Next** | 0% | 8 open, 0 closed | Testing & deferred features |
+| **0.2.0** | 🔮 **Planned** | 0% | 28 open, 0 closed | Beta-ready phase |
+| **0.3.0** | 🚀 **Future** | 0% | 11 open, 0 closed | Multi-user foundation |
 | **1.0.0** | ⭐ **Vision** | 0% | 10 open, 0 closed | Community platform |
 
 ---
@@ -109,45 +110,127 @@
 
 ---
 
-## 🎯 **Current Milestone: 0.1.2 - Stability & Polish Completion**
+## 🎯 **Current Milestone: 0.1.2 - Polish & Data Safety**
+
+**Theme:** User experience improvements and critical data protection
+**Based on:** Real-world beta testing feedback (December 2025)
+**Estimated Duration:** 10-14 days
 
 ### **Focus Areas**
-- **Testing Foundation Completion**: Widget tests for core screens, database layer testing
-- **UI Enhancements**: Ingredients and meal recording improvements
-- **i18n Improvements**: Measurement units localization
-- **Shopping List Generation**: New feature implementation
+1. ✅ Protect user data with backup/restore capability
+2. ✅ Fix critical UX issues (filter indicators, sorting)
+3. ✅ Improve parser quality for bulk recipe updates
+4. ✅ Polish UI for better readability (fractions)
+5. ✅ Validate meal edit functionality with tests
 
-### **Open Issues (15 total)**
+### **Open Issues (11 total)**
 
-#### **Testing (Priority 1)**
-- **#77** - Create Widget Tests for MealHistoryScreen
-- **#76** - Create Database Tests for Meal Recording and History
-- **#126** - Test Complete End-to-End Meal Edit Workflow
-- **#125** - Test UI Refresh After Meal Edit Operations
-- **#124** - Test Feedback Messages for Meal Edit Operations
-- **#38** - Implement Dialog and State Management Testing
-- **#39** - Develop Edge Case Test Suite
-- **#40** - Test Refactoring and Coverage Enhancement
-- **#221** - Organize integration tests into e2e/ and services/ directories
+#### **Critical Data Safety & UX (3 issues)**
+- **#223** - Complete Database Backup and Restore Functionality (P0-Critical)
+  - One-click SQLite backup/restore
+  - Critical for protecting beta tester data
+  - Foundation for safe model changes in 0.1.3
 
-#### **Features & Enhancements (Priority 2)**
-- **#5** - Add Shopping List Generation (P1-High)
-- **#199** - Add Meal Type Selection When Recording Cooked Meals
-- **#196** - Improve Display and Storage of "To Taste" Ingredients
-- **#193** - Add Recipe Usage View for Ingredients
+- **#228** - Show active filter indicators (P1-High, UX bug)
+  - Visual indicators when filter is active
+  - "Showing X of Y recipes" count
+  - Easy "Clear filter" button
+  - Fixes "where are my recipes?" confusion
 
-#### **Technical Debt (Priority 3)**
-- **#175** - Analyze feasibility of Type Safety pattern for entity IDs (P3-Low)
-- **#170** - Refactor ingredient parser to use localized measurement unit strings (P3-Low)
+- **#224** - Reorganize Tools Tab for Better UX (✓✓)
+  - Section-based layout (Data Management, Recipe Management)
+  - Better structure for backup/restore integration
+  - Scalable for future tools
 
-**Estimated Completion:** 3-4 weeks
+#### **Parser Quality & Data (3 issues)**
+- **#226** - Auto-extract parenthetical text to notes (P2-Medium)
+  - Extract "(mais um pouco)" → notes field
+  - Improves ingredient matching quality
+  - Beta tester reported during bulk recipe entry
+
+- **#225** - Add 'maço' (bunch) measurement unit (P2-Medium)
+  - Support "2 maços de coentro" pattern
+  - Common Portuguese cooking measurement
+  - Beta tester reported parsing confusion
+
+- **#227** - Fix hyphenated ingredient/recipe names sorting (P2-Medium, bug)
+  - "pimenta-do-reino" should sort before "pimenta jalapeño"
+  - Normalized sort key with hyphen handling
+  - Beta tester reported incorrect alphabetical order
+
+#### **UI Polish (1 issue)**
+- **#148** - Implement fraction display for quantities (P2-Medium)
+  - "0.5 xícara" → "½ xícara"
+  - "0.25 colher" → "¼ colher"
+  - Much better readability for daily cooking use
+  - Moved from 0.2.0 based on beta feedback
+
+#### **Testing - Meal Edit Validation (4 issues)**
+- **#126** - Test Complete End-to-End Meal Edit Workflow (✓✓)
+- **#125** - Test UI Refresh After Meal Edit Operations (✓✓)
+- **#124** - Test Feedback Messages for Meal Edit Operations (✓✓)
+- **#76** - Create Database Tests for Meal Recording and History (✓✓)
+
+### **Why These Issues?**
+All issues driven by **real-world beta testing feedback**:
+- Data loss incident highlighted need for backup (#223)
+- Hidden filter state caused user confusion (#228)
+- Portuguese ingredient sorting felt wrong (#227)
+- Bulk recipe entry revealed parser gaps (#226, #225)
+- Fraction readability important for daily use (#148)
+
+**Estimated Completion:** 2 weeks
 
 ---
 
-## 📋 **Next: 0.2.0 - Beta-Ready Phase**
+## 📋 **Next: 0.1.3 - Testing & Deferred Features**
+
+**Theme:** Testing completion and feature development
+**Status:** Planned after 0.1.2
+**Estimated Duration:** 8-12 days
+
+### **Focus Areas**
+1. ✅ Complete testing foundation from 0.1.1
+2. ✅ Implement deferred features (Shopping List, Meal Type, To Taste)
+3. ✅ Prepare for 0.2.0 beta-ready phase
+
+### **Open Issues (8 total)**
+
+#### **Deferred Features (3 issues)**
+- **#5** - Add Shopping List Generation (P1-High, ✓)
+  - Deferred from 0.1.2 - needs design finalization
+  - PO to complete requirements before sprint
+  - High-value feature for users
+
+- **#199** - Add Meal Type Selection When Recording Cooked Meals (✓✓, UI)
+  - Deferred from 0.1.2 - scope reduction
+  - Model changes safer after backup feature (#223)
+  - Adds important context to meal history
+
+- **#196** - Improve Display and Storage of "To Taste" Ingredients (✓✓, model/UI)
+  - Deferred from 0.1.2 - scope reduction
+  - Common recipe pattern (zero quantity handling)
+  - May require database migration
+
+#### **Testing Completion (5 issues)**
+- **#77** - Create Widget Tests for MealHistoryScreen (✓✓, UI testing)
+- **#40** - Test Refactoring and Coverage Enhancement (✓, technical-debt)
+- **#39** - Develop Edge Case Test Suite (✓✓, testing)
+- **#38** - Implement Dialog and State Management Testing (✓✓, UI testing)
+- **#221** - Organize integration tests into e2e/ and services/ directories (technical-debt)
+
+### **Dependencies**
+- **Requires 0.1.2 completion**: Backup feature (#223) must be in place before model changes
+- **Shopping List design**: PO to finalize requirements before sprint starts
+
+**Estimated Completion:** 2 weeks after 0.1.2
+
+---
+
+## 🔮 **Planned: 0.2.0 - Beta-Ready Phase**
 
 **Goal:** Production-ready app for 5-6 trusted beta users
-**Issues:** 25 open, 0 closed
+**Issues:** 28 open, 0 closed
 
 ### **Focus Areas**
 
@@ -158,6 +241,7 @@
 - Recipe details navigation from meal plan (#94)
 - Multi-recipe UX refinement (#121)
 - Dedicated landing page (#134)
+- Recipe Usage View for Ingredients (#193) ← moved from 0.1.2
 
 #### **Recommendation Engine Evolution**
 - Meal type-specific recommendation profiles (#127)
@@ -168,6 +252,7 @@
 - Recommendation history and feedback (#25)
 - Recommendation preference settings (#24)
 - Debug tool for scoring (#213)
+- Custom ingredient protein type support (#209)
 
 #### **Data Management & Tools**
 - Ingredient aliases for alternative names (#198)
@@ -179,9 +264,12 @@
 - Smart metric conversion with intelligent rounding (#151)
 - Range formatting for approximate quantities (#150)
 - Unit pluralization (#149)
-- Fraction display for quantities (#148)
 - Legend/help system for recommendation indicators (#103)
 - User hint for recommendation factor information (#102)
+
+#### **Technical Debt (Deferred from 0.1.2)**
+- Type Safety pattern for entity IDs (#175, P3-Low)
+- Localized measurement unit strings refactor (#170, P3-Low)
 
 ---
 
@@ -226,19 +314,32 @@
   - Context-aware recommendations considering both planned and cooked meals
   - Bulk recipe management with intelligent ingredient parsing
 - **Quality-First**: 69 issues closed across two milestones with comprehensive testing
+- **Beta-Driven Development**: Real-world usage driving priorities and validating decisions
 
-### **Current Focus (0.1.2)**
-- **Testing Completion**: Widget tests, database tests, and edge case coverage
-- **Shopping List Generation**: New high-priority feature (#5)
-- **UI Refinements**: Meal type selection, "to taste" ingredient handling
-- **Technical Debt**: Code organization and refactoring
+### **Current Focus (0.1.2 - Polish & Data Safety)**
+- **Data Protection**: Complete backup/restore system (#223) - critical after data loss incident
+- **UX Polish**: Fix filter confusion (#228), sorting issues (#227), fraction display (#148)
+- **Parser Quality**: Handle parenthetical text (#226), add "maço" unit (#225)
+- **Testing Validation**: Meal edit workflow tests (#126, #125, #124, #76)
+- **Tools Organization**: Scalable Tools tab structure (#224)
+
+### **Next Sprint (0.1.3 - Testing & Features)**
+- **Shopping List**: Finalize design and implement (#5)
+- **Deferred Features**: Meal type selection (#199), "to taste" ingredients (#196)
+- **Testing Completion**: Complete widget/integration test coverage (#77, #38, #39, #40, #221)
+
+### **Milestone Strategy**
+1. **0.1.2** (2 weeks): Polish + Data Safety → Build confidence for beta testers
+2. **0.1.3** (2 weeks): Testing + Features → Complete foundation before 0.2.0
+3. **0.2.0** (4-6 weeks): Beta-Ready → Scale to 5-6 trusted beta users
 
 ### **Next Actions**
-1. Complete widget tests for MealHistoryScreen (#77)
-2. Implement shopping list generation feature (#5)
-3. Add meal type selection when recording cooked meals (#199)
-4. Organize integration tests into proper directory structure (#221)
-5. Transition to 0.2.0 beta-ready phase
+1. **Immediate**: Implement backup/restore feature (#223) - highest priority
+2. Fix filter state indicators (#228) and sorting (#227) - critical UX issues
+3. Complete parser improvements (#226, #225) - quick wins
+4. Add fraction display (#148) - readability improvement
+5. Validate meal edit functionality with tests (#126, #125, #124, #76)
+6. **Before 0.1.3**: Finalize Shopping List requirements (#5)
 
 ---
 
@@ -278,4 +379,26 @@
 
 ---
 
-**Note**: The project has successfully completed two major milestones (0.1.0, 0.1.1) with 69 issues resolved, consistently overdelivering on both features and quality while maintaining excellent architectural standards.
+## 📝 **Planning Notes**
+
+### **Milestone Restructure (December 2025)**
+The original **0.1.1 - Stability & Polish** was split into three focused sprints based on beta testing feedback and scope management:
+- **0.1.1** ✅ - Testing infrastructure (completed, 9 issues)
+- **0.1.2** 🎯 - Polish & Data Safety (current, 11 issues)
+- **0.1.3** 📋 - Testing & Features (planned, 8 issues)
+
+This restructure enables:
+- **Focused delivery**: Each sprint has clear theme and goals
+- **Risk mitigation**: Backup feature before model changes
+- **Better planning**: Deferred features get proper design time
+- **Quality focus**: Testing and polish separated from feature development
+
+### **Beta Testing Impact**
+All 0.1.2 issues driven by real-world beta tester feedback from December 2025, demonstrating strong product-market validation and user-centric development approach.
+
+### **Related Documents**
+- **[Sprint Planning 0.1.2 & 0.1.3](Sprint-Planning-0.1.2-0.1.3.md)**: Detailed sprint planning, effort estimates, dependencies, and rationale for milestone restructure
+
+---
+
+**Note**: The project has successfully completed two major milestones (0.1.0, 0.1.1) with 69 issues resolved, consistently overdelivering on both features and quality while maintaining excellent architectural standards. The roadmap continues to evolve based on real-world usage and beta testing feedback.
