@@ -355,12 +355,43 @@ The original **0.1.1 - Stability & Polish** milestone was split into three focus
 
 ---
 
+## Implementation Sequence
+
+### 0.1.2 Implementation Phases
+
+**Phase 1: Quick Wins (Parallel)**
+- #225 - Add 'maço' unit (no dependencies)
+- #226 - Parser: parentheses extraction (no dependencies)
+- #227 - Fix sorting with accents (no dependencies)
+
+**Phase 2: Foundation - Backup/Restore (Critical Path)**
+- #223 - Complete backup/restore (blocks #229, #224)
+
+**Phase 3: Data Management**
+- #229 - Recipe import tool (depends on #223)
+- #224 - Reorganize Tools tab (ideally after #223)
+
+**Phase 4: UI Improvements (Parallel)**
+- #148 - Fraction display (no dependencies)
+- #228 - Filter indicator UI (no dependencies)
+
+**Phase 5: Testing Suite**
+- #76 - Database tests for meals (foundation)
+- #124 + #125 - Feedback messages + UI refresh (can be parallel)
+- #126 - End-to-end meal edit test (depends on #124, #125)
+
+### Total Story Points
+**45 points** across 12 issues (including #229 added during planning)
+
+---
+
 ## Dependencies
 
 ### 0.1.2 Dependencies
-- **#224 depends on #223**: Tools tab reorganization benefits from backup/restore buttons
-- **#125, #124 depend on #126**: UI tests build on E2E workflow tests
-- **#148 depends on #141**: Fraction display builds on smart decimal formatting (completed)
+- **#223 blocks #229**: Recipe import reuses backup/restore JSON infrastructure
+- **#223 enables #224**: Tools tab reorganization needs backup/restore tools to exist
+- **#126 depends on #124, #125**: E2E test builds on specific feature tests
+- **#148 depends on #141**: Fraction display builds on smart decimal formatting (completed in 0.1.1)
 
 ### 0.1.3 Dependencies
 - **#199, #196 depend on #223**: Model changes safer with backup feature in place
@@ -413,6 +444,11 @@ This validates our approach of **real-world usage driving priorities**.
 ## Document History
 
 - **2025-12-01**: Initial sprint planning session (PO + Tech Lead)
+- **2025-12-02**: Detailed estimation session and implementation sequencing
+  - Estimated all 12 issues using fibonacci scale
+  - Added #229 (Recipe import tool) during planning
+  - Defined 5-phase implementation sequence with dependencies
+  - Total: 45 story points
 - **Status**: Plan approved, ready for execution
 
 ---
