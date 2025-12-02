@@ -1,3 +1,4 @@
+<!-- markdownlint-disable -->
 # Sprint Planning: 0.1.2 & 0.1.3
 
 **Date:** December 1, 2025
