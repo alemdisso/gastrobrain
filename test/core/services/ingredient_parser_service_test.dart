@@ -856,6 +856,86 @@ void main() {
       });
     });
 
+    group('Parenthetical Text Extraction', () {
+      test('extracts end-line parenthetical text to notes', () {
+        final result = parserService.parseIngredientLine('150 ml de azeite (mais um pouco)');
+        expect(result.quantity, equals(150));
+        expect(result.unit, equals('ml'));
+        expect(result.ingredientName, equals('azeite'));
+        expect(result.notes, equals('mais um pouco'));
+      });
+
+      test('extracts mid-line parenthetical text to notes', () {
+        final result = parserService.parseIngredientLine('2 colheres (sopa) de açúcar');
+        expect(result.quantity, equals(2));
+        expect(result.unit, equals('tbsp'));
+        expect(result.ingredientName, equals('açúcar'));
+        expect(result.notes, equals('sopa'));
+      });
+
+      test('combines mid-line and end-line parenthetical text', () {
+        final result = parserService.parseIngredientLine('2 colheres (sopa) de açúcar (a gosto)');
+        expect(result.quantity, equals(2));
+        expect(result.unit, equals('tbsp'));
+        expect(result.ingredientName, equals('açúcar'));
+        expect(result.notes, equals('sopa | a gosto'));
+      });
+
+      test('combines mid-line, parser-detected, and end-line notes', () {
+        final result = parserService.parseIngredientLine('1 colher (sopa) de mangas maduras picadas (ou abacate)');
+        expect(result.quantity, equals(1));
+        expect(result.unit, equals('tbsp'));
+        expect(result.ingredientName, equals('mangas'));
+        expect(result.notes, equals('sopa | maduras picadas ou abacate'));
+      });
+
+      test('handles multiple mid-line parentheses', () {
+        final result = parserService.parseIngredientLine('2 colheres (sopa) (chá) de açúcar');
+        expect(result.quantity, equals(2));
+        expect(result.unit, equals('tbsp'));
+        expect(result.ingredientName, equals('açúcar'));
+        expect(result.notes, equals('sopa|chá'));
+      });
+
+      test('handles lines without parentheses', () {
+        final result = parserService.parseIngredientLine('200g de farinha de trigo');
+        expect(result.quantity, equals(200));
+        expect(result.unit, equals('g'));
+        expect(result.ingredientName, contains('farinha'));
+      });
+
+      test('handles empty parentheses', () {
+        final result = parserService.parseIngredientLine('1 xícara de farinha ()');
+        expect(result.quantity, equals(1));
+        expect(result.unit, equals('cup'));
+        expect(result.ingredientName, contains('farinha'));
+        expect(result.notes, isNull);
+      });
+
+      test('handles parentheses with "de" prepositions inside', () {
+        final result = parserService.parseIngredientLine('1 kg de pimenta (de cheiro)');
+        expect(result.quantity, equals(1));
+        expect(result.unit, equals('kg'));
+        expect(result.ingredientName, contains('pimenta'));
+        expect(result.notes, equals('de cheiro'));
+      });
+
+      test('handles nested prepositions in parentheses', () {
+        final result = parserService.parseIngredientLine('200g de queijo (tipo parmesão)');
+        expect(result.quantity, equals(200));
+        expect(result.unit, equals('g'));
+        expect(result.ingredientName, contains('queijo'));
+        expect(result.notes, equals('tipo parmesão'));
+      });
+
+      test('extracts parenthetical text from "a gosto" pattern', () {
+        final result = parserService.parseIngredientLine('Sal (marinho) a gosto');
+        expect(result.quantity, equals(0));
+        expect(result.ingredientName, equals('sal'));
+        expect(result.notes, equals('marinho | a gosto'));
+      });
+    });
+
     group('Initialization', () {
       test('throws StateError if not initialized', () {
         final uninitializedService = IngredientParserService();
