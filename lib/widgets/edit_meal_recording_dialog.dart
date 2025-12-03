@@ -6,6 +6,7 @@ import '../models/meal.dart';
 import '../database/database_helper.dart';
 import '../core/validators/entity_validator.dart';
 import '../core/di/service_provider.dart';
+import '../utils/sorting_utils.dart';
 import '../l10n/app_localizations.dart';
 
 class EditMealRecordingDialog extends StatefulWidget {
@@ -72,9 +73,9 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
       final recipes = await _dbHelper.getAllRecipes();
       if (mounted) {
         setState(() {
-          _availableRecipes =
-              recipes.where((r) => r.id != widget.primaryRecipe.id).toList()
-                ..sort((a, b) => a.name.compareTo(b.name));
+          final filtered =
+              recipes.where((r) => r.id != widget.primaryRecipe.id).toList();
+          _availableRecipes = SortingUtils.sortByName(filtered, (r) => r.name);
           _isLoadingRecipes = false;
         });
       }
@@ -84,7 +85,9 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
           _isLoadingRecipes = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${AppLocalizations.of(context)!.errorLoadingRecipes} $e')),
+          SnackBar(
+              content: Text(
+                  '${AppLocalizations.of(context)!.errorLoadingRecipes} $e')),
         );
       }
     }
@@ -112,7 +115,8 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.errorSelectingDate)),
+          SnackBar(
+              content: Text(AppLocalizations.of(context)!.errorSelectingDate)),
         );
       }
     }
@@ -121,7 +125,9 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
   Future<void> _showAddRecipeDialog() async {
     if (_availableRecipes.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.noAdditionalRecipesAvailable)),
+        SnackBar(
+            content: Text(
+                AppLocalizations.of(context)!.noAdditionalRecipesAvailable)),
       );
       return;
     }
@@ -185,8 +191,10 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
       final prepTime = double.tryParse(_prepTimeController.text);
       final cookTime = double.tryParse(_cookTimeController.text);
 
-      EntityValidator.validateTime(prepTime, AppLocalizations.of(context)!.preparationTime);
-      EntityValidator.validateTime(cookTime, AppLocalizations.of(context)!.cookingTime);
+      EntityValidator.validateTime(
+          prepTime, AppLocalizations.of(context)!.preparationTime);
+      EntityValidator.validateTime(
+          cookTime, AppLocalizations.of(context)!.cookingTime);
 
       // Return the updated meal data
       Navigator.of(context).pop({
@@ -203,7 +211,8 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${AppLocalizations.of(context)!.errorPrefix} $e')),
+        SnackBar(
+            content: Text('${AppLocalizations.of(context)!.errorPrefix} $e')),
       );
     }
   }
@@ -220,7 +229,8 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(AppLocalizations.of(context)!.editMealTitle(widget.primaryRecipe.name)),
+      title: Text(AppLocalizations.of(context)!
+          .editMealTitle(widget.primaryRecipe.name)),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -252,7 +262,8 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return AppLocalizations.of(context)!.pleaseEnterNumberOfServings;
+                    return AppLocalizations.of(context)!
+                        .pleaseEnterNumberOfServings;
                   }
                   if (int.tryParse(value) == null || int.parse(value) < 1) {
                     return AppLocalizations.of(context)!.pleaseEnterValidNumber;

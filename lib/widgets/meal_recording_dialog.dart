@@ -5,6 +5,7 @@ import '../models/recipe.dart';
 import '../database/database_helper.dart';
 import '../core/validators/entity_validator.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/sorting_utils.dart';
 import 'package:intl/intl.dart';
 
 class MealRecordingDialog extends StatefulWidget {
@@ -84,9 +85,8 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
       final recipes = await _dbHelper.getAllRecipes();
       if (mounted) {
         setState(() {
-          _availableRecipes =
-              recipes.where((r) => r.id != widget.primaryRecipe.id).toList()
-                ..sort((a, b) => a.name.compareTo(b.name));
+          final filtered = recipes.where((r) => r.id != widget.primaryRecipe.id).toList();
+          _availableRecipes = SortingUtils.sortByName(filtered, (r) => r.name);
           _isLoadingRecipes = false;
         });
       }

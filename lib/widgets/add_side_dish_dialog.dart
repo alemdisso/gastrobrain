@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/sorting_utils.dart';
 
 class AddSideDishDialog extends StatefulWidget {
   final List<Recipe> availableRecipes;
@@ -142,8 +143,7 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredRecipes = _filteredRecipes
-      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    final filteredRecipes = SortingUtils.sortByName(_filteredRecipes, (r) => r.name);
 
     // Determine if this is for multiple recipe management or single selection
     final isMultiRecipeMode = widget.primaryRecipe != null;

@@ -11,6 +11,7 @@ import '../models/ingredient_match.dart';
 import '../widgets/add_new_ingredient_dialog.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/id_generator.dart';
+import '../utils/sorting_utils.dart';
 
 /// Milestone target for enriched recipes (recipes with 3+ ingredients)
 const int kEnrichedRecipesMilestoneTarget = 50;
@@ -121,17 +122,16 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       final allRecipes = await dbHelper.getAllRecipes();
 
       // Filter recipes with less than 3 ingredients (incomplete data)
-      final recipesNeedingUpdate = <Recipe>[];
+      final unsortedRecipes = <Recipe>[];
       for (final recipe in allRecipes) {
         final ingredients = await dbHelper.getRecipeIngredients(recipe.id);
         if (ingredients.length < 3) {
-          recipesNeedingUpdate.add(recipe);
+          unsortedRecipes.add(recipe);
         }
       }
 
       // Sort recipes alphabetically by name for easier selection
-      recipesNeedingUpdate
-          .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      final recipesNeedingUpdate = SortingUtils.sortByName(unsortedRecipes, (r) => r.name);
 
       // Try to find the previously selected recipe in the updated list
       Recipe? recipeToSelect;
@@ -1021,8 +1021,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
     final progressPercent =
         totalCount > 0 ? ((enrichedCount / totalCount) * 100).round() : 0;
     final isTargetReached = enrichedCount >= milestoneTarget;
-    final recipesNeeded =
-        isTargetReached ? 0 : milestoneTarget - enrichedCount;
+    final recipesNeeded = isTargetReached ? 0 : milestoneTarget - enrichedCount;
 
     // Determine card color based on progress
     Color? cardColor;
@@ -1174,8 +1173,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                         Text(
                           isTargetReached
                               ? localizations.milestoneAchieved
-                              : localizations.recipesNeededForMilestone(
-                                  recipesNeeded),
+                              : localizations
+                                  .recipesNeededForMilestone(recipesNeeded),
                           style:
                               Theme.of(context).textTheme.bodySmall?.copyWith(
                                     color: isTargetReached
