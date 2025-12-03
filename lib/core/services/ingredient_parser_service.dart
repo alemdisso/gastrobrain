@@ -198,7 +198,8 @@ class IngredientParserService {
     
     // Bunch variants
     _unitStringMap['maço'] = 'bunch';
-    _unitStringMap['macos'] = 'bunch';
+    _unitStringMap['maços'] = 'bunch';  // plural with cedilla (proper Portuguese)
+    _unitStringMap['macos'] = 'bunch';  // plural without cedilla (robustness)
     _unitStringMap['bunch'] = 'bunch';
     _unitStringMap['bunches'] = 'bunch';
     

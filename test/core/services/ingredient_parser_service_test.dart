@@ -634,6 +634,64 @@ void main() {
       });
     });
 
+    group('New Measurement Units - Bunches', () {
+      test('parses "2 maços de coentro" correctly', () {
+        final result = parserService.parseIngredientLine('2 maços de coentro');
+        expect(result.quantity, equals(2));
+        expect(result.unit, equals('bunch'));
+        expect(result.ingredientName, equals('coentro'));
+      });
+
+      test('parses "1 maço de salsinha fresca" correctly', () {
+        final result = parserService.parseIngredientLine('1 maço de salsinha fresca');
+        expect(result.quantity, equals(1));
+        expect(result.unit, equals('bunch'));
+        expect(result.ingredientName, contains('salsinha'));
+      });
+
+      test('parses "3 maços de cebolinha" correctly', () {
+        final result = parserService.parseIngredientLine('3 maços de cebolinha');
+        expect(result.quantity, equals(3));
+        expect(result.unit, equals('bunch'));
+        expect(result.ingredientName, equals('cebolinha'));
+      });
+
+      test('parses "1 maço de manjericão" correctly', () {
+        final result = parserService.parseIngredientLine('1 maço de manjericão');
+        expect(result.quantity, equals(1));
+        expect(result.unit, equals('bunch'));
+        expect(result.ingredientName, equals('manjericão'));
+      });
+
+      test('parses "2 macos de coentro" (without cedilla) correctly', () {
+        final result = parserService.parseIngredientLine('2 macos de coentro');
+        expect(result.quantity, equals(2));
+        expect(result.unit, equals('bunch'));
+        expect(result.ingredientName, equals('coentro'));
+      });
+
+      test('parses "3 bunches of cilantro" correctly', () {
+        final result = parserService.parseIngredientLine('3 bunches of cilantro');
+        expect(result.quantity, equals(3));
+        expect(result.unit, equals('bunch'));
+        expect(result.ingredientName, contains('cilantro'));
+      });
+
+      test('parses "1 bunch of fresh parsley" correctly', () {
+        final result = parserService.parseIngredientLine('1 bunch of fresh parsley');
+        expect(result.quantity, equals(1));
+        expect(result.unit, equals('bunch'));
+        expect(result.ingredientName, contains('parsley'));
+      });
+
+      test('parses "2 bunches of green onions" correctly', () {
+        final result = parserService.parseIngredientLine('2 bunches of green onions');
+        expect(result.quantity, equals(2));
+        expect(result.unit, equals('bunch'));
+        expect(result.ingredientName, contains('green onions'));
+      });
+    });
+
     group('New Measurement Units - Stems', () {
       test('parses "2 talos de salsão" correctly', () {
         final result = parserService.parseIngredientLine('2 talos de salsão');
