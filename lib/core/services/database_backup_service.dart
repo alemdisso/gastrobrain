@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import '../../database/database_helper.dart';
 import '../errors/gastrobrain_exceptions.dart';
@@ -33,7 +32,7 @@ class DatabaseBackupService {
 
   /// Creates a complete backup of the database
   ///
-  /// Opens a file picker for the user to select save location.
+  /// Saves the database file using file picker with proper Android permissions.
   /// The backup file will have a timestamp in the format:
   /// gastrobrain_backup_YYYY-MM-DD_HHMMSS.db
   ///
@@ -52,40 +51,33 @@ class DatabaseBackupService {
           '${timestamp.hour.toString().padLeft(2, '0')}${timestamp.minute.toString().padLeft(2, '0')}${timestamp.second.toString().padLeft(2, '0')}';
       final backupFilename = 'gastrobrain_backup_${formattedDate}_$formattedTime.db';
 
-      // Get save directory
-      // On Android/iOS, save directly to Downloads or Documents folder
-      Directory? targetDir;
-      try {
-        targetDir = await getDownloadsDirectory();
-      } catch (e) {
-        // If getDownloadsDirectory() fails, try external storage
-        try {
-          targetDir = await getExternalStorageDirectory();
-        } catch (e2) {
-          // Last resort: use application documents directory
-          targetDir = await getApplicationDocumentsDirectory();
-        }
-      }
-
-      if (targetDir == null) {
-        throw const GastrobrainException(
-            'Could not find a suitable directory for backup');
-      }
-
-      final backupPath = '${targetDir.path}/$backupFilename';
-
-      // Close database connection before copying
+      // Close database connection before reading
       await _databaseHelper.closeDatabase();
 
       try {
-        // Copy database file to backup location
+        // Read database file content
         final dbFile = File(dbPath);
-        await dbFile.copy(backupPath);
+        final bytes = await dbFile.readAsBytes();
+
+        // Use file picker to save with proper permissions
+        final result = await FilePicker.platform.saveFile(
+          dialogTitle: 'Save Database Backup',
+          fileName: backupFilename,
+          type: FileType.custom,
+          allowedExtensions: ['db'],
+          bytes: bytes, // Provide bytes for Android/iOS
+        );
 
         // Reopen database connection
         await _databaseHelper.reopenDatabase();
 
-        return backupPath;
+        if (result == null) {
+          // User cancelled the picker
+          throw const GastrobrainException('Backup cancelled by user');
+        }
+
+        // Return the path where file was saved
+        return result;
       } catch (e) {
         // Reopen database on failure
         await _databaseHelper.reopenDatabase();
