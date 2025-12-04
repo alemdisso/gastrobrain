@@ -1025,4 +1025,22 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   MigrationRunner? get migrationRunner => null; // Mock: no migration runner
+
+  // === BACKUP/RESTORE METHODS (Mock Implementation) ===
+
+  @override
+  Future<void> closeDatabase() async {
+    // Mock: do nothing - in tests we don't need to close the database
+  }
+
+  @override
+  Future<void> reopenDatabase() async {
+    // Mock: do nothing - in tests the database is always "open"
+  }
+
+  @override
+  Future<String> getDatabasePath() async {
+    // Mock: return a test database path
+    return '/mock/test/database.db';
+  }
 }

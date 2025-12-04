@@ -1699,6 +1699,88 @@
         "type": "int"
       }
     }
+  },
+  "backupAllData": "Backup All Data",
+  "@backupAllData": {
+    "description": "Button text for backing up all data"
+  },
+  "restoreFromBackup": "Restore from Backup",
+  "@restoreFromBackup": {
+    "description": "Button text for restoring from backup"
+  },
+  "databaseBackup": "Database Backup",
+  "@databaseBackup": {
+    "description": "Section title for database backup"
+  },
+  "backupDescription": "Create a complete backup of all your data including recipes, ingredients, meal plans, and meal history. Save it to a safe location.",
+  "@backupDescription": {
+    "description": "Description for backup feature"
+  },
+  "restoreDescription": "Restore all your data from a previous backup file. WARNING: This will replace ALL existing data.",
+  "@restoreDescription": {
+    "description": "Description for restore feature"
+  },
+  "backupSuccess": "Backup created successfully!",
+  "@backupSuccess": {
+    "description": "Success message after backup"
+  },
+  "backupSuccessDetails": "Your database has been backed up successfully.\n\nFile: {filePath}",
+  "@backupSuccessDetails": {
+    "description": "Detailed success message with file path",
+    "placeholders": {
+      "filePath": {
+        "type": "String"
+      }
+    }
+  },
+  "restoreWarningTitle": "Restore from Backup?",
+  "@restoreWarningTitle": {
+    "description": "Title for restore warning dialog"
+  },
+  "restoreWarningMessage": "This will replace ALL existing data with the data from the backup file.\n\nYour current recipes, ingredients, meal plans, and meal history will be permanently deleted.\n\nAre you sure you want to continue?",
+  "@restoreWarningMessage": {
+    "description": "Warning message before restore"
+  },
+  "restoreSuccess": "Data Restored Successfully!",
+  "@restoreSuccess": {
+    "description": "Success message after restore"
+  },
+  "restoreSuccessMessage": "Your data has been restored from the backup. The app will now refresh.",
+  "@restoreSuccessMessage": {
+    "description": "Detailed success message after restore"
+  },
+  "backupFailed": "Backup Failed",
+  "@backupFailed": {
+    "description": "Error message when backup fails"
+  },
+  "restoreFailed": "Restore Failed",
+  "@restoreFailed": {
+    "description": "Error message when restore fails"
+  },
+  "backupCancelled": "Backup cancelled",
+  "@backupCancelled": {
+    "description": "Message when user cancels backup"
+  },
+  "restoreCancelled": "Restore cancelled",
+  "@restoreCancelled": {
+    "description": "Message when user cancels restore"
+  },
+  "currentDatabaseSize": "Current database size: {size}",
+  "@currentDatabaseSize": {
+    "description": "Shows the current database file size",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "backingUp": "Creating backup...",
+  "@backingUp": {
+    "description": "Progress message while backing up"
+  },
+  "restoring": "Restoring data...",
+  "@restoring": {
+    "description": "Progress message while restoring"
   }
 
 }

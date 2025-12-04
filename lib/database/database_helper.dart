@@ -1688,12 +1688,44 @@ class DatabaseHelper {
   }
 
   /// Force invalidate all repository caches after migration
-  /// 
+  ///
   /// This should be called by repositories after successful migrations
   /// to ensure cached data is refreshed with the new schema.
   void notifyMigrationCompleted() {
     // Notify all registered repositories to invalidate their caches
     print('Migration completed - notifying repositories to invalidate caches');
     RepositoryRegistry.notifyMigrationCompleted();
+  }
+
+  /// Close the database connection
+  ///
+  /// This is used by backup/restore operations that need to close the database
+  /// temporarily. After calling this, you must call reopenDatabase() to restore
+  /// the connection.
+  Future<void> closeDatabase() async {
+    if (_database != null) {
+      await _database!.close();
+      _database = null;
+      _migrationRunner = null;
+    }
+  }
+
+  /// Reopen the database connection
+  ///
+  /// This reinitializes the database connection after it was closed.
+  /// Used by backup/restore operations.
+  Future<void> reopenDatabase() async {
+    _database = null;
+    _migrationRunner = null;
+    await database; // This will trigger _initDatabase()
+  }
+
+  /// Get the database file path
+  ///
+  /// Returns the path to the SQLite database file.
+  /// Useful for backup operations.
+  Future<String> getDatabasePath() async {
+    final db = await database;
+    return db.path;
   }
 }
