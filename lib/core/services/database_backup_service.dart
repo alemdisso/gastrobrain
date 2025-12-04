@@ -52,42 +52,45 @@ class DatabaseBackupService {
           '${timestamp.hour.toString().padLeft(2, '0')}${timestamp.minute.toString().padLeft(2, '0')}${timestamp.second.toString().padLeft(2, '0')}';
       final backupFilename = 'gastrobrain_backup_${formattedDate}_$formattedTime.db';
 
-      // Get default save directory (Downloads folder)
-      Directory? downloadsDir;
+      // Get save directory
+      // On Android/iOS, save directly to Downloads or Documents folder
+      Directory? targetDir;
       try {
-        downloadsDir = await getDownloadsDirectory();
+        targetDir = await getDownloadsDirectory();
       } catch (e) {
-        // If getDownloadsDirectory() fails, fallback to external storage
-        downloadsDir = await getExternalStorageDirectory();
+        // If getDownloadsDirectory() fails, try external storage
+        try {
+          targetDir = await getExternalStorageDirectory();
+        } catch (e2) {
+          // Last resort: use application documents directory
+          targetDir = await getApplicationDocumentsDirectory();
+        }
       }
 
-      // Open file picker for user to select save location
-      final result = await FilePicker.platform.saveFile(
-        dialogTitle: 'Save Database Backup',
-        fileName: backupFilename,
-        type: FileType.custom,
-        allowedExtensions: ['db'],
-        initialDirectory: downloadsDir?.path,
-      );
-
-      if (result == null) {
-        // User cancelled the picker
-        throw const GastrobrainException('Backup cancelled by user');
+      if (targetDir == null) {
+        throw const GastrobrainException(
+            'Could not find a suitable directory for backup');
       }
 
-      final backupPath = result;
+      final backupPath = '${targetDir.path}/$backupFilename';
 
       // Close database connection before copying
       await _databaseHelper.closeDatabase();
 
-      // Copy database file to backup location
-      final dbFile = File(dbPath);
-      await dbFile.copy(backupPath);
+      try {
+        // Copy database file to backup location
+        final dbFile = File(dbPath);
+        await dbFile.copy(backupPath);
 
-      // Reopen database connection
-      await _databaseHelper.reopenDatabase();
+        // Reopen database connection
+        await _databaseHelper.reopenDatabase();
 
-      return backupPath;
+        return backupPath;
+      } catch (e) {
+        // Reopen database on failure
+        await _databaseHelper.reopenDatabase();
+        rethrow;
+      }
     } catch (e) {
       // Ensure database is reopened even if backup fails
       try {
