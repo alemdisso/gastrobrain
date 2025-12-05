@@ -10,6 +10,7 @@ import '../errors/gastrobrain_exceptions.dart';
 /// - Ingredients
 /// - Meal Plans
 /// - Meals (cooked meal records)
+/// - Recommendation History (user preferences and interactions)
 ///
 /// This is a COMPLETE backup/restore (no merge logic).
 /// Restore operation replaces ALL existing data.
@@ -42,6 +43,9 @@ class DatabaseBackupService {
 
       // Export meals (cooked meal records)
       backupData['meals'] = await _exportMeals();
+
+      // Export recommendation history
+      backupData['recommendation_history'] = await _exportRecommendationHistory();
 
       // Generate JSON
       final jsonString = const JsonEncoder.withIndent('  ').convert(backupData);
@@ -187,6 +191,24 @@ class DatabaseBackupService {
     return exportData;
   }
 
+  /// Exports all recommendation history records
+  Future<List<Map<String, dynamic>>> _exportRecommendationHistory() async {
+    final db = await _databaseHelper.database;
+    final records = await db.query('recommendation_history');
+
+    return records
+        .map((record) => {
+              'id': record['id'],
+              'result_data': record['result_data'],
+              'created_at': record['created_at'],
+              'context_type': record['context_type'],
+              'target_date': record['target_date'],
+              'meal_type': record['meal_type'],
+              'user_id': record['user_id'],
+            })
+        .toList();
+  }
+
   /// Writes backup JSON to Downloads folder
   Future<String> _writeBackupToFile(String jsonString) async {
     try {
@@ -249,6 +271,7 @@ class DatabaseBackupService {
         await txn.delete('recipe_ingredients');
         await txn.delete('recipes');
         await txn.delete('ingredients');
+        await txn.delete('recommendation_history');
 
         // Step 2: Import ingredients
         if (backupData['ingredients'] != null) {
@@ -378,6 +401,22 @@ class DatabaseBackupService {
                 });
               }
             }
+          }
+        }
+
+        // Step 6: Import recommendation history
+        if (backupData['recommendation_history'] != null) {
+          final records = backupData['recommendation_history'] as List;
+          for (final record in records) {
+            await txn.insert('recommendation_history', {
+              'id': record['id'],
+              'result_data': record['result_data'],
+              'created_at': record['created_at'],
+              'context_type': record['context_type'],
+              'target_date': record['target_date'],
+              'meal_type': record['meal_type'],
+              'user_id': record['user_id'],
+            });
           }
         }
       });
