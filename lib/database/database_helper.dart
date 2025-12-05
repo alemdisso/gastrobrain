@@ -610,6 +610,36 @@ class DatabaseHelper {
     );
   }
 
+  /// Get all meal plans with their items
+  Future<List<MealPlan>> getAllMealPlans() async {
+    final Database db = await database;
+
+    final List<Map<String, dynamic>> planMaps = await db.query(
+      'meal_plans',
+      orderBy: 'week_start_date DESC',
+    );
+
+    List<MealPlan> mealPlans = [];
+
+    for (var planMap in planMaps) {
+      final String planId = planMap['id'];
+
+      // Get all items for this plan
+      final List<Map<String, dynamic>> itemMaps = await db.query(
+        'meal_plan_items',
+        where: 'meal_plan_id = ?',
+        whereArgs: [planId],
+      );
+
+      final List<MealPlanItem> items = List.generate(
+          itemMaps.length, (i) => MealPlanItem.fromMap(itemMaps[i]));
+
+      mealPlans.add(MealPlan.fromMap(planMap, items));
+    }
+
+    return mealPlans;
+  }
+
   // Meal Plan Item operations
 
   Future<String> insertMealPlanItem(MealPlanItem item) async {
@@ -666,6 +696,39 @@ class DatabaseHelper {
     );
 
     return List.generate(maps.length, (i) => MealPlanItem.fromMap(maps[i]));
+  }
+
+  /// Get all items for a specific meal plan
+  Future<List<MealPlanItem>> getMealPlanItems(String mealPlanId) async {
+    final Database db = await database;
+
+    final List<Map<String, dynamic>> itemMaps = await db.query(
+      'meal_plan_items',
+      where: 'meal_plan_id = ?',
+      whereArgs: [mealPlanId],
+    );
+
+    List<MealPlanItem> items = [];
+
+    for (final itemMap in itemMaps) {
+      final item = MealPlanItem.fromMap(itemMap);
+
+      // Fetch associated recipes from the junction table
+      final List<Map<String, dynamic>> recipeMaps = await db.query(
+        'meal_plan_item_recipes',
+        where: 'meal_plan_item_id = ?',
+        whereArgs: [item.id],
+      );
+
+      if (recipeMaps.isNotEmpty) {
+        item.mealPlanItemRecipes = List.generate(recipeMaps.length,
+            (i) => MealPlanItemRecipe.fromMap(recipeMaps[i]));
+      }
+
+      items.add(item);
+    }
+
+    return items;
   }
 
   Future<String> insertMealPlanItemRecipe(
@@ -1066,6 +1129,38 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  /// Get all meals with their recipes
+  Future<List<Meal>> getAllMeals() async {
+    final Database db = await database;
+
+    final List<Map<String, dynamic>> mealMaps = await db.query(
+      'meals',
+      orderBy: 'cooked_at DESC',
+    );
+
+    List<Meal> meals = [];
+
+    for (var mealMap in mealMaps) {
+      final String mealId = mealMap['id'];
+
+      // Get recipes for this meal
+      final List<Map<String, dynamic>> recipeMaps = await db.query(
+        'meal_recipes',
+        where: 'meal_id = ?',
+        whereArgs: [mealId],
+      );
+
+      final List<MealRecipe> mealRecipes = List.generate(
+          recipeMaps.length, (i) => MealRecipe.fromMap(recipeMaps[i]));
+
+      final meal = Meal.fromMap(mealMap);
+      meal.mealRecipes = mealRecipes;
+      meals.add(meal);
+    }
+
+    return meals;
   }
 
   // MealRecipe operations

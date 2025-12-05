@@ -1765,6 +1765,18 @@
   "@restoreCancelled": {
     "description": "Mensagem quando o usuário cancela a restauração"
   },
+  "selectBackupFile": "Selecionar Arquivo de Backup",
+  "@selectBackupFile": {
+    "description": "Título do diálogo de seleção de arquivo de backup"
+  },
+  "backupFilePath": "Caminho do Arquivo de Backup",
+  "@backupFilePath": {
+    "description": "Rótulo do campo de entrada do caminho do arquivo de backup"
+  },
+  "ok": "OK",
+  "@ok": {
+    "description": "Rótulo do botão OK"
+  },
   "currentDatabaseSize": "Tamanho do banco de dados: {size}",
   "@currentDatabaseSize": {
     "description": "Mostra o tamanho atual do arquivo do banco de dados",

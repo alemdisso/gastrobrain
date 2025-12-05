@@ -204,6 +204,38 @@ class _ToolsScreenState extends State<ToolsScreen> {
 
     final l10n = AppLocalizations.of(context)!;
 
+    // Get backup file path from user
+    final filePathController = TextEditingController(
+        text: '/sdcard/Download/'); // Pre-fill with Downloads directory
+    final backupFilePath = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.selectBackupFile),
+        content: TextField(
+          controller: filePathController,
+          decoration: InputDecoration(
+            labelText: l10n.backupFilePath,
+            hintText: '/sdcard/Download/gastrobrain_backup_2024-12-04_120000.json',
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(null),
+            child: Text(l10n.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(filePathController.text),
+            child: Text(l10n.ok),
+          ),
+        ],
+      ),
+    );
+
+    if (backupFilePath == null || backupFilePath.trim().isEmpty) {
+      return; // User cancelled or provided empty path
+    }
+
     // Show warning dialog before proceeding
     final confirmed = await showDialog<bool>(
       context: context,
@@ -235,7 +267,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
 
     try {
       final backupService = ServiceProvider.database.backup;
-      await backupService.restoreDatabase();
+      await backupService.restoreDatabase(backupFilePath);
 
       if (mounted) {
         SnackbarService.showSuccess(

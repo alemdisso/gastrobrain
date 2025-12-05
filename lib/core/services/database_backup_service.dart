@@ -1,225 +1,379 @@
+import 'dart:convert';
 import 'dart:io';
-import 'package:file_picker/file_picker.dart';
-import 'package:sqflite/sqflite.dart';
 import '../../database/database_helper.dart';
 import '../errors/gastrobrain_exceptions.dart';
 
-/// Service for backing up and restoring the complete Gastrobrain database
+/// Service for complete database backup and restore using JSON format
 ///
-/// Usage:
-/// ```dart
-/// final backupService = ServiceProvider.database.backup;
+/// Creates a single JSON file containing ALL application data:
+/// - Recipes (with ingredients, metadata, cooking history)
+/// - Ingredients
+/// - Meal Plans
+/// - Meals (cooked meal records)
 ///
-/// // Create backup
-/// final backupPath = await backupService.backupDatabase();
-/// print('Backup created: $backupPath');
-///
-/// // Restore from backup
-/// await backupService.restoreDatabase('/path/to/backup.db');
-/// ```
-///
-/// Features:
-/// - Complete SQLite database backup
-/// - User-selected backup location
-/// - Timestamp in backup filename
-/// - File validation before restore
-/// - Complete database replacement (no merge logic)
-/// - Automatic database connection management
+/// This is a COMPLETE backup/restore (no merge logic).
+/// Restore operation replaces ALL existing data.
 class DatabaseBackupService {
   final DatabaseHelper _databaseHelper;
 
   DatabaseBackupService(this._databaseHelper);
 
-  /// Creates a complete backup of the database
+  /// Creates a complete backup of all database data to JSON
   ///
-  /// Saves the database file using file picker with proper Android permissions.
-  /// The backup file will have a timestamp in the format:
-  /// gastrobrain_backup_YYYY-MM-DD_HHMMSS.db
+  /// Saves to Downloads folder with timestamp:
+  /// gastrobrain_backup_YYYY-MM-DD_HHMMSS.json
   ///
   /// Returns the path to the created backup file.
-  /// Throws [GastrobrainException] if backup fails.
   Future<String> backupDatabase() async {
     try {
-      // Get current database path
-      final dbPath = await _databaseHelper.getDatabasePath();
+      final backupData = <String, dynamic>{
+        'version': '1.0',
+        'backup_date': DateTime.now().toIso8601String(),
+      };
 
-      // Generate timestamp for filename
+      // Export recipes with full data
+      backupData['recipes'] = await _exportRecipes();
+
+      // Export ingredients
+      backupData['ingredients'] = await _exportIngredients();
+
+      // Export meal plans
+      backupData['meal_plans'] = await _exportMealPlans();
+
+      // Export meals (cooked meal records)
+      backupData['meals'] = await _exportMeals();
+
+      // Generate JSON
+      final jsonString = const JsonEncoder.withIndent('  ').convert(backupData);
+
+      // Write to file in Downloads
+      final filePath = await _writeBackupToFile(jsonString);
+
+      return filePath;
+    } catch (e) {
+      throw GastrobrainException('Failed to create backup: ${e.toString()}');
+    }
+  }
+
+  /// Exports all recipes with ingredients and cooking history
+  Future<List<Map<String, dynamic>>> _exportRecipes() async {
+    final recipes = await _databaseHelper.getAllRecipes();
+    final exportData = <Map<String, dynamic>>[];
+
+    for (final recipe in recipes) {
+      // Get ingredients for this recipe
+      final ingredients = await _databaseHelper.getRecipeIngredients(recipe.id);
+
+      // Get cooking history
+      final lastCookedDate = await _databaseHelper.getLastCookedDate(recipe.id);
+      final timesCookedCount =
+          await _databaseHelper.getTimesCookedCount(recipe.id);
+
+      exportData.add({
+        'id': recipe.id,
+        'name': recipe.name,
+        'difficulty': recipe.difficulty,
+        'prep_time_minutes': recipe.prepTimeMinutes,
+        'cook_time_minutes': recipe.cookTimeMinutes,
+        'rating': recipe.rating,
+        'category': recipe.category.value,
+        'desired_frequency': recipe.desiredFrequency.value,
+        'notes': recipe.notes,
+        'instructions': recipe.instructions,
+        'created_at': recipe.createdAt.toIso8601String(),
+        'ingredients': ingredients
+            .map((ing) => {
+                  'ingredient_id': ing['ingredient_id'],
+                  'name': ing['name'],
+                  'quantity': ing['quantity'],
+                  'unit': ing['unit'],
+                  'category': ing['category'],
+                  'protein_type': ing['protein_type'],
+                  'preparation_notes': ing['preparation_notes'],
+                })
+            .toList(),
+        'cooking_history': {
+          'times_cooked': timesCookedCount,
+          'last_cooked_date': lastCookedDate?.toIso8601String(),
+        },
+      });
+    }
+
+    return exportData;
+  }
+
+  /// Exports all ingredients
+  Future<List<Map<String, dynamic>>> _exportIngredients() async {
+    final ingredients = await _databaseHelper.getAllIngredients();
+
+    return ingredients
+        .map((ingredient) => {
+              'id': ingredient.id,
+              'name': ingredient.name,
+              'category': ingredient.category.value,
+              'unit': ingredient.unit?.value,
+              'protein_type': ingredient.proteinType?.name,
+              'notes': ingredient.notes,
+            })
+        .toList();
+  }
+
+  /// Exports all meal plans with their items and recipes
+  Future<List<Map<String, dynamic>>> _exportMealPlans() async {
+    final mealPlans = await _databaseHelper.getAllMealPlans();
+    final exportData = <Map<String, dynamic>>[];
+
+    for (final plan in mealPlans) {
+      // Get items for this meal plan
+      final items = await _databaseHelper.getMealPlanItems(plan.id);
+
+      exportData.add({
+        'id': plan.id,
+        'week_start_date': plan.weekStartDate.toIso8601String(),
+        'week_end_date': plan.weekEndDate.toIso8601String(),
+        'notes': plan.notes,
+        'created_at': plan.createdAt.toIso8601String(),
+        'items': items
+            .map((item) => {
+                  'id': item.id,
+                  'meal_plan_id': item.mealPlanId,
+                  'planned_date': item.plannedDate,
+                  'meal_type': item.mealType,
+                  'notes': item.notes,
+                  'has_been_cooked': item.hasBeenCooked,
+                  'recipes': (item.mealPlanItemRecipes ?? [])
+                      .map((recipe) => {
+                            'meal_plan_item_id': recipe.mealPlanItemId,
+                            'recipe_id': recipe.recipeId,
+                            'is_primary_dish': recipe.isPrimaryDish,
+                          })
+                      .toList(),
+                })
+            .toList(),
+      });
+    }
+
+    return exportData;
+  }
+
+  /// Exports all cooked meals with their recipes
+  Future<List<Map<String, dynamic>>> _exportMeals() async {
+    final meals = await _databaseHelper.getAllMeals();
+    final exportData = <Map<String, dynamic>>[];
+
+    for (final meal in meals) {
+      exportData.add({
+        'id': meal.id,
+        'recipe_id': meal.recipeId,
+        'cooked_at': meal.cookedAt.toIso8601String(),
+        'servings': meal.servings,
+        'notes': meal.notes,
+        'was_successful': meal.wasSuccessful,
+        'actual_prep_time': meal.actualPrepTime,
+        'actual_cook_time': meal.actualCookTime,
+        'modified_at': meal.modifiedAt?.toIso8601String(),
+        'meal_recipes': (meal.mealRecipes ?? [])
+            .map((recipe) => {
+                  'meal_id': recipe.mealId,
+                  'recipe_id': recipe.recipeId,
+                  'is_primary_dish': recipe.isPrimaryDish,
+                })
+            .toList(),
+      });
+    }
+
+    return exportData;
+  }
+
+  /// Writes backup JSON to Downloads folder
+  Future<String> _writeBackupToFile(String jsonString) async {
+    try {
+      // Generate filename with timestamp
       final timestamp = DateTime.now();
       final formattedDate =
           '${timestamp.year}-${timestamp.month.toString().padLeft(2, '0')}-${timestamp.day.toString().padLeft(2, '0')}';
       final formattedTime =
           '${timestamp.hour.toString().padLeft(2, '0')}${timestamp.minute.toString().padLeft(2, '0')}${timestamp.second.toString().padLeft(2, '0')}';
-      final backupFilename = 'gastrobrain_backup_${formattedDate}_$formattedTime.db';
+      final fileName = 'gastrobrain_backup_${formattedDate}_$formattedTime.json';
 
-      // Close database connection before reading
-      await _databaseHelper.closeDatabase();
+      // Save to Downloads directory
+      final file = File('/sdcard/Download/$fileName');
 
-      try {
-        // Read database file content
-        final dbFile = File(dbPath);
-        final bytes = await dbFile.readAsBytes();
+      // Create Downloads directory if it doesn't exist
+      await file.parent.create(recursive: true);
 
-        // Use file picker to save with proper permissions
-        final result = await FilePicker.platform.saveFile(
-          dialogTitle: 'Save Database Backup',
-          fileName: backupFilename,
-          type: FileType.custom,
-          allowedExtensions: ['db'],
-          bytes: bytes, // Provide bytes for Android/iOS
-        );
+      // Write JSON to file
+      await file.writeAsString(jsonString);
 
-        // Reopen database connection
-        await _databaseHelper.reopenDatabase();
-
-        if (result == null) {
-          // User cancelled the picker
-          throw const GastrobrainException('Backup cancelled by user');
-        }
-
-        // Return the path where file was saved
-        return result;
-      } catch (e) {
-        // Reopen database on failure
-        await _databaseHelper.reopenDatabase();
-        rethrow;
-      }
+      return file.path;
     } catch (e) {
-      // Ensure database is reopened even if backup fails
-      try {
-        await _databaseHelper.reopenDatabase();
-      } catch (_) {
-        // Ignore errors during recovery
-      }
-
-      if (e is GastrobrainException) {
-        rethrow;
-      }
-      throw GastrobrainException('Failed to create backup: ${e.toString()}');
+      throw GastrobrainException(
+          'Failed to write backup file: ${e.toString()}');
     }
   }
 
-  /// Restores the database from a backup file
-  ///
-  /// Opens a file picker for the user to select a backup file.
+  /// Restores database from a backup JSON file
   ///
   /// IMPORTANT: This operation replaces ALL existing data.
-  /// The calling code should show a warning dialog before calling this method.
+  /// Make sure to show a warning dialog before calling this.
   ///
-  /// Returns true if restore was successful.
-  /// Throws [GastrobrainException] if restore fails.
-  Future<bool> restoreDatabase() async {
+  /// [backupFilePath] Path to the JSON backup file to restore from
+  Future<void> restoreDatabase(String backupFilePath) async {
     try {
-      // Open file picker for user to select backup file
-      final result = await FilePicker.platform.pickFiles(
-        dialogTitle: 'Select Database Backup',
-        type: FileType.custom,
-        allowedExtensions: ['db'],
-        allowMultiple: false,
-      );
-
-      if (result == null || result.files.isEmpty) {
-        // User cancelled the picker
-        throw const GastrobrainException('Restore cancelled by user');
+      // Read and parse JSON file
+      final file = File(backupFilePath);
+      if (!await file.exists()) {
+        throw GastrobrainException('Backup file not found: $backupFilePath');
       }
 
-      final backupPath = result.files.single.path;
-      if (backupPath == null) {
-        throw const GastrobrainException('Invalid backup file path');
+      final jsonString = await file.readAsString();
+      final Map<String, dynamic> backupData = json.decode(jsonString);
+
+      // Validate backup format
+      if (backupData['version'] == null) {
+        throw const GastrobrainException('Invalid backup file: missing version');
       }
 
-      // Validate backup file exists
-      final backupFile = File(backupPath);
-      if (!await backupFile.exists()) {
-        throw const GastrobrainException('Backup file does not exist');
-      }
-
-      // Basic validation: check if file is a valid SQLite database
-      // Try to open it briefly to validate format
-      try {
-        final testDb = await openDatabase(
-          backupPath,
-          readOnly: true,
-          singleInstance: false,
-        );
-        await testDb.close();
-      } catch (e) {
-        throw const GastrobrainException('Invalid database file format');
-      }
-
-      // Get current database path
-      final dbPath = await _databaseHelper.getDatabasePath();
-
-      // Close current database connection
-      await _databaseHelper.closeDatabase();
-
-      try {
-        // Delete current database
-        final currentDbFile = File(dbPath);
-        if (await currentDbFile.exists()) {
-          await currentDbFile.delete();
-        }
-
-        // Copy backup file to database location
-        await backupFile.copy(dbPath);
-
-        // Reopen database connection
-        await _databaseHelper.reopenDatabase();
-
-        return true;
-      } catch (e) {
-        // If restore fails, try to reopen the database
-        // (it might still have the old data if delete failed)
-        try {
-          await _databaseHelper.reopenDatabase();
-        } catch (_) {
-          // Ignore errors during recovery
-        }
-        throw GastrobrainException('Failed to restore database: ${e.toString()}');
-      }
-    } catch (e) {
-      // Ensure database is reopened even if restore fails
-      try {
-        await _databaseHelper.reopenDatabase();
-      } catch (_) {
-        // Ignore errors during recovery
-      }
-
-      if (e is GastrobrainException) {
-        rethrow;
-      }
-      throw GastrobrainException('Failed to restore database: ${e.toString()}');
-    }
-  }
-
-  /// Gets the current database file size in bytes
-  ///
-  /// Useful for displaying information to users about backup size.
-  Future<int> getDatabaseSize() async {
-    try {
+      // Get database instance and perform restore in a transaction
       final db = await _databaseHelper.database;
-      final dbFile = File(db.path);
 
-      if (await dbFile.exists()) {
-        final stat = await dbFile.stat();
-        return stat.size;
-      }
+      await db.transaction((txn) async {
+        // Step 1: Delete all existing data (in reverse dependency order)
+        await txn.delete('meal_recipes');
+        await txn.delete('meals');
+        await txn.delete('meal_plan_item_recipes');
+        await txn.delete('meal_plan_items');
+        await txn.delete('meal_plans');
+        await txn.delete('recipe_ingredients');
+        await txn.delete('recipes');
+        await txn.delete('ingredients');
 
-      return 0;
+        // Step 2: Import ingredients
+        if (backupData['ingredients'] != null) {
+          final ingredients = backupData['ingredients'] as List;
+          for (final ing in ingredients) {
+            await txn.insert('ingredients', {
+              'id': ing['id'],
+              'name': ing['name'],
+              'category': ing['category'],
+              'unit': ing['unit'],
+              'protein_type': ing['protein_type'],
+              'notes': ing['notes'],
+            });
+          }
+        }
+
+        // Step 3: Import recipes with ingredients
+        if (backupData['recipes'] != null) {
+          final recipes = backupData['recipes'] as List;
+          for (final recipe in recipes) {
+            // Insert recipe
+            await txn.insert('recipes', {
+              'id': recipe['id'],
+              'name': recipe['name'],
+              'difficulty': recipe['difficulty'],
+              'prep_time_minutes': recipe['prep_time_minutes'],
+              'cook_time_minutes': recipe['cook_time_minutes'],
+              'rating': recipe['rating'],
+              'category': recipe['category'],
+              'desired_frequency': recipe['desired_frequency'],
+              'notes': recipe['notes'],
+              'instructions': recipe['instructions'],
+              'created_at': recipe['created_at'],
+            });
+
+            // Insert recipe ingredients
+            if (recipe['ingredients'] != null) {
+              final ingredients = recipe['ingredients'] as List;
+              for (final ing in ingredients) {
+                await txn.insert('recipe_ingredients', {
+                  'recipe_id': recipe['id'],
+                  'ingredient_id': ing['ingredient_id'],
+                  'quantity': ing['quantity'],
+                  'unit': ing['unit'],
+                  'preparation_notes': ing['preparation_notes'],
+                });
+              }
+            }
+          }
+        }
+
+        // Step 4: Import meal plans with items
+        if (backupData['meal_plans'] != null) {
+          final mealPlans = backupData['meal_plans'] as List;
+          for (final plan in mealPlans) {
+            // Insert meal plan
+            await txn.insert('meal_plans', {
+              'id': plan['id'],
+              'week_start_date': plan['week_start_date'],
+              'week_end_date': plan['week_end_date'],
+              'notes': plan['notes'],
+              'created_at': plan['created_at'],
+            });
+
+            // Insert meal plan items
+            if (plan['items'] != null) {
+              final items = plan['items'] as List;
+              for (final item in items) {
+                await txn.insert('meal_plan_items', {
+                  'id': item['id'],
+                  'meal_plan_id': item['meal_plan_id'],
+                  'planned_date': item['planned_date'],
+                  'meal_type': item['meal_type'],
+                  'notes': item['notes'] ?? '',
+                  'has_been_cooked': item['has_been_cooked'] ? 1 : 0,
+                });
+
+                // Insert meal plan item recipes
+                if (item['recipes'] != null) {
+                  final recipes = item['recipes'] as List;
+                  for (final recipe in recipes) {
+                    await txn.insert('meal_plan_item_recipes', {
+                      'meal_plan_item_id': recipe['meal_plan_item_id'],
+                      'recipe_id': recipe['recipe_id'],
+                      'is_primary_dish': recipe['is_primary_dish'] ? 1 : 0,
+                    });
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // Step 5: Import meals with recipes
+        if (backupData['meals'] != null) {
+          final meals = backupData['meals'] as List;
+          for (final meal in meals) {
+            // Insert meal
+            await txn.insert('meals', {
+              'id': meal['id'],
+              'recipe_id': meal['recipe_id'],
+              'cooked_at': meal['cooked_at'],
+              'servings': meal['servings'],
+              'notes': meal['notes'],
+              'was_successful': meal['was_successful'] ? 1 : 0,
+              'actual_prep_time': meal['actual_prep_time'],
+              'actual_cook_time': meal['actual_cook_time'],
+              'modified_at': meal['modified_at'],
+            });
+
+            // Insert meal recipes
+            if (meal['meal_recipes'] != null) {
+              final mealRecipes = meal['meal_recipes'] as List;
+              for (final recipe in mealRecipes) {
+                await txn.insert('meal_recipes', {
+                  'meal_id': recipe['meal_id'],
+                  'recipe_id': recipe['recipe_id'],
+                  'is_primary_dish': recipe['is_primary_dish'] ? 1 : 0,
+                });
+              }
+            }
+          }
+        }
+      });
     } catch (e) {
-      throw GastrobrainException('Failed to get database size: ${e.toString()}');
-    }
-  }
-
-  /// Formats file size in human-readable format (KB, MB)
-  static String formatFileSize(int bytes) {
-    if (bytes < 1024) {
-      return '$bytes B';
-    } else if (bytes < 1024 * 1024) {
-      final kb = (bytes / 1024).toStringAsFixed(1);
-      return '$kb KB';
-    } else {
-      final mb = (bytes / (1024 * 1024)).toStringAsFixed(2);
-      return '$mb MB';
+      throw GastrobrainException(
+          'Failed to restore backup: ${e.toString()}');
     }
   }
 }

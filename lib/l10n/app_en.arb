@@ -1765,6 +1765,18 @@
   "@restoreCancelled": {
     "description": "Message when user cancels restore"
   },
+  "selectBackupFile": "Select Backup File",
+  "@selectBackupFile": {
+    "description": "Title for backup file selection dialog"
+  },
+  "backupFilePath": "Backup File Path",
+  "@backupFilePath": {
+    "description": "Label for backup file path input field"
+  },
+  "ok": "OK",
+  "@ok": {
+    "description": "OK button label"
+  },
   "currentDatabaseSize": "Current database size: {size}",
   "@currentDatabaseSize": {
     "description": "Shows the current database file size",

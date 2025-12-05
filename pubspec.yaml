@@ -54,8 +54,6 @@ dependencies:
   provider: ">=6.0.0 <7.0.0"  # State management solution
   string_similarity: ">=2.0.0 <3.0.0"  # For fuzzy ingredient matching
   diacritic: ^0.1.6
-  file_picker: ">=8.0.0 <9.0.0"  # For backup/restore file selection
-  path_provider: ">=2.1.0 <3.0.0"  # For accessing device directories
 
 dev_dependencies:
   flutter_test:

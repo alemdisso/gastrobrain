@@ -304,6 +304,18 @@ class MockDatabaseHelper implements DatabaseHelper {
     return limitedMeals;
   }
 
+  @override
+  Future<List<Meal>> getAllMeals() async {
+    final allMeals = _meals.values.toList();
+
+    // Load meal recipes for each meal
+    for (final meal in allMeals) {
+      meal.mealRecipes = await getMealRecipesForMeal(meal.id);
+    }
+
+    return allMeals;
+  }
+
 // Add this to your MockDatabaseHelper class
   Future<List<Map<String, dynamic>>> getRecentMealsForRecommendations({
     required DateTime startDate,
@@ -754,6 +766,17 @@ class MockDatabaseHelper implements DatabaseHelper {
       return !normalizedStart.isAfter(planEndDate) &&
           !normalizedEnd.isBefore(plan.weekStartDate);
     }).toList();
+  }
+
+  @override
+  Future<List<MealPlan>> getAllMealPlans() async {
+    return _mealPlans.values.toList();
+  }
+
+  @override
+  Future<List<MealPlanItem>> getMealPlanItems(String mealPlanId) async {
+    final plan = _mealPlans[mealPlanId];
+    return plan?.items ?? [];
   }
 
   @override
