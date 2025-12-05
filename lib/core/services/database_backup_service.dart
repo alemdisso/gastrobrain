@@ -55,19 +55,19 @@ class DatabaseBackupService {
     }
   }
 
-  /// Exports all recipes with ingredients and cooking history
+  /// Exports all recipes with their recipe_ingredients junction table data
   Future<List<Map<String, dynamic>>> _exportRecipes() async {
     final recipes = await _databaseHelper.getAllRecipes();
     final exportData = <Map<String, dynamic>>[];
+    final db = await _databaseHelper.database;
 
     for (final recipe in recipes) {
-      // Get ingredients for this recipe
-      final ingredients = await _databaseHelper.getRecipeIngredients(recipe.id);
-
-      // Get cooking history
-      final lastCookedDate = await _databaseHelper.getLastCookedDate(recipe.id);
-      final timesCookedCount =
-          await _databaseHelper.getTimesCookedCount(recipe.id);
+      // Query recipe_ingredients table directly to get actual table data
+      final recipeIngredients = await db.query(
+        'recipe_ingredients',
+        where: 'recipe_id = ?',
+        whereArgs: [recipe.id],
+      );
 
       exportData.add({
         'id': recipe.id,
@@ -81,21 +81,19 @@ class DatabaseBackupService {
         'notes': recipe.notes,
         'instructions': recipe.instructions,
         'created_at': recipe.createdAt.toIso8601String(),
-        'ingredients': ingredients
-            .map((ing) => {
-                  'ingredient_id': ing['ingredient_id'],
-                  'name': ing['name'],
-                  'quantity': ing['quantity'],
-                  'unit': ing['unit'],
-                  'category': ing['category'],
-                  'protein_type': ing['protein_type'],
-                  'preparation_notes': ing['preparation_notes'],
+        'recipe_ingredients': recipeIngredients
+            .map((ri) => {
+                  'id': ri['id'],
+                  'recipe_id': ri['recipe_id'],
+                  'ingredient_id': ri['ingredient_id'],
+                  'quantity': ri['quantity'],
+                  'notes': ri['notes'],
+                  'unit_override': ri['unit_override'],
+                  'custom_name': ri['custom_name'],
+                  'custom_category': ri['custom_category'],
+                  'custom_unit': ri['custom_unit'],
                 })
             .toList(),
-        'cooking_history': {
-          'times_cooked': timesCookedCount,
-          'last_cooked_date': lastCookedDate?.toIso8601String(),
-        },
       });
     }
 
@@ -130,9 +128,9 @@ class DatabaseBackupService {
       exportData.add({
         'id': plan.id,
         'week_start_date': plan.weekStartDate.toIso8601String(),
-        'week_end_date': plan.weekEndDate.toIso8601String(),
         'notes': plan.notes,
         'created_at': plan.createdAt.toIso8601String(),
+        'modified_at': plan.modifiedAt.toIso8601String(),
         'items': items
             .map((item) => {
                   'id': item.id,
@@ -143,9 +141,11 @@ class DatabaseBackupService {
                   'has_been_cooked': item.hasBeenCooked,
                   'recipes': (item.mealPlanItemRecipes ?? [])
                       .map((recipe) => {
+                            'id': recipe.id,
                             'meal_plan_item_id': recipe.mealPlanItemId,
                             'recipe_id': recipe.recipeId,
                             'is_primary_dish': recipe.isPrimaryDish,
+                            'notes': recipe.notes,
                           })
                       .toList(),
                 })
@@ -174,9 +174,11 @@ class DatabaseBackupService {
         'modified_at': meal.modifiedAt?.toIso8601String(),
         'meal_recipes': (meal.mealRecipes ?? [])
             .map((recipe) => {
+                  'id': recipe.id,
                   'meal_id': recipe.mealId,
                   'recipe_id': recipe.recipeId,
                   'is_primary_dish': recipe.isPrimaryDish,
+                  'notes': recipe.notes,
                 })
             .toList(),
       });
@@ -283,15 +285,19 @@ class DatabaseBackupService {
             });
 
             // Insert recipe ingredients
-            if (recipe['ingredients'] != null) {
-              final ingredients = recipe['ingredients'] as List;
-              for (final ing in ingredients) {
+            if (recipe['recipe_ingredients'] != null) {
+              final recipeIngredients = recipe['recipe_ingredients'] as List;
+              for (final ri in recipeIngredients) {
                 await txn.insert('recipe_ingredients', {
-                  'recipe_id': recipe['id'],
-                  'ingredient_id': ing['ingredient_id'],
-                  'quantity': ing['quantity'],
-                  'unit': ing['unit'],
-                  'preparation_notes': ing['preparation_notes'],
+                  'id': ri['id'],
+                  'recipe_id': ri['recipe_id'],
+                  'ingredient_id': ri['ingredient_id'],
+                  'quantity': ri['quantity'],
+                  'notes': ri['notes'],
+                  'unit_override': ri['unit_override'],
+                  'custom_name': ri['custom_name'],
+                  'custom_category': ri['custom_category'],
+                  'custom_unit': ri['custom_unit'],
                 });
               }
             }
@@ -306,9 +312,9 @@ class DatabaseBackupService {
             await txn.insert('meal_plans', {
               'id': plan['id'],
               'week_start_date': plan['week_start_date'],
-              'week_end_date': plan['week_end_date'],
               'notes': plan['notes'],
               'created_at': plan['created_at'],
+              'modified_at': plan['modified_at'],
             });
 
             // Insert meal plan items
@@ -329,9 +335,11 @@ class DatabaseBackupService {
                   final recipes = item['recipes'] as List;
                   for (final recipe in recipes) {
                     await txn.insert('meal_plan_item_recipes', {
+                      'id': recipe['id'],
                       'meal_plan_item_id': recipe['meal_plan_item_id'],
                       'recipe_id': recipe['recipe_id'],
                       'is_primary_dish': recipe['is_primary_dish'] ? 1 : 0,
+                      'notes': recipe['notes'],
                     });
                   }
                 }
@@ -362,9 +370,11 @@ class DatabaseBackupService {
               final mealRecipes = meal['meal_recipes'] as List;
               for (final recipe in mealRecipes) {
                 await txn.insert('meal_recipes', {
+                  'id': recipe['id'],
                   'meal_id': recipe['meal_id'],
                   'recipe_id': recipe['recipe_id'],
                   'is_primary_dish': recipe['is_primary_dish'] ? 1 : 0,
+                  'notes': recipe['notes'],
                 });
               }
             }
