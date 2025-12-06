@@ -23,6 +23,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -31,6 +32,12 @@ class _HomePageState extends State<HomePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<RecipeProvider>().loadRecipes();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
 
@@ -170,6 +177,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _clearAllFilters() async {
     setState(() {
       _searchQuery = '';
+      _searchController.clear(); // Clear the TextField as well
     });
     await context.read<RecipeProvider>().clearFilters();
   }
@@ -373,6 +381,7 @@ class _HomePageState extends State<HomePage> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: TextField(
+            controller: _searchController,
             decoration: InputDecoration(
               hintText: AppLocalizations.of(context)!.searchRecipes,
               prefixIcon: const Icon(Icons.search),
