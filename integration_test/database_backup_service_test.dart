@@ -1016,6 +1016,8 @@ void main() {
         final malformedPath = '/sdcard/Download/malformed_$timestamp.json';
         final malformedFile = File(malformedPath);
 
+        // Ensure directory exists
+        await malformedFile.parent.create(recursive: true);
         await malformedFile.writeAsString('{ this is not valid JSON }');
 
         // Attempt restore should throw
@@ -1043,6 +1045,8 @@ void main() {
           'recommendation_history': [],
         };
 
+        // Ensure directory exists
+        await invalidFile.parent.create(recursive: true);
         await invalidFile.writeAsString(json.encode(invalidBackup));
 
         // Attempt restore should throw
@@ -1125,6 +1129,8 @@ void main() {
           'recommendation_history': [],
         };
 
+        // Ensure directory exists
+        await corruptedFile.parent.create(recursive: true);
         await corruptedFile.writeAsString(
           const JsonEncoder.withIndent('  ').convert(corruptedBackup),
         );
