@@ -1230,12 +1230,12 @@ void main() {
         );
         await dbHelper.addIngredientToRecipe(recipeIngredient);
 
-        // Create meal plan with dependencies
+        // Create meal plan with dependencies (weekStartDate must be Friday)
         final mealPlan = MealPlan(
           id: IdGenerator.generateId(),
-          weekStartDate: DateTime.now(),
-          createdAt: DateTime.now(),
-          modifiedAt: DateTime.now(),
+          weekStartDate: DateTime(2025, 1, 3), // Friday
+          createdAt: DateTime(2025, 1, 1),
+          modifiedAt: DateTime(2025, 1, 2),
           items: [],
         );
         await dbHelper.insertMealPlan(mealPlan);
@@ -1344,12 +1344,12 @@ void main() {
           quantity: 200.0,
         ));
 
-        // Create meal plan (no dependencies)
+        // Create meal plan (no dependencies, weekStartDate must be Friday)
         final mealPlan = MealPlan(
           id: IdGenerator.generateId(),
-          weekStartDate: DateTime.now(),
-          createdAt: DateTime.now(),
-          modifiedAt: DateTime.now(),
+          weekStartDate: DateTime(2025, 1, 10), // Friday
+          createdAt: DateTime(2025, 1, 8),
+          modifiedAt: DateTime(2025, 1, 9),
           items: [],
         );
         await dbHelper.insertMealPlan(mealPlan);
