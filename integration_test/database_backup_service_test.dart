@@ -436,5 +436,559 @@ void main() {
         await backupFile.delete();
       });
     });
+
+    group('Import/Restore functionality', () {
+      test('restores empty database successfully', () async {
+        // Create backup of empty database
+        final backupPath = await backupService.backupDatabase();
+
+        // Add some data to database
+        final ingredient = Ingredient(
+          id: IdGenerator.generateId(),
+          name: 'Test Ingredient',
+          category: IngredientCategory.vegetable,
+        );
+        await dbHelper.insertIngredient(ingredient);
+
+        // Verify data exists
+        expect(await dbHelper.getAllIngredients(), hasLength(1));
+
+        // Restore empty backup
+        await backupService.restoreDatabase(backupPath);
+
+        // Verify database is now empty
+        expect(await dbHelper.getAllRecipes(), isEmpty);
+        expect(await dbHelper.getAllIngredients(), isEmpty);
+        expect(await dbHelper.getAllMealPlans(), isEmpty);
+        expect(await dbHelper.getAllMeals(), isEmpty);
+
+        // Clean up
+        await File(backupPath).delete();
+      });
+
+      test('restores ingredients with all fields', () async {
+        // Create test ingredients
+        final ingredient1 = Ingredient(
+          id: IdGenerator.generateId(),
+          name: 'Carrot',
+          category: IngredientCategory.vegetable,
+          unit: MeasurementUnit.gram,
+          proteinType: null,
+          notes: 'Fresh carrots',
+        );
+
+        final ingredient2 = Ingredient(
+          id: IdGenerator.generateId(),
+          name: 'Salmon',
+          category: IngredientCategory.protein,
+          unit: MeasurementUnit.gram,
+          proteinType: ProteinType.fish,
+          notes: null,
+        );
+
+        await dbHelper.insertIngredient(ingredient1);
+        await dbHelper.insertIngredient(ingredient2);
+
+        // Create backup
+        final backupPath = await backupService.backupDatabase();
+
+        // Clear database
+        await cleanDatabase(dbHelper);
+        expect(await dbHelper.getAllIngredients(), isEmpty);
+
+        // Restore backup
+        await backupService.restoreDatabase(backupPath);
+
+        // Verify ingredients restored
+        final restoredIngredients = await dbHelper.getAllIngredients();
+        expect(restoredIngredients.length, equals(2));
+
+        // Verify ingredient 1
+        final restored1 = restoredIngredients.firstWhere((i) => i.id == ingredient1.id);
+        expect(restored1.name, equals('Carrot'));
+        expect(restored1.category, equals(IngredientCategory.vegetable));
+        expect(restored1.unit, equals(MeasurementUnit.gram));
+        expect(restored1.proteinType, isNull);
+        expect(restored1.notes, equals('Fresh carrots'));
+
+        // Verify ingredient 2
+        final restored2 = restoredIngredients.firstWhere((i) => i.id == ingredient2.id);
+        expect(restored2.name, equals('Salmon'));
+        expect(restored2.category, equals(IngredientCategory.protein));
+        expect(restored2.unit, equals(MeasurementUnit.gram));
+        expect(restored2.proteinType, equals(ProteinType.fish));
+        expect(restored2.notes, isNull);
+
+        // Clean up
+        await File(backupPath).delete();
+      });
+
+      test('restores recipes with recipe_ingredients', () async {
+        // Create test ingredient
+        final ingredient = Ingredient(
+          id: IdGenerator.generateId(),
+          name: 'Pasta',
+          category: IngredientCategory.grain,
+        );
+        await dbHelper.insertIngredient(ingredient);
+
+        // Create test recipe
+        final recipe = Recipe(
+          id: IdGenerator.generateId(),
+          name: 'Pasta Dish',
+          difficulty: 1,
+          prepTimeMinutes: 5,
+          cookTimeMinutes: 15,
+          rating: 5,
+          category: RecipeCategory.mainDishes,
+          desiredFrequency: FrequencyType.weekly,
+          notes: 'Simple pasta',
+          instructions: 'Cook pasta',
+          createdAt: DateTime(2025, 1, 10),
+        );
+        await dbHelper.insertRecipe(recipe);
+
+        // Create recipe ingredient
+        final recipeIngredient = RecipeIngredient(
+          id: IdGenerator.generateId(),
+          recipeId: recipe.id,
+          ingredientId: ingredient.id,
+          quantity: 200.0,
+          notes: 'Cooked',
+          unitOverride: 'g',
+        );
+        await dbHelper.addIngredientToRecipe(recipeIngredient);
+
+        // Create backup
+        final backupPath = await backupService.backupDatabase();
+
+        // Clear database
+        await cleanDatabase(dbHelper);
+        expect(await dbHelper.getAllRecipes(), isEmpty);
+
+        // Restore backup
+        await backupService.restoreDatabase(backupPath);
+
+        // Verify recipe restored
+        final restoredRecipes = await dbHelper.getAllRecipes();
+        expect(restoredRecipes.length, equals(1));
+
+        final restoredRecipe = restoredRecipes.first;
+        expect(restoredRecipe.id, equals(recipe.id));
+        expect(restoredRecipe.name, equals('Pasta Dish'));
+        expect(restoredRecipe.difficulty, equals(1));
+        expect(restoredRecipe.prepTimeMinutes, equals(5));
+        expect(restoredRecipe.cookTimeMinutes, equals(15));
+        expect(restoredRecipe.rating, equals(5));
+        expect(restoredRecipe.category, equals(RecipeCategory.mainDishes));
+        expect(restoredRecipe.desiredFrequency, equals(FrequencyType.weekly));
+        expect(restoredRecipe.notes, equals('Simple pasta'));
+        expect(restoredRecipe.instructions, equals('Cook pasta'));
+
+        // Verify recipe ingredients restored
+        final db = await dbHelper.database;
+        final restoredRecipeIngredients = await db.query(
+          'recipe_ingredients',
+          where: 'recipe_id = ?',
+          whereArgs: [recipe.id],
+        );
+
+        expect(restoredRecipeIngredients.length, equals(1));
+        final restoredRI = restoredRecipeIngredients.first;
+        expect(restoredRI['id'], equals(recipeIngredient.id));
+        expect(restoredRI['recipe_id'], equals(recipe.id));
+        expect(restoredRI['ingredient_id'], equals(ingredient.id));
+        expect(restoredRI['quantity'], equals(200.0));
+        expect(restoredRI['notes'], equals('Cooked'));
+        expect(restoredRI['unit_override'], equals('g'));
+
+        // Clean up
+        await File(backupPath).delete();
+      });
+
+      test('restores meal plans with items and recipes', () async {
+        // Create test recipe
+        final recipe = Recipe(
+          id: IdGenerator.generateId(),
+          name: 'Backup Test Recipe',
+          difficulty: 2,
+          desiredFrequency: FrequencyType.weekly,
+          category: RecipeCategory.mainDishes,
+          createdAt: DateTime(2025, 1, 15),
+        );
+        await dbHelper.insertRecipe(recipe);
+
+        // Create meal plan
+        final mealPlan = MealPlan(
+          id: IdGenerator.generateId(),
+          weekStartDate: DateTime(2025, 1, 10),
+          notes: 'Restore test plan',
+          createdAt: DateTime(2025, 1, 8),
+          modifiedAt: DateTime(2025, 1, 9),
+          items: [],
+        );
+        await dbHelper.insertMealPlan(mealPlan);
+
+        // Create meal plan item
+        final mealPlanItem = MealPlanItem(
+          id: IdGenerator.generateId(),
+          mealPlanId: mealPlan.id,
+          plannedDate: '2025-01-10',
+          mealType: 'lunch',
+          notes: 'Restore test lunch',
+          hasBeenCooked: true,
+        );
+        await dbHelper.insertMealPlanItem(mealPlanItem);
+
+        // Create meal plan item recipe
+        final mealPlanItemRecipe = MealPlanItemRecipe(
+          id: IdGenerator.generateId(),
+          mealPlanItemId: mealPlanItem.id,
+          recipeId: recipe.id,
+          isPrimaryDish: true,
+          notes: 'Primary',
+        );
+        await dbHelper.insertMealPlanItemRecipe(mealPlanItemRecipe);
+
+        // Create backup
+        final backupPath = await backupService.backupDatabase();
+
+        // Clear database
+        await cleanDatabase(dbHelper);
+        expect(await dbHelper.getAllMealPlans(), isEmpty);
+
+        // Restore backup
+        await backupService.restoreDatabase(backupPath);
+
+        // Verify meal plan restored
+        final restoredMealPlans = await dbHelper.getAllMealPlans();
+        expect(restoredMealPlans.length, equals(1));
+
+        final restoredPlan = restoredMealPlans.first;
+        expect(restoredPlan.id, equals(mealPlan.id));
+        expect(restoredPlan.weekStartDate, equals(DateTime(2025, 1, 10)));
+        expect(restoredPlan.notes, equals('Restore test plan'));
+
+        // Verify meal plan items restored
+        final restoredItems = await dbHelper.getMealPlanItems(mealPlan.id);
+        expect(restoredItems.length, equals(1));
+
+        final restoredItem = restoredItems.first;
+        expect(restoredItem.id, equals(mealPlanItem.id));
+        expect(restoredItem.mealPlanId, equals(mealPlan.id));
+        expect(restoredItem.plannedDate, equals('2025-01-10'));
+        expect(restoredItem.mealType, equals('lunch'));
+        expect(restoredItem.notes, equals('Restore test lunch'));
+        expect(restoredItem.hasBeenCooked, equals(true));
+
+        // Verify meal plan item recipes restored
+        expect(restoredItem.mealPlanItemRecipes, isNotNull);
+        expect(restoredItem.mealPlanItemRecipes!.length, equals(1));
+
+        final restoredRecipe = restoredItem.mealPlanItemRecipes!.first;
+        expect(restoredRecipe.id, equals(mealPlanItemRecipe.id));
+        expect(restoredRecipe.mealPlanItemId, equals(mealPlanItem.id));
+        expect(restoredRecipe.recipeId, equals(recipe.id));
+        expect(restoredRecipe.isPrimaryDish, equals(true));
+        expect(restoredRecipe.notes, equals('Primary'));
+
+        // Clean up
+        await File(backupPath).delete();
+      });
+
+      test('restores meals with meal_recipes', () async {
+        // Create test recipe
+        final recipe = Recipe(
+          id: IdGenerator.generateId(),
+          name: 'Meal Restore Test',
+          difficulty: 3,
+          desiredFrequency: FrequencyType.monthly,
+          category: RecipeCategory.mainDishes,
+          createdAt: DateTime(2025, 1, 20),
+        );
+        await dbHelper.insertRecipe(recipe);
+
+        // Create meal
+        final meal = Meal(
+          id: IdGenerator.generateId(),
+          recipeId: recipe.id,
+          cookedAt: DateTime(2025, 1, 22, 19, 0),
+          servings: 2,
+          notes: 'Tasty!',
+          wasSuccessful: true,
+          actualPrepTime: 10.0,
+          actualCookTime: 25.0,
+          modifiedAt: DateTime(2025, 1, 23),
+        );
+        await dbHelper.insertMeal(meal);
+
+        // Create meal recipe
+        final mealRecipe = MealRecipe(
+          id: IdGenerator.generateId(),
+          mealId: meal.id,
+          recipeId: recipe.id,
+          isPrimaryDish: true,
+          notes: 'Main dish',
+        );
+        await dbHelper.insertMealRecipe(mealRecipe);
+
+        // Create backup
+        final backupPath = await backupService.backupDatabase();
+
+        // Clear database
+        await cleanDatabase(dbHelper);
+        expect(await dbHelper.getAllMeals(), isEmpty);
+
+        // Restore backup
+        await backupService.restoreDatabase(backupPath);
+
+        // Verify meal restored
+        final restoredMeals = await dbHelper.getAllMeals();
+        expect(restoredMeals.length, equals(1));
+
+        final restoredMeal = restoredMeals.first;
+        expect(restoredMeal.id, equals(meal.id));
+        expect(restoredMeal.recipeId, equals(recipe.id));
+        expect(restoredMeal.cookedAt, equals(DateTime(2025, 1, 22, 19, 0)));
+        expect(restoredMeal.servings, equals(2));
+        expect(restoredMeal.notes, equals('Tasty!'));
+        expect(restoredMeal.wasSuccessful, equals(true));
+        expect(restoredMeal.actualPrepTime, equals(10.0));
+        expect(restoredMeal.actualCookTime, equals(25.0));
+
+        // Verify meal recipes restored
+        expect(restoredMeal.mealRecipes, isNotNull);
+        expect(restoredMeal.mealRecipes!.length, equals(1));
+
+        final restoredMealRecipe = restoredMeal.mealRecipes!.first;
+        expect(restoredMealRecipe.id, equals(mealRecipe.id));
+        expect(restoredMealRecipe.mealId, equals(meal.id));
+        expect(restoredMealRecipe.recipeId, equals(recipe.id));
+        expect(restoredMealRecipe.isPrimaryDish, equals(true));
+        expect(restoredMealRecipe.notes, equals('Main dish'));
+
+        // Clean up
+        await File(backupPath).delete();
+      });
+
+      test('restores recommendation_history', () async {
+        // Insert recommendation history records directly
+        final db = await dbHelper.database;
+        final record1Id = IdGenerator.generateId();
+        final record2Id = IdGenerator.generateId();
+
+        await db.insert('recommendation_history', {
+          'id': record1Id,
+          'result_data': '{"recipe_ids": ["rec1", "rec2"]}',
+          'created_at': '2025-01-15T10:00:00.000',
+          'context_type': 'meal_plan',
+          'target_date': '2025-01-20',
+          'meal_type': 'dinner',
+          'user_id': 'user123',
+        });
+
+        await db.insert('recommendation_history', {
+          'id': record2Id,
+          'result_data': '{"recipe_ids": ["rec3"]}',
+          'created_at': '2025-01-16T11:30:00.000',
+          'context_type': 'quick_pick',
+          'target_date': null,
+          'meal_type': 'lunch',
+          'user_id': 'user456',
+        });
+
+        // Create backup
+        final backupPath = await backupService.backupDatabase();
+
+        // Clear database
+        await cleanDatabase(dbHelper);
+        final emptyRecords = await db.query('recommendation_history');
+        expect(emptyRecords, isEmpty);
+
+        // Restore backup
+        await backupService.restoreDatabase(backupPath);
+
+        // Verify recommendation history restored
+        final restoredRecords = await db.query('recommendation_history');
+        expect(restoredRecords.length, equals(2));
+
+        // Verify record 1
+        final restored1 = restoredRecords.firstWhere((r) => r['id'] == record1Id);
+        expect(restored1['result_data'], equals('{"recipe_ids": ["rec1", "rec2"]}'));
+        expect(restored1['created_at'], equals('2025-01-15T10:00:00.000'));
+        expect(restored1['context_type'], equals('meal_plan'));
+        expect(restored1['target_date'], equals('2025-01-20'));
+        expect(restored1['meal_type'], equals('dinner'));
+        expect(restored1['user_id'], equals('user123'));
+
+        // Verify record 2
+        final restored2 = restoredRecords.firstWhere((r) => r['id'] == record2Id);
+        expect(restored2['result_data'], equals('{"recipe_ids": ["rec3"]}'));
+        expect(restored2['created_at'], equals('2025-01-16T11:30:00.000'));
+        expect(restored2['context_type'], equals('quick_pick'));
+        expect(restored2['target_date'], isNull);
+        expect(restored2['meal_type'], equals('lunch'));
+        expect(restored2['user_id'], equals('user456'));
+
+        // Clean up
+        await File(backupPath).delete();
+      });
+
+      test('restore replaces existing data completely', () async {
+        // Create original data
+        final originalIngredient = Ingredient(
+          id: IdGenerator.generateId(),
+          name: 'Original Ingredient',
+          category: IngredientCategory.vegetable,
+        );
+        await dbHelper.insertIngredient(originalIngredient);
+
+        final originalRecipe = Recipe(
+          id: IdGenerator.generateId(),
+          name: 'Original Recipe',
+          difficulty: 1,
+          desiredFrequency: FrequencyType.weekly,
+          category: RecipeCategory.mainDishes,
+          createdAt: DateTime(2025, 1, 1),
+        );
+        await dbHelper.insertRecipe(originalRecipe);
+
+        // Create backup of original data
+        final backupPath = await backupService.backupDatabase();
+
+        // Add new different data
+        final newIngredient = Ingredient(
+          id: IdGenerator.generateId(),
+          name: 'New Ingredient',
+          category: IngredientCategory.protein,
+        );
+        await dbHelper.insertIngredient(newIngredient);
+
+        final newRecipe = Recipe(
+          id: IdGenerator.generateId(),
+          name: 'New Recipe',
+          difficulty: 3,
+          desiredFrequency: FrequencyType.monthly,
+          category: RecipeCategory.desserts,
+          createdAt: DateTime(2025, 2, 1),
+        );
+        await dbHelper.insertRecipe(newRecipe);
+
+        // Verify we have 2 ingredients and 2 recipes
+        expect(await dbHelper.getAllIngredients(), hasLength(2));
+        expect(await dbHelper.getAllRecipes(), hasLength(2));
+
+        // Restore original backup
+        await backupService.restoreDatabase(backupPath);
+
+        // Verify only original data exists (new data was replaced)
+        final ingredients = await dbHelper.getAllIngredients();
+        expect(ingredients.length, equals(1));
+        expect(ingredients.first.id, equals(originalIngredient.id));
+        expect(ingredients.first.name, equals('Original Ingredient'));
+
+        final recipes = await dbHelper.getAllRecipes();
+        expect(recipes.length, equals(1));
+        expect(recipes.first.id, equals(originalRecipe.id));
+        expect(recipes.first.name, equals('Original Recipe'));
+
+        // Clean up
+        await File(backupPath).delete();
+      });
+
+      test('round-trip integrity: export → restore → verify', () async {
+        // Create comprehensive test data
+        final ingredient = Ingredient(
+          id: IdGenerator.generateId(),
+          name: 'Round Trip Ingredient',
+          category: IngredientCategory.vegetable,
+          unit: MeasurementUnit.piece,
+          notes: 'Test notes',
+        );
+        await dbHelper.insertIngredient(ingredient);
+
+        final recipe = Recipe(
+          id: IdGenerator.generateId(),
+          name: 'Round Trip Recipe',
+          difficulty: 2,
+          prepTimeMinutes: 15,
+          cookTimeMinutes: 30,
+          rating: 4,
+          category: RecipeCategory.mainDishes,
+          desiredFrequency: FrequencyType.weekly,
+          notes: 'Recipe notes',
+          instructions: 'Cook it well',
+          createdAt: DateTime(2025, 1, 25),
+        );
+        await dbHelper.insertRecipe(recipe);
+
+        final recipeIngredient = RecipeIngredient(
+          id: IdGenerator.generateId(),
+          recipeId: recipe.id,
+          ingredientId: ingredient.id,
+          quantity: 3.0,
+          notes: 'Chopped',
+          unitOverride: 'piece',
+        );
+        await dbHelper.addIngredientToRecipe(recipeIngredient);
+
+        // Store original values for comparison
+        final originalIngredients = await dbHelper.getAllIngredients();
+        final originalRecipes = await dbHelper.getAllRecipes();
+
+        // Create backup
+        final backupPath = await backupService.backupDatabase();
+
+        // Completely clear database
+        await cleanDatabase(dbHelper);
+        expect(await dbHelper.getAllIngredients(), isEmpty);
+        expect(await dbHelper.getAllRecipes(), isEmpty);
+
+        // Restore backup
+        await backupService.restoreDatabase(backupPath);
+
+        // Verify exact match with original data
+        final restoredIngredients = await dbHelper.getAllIngredients();
+        expect(restoredIngredients.length, equals(originalIngredients.length));
+
+        final restoredIngredient = restoredIngredients.first;
+        expect(restoredIngredient.id, equals(ingredient.id));
+        expect(restoredIngredient.name, equals(ingredient.name));
+        expect(restoredIngredient.category, equals(ingredient.category));
+        expect(restoredIngredient.unit, equals(ingredient.unit));
+        expect(restoredIngredient.notes, equals(ingredient.notes));
+
+        final restoredRecipes = await dbHelper.getAllRecipes();
+        expect(restoredRecipes.length, equals(originalRecipes.length));
+
+        final restoredRecipe = restoredRecipes.first;
+        expect(restoredRecipe.id, equals(recipe.id));
+        expect(restoredRecipe.name, equals(recipe.name));
+        expect(restoredRecipe.difficulty, equals(recipe.difficulty));
+        expect(restoredRecipe.prepTimeMinutes, equals(recipe.prepTimeMinutes));
+        expect(restoredRecipe.cookTimeMinutes, equals(recipe.cookTimeMinutes));
+        expect(restoredRecipe.rating, equals(recipe.rating));
+        expect(restoredRecipe.category, equals(recipe.category));
+        expect(restoredRecipe.desiredFrequency, equals(recipe.desiredFrequency));
+        expect(restoredRecipe.notes, equals(recipe.notes));
+        expect(restoredRecipe.instructions, equals(recipe.instructions));
+
+        // Verify recipe ingredients junction table
+        final db = await dbHelper.database;
+        final restoredRI = await db.query(
+          'recipe_ingredients',
+          where: 'recipe_id = ?',
+          whereArgs: [recipe.id],
+        );
+
+        expect(restoredRI.length, equals(1));
+        expect(restoredRI.first['id'], equals(recipeIngredient.id));
+        expect(restoredRI.first['quantity'], equals(3.0));
+        expect(restoredRI.first['notes'], equals('Chopped'));
+
+        // Clean up
+        await File(backupPath).delete();
+      });
+    });
   });
 }
