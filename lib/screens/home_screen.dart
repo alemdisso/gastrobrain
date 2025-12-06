@@ -161,6 +161,46 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// Checks if any filter is currently active (provider filters or search query)
+  bool _hasAnyActiveFilter(RecipeProvider provider) {
+    return provider.hasActiveFilters || _searchQuery.isNotEmpty;
+  }
+
+  /// Clears all active filters (both provider filters and search query)
+  Future<void> _clearAllFilters() async {
+    setState(() {
+      _searchQuery = '';
+    });
+    await context.read<RecipeProvider>().clearFilters();
+  }
+
+  /// Gets a human-readable description of active filters
+  String _getFilterDescription(BuildContext context, RecipeProvider provider) {
+    final List<String> filterParts = [];
+
+    // Add search query if present
+    if (_searchQuery.isNotEmpty) {
+      filterParts.add('${AppLocalizations.of(context)!.filterByName}: "$_searchQuery"');
+    }
+
+    // Add provider filters
+    final filters = provider.filters;
+    if (filters.containsKey('difficulty')) {
+      filterParts.add('${AppLocalizations.of(context)!.filterByDifficulty}: ${filters['difficulty']}');
+    }
+    if (filters.containsKey('rating')) {
+      filterParts.add('${AppLocalizations.of(context)!.filterByRating}: ${filters['rating']}+');
+    }
+    if (filters.containsKey('desired_frequency')) {
+      filterParts.add('${AppLocalizations.of(context)!.filterByFrequency}');
+    }
+    if (filters.containsKey('category')) {
+      filterParts.add('${AppLocalizations.of(context)!.filterByCategory}');
+    }
+
+    return filterParts.join(', ');
+  }
+
   void _showFilterDialog() {
     final currentFilters = context.read<RecipeProvider>().filters;
     int? selectedDifficulty = currentFilters['difficulty'];
@@ -345,6 +385,72 @@ class _HomePageState extends State<HomePage> {
             },
           ),
         ),
+        // Filter indicator banner
+        Consumer<RecipeProvider>(
+          builder: (context, provider, child) {
+            if (!_hasAnyActiveFilter(provider)) {
+              return const SizedBox.shrink();
+            }
+
+            final filteredCount = _getFilteredRecipes(provider.recipes).length;
+            final totalCount = provider.totalRecipeCount;
+
+            return Container(
+              color: Theme.of(context).colorScheme.primaryContainer,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.filter_list,
+                        size: 20,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${AppLocalizations.of(context)!.filtersActive}: ${_getFilterDescription(context, provider)}',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onPrimaryContainer,
+                            fontSize: 13,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      TextButton.icon(
+                        icon: const Icon(Icons.clear, size: 16),
+                        label: Text(AppLocalizations.of(context)!.clearFilters),
+                        onPressed: _clearAllFilters,
+                        style: TextButton.styleFrom(
+                          foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      AppLocalizations.of(context)!.showingXOfYRecipes(
+                        filteredCount,
+                        totalCount,
+                      ),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
         Expanded(
           child: Consumer<RecipeProvider>(
             builder: (context, recipeProvider, child) {
@@ -474,10 +580,18 @@ class _HomePageState extends State<HomePage> {
                   onPressed: _showSortingDialog,
                   tooltip: AppLocalizations.of(context)!.sortRecipes,
                 ),
-                IconButton(
-                  icon: const Icon(Icons.filter_list),
-                  onPressed: _showFilterDialog,
-                  tooltip: AppLocalizations.of(context)!.filterRecipesTooltip,
+                Consumer<RecipeProvider>(
+                  builder: (context, provider, child) {
+                    final hasActiveFilters = _hasAnyActiveFilter(provider);
+                    return IconButton(
+                      icon: Badge(
+                        isLabelVisible: hasActiveFilters,
+                        child: const Icon(Icons.filter_list),
+                      ),
+                      onPressed: _showFilterDialog,
+                      tooltip: AppLocalizations.of(context)!.filterRecipesTooltip,
+                    );
+                  },
                 ),
               ]
             : null,

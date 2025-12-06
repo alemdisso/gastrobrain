@@ -90,6 +90,48 @@
   "@apply": {
     "description": "Button to apply filters"
   },
+  "filtersActive": "Filters active",
+  "@filtersActive": {
+    "description": "Banner header shown when filters are applied"
+  },
+  "clearFilters": "Clear filters",
+  "@clearFilters": {
+    "description": "Button to clear all active filters"
+  },
+  "showingXOfYRecipes": "Showing {filtered} of {total} recipes",
+  "@showingXOfYRecipes": {
+    "description": "Recipe count display when filters are active",
+    "placeholders": {
+      "filtered": {
+        "type": "int",
+        "description": "Number of recipes after filtering"
+      },
+      "total": {
+        "type": "int",
+        "description": "Total number of recipes"
+      }
+    }
+  },
+  "filterByName": "Name",
+  "@filterByName": {
+    "description": "Filter type label for name search"
+  },
+  "filterByDifficulty": "Difficulty",
+  "@filterByDifficulty": {
+    "description": "Filter type label for difficulty"
+  },
+  "filterByRating": "Rating",
+  "@filterByRating": {
+    "description": "Filter type label for rating"
+  },
+  "filterByFrequency": "Frequency",
+  "@filterByFrequency": {
+    "description": "Filter type label for cooking frequency"
+  },
+  "filterByCategory": "Category",
+  "@filterByCategory": {
+    "description": "Filter type label for category"
+  },
   "addRecipe": "Add Recipe",
   "@addRecipe": {
     "description": "Tooltip for add recipe button"

@@ -90,6 +90,48 @@
   "@apply": {
     "description": "Botão para aplicar filtros"
   },
+  "filtersActive": "Filtros ativos",
+  "@filtersActive": {
+    "description": "Cabeçalho do banner mostrado quando filtros estão aplicados"
+  },
+  "clearFilters": "Limpar filtros",
+  "@clearFilters": {
+    "description": "Botão para limpar todos os filtros ativos"
+  },
+  "showingXOfYRecipes": "Mostrando {filtered} de {total} receitas",
+  "@showingXOfYRecipes": {
+    "description": "Contagem de receitas quando filtros estão ativos",
+    "placeholders": {
+      "filtered": {
+        "type": "int",
+        "description": "Número de receitas após filtragem"
+      },
+      "total": {
+        "type": "int",
+        "description": "Número total de receitas"
+      }
+    }
+  },
+  "filterByName": "Nome",
+  "@filterByName": {
+    "description": "Rótulo do tipo de filtro para busca por nome"
+  },
+  "filterByDifficulty": "Dificuldade",
+  "@filterByDifficulty": {
+    "description": "Rótulo do tipo de filtro para dificuldade"
+  },
+  "filterByRating": "Avaliação",
+  "@filterByRating": {
+    "description": "Rótulo do tipo de filtro para avaliação"
+  },
+  "filterByFrequency": "Frequência",
+  "@filterByFrequency": {
+    "description": "Rótulo do tipo de filtro para frequência de preparo"
+  },
+  "filterByCategory": "Categoria",
+  "@filterByCategory": {
+    "description": "Rótulo do tipo de filtro para categoria"
+  },
   "addRecipe": "Adicionar Receita",
   "@addRecipe": {
     "description": "Dica do botão adicionar receita"

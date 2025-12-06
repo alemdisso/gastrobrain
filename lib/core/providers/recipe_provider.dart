@@ -11,6 +11,7 @@ class RecipeProvider extends ChangeNotifier {
   List<Recipe> _recipes = [];
   bool _isLoading = false;
   GastrobrainException? _error;
+  int _totalRecipeCount = 0;
 
   // Filter and sort state
   String? _currentSortBy = 'name';
@@ -29,6 +30,11 @@ class RecipeProvider extends ChangeNotifier {
   String? get currentSortOrder => _currentSortOrder;
   Map<String, dynamic> get filters => Map.unmodifiable(_filters);
 
+  // Filter state helpers
+  bool get hasActiveFilters => _filters.isNotEmpty;
+  int get totalRecipeCount => _totalRecipeCount;
+  int get filteredRecipeCount => _recipes.length;
+
   /// Loads all recipes with current filters and sorting
   Future<void> loadRecipes({bool forceRefresh = false}) async {
     if (_isLoading) return; // Prevent multiple simultaneous loads
@@ -42,6 +48,9 @@ class RecipeProvider extends ChangeNotifier {
       filters: _filters.isEmpty ? null : _filters,
       forceRefresh: forceRefresh,
     );
+
+    // Also fetch total recipe count (for "X of Y" display)
+    _totalRecipeCount = await _repository.getTotalRecipeCount();
 
     _setLoading(false);
 
