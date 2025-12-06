@@ -128,7 +128,7 @@ void main() {
         final ing1 = ingredients.firstWhere((i) => i['id'] == ingredient1.id);
         expect(ing1['name'], equals('Tomato'));
         expect(ing1['category'], equals('vegetable'));
-        expect(ing1['unit'], equals('piece'));
+        expect(ing1['unit'], equals('piece')); // MeasurementUnit.piece.value
         expect(ing1['protein_type'], isNull);
         expect(ing1['notes'], equals('Fresh tomatoes'));
 
@@ -136,7 +136,7 @@ void main() {
         final ing2 = ingredients.firstWhere((i) => i['id'] == ingredient2.id);
         expect(ing2['name'], equals('Chicken Breast'));
         expect(ing2['category'], equals('protein'));
-        expect(ing2['unit'], equals('gram'));
+        expect(ing2['unit'], equals('g')); // MeasurementUnit.gram.value
         expect(ing2['protein_type'], equals('chicken'));
         expect(ing2['notes'], isNull);
 
