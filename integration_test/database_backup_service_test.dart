@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:gastrobrain/database/database_helper.dart';
 import 'package:gastrobrain/core/services/database_backup_service.dart';
+import 'package:gastrobrain/core/errors/gastrobrain_exceptions.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/ingredient.dart';
 import 'package:gastrobrain/models/meal.dart';
@@ -985,6 +986,201 @@ void main() {
         expect(restoredRI.first['id'], equals(recipeIngredient.id));
         expect(restoredRI.first['quantity'], equals(3.0));
         expect(restoredRI.first['notes'], equals('Chopped'));
+
+        // Clean up
+        await File(backupPath).delete();
+      });
+    });
+
+    group('Edge cases and error handling', () {
+      test('restore throws exception for non-existent file', () async {
+        final nonExistentPath = '/sdcard/Download/does_not_exist.json';
+
+        // Verify file doesn't exist
+        expect(await File(nonExistentPath).exists(), isFalse);
+
+        // Attempt restore should throw
+        expect(
+          () => backupService.restoreDatabase(nonExistentPath),
+          throwsA(isA<GastrobrainException>().having(
+            (e) => e.message,
+            'message',
+            contains('Backup file not found'),
+          )),
+        );
+      });
+
+      test('restore throws exception for malformed JSON', () async {
+        // Create file with invalid JSON
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        final malformedPath = '/sdcard/Download/malformed_$timestamp.json';
+        final malformedFile = File(malformedPath);
+
+        await malformedFile.writeAsString('{ this is not valid JSON }');
+
+        // Attempt restore should throw
+        expect(
+          () => backupService.restoreDatabase(malformedPath),
+          throwsA(isA<GastrobrainException>()),
+        );
+
+        // Clean up
+        await malformedFile.delete();
+      });
+
+      test('restore throws exception for missing version field', () async {
+        // Create backup file without version
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        final invalidPath = '/sdcard/Download/no_version_$timestamp.json';
+        final invalidFile = File(invalidPath);
+
+        final invalidBackup = {
+          'backup_date': DateTime.now().toIso8601String(),
+          'recipes': [],
+          'ingredients': [],
+          'meal_plans': [],
+          'meals': [],
+          'recommendation_history': [],
+        };
+
+        await invalidFile.writeAsString(json.encode(invalidBackup));
+
+        // Attempt restore should throw
+        expect(
+          () => backupService.restoreDatabase(invalidPath),
+          throwsA(isA<GastrobrainException>().having(
+            (e) => e.message,
+            'message',
+            contains('Invalid backup file: missing version'),
+          )),
+        );
+
+        // Clean up
+        await invalidFile.delete();
+      });
+
+      test('restore is atomic - rolls back on error', () async {
+        // Create initial data
+        final originalIngredient = Ingredient(
+          id: IdGenerator.generateId(),
+          name: 'Original Data',
+          category: IngredientCategory.vegetable,
+        );
+        await dbHelper.insertIngredient(originalIngredient);
+
+        final originalRecipe = Recipe(
+          id: IdGenerator.generateId(),
+          name: 'Original Recipe',
+          difficulty: 1,
+          desiredFrequency: FrequencyType.weekly,
+          category: RecipeCategory.mainDishes,
+          createdAt: DateTime(2025, 1, 1),
+        );
+        await dbHelper.insertRecipe(originalRecipe);
+
+        // Verify initial data exists
+        expect(await dbHelper.getAllIngredients(), hasLength(1));
+        expect(await dbHelper.getAllRecipes(), hasLength(1));
+
+        // Create a backup with invalid foreign key reference
+        // This should cause the transaction to fail
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        final corruptedPath = '/sdcard/Download/corrupted_$timestamp.json';
+        final corruptedFile = File(corruptedPath);
+
+        final corruptedBackup = {
+          'version': '1.0',
+          'backup_date': DateTime.now().toIso8601String(),
+          'ingredients': [],
+          'recipes': [
+            {
+              'id': IdGenerator.generateId(),
+              'name': 'Test Recipe',
+              'difficulty': 1,
+              'prep_time_minutes': null,
+              'cook_time_minutes': null,
+              'rating': null,
+              'category': 'mainDishes',
+              'desired_frequency': 'weekly',
+              'notes': null,
+              'instructions': null,
+              'created_at': DateTime.now().toIso8601String(),
+              'recipe_ingredients': [
+                {
+                  'id': IdGenerator.generateId(),
+                  'recipe_id': 'valid-recipe-id',
+                  'ingredient_id': 'non-existent-ingredient-id', // Invalid FK
+                  'quantity': 100.0,
+                  'notes': null,
+                  'unit_override': null,
+                  'custom_name': null,
+                  'custom_category': null,
+                  'custom_unit': null,
+                }
+              ],
+            }
+          ],
+          'meal_plans': [],
+          'meals': [],
+          'recommendation_history': [],
+        };
+
+        await corruptedFile.writeAsString(
+          const JsonEncoder.withIndent('  ').convert(corruptedBackup),
+        );
+
+        // Attempt restore - should fail and rollback
+        try {
+          await backupService.restoreDatabase(corruptedPath);
+          fail('Should have thrown an exception');
+        } catch (e) {
+          // Expected to fail
+          expect(e, isA<GastrobrainException>());
+        }
+
+        // Verify original data is still intact (transaction rolled back)
+        final ingredientsAfterFail = await dbHelper.getAllIngredients();
+        final recipesAfterFail = await dbHelper.getAllRecipes();
+
+        expect(ingredientsAfterFail.length, equals(1));
+        expect(ingredientsAfterFail.first.id, equals(originalIngredient.id));
+        expect(ingredientsAfterFail.first.name, equals('Original Data'));
+
+        expect(recipesAfterFail.length, equals(1));
+        expect(recipesAfterFail.first.id, equals(originalRecipe.id));
+        expect(recipesAfterFail.first.name, equals('Original Recipe'));
+
+        // Clean up
+        await corruptedFile.delete();
+      });
+
+      test('handles empty tables gracefully', () async {
+        // This is already covered by "exports empty database successfully"
+        // but we verify restore side here
+
+        // Create empty backup
+        final backupPath = await backupService.backupDatabase();
+
+        // Add data
+        final ingredient = Ingredient(
+          id: IdGenerator.generateId(),
+          name: 'Test',
+          category: IngredientCategory.vegetable,
+        );
+        await dbHelper.insertIngredient(ingredient);
+
+        // Restore empty backup
+        await backupService.restoreDatabase(backupPath);
+
+        // Verify all tables are empty
+        expect(await dbHelper.getAllRecipes(), isEmpty);
+        expect(await dbHelper.getAllIngredients(), isEmpty);
+        expect(await dbHelper.getAllMealPlans(), isEmpty);
+        expect(await dbHelper.getAllMeals(), isEmpty);
+
+        final db = await dbHelper.database;
+        final recommendationHistory = await db.query('recommendation_history');
+        expect(recommendationHistory, isEmpty);
 
         // Clean up
         await File(backupPath).delete();
