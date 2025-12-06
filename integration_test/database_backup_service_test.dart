@@ -1018,14 +1018,19 @@ void main() {
 
         await malformedFile.writeAsString('{ this is not valid JSON }');
 
+        // Verify file was created
+        expect(await malformedFile.exists(), isTrue);
+
         // Attempt restore should throw
-        expect(
-          () => backupService.restoreDatabase(malformedFile.path),
+        await expectLater(
+          backupService.restoreDatabase(malformedFile.path),
           throwsA(isA<GastrobrainException>()),
         );
 
         // Clean up
-        await malformedFile.delete();
+        if (await malformedFile.exists()) {
+          await malformedFile.delete();
+        }
       });
 
       test('restore throws exception for missing version field', () async {
@@ -1045,9 +1050,12 @@ void main() {
 
         await invalidFile.writeAsString(json.encode(invalidBackup));
 
+        // Verify file was created
+        expect(await invalidFile.exists(), isTrue);
+
         // Attempt restore should throw
-        expect(
-          () => backupService.restoreDatabase(invalidFile.path),
+        await expectLater(
+          backupService.restoreDatabase(invalidFile.path),
           throwsA(isA<GastrobrainException>().having(
             (e) => e.message,
             'message',
@@ -1056,7 +1064,9 @@ void main() {
         );
 
         // Clean up
-        await invalidFile.delete();
+        if (await invalidFile.exists()) {
+          await invalidFile.delete();
+        }
       });
 
       test('restore is atomic - rolls back on error', () async {
@@ -1129,6 +1139,9 @@ void main() {
           const JsonEncoder.withIndent('  ').convert(corruptedBackup),
         );
 
+        // Verify file was created
+        expect(await corruptedFile.exists(), isTrue);
+
         // Attempt restore - should fail and rollback
         try {
           await backupService.restoreDatabase(corruptedFile.path);
@@ -1151,7 +1164,9 @@ void main() {
         expect(recipesAfterFail.first.name, equals('Original Recipe'));
 
         // Clean up
-        await corruptedFile.delete();
+        if (await corruptedFile.exists()) {
+          await corruptedFile.delete();
+        }
       });
 
       test('handles empty tables gracefully', () async {
