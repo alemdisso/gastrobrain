@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../l10n/app_localizations.dart';
 import '../core/di/service_provider.dart';
 import '../core/services/snackbar_service.dart';
 import '../core/services/ingredient_translation_service.dart';
+import '../core/errors/gastrobrain_exceptions.dart';
 
 /// Temporary tools screen for development utilities
 class ToolsScreen extends StatefulWidget {
@@ -13,6 +15,8 @@ class ToolsScreen extends StatefulWidget {
 }
 
 class _ToolsScreenState extends State<ToolsScreen> {
+  bool _isBackingUp = false;
+  bool _isRestoring = false;
   bool _isExportingRecipes = false;
   bool _isExportingIngredients = false;
   bool _isTranslatingIngredients = false;
@@ -141,6 +145,170 @@ class _ToolsScreenState extends State<ToolsScreen> {
     }
   }
 
+  Future<void> _backupDatabase() async {
+    if (_isBackingUp) return;
+
+    setState(() {
+      _isBackingUp = true;
+    });
+
+    try {
+      final backupService = ServiceProvider.database.backup;
+      final backupPath = await backupService.backupDatabase();
+
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        SnackbarService.showSuccess(
+          context,
+          l10n.backupSuccess,
+        );
+
+        // Show detailed success dialog
+        _showBackupSuccessDialog(backupPath);
+      }
+    } on GastrobrainException catch (e) {
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        // Check if user cancelled
+        if (e.message.contains('cancelled')) {
+          SnackbarService.showSuccess(
+            context,
+            l10n.backupCancelled,
+          );
+        } else {
+          SnackbarService.showError(
+            context,
+            '${l10n.backupFailed}: ${e.message}',
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        SnackbarService.showError(
+          context,
+          '${l10n.backupFailed}: ${e.toString()}',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isBackingUp = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _restoreDatabase() async {
+    if (_isRestoring) return;
+
+    final l10n = AppLocalizations.of(context)!;
+
+    // Get backup file path from user
+    final filePathController = TextEditingController(
+        text: '/sdcard/Download/'); // Pre-fill with Downloads directory
+    final backupFilePath = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.selectBackupFile),
+        content: TextField(
+          controller: filePathController,
+          decoration: InputDecoration(
+            labelText: l10n.backupFilePath,
+            hintText: '/sdcard/Download/gastrobrain_backup_2024-12-04_120000.json',
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(null),
+            child: Text(l10n.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(filePathController.text),
+            child: Text(l10n.ok),
+          ),
+        ],
+      ),
+    );
+
+    if (backupFilePath == null || backupFilePath.trim().isEmpty) {
+      return; // User cancelled or provided empty path
+    }
+
+    // Show warning dialog before proceeding
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.restoreWarningTitle),
+        content: Text(l10n.restoreWarningMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
+            child: Text(l10n.buttonContinue),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() {
+      _isRestoring = true;
+    });
+
+    try {
+      final backupService = ServiceProvider.database.backup;
+      await backupService.restoreDatabase(backupFilePath);
+
+      if (mounted) {
+        SnackbarService.showSuccess(
+          context,
+          l10n.restoreSuccess,
+        );
+
+        // Show success dialog
+        _showRestoreSuccessDialog();
+      }
+    } on GastrobrainException catch (e) {
+      if (mounted) {
+        // Check if user cancelled
+        if (e.message.contains('cancelled')) {
+          SnackbarService.showSuccess(
+            context,
+            l10n.restoreCancelled,
+          );
+        } else {
+          SnackbarService.showError(
+            context,
+            '${l10n.restoreFailed}: ${e.message}',
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackbarService.showError(
+          context,
+          '${l10n.restoreFailed}: ${e.toString()}',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRestoring = false;
+        });
+      }
+    }
+  }
+
   void _showExportSuccessDialog(String filePath, [String type = 'Recipe']) {
     showDialog(
       context: context,
@@ -256,6 +424,54 @@ class _ToolsScreenState extends State<ToolsScreen> {
     );
   }
 
+  void _showBackupSuccessDialog(String filePath) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.backupSuccess),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.backupSuccessDetails(filePath)),
+            const SizedBox(height: 16),
+            const Text('📋 File path copied to clipboard'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+
+    // Copy file path to clipboard
+    Clipboard.setData(ClipboardData(text: filePath));
+  }
+
+  void _showRestoreSuccessDialog() {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.restoreSuccess),
+        content: Text(l10n.restoreSuccessMessage),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              // Note: In a real app, you might want to restart or refresh the app state here
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -276,6 +492,79 @@ class _ToolsScreenState extends State<ToolsScreen> {
                   ),
             ),
             const SizedBox(height: 32),
+
+            // Database Backup Section
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.backup,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          AppLocalizations.of(context)!.databaseBackup,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(AppLocalizations.of(context)!.backupDescription),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isBackingUp ? null : _backupDatabase,
+                        icon: _isBackingUp
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.backup),
+                        label: Text(_isBackingUp
+                            ? AppLocalizations.of(context)!.backingUp
+                            : AppLocalizations.of(context)!.backupAllData),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(AppLocalizations.of(context)!.restoreDescription),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isRestoring ? null : _restoreDatabase,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              Theme.of(context).colorScheme.errorContainer,
+                          foregroundColor:
+                              Theme.of(context).colorScheme.onErrorContainer,
+                        ),
+                        icon: _isRestoring
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.restore),
+                        label: Text(_isRestoring
+                            ? AppLocalizations.of(context)!.restoring
+                            : AppLocalizations.of(context)!.restoreFromBackup),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
 
             // Bulk Recipe Update Section
             Card(
@@ -306,7 +595,8 @@ class _ToolsScreenState extends State<ToolsScreen> {
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          Navigator.of(context).pushNamed('/bulk-recipe-update');
+                          Navigator.of(context)
+                              .pushNamed('/bulk-recipe-update');
                         },
                         icon: const Icon(Icons.edit_outlined),
                         label: const Text('Open Bulk Update'),

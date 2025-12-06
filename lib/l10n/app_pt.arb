@@ -1699,5 +1699,99 @@
         "type": "int"
       }
     }
+  },
+  "backupAllData": "Backup de Todos os Dados",
+  "@backupAllData": {
+    "description": "Texto do botão para fazer backup de todos os dados"
+  },
+  "restoreFromBackup": "Restaurar do Backup",
+  "@restoreFromBackup": {
+    "description": "Texto do botão para restaurar do backup"
+  },
+  "databaseBackup": "Backup do Banco de Dados",
+  "@databaseBackup": {
+    "description": "Título da seção de backup do banco de dados"
+  },
+  "backupDescription": "Crie um backup completo de todos os seus dados incluindo receitas, ingredientes, planos de refeições e histórico de refeições. Salve em um local seguro.",
+  "@backupDescription": {
+    "description": "Descrição do recurso de backup"
+  },
+  "restoreDescription": "Restaure todos os seus dados de um arquivo de backup anterior. AVISO: Isso irá substituir TODOS os dados existentes.",
+  "@restoreDescription": {
+    "description": "Descrição do recurso de restauração"
+  },
+  "backupSuccess": "Backup criado com sucesso!",
+  "@backupSuccess": {
+    "description": "Mensagem de sucesso após backup"
+  },
+  "backupSuccessDetails": "Seu banco de dados foi copiado com sucesso.\n\nArquivo: {filePath}",
+  "@backupSuccessDetails": {
+    "description": "Mensagem de sucesso detalhada com caminho do arquivo",
+    "placeholders": {
+      "filePath": {
+        "type": "String"
+      }
+    }
+  },
+  "restoreWarningTitle": "Restaurar do Backup?",
+  "@restoreWarningTitle": {
+    "description": "Título do diálogo de aviso de restauração"
+  },
+  "restoreWarningMessage": "Isso irá substituir TODOS os dados existentes com os dados do arquivo de backup.\n\nSuas receitas, ingredientes, planos de refeições e histórico de refeições atuais serão permanentemente excluídos.\n\nTem certeza que deseja continuar?",
+  "@restoreWarningMessage": {
+    "description": "Mensagem de aviso antes da restauração"
+  },
+  "restoreSuccess": "Dados Restaurados com Sucesso!",
+  "@restoreSuccess": {
+    "description": "Mensagem de sucesso após restauração"
+  },
+  "restoreSuccessMessage": "Seus dados foram restaurados do backup. O aplicativo será atualizado agora.",
+  "@restoreSuccessMessage": {
+    "description": "Mensagem de sucesso detalhada após restauração"
+  },
+  "backupFailed": "Falha no Backup",
+  "@backupFailed": {
+    "description": "Mensagem de erro quando o backup falha"
+  },
+  "restoreFailed": "Falha na Restauração",
+  "@restoreFailed": {
+    "description": "Mensagem de erro quando a restauração falha"
+  },
+  "backupCancelled": "Backup cancelado",
+  "@backupCancelled": {
+    "description": "Mensagem quando o usuário cancela o backup"
+  },
+  "restoreCancelled": "Restauração cancelada",
+  "@restoreCancelled": {
+    "description": "Mensagem quando o usuário cancela a restauração"
+  },
+  "selectBackupFile": "Selecionar Arquivo de Backup",
+  "@selectBackupFile": {
+    "description": "Título do diálogo de seleção de arquivo de backup"
+  },
+  "backupFilePath": "Caminho do Arquivo de Backup",
+  "@backupFilePath": {
+    "description": "Rótulo do campo de entrada do caminho do arquivo de backup"
+  },
+  "ok": "OK",
+  "@ok": {
+    "description": "Rótulo do botão OK"
+  },
+  "currentDatabaseSize": "Tamanho do banco de dados: {size}",
+  "@currentDatabaseSize": {
+    "description": "Mostra o tamanho atual do arquivo do banco de dados",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "backingUp": "Criando backup...",
+  "@backingUp": {
+    "description": "Mensagem de progresso durante o backup"
+  },
+  "restoring": "Restaurando dados...",
+  "@restoring": {
+    "description": "Mensagem de progresso durante a restauração"
   }
 }

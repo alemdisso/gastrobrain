@@ -610,6 +610,36 @@ class DatabaseHelper {
     );
   }
 
+  /// Get all meal plans with their items
+  Future<List<MealPlan>> getAllMealPlans() async {
+    final Database db = await database;
+
+    final List<Map<String, dynamic>> planMaps = await db.query(
+      'meal_plans',
+      orderBy: 'week_start_date DESC',
+    );
+
+    List<MealPlan> mealPlans = [];
+
+    for (var planMap in planMaps) {
+      final String planId = planMap['id'];
+
+      // Get all items for this plan
+      final List<Map<String, dynamic>> itemMaps = await db.query(
+        'meal_plan_items',
+        where: 'meal_plan_id = ?',
+        whereArgs: [planId],
+      );
+
+      final List<MealPlanItem> items = List.generate(
+          itemMaps.length, (i) => MealPlanItem.fromMap(itemMaps[i]));
+
+      mealPlans.add(MealPlan.fromMap(planMap, items));
+    }
+
+    return mealPlans;
+  }
+
   // Meal Plan Item operations
 
   Future<String> insertMealPlanItem(MealPlanItem item) async {
@@ -666,6 +696,39 @@ class DatabaseHelper {
     );
 
     return List.generate(maps.length, (i) => MealPlanItem.fromMap(maps[i]));
+  }
+
+  /// Get all items for a specific meal plan
+  Future<List<MealPlanItem>> getMealPlanItems(String mealPlanId) async {
+    final Database db = await database;
+
+    final List<Map<String, dynamic>> itemMaps = await db.query(
+      'meal_plan_items',
+      where: 'meal_plan_id = ?',
+      whereArgs: [mealPlanId],
+    );
+
+    List<MealPlanItem> items = [];
+
+    for (final itemMap in itemMaps) {
+      final item = MealPlanItem.fromMap(itemMap);
+
+      // Fetch associated recipes from the junction table
+      final List<Map<String, dynamic>> recipeMaps = await db.query(
+        'meal_plan_item_recipes',
+        where: 'meal_plan_item_id = ?',
+        whereArgs: [item.id],
+      );
+
+      if (recipeMaps.isNotEmpty) {
+        item.mealPlanItemRecipes = List.generate(recipeMaps.length,
+            (i) => MealPlanItemRecipe.fromMap(recipeMaps[i]));
+      }
+
+      items.add(item);
+    }
+
+    return items;
   }
 
   Future<String> insertMealPlanItemRecipe(
@@ -1066,6 +1129,38 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  /// Get all meals with their recipes
+  Future<List<Meal>> getAllMeals() async {
+    final Database db = await database;
+
+    final List<Map<String, dynamic>> mealMaps = await db.query(
+      'meals',
+      orderBy: 'cooked_at DESC',
+    );
+
+    List<Meal> meals = [];
+
+    for (var mealMap in mealMaps) {
+      final String mealId = mealMap['id'];
+
+      // Get recipes for this meal
+      final List<Map<String, dynamic>> recipeMaps = await db.query(
+        'meal_recipes',
+        where: 'meal_id = ?',
+        whereArgs: [mealId],
+      );
+
+      final List<MealRecipe> mealRecipes = List.generate(
+          recipeMaps.length, (i) => MealRecipe.fromMap(recipeMaps[i]));
+
+      final meal = Meal.fromMap(mealMap);
+      meal.mealRecipes = mealRecipes;
+      meals.add(meal);
+    }
+
+    return meals;
   }
 
   // MealRecipe operations
@@ -1688,12 +1783,44 @@ class DatabaseHelper {
   }
 
   /// Force invalidate all repository caches after migration
-  /// 
+  ///
   /// This should be called by repositories after successful migrations
   /// to ensure cached data is refreshed with the new schema.
   void notifyMigrationCompleted() {
     // Notify all registered repositories to invalidate their caches
     print('Migration completed - notifying repositories to invalidate caches');
     RepositoryRegistry.notifyMigrationCompleted();
+  }
+
+  /// Close the database connection
+  ///
+  /// This is used by backup/restore operations that need to close the database
+  /// temporarily. After calling this, you must call reopenDatabase() to restore
+  /// the connection.
+  Future<void> closeDatabase() async {
+    if (_database != null) {
+      await _database!.close();
+      _database = null;
+      _migrationRunner = null;
+    }
+  }
+
+  /// Reopen the database connection
+  ///
+  /// This reinitializes the database connection after it was closed.
+  /// Used by backup/restore operations.
+  Future<void> reopenDatabase() async {
+    _database = null;
+    _migrationRunner = null;
+    await database; // This will trigger _initDatabase()
+  }
+
+  /// Get the database file path
+  ///
+  /// Returns the path to the SQLite database file.
+  /// Useful for backup operations.
+  Future<String> getDatabasePath() async {
+    final db = await database;
+    return db.path;
   }
 }

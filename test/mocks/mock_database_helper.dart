@@ -304,6 +304,18 @@ class MockDatabaseHelper implements DatabaseHelper {
     return limitedMeals;
   }
 
+  @override
+  Future<List<Meal>> getAllMeals() async {
+    final allMeals = _meals.values.toList();
+
+    // Load meal recipes for each meal
+    for (final meal in allMeals) {
+      meal.mealRecipes = await getMealRecipesForMeal(meal.id);
+    }
+
+    return allMeals;
+  }
+
 // Add this to your MockDatabaseHelper class
   Future<List<Map<String, dynamic>>> getRecentMealsForRecommendations({
     required DateTime startDate,
@@ -757,6 +769,17 @@ class MockDatabaseHelper implements DatabaseHelper {
   }
 
   @override
+  Future<List<MealPlan>> getAllMealPlans() async {
+    return _mealPlans.values.toList();
+  }
+
+  @override
+  Future<List<MealPlanItem>> getMealPlanItems(String mealPlanId) async {
+    final plan = _mealPlans[mealPlanId];
+    return plan?.items ?? [];
+  }
+
+  @override
   Future<String> insertMealPlanItemRecipe(
       MealPlanItemRecipe mealPlanItemRecipe) async {
     // Find the item this recipe belongs to
@@ -1025,4 +1048,22 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   MigrationRunner? get migrationRunner => null; // Mock: no migration runner
+
+  // === BACKUP/RESTORE METHODS (Mock Implementation) ===
+
+  @override
+  Future<void> closeDatabase() async {
+    // Mock: do nothing - in tests we don't need to close the database
+  }
+
+  @override
+  Future<void> reopenDatabase() async {
+    // Mock: do nothing - in tests the database is always "open"
+  }
+
+  @override
+  Future<String> getDatabasePath() async {
+    // Mock: return a test database path
+    return '/mock/test/database.db';
+  }
 }
