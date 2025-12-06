@@ -1011,18 +1011,16 @@ void main() {
       });
 
       test('restore throws exception for malformed JSON', () async {
-        // Create file with invalid JSON
+        // Create file with invalid JSON in temporary directory
+        final tempDir = Directory.systemTemp;
         final timestamp = DateTime.now().millisecondsSinceEpoch;
-        final malformedPath = '/sdcard/Download/malformed_$timestamp.json';
-        final malformedFile = File(malformedPath);
+        final malformedFile = File('${tempDir.path}/malformed_$timestamp.json');
 
-        // Ensure directory exists
-        await malformedFile.parent.create(recursive: true);
         await malformedFile.writeAsString('{ this is not valid JSON }');
 
         // Attempt restore should throw
         expect(
-          () => backupService.restoreDatabase(malformedPath),
+          () => backupService.restoreDatabase(malformedFile.path),
           throwsA(isA<GastrobrainException>()),
         );
 
@@ -1031,10 +1029,10 @@ void main() {
       });
 
       test('restore throws exception for missing version field', () async {
-        // Create backup file without version
+        // Create backup file without version in temporary directory
+        final tempDir = Directory.systemTemp;
         final timestamp = DateTime.now().millisecondsSinceEpoch;
-        final invalidPath = '/sdcard/Download/no_version_$timestamp.json';
-        final invalidFile = File(invalidPath);
+        final invalidFile = File('${tempDir.path}/no_version_$timestamp.json');
 
         final invalidBackup = {
           'backup_date': DateTime.now().toIso8601String(),
@@ -1045,13 +1043,11 @@ void main() {
           'recommendation_history': [],
         };
 
-        // Ensure directory exists
-        await invalidFile.parent.create(recursive: true);
         await invalidFile.writeAsString(json.encode(invalidBackup));
 
         // Attempt restore should throw
         expect(
-          () => backupService.restoreDatabase(invalidPath),
+          () => backupService.restoreDatabase(invalidFile.path),
           throwsA(isA<GastrobrainException>().having(
             (e) => e.message,
             'message',
@@ -1086,11 +1082,11 @@ void main() {
         expect(await dbHelper.getAllIngredients(), hasLength(1));
         expect(await dbHelper.getAllRecipes(), hasLength(1));
 
-        // Create a backup with invalid foreign key reference
+        // Create a backup with invalid foreign key reference in temporary directory
         // This should cause the transaction to fail
+        final tempDir = Directory.systemTemp;
         final timestamp = DateTime.now().millisecondsSinceEpoch;
-        final corruptedPath = '/sdcard/Download/corrupted_$timestamp.json';
-        final corruptedFile = File(corruptedPath);
+        final corruptedFile = File('${tempDir.path}/corrupted_$timestamp.json');
 
         final corruptedBackup = {
           'version': '1.0',
@@ -1129,15 +1125,13 @@ void main() {
           'recommendation_history': [],
         };
 
-        // Ensure directory exists
-        await corruptedFile.parent.create(recursive: true);
         await corruptedFile.writeAsString(
           const JsonEncoder.withIndent('  ').convert(corruptedBackup),
         );
 
         // Attempt restore - should fail and rollback
         try {
-          await backupService.restoreDatabase(corruptedPath);
+          await backupService.restoreDatabase(corruptedFile.path);
           fail('Should have thrown an exception');
         } catch (e) {
           // Expected to fail
