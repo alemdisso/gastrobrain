@@ -17,6 +17,7 @@ class ToolsScreen extends StatefulWidget {
 class _ToolsScreenState extends State<ToolsScreen> {
   bool _isBackingUp = false;
   bool _isRestoring = false;
+  bool _isImportingRecipes = false;
   bool _isExportingRecipes = false;
   bool _isExportingIngredients = false;
   bool _isTranslatingIngredients = false;
@@ -472,6 +473,176 @@ class _ToolsScreenState extends State<ToolsScreen> {
     );
   }
 
+  Future<void> _importRecipes() async {
+    if (_isImportingRecipes) return;
+
+    final l10n = AppLocalizations.of(context)!;
+
+    // Get JSON file path from user
+    final filePathController = TextEditingController(
+        text: '/sdcard/Download/recipe_export_1762460315862.json'); // Pre-fill with Downloads folder
+    final jsonFilePath = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Recipe JSON File'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: filePathController,
+              decoration: const InputDecoration(
+                labelText: 'JSON File Path',
+                hintText: '/sdcard/Download/recipe_export_1762460315862.json',
+                helperText: 'File system path or asset path',
+              ),
+              autofocus: true,
+              maxLines: 2,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'You can use a file system path (e.g., /sdcard/Download/file.json) or an asset path (e.g., assets/file.json)',
+              style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(null),
+            child: Text(l10n.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(filePathController.text),
+            child: Text(l10n.ok),
+          ),
+        ],
+      ),
+    );
+
+    if (jsonFilePath == null || jsonFilePath.trim().isEmpty) {
+      return; // User cancelled or provided empty path
+    }
+
+    // Show warning dialog before proceeding
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('⚠️ Warning: Data Replacement'),
+        content: const Text(
+          'This will REPLACE all existing recipes and ingredients with data from the JSON file.\n\n'
+          'Meal plans and cooking history will be preserved.\n\n'
+          'This operation cannot be undone. Continue?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
+            child: Text(l10n.buttonContinue),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() {
+      _isImportingRecipes = true;
+    });
+
+    try {
+      final importService = ServiceProvider.export.recipeImport;
+      final result = await importService.importRecipesFromJson(jsonFilePath);
+
+      if (mounted) {
+        if (result.hasErrors) {
+          // Show success with warnings
+          _showImportResultDialog(result, hasErrors: true);
+        } else {
+          // Show success
+          _showImportResultDialog(result);
+        }
+
+        SnackbarService.showSuccess(
+          context,
+          'Import complete! ${result.recipesImported} recipes, ${result.ingredientsImported} ingredients',
+        );
+      }
+    } on GastrobrainException catch (e) {
+      if (mounted) {
+        SnackbarService.showError(
+          context,
+          'Import failed: ${e.message}',
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackbarService.showError(
+          context,
+          'Import failed: ${e.toString()}',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isImportingRecipes = false;
+        });
+      }
+    }
+  }
+
+  void _showImportResultDialog(dynamic result, {bool hasErrors = false}) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(hasErrors ? 'Import Completed with Errors' : 'Import Successful'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (!hasErrors)
+              const Text('All recipes and ingredients have been imported successfully!'),
+            if (hasErrors)
+              const Text('Import completed but some errors occurred.'),
+            const SizedBox(height: 16),
+            const Text('📊 Summary:',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text('• Recipes imported: ${result.recipesImported}'),
+            Text('• Ingredients imported: ${result.ingredientsImported}'),
+            if (hasErrors) Text('• Errors: ${result.errors.length}'),
+            if (hasErrors && result.errors.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              const Text('❌ Errors:',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 200,
+                child: SingleChildScrollView(
+                  child: Text(
+                    result.errors.join('\n'),
+                    style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -557,6 +728,39 @@ class _ToolsScreenState extends State<ToolsScreen> {
                         label: Text(_isRestoring
                             ? AppLocalizations.of(context)!.restoring
                             : AppLocalizations.of(context)!.restoreFromBackup),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Import Recipes from JSON\n\n'
+                      'Restore recipes and ingredients from a JSON export file. '
+                      'This will REPLACE all existing recipes and ingredients.',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isImportingRecipes ? null : _importRecipes,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              Theme.of(context).colorScheme.secondaryContainer,
+                          foregroundColor:
+                              Theme.of(context).colorScheme.onSecondaryContainer,
+                        ),
+                        icon: _isImportingRecipes
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.file_upload),
+                        label: Text(_isImportingRecipes
+                            ? 'Importing...'
+                            : 'Import Recipes from JSON'),
                       ),
                     ),
                   ],
