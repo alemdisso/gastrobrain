@@ -480,7 +480,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
 
     // Get JSON file path from user
     final filePathController = TextEditingController(
-        text: '/sdcard/Download/recipe_export_1762460315862.json'); // Pre-fill with Downloads folder
+        text: 'assets/recipe_export_1762460315862.json'); // Pre-fill with bundled asset
     final jsonFilePath = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
@@ -492,15 +492,15 @@ class _ToolsScreenState extends State<ToolsScreen> {
               controller: filePathController,
               decoration: const InputDecoration(
                 labelText: 'JSON File Path',
-                hintText: '/sdcard/Download/recipe_export_1762460315862.json',
-                helperText: 'File system path or asset path',
+                hintText: 'assets/recipe_export_1762460315862.json',
+                helperText: 'Asset path or file system path',
               ),
               autofocus: true,
               maxLines: 2,
             ),
             const SizedBox(height: 16),
             const Text(
-              'You can use a file system path (e.g., /sdcard/Download/file.json) or an asset path (e.g., assets/file.json)',
+              'You can use an asset path (e.g., assets/file.json) or a file system path (e.g., /sdcard/Download/file.json)',
               style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
             ),
           ],
