@@ -109,22 +109,32 @@ class RecipeImportService {
             // Insert recipe ingredients relationships
             final currentIngredients =
                 recipeData['current_ingredients'] as List? ?? [];
+            int ingredientCount = 0;
             for (final ing in currentIngredients) {
-              // Generate a new ID for the recipe_ingredient junction entry
-              await txn.insert('recipe_ingredients', {
-                'id': _generateId(),
-                'recipe_id': recipeId,
-                'ingredient_id': ing['ingredient_id'],
-                'quantity': ing['quantity'],
-                'notes': ing['preparation_notes'],
-                'unit_override': ing['unit'],
-                'custom_name': null,
-                'custom_category': null,
-                'custom_unit': null,
-              });
+              try {
+                // Generate a unique ID for the recipe_ingredient junction entry
+                final riId = _generateUniqueId();
+                await txn.insert('recipe_ingredients', {
+                  'id': riId,
+                  'recipe_id': recipeId,
+                  'ingredient_id': ing['ingredient_id'],
+                  'quantity': ing['quantity'],
+                  'notes': ing['preparation_notes'],
+                  'unit_override': ing['unit'],
+                  'custom_name': null,
+                  'custom_category': null,
+                  'custom_unit': null,
+                });
+                ingredientCount++;
+              } catch (e) {
+                errors.add(
+                    'Failed to import ingredient ${ing['name']} for recipe ${recipeData['name']}: $e');
+              }
             }
 
-            recipesImported++;
+            if (ingredientCount > 0) {
+              recipesImported++;
+            }
           } catch (e) {
             errors.add(
                 'Failed to import recipe ${recipeData['name']}: $e');
@@ -158,10 +168,11 @@ class RecipeImportService {
   }
 
   /// Generate a unique ID for recipe_ingredient entries
-  String _generateId() {
-    return DateTime.now().millisecondsSinceEpoch.toString() +
-        '_' +
-        (DateTime.now().microsecond % 1000).toString();
+  String _generateUniqueId() {
+    // Use timestamp + random component to ensure uniqueness
+    final timestamp = DateTime.now().microsecondsSinceEpoch;
+    final random = (timestamp % 100000).toString().padLeft(5, '0');
+    return '${timestamp}_$random';
   }
 }
 
