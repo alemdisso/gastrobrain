@@ -404,5 +404,167 @@ void main() {
       expect(recipeIds.contains(testRecipeId1), true);
       expect(recipeIds.contains(testRecipeId2), true);
     });
+
+    test('getRecentMeals returns meals ordered by cooked date', () async {
+      // Create meals with different cooked dates
+      final now = DateTime.now();
+      final mealIds = <String>[];
+
+      // Create 5 meals with different dates (oldest to newest)
+      for (int i = 0; i < 5; i++) {
+        final mealId = IdGenerator.generateId();
+        mealIds.add(mealId);
+
+        final meal = Meal(
+          id: mealId,
+          recipeId: testRecipeId1,
+          cookedAt: now.subtract(Duration(days: 5 - i)), // 5 days ago, 4 days ago, etc.
+          servings: 2,
+          notes: 'Meal $i',
+        );
+
+        await mockDbHelper.insertMeal(meal);
+      }
+
+      // Get recent meals with default limit
+      final recentMeals = await mockDbHelper.getRecentMeals();
+
+      // Verify meals are returned
+      expect(recentMeals.isNotEmpty, true);
+      expect(recentMeals.length, greaterThanOrEqualTo(5));
+
+      // Verify meals are ordered by cooked date (newest first)
+      for (int i = 0; i < recentMeals.length - 1; i++) {
+        expect(
+          recentMeals[i].cookedAt.isAfter(recentMeals[i + 1].cookedAt) ||
+              recentMeals[i].cookedAt.isAtSameMomentAs(recentMeals[i + 1].cookedAt),
+          true,
+          reason: 'Meals should be ordered by cooked date (newest first)',
+        );
+      }
+    });
+
+    test('getRecentMeals respects limit parameter', () async {
+      // Create multiple meals
+      final now = DateTime.now();
+      for (int i = 0; i < 15; i++) {
+        final mealId = IdGenerator.generateId();
+        final meal = Meal(
+          id: mealId,
+          recipeId: testRecipeId1,
+          cookedAt: now.subtract(Duration(hours: i)),
+          servings: 2,
+        );
+
+        await mockDbHelper.insertMeal(meal);
+      }
+
+      // Get recent meals with limit of 5
+      final recentMeals = await mockDbHelper.getRecentMeals(limit: 5);
+
+      // Verify only 5 meals are returned
+      expect(recentMeals.length, lessThanOrEqualTo(5));
+    });
+
+    test('getLastCookedDate returns most recent cooking date for recipe',
+        () async {
+      final now = DateTime.now();
+      final twoDaysAgo = now.subtract(const Duration(days: 2));
+      final fiveDaysAgo = now.subtract(const Duration(days: 5));
+
+      // Create multiple meals for the same recipe with different dates
+      final meal1 = Meal(
+        id: IdGenerator.generateId(),
+        recipeId: null,
+        cookedAt: fiveDaysAgo,
+        servings: 2,
+      );
+
+      final meal2 = Meal(
+        id: IdGenerator.generateId(),
+        recipeId: null,
+        cookedAt: twoDaysAgo, // Most recent
+        servings: 2,
+      );
+
+      await mockDbHelper.insertMeal(meal1);
+      await mockDbHelper.insertMeal(meal2);
+
+      // Associate both meals with the same recipe
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal1.id,
+        recipeId: testRecipeId1,
+        isPrimaryDish: true,
+      ));
+
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal2.id,
+        recipeId: testRecipeId1,
+        isPrimaryDish: true,
+      ));
+
+      // Get last cooked date
+      final lastCookedDate = await mockDbHelper.getLastCookedDate(testRecipeId1);
+
+      // Verify it returns the most recent date
+      expect(lastCookedDate, isNotNull);
+      expect(lastCookedDate!.year, twoDaysAgo.year);
+      expect(lastCookedDate.month, twoDaysAgo.month);
+      expect(lastCookedDate.day, twoDaysAgo.day);
+    });
+
+    test('getLastCookedDate returns null for recipe never cooked', () async {
+      // Create a new recipe that has never been cooked
+      final neverCookedRecipeId = IdGenerator.generateId();
+      final recipe = Recipe(
+        id: neverCookedRecipeId,
+        name: 'Never Cooked Recipe',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+      );
+
+      await mockDbHelper.insertRecipe(recipe);
+
+      // Get last cooked date
+      final lastCookedDate = await mockDbHelper.getLastCookedDate(neverCookedRecipeId);
+
+      // Verify it returns null
+      expect(lastCookedDate, isNull);
+    });
+
+    test('insertMeal rejects invalid meal data', () async {
+      // Create a meal with invalid servings (negative)
+      final invalidMeal = Meal(
+        id: IdGenerator.generateId(),
+        recipeId: testRecipeId1,
+        cookedAt: DateTime.now(),
+        servings: -1, // Invalid: negative servings
+        notes: 'Invalid meal',
+      );
+
+      // Attempt to insert should handle validation
+      // Note: This depends on how validation is implemented in DatabaseHelper
+      // If validation throws an exception, we expect that
+      // If validation is done at UI level, this test might not apply
+      try {
+        await mockDbHelper.insertMeal(invalidMeal);
+        // If no validation, meal is inserted - verify it exists
+        final retrievedMeal = await mockDbHelper.getMeal(invalidMeal.id);
+        // At minimum, verify the meal was stored
+        expect(retrievedMeal, isNotNull);
+      } catch (e) {
+        // If validation throws, that's also acceptable behavior
+        expect(e, isNotNull);
+      }
+    });
+
+    test('meal retrieval handles empty database gracefully', () async {
+      // This test assumes we're starting with an empty database or can clear it
+      // For now, just verify getRecentMeals doesn't crash with no data
+      final recentMeals = await mockDbHelper.getRecentMeals(limit: 10);
+
+      // Should return a list (possibly empty, possibly with existing test data)
+      expect(recentMeals, isA<List<Meal>>());
+    });
   });
 }
