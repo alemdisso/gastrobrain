@@ -1835,5 +1835,53 @@
   "restoring": "Restaurando dados...",
   "@restoring": {
     "description": "Mensagem de progresso durante a restauração"
+  },
+  "recipeManagement": "Gestão de Receitas",
+  "@recipeManagement": {
+    "description": "Section header for recipe management tools"
+  },
+  "dataManagement": "Gestão de Dados",
+  "@dataManagement": {
+    "description": "Section header for data management tools"
+  },
+  "toolsScreenTitle": "Ferramentas",
+  "@toolsScreenTitle": {
+    "description": "Title for tools screen"
+  },
+  "toolsScreenSubtitle": "Utilitários para gerenciar suas receitas, ingredientes e dados.",
+  "@toolsScreenSubtitle": {
+    "description": "Subtitle for tools screen"
+  },
+  "bulkRecipeUpdate": "Atualização em Lote de Receitas",
+  "@bulkRecipeUpdate": {
+    "description": "Title for bulk recipe update tool"
+  },
+  "bulkRecipeUpdateDescription": "Atualize várias receitas de uma vez com dados de ingredientes e instruções.",
+  "@bulkRecipeUpdateDescription": {
+    "description": "Description for bulk recipe update tool"
+  },
+  "exportRecipes": "Exportar Receitas",
+  "@exportRecipes": {
+    "description": "Button text for exporting recipes"
+  },
+  "exportRecipesDescription": "Exporte todos os dados de receitas com ingredientes para formato JSON.",
+  "@exportRecipesDescription": {
+    "description": "Description for recipe export tool"
+  },
+  "exportIngredients": "Exportar Ingredientes",
+  "@exportIngredients": {
+    "description": "Button text for exporting ingredients"
+  },
+  "exportIngredientsDescription": "Exporte todos os dados de ingredientes para formato JSON.",
+  "@exportIngredientsDescription": {
+    "description": "Description for ingredient export tool"
+  },
+  "importRecipes": "Importar Receitas",
+  "@importRecipes": {
+    "description": "Button text for importing recipes"
+  },
+  "importRecipesDescription": "Importe receitas e ingredientes do JSON. Substitui todos os dados existentes.",
+  "@importRecipesDescription": {
+    "description": "Description for recipe import tool"
   }
 }

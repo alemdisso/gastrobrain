@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import '../l10n/app_localizations.dart';
 import '../core/di/service_provider.dart';
 import '../core/services/snackbar_service.dart';
-import '../core/services/ingredient_translation_service.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 
 /// Temporary tools screen for development utilities
@@ -20,7 +19,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
   bool _isImportingRecipes = false;
   bool _isExportingRecipes = false;
   bool _isExportingIngredients = false;
-  bool _isTranslatingIngredients = false;
 
   Future<void> _exportRecipes() async {
     if (_isExportingRecipes) return;
@@ -95,52 +93,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
       if (mounted) {
         setState(() {
           _isExportingIngredients = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _translateIngredients() async {
-    if (_isTranslatingIngredients) return;
-
-    setState(() {
-      _isTranslatingIngredients = true;
-    });
-
-    try {
-      final translationService = IngredientTranslationService();
-      final result = await translationService.translateIngredients();
-
-      if (mounted) {
-        if (result.isSuccess) {
-          SnackbarService.showSuccess(
-            context,
-            'Translation successful!\n${result.summary}',
-          );
-
-          // Show detailed success dialog
-          _showTranslationSuccessDialog(result);
-        } else {
-          SnackbarService.showError(
-            context,
-            'Translation completed with errors!\n${result.summary}',
-          );
-
-          // Show error dialog with details
-          _showTranslationErrorDialog(result);
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        SnackbarService.showError(
-          context,
-          'Translation failed: ${e.toString()}',
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isTranslatingIngredients = false;
         });
       }
     }
@@ -337,82 +289,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
               'You can find this file in your device\'s Downloads folder or file manager.',
               style: TextStyle(fontStyle: FontStyle.italic),
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showTranslationSuccessDialog(TranslationResult result) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Translation Successful'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('All ingredients have been translated to Portuguese!'),
-            const SizedBox(height: 16),
-            const Text('📊 Summary:',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text('• Total processed: ${result.totalProcessed}'),
-            Text('• Successfully updated: ${result.successCount}'),
-            Text('• Errors: ${result.errorCount}'),
-            const SizedBox(height: 16),
-            const Text('🎉 Your ingredient database is now in Portuguese!'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showTranslationErrorDialog(TranslationResult result) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Translation Completed with Errors'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Translation completed but some errors occurred.'),
-            const SizedBox(height: 16),
-            const Text('📊 Summary:',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text('• Total processed: ${result.totalProcessed}'),
-            Text('• Successfully updated: ${result.successCount}'),
-            Text('• Errors: ${result.errorCount}'),
-            if (result.errors.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              const Text('❌ Errors:',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 200,
-                child: SingleChildScrollView(
-                  child: Text(
-                    result.errors.join('\n'),
-                    style:
-                        const TextStyle(fontSize: 12, fontFamily: 'monospace'),
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
         actions: [
@@ -643,8 +519,29 @@ class _ToolsScreenState extends State<ToolsScreen> {
     );
   }
 
+  // Simple section header - no over-engineering
+  Widget _buildSectionHeader(String title, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 24, bottom: 12, left: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -652,125 +549,21 @@ class _ToolsScreenState extends State<ToolsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Development Tools',
+              l10n.toolsScreenTitle,
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              'Temporary tools for development and testing purposes.',
+              l10n.toolsScreenSubtitle,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             ),
-            const SizedBox(height: 32),
 
-            // Database Backup Section
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.backup,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          AppLocalizations.of(context)!.databaseBackup,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(AppLocalizations.of(context)!.backupDescription),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _isBackingUp ? null : _backupDatabase,
-                        icon: _isBackingUp
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.backup),
-                        label: Text(_isBackingUp
-                            ? AppLocalizations.of(context)!.backingUp
-                            : AppLocalizations.of(context)!.backupAllData),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(AppLocalizations.of(context)!.restoreDescription),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _isRestoring ? null : _restoreDatabase,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.errorContainer,
-                          foregroundColor:
-                              Theme.of(context).colorScheme.onErrorContainer,
-                        ),
-                        icon: _isRestoring
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.restore),
-                        label: Text(_isRestoring
-                            ? AppLocalizations.of(context)!.restoring
-                            : AppLocalizations.of(context)!.restoreFromBackup),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Divider(),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Import Recipes from JSON\n\n'
-                      'Restore recipes and ingredients from a JSON export file. '
-                      'This will REPLACE all existing recipes and ingredients.',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _isImportingRecipes ? null : _importRecipes,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.secondaryContainer,
-                          foregroundColor:
-                              Theme.of(context).colorScheme.onSecondaryContainer,
-                        ),
-                        icon: _isImportingRecipes
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.file_upload),
-                        label: Text(_isImportingRecipes
-                            ? 'Importing...'
-                            : 'Import Recipes from JSON'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            // Recipe Management Section
+            _buildSectionHeader(l10n.recipeManagement, Icons.restaurant_menu),
 
-            const SizedBox(height: 16),
-
-            // Bulk Recipe Update Section
+            // Bulk Recipe Update
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -785,22 +578,19 @@ class _ToolsScreenState extends State<ToolsScreen> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Bulk Recipe Update',
+                          l10n.bulkRecipeUpdate,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Update existing recipes with ingredient data and cooking instructions. Efficiently add missing details to recipes.',
-                    ),
+                    Text(l10n.bulkRecipeUpdateDescription),
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          Navigator.of(context)
-                              .pushNamed('/bulk-recipe-update');
+                          Navigator.of(context).pushNamed('/bulk-recipe-update');
                         },
                         icon: const Icon(Icons.edit_outlined),
                         label: const Text('Open Bulk Update'),
@@ -811,9 +601,98 @@ class _ToolsScreenState extends State<ToolsScreen> {
               ),
             ),
 
+            // Data Management Section
+            _buildSectionHeader(l10n.dataManagement, Icons.storage),
+
+            // Database Backup
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.backup,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          l10n.databaseBackup,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(l10n.backupDescription),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isBackingUp ? null : _backupDatabase,
+                        icon: _isBackingUp
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.backup),
+                        label: Text(_isBackingUp ? l10n.backingUp : l10n.backupAllData),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(l10n.restoreDescription),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isRestoring ? null : _restoreDatabase,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.errorContainer,
+                          foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
+                        ),
+                        icon: _isRestoring
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.restore),
+                        label: Text(_isRestoring ? l10n.restoring : l10n.restoreFromBackup),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    const SizedBox(height: 16),
+                    Text(l10n.importRecipesDescription),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isImportingRecipes ? null : _importRecipes,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+                          foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                        ),
+                        icon: _isImportingRecipes
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.file_upload),
+                        label: Text(_isImportingRecipes ? 'Importing...' : l10n.importRecipes),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
             const SizedBox(height: 16),
 
-            // Recipe Export Section
+            // Recipe Export
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -828,15 +707,13 @@ class _ToolsScreenState extends State<ToolsScreen> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Recipe Data Export',
+                          l10n.exportRecipes,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Export all recipe data with current ingredients (quantities, units, categories) to JSON format for external enhancement.',
-                    ),
+                    Text(l10n.exportRecipesDescription),
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
@@ -846,13 +723,10 @@ class _ToolsScreenState extends State<ToolsScreen> {
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(strokeWidth: 2),
                               )
                             : const Icon(Icons.download),
-                        label: Text(_isExportingRecipes
-                            ? 'Exporting...'
-                            : 'Export Recipes'),
+                        label: Text(_isExportingRecipes ? 'Exporting...' : l10n.exportRecipes),
                       ),
                     ),
                   ],
@@ -862,7 +736,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
 
             const SizedBox(height: 16),
 
-            // Ingredient Export Section
+            // Ingredient Export
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -877,116 +751,26 @@ class _ToolsScreenState extends State<ToolsScreen> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Ingredient Data Export',
+                          l10n.exportIngredients,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Export all ingredient data including categories, units, protein types, and notes to JSON format for external management.',
-                    ),
+                    Text(l10n.exportIngredientsDescription),
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed:
-                            _isExportingIngredients ? null : _exportIngredients,
+                        onPressed: _isExportingIngredients ? null : _exportIngredients,
                         icon: _isExportingIngredients
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(strokeWidth: 2),
                               )
                             : const Icon(Icons.download),
-                        label: Text(_isExportingIngredients
-                            ? 'Exporting...'
-                            : 'Export Ingredients'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Ingredient Translation Section
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.translate,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Ingredient Translation',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Translate all ingredients from English to Portuguese using the reviewed translation data. This will update ingredient names, categories, units, and protein types.',
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.warning,
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'This will permanently update your ingredient database. Make sure you have a backup.',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _isTranslatingIngredients
-                            ? null
-                            : _translateIngredients,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primary,
-                          foregroundColor:
-                              Theme.of(context).colorScheme.onPrimary,
-                        ),
-                        icon: _isTranslatingIngredients
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: Colors.white),
-                              )
-                            : const Icon(Icons.translate),
-                        label: Text(_isTranslatingIngredients
-                            ? 'Translating...'
-                            : 'Translate to Portuguese'),
+                        label: Text(_isExportingIngredients ? 'Exporting...' : l10n.exportIngredients),
                       ),
                     ),
                   ],
@@ -1027,15 +811,13 @@ class _ToolsScreenState extends State<ToolsScreen> {
                       '• All ingredients with categories, units, protein types\n'
                       '• Master ingredient list for external management\n'
                       '• Useful for ingredient database maintenance\n\n'
-                      'Ingredient Translation:\n'
-                      '• Translates all ingredients from English to Portuguese\n'
-                      '• Updates names, categories, units, and protein types\n'
-                      '• Uses reviewed translation data (330+ ingredients)\n'
-                      '• Permanent operation - creates backup first\n\n'
+                      'Backup & Restore:\n'
+                      '• Complete database backup to Downloads folder\n'
+                      '• Restore from previous backups\n'
+                      '• Import recipes and ingredients from JSON\n\n'
                       'General:\n'
                       '• Files saved to Downloads folder with timestamp\n'
-                      '• Use exported data with import utilities\n'
-                      '• Translation uses embedded CSV data for accuracy',
+                      '• Use exported data with import utilities',
                       style: TextStyle(fontSize: 12),
                     ),
                   ],

@@ -1835,6 +1835,54 @@
   "restoring": "Restoring data...",
   "@restoring": {
     "description": "Progress message while restoring"
+  },
+  "recipeManagement": "Recipe Management",
+  "@recipeManagement": {
+    "description": "Section header for recipe management tools"
+  },
+  "dataManagement": "Data Management",
+  "@dataManagement": {
+    "description": "Section header for data management tools"
+  },
+  "toolsScreenTitle": "Tools",
+  "@toolsScreenTitle": {
+    "description": "Title for tools screen"
+  },
+  "toolsScreenSubtitle": "Utilities for managing your recipes, ingredients, and data.",
+  "@toolsScreenSubtitle": {
+    "description": "Subtitle for tools screen"
+  },
+  "bulkRecipeUpdate": "Bulk Recipe Update",
+  "@bulkRecipeUpdate": {
+    "description": "Title for bulk recipe update tool"
+  },
+  "bulkRecipeUpdateDescription": "Update multiple recipes at once with ingredient data and cooking instructions.",
+  "@bulkRecipeUpdateDescription": {
+    "description": "Description for bulk recipe update tool"
+  },
+  "exportRecipes": "Export Recipes",
+  "@exportRecipes": {
+    "description": "Button text for exporting recipes"
+  },
+  "exportRecipesDescription": "Export all recipe data with ingredients to JSON format.",
+  "@exportRecipesDescription": {
+    "description": "Description for recipe export tool"
+  },
+  "exportIngredients": "Export Ingredients",
+  "@exportIngredients": {
+    "description": "Button text for exporting ingredients"
+  },
+  "exportIngredientsDescription": "Export all ingredient data to JSON format.",
+  "@exportIngredientsDescription": {
+    "description": "Description for ingredient export tool"
+  },
+  "importRecipes": "Import Recipes",
+  "@importRecipes": {
+    "description": "Button text for importing recipes"
+  },
+  "importRecipesDescription": "Import recipes and ingredients from JSON. Replaces all existing data.",
+  "@importRecipesDescription": {
+    "description": "Description for recipe import tool"
   }
 
 }
