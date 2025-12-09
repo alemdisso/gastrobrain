@@ -153,6 +153,7 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
             meal: meal,
             primaryRecipe: primaryRecipe,
             additionalRecipes: additionalRecipes,
+            databaseHelper: _dbHelper,
           ),
         );
       }
@@ -179,8 +180,8 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
             mealId, primaryRecipe.id, updatedAdditionalRecipes);
 
         // Refresh the meal list
-        _loadMeals();
-        
+        await _loadMeals();
+
         // Refresh recipe statistics to reflect any changes in meal data
         final recipeProvider = context.read<RecipeProvider>();
         await recipeProvider.refreshMealStats();
@@ -210,48 +211,53 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
     double actualCookTime,
     DateTime modifiedAt,
   ) async {
-    final db = await _dbHelper.database;
+    // Get the current meal to preserve fields we're not updating
+    final currentMeal = await _dbHelper.getMeal(mealId);
+    if (currentMeal == null) {
+      throw Exception('Meal not found: $mealId');
+    }
 
-    await db.update(
-      'meals',
-      {
-        'cooked_at': cookedAt.toIso8601String(),
-        'servings': servings,
-        'notes': notes,
-        'was_successful': wasSuccessful ? 1 : 0,
-        'actual_prep_time': actualPrepTime,
-        'actual_cook_time': actualCookTime,
-        'modified_at': modifiedAt.toIso8601String(),
-      },
-      where: 'id = ?',
-      whereArgs: [mealId],
+    // Create updated meal with new values
+    final updatedMeal = Meal(
+      id: mealId,
+      recipeId: currentMeal.recipeId,
+      cookedAt: cookedAt,
+      servings: servings,
+      notes: notes,
+      wasSuccessful: wasSuccessful,
+      actualPrepTime: actualPrepTime,
+      actualCookTime: actualCookTime,
+      modifiedAt: modifiedAt,
+      mealRecipes: currentMeal.mealRecipes,
     );
+
+    // Use DatabaseHelper's updateMeal method
+    await _dbHelper.updateMeal(updatedMeal);
   }
 
   Future<void> _updateMealRecipeAssociations(String mealId,
       String primaryRecipeId, List<Recipe> additionalRecipes) async {
-    final db = await _dbHelper.database;
+    // Get all current meal recipes for this meal
+    final currentMealRecipes = await _dbHelper.getMealRecipesForMeal(mealId);
 
-    await db.transaction((txn) async {
-      // Remove all existing side dishes (keep only primary)
-      await txn.delete(
-        'meal_recipes',
-        where: 'meal_id = ? AND is_primary_dish = 0',
-        whereArgs: [mealId],
+    // Delete all existing side dishes (keep only primary)
+    for (final mealRecipe in currentMealRecipes) {
+      if (!mealRecipe.isPrimaryDish) {
+        await _dbHelper.deleteMealRecipe(mealRecipe.id);
+      }
+    }
+
+    // Add all new additional recipes as side dishes
+    for (final recipe in additionalRecipes) {
+      final sideDishMealRecipe = MealRecipe(
+        mealId: mealId,
+        recipeId: recipe.id,
+        isPrimaryDish: false,
+        notes: 'Side dish - edited',
       );
 
-      // Add all new additional recipes as side dishes
-      for (final recipe in additionalRecipes) {
-        final sideDishMealRecipe = MealRecipe(
-          mealId: mealId,
-          recipeId: recipe.id,
-          isPrimaryDish: false,
-          notes: 'Side dish - edited',
-        );
-
-        await txn.insert('meal_recipes', sideDishMealRecipe.toMap());
-      }
-    });
+      await _dbHelper.insertMealRecipe(sideDishMealRecipe);
+    }
   }
 
   @override
