@@ -10,7 +10,6 @@ import 'package:gastrobrain/core/providers/recipe_provider.dart';
 /// E2E Test Helper Methods
 ///
 /// Common utilities for end-to-end integration tests.
-/// Extracted from working tests to reduce duplication and improve maintainability.
 class E2ETestHelpers {
   /// Standard app initialization time
   static const appInitializationDuration = Duration(seconds: 10);
@@ -221,8 +220,7 @@ class E2ETestHelpers {
 
     expect(bottomNavBar, findsOneWidget,
         reason: 'Bottom navigation should be visible on main screen');
-    expect(fab, findsOneWidget,
-        reason: 'FAB should be visible on main screen');
+    expect(fab, findsOneWidget, reason: 'FAB should be visible on main screen');
   }
 
   /// Verify we're on a form screen (has text fields)
@@ -360,7 +358,8 @@ class E2ETestHelpers {
   static Future<void> refreshRecipeProvider(WidgetTester tester) async {
     await tester.runAsync(() async {
       final context = tester.element(find.byType(MaterialApp));
-      final recipeProvider = Provider.of<RecipeProvider>(context, listen: false);
+      final recipeProvider =
+          Provider.of<RecipeProvider>(context, listen: false);
       await recipeProvider.loadRecipes(forceRefresh: true);
     });
     await tester.pumpAndSettle();
@@ -410,21 +409,24 @@ class E2ETestHelpers {
     bool? toggleSuccess,
   }) async {
     if (servings != null) {
-      final servingsField = find.byKey(const Key('meal_recording_servings_field'));
+      final servingsField =
+          find.byKey(const Key('meal_recording_servings_field'));
       expect(servingsField, findsOneWidget);
       await tester.enterText(servingsField, servings);
       await tester.pumpAndSettle();
     }
 
     if (prepTime != null) {
-      final prepTimeField = find.byKey(const Key('meal_recording_prep_time_field'));
+      final prepTimeField =
+          find.byKey(const Key('meal_recording_prep_time_field'));
       expect(prepTimeField, findsOneWidget);
       await tester.enterText(prepTimeField, prepTime);
       await tester.pumpAndSettle();
     }
 
     if (cookTime != null) {
-      final cookTimeField = find.byKey(const Key('meal_recording_cook_time_field'));
+      final cookTimeField =
+          find.byKey(const Key('meal_recording_cook_time_field'));
       expect(cookTimeField, findsOneWidget);
       await tester.enterText(cookTimeField, cookTime);
       await tester.pumpAndSettle();
@@ -438,7 +440,8 @@ class E2ETestHelpers {
     }
 
     if (toggleSuccess != null) {
-      final successSwitch = find.byKey(const Key('meal_recording_success_switch'));
+      final successSwitch =
+          find.byKey(const Key('meal_recording_success_switch'));
       expect(successSwitch, findsOneWidget);
       await tester.tap(successSwitch);
       await tester.pumpAndSettle();
@@ -551,8 +554,8 @@ class E2ETestHelpers {
     expect(find.byKey(const Key('recipe_selection_all_tab')), findsOneWidget,
         reason: 'All Recipes tab should exist');
 
-    expect(find.byKey(const Key('recipe_selection_cancel_button')),
-        findsOneWidget,
+    expect(
+        find.byKey(const Key('recipe_selection_cancel_button')), findsOneWidget,
         reason: 'Cancel button should exist');
   }
 
@@ -693,7 +696,8 @@ class E2ETestHelpers {
     print('AppBars: ${find.byType(AppBar).evaluate().length}');
     print('FABs: ${find.byType(FloatingActionButton).evaluate().length}');
     print('TextFormFields: ${find.byType(TextFormField).evaluate().length}');
-    print('BottomNavBars: ${find.byType(BottomNavigationBar).evaluate().length}');
+    print(
+        'BottomNavBars: ${find.byType(BottomNavigationBar).evaluate().length}');
   }
 
   /// Wait for async operations to complete
