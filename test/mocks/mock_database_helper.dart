@@ -26,6 +26,11 @@ class MockDatabaseHelper implements DatabaseHelper {
   Map<String, List<ProteinType>> recipeProteinTypes = {};
   List<Map<String, dynamic>>? returnCustomMealsForRecommendations;
 
+  // Error simulation properties
+  bool _shouldFailNextOperation = false;
+  String _nextOperationError = 'Simulated database error';
+  String? _failOnSpecificOperation;
+
   @override
   Future<int> deleteMealPlan(String id) async {
     if (!_mealPlans.containsKey(id)) return 0;
@@ -149,6 +154,39 @@ class MockDatabaseHelper implements DatabaseHelper {
     _mockDatabase = db;
   }
 
+  /// Configure the mock to fail on a specific operation.
+  ///
+  /// This method sets up error simulation for testing error handling.
+  /// When the specified operation is called, it will throw an exception.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// mockDb.failOnOperation('updateMeal');
+  /// // Next call to updateMeal will throw
+  /// ```
+  void failOnOperation(String operationName) {
+    _shouldFailNextOperation = true;
+    _failOnSpecificOperation = operationName;
+  }
+
+  /// Reset error simulation state.
+  ///
+  /// This method clears all error simulation flags and resets the error
+  /// message to the default. Use this between tests to ensure a clean state.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// mockDb.failOnOperation('updateMeal');
+  /// // ... test error handling ...
+  /// mockDb.resetErrorSimulation();
+  /// // Next call to updateMeal will succeed
+  /// ```
+  void resetErrorSimulation() {
+    _shouldFailNextOperation = false;
+    _failOnSpecificOperation = null;
+    _nextOperationError = 'Simulated database error';
+  }
+
   // Reset all data
   void resetAllData() {
     _recipes.clear();
@@ -244,6 +282,15 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<Meal?> getMeal(String id) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'getMeal')) {
+      final errorMessage = _nextOperationError;
+      resetErrorSimulation();
+      throw Exception(errorMessage);
+    }
+
     return _meals[id];
   }
 
@@ -551,12 +598,12 @@ class MockDatabaseHelper implements DatabaseHelper {
               })
           .toList();
     }
-    
+
     // Return recipe ingredients from our mock data
     final recipeIngredients = _recipeIngredients.values
         .where((ri) => ri.recipeId == recipeId)
         .toList();
-    
+
     // Convert to map format expected by the code
     return recipeIngredients.map((ri) {
       final ingredient = _ingredients[ri.ingredientId];
@@ -579,18 +626,18 @@ class MockDatabaseHelper implements DatabaseHelper {
   Future<int> getEnrichedRecipeCount() async {
     // Count recipes that have 3 or more ingredients
     int enrichedCount = 0;
-    
+
     for (final recipeId in _recipes.keys) {
       // Count ingredients for this recipe
       final ingredientCount = _recipeIngredients.values
           .where((ri) => ri.recipeId == recipeId)
           .length;
-      
+
       if (ingredientCount >= 3) {
         enrichedCount++;
       }
     }
-    
+
     return enrichedCount;
   }
 
@@ -599,7 +646,7 @@ class MockDatabaseHelper implements DatabaseHelper {
     final totalRecipes = await getRecipesCount();
     final enrichedRecipes = await getEnrichedRecipeCount();
     final incompleteRecipes = totalRecipes - enrichedRecipes;
-    
+
     return {
       'total': totalRecipes,
       'enriched': enrichedRecipes,
@@ -701,6 +748,15 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<int> updateMeal(Meal meal) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'updateMeal')) {
+      final errorMessage = _nextOperationError;
+      resetErrorSimulation();
+      throw Exception(errorMessage);
+    }
+
     // Check if the meal exists
     if (!_meals.containsKey(meal.id)) return 0;
 

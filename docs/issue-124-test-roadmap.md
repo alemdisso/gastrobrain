@@ -50,12 +50,12 @@ Current state:
 **File:** `test/mocks/mock_database_helper.dart`
 
 **Tasks:**
-- [ ] Add `shouldFailNextOperation` flag
-- [ ] Add `nextOperationError` message property
-- [ ] Add `failOnOperation(String operationName)` method
-- [ ] Add `resetErrorSimulation()` method
-- [ ] Implement error throwing in `updateMeal()` when flag is set
-- [ ] Implement error throwing in `getMeal()` when flag is set
+- [X] Add `shouldFailNextOperation` flag
+- [X] Add `nextOperationError` message property
+- [X] Add `failOnOperation(String operationName)` method
+- [X] Add `resetErrorSimulation()` method
+- [X] Implement error throwing in `updateMeal()` when flag is set
+- [X] Implement error throwing in `getMeal()` when flag is set
 
 **Example Implementation:**
 ```dart
@@ -82,11 +82,11 @@ void resetErrorSimulation() {
 **File:** `test/helpers/snackbar_test_helpers.dart` (new file)
 
 **Tasks:**
-- [ ] Create `findSnackBarWithText(String text)` helper
-- [ ] Create `expectSuccessSnackBar(String expectedText)` helper
-- [ ] Create `expectErrorSnackBar(String expectedText)` helper
-- [ ] Create `waitForSnackBar(WidgetTester tester)` helper
-- [ ] Create `dismissSnackBar(WidgetTester tester)` helper
+- [X] Create `findSnackBarWithText(String text)` helper
+- [X] Create `expectSuccessSnackBar(String expectedText)` helper
+- [X] Create `expectErrorSnackBar(String expectedText)` helper
+- [X] Create `waitForSnackBar(WidgetTester tester)` helper
+- [X] Create `dismissSnackBar(WidgetTester tester)` helper
 
 ### 1.3 Review Existing Test Patterns
 
