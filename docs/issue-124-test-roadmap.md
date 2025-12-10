@@ -95,8 +95,8 @@ void resetErrorSimulation() {
 - `test/screens/meal_history_edit_test.dart` (if exists)
 
 **Tasks:**
-- [ ] Document existing `createTestableWidget()` pattern
-- [ ] Verify Provider setup for `RecipeProvider` (required by `_handleEditMeal`)
+- [X] Document existing `createTestableWidget()` pattern
+- [X] Verify Provider setup for `RecipeProvider` (required by `_handleEditMeal`)
 - [ ] Identify any existing snackbar test patterns to follow
 
 ---
