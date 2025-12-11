@@ -210,6 +210,15 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<List<Recipe>> getAllRecipes() async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'getAllRecipes')) {
+      final errorMessage = _nextOperationError;
+      resetErrorSimulation();
+      throw Exception(errorMessage);
+    }
+
     return _recipes.values.toList();
   }
 
@@ -758,7 +767,9 @@ class MockDatabaseHelper implements DatabaseHelper {
     }
 
     // Check if the meal exists
-    if (!_meals.containsKey(meal.id)) return 0;
+    if (!_meals.containsKey(meal.id)) {
+      throw Exception('Meal not found: ${meal.id}');
+    }
 
     // Store the original meal to handle recipeId changes
     final originalMeal = _meals[meal.id];

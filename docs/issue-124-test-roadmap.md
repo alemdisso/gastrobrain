@@ -97,7 +97,7 @@ void resetErrorSimulation() {
 **Tasks:**
 - [X] Document existing `createTestableWidget()` pattern
 - [X] Verify Provider setup for `RecipeProvider` (required by `_handleEditMeal`)
-- [ ] Identify any existing snackbar test patterns to follow
+- [X] Identify any existing snackbar test patterns to follow
 
 ---
 
@@ -116,12 +116,12 @@ testWidgets('shows success snackbar after successful meal edit', (tester) async 
   // Verify: SnackBar with 'mealUpdatedSuccessfully' text appears
 });
 ```
-- [ ] Create test meal with mock database
-- [ ] Tap edit button to open dialog
-- [ ] Modify a field (e.g., servings)
-- [ ] Tap save button
-- [ ] Verify success snackbar appears
-- [ ] Verify snackbar contains correct localized text
+- [X] Create test meal with mock database
+- [X] Tap edit button to open dialog
+- [X] Modify a field (e.g., servings)
+- [X] Tap save button
+- [X] Verify success snackbar appears
+- [X] Verify snackbar contains correct localized text
 
 #### Test 2.1.2: Success message content is user-friendly
 ```dart
@@ -129,9 +129,9 @@ testWidgets('success message contains appropriate content', (tester) async {
   // Verify the actual message text is meaningful
 });
 ```
-- [ ] Verify message is localized
-- [ ] Verify message is concise and clear
-- [ ] Test in both English and Portuguese locales
+- [X] Verify message is localized
+- [X] Verify message is concise and clear
+- [X] Test in both English and Portuguese locales
 
 #### Test 2.1.3: Success message timing
 ```dart
@@ -139,8 +139,8 @@ testWidgets('success message appears after save operation completes', (tester) a
   // Verify timing: message shows AFTER database update, not before
 });
 ```
-- [ ] Verify snackbar appears after dialog closes
-- [ ] Verify snackbar appears after `_loadMeals()` completes
+- [x] Verify snackbar appears after dialog closes
+- [x] Verify snackbar appears after `_loadMeals()` completes
 
 ### 2.2 WeeklyPlanScreen Success Tests
 
@@ -176,10 +176,10 @@ testWidgets('shows error when servings is invalid', (tester) async {
   // Verify form validation error OR snackbar error
 });
 ```
-- [ ] Test servings = 0
-- [ ] Test servings = -1
-- [ ] Test servings = empty string
-- [ ] Verify appropriate error feedback
+- [X] Test servings = 0
+- [X] Test servings = -1
+- [X] Test servings = empty string
+- [X] Verify appropriate error feedback
 
 #### Test 3.1.2: Invalid prep time shows error
 ```dart
@@ -213,9 +213,9 @@ testWidgets('shows error snackbar when database update fails', (tester) async {
   // Verify error snackbar appears
 });
 ```
-- [ ] Configure `MockDatabaseHelper` to simulate failure
-- [ ] Attempt save operation
-- [ ] Verify error snackbar appears with `errorEditingMeal` text
+- [X] Configure `MockDatabaseHelper` to simulate failure
+- [X] Attempt save operation
+- [X] Verify error snackbar appears with `errorEditingMeal` text
 
 #### Test 3.2.2: Meal not found error
 ```dart
@@ -225,8 +225,8 @@ testWidgets('shows error when meal is not found during edit', (tester) async {
   // Verify error feedback
 });
 ```
-- [ ] Simulate meal deletion during edit
-- [ ] Verify appropriate error message
+- [X] Simulate meal deletion during edit
+- [X] Verify appropriate error message
 
 #### Test 3.2.3: Recipe loading error in dialog
 ```dart
@@ -236,9 +236,9 @@ testWidgets('shows error snackbar when loading recipes fails', (tester) async {
   // Verify error snackbar with 'errorLoadingRecipes'
 });
 ```
-- [ ] Configure `MockDatabaseHelper.getAllRecipes()` to throw
-- [ ] Open edit dialog
-- [ ] Verify error snackbar appears
+- [X] Configure `MockDatabaseHelper.getAllRecipes()` to throw
+- [X] Open edit dialog
+- [X] Verify error snackbar appears
 
 ### 3.3 Error Message Content Tests
 

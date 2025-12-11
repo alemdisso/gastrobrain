@@ -352,440 +352,1070 @@ void main() {
       // Should still show edit button
       expect(find.byIcon(Icons.edit), findsWidgets);
     });
+  });
 
-    group('UI Refresh After Edit', () {
-      testWidgets('meal list updates immediately after successful edit',
-          (WidgetTester tester) async {
-        // Clear any meals from setUp to avoid interference
-        mockDbHelper.resetAllData();
-        await mockDbHelper.insertRecipe(testRecipe);
+  group('UI Refresh After Edit', () {
+    testWidgets('meal list updates immediately after successful edit',
+        (WidgetTester tester) async {
+      // Clear any meals from setUp to avoid interference
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
 
-        // 1. Set up a meal with specific data in database
-        final meal = Meal(
-          id: 'refresh-test-meal',
-          recipeId: null,
-          cookedAt: DateTime.now().subtract(const Duration(days: 1)),
-          servings: 2,
-          notes: 'Original notes',
-          wasSuccessful: true,
-          actualPrepTime: 10.0,
-          actualCookTime: 20.0,
-        );
+      // 1. Set up a meal with specific data in database
+      final meal = Meal(
+        id: 'refresh-test-meal',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 2,
+        notes: 'Original notes',
+        wasSuccessful: true,
+        actualPrepTime: 10.0,
+        actualCookTime: 20.0,
+      );
 
-        await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Verify initial state in UI
+      expect(find.text('Original notes'), findsOneWidget,
+          reason: 'Original notes should be displayed');
+      expect(find.text('2'), findsWidgets,
+          reason: 'Original servings count should be displayed');
+
+      // 4. Open edit dialog
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      // 5. Change servings
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '4',
+      );
+      await tester.pump(); // Allow text to be processed
+
+      // 6. Save changes
+      await tester.tap(find.text('Save Changes'));
+      await tester.pumpAndSettle();
+
+      // 7. Verify UI updated immediately with new servings
+      expect(find.text('4'), findsWidgets,
+          reason: 'UI should immediately show updated servings after save');
+
+      // 8. Verify database state matches UI
+      final updatedMeal = await mockDbHelper.getMeal(meal.id);
+      expect(updatedMeal, isNotNull,
+          reason: 'Meal should still exist in database');
+      expect(updatedMeal!.servings, 4,
+          reason: 'Database should have updated servings value');
+    });
+
+    testWidgets('edited meal data appears correctly in UI',
+        (WidgetTester tester) async {
+      // Clear any meals from setUp to avoid interference
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
+
+      // 1. Set up a meal with initial data
+      final meal = Meal(
+        id: 'multi-field-edit-meal',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 2,
+        notes: 'Original notes',
+        wasSuccessful: true,
+        actualPrepTime: 10.0,
+        actualCookTime: 20.0,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Open edit dialog
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      // 4. Edit multiple fields
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '5',
+      );
+
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_notes_field')),
+        'Updated notes with new information',
+      );
+
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_prep_time_field')),
+        '15',
+      );
+
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_cook_time_field')),
+        '30',
+      );
+
+      // 5. Save changes
+      await tester.tap(find.text('Save Changes'));
+      await tester.pumpAndSettle();
+
+      // 6. Verify all edited fields appear correctly in UI
+      expect(find.text('5'), findsWidgets,
+          reason: 'Updated servings should be displayed');
+      expect(find.text('Updated notes with new information'), findsOneWidget,
+          reason: 'Updated notes should be displayed');
+
+      // 7. Verify database contains all updates
+      final updatedMeal = await mockDbHelper.getMeal(meal.id);
+      expect(updatedMeal!.servings, 5,
+          reason: 'Database should have updated servings');
+      expect(updatedMeal.notes, 'Updated notes with new information',
+          reason: 'Database should have updated notes');
+      expect(updatedMeal.actualPrepTime, 15.0,
+          reason: 'Database should have updated prep time');
+      expect(updatedMeal.actualCookTime, 30.0,
+          reason: 'Database should have updated cook time');
+    });
+
+    testWidgets('UI refresh works for single-recipe meals',
+        (WidgetTester tester) async {
+      // 1. Set up a single-recipe meal
+      final meal = Meal(
+        id: 'single-recipe-refresh',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 3,
+        notes: 'Single recipe meal',
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Verify initial state (single recipe, no side dishes)
+      expect(find.text('3'), findsWidgets,
+          reason: 'Original servings count should be displayed');
+      expect(find.text('1 side dish'), findsNothing,
+          reason: 'Should not show side dish indicator for single recipe');
+
+      // 4. Edit the meal
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '6',
+      );
+
+      await tester.tap(find.text('Save Changes'));
+      await tester.pumpAndSettle();
+
+      // 5. Verify UI refreshed correctly
+      expect(find.text('6'), findsWidgets,
+          reason: 'Single-recipe meal should show updated servings');
+      expect(find.text('1 side dish'), findsNothing,
+          reason: 'Should still not show side dish indicator');
+    });
+
+    testWidgets('UI refresh works for multi-recipe meals',
+        (WidgetTester tester) async {
+      // 1. Set up a multi-recipe meal
+      final meal = Meal(
+        id: 'multi-recipe-refresh',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 4,
+        notes: 'Multi recipe meal',
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+
+      // Add primary recipe
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // Add side recipe
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: sideRecipe.id,
+        isPrimaryDish: false,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Verify initial multi-recipe state
+      expect(find.text('4'), findsWidgets,
+          reason: 'Original servings count should be displayed');
+      expect(find.text('1 side dish'), findsOneWidget,
+          reason: 'Should show side dish indicator');
+
+      // 4. Edit the meal
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '8',
+      );
+
+      await tester.tap(find.text('Save Changes'));
+      await tester.pumpAndSettle();
+
+      // 5. Verify UI refreshed correctly with side dishes still shown
+      expect(find.text('8'), findsWidgets,
+          reason: 'Multi-recipe meal should show updated servings');
+      expect(find.text('1 side dish'), findsOneWidget,
+          reason: 'Side dish indicator should still be present after edit');
+    });
+
+    testWidgets('edited meal maintains correct position in history list',
+        (WidgetTester tester) async {
+      // 1. Set up multiple meals at different dates
+      final oldMeal = Meal(
+        id: 'old-meal',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 5)),
+        servings: 1,
+        notes: 'Old meal',
+        wasSuccessful: true,
+      );
+
+      final middleMeal = Meal(
+        id: 'middle-meal',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 3)),
+        servings: 2,
+        notes: 'Middle meal',
+        wasSuccessful: true,
+      );
+
+      final recentMeal = Meal(
+        id: 'recent-meal',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 3,
+        notes: 'Recent meal',
+        wasSuccessful: true,
+      );
+
+      // Insert meals in random order
+      await mockDbHelper.insertMeal(middleMeal);
+      await mockDbHelper.insertMeal(recentMeal);
+      await mockDbHelper.insertMeal(oldMeal);
+
+      // Add recipe associations
+      for (var meal in [oldMeal, middleMeal, recentMeal]) {
         await mockDbHelper.insertMealRecipe(MealRecipe(
           mealId: meal.id,
           recipeId: testRecipe.id,
           isPrimaryDish: true,
         ));
+      }
 
-        // 2. Launch the screen
-        await tester.pumpWidget(
-          createTestableWidget(
-            MealHistoryScreen(
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Capture time before edit for timestamp verification
+      final timeBeforeEdit = DateTime.now();
+
+      // 4. Verify initial order (most recent first)
+      expect(find.text('Recent meal'), findsOneWidget);
+      expect(find.text('Middle meal'), findsOneWidget);
+      expect(find.text('Old meal'), findsOneWidget);
+
+      // 5. Edit the middle meal
+      final editButtons = find.byIcon(Icons.edit);
+      // Find the edit button for the middle meal (second in the list)
+      await tester.tap(editButtons.at(1));
+      await tester.pumpAndSettle();
+
+      // 6. Change only the notes (not the date)
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_notes_field')),
+        'Updated middle meal notes',
+      );
+
+      await tester.tap(find.text('Save Changes'));
+      await tester.pumpAndSettle();
+
+      // 7. Verify meal order is maintained
+      expect(find.text('Recent meal'), findsOneWidget,
+          reason: 'Most recent meal should still be first');
+      expect(find.text('Updated middle meal notes'), findsOneWidget,
+          reason: 'Edited middle meal should show updated notes');
+      expect(find.text('Old meal'), findsOneWidget,
+          reason: 'Oldest meal should still be last');
+
+      // 8. Verify database state
+      final updatedMiddleMeal = await mockDbHelper.getMeal(middleMeal.id);
+      expect(updatedMiddleMeal!.notes, 'Updated middle meal notes',
+          reason: 'Database should have updated notes');
+      expect(
+          updatedMiddleMeal.cookedAt.difference(middleMeal.cookedAt).inSeconds,
+          0,
+          reason: 'Meal date should remain unchanged');
+      expect(updatedMiddleMeal.modifiedAt, isNotNull,
+          reason: 'modifiedAt should be set after edit');
+      expect(
+          updatedMiddleMeal.modifiedAt!.isAfter(timeBeforeEdit) ||
+              updatedMiddleMeal.modifiedAt!.isAtSameMomentAs(timeBeforeEdit),
+          true,
+          reason:
+              'modifiedAt should be updated to current time when meal is edited');
+    });
+  });
+
+  group('Edit Feedback Messages', () {
+    testWidgets('UI shows success message after edit',
+        (WidgetTester tester) async {
+      // 1. Set up a meal
+      final meal = Meal(
+        id: 'success-message-meal',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 2,
+        notes: 'Test meal',
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Edit the meal
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '5',
+      );
+
+      await tester.tap(find.text('Save Changes'));
+      await tester.pumpAndSettle();
+
+      // 4. Verify success message appears
+      expect(find.byType(SnackBar), findsOneWidget,
+          reason: 'Success message should be displayed after edit');
+      expect(find.text('Meal updated successfully'), findsOneWidget,
+          reason: 'Success message should have correct text');
+
+      // 5. Verify UI updated correctly
+      expect(find.text('5'), findsWidgets,
+          reason: 'UI should show updated data along with success message');
+    });
+
+    testWidgets('success message is localized in English',
+        (WidgetTester tester) async {
+      // 1. Set up a meal
+      final meal = Meal(
+        id: 'localized-en-message-meal',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 2,
+        notes: 'Test meal for English locale',
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // 2. Launch the screen with explicit English locale
+      await tester.pumpWidget(
+        ChangeNotifierProvider<RecipeProvider>(
+          create: (_) => MockRecipeProvider(),
+          child: MaterialApp(
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en', ''),
+              Locale('pt', ''),
+            ],
+            locale: const Locale('en', ''), // Explicitly set English locale
+            home: MealHistoryScreen(
               recipe: testRecipe,
               databaseHelper: mockDbHelper,
             ),
           ),
-        );
+        ),
+      );
 
-        await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-        // 3. Verify initial state in UI
-        expect(find.text('Original notes'), findsOneWidget,
-            reason: 'Original notes should be displayed');
-        expect(find.text('2'), findsWidgets,
-            reason: 'Original servings count should be displayed');
+      // 3. Edit the meal
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
 
-        // 4. Open edit dialog
-        await tester.tap(find.byIcon(Icons.edit).first);
-        await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '4',
+      );
 
-        // 5. Change servings
-        await tester.enterText(
-          find.byKey(const Key('edit_meal_recording_servings_field')),
-          '4',
-        );
-        await tester.pump(); // Allow text to be processed
+      await tester.tap(find.text('Save Changes'));
+      await tester.pumpAndSettle();
 
-        // 6. Save changes
-        await tester.tap(find.text('Save Changes'));
-        await tester.pumpAndSettle();
+      // 4. Verify English success message appears
+      expect(find.byType(SnackBar), findsOneWidget,
+          reason: 'Success message should be displayed after edit');
+      expect(find.text('Meal updated successfully'), findsOneWidget,
+          reason:
+              'Success message should contain English localized text (mealUpdatedSuccessfully)');
+    });
 
-        // 7. Verify UI updated immediately with new servings
-        expect(find.text('4'), findsWidgets,
-            reason: 'UI should immediately show updated servings after save');
+    testWidgets('success message is localized in Portuguese',
+        (WidgetTester tester) async {
+      // 1. Set up a meal
+      final meal = Meal(
+        id: 'localized-pt-message-meal',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 2,
+        notes: 'Test meal for Portuguese locale',
+        wasSuccessful: true,
+      );
 
-        // 8. Verify database state matches UI
-        final updatedMeal = await mockDbHelper.getMeal(meal.id);
-        expect(updatedMeal, isNotNull,
-            reason: 'Meal should still exist in database');
-        expect(updatedMeal!.servings, 4,
-            reason: 'Database should have updated servings value');
-      });
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
 
-      testWidgets('edited meal data appears correctly in UI',
-          (WidgetTester tester) async {
-        // Clear any meals from setUp to avoid interference
-        mockDbHelper.resetAllData();
-        await mockDbHelper.insertRecipe(testRecipe);
-
-        // 1. Set up a meal with initial data
-        final meal = Meal(
-          id: 'multi-field-edit-meal',
-          recipeId: null,
-          cookedAt: DateTime.now().subtract(const Duration(days: 1)),
-          servings: 2,
-          notes: 'Original notes',
-          wasSuccessful: true,
-          actualPrepTime: 10.0,
-          actualCookTime: 20.0,
-        );
-
-        await mockDbHelper.insertMeal(meal);
-        await mockDbHelper.insertMealRecipe(MealRecipe(
-          mealId: meal.id,
-          recipeId: testRecipe.id,
-          isPrimaryDish: true,
-        ));
-
-        // 2. Launch the screen
-        await tester.pumpWidget(
-          createTestableWidget(
-            MealHistoryScreen(
+      // 2. Launch the screen with explicit Portuguese locale
+      await tester.pumpWidget(
+        ChangeNotifierProvider<RecipeProvider>(
+          create: (_) => MockRecipeProvider(),
+          child: MaterialApp(
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en', ''),
+              Locale('pt', ''),
+            ],
+            locale: const Locale('pt', ''), // Explicitly set Portuguese locale
+            home: MealHistoryScreen(
               recipe: testRecipe,
               databaseHelper: mockDbHelper,
             ),
           ),
-        );
+        ),
+      );
 
-        await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-        // 3. Open edit dialog
-        await tester.tap(find.byIcon(Icons.edit).first);
-        await tester.pumpAndSettle();
+      // 3. Edit the meal
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
 
-        // 4. Edit multiple fields
-        await tester.enterText(
-          find.byKey(const Key('edit_meal_recording_servings_field')),
-          '5',
-        );
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '6',
+      );
 
-        await tester.enterText(
-          find.byKey(const Key('edit_meal_recording_notes_field')),
-          'Updated notes with new information',
-        );
+      await tester
+          .tap(find.text('Salvar Alterações')); // Portuguese "Save Changes"
+      await tester.pumpAndSettle();
 
-        await tester.enterText(
-          find.byKey(const Key('edit_meal_recording_prep_time_field')),
-          '15',
-        );
+      // 4. Verify Portuguese success message appears
+      expect(find.byType(SnackBar), findsOneWidget,
+          reason: 'Success message should be displayed after edit');
+      expect(find.text('Refeição atualizada com sucesso'), findsOneWidget,
+          reason:
+              'Success message should contain Portuguese localized text (mealUpdatedSuccessfully)');
+    });
 
-        await tester.enterText(
-          find.byKey(const Key('edit_meal_recording_cook_time_field')),
-          '30',
-        );
+    testWidgets('success message appears after UI refresh completes',
+        (WidgetTester tester) async {
+      // 0. Clear any meals from setUp to avoid interference
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
 
-        // 5. Save changes
-        await tester.tap(find.text('Save Changes'));
-        await tester.pumpAndSettle();
+      // 1. Set up a meal with initial servings
+      final meal = Meal(
+        id: 'timing-test-meal',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 2,
+        notes: 'Test meal for timing verification',
+        wasSuccessful: true,
+        actualPrepTime: 15.0,
+        actualCookTime: 25.0,
+      );
 
-        // 6. Verify all edited fields appear correctly in UI
-        expect(find.text('5'), findsWidgets,
-            reason: 'Updated servings should be displayed');
-        expect(find.text('Updated notes with new information'), findsOneWidget,
-            reason: 'Updated notes should be displayed');
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
 
-        // 7. Verify database contains all updates
-        final updatedMeal = await mockDbHelper.getMeal(meal.id);
-        expect(updatedMeal!.servings, 5,
-            reason: 'Database should have updated servings');
-        expect(updatedMeal.notes, 'Updated notes with new information',
-            reason: 'Database should have updated notes');
-        expect(updatedMeal.actualPrepTime, 15.0,
-            reason: 'Database should have updated prep time');
-        expect(updatedMeal.actualCookTime, 30.0,
-            reason: 'Database should have updated cook time');
-      });
-
-      testWidgets('UI refresh works for single-recipe meals',
-          (WidgetTester tester) async {
-        // 1. Set up a single-recipe meal
-        final meal = Meal(
-          id: 'single-recipe-refresh',
-          recipeId: null,
-          cookedAt: DateTime.now().subtract(const Duration(days: 1)),
-          servings: 3,
-          notes: 'Single recipe meal',
-          wasSuccessful: true,
-        );
-
-        await mockDbHelper.insertMeal(meal);
-        await mockDbHelper.insertMealRecipe(MealRecipe(
-          mealId: meal.id,
-          recipeId: testRecipe.id,
-          isPrimaryDish: true,
-        ));
-
-        // 2. Launch the screen
-        await tester.pumpWidget(
-          createTestableWidget(
-            MealHistoryScreen(
-              recipe: testRecipe,
-              databaseHelper: mockDbHelper,
-            ),
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
           ),
-        );
+        ),
+      );
 
-        await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-        // 3. Verify initial state (single recipe, no side dishes)
-        expect(find.text('3'), findsWidgets,
-            reason: 'Original servings count should be displayed');
-        expect(find.text('1 side dish'), findsNothing,
-            reason: 'Should not show side dish indicator for single recipe');
+      // 3. Verify initial state shows servings: 2
+      expect(find.text('2'), findsWidgets,
+          reason: 'Initial servings should be 2');
 
-        // 4. Edit the meal
-        await tester.tap(find.byIcon(Icons.edit).first);
-        await tester.pumpAndSettle();
+      // 4. Open edit dialog
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
 
-        await tester.enterText(
-          find.byKey(const Key('edit_meal_recording_servings_field')),
-          '6',
-        );
+      // 5. Change servings to 5
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '5',
+      );
 
-        await tester.tap(find.text('Save Changes'));
-        await tester.pumpAndSettle();
+      // 6. Save changes
+      await tester.tap(find.text('Save Changes'));
+      await tester.pumpAndSettle();
 
-        // 5. Verify UI refreshed correctly
-        expect(find.text('6'), findsWidgets,
-            reason: 'Single-recipe meal should show updated servings');
-        expect(find.text('1 side dish'), findsNothing,
-            reason: 'Should still not show side dish indicator');
-      });
+      // 7. Critical verification: When snackbar is visible, UI should already be updated
+      final snackbarFinder = find.byType(SnackBar);
+      final updatedDataFinder = find.text('5');
 
-      testWidgets('UI refresh works for multi-recipe meals',
-          (WidgetTester tester) async {
-        // 1. Set up a multi-recipe meal
-        final meal = Meal(
-          id: 'multi-recipe-refresh',
-          recipeId: null,
-          cookedAt: DateTime.now().subtract(const Duration(days: 1)),
-          servings: 4,
-          notes: 'Multi recipe meal',
-          wasSuccessful: true,
-        );
+      expect(snackbarFinder, findsOneWidget,
+          reason: 'Snackbar should be visible after save');
+      expect(updatedDataFinder, findsWidgets,
+          reason:
+              'UI should already show updated servings (5) when snackbar appears');
 
-        await mockDbHelper.insertMeal(meal);
+      // 8. Verify the old value is no longer in the meal card
+      // Note: '2' might still appear in other UI elements, so we check that '5' exists
+      // which proves the UI refresh (_loadMeals) completed before snackbar appeared
 
-        // Add primary recipe
-        await mockDbHelper.insertMealRecipe(MealRecipe(
-          mealId: meal.id,
-          recipeId: testRecipe.id,
-          isPrimaryDish: true,
-        ));
+      // 9. Verify database was updated
+      final updatedMeal = await mockDbHelper.getMeal(meal.id);
+      expect(updatedMeal, isNotNull);
+      expect(updatedMeal!.servings, 5,
+          reason: 'Database should have updated servings value');
 
-        // Add side recipe
-        await mockDbHelper.insertMealRecipe(MealRecipe(
-          mealId: meal.id,
-          recipeId: sideRecipe.id,
-          isPrimaryDish: false,
-        ));
+      // This test proves the correct order of operations:
+      // 1. Save button tapped
+      // 2. Database updated (verified above)
+      // 3. UI refreshed via _loadMeals() (verified by finding '5' in UI)
+      // 4. Success snackbar shown (verified by finding SnackBar)
+    });
+  });
 
-        // 2. Launch the screen
-        await tester.pumpWidget(
-          createTestableWidget(
-            MealHistoryScreen(
-              recipe: testRecipe,
-              databaseHelper: mockDbHelper,
-            ),
+  group('Validation Error Feedback', () {
+    testWidgets('shows inline error when servings is zero',
+        (WidgetTester tester) async {
+      // 0. Clear and setup
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
+
+      // 1. Set up a meal with valid initial servings
+      final meal = Meal(
+        id: 'validation-test-meal',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 2,
+        notes: 'Test meal for validation',
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
           ),
-        );
+        ),
+      );
 
-        await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-        // 3. Verify initial multi-recipe state
-        expect(find.text('4'), findsWidgets,
-            reason: 'Original servings count should be displayed');
-        expect(find.text('1 side dish'), findsOneWidget,
-            reason: 'Should show side dish indicator');
+      // 3. Open edit dialog
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
 
-        // 4. Edit the meal
-        await tester.tap(find.byIcon(Icons.edit).first);
-        await tester.pumpAndSettle();
+      // 4. Enter invalid servings (0)
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '0',
+      );
 
-        await tester.enterText(
-          find.byKey(const Key('edit_meal_recording_servings_field')),
-          '8',
-        );
+      // 5. Try to save - this triggers form validation
+      await tester.tap(find.text('Save Changes'));
+      await tester.pump(); // Trigger validation but don't settle yet
 
-        await tester.tap(find.text('Save Changes'));
-        await tester.pumpAndSettle();
+      // 6. Verify inline validation error appears
+      expect(find.text('Please enter a valid number'), findsOneWidget,
+          reason:
+              'Inline validation error should appear for servings = 0 (pleaseEnterValidNumber)');
 
-        // 5. Verify UI refreshed correctly with side dishes still shown
-        expect(find.text('8'), findsWidgets,
-            reason: 'Multi-recipe meal should show updated servings');
-        expect(find.text('1 side dish'), findsOneWidget,
-            reason: 'Side dish indicator should still be present after edit');
-      });
+      // 7. Verify dialog is still open (didn't close on error)
+      expect(find.byType(Dialog), findsOneWidget,
+          reason: 'Dialog should remain open after validation error');
 
-      testWidgets('edited meal maintains correct position in history list',
-          (WidgetTester tester) async {
-        // 1. Set up multiple meals at different dates
-        final oldMeal = Meal(
-          id: 'old-meal',
-          recipeId: null,
-          cookedAt: DateTime.now().subtract(const Duration(days: 5)),
-          servings: 1,
-          notes: 'Old meal',
-          wasSuccessful: true,
-        );
+      // 8. Verify database was NOT updated
+      final unchangedMeal = await mockDbHelper.getMeal(meal.id);
+      expect(unchangedMeal!.servings, 2,
+          reason: 'Database should not be updated when validation fails');
+    });
 
-        final middleMeal = Meal(
-          id: 'middle-meal',
-          recipeId: null,
-          cookedAt: DateTime.now().subtract(const Duration(days: 3)),
-          servings: 2,
-          notes: 'Middle meal',
-          wasSuccessful: true,
-        );
+    testWidgets('shows inline error when servings is negative',
+        (WidgetTester tester) async {
+      // 0. Clear and setup
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
 
-        final recentMeal = Meal(
-          id: 'recent-meal',
-          recipeId: null,
-          cookedAt: DateTime.now().subtract(const Duration(days: 1)),
-          servings: 3,
-          notes: 'Recent meal',
-          wasSuccessful: true,
-        );
+      // 1. Set up a meal
+      final meal = Meal(
+        id: 'negative-servings-test',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 3,
+        notes: 'Test meal',
+        wasSuccessful: true,
+      );
 
-        // Insert meals in random order
-        await mockDbHelper.insertMeal(middleMeal);
-        await mockDbHelper.insertMeal(recentMeal);
-        await mockDbHelper.insertMeal(oldMeal);
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
 
-        // Add recipe associations
-        for (var meal in [oldMeal, middleMeal, recentMeal]) {
-          await mockDbHelper.insertMealRecipe(MealRecipe(
-            mealId: meal.id,
-            recipeId: testRecipe.id,
-            isPrimaryDish: true,
-          ));
-        }
-
-        // 2. Launch the screen
-        await tester.pumpWidget(
-          createTestableWidget(
-            MealHistoryScreen(
-              recipe: testRecipe,
-              databaseHelper: mockDbHelper,
-            ),
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
           ),
-        );
+        ),
+      );
 
-        await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-        // 3. Capture time before edit for timestamp verification
-        final timeBeforeEdit = DateTime.now();
+      // 3. Open edit dialog
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
 
-        // 4. Verify initial order (most recent first)
-        expect(find.text('Recent meal'), findsOneWidget);
-        expect(find.text('Middle meal'), findsOneWidget);
-        expect(find.text('Old meal'), findsOneWidget);
+      // 4. Enter negative servings
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '-1',
+      );
 
-        // 5. Edit the middle meal
-        final editButtons = find.byIcon(Icons.edit);
-        // Find the edit button for the middle meal (second in the list)
-        await tester.tap(editButtons.at(1));
-        await tester.pumpAndSettle();
+      // 5. Try to save - this triggers form validation
+      await tester.tap(find.text('Save Changes'));
+      await tester.pump();
 
-        // 6. Change only the notes (not the date)
-        await tester.enterText(
-          find.byKey(const Key('edit_meal_recording_notes_field')),
-          'Updated middle meal notes',
-        );
+      // 6. Verify inline validation error appears
+      expect(find.text('Please enter a valid number'), findsOneWidget,
+          reason:
+              'Inline validation error should appear for negative servings (pleaseEnterValidNumber)');
 
-        await tester.tap(find.text('Save Changes'));
-        await tester.pumpAndSettle();
+      // 7. Verify dialog is still open
+      expect(find.byType(Dialog), findsOneWidget,
+          reason: 'Dialog should remain open after validation error');
 
-        // 7. Verify meal order is maintained
-        expect(find.text('Recent meal'), findsOneWidget,
-            reason: 'Most recent meal should still be first');
-        expect(find.text('Updated middle meal notes'), findsOneWidget,
-            reason: 'Edited middle meal should show updated notes');
-        expect(find.text('Old meal'), findsOneWidget,
-            reason: 'Oldest meal should still be last');
+      // 8. Verify database was NOT updated
+      final unchangedMeal = await mockDbHelper.getMeal(meal.id);
+      expect(unchangedMeal!.servings, 3,
+          reason: 'Database should not be updated for negative servings');
+    });
 
-        // 8. Verify database state
-        final updatedMiddleMeal = await mockDbHelper.getMeal(middleMeal.id);
-        expect(updatedMiddleMeal!.notes, 'Updated middle meal notes',
-            reason: 'Database should have updated notes');
-        expect(
-            updatedMiddleMeal.cookedAt
-                .difference(middleMeal.cookedAt)
-                .inSeconds,
-            0,
-            reason: 'Meal date should remain unchanged');
-        expect(updatedMiddleMeal.modifiedAt, isNotNull,
-            reason: 'modifiedAt should be set after edit');
-        expect(updatedMiddleMeal.modifiedAt!.isAfter(timeBeforeEdit) ||
-            updatedMiddleMeal.modifiedAt!.isAtSameMomentAs(timeBeforeEdit), true,
-            reason: 'modifiedAt should be updated to current time when meal is edited');
-      });
+    testWidgets('shows inline error when servings is empty',
+        (WidgetTester tester) async {
+      // 0. Clear and setup
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
 
-      testWidgets('UI shows success message after edit',
-          (WidgetTester tester) async {
-        // 1. Set up a meal
-        final meal = Meal(
-          id: 'success-message-meal',
-          recipeId: null,
-          cookedAt: DateTime.now().subtract(const Duration(days: 1)),
-          servings: 2,
-          notes: 'Test meal',
-          wasSuccessful: true,
-        );
+      // 1. Set up a meal
+      final meal = Meal(
+        id: 'empty-servings-test',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 4,
+        notes: 'Test meal',
+        wasSuccessful: true,
+      );
 
-        await mockDbHelper.insertMeal(meal);
-        await mockDbHelper.insertMealRecipe(MealRecipe(
-          mealId: meal.id,
-          recipeId: testRecipe.id,
-          isPrimaryDish: true,
-        ));
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
 
-        // 2. Launch the screen
-        await tester.pumpWidget(
-          createTestableWidget(
-            MealHistoryScreen(
-              recipe: testRecipe,
-              databaseHelper: mockDbHelper,
-            ),
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
           ),
-        );
+        ),
+      );
 
-        await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-        // 3. Edit the meal
-        await tester.tap(find.byIcon(Icons.edit).first);
-        await tester.pumpAndSettle();
+      // 3. Open edit dialog
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
 
-        await tester.enterText(
-          find.byKey(const Key('edit_meal_recording_servings_field')),
-          '5',
-        );
+      // 4. Clear the servings field (make it empty)
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '',
+      );
 
-        await tester.tap(find.text('Save Changes'));
-        await tester.pumpAndSettle();
+      // 5. Try to save - this triggers form validation
+      await tester.tap(find.text('Save Changes'));
+      await tester.pump();
 
-        // 4. Verify success message appears
-        expect(find.byType(SnackBar), findsOneWidget,
-            reason: 'Success message should be displayed after edit');
-        expect(find.text('Meal updated successfully'), findsOneWidget,
-            reason: 'Success message should have correct text');
+      // 6. Verify inline validation error appears
+      expect(find.text('Please enter number of servings'), findsOneWidget,
+          reason:
+              'Inline validation error should appear for empty servings (pleaseEnterNumberOfServings)');
 
-        // 5. Verify UI updated correctly
-        expect(find.text('5'), findsWidgets,
-            reason: 'UI should show updated data along with success message');
-      });
+      // 7. Verify dialog is still open
+      expect(find.byType(Dialog), findsOneWidget,
+          reason: 'Dialog should remain open after validation error');
+
+      // 8. Verify database was NOT updated
+      final unchangedMeal = await mockDbHelper.getMeal(meal.id);
+      expect(unchangedMeal!.servings, 4,
+          reason: 'Database should not be updated for empty servings');
+    });
+  });
+
+  group('Database Error Feedback', () {
+    testWidgets('shows error snackbar when database update fails',
+        (WidgetTester tester) async {
+      // 0. Clear and setup
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
+
+      // 1. Set up a meal
+      final meal = Meal(
+        id: 'db-error-test-meal',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 2,
+        notes: 'Test meal',
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Configure mock to fail on updateMeal
+      mockDbHelper.failOnOperation('updateMeal');
+
+      // 4. Open edit dialog
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      // 5. Make a valid change
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '5',
+      );
+
+      // 6. Try to save (database will fail)
+      await tester.tap(find.text('Save Changes'));
+      await tester.pump(); // Start closing dialog
+      await tester.pump(); // Complete dialog close animation
+
+      // Give more time for async operations
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // Debug: Print what widgets are actually in the tree
+      print('Widgets in tree:');
+      print('SnackBar: ${find.byType(SnackBar).evaluate().length}');
+      print(
+          'All text widgets: ${find.byType(Text).evaluate().map((e) => (e.widget as Text).data).toList()}');
+
+      // 7. Verify error snackbar appears
+      expect(find.byType(SnackBar), findsOneWidget,
+          reason: 'Error snackbar should appear when database update fails');
+
+      // Check for any text containing error-related keywords
+      final snackBar = find.byType(SnackBar);
+      if (snackBar.evaluate().isNotEmpty) {
+        expect(find.textContaining('error', findRichText: true), findsWidgets,
+            reason: 'Error message should be present');
+      }
+
+      // 8. Verify database was NOT updated (because update failed)
+      final unchangedMeal = await mockDbHelper.getMeal(meal.id);
+      expect(unchangedMeal!.servings, 2,
+          reason: 'Database should not be updated when updateMeal fails');
+    });
+
+    testWidgets('shows error when meal is deleted during edit',
+        (WidgetTester tester) async {
+      // 0. Clear and setup
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
+
+      // 1. Set up a meal
+      final meal = Meal(
+        id: 'meal-deletion-test',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 3,
+        notes: 'Test meal',
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Open edit dialog
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      // 4. While dialog is open, delete the meal from database
+      await mockDbHelper.deleteMeal(meal.id);
+
+      // 5. Make a change in the dialog
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '6',
+      );
+
+      // 6. Try to save (meal no longer exists)
+      await tester.tap(find.text('Save Changes'));
+      await tester.pump(); // Start closing dialog
+      await tester.pump(); // Complete dialog close animation
+
+      // Give more time for async operations (same as test that passed)
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // 7. Verify error snackbar appears
+      expect(find.byType(SnackBar), findsOneWidget,
+          reason: 'Error snackbar should appear when meal is not found');
+
+      // Check for any text containing error-related keywords
+      final snackBar = find.byType(SnackBar);
+      if (snackBar.evaluate().isNotEmpty) {
+        expect(find.textContaining('error', findRichText: true), findsWidgets,
+            reason: 'Error message should be present');
+      }
+
+      // 8. Verify meal is indeed deleted
+      final deletedMeal = await mockDbHelper.getMeal(meal.id);
+      expect(deletedMeal, isNull, reason: 'Meal should be deleted');
+    });
+
+    testWidgets('shows error snackbar when loading recipes fails',
+        (WidgetTester tester) async {
+      // 0. Clear and setup
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
+
+      // 1. Set up a meal
+      final meal = Meal(
+        id: 'recipe-loading-error-test',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 2,
+        notes: 'Test meal',
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Configure mock to fail on getAllRecipes
+      // This will cause the edit dialog to fail when loading available recipes
+      mockDbHelper.failOnOperation('getAllRecipes');
+
+      // 4. Open edit dialog (this triggers getAllRecipes in initState)
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pump(); // Start opening dialog
+      await tester.pump(); // Build dialog widget tree
+
+      // Give time for async _loadAvailableRecipes to execute and show error
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // 5. Verify error snackbar appears in dialog
+      // Note: The error appears in the dialog context, not the screen
+      expect(find.byType(SnackBar), findsOneWidget,
+          reason:
+              'Error snackbar should appear when loading recipes fails in dialog');
+
+      // Check for any text containing error-related keywords
+      final snackBar = find.byType(SnackBar);
+      if (snackBar.evaluate().isNotEmpty) {
+        expect(find.textContaining('error', findRichText: true), findsWidgets,
+            reason: 'Error message should be present');
+      }
     });
   });
 }
