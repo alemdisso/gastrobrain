@@ -1418,4 +1418,423 @@ void main() {
       }
     });
   });
+
+  group('Multi-Recipe and Single-Recipe Edge Cases', () {
+    testWidgets('shows success message after editing meal with multiple recipes',
+        (WidgetTester tester) async {
+      // 0. Clear and setup
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
+      await mockDbHelper.insertRecipe(sideRecipe);
+
+      // Create another side recipe
+      final sideRecipe2 = Recipe(
+        id: 'side-recipe-2',
+        name: 'Steamed Vegetables',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+        difficulty: 1,
+        prepTimeMinutes: 5,
+        cookTimeMinutes: 10,
+      );
+      await mockDbHelper.insertRecipe(sideRecipe2);
+
+      // 1. Create a multi-recipe meal (primary + 2 side dishes)
+      final meal = Meal(
+        id: 'multi-recipe-success-test',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 4,
+        notes: 'Multi-recipe meal',
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+
+      // Add primary recipe
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // Add first side dish
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: sideRecipe.id,
+        isPrimaryDish: false,
+      ));
+
+      // Add second side dish
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: sideRecipe2.id,
+        isPrimaryDish: false,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Verify multi-recipe meal is displayed (2 side dishes)
+      expect(find.text('2 side dishes'), findsOneWidget,
+          reason: 'Should show count of 2 side dishes');
+
+      // 4. Edit the meal
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      // 5. Modify servings
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '6',
+      );
+
+      // 6. Save changes
+      await tester.tap(find.text('Save Changes'));
+
+      // Give time for async operations
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // 7. Verify success snackbar appears
+      expect(find.byType(SnackBar), findsOneWidget,
+          reason:
+              'Success snackbar should appear after editing multi-recipe meal');
+
+      // Check for success-related text
+      final snackBar = find.byType(SnackBar);
+      if (snackBar.evaluate().isNotEmpty) {
+        expect(find.textContaining('success', findRichText: true), findsWidgets,
+            reason: 'Success message should be present');
+      }
+
+      // 8. Verify data was updated
+      final updatedMeal = await mockDbHelper.getMeal(meal.id);
+      expect(updatedMeal!.servings, 6,
+          reason: 'Multi-recipe meal servings should be updated');
+    });
+
+    testWidgets('shows success message after editing single-recipe meal',
+        (WidgetTester tester) async {
+      // 0. Clear and setup
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
+
+      // 1. Create a single-recipe meal (no side dishes)
+      final meal = Meal(
+        id: 'single-recipe-success-test',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 2,
+        notes: 'Simple single-recipe meal',
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+
+      // Add only primary recipe (no side dishes)
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Verify single-recipe meal (no side dishes indicator)
+      expect(find.textContaining('side dish'), findsNothing,
+          reason: 'Should not show side dishes for single-recipe meal');
+
+      // 4. Edit the meal
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      // 5. Modify notes
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_notes_field')),
+        'Updated single-recipe meal notes',
+      );
+
+      // 6. Save changes
+      await tester.tap(find.text('Save Changes'));
+
+      // Give time for async operations
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // 7. Verify success snackbar appears
+      expect(find.byType(SnackBar), findsOneWidget,
+          reason:
+              'Success snackbar should appear after editing single-recipe meal');
+
+      // Check for success-related text
+      final snackBar = find.byType(SnackBar);
+      if (snackBar.evaluate().isNotEmpty) {
+        expect(find.textContaining('success', findRichText: true), findsWidgets,
+            reason: 'Success message should be present');
+      }
+
+      // 8. Verify data was updated
+      final updatedMeal = await mockDbHelper.getMeal(meal.id);
+      expect(updatedMeal!.notes, 'Updated single-recipe meal notes',
+          reason: 'Single-recipe meal notes should be updated');
+    });
+  });
+
+  group('Snackbar Behavior Tests', () {
+    testWidgets('snackbar displays for appropriate duration',
+        (WidgetTester tester) async {
+      // 0. Clear and setup
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
+
+      // 1. Create a test meal
+      final meal = Meal(
+        id: 'snackbar-duration-test',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 3,
+        notes: 'Test meal for snackbar duration',
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Edit the meal
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      // 4. Make a simple change
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '5',
+      );
+
+      // 5. Save changes
+      await tester.tap(find.text('Save Changes'));
+
+      // Give time for async operations
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // 6. Verify snackbar is visible immediately after action
+      expect(find.byType(SnackBar), findsOneWidget,
+          reason: 'Snackbar should be visible immediately after save');
+
+      // 7. Wait 2 seconds and verify snackbar is still visible
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.byType(SnackBar), findsOneWidget,
+          reason: 'Snackbar should still be visible after 2 seconds');
+
+      // 8. Wait another 3 seconds (total ~5 seconds) and verify snackbar auto-dismisses
+      // Flutter's default SnackBar duration is 4 seconds, so after 5 total it should be gone
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SnackBar), findsNothing,
+          reason:
+              'Snackbar should auto-dismiss after its duration (4 seconds default)');
+    });
+
+    testWidgets('snackbar can be manually dismissed',
+        (WidgetTester tester) async {
+      // 0. Clear and setup
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
+
+      // 1. Create a test meal
+      final meal = Meal(
+        id: 'snackbar-dismiss-test',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 3,
+        notes: 'Test meal for snackbar dismissal',
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Edit the meal
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      // 4. Make a simple change
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '5',
+      );
+
+      // 5. Save changes
+      await tester.tap(find.text('Save Changes'));
+
+      // Give time for async operations
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // 6. Verify snackbar is visible
+      expect(find.byType(SnackBar), findsOneWidget,
+          reason: 'Snackbar should be visible after save');
+
+      // 7. Swipe to dismiss the snackbar
+      // SnackBars in Flutter can be dismissed by swiping or by DismissDirection
+      await tester.drag(find.byType(SnackBar), const Offset(0, 100));
+      await tester.pumpAndSettle();
+
+      // 8. Verify snackbar is dismissed
+      expect(find.byType(SnackBar), findsNothing,
+          reason: 'Snackbar should be dismissed after swipe gesture');
+    });
+
+    testWidgets('handles multiple rapid edit operations gracefully',
+        (WidgetTester tester) async {
+      // 0. Clear and setup
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
+
+      // 1. Create multiple test meals
+      final meal1 = Meal(
+        id: 'rapid-edit-test-1',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 3)),
+        servings: 2,
+        notes: 'First meal',
+        wasSuccessful: true,
+      );
+
+      final meal2 = Meal(
+        id: 'rapid-edit-test-2',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 2)),
+        servings: 3,
+        notes: 'Second meal',
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal1);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal1.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      await mockDbHelper.insertMeal(meal2);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal2.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Perform first rapid edit
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '10',
+      );
+
+      await tester.tap(find.text('Save Changes'));
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump();
+
+      // 4. Immediately perform second rapid edit (don't wait for first snackbar)
+      await tester.tap(find.byIcon(Icons.edit).last);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '8',
+      );
+
+      await tester.tap(find.text('Save Changes'));
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // 5. Verify snackbar behavior is reasonable
+      // We should see at least one snackbar (the most recent one)
+      // Flutter's ScaffoldMessenger manages the queue
+      expect(find.byType(SnackBar), findsOneWidget,
+          reason:
+              'At least one snackbar should be visible after rapid edits');
+
+      // 6. Verify both meals were updated successfully
+      final updatedMeal1 = await mockDbHelper.getMeal(meal1.id);
+      final updatedMeal2 = await mockDbHelper.getMeal(meal2.id);
+
+      expect(updatedMeal1!.servings, 10,
+          reason: 'First meal should be updated despite rapid edits');
+      expect(updatedMeal2!.servings, 8,
+          reason: 'Second meal should be updated despite rapid edits');
+    });
+  });
 }
