@@ -1197,6 +1197,271 @@ void main() {
       expect(unchangedMeal!.servings, 4,
           reason: 'Database should not be updated for empty servings');
     });
+
+    testWidgets('shows inline error when prep time is negative',
+        (WidgetTester tester) async {
+      // 0. Clear and setup
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
+
+      // 1. Set up a meal
+      final meal = Meal(
+        id: 'negative-prep-time-test',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 3,
+        notes: 'Test meal',
+        wasSuccessful: true,
+        actualPrepTime: 15.0,
+        actualCookTime: 25.0,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Open edit dialog
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      // 4. Enter negative prep time
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_prep_time_field')),
+        '-5',
+      );
+
+      // 5. Try to save - this triggers form validation
+      await tester.tap(find.text('Save Changes'));
+      await tester.pump();
+
+      // 6. Verify inline validation error appears
+      expect(find.text('Enter a valid time'), findsOneWidget,
+          reason:
+              'Inline validation error should appear for negative prep time (enterValidTime)');
+
+      // 7. Verify dialog is still open
+      expect(find.byType(Dialog), findsOneWidget,
+          reason: 'Dialog should remain open after validation error');
+
+      // 8. Verify database was NOT updated
+      final unchangedMeal = await mockDbHelper.getMeal(meal.id);
+      expect(unchangedMeal!.actualPrepTime, 15.0,
+          reason: 'Database should not be updated for negative prep time');
+    });
+
+    testWidgets('shows inline error when prep time is invalid format',
+        (WidgetTester tester) async {
+      // 0. Clear and setup
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
+
+      // 1. Set up a meal
+      final meal = Meal(
+        id: 'invalid-prep-time-test',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 3,
+        notes: 'Test meal',
+        wasSuccessful: true,
+        actualPrepTime: 20.0,
+        actualCookTime: 30.0,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Open edit dialog
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      // 4. Enter non-numeric prep time
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_prep_time_field')),
+        'abc',
+      );
+
+      // 5. Try to save - this triggers form validation
+      await tester.tap(find.text('Save Changes'));
+      await tester.pump();
+
+      // 6. Verify inline validation error appears
+      expect(find.text('Enter a valid time'), findsOneWidget,
+          reason:
+              'Inline validation error should appear for non-numeric prep time (enterValidTime)');
+
+      // 7. Verify dialog is still open
+      expect(find.byType(Dialog), findsOneWidget,
+          reason: 'Dialog should remain open after validation error');
+
+      // 8. Verify database was NOT updated
+      final unchangedMeal = await mockDbHelper.getMeal(meal.id);
+      expect(unchangedMeal!.actualPrepTime, 20.0,
+          reason:
+              'Database should not be updated for invalid prep time format');
+    });
+    testWidgets('shows inline error when cook time is negative',
+        (WidgetTester tester) async {
+      // 0. Clear and setup
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
+
+      // 1. Set up a meal
+      final meal = Meal(
+        id: 'negative-cook-time-test',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 3,
+        notes: 'Test meal',
+        wasSuccessful: true,
+        actualPrepTime: 15.0,
+        actualCookTime: 25.0,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Open edit dialog
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      // 4. Enter negative cook time
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_cook_time_field')),
+        '-1',
+      );
+
+      // 5. Try to save - this triggers form validation
+      await tester.tap(find.text('Save Changes'));
+      await tester.pump();
+
+      // 6. Verify inline validation error appears
+      expect(find.text('Enter a valid time'), findsOneWidget,
+          reason:
+              'Inline validation error should appear for negative cook time (enterValidTime)');
+
+      // 7. Verify dialog is still open
+      expect(find.byType(Dialog), findsOneWidget,
+          reason: 'Dialog should remain open after validation error');
+
+      // 8. Verify database was NOT updated
+      final unchangedMeal = await mockDbHelper.getMeal(meal.id);
+      expect(unchangedMeal!.actualCookTime, 25.0,
+          reason: 'Database should not be updated for negative cook time');
+    });
+
+    testWidgets('shows inline error when cook time is invalid format',
+        (WidgetTester tester) async {
+      // 0. Clear and setup
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
+
+      // 1. Set up a meal
+      final meal = Meal(
+        id: 'invalid-cook-time-test',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 3,
+        notes: 'Test meal',
+        wasSuccessful: true,
+        actualPrepTime: 20.0,
+        actualCookTime: 30.0,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Open edit dialog
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      // 4. Enter non-numeric cook time
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_cook_time_field')),
+        'xyz',
+      );
+
+      // 5. Try to save - this triggers form validation
+      await tester.tap(find.text('Save Changes'));
+      await tester.pump();
+
+      // 6. Verify inline validation error appears
+      expect(find.text('Enter a valid time'), findsOneWidget,
+          reason:
+              'Inline validation error should appear for non-numeric cook time (enterValidTime)');
+
+      // 7. Verify dialog is still open
+      expect(find.byType(Dialog), findsOneWidget,
+          reason: 'Dialog should remain open after validation error');
+
+      // 8. Verify database was NOT updated
+      final unchangedMeal = await mockDbHelper.getMeal(meal.id);
+      expect(unchangedMeal!.actualCookTime, 30.0,
+          reason:
+              'Database should not be updated for invalid cook time format');
+    });
   });
 
   group('Database Error Feedback', () {
@@ -1420,7 +1685,8 @@ void main() {
   });
 
   group('Multi-Recipe and Single-Recipe Edge Cases', () {
-    testWidgets('shows success message after editing meal with multiple recipes',
+    testWidgets(
+        'shows success message after editing meal with multiple recipes',
         (WidgetTester tester) async {
       // 0. Clear and setup
       mockDbHelper.resetAllData();
@@ -1824,8 +2090,7 @@ void main() {
       // We should see at least one snackbar (the most recent one)
       // Flutter's ScaffoldMessenger manages the queue
       expect(find.byType(SnackBar), findsOneWidget,
-          reason:
-              'At least one snackbar should be visible after rapid edits');
+          reason: 'At least one snackbar should be visible after rapid edits');
 
       // 6. Verify both meals were updated successfully
       final updatedMeal1 = await mockDbHelper.getMeal(meal1.id);
