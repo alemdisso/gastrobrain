@@ -410,6 +410,15 @@ class MockDatabaseHelper implements DatabaseHelper {
   // MEAL RECIPE OPERATIONS
   @override
   Future<String> insertMealRecipe(MealRecipe mealRecipe) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'insertMealRecipe')) {
+      final errorMessage = _nextOperationError;
+      resetErrorSimulation();
+      throw Exception(errorMessage);
+    }
+
     _mealRecipes[mealRecipe.id] = mealRecipe;
 
     // Update last cooked date and count
@@ -418,6 +427,10 @@ class MockDatabaseHelper implements DatabaseHelper {
       _lastCookedDates[mealRecipe.recipeId] = meal.cookedAt;
       _mealCounts[mealRecipe.recipeId] =
           (_mealCounts[mealRecipe.recipeId] ?? 0) + 1;
+
+      // Also update the meal's mealRecipes list to keep it in sync
+      meal.mealRecipes ??= [];
+      meal.mealRecipes!.add(mealRecipe);
     }
 
     return mealRecipe.id;

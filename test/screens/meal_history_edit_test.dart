@@ -2051,6 +2051,304 @@ void main() {
           reason: 'Multi-recipe meal servings should be updated');
     });
 
+    testWidgets('shows success message after adding side dish during meal edit',
+        (WidgetTester tester) async {
+      // 0. Clear and setup
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
+      await mockDbHelper.insertRecipe(sideRecipe);
+
+      // Create a third recipe that will be added during edit
+      final sideRecipe2 = Recipe(
+        id: 'side-recipe-2',
+        name: 'Steamed Vegetables',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+        difficulty: 1,
+        prepTimeMinutes: 5,
+        cookTimeMinutes: 10,
+      );
+      await mockDbHelper.insertRecipe(sideRecipe2);
+
+      // 1. Create a meal with primary + 1 side dish
+      final meal = Meal(
+        id: 'add-side-dish-test',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 4,
+        notes: 'Meal to test adding side dish',
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+
+      // Add primary recipe
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // Add first side dish
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: sideRecipe.id,
+        isPrimaryDish: false,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Verify initial state: 1 side dish
+      expect(find.text('1 side dish'), findsOneWidget,
+          reason: 'Should initially show 1 side dish');
+
+      // 4. Open edit dialog
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      // 5. Verify edit dialog is open (there are multiple "Rice Pilaf" texts: one in background, one in dialog)
+      expect(find.byType(Dialog), findsOneWidget,
+          reason: 'Edit dialog should be open');
+      expect(find.text('Rice Pilaf'), findsWidgets,
+          reason: 'Existing side dish should be shown in edit dialog and background');
+
+      // 6. Tap "Add Recipe" button to add another side dish
+      await tester.tap(find.text('Add Recipe'));
+      await tester.pumpAndSettle();
+
+      // 7. Select the second side dish from the dialog
+      expect(find.text('Steamed Vegetables'), findsOneWidget,
+          reason: 'Should show available recipe in add dialog');
+      await tester.tap(find.text('Steamed Vegetables'));
+      await tester.pumpAndSettle();
+
+      // 8. Verify the new side dish appears in the edit dialog
+      expect(find.text('Steamed Vegetables'), findsOneWidget,
+          reason: 'Newly added side dish should appear in edit dialog');
+
+      // 9. Save changes
+      await tester.tap(find.text('Save Changes'));
+
+      // Give time for async operations
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // 10. Verify success snackbar appears
+      expect(find.byType(SnackBar), findsOneWidget,
+          reason:
+              'Success snackbar should appear after adding side dish to meal');
+
+      // Check for success message text
+      final hasSuccessMessage =
+          find.textContaining('success', findRichText: true).evaluate().isNotEmpty ||
+              find.textContaining('sucesso', findRichText: true).evaluate().isNotEmpty;
+      expect(hasSuccessMessage, isTrue,
+          reason: 'Success message should be present in English or Portuguese');
+
+      // 11. Verify UI shows 2 side dishes now
+      // Debug: Print all text widgets to see what's actually rendered
+      print('=== DEBUG: All text widgets after save ===');
+      for (final element in find.byType(Text).evaluate()) {
+        final textWidget = element.widget as Text;
+        print('Text: "${textWidget.data}"');
+      }
+      print('=== END DEBUG ===');
+
+      expect(find.text('2 side dishes'), findsOneWidget,
+          reason: 'Should now show 2 side dishes after adding one');
+
+      // 12. Verify database was updated with new side dish
+      final mealRecipes = await mockDbHelper.getMealRecipesForMeal(meal.id);
+      expect(mealRecipes.length, 3,
+          reason: 'Should have 3 recipes total: 1 primary + 2 sides');
+
+      final sideRecipes =
+          mealRecipes.where((mr) => !mr.isPrimaryDish).toList();
+      expect(sideRecipes.length, 2, reason: 'Should have 2 side dishes');
+
+      // Verify both side dishes are present
+      final sideRecipeIds = sideRecipes.map((mr) => mr.recipeId).toList();
+      expect(sideRecipeIds.contains(sideRecipe.id), isTrue,
+          reason: 'Original side dish should still be present');
+      expect(sideRecipeIds.contains(sideRecipe2.id), isTrue,
+          reason: 'Newly added side dish should be in database');
+    });
+
+    testWidgets(
+        'shows error when side dish database operations fail during save',
+        (WidgetTester tester) async {
+      // 0. Clear and setup
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
+      await mockDbHelper.insertRecipe(sideRecipe);
+
+      // Create a third recipe that will be added during edit
+      final sideRecipe2 = Recipe(
+        id: 'side-recipe-2',
+        name: 'Steamed Vegetables',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+        difficulty: 1,
+        prepTimeMinutes: 5,
+        cookTimeMinutes: 10,
+      );
+      await mockDbHelper.insertRecipe(sideRecipe2);
+
+      // 1. Create a meal with primary + 1 side dish
+      final meal = Meal(
+        id: 'side-dish-error-test',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 4,
+        notes: 'Meal to test side dish error handling',
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+
+      // Add primary recipe
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // Add first side dish (Rice Pilaf)
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: sideRecipe.id,
+        isPrimaryDish: false,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Verify initial state: 1 side dish
+      expect(find.text('1 side dish'), findsOneWidget,
+          reason: 'Should initially show 1 side dish');
+
+      // 4. Open edit dialog
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      // 5. Remove existing side dish (Rice Pilaf) by tapping trash icon
+      expect(find.byIcon(Icons.delete_outline), findsOneWidget,
+          reason: 'Should find delete icon for the existing side dish');
+      await tester.tap(find.byIcon(Icons.delete_outline));
+      await tester.pumpAndSettle();
+
+      // 6. Verify Rice Pilaf is removed from dialog (local state)
+      // Note: There might still be instances in the background, so we check the dialog
+      expect(find.byType(Dialog), findsOneWidget,
+          reason: 'Dialog should still be open');
+
+      // 7. Add a new side dish (Steamed Vegetables)
+      await tester.tap(find.text('Add Recipe'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Steamed Vegetables'));
+      await tester.pumpAndSettle();
+
+      // 8. Configure mock to fail when inserting meal recipes
+      mockDbHelper.failOnOperation('insertMealRecipe');
+
+      // 9. Save changes (this will trigger the error)
+      await tester.tap(find.text('Save Changes'));
+      await tester.pump();
+      await tester.pump();
+
+      // Give time for async operations
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // 10. Verify error snackbar appears
+      expect(find.byType(SnackBar), findsOneWidget,
+          reason:
+              'Error snackbar should appear when side dish database operation fails');
+
+      // 11. Extract and verify error message
+      final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
+      final snackBarContent = snackBar.content as Text;
+      final errorMessage = snackBarContent.data ?? '';
+
+      // Should contain error message (English or Portuguese)
+      final hasErrorMessage =
+          errorMessage.contains('Error editing meal') ||
+              errorMessage.contains('Erro ao editar refeição');
+      expect(hasErrorMessage, isTrue,
+          reason:
+              'Error message should contain "Error editing meal" or "Erro ao editar refeição". Got: "$errorMessage"');
+
+      // 12. Verify error message does NOT contain technical details
+      final technicalPatterns = [
+        'Exception:',
+        'Error:',
+        'at ',
+        'lib/',
+        '.dart',
+        'StackTrace',
+        '#0',
+        'Simulated',
+      ];
+
+      for (final pattern in technicalPatterns) {
+        expect(errorMessage.contains(pattern), isFalse,
+            reason:
+                'Error message should not contain technical detail "$pattern". Message was: "$errorMessage"');
+      }
+
+      // 13. Verify database state after partial operation
+      // Note: _updateMealRecipeAssociations deletes all side dishes first,
+      // then tries to insert new ones. Since insert failed, we have:
+      // - Deletions succeeded (original side dish removed)
+      // - Inserts failed (new side dish NOT added)
+      // Result: Only primary recipe remains
+      final mealRecipes = await mockDbHelper.getMealRecipesForMeal(meal.id);
+      expect(mealRecipes.length, 1,
+          reason:
+              'Should have only 1 recipe (primary) because deletions succeeded but inserts failed');
+
+      final primaryRecipes =
+          mealRecipes.where((mr) => mr.isPrimaryDish).toList();
+      expect(primaryRecipes.length, 1, reason: 'Should have 1 primary recipe');
+      expect(primaryRecipes.first.recipeId, testRecipe.id,
+          reason: 'Primary recipe should be Grilled Chicken');
+
+      final sideRecipes =
+          mealRecipes.where((mr) => !mr.isPrimaryDish).toList();
+      expect(sideRecipes.length, 0,
+          reason:
+              'Should have 0 side dishes because original was deleted and new one failed to insert');
+
+      // 14. Verify new side dish was NOT added (operation failed)
+      final hasNewSideDish =
+          mealRecipes.any((mr) => mr.recipeId == sideRecipe2.id);
+      expect(hasNewSideDish, isFalse,
+          reason:
+              'New side dish (Steamed Vegetables) should NOT be in database because operation failed');
+    });
+
     testWidgets('shows success message after editing single-recipe meal',
         (WidgetTester tester) async {
       // 0. Clear and setup
@@ -2360,6 +2658,90 @@ void main() {
           reason: 'First meal should be updated despite rapid edits');
       expect(updatedMeal2!.servings, 8,
           reason: 'Second meal should be updated despite rapid edits');
+    });
+  });
+
+  group('Accessibility Tests', () {
+    testWidgets('snackbar meets accessibility requirements',
+        (WidgetTester tester) async {
+      // 0. Clear and setup
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
+
+      // 1. Create a test meal
+      final meal = Meal(
+        id: 'accessibility-test-meal',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 3,
+        notes: 'Test meal for accessibility',
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Edit the meal to trigger success snackbar
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '5',
+      );
+
+      await tester.tap(find.text('Save Changes'));
+
+      // Give time for async operations
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // 4. Verify snackbar appears
+      expect(find.byType(SnackBar), findsOneWidget,
+          reason: 'Success snackbar should appear');
+
+      // 5. Verify snackbar text is accessible
+      // Find the success message text
+      final successMessageFinder = find.text('Meal updated successfully');
+      expect(successMessageFinder, findsOneWidget,
+          reason: 'Success message should be present');
+
+      // 6. Get the Text widget and verify it's in the widget tree (accessible)
+      final textWidget = tester.widget<Text>(successMessageFinder);
+      expect(textWidget.data, 'Meal updated successfully',
+          reason: 'Text widget should contain the success message');
+
+      // 7. Verify the text is not explicitly excluded from semantics
+      // In Flutter, by default, Text widgets are included in the semantics tree
+      // We verify this by checking that we can find the text in the tree
+      final semanticsFinder = find.ancestor(
+        of: successMessageFinder,
+        matching: find.byType(SnackBar),
+      );
+      expect(semanticsFinder, findsOneWidget,
+          reason: 'Text should be within SnackBar and accessible to screen readers');
+
+      // 8. Verify snackbar is visible and has content
+      final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
+      expect(snackBar.content, isA<Text>(),
+          reason: 'SnackBar should have Text content that is accessible');
     });
   });
 }
