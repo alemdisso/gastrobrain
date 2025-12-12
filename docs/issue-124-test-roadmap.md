@@ -156,6 +156,10 @@ testWidgets('shows success snackbar when editing cooked meal from weekly plan', 
   // Verify success message
 });
 ```
+BLOCKED: This test is blocked by issue #234
+WeeklyPlanScreen uses raw database access (_updateMealRecord calls db.update directly) which cannot be mocked. Need to refactor to use DatabaseHelper.updateMeal() first.
+See: https://github.com/alemdisso/gastrobrain/issues/234
+
 - [ ] Create meal plan with cooked item
 - [ ] Navigate to edit cooked meal
 - [ ] Save changes
@@ -250,7 +254,7 @@ testWidgets('error messages do not expose technical details', (tester) async {
 ```
 - [X] Verify no stack traces in user-facing messages
 - [X] Verify messages are localized
-- [ ] Verify messages provide actionable information
+- [ ] Verify messages provide actionable information (WILL NOT BE DONE NOW)
 
 ---
 

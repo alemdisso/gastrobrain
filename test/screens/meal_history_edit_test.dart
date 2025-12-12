@@ -1798,12 +1798,11 @@ void main() {
       expect(find.byType(SnackBar), findsOneWidget,
           reason: 'Error snackbar should appear when database update fails');
 
-      // Check for any text containing error-related keywords
-      final snackBar = find.byType(SnackBar);
-      if (snackBar.evaluate().isNotEmpty) {
-        expect(find.textContaining('error', findRichText: true), findsWidgets,
-            reason: 'Error message should be present');
-      }
+      // Check for error message text (case-sensitive: "Error" in English or "Erro" in Portuguese)
+      final hasErrorMessage = find.textContaining('Error', findRichText: true).evaluate().isNotEmpty ||
+          find.textContaining('Erro', findRichText: true).evaluate().isNotEmpty;
+      expect(hasErrorMessage, isTrue,
+          reason: 'Error message should be present in English or Portuguese');
 
       // 8. Verify database was NOT updated (because update failed)
       final unchangedMeal = await mockDbHelper.getMeal(meal.id);
@@ -1873,12 +1872,11 @@ void main() {
       expect(find.byType(SnackBar), findsOneWidget,
           reason: 'Error snackbar should appear when meal is not found');
 
-      // Check for any text containing error-related keywords
-      final snackBar = find.byType(SnackBar);
-      if (snackBar.evaluate().isNotEmpty) {
-        expect(find.textContaining('error', findRichText: true), findsWidgets,
-            reason: 'Error message should be present');
-      }
+      // Check for error message text (case-sensitive: "Error" in English or "Erro" in Portuguese)
+      final hasErrorMessage = find.textContaining('Error', findRichText: true).evaluate().isNotEmpty ||
+          find.textContaining('Erro', findRichText: true).evaluate().isNotEmpty;
+      expect(hasErrorMessage, isTrue,
+          reason: 'Error message should be present in English or Portuguese');
 
       // 8. Verify meal is indeed deleted
       final deletedMeal = await mockDbHelper.getMeal(meal.id);
@@ -1940,12 +1938,11 @@ void main() {
           reason:
               'Error snackbar should appear when loading recipes fails in dialog');
 
-      // Check for any text containing error-related keywords
-      final snackBar = find.byType(SnackBar);
-      if (snackBar.evaluate().isNotEmpty) {
-        expect(find.textContaining('error', findRichText: true), findsWidgets,
-            reason: 'Error message should be present');
-      }
+      // Check for error message text (case-sensitive: "Error" in English or "Erro" in Portuguese)
+      final hasErrorMessage = find.textContaining('Error', findRichText: true).evaluate().isNotEmpty ||
+          find.textContaining('Erro', findRichText: true).evaluate().isNotEmpty;
+      expect(hasErrorMessage, isTrue,
+          reason: 'Error message should be present in English or Portuguese');
     });
   });
 
@@ -2042,12 +2039,11 @@ void main() {
           reason:
               'Success snackbar should appear after editing multi-recipe meal');
 
-      // Check for success-related text
-      final snackBar = find.byType(SnackBar);
-      if (snackBar.evaluate().isNotEmpty) {
-        expect(find.textContaining('success', findRichText: true), findsWidgets,
-            reason: 'Success message should be present');
-      }
+      // Check for success message text
+      final hasSuccessMessage = find.textContaining('success', findRichText: true).evaluate().isNotEmpty ||
+          find.textContaining('sucesso', findRichText: true).evaluate().isNotEmpty;
+      expect(hasSuccessMessage, isTrue,
+          reason: 'Success message should be present in English or Portuguese');
 
       // 8. Verify data was updated
       final updatedMeal = await mockDbHelper.getMeal(meal.id);
@@ -2119,12 +2115,11 @@ void main() {
           reason:
               'Success snackbar should appear after editing single-recipe meal');
 
-      // Check for success-related text
-      final snackBar = find.byType(SnackBar);
-      if (snackBar.evaluate().isNotEmpty) {
-        expect(find.textContaining('success', findRichText: true), findsWidgets,
-            reason: 'Success message should be present');
-      }
+      // Check for success message text
+      final hasSuccessMessage = find.textContaining('success', findRichText: true).evaluate().isNotEmpty ||
+          find.textContaining('sucesso', findRichText: true).evaluate().isNotEmpty;
+      expect(hasSuccessMessage, isTrue,
+          reason: 'Success message should be present in English or Portuguese');
 
       // 8. Verify data was updated
       final updatedMeal = await mockDbHelper.getMeal(meal.id);
