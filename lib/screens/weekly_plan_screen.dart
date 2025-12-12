@@ -1029,8 +1029,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       }
     } catch (e) {
       if (mounted) {
-        SnackbarService.showError(context,
-            AppLocalizations.of(context)!.errorEditingMeal(e.toString()));
+        SnackbarService.showError(
+            context, AppLocalizations.of(context)!.errorEditingMeal);
       }
     }
   }

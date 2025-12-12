@@ -188,8 +188,8 @@ testWidgets('shows error when prep time is negative', (tester) async {
   // Verify error message
 });
 ```
-- [ ] Test negative prep time
-- [ ] Test invalid format (non-numeric)
+- [X] Test negative prep time
+- [X] Test invalid format (non-numeric)
 
 #### Test 3.1.3: Invalid cook time shows error
 ```dart
@@ -198,8 +198,8 @@ testWidgets('shows error when cook time is negative', (tester) async {
   // Verify error message
 });
 ```
-- [ ] Test negative cook time
-- [ ] Test invalid format (non-numeric)
+- [X] Test negative cook time
+- [X] Test invalid format (non-numeric)
 
 ### 3.2 Database Error Tests
 
@@ -246,10 +246,10 @@ testWidgets('shows error snackbar when loading recipes fails', (tester) async {
 ```dart
 testWidgets('error messages do not expose technical details', (tester) async {
   // Verify error messages are appropriate for end users
-});
+});s
 ```
-- [ ] Verify no stack traces in user-facing messages
-- [ ] Verify messages are localized
+- [X] Verify no stack traces in user-facing messages
+- [X] Verify messages are localized
 - [ ] Verify messages provide actionable information
 
 ---
@@ -303,9 +303,9 @@ testWidgets('snackbar displays for appropriate duration', (tester) async {
   // Verify snackbar stays visible for ~3 seconds
 });
 ```
-- [ ] Verify snackbar is visible immediately after action
-- [ ] Verify snackbar auto-dismisses after duration
-- [ ] Note: Duration is 3 seconds per `SnackbarService`
+- [X] Verify snackbar is visible immediately after action
+- [X] Verify snackbar auto-dismisses after duration
+- [X] Note: Duration is 3 seconds per `SnackbarService`
 
 #### Test 4.3.2: Snackbar dismissal
 ```dart
@@ -315,8 +315,8 @@ testWidgets('snackbar can be manually dismissed', (tester) async {
   // Verify dismissed
 });
 ```
-- [ ] Test swipe-to-dismiss functionality
-- [ ] Verify no lingering snackbars
+- [X] Test swipe-to-dismiss functionality
+- [X] Verify no lingering snackbars
 
 #### Test 4.3.3: Multiple rapid edits don't stack snackbars poorly
 ```dart
@@ -325,8 +325,8 @@ testWidgets('handles multiple rapid edit operations gracefully', (tester) async 
   // Verify snackbar behavior is reasonable
 });
 ```
-- [ ] Test rapid successive edits
-- [ ] Verify snackbar queue behavior
+- [X] Test rapid successive edits
+- [X] Verify snackbar queue behavior
 
 ### 4.4 Accessibility Tests
 

@@ -304,15 +304,9 @@
   "@mealUpdatedSuccessfully": {
     "description": "Success message for meal update"
   },
-  "errorEditingMeal": "Error editing meal: {error}",
+  "errorEditingMeal": "Error editing meal",
   "@errorEditingMeal": {
-    "description": "Error message when editing meal fails",
-    "placeholders": {
-      "error": {
-        "type": "String",
-        "description": "The error message"
-      }
-    }
+    "description": "Error message when editing meal fails"
   },
   "recipesCount": "{count} recipes",
   "@recipesCount": {

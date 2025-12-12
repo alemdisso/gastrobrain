@@ -70,12 +70,14 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
       });
     } on GastrobrainException catch (e) {
       setState(() {
-        _errorMessage = '${AppLocalizations.of(context)!.errorLoadingMeals} ${e.message}';
+        _errorMessage =
+            '${AppLocalizations.of(context)!.errorLoadingMeals} ${e.message}';
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _errorMessage = AppLocalizations.of(context)!.unexpectedErrorLoadingMeals;
+        _errorMessage =
+            AppLocalizations.of(context)!.unexpectedErrorLoadingMeals;
         _isLoading = false;
       });
     }
@@ -188,14 +190,18 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!.mealUpdatedSuccessfully)),
+            SnackBar(
+                content: Text(
+                    AppLocalizations.of(context)!.mealUpdatedSuccessfully)),
           );
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${AppLocalizations.of(context)!.errorEditingMeal} $e')),
+          SnackBar(
+              content:
+                  Text('${AppLocalizations.of(context)!.errorEditingMeal}')),
         );
       }
     }
@@ -325,7 +331,9 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                               BorderRadius.circular(10),
                                         ),
                                         child: Text(
-                                          AppLocalizations.of(context)!.sideDishCount(meal.mealRecipes!.length - 1),
+                                          AppLocalizations.of(context)!
+                                              .sideDishCount(
+                                                  meal.mealRecipes!.length - 1),
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Theme.of(context)
@@ -344,7 +352,8 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                     IconButton(
                                       icon: const Icon(Icons.edit, size: 20),
                                       onPressed: () => _handleEditMeal(meal),
-                                      tooltip: AppLocalizations.of(context)!.editMeal,
+                                      tooltip: AppLocalizations.of(context)!
+                                          .editMeal,
                                       constraints: const BoxConstraints(
                                         minWidth: 36,
                                         minHeight: 36,
@@ -364,8 +373,9 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                         .where((mealRecipe) =>
                                             // Only exclude if this recipe was the PRIMARY dish
                                             // If it was a side dish, show it (important context)
-                                            !(mealRecipe.recipeId == widget.recipe.id &&
-                                              mealRecipe.isPrimaryDish))
+                                            !(mealRecipe.recipeId ==
+                                                    widget.recipe.id &&
+                                                mealRecipe.isPrimaryDish))
                                         .map((mealRecipe) {
                                       return FutureBuilder<Recipe?>(
                                         future: _dbHelper
@@ -393,7 +403,10 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                                         'From planned meal') ==
                                                     true)
                                                   Tooltip(
-                                                    message: AppLocalizations.of(context)!.fromMealPlan,
+                                                    message:
+                                                        AppLocalizations.of(
+                                                                context)!
+                                                            .fromMealPlan,
                                                     child: Icon(
                                                         Icons.event_available,
                                                         size: 16,
@@ -418,7 +431,8 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                       const Icon(Icons.timer, size: 16),
                                       const SizedBox(width: 4),
                                       Text(
-                                        AppLocalizations.of(context)!.actualTimes(
+                                        AppLocalizations.of(context)!
+                                            .actualTimes(
                                           meal.actualPrepTime.toString(),
                                           meal.actualCookTime.toString(),
                                         ),

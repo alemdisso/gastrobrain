@@ -304,15 +304,9 @@
   "@mealUpdatedSuccessfully": {
     "description": "Mensagem de sucesso para atualização de refeição"
   },
-  "errorEditingMeal": "Erro ao editar refeição: {error}",
+  "errorEditingMeal": "Erro ao editar refeição",
   "@errorEditingMeal": {
-    "description": "Mensagem de erro quando falha ao editar refeição",
-    "placeholders": {
-      "error": {
-        "type": "String",
-        "description": "A mensagem de erro"
-      }
-    }
+    "description": "Mensagem de erro quando falha ao editar refeição"    
   },
   "recipesCount": "{count} receitas",
   "@recipesCount": {

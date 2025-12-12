@@ -1464,6 +1464,271 @@ void main() {
     });
   });
 
+  group('Error Message Content', () {
+    testWidgets('error messages do not expose technical implementation details',
+        (WidgetTester tester) async {
+      // 0. Clear and setup
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
+
+      // 1. Set up a meal
+      final meal = Meal(
+        id: 'error-message-content-test',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 2,
+        notes: 'Test meal',
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // 2. Launch the screen
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Configure mock to fail on updateMeal
+      mockDbHelper.failOnOperation('updateMeal');
+
+      // 4. Open edit dialog
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      // 5. Make a valid change
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '5',
+      );
+
+      // 6. Try to save (database will fail)
+      await tester.tap(find.text('Save Changes'));
+      await tester.pump();
+      await tester.pump();
+
+      // Give time for async operations
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // 7. Verify error snackbar appears
+      expect(find.byType(SnackBar), findsOneWidget,
+          reason: 'Error snackbar should appear when database update fails');
+
+      // 8. Extract the error message text from the snackbar
+      final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
+      final snackBarContent = snackBar.content as Text;
+      final errorMessage = snackBarContent.data ?? '';
+
+      // 9. Verify message does NOT contain technical implementation details
+      // These are patterns that should NOT appear in user-facing error messages:
+      final technicalPatterns = [
+        'Exception:', // Exception class name
+        'Error:', // Error class name
+        'at ', // Stack trace indicator
+        'lib/', // File path
+        '.dart', // Dart file extension
+        'StackTrace', // Stack trace keyword
+        '#0', // Stack frame number
+        'Simulated', // Internal test implementation detail
+      ];
+
+      for (final pattern in technicalPatterns) {
+        expect(errorMessage.contains(pattern), isFalse,
+            reason:
+                'Error message should not contain technical detail "$pattern". Message was: "$errorMessage"');
+      }
+    });
+
+    testWidgets('error message is localized in English',
+        (WidgetTester tester) async {
+      // 0. Clear and setup
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
+
+      // 1. Set up a meal
+      final meal = Meal(
+        id: 'error-en-message-content-test',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 2,
+        notes: 'Test meal for English error',
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // 2. Launch the screen with explicit English locale
+      await tester.pumpWidget(
+        ChangeNotifierProvider<RecipeProvider>(
+          create: (_) => MockRecipeProvider(),
+          child: MaterialApp(
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en', ''),
+              Locale('pt', ''),
+            ],
+            locale: const Locale('en', ''), // Explicitly set English locale
+            home: MealHistoryScreen(
+              recipe: testRecipe,
+              databaseHelper: mockDbHelper,
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Configure mock to fail on updateMeal
+      mockDbHelper.failOnOperation('updateMeal');
+
+      // 4. Open edit dialog
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      // 5. Make a valid change
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '3',
+      );
+
+      // 6. Try to save (database will fail)
+      await tester.tap(find.text('Save Changes'));
+      await tester.pump();
+      await tester.pump();
+
+      // Give time for async operations
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // 7. Verify error snackbar appears
+      expect(find.byType(SnackBar), findsOneWidget,
+          reason: 'Error snackbar should appear when database update fails');
+
+      // 8. Extract the error message text from the snackbar
+      final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
+      final snackBarContent = snackBar.content as Text;
+      final errorMessage = snackBarContent.data ?? '';
+
+      // 9. Verify message is localized
+      // Should start with localized error prefix
+      expect(errorMessage.startsWith('Error editing meal'), isTrue,
+          reason:
+              'Error message should start with localized error prefix. Message was: "$errorMessage"');
+    });
+    testWidgets('error message is localized in Portuguese',
+        (WidgetTester tester) async {
+      // 0. Clear and setup
+      mockDbHelper.resetAllData();
+      await mockDbHelper.insertRecipe(testRecipe);
+
+      // 1. Set up a meal
+      final meal = Meal(
+        id: 'error-pt-message-content-test',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 2,
+        notes: 'Test meal for Portuguese error',
+        wasSuccessful: true,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // 2. Launch the screen with explicit English locale
+      await tester.pumpWidget(
+        ChangeNotifierProvider<RecipeProvider>(
+          create: (_) => MockRecipeProvider(),
+          child: MaterialApp(
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en', ''),
+              Locale('pt', ''),
+            ],
+            locale: const Locale('pt', ''), // Explicitly set Portuguese locale
+            home: MealHistoryScreen(
+              recipe: testRecipe,
+              databaseHelper: mockDbHelper,
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // 3. Configure mock to fail on updateMeal
+      mockDbHelper.failOnOperation('updateMeal');
+
+      // 4. Open edit dialog
+      await tester.tap(find.byIcon(Icons.edit).first);
+      await tester.pumpAndSettle();
+
+      // 5. Make a valid change
+      await tester.enterText(
+        find.byKey(const Key('edit_meal_recording_servings_field')),
+        '3',
+      );
+
+      // 6. Try to save (database will fail)
+      await tester
+          .tap(find.text('Salvar Alterações')); // Portuguese "Save Changes"
+      await tester.pump();
+      await tester.pump();
+
+      // Give time for async operations
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // 7. Verify error snackbar appears
+      expect(find.byType(SnackBar), findsOneWidget,
+          reason: 'Error snackbar should appear when database update fails');
+
+      // 8. Extract the error message text from the snackbar
+      final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
+      final snackBarContent = snackBar.content as Text;
+      final errorMessage = snackBarContent.data ?? '';
+
+      // 9. Verify message is localized
+      // Should start with localized error prefix
+      expect(errorMessage.startsWith('Erro ao editar refeição'), isTrue,
+          reason:
+              'Error message should start with localized error prefix. Message was: "$errorMessage"');
+    });
+  });
+
   group('Database Error Feedback', () {
     testWidgets('shows error snackbar when database update fails',
         (WidgetTester tester) async {
