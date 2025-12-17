@@ -398,22 +398,6 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                                 Expanded(
                                                   child: Text(recipe.name),
                                                 ),
-                                                // Add note if this was from a plan
-                                                if (mealRecipe.notes?.contains(
-                                                        'From planned meal') ==
-                                                    true)
-                                                  Tooltip(
-                                                    message:
-                                                        AppLocalizations.of(
-                                                                context)!
-                                                            .fromMealPlan,
-                                                    child: Icon(
-                                                        Icons.event_available,
-                                                        size: 16,
-                                                        color: Theme.of(context)
-                                                            .colorScheme
-                                                            .primary),
-                                                  ),
                                               ],
                                             ),
                                           );

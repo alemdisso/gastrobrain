@@ -302,56 +302,6 @@ void main() {
       expect(iconButton.constraints?.minWidth, 36);
       expect(iconButton.constraints?.minHeight, 36);
     });
-
-    testWidgets('edit functionality preserves meal plan origin indicators',
-        (WidgetTester tester) async {
-      // Create a meal with plan origin note
-      final planMeal = Meal(
-        id: 'plan-meal-1',
-        recipeId: null,
-        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
-        servings: 2,
-        wasSuccessful: true,
-      );
-
-      await mockDbHelper.insertMeal(planMeal);
-
-      // Add primary recipe
-      final primaryMealRecipe = MealRecipe(
-        mealId: planMeal.id,
-        recipeId: testRecipe.id,
-        isPrimaryDish: true,
-        notes: 'Main dish',
-      );
-
-      // Add side dish with plan origin note (this will be displayed)
-      final sideMealRecipe = MealRecipe(
-        mealId: planMeal.id,
-        recipeId: sideRecipe.id,
-        isPrimaryDish: false,
-        notes: 'From planned meal', // This should trigger the plan indicator
-      );
-
-      await mockDbHelper.insertMealRecipe(primaryMealRecipe);
-      await mockDbHelper.insertMealRecipe(sideMealRecipe);
-
-      await tester.pumpWidget(
-        createTestableWidget(
-          MealHistoryScreen(
-            recipe: testRecipe,
-            databaseHelper: mockDbHelper,
-          ),
-        ),
-      );
-
-      await tester.pumpAndSettle();
-
-      // Should show meal plan origin indicator on side dish
-      expect(find.byIcon(Icons.event_available), findsOneWidget);
-
-      // Should still show edit button
-      expect(find.byIcon(Icons.edit), findsWidgets);
-    });
   });
 
   group('UI Refresh After Edit', () {

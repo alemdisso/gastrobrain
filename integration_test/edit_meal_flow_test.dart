@@ -356,7 +356,7 @@ void main() {
         mealId: mealId,
         recipeId: primaryRecipeId,
         isPrimaryDish: true,
-        notes: 'From planned meal',
+        notes: 'Main dish',
       );
       await mockDbHelper.insertMealRecipe(mealRecipe);
 

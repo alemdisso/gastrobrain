@@ -1,3 +1,4 @@
+<!-- markdownlint-disable -->
 # End-to-End Testing Best Practices
 
 **Related Issue:** [#36 Establish End-to-End Flow Testing Framework](https://github.com/alemdisso/gastrobrain/issues/36)
