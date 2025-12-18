@@ -38,7 +38,9 @@ Gastrobrain is a Flutter-based mobile application designed to assist home cooks 
 ### Ingredients & Shopping
 
 - **Ingredient Database** - Comprehensive categorization with protein type tracking
-- **Localized Units** - Support for metric and customary measurements
+- **Localized Units** - Support for metric and customary measurements with fraction display
+- **Smart Quantity Display** - Automatic fraction formatting (e.g., 1/2, 1/4, 3/4) for common values
+- **Enhanced Parser** - Supports Portuguese measurement units including 'maço' (bunch)
 - **Custom Ingredients** - Add custom ingredients when needed
 - **Recipe Ingredient Management** - Link ingredients to recipes with quantities and preparation notes
 
@@ -51,7 +53,10 @@ Gastrobrain is a Flutter-based mobile application designed to assist home cooks 
 ### Data Management
 
 - **Database Migrations** - Versioned schema evolution with automatic migrations
-- **Data Export** - Export recipes and ingredients in JSON format
+- **Complete Backup & Restore** - JSON-based export/import system with data integrity validation
+- **Recipe Import Tool** - Restore recipes from bundled or custom backup files
+- **Data Export** - Export recipes and ingredients in human-readable JSON format
+- **Cross-Platform Compatibility** - File picker integration for Android/iOS backup handling
 - **Backup-Friendly** - SQLite database for easy backup and portability
 
 ## Getting Started
@@ -135,40 +140,47 @@ docs/                     # Documentation
 
 ## Development Status
 
-**Current Version: v0.1.1** - Stability & Polish
+**Current Version: v0.1.2** - Polish & Data Safety
 
 ### Major Achievements
 
 - ✅ Modern architecture with dependency injection
-- ✅ Comprehensive testing infrastructure (60+ unit/widget tests, 8+ E2E tests)
+- ✅ Comprehensive testing infrastructure (65+ unit/widget tests, 12+ E2E tests)
 - ✅ Full bilingual support (English/Portuguese) with proper date localization
 - ✅ Advanced recommendation engine with 6 scoring factors
-- ✅ Database migration system
+- ✅ Database migration system with backup/restore functionality
+- ✅ Complete JSON-based backup and restore system for data safety
 - ✅ CI/CD pipeline with GitHub Actions
 - ✅ Multi-ingredient and multi-recipe meal support
 - ✅ End-to-end testing framework with best practices guide
 - ✅ Form field keys for improved testability and accessibility
-- ✅ Recipe search and filtering capabilities
-- ✅ Polished UI with improved information density
+- ✅ Recipe search and filtering with visual indicators
+- ✅ Polished UI with improved information density and fraction display
+- ✅ Enhanced ingredient parser with Portuguese measurement units
 
-### What's Next (v0.1.2 - Stability & Polish Completion)
+### What's Next (v0.1.3 - Testing & Deferred Features)
+
+**User-Facing Features:**
+
+- Shopping list generation from meal plans (#5)
+- Meal type selection when recording cooked meals (#199)
+- Improved "to taste" ingredient handling with zero quantity support (#196)
+- Context menu with edit and delete options for meal cards (#238)
 
 **Testing Foundation:**
-- Complete widget test coverage for core screens (MealHistoryScreen, dialogs)
-- Database layer testing for meal operations
-- End-to-end workflow testing for meal editing
-- Dialog and state management testing
-- Edge case test suite and test refactoring
 
-**Features & Polish:**
-- Shopping list generation
-- Recipe usage view for ingredients
-- Improved "to taste" ingredient handling (zero quantity)
-- Meal type selection when recording cooked meals
+- Widget tests for MealHistoryScreen (#77)
+- Dialog and state management testing (#38)
+- Edge case test suite development (#39)
+- Test refactoring and coverage enhancement (#40)
+- Test coverage reporting integration (#230)
+- Organize integration tests into e2e/ and services/ directories (#221)
 
-**Technical Improvements:**
-- Refactor ingredient parser for localized measurement units
-- Test organization improvements (e2e/ and services/ directories)
+**Architecture & Technical Debt:**
+
+- Consolidate meal editing logic into shared service (#237)
+- Refactor WeeklyPlanScreen to use DatabaseHelper abstraction (#234, #235, #236)
+- Extract RecipesScreen from HomePage for better separation of concerns (#231)
 
 ### Future Milestones
 

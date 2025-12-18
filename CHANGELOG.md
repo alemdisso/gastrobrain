@@ -118,6 +118,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.2] - 2025-12-18
+
+### Added
+
+#### Data Management
+- Complete database backup and restore functionality (#223)
+  - JSON-based export/import system with human-readable format
+  - Support for all database tables including recommendation_history
+  - Data integrity and foreign key constraint validation
+  - File picker integration for cross-platform compatibility (Android/iOS)
+  - Comprehensive error handling for malformed or corrupted backup files
+- Recipe import tool to restore backup data (#229)
+  - Bundled recipe backup JSON as fallback asset
+  - Improved error handling and ID generation for recipe_ingredients
+  - Smart default import path handling
+
+#### Testing Infrastructure
+- Comprehensive E2E test suite for meal editing workflow (#126)
+  - Success and error handling tests for adding side dishes
+  - Edge case tests for multi-recipe and single-recipe meal editing
+  - Inline validation error tests for negative and invalid prep/cook times
+- UI refresh tests for meal editing operations (#125)
+- Feedback message tests for meal edit operations (#124)
+- Database tests for meal recording and history (#76)
+- Form field keys across all forms for improved testability and debugging (#219)
+- Error simulation capabilities in MockDatabaseHelper
+- Test helpers for Snackbar validation and createTestableWidget() pattern
+
+#### Features & Enhancements
+- Fraction display for ingredient quantities (#148)
+- Parser enhancement: Auto-extract parenthetical text to notes field (#226)
+- Parser enhancement: Support for 'maço' (bunch) measurement unit in Portuguese (#225)
+- Visual indicators for active recipe filters (#228)
+
+#### UI/UX Improvements
+- Reorganized Tools tab with sections for better scalability and UX (#224)
+
+### Changed
+
+#### UI/UX
+- Removed obsolete translation tool from Tools tab (#224)
+
+#### Testing Infrastructure
+- Enhanced test patterns with createTestableWidget() documentation
+- Improved RecipeProvider test setup patterns
+- Refactored meal editing tests for better error and success message validation
+- Updated tests to use temporary directories for malformed backup file scenarios
+
+### Fixed
+- Resolved Flutter 3.33+ deprecation warnings for future compatibility
+- Proper date localization in formatting methods (#146)
+- Clear search field text when clearing filters (#228)
+- Accented characters and hyphenated names breaking alphabetical sorting (#227)
+- Enhanced ingredient parsing for plural forms of "bunch" in Portuguese (#225)
+- Error handling and ID generation for recipe_ingredients during import (#229)
+- File permissions on Android by using file picker with bytes instead of direct file paths (#223)
+- Database backup/restore to correctly match actual table schemas (#223)
+- Corrected MeasurementUnit value expectations in backup tests (#223)
+- Meal plan weekStartDate in tests to use Friday dates for consistency (#223)
+
+### Documentation
+- Added implementation sequence and detailed estimation for 0.1.2 sprint
+- Restructured sprint planning for 0.1.2 and 0.1.3 based on beta feedback
+- Updated roadmap status and milestone completion details
+- Added documentation for createTestableWidget() pattern and test setup
+- Added test roadmap for meal edit feedback messages (#124)
+
+---
+
 ## [Unreleased]
 
 ---
