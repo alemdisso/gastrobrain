@@ -87,7 +87,8 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     );
   }
 
-  Widget _buildTimeField(String label, TextEditingController controller, {Key? key}) {
+  Widget _buildTimeField(String label, TextEditingController controller,
+      {Key? key}) {
     return TextFormField(
       key: key,
       controller: controller,
@@ -223,7 +224,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                 const SizedBox(height: 16),
                 DropdownButtonFormField<FrequencyType>(
                   key: const Key('edit_recipe_frequency_field'),
-                  value: _selectedFrequency,
+                  initialValue: _selectedFrequency,
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.desiredFrequency,
                     border: const OutlineInputBorder(),
@@ -245,7 +246,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                 const SizedBox(height: 16),
                 DropdownButtonFormField<RecipeCategory>(
                   key: const Key('edit_recipe_category_field'),
-                  value: _selectedCategory,
+                  initialValue: _selectedCategory,
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.category,
                     border: const OutlineInputBorder(),
@@ -271,13 +272,11 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                   setState(() => _difficulty = value);
                 }),
                 const SizedBox(height: 16),
-                _buildTimeField(
-                    AppLocalizations.of(context)!.preparationTime,
+                _buildTimeField(AppLocalizations.of(context)!.preparationTime,
                     _prepTimeController,
                     key: const Key('edit_recipe_prep_time_field')),
                 const SizedBox(height: 16),
-                _buildTimeField(
-                    AppLocalizations.of(context)!.cookingTime,
+                _buildTimeField(AppLocalizations.of(context)!.cookingTime,
                     _cookTimeController,
                     key: const Key('edit_recipe_cook_time_field')),
                 const SizedBox(height: 16),

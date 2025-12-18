@@ -102,12 +102,13 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
       }
     } on GastrobrainException catch (e) {
       if (mounted) {
-        SnackbarService.showError(
-            context, '${AppLocalizations.of(context)!.errorSavingRecipe} ${e.message}');
+        SnackbarService.showError(context,
+            '${AppLocalizations.of(context)!.errorSavingRecipe} ${e.message}');
       }
     } catch (e) {
       if (mounted) {
-        SnackbarService.showError(context, AppLocalizations.of(context)!.unexpectedError);
+        SnackbarService.showError(
+            context, AppLocalizations.of(context)!.unexpectedError);
       }
     } finally {
       if (mounted) {
@@ -117,7 +118,6 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
       }
     }
   }
-
 
   @override
   void dispose() {
@@ -129,10 +129,9 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(
-          widget.ingredient != null 
-              ? AppLocalizations.of(context)!.editIngredient 
-              : AppLocalizations.of(context)!.newIngredient),
+      title: Text(widget.ingredient != null
+          ? AppLocalizations.of(context)!.editIngredient
+          : AppLocalizations.of(context)!.newIngredient),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -148,7 +147,8 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return AppLocalizations.of(context)!.pleaseEnterIngredientName;
+                    return AppLocalizations.of(context)!
+                        .pleaseEnterIngredientName;
                   }
                   return null;
                 },
@@ -158,7 +158,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
               // Category Dropdown
               DropdownButtonFormField<IngredientCategory>(
                 key: const Key('add_new_ingredient_category_field'),
-                value: _selectedCategory,
+                initialValue: _selectedCategory,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.categoryLabel,
                   border: const OutlineInputBorder(),
@@ -183,7 +183,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
               // Unit Dropdown
               DropdownButtonFormField<MeasurementUnit?>(
                 key: const Key('add_new_ingredient_unit_field'),
-                value: _selectedUnit,
+                initialValue: _selectedUnit,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.unitOptional,
                   border: const OutlineInputBorder(),
@@ -212,7 +212,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
               if (_selectedCategory == IngredientCategory.protein)
                 DropdownButtonFormField<ProteinType>(
                   key: const Key('add_new_ingredient_protein_type_field'),
-                  value: _selectedProteinType,
+                  initialValue: _selectedProteinType,
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.proteinTypeLabel,
                     border: const OutlineInputBorder(),
@@ -229,14 +229,17 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
                     });
                   },
                   validator: (value) {
-                    if (_selectedCategory == IngredientCategory.protein && value == null) {
-                      return AppLocalizations.of(context)!.pleaseSelectProteinType;
+                    if (_selectedCategory == IngredientCategory.protein &&
+                        value == null) {
+                      return AppLocalizations.of(context)!
+                          .pleaseSelectProteinType;
                     }
                     return null;
                   },
                 ),
 
-              if (_selectedCategory == IngredientCategory.protein) const SizedBox(height: 16),
+              if (_selectedCategory == IngredientCategory.protein)
+                const SizedBox(height: 16),
 
               // Notes
               TextFormField(
@@ -245,7 +248,8 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.notesOptional,
                   border: const OutlineInputBorder(),
-                  hintText: AppLocalizations.of(context)!.anyAdditionalInformation,
+                  hintText:
+                      AppLocalizations.of(context)!.anyAdditionalInformation,
                 ),
                 maxLines: 2,
               ),
@@ -266,8 +270,8 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : Text(widget.ingredient != null 
-                  ? AppLocalizations.of(context)!.saveChanges 
+              : Text(widget.ingredient != null
+                  ? AppLocalizations.of(context)!.saveChanges
                   : AppLocalizations.of(context)!.save),
         ),
       ],

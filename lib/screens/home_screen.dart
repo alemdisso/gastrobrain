@@ -40,7 +40,6 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-
   Future<void> _addRecipe() async {
     final result = await Navigator.push<bool>(
       context,
@@ -92,7 +91,7 @@ class _HomePageState extends State<HomePage> {
     if (confirm == true) {
       final provider = context.read<RecipeProvider>();
       final success = await provider.deleteRecipe(recipe.id);
-      
+
       if (!success && mounted) {
         // Show error message if deletion failed
         ScaffoldMessenger.of(context).showSnackBar(
@@ -119,23 +118,26 @@ class _HomePageState extends State<HomePage> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  RadioListTile<String>(
-                    title: Text(AppLocalizations.of(context)!.name),
-                    value: 'name',
+                  RadioGroup<String>(
                     groupValue: tempSortBy,
                     onChanged: (value) => setState(() => tempSortBy = value),
-                  ),
-                  RadioListTile<String>(
-                    title: Text(AppLocalizations.of(context)!.rating),
-                    value: 'rating',
-                    groupValue: tempSortBy,
-                    onChanged: (value) => setState(() => tempSortBy = value),
-                  ),
-                  RadioListTile<String>(
-                    title: Text(AppLocalizations.of(context)!.difficulty),
-                    value: 'difficulty',
-                    groupValue: tempSortBy,
-                    onChanged: (value) => setState(() => tempSortBy = value),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        RadioListTile<String>(
+                          title: Text(AppLocalizations.of(context)!.name),
+                          value: 'name',
+                        ),
+                        RadioListTile<String>(
+                          title: Text(AppLocalizations.of(context)!.rating),
+                          value: 'rating',
+                        ),
+                        RadioListTile<String>(
+                          title: Text(AppLocalizations.of(context)!.difficulty),
+                          value: 'difficulty',
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -152,9 +154,9 @@ class _HomePageState extends State<HomePage> {
                         sortOrder = 'DESC'; // Higher ratings first
                       }
                       context.read<RecipeProvider>().setSorting(
-                        sortBy: tempSortBy!,
-                        sortOrder: sortOrder,
-                      );
+                            sortBy: tempSortBy!,
+                            sortOrder: sortOrder,
+                          );
                     }
                     Navigator.pop(context);
                   },
@@ -188,16 +190,19 @@ class _HomePageState extends State<HomePage> {
 
     // Add search query if present
     if (_searchQuery.isNotEmpty) {
-      filterParts.add('${AppLocalizations.of(context)!.filterByName}: "$_searchQuery"');
+      filterParts.add(
+          '${AppLocalizations.of(context)!.filterByName}: "$_searchQuery"');
     }
 
     // Add provider filters
     final filters = provider.filters;
     if (filters.containsKey('difficulty')) {
-      filterParts.add('${AppLocalizations.of(context)!.filterByDifficulty}: ${filters['difficulty']}');
+      filterParts.add(
+          '${AppLocalizations.of(context)!.filterByDifficulty}: ${filters['difficulty']}');
     }
     if (filters.containsKey('rating')) {
-      filterParts.add('${AppLocalizations.of(context)!.filterByRating}: ${filters['rating']}+');
+      filterParts.add(
+          '${AppLocalizations.of(context)!.filterByRating}: ${filters['rating']}+');
     }
     if (filters.containsKey('desired_frequency')) {
       filterParts.add('${AppLocalizations.of(context)!.filterByFrequency}');
@@ -231,97 +236,97 @@ class _HomePageState extends State<HomePage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                    Text(AppLocalizations.of(context)!.difficulty),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(5, (index) {
-                        return IconButton(
-                          icon: Icon(
-                            index < (selectedDifficulty ?? -1)
-                                ? Icons.battery_full
-                                : Icons.battery_0_bar,
-                            color: index < (selectedDifficulty ?? -1)
-                                ? Colors.green
-                                : Colors.grey,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              selectedDifficulty = index + 1;
-                            });
-                          },
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(AppLocalizations.of(context)!.minimumRating),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(5, (index) {
-                        return IconButton(
-                          icon: Icon(
-                            index < (selectedRating ?? -1)
-                                ? Icons.star
-                                : Icons.star_border,
-                            color: index < (selectedRating ?? -1)
-                                ? Colors.amber
-                                : Colors.grey,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              selectedRating = index + 1;
-                            });
-                          },
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      value: selectedFrequency,
-                      decoration: InputDecoration(
-                        labelText:
-                            AppLocalizations.of(context)!.cookingFrequency,
+                      Text(AppLocalizations.of(context)!.difficulty),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: List.generate(5, (index) {
+                          return IconButton(
+                            icon: Icon(
+                              index < (selectedDifficulty ?? -1)
+                                  ? Icons.battery_full
+                                  : Icons.battery_0_bar,
+                              color: index < (selectedDifficulty ?? -1)
+                                  ? Colors.green
+                                  : Colors.grey,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                selectedDifficulty = index + 1;
+                              });
+                            },
+                          );
+                        }),
                       ),
-                      items: [
-                        DropdownMenuItem(
-                            value: null,
-                            child: Text(AppLocalizations.of(context)!.any)),
-                        ...FrequencyType.values.map((frequency) => 
-                            DropdownMenuItem(
-                              value: frequency.value, 
-                              child: Text(frequency.getLocalizedDisplayName(context))
-                            )),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          selectedFrequency = value;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      value: selectedCategory,
-                      decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)!.category,
+                      const SizedBox(height: 16),
+                      Text(AppLocalizations.of(context)!.minimumRating),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: List.generate(5, (index) {
+                          return IconButton(
+                            icon: Icon(
+                              index < (selectedRating ?? -1)
+                                  ? Icons.star
+                                  : Icons.star_border,
+                              color: index < (selectedRating ?? -1)
+                                  ? Colors.amber
+                                  : Colors.grey,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                selectedRating = index + 1;
+                              });
+                            },
+                          );
+                        }),
                       ),
-                      items: [
-                        DropdownMenuItem(
-                            value: null,
-                            child: Text(AppLocalizations.of(context)!.any)),
-                        ...RecipeCategory.values.map(
-                          (category) => DropdownMenuItem(
-                            value: category.value,
-                            child:
-                                Text(category.getLocalizedDisplayName(context)),
-                          ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        initialValue: selectedFrequency,
+                        decoration: InputDecoration(
+                          labelText:
+                              AppLocalizations.of(context)!.cookingFrequency,
                         ),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          selectedCategory = value;
-                        });
-                      },
-                    ),
-                  ],
+                        items: [
+                          DropdownMenuItem(
+                              value: null,
+                              child: Text(AppLocalizations.of(context)!.any)),
+                          ...FrequencyType.values.map((frequency) =>
+                              DropdownMenuItem(
+                                  value: frequency.value,
+                                  child: Text(frequency
+                                      .getLocalizedDisplayName(context)))),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            selectedFrequency = value;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        initialValue: selectedCategory,
+                        decoration: InputDecoration(
+                          labelText: AppLocalizations.of(context)!.category,
+                        ),
+                        items: [
+                          DropdownMenuItem(
+                              value: null,
+                              child: Text(AppLocalizations.of(context)!.any)),
+                          ...RecipeCategory.values.map(
+                            (category) => DropdownMenuItem(
+                              value: category.value,
+                              child: Text(
+                                  category.getLocalizedDisplayName(context)),
+                            ),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            selectedCategory = value;
+                          });
+                        },
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -422,7 +427,9 @@ class _HomePageState extends State<HomePage> {
                         child: Text(
                           '${AppLocalizations.of(context)!.filtersActive}: ${_getFilterDescription(context, provider)}',
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.onPrimaryContainer,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimaryContainer,
                             fontSize: 13,
                           ),
                           maxLines: 2,
@@ -434,8 +441,10 @@ class _HomePageState extends State<HomePage> {
                         label: Text(AppLocalizations.of(context)!.clearFilters),
                         onPressed: _clearAllFilters,
                         style: TextButton.styleFrom(
-                          foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          foregroundColor:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 4),
                         ),
                       ),
                     ],
@@ -532,7 +541,8 @@ class _HomePageState extends State<HomePage> {
               }
 
               // Get filtered recipes
-              final filteredRecipes = _getFilteredRecipes(recipeProvider.recipes);
+              final filteredRecipes =
+                  _getFilteredRecipes(recipeProvider.recipes);
 
               // Build recipes list
               return RefreshIndicator(
@@ -549,7 +559,8 @@ class _HomePageState extends State<HomePage> {
                         Navigator.push<bool>(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => CookMealScreen(recipe: recipe),
+                            builder: (context) =>
+                                CookMealScreen(recipe: recipe),
                           ),
                         ).then((value) {
                           if (value == true) {
@@ -598,7 +609,8 @@ class _HomePageState extends State<HomePage> {
                         child: const Icon(Icons.filter_list),
                       ),
                       onPressed: _showFilterDialog,
-                      tooltip: AppLocalizations.of(context)!.filterRecipesTooltip,
+                      tooltip:
+                          AppLocalizations.of(context)!.filterRecipesTooltip,
                     );
                   },
                 ),
@@ -620,11 +632,13 @@ class _HomePageState extends State<HomePage> {
             label: AppLocalizations.of(context)!.recipes,
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.calendar_today, key: Key('meal_plan_tab_icon')),
+            icon: const Icon(Icons.calendar_today,
+                key: Key('meal_plan_tab_icon')),
             label: AppLocalizations.of(context)!.mealPlan,
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.restaurant_menu, key: Key('ingredients_tab_icon')),
+            icon: const Icon(Icons.restaurant_menu,
+                key: Key('ingredients_tab_icon')),
             label: AppLocalizations.of(context)!.ingredients,
           ),
           const BottomNavigationBarItem(

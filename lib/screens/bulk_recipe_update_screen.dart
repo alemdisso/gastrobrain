@@ -131,7 +131,8 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       }
 
       // Sort recipes alphabetically by name for easier selection
-      final recipesNeedingUpdate = SortingUtils.sortByName(unsortedRecipes, (r) => r.name);
+      final recipesNeedingUpdate =
+          SortingUtils.sortByName(unsortedRecipes, (r) => r.name);
 
       // Try to find the previously selected recipe in the updated list
       Recipe? recipeToSelect;
@@ -1245,7 +1246,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<Recipe>(
-              value: _selectedRecipe,
+              initialValue: _selectedRecipe,
               decoration: InputDecoration(
                 labelText: localizations.recipeName,
                 border: const OutlineInputBorder(),
@@ -2072,7 +2073,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
                     if (ingredient.matches.length > 1) ...[
                       const SizedBox(height: 8),
                       DropdownButtonFormField<IngredientMatch>(
-                        value: ingredient.selectedMatch,
+                        initialValue: ingredient.selectedMatch,
                         hint: Text(
                           'Select one of ${ingredient.matches.length} matches',
                           style: const TextStyle(fontSize: 12),
