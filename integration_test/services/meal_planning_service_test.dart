@@ -8,8 +8,8 @@ import 'package:gastrobrain/models/meal_plan_item.dart';
 import 'package:gastrobrain/models/meal_plan_item_recipe.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/utils/id_generator.dart';
-import '../test/test_utils/test_setup.dart';
-import '../test/mocks/mock_database_helper.dart';
+import '../../test/test_utils/test_setup.dart';
+import '../../test/mocks/mock_database_helper.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
