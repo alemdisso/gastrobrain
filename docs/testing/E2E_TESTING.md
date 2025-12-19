@@ -43,7 +43,7 @@ Gastrobrain uses two types of integration tests that serve different purposes:
 
 ### Service Integration Tests
 
-**Location:** `integration_test/*_flow_test.dart`, `integration_test/*_integration_test.dart`
+**Location:** `integration_test/services/*_service_test.dart`
 
 **Purpose:** Test business logic and service layer interactions without UI
 
@@ -75,7 +75,7 @@ testWidgets('Test database operations for meal plans', (tester) async {
 
 ### E2E Integration Tests
 
-**Location:** `integration_test/e2e_*.dart`
+**Location:** `integration_test/e2e/e2e_*.dart`
 
 **Purpose:** Test complete user workflows from UI to database and back
 
@@ -139,7 +139,16 @@ Both types of tests are valuable and complementary:
 - Both test types should clean up test data in `finally` blocks
 
 **Current test organization:**
-See [Issue #221](https://github.com/alemdisso/gastrobrain/issues/221) for planned reorganization into `e2e/` and `services/` directories.
+```
+integration_test/
+├── e2e/                    # End-to-End User Workflow Tests
+│   ├── e2e_*.dart         # E2E test files
+│   ├── helpers/           # E2E test helpers
+│   └── TEST_TEMPLATE.dart # Template for new E2E tests
+└── services/              # Service Integration Tests
+    └── *_service_test.dart # Service test files
+```
+Organized per [Issue #221](https://github.com/alemdisso/gastrobrain/issues/221).
 
 ---
 
@@ -396,7 +405,7 @@ void main() { ... }
 
 ## Helper Methods
 
-All helper methods are in `integration_test/helpers/e2e_test_helpers.dart`.
+All helper methods are in `integration_test/e2e/helpers/e2e_test_helpers.dart`.
 
 ### App Initialization
 
@@ -689,7 +698,7 @@ await E2ETestHelpers.fillTextFieldByKey(
 
 1. **Copy the template:**
    ```bash
-   cp integration_test/TEST_TEMPLATE.dart integration_test/e2e_your_feature_test.dart
+   cp integration_test/e2e/TEST_TEMPLATE.dart integration_test/e2e/e2e_your_feature_test.dart
    ```
 
 2. **Update the header:**
@@ -724,12 +733,12 @@ await E2ETestHelpers.fillTextFieldByKey(
 
 6. **Run the test:**
    ```bash
-   flutter test integration_test/e2e_your_feature_test.dart
+   flutter test integration_test/e2e/e2e_your_feature_test.dart
    ```
 
 ### Test Template
 
-See `integration_test/TEST_TEMPLATE.dart` for a complete, documented template.
+See `integration_test/e2e/TEST_TEMPLATE.dart` for a complete, documented template.
 
 ---
 
@@ -742,5 +751,5 @@ See `integration_test/TEST_TEMPLATE.dart` for a complete, documented template.
 
 ---
 
-**Last Updated:** 2025-11-25
+**Last Updated:** 2025-12-19
 **Status:** Active - Framework established, ongoing test development
