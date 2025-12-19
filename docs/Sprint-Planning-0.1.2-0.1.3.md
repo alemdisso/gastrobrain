@@ -83,9 +83,10 @@ During 0.1.3 planning review (Dec 18, 2025), the milestone had grown from 8 to 1
 ## 0.1.3 - User Features & Critical Foundation
 
 **Theme:** Deliver high-impact user features + unblock testing infrastructure
-**Duration:** ~8-10 days
+**Duration:** ~10-12 days
 **Status:** 🎯 Current Sprint
 **Total Issues:** 8
+**Total Points:** 26
 
 ### Goals
 
@@ -95,6 +96,25 @@ During 0.1.3 planning review (Dec 18, 2025), the milestone had grown from 8 to 1
 4. 🎯 Complete widget test coverage for core screens (#77)
 5. 🎯 Establish testing patterns for dialogs and edge cases (#38, #39)
 6. 🎯 Organize test structure (#221)
+
+### Implementation Order
+
+| Order | Issue | Size | Points | Rationale |
+|-------|-------|------|--------|-----------|
+| 1 | #221 | XS | 1 | Quick win, organize test structure first |
+| 2 | #238 | S | 2 | User-facing feature, follows existing pattern |
+| 3 | #234 | S | 2 | Refactoring, unblocks testing |
+| 4 | #235 | M | 3 | P1-High, unblocks testing, depends on #234 patterns |
+| 5 | #172 | M | 3 | Main feature, highest user value |
+| 6 | #77 | S | 2 | Widget tests, benefits from #234/#235 done |
+| 7 | #38 | M | 5 | Dialog testing infrastructure |
+| 8 | #39 | L | 8 | Most open-ended, can be partially completed |
+
+**Order rationale:**
+- Start with quick wins (#221, #238) to build momentum
+- Do blocking refactoring early (#234, #235) to enable testing
+- Main feature (#172) in middle when context is fresh
+- Testing infrastructure (#77, #38, #39) at end - #39 can be cut if needed
 
 ### Issues by Category
 
@@ -185,18 +205,21 @@ During 0.1.3 planning review (Dec 18, 2025), the milestone had grown from 8 to 1
 ### Sprint Metrics
 
 **Total Issues:** 8
-**Estimated Effort:** 8-10 days
+**Total Points:** 26
+**Estimated Effort:** 10-12 days
 
-**Priority Breakdown:**
-- P1-High: 1 issue (#235)
-- ✓✓✓: 1 issue (#172)
-- ✓✓: 5 issues (#238, #77, #38, #39, #234)
-- Unlabeled: 1 issue (#221)
+**Size Breakdown:**
+| Size | Points | Issues |
+|------|--------|--------|
+| XS | 1 | #221 |
+| S | 2 | #238, #234, #77 |
+| M | 3-5 | #172, #235, #38 |
+| L | 8 | #39 |
 
 **Type Breakdown:**
-- Features: 2 (#172, #238)
-- Architecture: 2 (#234, #235)
-- Testing: 4 (#77, #38, #39, #221)
+- Features: 2 issues, 5 points (#172, #238)
+- Architecture: 2 issues, 5 points (#234, #235)
+- Testing: 4 issues, 16 points (#77, #38, #39, #221)
 
 ---
 
@@ -446,6 +469,10 @@ During 0.1.3 planning review (Dec 18, 2025), the milestone had grown from 8 to 1
   - 0.1.3: User features + critical foundation
   - 0.1.4: Model changes + architecture polish
   - Moved #9 (structured instructions) to 0.2.0
+- **2025-12-18**: 0.1.3 poker planning estimation session
+  - Total: 26 points across 8 issues
+  - Defined implementation order based on dependencies and momentum
+  - Key estimates: #39 (L/8) and #38 (M/5) flagged as infrastructure risk
 - **Status**: 0.1.3 plan approved, ready for execution
 
 ---
