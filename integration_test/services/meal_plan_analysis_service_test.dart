@@ -18,7 +18,7 @@ import 'package:gastrobrain/core/services/meal_plan_analysis_service.dart';
 import 'package:gastrobrain/core/di/service_provider.dart';
 import 'package:gastrobrain/utils/id_generator.dart';
 
-import '../test/mocks/mock_database_helper.dart';
+import '../../test/mocks/mock_database_helper.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();

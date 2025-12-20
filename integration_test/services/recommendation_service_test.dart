@@ -14,7 +14,7 @@ import 'package:gastrobrain/core/services/recommendation_factors/frequency_facto
 import 'package:gastrobrain/core/di/service_provider.dart';
 import 'package:gastrobrain/utils/id_generator.dart';
 
-import '../test/mocks/mock_database_helper.dart';
+import '../../test/mocks/mock_database_helper.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();

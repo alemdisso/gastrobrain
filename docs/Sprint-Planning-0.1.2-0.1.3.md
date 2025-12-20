@@ -1,7 +1,7 @@
 <!-- markdownlint-disable -->
-# Sprint Planning: 0.1.2 & 0.1.3
+# Sprint Planning: 0.1.2, 0.1.3 & 0.1.4
 
-**Date:** December 1, 2025
+**Date:** December 1, 2025 (Updated: December 18, 2025)
 **Participants:** Product Owner, Technical Leader
 **Context:** Beta testing feedback session and milestone restructure
 
@@ -9,288 +9,331 @@
 
 ## Executive Summary
 
-The original **0.1.1 - Stability & Polish** milestone was split into three focused sprints to better manage scope and deliver value incrementally:
+The original **0.1.1 - Stability & Polish** milestone was split into focused sprints to better manage scope and deliver value incrementally:
 
 - **0.1.1** ✅ - Completed (9 issues: testing infrastructure, UI polish)
-- **0.1.2** 🎯 - Polish & Data Safety (11 issues: UX improvements, backup, parser quality)
-- **0.1.3** 📋 - Testing & Features (8 issues: testing completion, deferred features)
+- **0.1.2** ✅ - Completed (11 issues: UX improvements, backup, parser quality)
+- **0.1.3** 🎯 - User Features & Critical Foundation (8 issues: instructions, testing foundation)
+- **0.1.4** 📋 - Model Changes & Architecture Polish (8 issues: DB migrations, consolidation)
+
+### Why Split 0.1.3?
+
+During 0.1.3 planning review (Dec 18, 2025), the milestone had grown from 8 to 16 issues due to:
+1. New feature specifications (#172 Instructions, #238 Context menu)
+2. Technical debt discovered during 0.1.2 testing (#234-237 refactoring chain)
+3. Architecture improvements (#231 RecipesScreen extraction)
+4. DevEx tooling (#230 coverage reporting)
+
+**Decision:** Split into two focused milestones to maintain ~8-12 day sprint cadence.
 
 ---
 
 ## Milestone Restructure Rationale
 
-### Why Split 0.1.1?
+### Original Split (0.1.1 → 0.1.2 + 0.1.3)
 
 1. **Scope Management**: Original 0.1.1 backlog grew to 22 issues - too large for single sprint
 2. **Focus Areas**: Testing vs Polish vs Features needed separate attention
 3. **Beta Feedback**: Real-world usage revealed critical UX and data safety needs
 4. **Risk Mitigation**: Backup feature needed before model changes in subsequent sprints
 
-### Strategic Approach
+### Second Split (0.1.3 → 0.1.3 + 0.1.4)
 
-- **0.1.2**: Focus on **user-facing polish** and **data safety** (critical for beta confidence)
-- **0.1.3**: Focus on **testing completion** and **deferred features** (foundation for 0.2.0)
-- **0.2.0**: Advanced features for beta-ready phase
+1. **Scope Creep**: 0.1.3 grew from 8 to 16 issues
+2. **Dependency Chain**: Architecture refactoring (#234→#235→#236→#237) emerged
+3. **Risk Separation**: Model changes (#199, #196, #5) safer after testing foundation complete
+4. **Focus**: User features vs technical consolidation need separate attention
 
 ---
 
-## 0.1.2 - Polish & Data Safety
+## 0.1.2 - Polish & Data Safety ✅ COMPLETED
 
 **Theme:** Make the app feel polished and protect user data
-**Duration:** ~10-14 days
-**Status:** Current Sprint
+**Duration:** December 2-17, 2025
+**Status:** ✅ Completed
 **Total Issues:** 11
+
+### Completed Goals
+
+1. ✅ Protect user data with backup/restore capability (#223)
+2. ✅ Fix critical UX issues - filter indicators (#228), sorting (#227)
+3. ✅ Improve parser quality for bulk recipe updates (#226, #225)
+4. ✅ Polish UI for better readability - fractions (#148)
+5. ✅ Validate meal edit functionality with tests (#126, #125, #124, #76)
+6. ✅ Tools tab organized and scalable (#224)
+
+### Issues Completed
+
+| # | Title | Type |
+|---|-------|------|
+| #223 | Complete Database Backup and Restore Functionality | Feature |
+| #228 | UX: No clear indication when recipe filter is active | Bug |
+| #224 | Reorganize Tools Tab for Better UX | UI/UX |
+| #226 | Parser: Auto-extract parenthetical text to notes | Parser |
+| #225 | Add 'maço' (bunch) measurement unit | Parser |
+| #227 | Bug: Hyphenated ingredient/recipe names sort incorrectly | Bug |
+| #148 | UI: Implement fraction display for ingredient quantities | UI |
+| #126 | Test Complete End-to-End Meal Edit Workflow | Testing |
+| #125 | Test UI Refresh After Meal Edit Operations | Testing |
+| #124 | Test Feedback Messages for Meal Edit Operations | Testing |
+| #76 | Create Database Tests for Meal Recording and History | Testing |
+
+---
+
+## 0.1.3 - User Features & Critical Foundation
+
+**Theme:** Deliver high-impact user features + unblock testing infrastructure
+**Duration:** ~10-12 days
+**Status:** 🎯 Current Sprint
+**Total Issues:** 8
+**Total Points:** 26
 
 ### Goals
 
-1. ✅ Protect user data with backup/restore capability
-2. ✅ Fix critical UX issues (filter indicators, sorting)
-3. ✅ Improve parser quality for bulk recipe updates
-4. ✅ Polish UI for better readability (fractions)
-5. ✅ Validate meal edit functionality with tests
+1. 🎯 Implement instructions viewing and editing (#172)
+2. 🎯 Add context menu for meal history cards (#238)
+3. 🎯 Refactor critical database access patterns (#234, #235)
+4. 🎯 Complete widget test coverage for core screens (#77)
+5. 🎯 Establish testing patterns for dialogs and edge cases (#38, #39)
+6. 🎯 Organize test structure (#221)
+
+### Implementation Order
+
+| Order | Issue | Size | Points | Rationale |
+|-------|-------|------|--------|-----------|
+| 1 | #221 | XS | 1 | Quick win, organize test structure first |
+| 2 | #238 | S | 2 | User-facing feature, follows existing pattern |
+| 3 | #234 | S | 2 | Refactoring, unblocks testing |
+| 4 | #235 | M | 3 | P1-High, unblocks testing, depends on #234 patterns |
+| 5 | #172 | M | 3 | Main feature, highest user value |
+| 6 | #77 | S | 2 | Widget tests, benefits from #234/#235 done |
+| 7 | #38 | M | 5 | Dialog testing infrastructure |
+| 8 | #39 | L | 8 | Most open-ended, can be partially completed |
+
+**Order rationale:**
+- Start with quick wins (#221, #238) to build momentum
+- Do blocking refactoring early (#234, #235) to enable testing
+- Main feature (#172) in middle when context is fresh
+- Testing infrastructure (#77, #38, #39) at end - #39 can be cut if needed
 
 ### Issues by Category
 
-#### **Critical Data Safety & UX (3 issues)**
+#### **User-Facing Features (2 issues)**
 
-**#223 - Complete Database Backup and Restore Functionality** (P0-Critical)
+**#172 - Add instructions viewing and editing to recipe management** (✓✓✓, UI/UX)
 - **Effort:** Medium-High (2-3 days)
 - **Priority:** Must-have
-- **Why:** Data loss destroys user trust; critical for beta testers
-- **Implementation:** SQLite file export/import with warning dialogs
-- **Risk:** Medium - file picker integration, restore edge cases
-- **Dependencies:** None
-- **Acceptance:** One-click backup, one-click restore with data replacement
+- **Why:** High user value, detailed spec ready, builds on #163
+- **Implementation:** View screen, edit field, recipe card button
+- **Risk:** Low - well-specified, follows existing patterns
+- **Dependencies:** #163 (completed - instructions field exists)
+- **Acceptance:** View instructions from card, edit in recipe screen
 
-**#228 - UX: No clear indication when recipe filter is active** (P1-High, bug)
+**#238 - Add context menu with edit and delete options to meal cards** (✓✓, UI)
 - **Effort:** Low-Medium (1 day)
+- **Priority:** Should-have
+- **Why:** UX consistency with recipe cards, enables meal deletion
+- **Implementation:** Replace IconButton with PopupMenuButton
+- **Risk:** Low - follows existing RecipeCard pattern
+- **Dependencies:** None
+- **Acceptance:** Context menu with edit/delete, confirmation dialog
+
+---
+
+#### **Critical Architecture (2 issues)**
+
+**#235 - Refactor WeeklyPlanScreen._handleMarkAsCooked() to use DatabaseHelper** (P1-High)
+- **Effort:** Medium (1-2 days)
 - **Priority:** Must-have
-- **Why:** Major UX confusion - users think recipes are missing
-- **Implementation:** Filter banner, count indicator, clear button
-- **Risk:** Low - mostly UI work
+- **Why:** Blocks proper testing - raw DB access not mockable
+- **Implementation:** Use DatabaseHelper/MealProvider abstraction
+- **Risk:** Medium - core workflow, needs careful testing
 - **Dependencies:** None
-- **Acceptance:** Visual indicators when filter active, easy clear action
+- **Acceptance:** No raw database access, tests can use MockDatabaseHelper
 
-**#224 - Reorganize Tools Tab for Better UX** (UI/UX, ✓✓)
-- **Effort:** Low-Medium (1 day)
-- **Priority:** Should-have (supports #223)
-- **Why:** Needed for clean backup/restore integration
-- **Implementation:** Section-based layout (Data Management, Recipe Management)
-- **Risk:** Low - layout refactoring
-- **Dependencies:** #223 (provides new tools to organize)
-- **Acceptance:** Clear sections, scalable structure
-
----
-
-#### **Parser Quality & Data (3 issues)**
-
-**#226 - Parser: Auto-extract parenthetical text to notes** (P2-Medium)
-- **Effort:** Low (0.5-1 day)
-- **Priority:** Should-have
-- **Why:** Improves bulk parser quality, better ingredient matching
-- **Implementation:** Regex preprocessing to extract `(...)` to notes field
-- **Risk:** Low - preprocessing step
-- **Dependencies:** None
-- **Acceptance:** "150 ml azeite (mais um pouco)" → notes: "mais um pouco"
-- **Beta Impact:** Reported by beta tester during repopulation experience
-
-**#225 - Add 'maço' (bunch) measurement unit** (P2-Medium, i18n)
-- **Effort:** Low (0.5 day)
-- **Priority:** Should-have
-- **Why:** Common Portuguese pattern, quick win
-- **Implementation:** Add to MeasurementUnit enum, localization, parser map
-- **Risk:** Very low - similar to #197 (completed in 0.1.0)
-- **Dependencies:** None
-- **Acceptance:** "2 maços de coentro" parses correctly as bunch unit
-- **Beta Impact:** Reported by beta tester during bulk recipe entry
-
-**#227 - Bug: Hyphenated ingredient/recipe names sort incorrectly** (P2-Medium, bug)
+**#234 - Refactor WeeklyPlanScreen._updateMealRecord() to use DatabaseHelper**
 - **Effort:** Low-Medium (1 day)
 - **Priority:** Should-have
-- **Why:** UX polish - affects all alphabetical lists
-- **Implementation:** Normalized sort key (replace hyphens, lowercase, accent handling)
-- **Risk:** Medium - ensure locale-aware sorting doesn't break existing behavior
+- **Why:** Same issue as #235, related methods
+- **Implementation:** Use DatabaseHelper.updateMeal() abstraction
+- **Risk:** Low - similar to #235
 - **Dependencies:** None
-- **Acceptance:** "pimenta-do-reino" before "pimenta jalapeño"
-- **Beta Impact:** Reported by beta tester - affects discoverability
+- **Acceptance:** No raw database access in update methods
 
 ---
 
-#### **UI Polish (1 issue)**
-
-**#148 - UI: Implement fraction display for ingredient quantities** (P2-Medium)
-- **Effort:** Low-Medium (1 day)
-- **Priority:** Should-have
-- **Why:** Much better readability for daily cooking use
-- **Implementation:** Convert decimals to fractions (½, ¼, ¾, ⅓, ⅔)
-- **Risk:** Low - builds on existing formatting (#141)
-- **Dependencies:** #141 (smart decimal formatting - completed)
-- **Acceptance:** "0.5 xícara" displays as "½ xícara"
-- **Beta Impact:** Moved from 0.2.0 based on beta tester feedback
-
----
-
-#### **Testing - Meal Edit Validation (4 issues)**
-
-**#126 - Test Complete End-to-End Meal Edit Workflow** (✓✓, integration)
-- **Effort:** Medium (1-2 days)
-- **Priority:** Should-have
-- **Why:** Validate meal edit functionality works end-to-end
-- **Implementation:** Integration test covering full edit workflow
-- **Risk:** Low
-- **Dependencies:** Existing meal edit functionality
-- **Acceptance:** E2E test passes for meal edit scenarios
-
-**#125 - Test UI Refresh After Meal Edit Operations** (✓✓, UI testing)
-- **Effort:** Low-Medium (0.5-1 day)
-- **Priority:** Should-have
-- **Why:** Ensure UI updates correctly after edits
-- **Implementation:** Widget tests for UI refresh behavior
-- **Risk:** Low
-- **Dependencies:** #126
-- **Acceptance:** Tests verify UI reflects changes immediately
-
-**#124 - Test Feedback Messages for Meal Edit Operations** (✓✓, UI testing)
-- **Effort:** Low-Medium (0.5-1 day)
-- **Priority:** Should-have
-- **Why:** Validate user feedback is clear and correct
-- **Implementation:** Widget tests for success/error messages
-- **Risk:** Low
-- **Dependencies:** #126
-- **Acceptance:** Tests verify appropriate feedback messages
-
-**#76 - Create Database Tests for Meal Recording and History** (✓✓, testing)
-- **Effort:** Medium (1-2 days)
-- **Priority:** Should-have
-- **Why:** Validate database layer for meal operations
-- **Implementation:** Unit tests for meal CRUD operations
-- **Risk:** Low
-- **Dependencies:** None
-- **Acceptance:** Comprehensive database test coverage for meals
-
----
-
-### Sprint Metrics
-
-**Total Issues:** 11
-**Estimated Effort:** 10-14 days
-**Priority Breakdown:**
-- P0-Critical: 1 issue (#223)
-- P1-High: 1 issue (#228)
-- P2-Medium: 4 issues (#226, #225, #227, #148)
-- No priority: 5 issues (testing - #126, #125, #124, #76, #224)
-
-**Type Breakdown:**
-- Features: 2 (#223, #224)
-- Bugs: 2 (#228, #227)
-- Parser/Algorithm: 2 (#226, #225)
-- UI Polish: 1 (#148)
-- Testing: 4 (#126, #125, #124, #76)
-
-**Complexity Breakdown:**
-- High (✓✓✓): 0
-- Medium (✓✓): 5 (#224, #126, #125, #124, #76)
-- Low (✓): 0
-- Not estimated: 6 (need quick estimation during sprint)
-
----
-
-### Success Criteria
-
-1. ✅ Backup/restore feature working and tested (#223)
-2. ✅ No more "where are my recipes?" confusion (#228)
-3. ✅ Portuguese ingredient/recipe names sort naturally (#227)
-4. ✅ Bulk parser handles common patterns correctly (#226, #225)
-5. ✅ Ingredient quantities display as fractions (#148)
-6. ✅ Meal edit functionality validated with tests (#126, #125, #124, #76)
-7. ✅ Tools tab organized and scalable (#224)
-8. ✅ All issues pass `flutter analyze`
-9. ✅ Beta tester validates fixes
-
----
-
-## 0.1.3 - Testing & Deferred Features
-
-**Theme:** Testing completion and feature development
-**Duration:** TBD
-**Status:** Next Sprint
-**Total Issues:** 8
-
-### Goals
-
-1. ✅ Complete testing foundation from 0.1.1
-2. ✅ Implement deferred features (Shopping List, Meal Type, To Taste)
-3. ✅ Prepare for 0.2.0 beta-ready phase
-
-### Issues by Category
-
-#### **Deferred Features (3 issues)**
-
-**#5 - Add Shopping List Generation** (P1-High, ✓)
-- **Deferred from:** 0.1.2
-- **Reason:** Needs more design/planning before implementation
-- **Effort:** Medium (2-3 days estimated)
-- **Priority:** High - valuable feature for users
-- **Note:** PO to finalize design and requirements before sprint
-
-**#199 - Add Meal Type Selection When Recording Cooked Meals** (✓✓, UI)
-- **Deferred from:** 0.1.2
-- **Reason:** Scope reduction; model changes safer after backup feature
-- **Effort:** Medium (1-2 days)
-- **Priority:** Should-have
-- **Dependencies:** #223 (backup provides safety net)
-
-**#196 - Improve Display and Storage of "To Taste" Ingredients** (✓✓, model/UI)
-- **Deferred from:** 0.1.2
-- **Reason:** Scope reduction; model changes safer after backup feature
-- **Effort:** Medium (1-2 days)
-- **Priority:** Should-have
-- **Dependencies:** #223 (backup provides safety net)
-- **Note:** May require database migration
-
----
-
-#### **Testing Completion (5 issues)**
+#### **Testing Foundation (4 issues)**
 
 **#77 - Create Widget Tests for MealHistoryScreen** (✓✓, UI testing)
 - **Effort:** Medium (1-2 days)
 - **Priority:** Should-have
 - **Why:** Complete widget test coverage for core screens
-
-**#40 - Test Refactoring and Coverage Enhancement** (✓, technical-debt)
-- **Effort:** Low-Medium (1 day)
-- **Priority:** Could-have
-- **Why:** Improve test quality and maintainability
-
-**#39 - Develop Edge Case Test Suite** (✓✓, testing)
-- **Effort:** Medium (1-2 days)
-- **Priority:** Should-have
-- **Why:** Catch edge cases and improve robustness
+- **Implementation:** Test loading, empty state, meal rendering, actions
+- **Risk:** Low
+- **Dependencies:** None
+- **Acceptance:** Comprehensive widget tests for MealHistoryScreen
 
 **#38 - Implement Dialog and State Management Testing** (✓✓, UI testing)
 - **Effort:** Medium (1-2 days)
 - **Priority:** Should-have
-- **Why:** Validate dialog interactions and state management
+- **Why:** Validate dialog interactions and temporary state
+- **Implementation:** Test utilities for dialog simulation
+- **Risk:** Low
+- **Dependencies:** None
+- **Acceptance:** Dialog return values and state management tested
 
-**#221 - Organize integration tests into e2e/ and services/ directories** (technical-debt)
+**#39 - Develop Edge Case Test Suite** (✓✓, testing)
+- **Effort:** Medium (1-2 days)
+- **Priority:** Should-have
+- **Why:** Catch edge cases, improve robustness
+- **Implementation:** Tests for empty states, boundaries, error conditions
+- **Risk:** Low
+- **Dependencies:** None
+- **Acceptance:** Edge case catalog with tests
+
+**#221 - Organize integration tests into e2e/ and services/ directories**
 - **Effort:** Low (0.5 day)
 - **Priority:** Could-have
 - **Why:** Better test organization and maintainability
+- **Implementation:** Move files, update imports
+- **Risk:** Very low - file reorganization only
+- **Dependencies:** None
+- **Acceptance:** Clear e2e/ and services/ directory structure
 
 ---
 
 ### Sprint Metrics
 
 **Total Issues:** 8
-**Estimated Effort:** 8-12 days
+**Total Points:** 26
+**Estimated Effort:** 10-12 days
+
+**Size Breakdown:**
+| Size | Points | Issues |
+|------|--------|--------|
+| XS | 1 | #221 |
+| S | 2 | #238, #234, #77 |
+| M | 3-5 | #172, #235, #38 |
+| L | 8 | #39 |
+
+**Type Breakdown:**
+- Features: 2 issues, 5 points (#172, #238)
+- Architecture: 2 issues, 5 points (#234, #235)
+- Testing: 4 issues, 16 points (#77, #38, #39, #221)
+
+---
+
+### Success Criteria
+
+1. ✅ Instructions viewable from recipe card and editable in edit screen (#172)
+2. ✅ Meal cards have context menu with edit/delete options (#238)
+3. ✅ WeeklyPlanScreen uses DatabaseHelper abstraction (#234, #235)
+4. ✅ MealHistoryScreen has widget test coverage (#77)
+5. ✅ Dialog testing patterns established (#38)
+6. ✅ Edge case test suite in place (#39)
+7. ✅ Integration tests organized (#221)
+8. ✅ All issues pass `flutter analyze`
+9. ✅ Foundation ready for model changes in 0.1.4
+
+---
+
+## 0.1.4 - Model Changes & Architecture Polish
+
+**Theme:** Database migrations + service consolidation + remaining features
+**Duration:** ~10-12 days
+**Status:** 📋 Next Sprint
+**Total Issues:** 8
+
+### Goals
+
+1. 📋 Implement Shopping List feature (#5)
+2. 📋 Add Meal Type selection (#199)
+3. 📋 Improve "To Taste" ingredient display (#196)
+4. 📋 Complete architecture refactoring (#236, #237)
+5. 📋 Extract RecipesScreen for better separation (#231)
+6. 📋 Improve test infrastructure (#40, #230)
+
+### Issues by Category
+
+#### **Features with Model Changes (3 issues)**
+
+**#5 - Add Shopping List Generation** (P1-High, ✓)
+- **Deferred from:** 0.1.2, 0.1.3
+- **Reason:** Needs design finalization before implementation
+- **Effort:** Medium-High (2-3 days)
+- **Priority:** High - valuable feature for users
+- **Risk:** Medium - new model, algorithm, UI
+- **Dependencies:** PO to finalize design
+- **Note:** Major feature requiring careful planning
+
+**#199 - Add Meal Type Selection When Recording Cooked Meals** (✓✓, UI)
+- **Deferred from:** 0.1.2
+- **Reason:** Model change safer after testing foundation in place
+- **Effort:** Medium (1-2 days)
+- **Priority:** Should-have
+- **Risk:** Low-Medium - database migration required
+- **Dependencies:** #223 (backup - completed), testing foundation from 0.1.3
+
+**#196 - Improve Display and Storage of "To Taste" Ingredients** (✓✓, model/UI)
+- **Deferred from:** 0.1.2
+- **Reason:** Model change safer after testing foundation in place
+- **Effort:** Medium (1-2 days)
+- **Priority:** Should-have
+- **Risk:** Low-Medium - may require database migration
+- **Dependencies:** #223 (backup - completed), testing foundation from 0.1.3
+
+---
+
+#### **Architecture Completion (3 issues)**
+
+**#236 - Refactor WeeklyPlanScreen._updateMealPlanItemRecipes() to use DatabaseHelper** (P2-Medium)
+- **Effort:** Low-Medium (1 day)
+- **Priority:** Should-have
+- **Why:** Completes refactoring started in #234/#235
+- **Dependencies:** #234, #235 (completed in 0.1.3)
+
+**#237 - Consolidate meal editing logic into shared service** (P2-Medium)
+- **Effort:** Medium (2-3 days)
+- **Priority:** Should-have
+- **Why:** Eliminates ~175 lines of duplicated code across screens
+- **Dependencies:** #234, #235, #236 (all prerequisites)
+- **Note:** Payoff issue - consolidates work from #234-236
+
+**#231 - Extract RecipesScreen from HomePage** (P2-Medium, ✓✓)
+- **Effort:** Medium (2-3 hours)
+- **Priority:** Could-have
+- **Why:** Better separation of concerns, testability
+- **Dependencies:** None
+- **Note:** Architecture improvement, not blocking
+
+---
+
+#### **Testing Infrastructure (2 issues)**
+
+**#40 - Test Refactoring and Coverage Enhancement** (✓, technical-debt)
+- **Effort:** Low-Medium (1 day)
+- **Priority:** Could-have
+- **Why:** Improve test quality and maintainability
+- **Dependencies:** Testing work from 0.1.3
+
+**#230 - Add test coverage reporting** (technical-debt)
+- **Effort:** Low-Medium (1 day)
+- **Priority:** Could-have
+- **Why:** Visibility into test coverage metrics
+- **Dependencies:** None
+- **Note:** DevEx improvement
+
+---
+
+### Sprint Metrics
+
+**Total Issues:** 8
+**Estimated Effort:** 10-12 days
+
 **Type Breakdown:**
 - Features: 3 (#5, #199, #196)
-- Testing: 5 (#77, #40, #39, #38, #221)
-
-**Complexity Breakdown:**
-- Medium (✓✓): 4 (#199, #196, #77, #39, #38)
-- Low (✓): 2 (#5, #40)
-- Not estimated: 2 (#221)
+- Architecture: 3 (#236, #237, #231)
+- Testing: 2 (#40, #230)
 
 ---
 
@@ -299,17 +342,21 @@ The original **0.1.1 - Stability & Polish** milestone was split into three focus
 1. ✅ Shopping list generation working (#5)
 2. ✅ Meal type selection implemented (#199)
 3. ✅ "To taste" ingredients handled properly (#196)
-4. ✅ Widget test coverage for MealHistoryScreen (#77)
-5. ✅ Edge case test suite in place (#39)
-6. ✅ Dialog and state management tested (#38)
-7. ✅ Integration tests organized (#221)
-8. ✅ Test refactoring complete (#40)
-9. ✅ All issues pass `flutter analyze`
-10. ✅ Ready for 0.2.0 beta-ready phase
+4. ✅ Meal editing logic consolidated into shared service (#237)
+5. ✅ RecipesScreen extracted from HomePage (#231)
+6. ✅ Test coverage reporting available (#230)
+7. ✅ Test refactoring complete (#40)
+8. ✅ All issues pass `flutter analyze`
+9. ✅ Ready for 0.2.0 beta-ready phase
 
 ---
 
 ## Issues Moved to 0.2.0 - Beta-Ready Phase
+
+**#9 - Add Cooking Instructions Management to Recipe Screens** (✓, enhancement)
+- **Reason:** Superseded by #172 for text-based approach; structured steps deferred
+- **Priority:** Low
+- **Note:** Original vision for structured step-by-step instructions with reordering
 
 **#193 - Add Recipe Usage View for Ingredients** (✓✓, UI)
 - **Reason:** Nice-to-have feature, not critical for current polish phase
@@ -328,117 +375,82 @@ The original **0.1.1 - Stability & Polish** milestone was split into three focus
 
 ---
 
+## Dependencies
+
+### 0.1.3 Dependencies
+
+- **#235, #234 enable #236, #237**: Architecture refactoring in 0.1.3 enables consolidation in 0.1.4
+- **#77, #38, #39 enable #199, #196**: Testing foundation makes model changes safer
+
+### 0.1.4 Dependencies
+
+- **#236 depends on #234, #235**: Must complete base refactoring first
+- **#237 depends on #234, #235, #236**: Consolidation requires all refactoring complete
+- **#5 depends on PO design**: Needs requirements finalization
+- **#199, #196 depend on testing foundation**: Safer with #77, #38, #39 complete
+
+### Cross-Milestone Dependencies
+
+```
+0.1.3                              0.1.4
+─────                              ─────
+#234 ─┬────────────────────────────→ #236 ─┐
+#235 ─┘                                    ├─→ #237 (consolidation)
+                                           │
+#77, #38, #39 (testing) ───────────→ #199, #196 (model changes)
+                                           │
+                                     #5 (needs PO design)
+```
+
+---
+
 ## Risk Assessment
 
-### 0.1.2 Risks
+### 0.1.3 Risks
 
 **Medium Risks:**
-1. **#223 (Backup/Restore)** - File picker integration, platform differences, restore edge cases
-   - Mitigation: Start early, thorough testing, clear user warnings
-
-2. **#227 (Sorting)** - Locale-aware sorting could break existing behavior
-   - Mitigation: Comprehensive tests, manual verification across lists
+1. **#235, #234 (Refactoring)** - Core workflow changes
+   - Mitigation: Thorough testing, E2E validation before merge
 
 **Low Risks:**
-3. All other issues are low complexity with clear implementations
+2. **#172 (Instructions)** - Well-specified, follows existing patterns
+3. Testing issues are isolated and low-risk
 
-### 0.1.3 Risks
+### 0.1.4 Risks
 
 **Medium Risks:**
 1. **#5 (Shopping List)** - Needs design clarity before implementation
    - Mitigation: PO to finalize requirements before sprint starts
 
 2. **#199, #196 (Model Changes)** - Database migrations, data integrity
-   - Mitigation: Backup feature (#223) in place, thorough testing
+   - Mitigation: Backup feature (#223) complete, testing foundation from 0.1.3
+
+3. **#237 (Consolidation)** - Touches multiple screens
+   - Mitigation: Prerequisites (#234-236) completed first, comprehensive tests
 
 **Low Risks:**
-3. Testing issues are isolated and low-risk
-
----
-
-## Implementation Sequence
-
-### 0.1.2 Implementation Phases
-
-**Phase 1: Quick Wins (Parallel)**
-- #225 - Add 'maço' unit (no dependencies)
-- #226 - Parser: parentheses extraction (no dependencies)
-- #227 - Fix sorting with accents (no dependencies)
-
-**Phase 2: Foundation - Backup/Restore (Critical Path)**
-- #223 - Complete backup/restore (blocks #229, #224)
-
-**Phase 3: Data Management**
-- #229 - Recipe import tool (depends on #223)
-- #224 - Reorganize Tools tab (ideally after #223)
-
-**Phase 4: UI Improvements (Parallel)**
-- #148 - Fraction display (no dependencies)
-- #228 - Filter indicator UI (no dependencies)
-
-**Phase 5: Testing Suite**
-- #76 - Database tests for meals (foundation)
-- #124 + #125 - Feedback messages + UI refresh (can be parallel)
-- #126 - End-to-end meal edit test (depends on #124, #125)
-
-### Total Story Points
-**45 points** across 12 issues (including #229 added during planning)
-
----
-
-## Dependencies
-
-### 0.1.2 Dependencies
-- **#223 blocks #229**: Recipe import reuses backup/restore JSON infrastructure
-- **#223 enables #224**: Tools tab reorganization needs backup/restore tools to exist
-- **#126 depends on #124, #125**: E2E test builds on specific feature tests
-- **#148 depends on #141**: Fraction display builds on smart decimal formatting (completed in 0.1.1)
-
-### 0.1.3 Dependencies
-- **#199, #196 depend on #223**: Model changes safer with backup feature in place
-- **#5 depends on PO design**: Needs requirements finalization
-
-### Cross-Milestone Dependencies
-- **0.1.3 depends on 0.1.2**: Backup feature must be complete before model changes
-- **0.2.0 depends on 0.1.3**: Testing foundation must be complete
-
----
-
-## Beta Testing Impact
-
-All issues in 0.1.2 were informed by **real-world beta testing feedback**:
-
-- **#223**: Tester lost data during deployment, highlighted critical need
-- **#228**: Tester confused by hidden filter state
-- **#227**: Tester noticed incorrect sorting of Portuguese ingredients
-- **#226**: Tester encountered parenthetical text during bulk recipe entry
-- **#225**: Tester found missing "maço" unit during bulk recipe entry
-- **#148**: Tester requested better readability (moved from 0.2.0)
-
-This validates our approach of **real-world usage driving priorities**.
+4. Architecture improvements (#231) are isolated
+5. Testing infrastructure (#40, #230) is additive
 
 ---
 
 ## Next Steps
 
-### Immediate Actions (Tech Lead)
-1. ✅ Create 0.1.3 milestone in GitHub
-2. ✅ Move issues to correct milestones:
-   - #196, #199, #5, #77, #40, #39, #38, #221 → 0.1.3
-   - #193, #175, #170 → 0.2.0
-3. ✅ Update roadmap document with new milestone structure
-4. ✅ Estimate remaining issues without complexity labels
-
-### Sprint Planning Actions (PO + Tech Lead)
-1. Review and approve final 0.1.2 scope
-2. Identify sprint start date
-3. Assign issues or determine workflow
-4. Establish sprint cadence and check-ins
-
 ### Before 0.1.3
+
+1. ✅ Split milestone scope (this document)
+2. 🎯 Create 0.1.4 milestone in GitHub
+3. 🎯 Move deferred issues to 0.1.4:
+   - #5, #199, #196 → 0.1.4 (features with model changes)
+   - #236, #237, #231 → 0.1.4 (architecture completion)
+   - #40, #230 → 0.1.4 (testing infrastructure)
+4. 🎯 Move #9 to 0.2.0 (structured instructions - deferred)
+
+### Before 0.1.4
+
 1. PO to finalize Shopping List (#5) requirements
-2. Review 0.1.2 completion and lessons learned
-3. Adjust 0.1.3 scope based on 0.1.2 outcomes
+2. Review 0.1.3 completion and lessons learned
+3. Validate testing foundation is solid for model changes
 
 ---
 
@@ -450,7 +462,18 @@ This validates our approach of **real-world usage driving priorities**.
   - Added #229 (Recipe import tool) during planning
   - Defined 5-phase implementation sequence with dependencies
   - Total: 45 story points
-- **Status**: Plan approved, ready for execution
+- **2025-12-17**: 0.1.2 completed, v0.1.2 released
+- **2025-12-18**: 0.1.3 scope review and split decision
+  - Milestone had grown from 8 to 16 issues
+  - Split into 0.1.3 (8 issues) + 0.1.4 (8 issues)
+  - 0.1.3: User features + critical foundation
+  - 0.1.4: Model changes + architecture polish
+  - Moved #9 (structured instructions) to 0.2.0
+- **2025-12-18**: 0.1.3 poker planning estimation session
+  - Total: 26 points across 8 issues
+  - Defined implementation order based on dependencies and momentum
+  - Key estimates: #39 (L/8) and #38 (M/5) flagged as infrastructure risk
+- **Status**: 0.1.3 plan approved, ready for execution
 
 ---
 
