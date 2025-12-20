@@ -359,8 +359,8 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Just verify that an edit icon/button exists
-      expect(find.byIcon(Icons.edit), findsOneWidget);
+      // Verify that PopupMenuButton with more_vert icon exists
+      expect(find.byIcon(Icons.more_vert), findsOneWidget);
     });
 
     testWidgets(

@@ -114,9 +114,8 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Should show edit button
-      expect(find.byIcon(Icons.edit), findsOneWidget);
-      expect(find.byTooltip('Edit meal'), findsOneWidget);
+      // Should show PopupMenuButton with more_vert icon
+      expect(find.byIcon(Icons.more_vert), findsOneWidget);
     });
 
     testWidgets('edit button opens edit dialog with pre-filled data',
@@ -151,10 +150,12 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Tap the edit button (if it exists)
-      final editButtons = find.byIcon(Icons.edit);
-      if (editButtons.evaluate().isNotEmpty) {
-        await tester.tap(editButtons.first);
+      // Tap the menu button and then Edit
+      final menuButtons = find.byIcon(Icons.more_vert);
+      if (menuButtons.evaluate().isNotEmpty) {
+        await tester.tap(menuButtons.first);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Edit'));
         await tester.pumpAndSettle();
       }
 
@@ -200,9 +201,8 @@ void main() {
       // Should show side dish count badge for multi-recipe meal
       expect(find.text('1 side dish'), findsOneWidget);
 
-      // Should still show edit button
-      expect(find.byIcon(Icons.edit), findsOneWidget);
-      expect(find.byTooltip('Edit meal'), findsOneWidget);
+      // Should still show PopupMenuButton
+      expect(find.byIcon(Icons.more_vert), findsOneWidget);
     });
 
     testWidgets('edit button works with multi-recipe meals',
@@ -263,16 +263,16 @@ void main() {
       expect(find.textContaining('Grilled Chicken'), findsWidgets);
       expect(find.textContaining('Rice Pilaf'), findsWidgets);
 
-      // Verify edit functionality exists (even if not fully implemented)
-      final editButtons = find.byIcon(Icons.edit);
-      expect(editButtons, findsWidgets,
-          reason: 'Edit buttons should be present');
+      // Verify edit functionality exists via PopupMenuButton
+      final menuButtons = find.byIcon(Icons.more_vert);
+      expect(menuButtons, findsWidgets,
+          reason: 'PopupMenuButton should be present');
 
       // TODO: When edit functionality is implemented, test the actual editing
       // This test currently just verifies the multi-recipe meal displays correctly
     });
 
-    testWidgets('edit button is properly sized and positioned',
+    testWidgets('PopupMenuButton is properly sized and positioned',
         (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestableWidget(
@@ -285,22 +285,22 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Find the edit button
-      final editButtonFinder = find.byIcon(Icons.edit);
-      expect(editButtonFinder, findsOneWidget);
+      // Find the PopupMenuButton
+      final menuButtonFinder = find.byIcon(Icons.more_vert);
+      expect(menuButtonFinder, findsOneWidget);
 
-      // Verify it's an IconButton
-      final iconButton = tester.widget<IconButton>(
+      // Verify it's a PopupMenuButton
+      final popupMenuButton = tester.widget<PopupMenuButton<String>>(
         find.ancestor(
-          of: editButtonFinder,
-          matching: find.byType(IconButton),
+          of: menuButtonFinder,
+          matching: find.byType(PopupMenuButton<String>),
         ),
       );
 
       // Verify button properties
-      expect(iconButton.tooltip, 'Edit meal');
-      expect(iconButton.constraints?.minWidth, 36);
-      expect(iconButton.constraints?.minHeight, 36);
+      expect(popupMenuButton.padding, const EdgeInsets.all(4));
+      expect(popupMenuButton.constraints?.minWidth, 36);
+      expect(popupMenuButton.constraints?.minHeight, 36);
     });
   });
 
@@ -349,7 +349,11 @@ void main() {
           reason: 'Original servings count should be displayed');
 
       // 4. Open edit dialog
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       // 5. Change servings
@@ -413,7 +417,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // 3. Open edit dialog
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       // 4. Edit multiple fields
@@ -497,7 +505,11 @@ void main() {
           reason: 'Should not show side dish indicator for single recipe');
 
       // 4. Edit the meal
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       await tester.enterText(
@@ -562,7 +574,11 @@ void main() {
           reason: 'Should show side dish indicator');
 
       // 4. Edit the meal
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       await tester.enterText(
@@ -645,9 +661,11 @@ void main() {
       expect(find.text('Old meal'), findsOneWidget);
 
       // 5. Edit the middle meal
-      final editButtons = find.byIcon(Icons.edit);
-      // Find the edit button for the middle meal (second in the list)
-      await tester.tap(editButtons.at(1));
+      final menuButtons = find.byIcon(Icons.more_vert);
+      // Find the menu button for the middle meal (second in the list)
+      await tester.tap(menuButtons.at(1));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
       await tester.pumpAndSettle();
 
       // 6. Change only the notes (not the date)
@@ -719,7 +737,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // 3. Edit the meal
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       await tester.enterText(
@@ -787,7 +809,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // 3. Edit the meal
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       await tester.enterText(
@@ -852,7 +878,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // 3. Edit the meal
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Editar (Edit in Portuguese)
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Editar')); // Portuguese "Edit"
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       await tester.enterText(
@@ -914,7 +944,11 @@ void main() {
           reason: 'Initial servings should be 2');
 
       // 4. Open edit dialog
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       // 5. Change servings to 5
@@ -992,7 +1026,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // 3. Open edit dialog
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       // 4. Enter invalid servings (0)
@@ -1056,7 +1094,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // 3. Open edit dialog
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       // 4. Enter negative servings
@@ -1120,7 +1162,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // 3. Open edit dialog
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       // 4. Clear the servings field (make it empty)
@@ -1186,7 +1232,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // 3. Open edit dialog
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       // 4. Enter negative prep time
@@ -1252,7 +1302,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // 3. Open edit dialog
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       // 4. Enter non-numeric prep time
@@ -1318,7 +1372,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // 3. Open edit dialog
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       // 4. Enter negative cook time
@@ -1384,7 +1442,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // 3. Open edit dialog
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       // 4. Enter non-numeric cook time
@@ -1454,7 +1516,11 @@ void main() {
       mockDbHelper.failOnOperation('updateMeal');
 
       // 4. Open edit dialog
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       // 5. Make a valid change
@@ -1555,7 +1621,11 @@ void main() {
       mockDbHelper.failOnOperation('updateMeal');
 
       // 4. Open edit dialog
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       // 5. Make a valid change
@@ -1642,7 +1712,11 @@ void main() {
       mockDbHelper.failOnOperation('updateMeal');
 
       // 4. Open edit dialog
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Editar (Edit in Portuguese)
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Editar')); // Portuguese "Edit"
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       // 5. Make a valid change
@@ -1719,7 +1793,11 @@ void main() {
       mockDbHelper.failOnOperation('updateMeal');
 
       // 4. Open edit dialog
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       // 5. Make a valid change
@@ -1796,7 +1874,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // 3. Open edit dialog
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       // 4. While dialog is open, delete the meal from database
@@ -1873,7 +1955,11 @@ void main() {
       mockDbHelper.failOnOperation('getAllRecipes');
 
       // 4. Open edit dialog (this triggers getAllRecipes in initState)
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pump(); // Start opening dialog
       await tester.pump(); // Build dialog widget tree
 
@@ -1967,7 +2053,11 @@ void main() {
           reason: 'Should show count of 2 side dishes');
 
       // 4. Edit the meal
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       // 5. Modify servings
@@ -2063,7 +2153,11 @@ void main() {
           reason: 'Should initially show 1 side dish');
 
       // 4. Open edit dialog
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       // 5. Verify edit dialog is open (there are multiple "Rice Pilaf" texts: one in background, one in dialog)
@@ -2198,7 +2292,11 @@ void main() {
           reason: 'Should initially show 1 side dish');
 
       // 4. Open edit dialog
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       // 5. Remove existing side dish (Rice Pilaf) by tapping trash icon
@@ -2341,7 +2439,11 @@ void main() {
           reason: 'Should not show side dishes for single-recipe meal');
 
       // 4. Edit the meal
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       // 5. Modify notes
@@ -2413,7 +2515,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // 3. Edit the meal
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       // 4. Make a simple change
@@ -2485,7 +2591,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // 3. Edit the meal
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       // 4. Make a simple change
@@ -2568,7 +2678,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // 3. Perform first rapid edit
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       await tester.enterText(
@@ -2581,7 +2695,9 @@ void main() {
       await tester.pump();
 
       // 4. Immediately perform second rapid edit (don't wait for first snackbar)
-      await tester.tap(find.byIcon(Icons.edit).last);
+      await tester.tap(find.byIcon(Icons.more_vert).last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
       await tester.pumpAndSettle();
 
       await tester.enterText(
@@ -2648,7 +2764,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // 3. Edit the meal to trigger success snackbar
-      await tester.tap(find.byIcon(Icons.edit).first);
+      // Tap menu button then Edit
+      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
       await tester.enterText(
@@ -2692,6 +2812,281 @@ void main() {
       final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
       expect(snackBar.content, isA<Text>(),
           reason: 'SnackBar should have Text content that is accessible');
+    });
+  });
+
+  group('Meal Deletion Tests', () {
+    testWidgets('displays PopupMenuButton with delete option',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Should show PopupMenuButton with three dots icon
+      expect(find.byIcon(Icons.more_vert), findsOneWidget);
+
+      // Tap the menu button
+      await tester.tap(find.byIcon(Icons.more_vert));
+      await tester.pumpAndSettle();
+
+      // Should show Edit and Delete options
+      expect(find.text('Edit'), findsOneWidget);
+      expect(find.text('Delete'), findsOneWidget);
+    });
+
+    testWidgets('delete option shows confirmation dialog',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Tap the menu button
+      await tester.tap(find.byIcon(Icons.more_vert));
+      await tester.pumpAndSettle();
+
+      // Tap Delete option
+      await tester.tap(find.text('Delete'));
+      await tester.pumpAndSettle();
+
+      // Should show confirmation dialog
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(find.text('Delete Meal'), findsOneWidget);
+      expect(find.textContaining('Are you sure you want to delete'), findsOneWidget);
+      expect(find.text('Cancel'), findsOneWidget);
+      expect(find.text('Delete'), findsAtLeastNWidgets(1));
+    });
+
+    testWidgets('cancelling deletion keeps meal in database',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Verify meal exists before deletion attempt
+      final mealBefore = await mockDbHelper.getMeal(testMeal.id);
+      expect(mealBefore, isNotNull);
+
+      // Tap the menu button
+      await tester.tap(find.byIcon(Icons.more_vert));
+      await tester.pumpAndSettle();
+
+      // Tap Delete option
+      await tester.tap(find.text('Delete'));
+      await tester.pumpAndSettle();
+
+      // Tap Cancel button
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      // Verify meal still exists
+      final mealAfter = await mockDbHelper.getMeal(testMeal.id);
+      expect(mealAfter, isNotNull);
+      expect(mealAfter!.id, testMeal.id);
+
+      // Verify no snackbar is shown
+      expect(find.byType(SnackBar), findsNothing);
+    });
+
+    testWidgets('confirming deletion removes meal from database',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Verify meal exists before deletion
+      final mealBefore = await mockDbHelper.getMeal(testMeal.id);
+      expect(mealBefore, isNotNull);
+
+      // Verify MealRecipe association exists
+      final mealRecipesBefore = await mockDbHelper.getMealRecipesForMeal(testMeal.id);
+      expect(mealRecipesBefore, isNotEmpty);
+
+      // Tap the menu button
+      await tester.tap(find.byIcon(Icons.more_vert));
+      await tester.pumpAndSettle();
+
+      // Tap Delete option
+      await tester.tap(find.text('Delete'));
+      await tester.pumpAndSettle();
+
+      // Tap Delete button in confirmation dialog
+      final deleteButtons = find.text('Delete');
+      await tester.tap(deleteButtons.last);
+      await tester.pumpAndSettle();
+
+      // Verify meal is deleted
+      final mealAfter = await mockDbHelper.getMeal(testMeal.id);
+      expect(mealAfter, isNull);
+
+      // Verify MealRecipe associations are deleted
+      final mealRecipesAfter = await mockDbHelper.getMealRecipesForMeal(testMeal.id);
+      expect(mealRecipesAfter, isEmpty);
+
+      // Verify success snackbar is shown
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(find.text('Meal deleted successfully'), findsOneWidget);
+    });
+
+    testWidgets('deleting meal with multiple side dishes removes all associations',
+        (WidgetTester tester) async {
+      // Remove the test meal from setUp to avoid confusion
+      await mockDbHelper.deleteMeal(testMeal.id);
+
+      // Create a meal with multiple side dishes
+      final mealWithSides = Meal(
+        id: 'meal-with-sides',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 4,
+        notes: 'Multi-recipe meal',
+        wasSuccessful: true,
+        actualPrepTime: 25.0,
+        actualCookTime: 35.0,
+      );
+
+      await mockDbHelper.insertMeal(mealWithSides);
+
+      // Add primary dish
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: mealWithSides.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      // Add two side dishes
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: mealWithSides.id,
+        recipeId: sideRecipe.id,
+        isPrimaryDish: false,
+      ));
+
+      final anotherSide = Recipe(
+        id: 'another-side',
+        name: 'Green Salad',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+        difficulty: 1,
+        prepTimeMinutes: 10,
+        cookTimeMinutes: 0,
+      );
+      await mockDbHelper.insertRecipe(anotherSide);
+
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: mealWithSides.id,
+        recipeId: anotherSide.id,
+        isPrimaryDish: false,
+      ));
+
+      // Verify all 3 MealRecipe entries exist
+      final mealRecipesBefore = await mockDbHelper.getMealRecipesForMeal(mealWithSides.id);
+      expect(mealRecipesBefore.length, 3);
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Find the meal card (should be the first one since it's more recent)
+      final moreVertButtons = find.byIcon(Icons.more_vert);
+      expect(moreVertButtons, findsAtLeastNWidgets(1));
+
+      // Tap the first menu button
+      await tester.tap(moreVertButtons.first);
+      await tester.pumpAndSettle();
+
+      // Tap Delete option
+      await tester.tap(find.text('Delete'));
+      await tester.pumpAndSettle();
+
+      // Confirm deletion - find and tap the Delete button in the AlertDialog
+      await tester.tap(find.widgetWithText(TextButton, 'Delete').last);
+      await tester.pumpAndSettle();
+
+      // Wait for async operations to complete
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pumpAndSettle();
+
+      // Verify meal is deleted
+      final mealAfter = await mockDbHelper.getMeal(mealWithSides.id);
+      expect(mealAfter, isNull);
+
+      // Verify ALL MealRecipe associations are deleted
+      final mealRecipesAfter = await mockDbHelper.getMealRecipesForMeal(mealWithSides.id);
+      expect(mealRecipesAfter, isEmpty);
+
+      // Verify success snackbar
+      expect(find.byType(SnackBar), findsOneWidget);
+    });
+
+    testWidgets('deletion error shows error snackbar',
+        (WidgetTester tester) async {
+      // Configure mock to throw exception on delete
+      mockDbHelper.shouldThrowOnDelete = true;
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Tap the menu button
+      await tester.tap(find.byIcon(Icons.more_vert));
+      await tester.pumpAndSettle();
+
+      // Tap Delete option
+      await tester.tap(find.text('Delete'));
+      await tester.pumpAndSettle();
+
+      // Confirm deletion
+      final deleteButtons = find.text('Delete');
+      await tester.tap(deleteButtons.last);
+      await tester.pumpAndSettle();
+
+      // Verify error snackbar is shown
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(find.text('Error deleting meal'), findsOneWidget);
+
+      // Reset mock state
+      mockDbHelper.shouldThrowOnDelete = false;
     });
   });
 }

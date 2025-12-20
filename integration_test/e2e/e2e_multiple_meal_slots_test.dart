@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:gastrobrain/database/database_helper.dart';
 import 'package:gastrobrain/models/recipe.dart';
+import 'package:gastrobrain/models/meal_plan_item.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/utils/id_generator.dart';
 import 'helpers/e2e_test_helpers.dart';
@@ -36,6 +37,16 @@ void main() {
       String? createdLunchRecipeId;
       String? createdDinnerRecipeId;
 
+      // Helper function to calculate Friday date (same logic as _getFriday in weekly_plan_screen.dart)
+      DateTime getFridayDate() {
+        final now = DateTime.now();
+        final weekday = now.weekday;
+        final daysToSubtract = weekday < 5
+            ? weekday + 2 // Go back to previous Friday
+            : weekday - 5; // Friday is day 5
+        return now.subtract(Duration(days: daysToSubtract));
+      }
+
       try {
         // ==================================================================
         // SETUP: Launch and Initialize
@@ -46,6 +57,28 @@ void main() {
         print('✓ App launched and initialized');
 
         final dbHelper = DatabaseHelper();
+        final fridayDate = getFridayDate(); // Calculate once and reuse
+
+        // ==================================================================
+        // SETUP: Clean up any existing meal plan items for Friday
+        // ==================================================================
+
+        print('\n=== CLEANING UP EXISTING FRIDAY MEAL PLANS ===');
+
+        // Get all meal plan items for Friday
+        final existingFridayItems =
+            await dbHelper.getMealPlanItemsForDate(fridayDate);
+
+        // Delete existing Friday lunch and dinner items
+        for (final item in existingFridayItems) {
+          if (item.mealType == MealPlanItem.lunch ||
+              item.mealType == MealPlanItem.dinner) {
+            await dbHelper.deleteMealPlanItem(item.id);
+            print('✓ Deleted existing ${item.mealType} item for Friday');
+          }
+        }
+
+        print('✓ Friday slots cleared');
 
         // ==================================================================
         // SETUP: Create Test Recipes
@@ -101,7 +134,11 @@ void main() {
             tester, const Key('meal_plan_tab_icon'));
         print('✓ Tapped Meal Plan tab');
 
+        // Wait for meal plan to load and settle
         await E2ETestHelpers.waitForAsyncOperations();
+        await tester.pumpAndSettle();
+        await Future.delayed(const Duration(milliseconds: 500)); // Extra wait for UI
+        await tester.pumpAndSettle();
 
         // ==================================================================
         // ACT: Add Recipe to Friday Lunch
@@ -120,6 +157,43 @@ void main() {
         await tester.tap(lunchSlotFinder);
         await tester.pumpAndSettle();
         print('✓ Tapped Friday lunch slot');
+
+        // Add extra wait time for dialog to open
+        await E2ETestHelpers.waitForAsyncOperations();
+        await tester.pumpAndSettle();
+
+        // Debug: Check what's actually on screen
+        print('🔍 Checking what dialogs are visible after lunch tap...');
+        var selectRecipeDialog = find.text('Selecionar Receita');
+        var mealOptionsDialog = find.text('Opções de Refeição');
+
+        print('   - "Selecionar Receita": ${selectRecipeDialog.evaluate().length} found');
+        print('   - "Opções de Refeição": ${mealOptionsDialog.evaluate().length} found');
+
+        // If meal already exists, remove it first
+        if (mealOptionsDialog.evaluate().isNotEmpty) {
+          print('⚠ WARNING: Found existing meal in lunch slot, removing it');
+          final removeOption = find.text('Remover');
+          if (removeOption.evaluate().isNotEmpty) {
+            await tester.tap(removeOption);
+            await tester.pumpAndSettle();
+            print('✓ Tapped Remover');
+
+            // Confirm removal
+            final confirmButton = find.text('Remover').last;
+            if (confirmButton.evaluate().isNotEmpty) {
+              await tester.tap(confirmButton);
+              await tester.pumpAndSettle();
+              print('✓ Confirmed removal');
+            }
+
+            // Tap lunch slot again
+            await tester.tap(lunchSlotFinder);
+            await tester.pumpAndSettle();
+            await E2ETestHelpers.waitForAsyncOperations();
+            print('✓ Tapped lunch slot again after removal');
+          }
+        }
 
         // Verify dialog opened
         expect(find.text('Selecionar Receita'), findsOneWidget,
@@ -194,9 +268,61 @@ void main() {
             reason: 'Friday dinner slot should exist');
         print('✓ Found Friday dinner slot');
 
-        await tester.tap(dinnerSlotFinder, warnIfMissed: false);
+        await tester.tap(dinnerSlotFinder);
         await tester.pumpAndSettle();
         print('✓ Tapped Friday dinner slot');
+
+        // Add extra wait time for any async operations
+        await E2ETestHelpers.waitForAsyncOperations();
+        await tester.pumpAndSettle();
+
+        // Debug: Check what's actually on screen
+        print('🔍 Checking what dialogs are visible after dinner tap...');
+        // Reuse variables from lunch section (already declared)
+        // ignore: prefer_final_locals
+        selectRecipeDialog = find.text('Selecionar Receita');
+        // ignore: prefer_final_locals
+        mealOptionsDialog = find.text('Opções de Refeição');
+        final editDialog = find.text('Editar Registro de Refeição');
+
+        print('   - "Selecionar Receita": ${selectRecipeDialog.evaluate().length} found');
+        print('   - "Opções de Refeição": ${mealOptionsDialog.evaluate().length} found');
+        print('   - "Editar Registro de Refeição": ${editDialog.evaluate().length} found');
+
+        // If we find a meal options dialog, it means there's already a meal in this slot
+        if (mealOptionsDialog.evaluate().isNotEmpty) {
+          print('⚠ WARNING: Found existing meal in dinner slot, need to remove it first');
+
+          // Find and tap the "Remover" option
+          final removeOption = find.text('Remover');
+          if (removeOption.evaluate().isNotEmpty) {
+            await tester.tap(removeOption);
+            await tester.pumpAndSettle();
+            print('✓ Tapped Remover option');
+
+            // Confirm removal if there's a confirmation dialog
+            final confirmButton = find.text('Remover').last;
+            if (confirmButton.evaluate().isNotEmpty) {
+              await tester.tap(confirmButton);
+              await tester.pumpAndSettle();
+              print('✓ Confirmed removal');
+            }
+
+            // Now tap the dinner slot again to add a new meal
+            await tester.tap(dinnerSlotFinder);
+            await tester.pumpAndSettle();
+            await E2ETestHelpers.waitForAsyncOperations();
+            print('✓ Tapped dinner slot again after removal');
+          } else {
+            // No remove option, just close the dialog
+            final cancelButton = find.text('Cancelar');
+            if (cancelButton.evaluate().isNotEmpty) {
+              await tester.tap(cancelButton.first);
+              await tester.pumpAndSettle();
+              print('✓ Closed meal options dialog');
+            }
+          }
+        }
 
         // Verify dialog opened
         expect(find.text('Selecionar Receita'), findsOneWidget,
@@ -283,8 +409,38 @@ void main() {
         print('✓ Lunch recipe appears in calendar');
 
         // Verify dinner recipe appears
-        final dinnerNameFinder = find.text(dinnerRecipeName);
-        final foundDinnerInUI = dinnerNameFinder.evaluate().isNotEmpty;
+        var dinnerNameFinder = find.text(dinnerRecipeName);
+        var foundDinnerInUI = dinnerNameFinder.evaluate().isNotEmpty;
+
+        if (!foundDinnerInUI) {
+          print('⚠ Dinner recipe not immediately visible, scrolling...');
+          final scrollables = find.byType(Scrollable);
+          if (scrollables.evaluate().isNotEmpty) {
+            // Try scrolling down to find dinner
+            for (int i = 0; i < 3 && !foundDinnerInUI; i++) {
+              await tester.drag(scrollables.first, const Offset(0, -200),
+                  warnIfMissed: false);
+              await tester.pumpAndSettle();
+              foundDinnerInUI = dinnerNameFinder.evaluate().isNotEmpty;
+              if (foundDinnerInUI) {
+                print('✓ Found dinner recipe after scrolling ${i + 1} times');
+                break;
+              }
+            }
+          }
+
+          // If still not found, try scrolling horizontally (might be in different column)
+          if (!foundDinnerInUI) {
+            print('⚠ Trying horizontal scroll...');
+            final scrollables = find.byType(Scrollable);
+            if (scrollables.evaluate().length > 1) {
+              await tester.drag(scrollables.at(1), const Offset(-200, 0),
+                  warnIfMissed: false);
+              await tester.pumpAndSettle();
+              foundDinnerInUI = dinnerNameFinder.evaluate().isNotEmpty;
+            }
+          }
+        }
 
         expect(foundDinnerInUI, true,
             reason: 'Dinner recipe should appear in calendar');
@@ -297,6 +453,14 @@ void main() {
         // ==================================================================
 
         print('\n=== CLEANING UP ===');
+
+        // Delete meal plan items created during test
+        final createdFridayItems =
+            await dbHelper.getMealPlanItemsForDate(fridayDate);
+        for (final item in createdFridayItems) {
+          await dbHelper.deleteMealPlanItem(item.id);
+          print('✓ Deleted ${item.mealType} meal plan item');
+        }
 
         await dbHelper.deleteRecipe(createdLunchRecipeId);
         print('✓ Lunch recipe deleted');
@@ -311,6 +475,24 @@ void main() {
 
         // Attempt cleanup even on failure
         final dbHelper = DatabaseHelper();
+
+        // Clean up meal plan items
+        try {
+          final now = DateTime.now();
+          final weekday = now.weekday;
+          final daysToSubtract = weekday < 5
+              ? weekday + 2 // Go back to previous Friday
+              : weekday - 5; // Friday is day 5
+          final fridayDate = now.subtract(Duration(days: daysToSubtract));
+
+          final fridayItems = await dbHelper.getMealPlanItemsForDate(fridayDate);
+          for (final item in fridayItems) {
+            await dbHelper.deleteMealPlanItem(item.id);
+          }
+          print('✓ Cleanup: Friday meal plan items deleted');
+        } catch (cleanupError) {
+          print('⚠ Cleanup failed for meal plan items: $cleanupError');
+        }
 
         if (createdLunchRecipeId != null) {
           try {

@@ -308,6 +308,28 @@
   "@errorEditingMeal": {
     "description": "Error message when editing meal fails"
   },
+  "deleteMeal": "Delete Meal",
+  "@deleteMeal": {
+    "description": "Title for delete meal confirmation dialog"
+  },
+  "deleteMealConfirmation": "Are you sure you want to delete this meal from {mealDate}?",
+  "@deleteMealConfirmation": {
+    "description": "Confirmation message for meal deletion",
+    "placeholders": {
+      "mealDate": {
+        "type": "String",
+        "description": "Date of the meal to be deleted"
+      }
+    }
+  },
+  "mealDeletedSuccessfully": "Meal deleted successfully",
+  "@mealDeletedSuccessfully": {
+    "description": "Success message after meal deletion"
+  },
+  "errorDeletingMeal": "Error deleting meal",
+  "@errorDeletingMeal": {
+    "description": "Error message when deleting meal fails"
+  },
   "recipesCount": "{count} recipes",
   "@recipesCount": {
     "description": "Recipe count display",

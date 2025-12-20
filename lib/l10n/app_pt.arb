@@ -306,7 +306,29 @@
   },
   "errorEditingMeal": "Erro ao editar refeição",
   "@errorEditingMeal": {
-    "description": "Mensagem de erro quando falha ao editar refeição"    
+    "description": "Mensagem de erro quando falha ao editar refeição"
+  },
+  "deleteMeal": "Excluir Refeição",
+  "@deleteMeal": {
+    "description": "Título do diálogo de confirmação de exclusão de refeição"
+  },
+  "deleteMealConfirmation": "Tem certeza que deseja excluir esta refeição de {mealDate}?",
+  "@deleteMealConfirmation": {
+    "description": "Mensagem de confirmação para exclusão de refeição",
+    "placeholders": {
+      "mealDate": {
+        "type": "String",
+        "description": "Data da refeição a ser excluída"
+      }
+    }
+  },
+  "mealDeletedSuccessfully": "Refeição excluída com sucesso",
+  "@mealDeletedSuccessfully": {
+    "description": "Mensagem de sucesso após exclusão de refeição"
+  },
+  "errorDeletingMeal": "Erro ao excluir refeição",
+  "@errorDeletingMeal": {
+    "description": "Mensagem de erro quando falha ao excluir refeição"
   },
   "recipesCount": "{count} receitas",
   "@recipesCount": {

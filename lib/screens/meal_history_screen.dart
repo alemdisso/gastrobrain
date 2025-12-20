@@ -266,6 +266,100 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
     }
   }
 
+  /// Shows confirmation dialog before deleting a meal
+  Future<bool> _showDeleteConfirmationDialog(Meal meal) async {
+    final formattedDate = _formatDateTime(meal.cookedAt);
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.deleteMeal),
+        content: Text(
+          AppLocalizations.of(context)!.deleteMealConfirmation(formattedDate),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(AppLocalizations.of(context)!.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: Text(AppLocalizations.of(context)!.delete),
+          ),
+        ],
+      ),
+    );
+
+    return result ?? false;
+  }
+
+  /// Handles meal deletion with confirmation dialog
+  Future<void> _handleDeleteMeal(Meal meal) async {
+    // Show confirmation dialog
+    final confirmed = await _showDeleteConfirmationDialog(meal);
+    if (!confirmed) return;
+
+    try {
+      // Delete associated MealRecipe entries first
+      final mealRecipes = await _dbHelper.getMealRecipesForMeal(meal.id);
+      for (final mealRecipe in mealRecipes) {
+        await _dbHelper.deleteMealRecipe(mealRecipe.id);
+      }
+
+      // Delete the meal
+      await _dbHelper.deleteMeal(meal.id);
+
+      // Refresh the meal list
+      await _loadMeals();
+
+      // Refresh recipe statistics
+      if (mounted) {
+        final recipeProvider = context.read<RecipeProvider>();
+        await recipeProvider.refreshMealStats();
+      }
+
+      // Show success snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.mealDeletedSuccessfully,
+            ),
+          ),
+        );
+      }
+    } on NotFoundException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.message),
+          ),
+        );
+      }
+    } on GastrobrainException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${AppLocalizations.of(context)!.errorDeletingMeal}: ${e.message}',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.errorDeletingMeal),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -348,17 +442,46 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                     const SizedBox(width: 4),
                                     Text('${meal.servings}'),
                                     const SizedBox(width: 8),
-                                    // Add edit button
-                                    IconButton(
-                                      icon: const Icon(Icons.edit, size: 20),
-                                      onPressed: () => _handleEditMeal(meal),
-                                      tooltip: AppLocalizations.of(context)!
-                                          .editMeal,
+                                    // Add context menu with edit and delete options
+                                    PopupMenuButton<String>(
+                                      icon: const Icon(Icons.more_vert, size: 20),
+                                      padding: const EdgeInsets.all(4),
                                       constraints: const BoxConstraints(
                                         minWidth: 36,
                                         minHeight: 36,
                                       ),
-                                      padding: const EdgeInsets.all(4),
+                                      onSelected: (value) {
+                                        switch (value) {
+                                          case 'edit':
+                                            _handleEditMeal(meal);
+                                            break;
+                                          case 'delete':
+                                            _handleDeleteMeal(meal);
+                                            break;
+                                        }
+                                      },
+                                      itemBuilder: (context) => [
+                                        PopupMenuItem(
+                                          value: 'edit',
+                                          child: Row(
+                                            children: [
+                                              const Icon(Icons.edit),
+                                              const SizedBox(width: 8),
+                                              Text(AppLocalizations.of(context)!.edit),
+                                            ],
+                                          ),
+                                        ),
+                                        PopupMenuItem(
+                                          value: 'delete',
+                                          child: Row(
+                                            children: [
+                                              const Icon(Icons.delete),
+                                              const SizedBox(width: 8),
+                                              Text(AppLocalizations.of(context)!.delete),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),

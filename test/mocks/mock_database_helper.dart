@@ -30,6 +30,7 @@ class MockDatabaseHelper implements DatabaseHelper {
   bool _shouldFailNextOperation = false;
   String _nextOperationError = 'Simulated database error';
   String? _failOnSpecificOperation;
+  bool shouldThrowOnDelete = false;
 
   @override
   Future<int> deleteMealPlan(String id) async {
@@ -333,6 +334,10 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<int> deleteMeal(String id) async {
+    if (shouldThrowOnDelete) {
+      throw Exception('Simulated delete error');
+    }
+
     if (!_meals.containsKey(id)) return 0;
 
     // Remove related junction records

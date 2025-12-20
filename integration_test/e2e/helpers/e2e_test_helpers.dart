@@ -750,7 +750,11 @@ class E2ETestHelpers {
   /// Open the edit dialog for a meal at the given index
   ///
   /// Assumes the meal history screen is already open and displays a list
-  /// of meals. Each meal card has an edit button (Icons.edit).
+  /// of meals. Each meal card has a PopupMenuButton with Edit option.
+  ///
+  /// This method:
+  /// 1. Opens the context menu (Icons.more_vert) for the specified meal
+  /// 2. Taps the Edit option in the menu
   ///
   /// The mealIndex parameter specifies which meal to edit (0-based index):
   /// - 0: First meal (most recent, at the top)
@@ -769,13 +773,129 @@ class E2ETestHelpers {
     WidgetTester tester, {
     int mealIndex = 0,
   }) async {
-    final editButtons = find.byIcon(Icons.edit);
-    expect(editButtons.evaluate().length, greaterThan(mealIndex),
-        reason:
-            'Should have at least ${mealIndex + 1} edit button(s), but found ${editButtons.evaluate().length}');
+    // Open the context menu for the specified meal
+    await openMealContextMenu(tester, mealIndex: mealIndex);
 
-    await tester.tap(editButtons.at(mealIndex));
+    // Tap the Edit option in the menu
+    final editIcon = find.byIcon(Icons.edit);
+    expect(editIcon, findsOneWidget,
+        reason: 'Edit option should be visible in context menu');
+
+    await tester.tap(editIcon);
     await tester.pumpAndSettle(standardSettleDuration);
+  }
+
+  // ============================================================================
+  // MEAL DELETION HELPERS
+  // ============================================================================
+
+  /// Open the context menu (PopupMenuButton) for a meal at the given index
+  ///
+  /// Assumes the meal history screen is already open and displays a list
+  /// of meals. Each meal card has a PopupMenuButton with three vertical dots
+  /// (Icons.more_vert).
+  ///
+  /// The mealIndex parameter specifies which meal's menu to open (0-based):
+  /// - 0: First meal (most recent, at the top)
+  /// - 1: Second meal
+  /// - etc.
+  ///
+  /// Usage:
+  /// ```dart
+  /// // Open context menu for first meal
+  /// await E2ETestHelpers.openMealContextMenu(tester);
+  ///
+  /// // Open context menu for second meal
+  /// await E2ETestHelpers.openMealContextMenu(tester, mealIndex: 1);
+  /// ```
+  static Future<void> openMealContextMenu(
+    WidgetTester tester, {
+    int mealIndex = 0,
+  }) async {
+    final moreVertButtons = find.byIcon(Icons.more_vert);
+    expect(moreVertButtons.evaluate().length, greaterThan(mealIndex),
+        reason:
+            'Should have at least ${mealIndex + 1} context menu button(s)');
+
+    await tester.tap(moreVertButtons.at(mealIndex));
+    await tester.pumpAndSettle();
+  }
+
+  /// Tap the Delete option in the context menu
+  ///
+  /// Assumes the context menu (PopupMenuButton) is already open.
+  /// This finds the Delete menu item and taps it.
+  ///
+  /// Usage:
+  /// ```dart
+  /// await E2ETestHelpers.openMealContextMenu(tester);
+  /// await E2ETestHelpers.tapDeleteInContextMenu(tester);
+  /// ```
+  static Future<void> tapDeleteInContextMenu(WidgetTester tester) async {
+    // Find the Delete option in the popup menu
+    // It should be a PopupMenuItem with Icons.delete icon
+    final deleteIcon = find.byIcon(Icons.delete);
+    expect(deleteIcon, findsOneWidget,
+        reason: 'Delete option should be visible in context menu');
+
+    await tester.tap(deleteIcon);
+    await tester.pumpAndSettle();
+  }
+
+  /// Verify the delete confirmation dialog is displayed
+  ///
+  /// Checks that an AlertDialog is present with the appropriate
+  /// delete confirmation elements.
+  ///
+  /// Usage:
+  /// ```dart
+  /// E2ETestHelpers.verifyDeleteConfirmationDialog();
+  /// ```
+  static void verifyDeleteConfirmationDialog() {
+    final alertDialog = find.byType(AlertDialog);
+    expect(alertDialog, findsOneWidget,
+        reason: 'Delete confirmation dialog should be displayed');
+  }
+
+  /// Confirm deletion in the confirmation dialog
+  ///
+  /// Finds and taps the Delete/Confirm button (second TextButton) in the
+  /// confirmation dialog to proceed with deletion.
+  ///
+  /// Usage:
+  /// ```dart
+  /// await E2ETestHelpers.confirmDeletion(tester);
+  /// ```
+  static Future<void> confirmDeletion(WidgetTester tester) async {
+    // The delete button is the second TextButton in the dialog
+    // (first is Cancel, second is Delete)
+    final textButtons = find.byType(TextButton);
+    expect(textButtons.evaluate().length, greaterThanOrEqualTo(2),
+        reason: 'Dialog should have at least 2 buttons (Cancel and Delete)');
+
+    // Tap the second TextButton (Delete)
+    await tester.tap(textButtons.at(1));
+    await tester.pumpAndSettle();
+  }
+
+  /// Cancel deletion in the confirmation dialog
+  ///
+  /// Finds and taps the Cancel button (TextButton) in the confirmation
+  /// dialog to abort the deletion.
+  ///
+  /// Usage:
+  /// ```dart
+  /// await E2ETestHelpers.cancelDeletion(tester);
+  /// ```
+  static Future<void> cancelDeletion(WidgetTester tester) async {
+    // The cancel button is typically a TextButton in the dialog
+    final cancelButtons = find.byType(TextButton);
+    expect(cancelButtons, findsWidgets,
+        reason: 'Cancel button should exist in confirmation dialog');
+
+    // Tap the first TextButton (Cancel)
+    await tester.tap(cancelButtons.first);
+    await tester.pumpAndSettle();
   }
 
   /// Fill in the meal edit dialog fields

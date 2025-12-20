@@ -96,28 +96,29 @@ void main() {
         await E2ETestHelpers.navigateToMealHistory(tester, testRecipeName);
         print('✓ Navigated to meal history screen');
 
-        // Verify: Edit button has tooltip
-        print('\n=== VERIFYING EDIT BUTTON ACCESSIBILITY ===');
+        // Verify: PopupMenuButton has menu options accessible
+        print('\n=== VERIFYING CONTEXT MENU ACCESSIBILITY ===');
+
+        // Find the PopupMenuButton (more_vert icon)
+        final moreVertIcon = find.byIcon(Icons.more_vert);
+        expect(moreVertIcon, findsOneWidget,
+            reason: 'Context menu button should be visible');
+        print('✓ Context menu button (more_vert) is visible');
+
+        // Open the context menu
+        await E2ETestHelpers.openMealContextMenu(tester);
+        print('✓ Context menu opened');
+
+        // Verify edit option is accessible in menu
         final editIcon = find.byIcon(Icons.edit);
-        expect(editIcon, findsOneWidget, reason: 'Edit icon should be visible');
+        expect(editIcon, findsOneWidget,
+            reason: 'Edit option should be visible in menu');
+        print('✓ Edit option is accessible in context menu');
 
-        // Find the IconButton that contains the edit icon
-        final editButton = find.ancestor(
-          of: editIcon,
-          matching: find.byType(IconButton),
-        );
-        expect(editButton, findsOneWidget,
-            reason: 'IconButton containing edit icon should exist');
-
-        // Get the IconButton widget to check its tooltip
-        final iconButton = tester.widget<IconButton>(editButton);
-        expect(iconButton.tooltip, isNotNull,
-            reason: 'Edit button should have a tooltip');
-        print('✓ Edit button has tooltip: "${iconButton.tooltip}"');
-
-        // Open edit dialog
+        // Tap edit option to open dialog
         print('\n=== OPENING EDIT DIALOG ===');
-        await E2ETestHelpers.openMealEditDialog(tester);
+        await tester.tap(editIcon);
+        await tester.pumpAndSettle(E2ETestHelpers.standardSettleDuration);
         print('✓ Edit dialog opened');
 
         // Verify: Form fields have semantic labels
