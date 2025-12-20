@@ -72,7 +72,8 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
           _isCustomIngredient = true;
           _customNameController.text =
               widget.existingIngredient!['custom_name'];
-          _selectedCategory = IngredientCategory.fromString(widget.existingIngredient!['custom_category'] ?? 'other');
+          _selectedCategory = IngredientCategory.fromString(
+              widget.existingIngredient!['custom_category'] ?? 'other');
           _selectedUnitOverride = widget.existingIngredient!['custom_unit'];
           _isLoading = false; // Set loading to false for custom ingredients
         });
@@ -108,7 +109,6 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
       _loadIngredients();
     }
   }
-
 
   Future<void> _addIngredientToRecipe() async {
     if (!_formKey.currentState!.validate() ||
@@ -150,9 +150,10 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
         // Detect if unit was changed from ingredient's default
         final defaultUnit = _selectedIngredient!.unit?.value;
         final selectedUnit = _selectedUnitOverride;
-        final unitOverride = (selectedUnit != null && selectedUnit != defaultUnit)
-            ? selectedUnit
-            : null;
+        final unitOverride =
+            (selectedUnit != null && selectedUnit != defaultUnit)
+                ? selectedUnit
+                : null;
 
         recipeIngredient = RecipeIngredient(
           id: widget.recipeIngredientId ?? IdGenerator.generateId(),
@@ -312,7 +313,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                       // Custom Ingredient Category
                       DropdownButtonFormField<IngredientCategory>(
                         key: const Key('add_ingredient_custom_category_field'),
-                        value: _selectedCategory,
+                        initialValue: _selectedCategory,
                         decoration: InputDecoration(
                           labelText:
                               AppLocalizations.of(context)!.categoryLabel,
@@ -338,7 +339,8 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                     ] else ...[
                       // Unified ingredient search with autocomplete
                       Autocomplete<Ingredient>(
-                        displayStringForOption: (Ingredient ingredient) => ingredient.name,
+                        displayStringForOption: (Ingredient ingredient) =>
+                            ingredient.name,
                         optionsBuilder: (TextEditingValue textEditingValue) {
                           if (textEditingValue.text.isEmpty) {
                             return _availableIngredients;
@@ -354,7 +356,8 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                             _selectedIngredient = selection;
                           });
                         },
-                        fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                        fieldViewBuilder:
+                            (context, controller, focusNode, onFieldSubmitted) {
                           // Sync with our search controller
                           if (_searchController.text != controller.text) {
                             _searchController.text = controller.text;
@@ -364,14 +367,17 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                             controller: controller,
                             focusNode: focusNode,
                             decoration: InputDecoration(
-                              labelText: AppLocalizations.of(context)!.ingredientLabel,
-                              hintText: AppLocalizations.of(context)!.searchOrCreateIngredient,
+                              labelText:
+                                  AppLocalizations.of(context)!.ingredientLabel,
+                              hintText: AppLocalizations.of(context)!
+                                  .searchOrCreateIngredient,
                               border: const OutlineInputBorder(),
                               prefixIcon: const Icon(Icons.search),
                             ),
                             validator: (value) {
                               if (_selectedIngredient == null) {
-                                return AppLocalizations.of(context)!.pleaseSelectAnIngredient;
+                                return AppLocalizations.of(context)!
+                                    .pleaseSelectAnIngredient;
                               }
                               return null;
                             },
@@ -380,20 +386,24 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                         optionsViewBuilder: (context, onSelected, options) {
                           final optionsList = options.toList();
                           final searchTerm = _searchController.text;
-                          final hasExactMatch = optionsList.any(
-                            (ing) => ing.name.toLowerCase() == searchTerm.toLowerCase()
-                          );
+                          final hasExactMatch = optionsList.any((ing) =>
+                              ing.name.toLowerCase() ==
+                              searchTerm.toLowerCase());
 
                           return Align(
                             alignment: Alignment.topLeft,
                             child: Material(
                               elevation: 4.0,
                               child: ConstrainedBox(
-                                constraints: const BoxConstraints(maxHeight: 200, maxWidth: 300),
+                                constraints: const BoxConstraints(
+                                    maxHeight: 200, maxWidth: 300),
                                 child: ListView.builder(
                                   padding: EdgeInsets.zero,
                                   shrinkWrap: true,
-                                  itemCount: optionsList.length + (searchTerm.isNotEmpty && !hasExactMatch ? 2 : 0),
+                                  itemCount: optionsList.length +
+                                      (searchTerm.isNotEmpty && !hasExactMatch
+                                          ? 2
+                                          : 0),
                                   itemBuilder: (context, index) {
                                     // Show ingredients first
                                     if (index < optionsList.length) {
@@ -412,11 +422,14 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                     // Show "Create new" option
                                     else {
                                       return ListTile(
-                                        leading: const Icon(Icons.add, size: 20),
+                                        leading:
+                                            const Icon(Icons.add, size: 20),
                                         title: Text(
-                                          AppLocalizations.of(context)!.createAsNew(searchTerm),
+                                          AppLocalizations.of(context)!
+                                              .createAsNew(searchTerm),
                                           style: TextStyle(
-                                            color: Theme.of(context).primaryColor,
+                                            color:
+                                                Theme.of(context).primaryColor,
                                           ),
                                         ),
                                         onTap: () async {
@@ -471,8 +484,9 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                           child: _isCustomIngredient
                               // Custom ingredient: optional unit selection
                               ? DropdownButtonFormField<String>(
-                                  key: const Key('add_ingredient_custom_unit_field'),
-                                  value: _selectedUnitOverride,
+                                  key: const Key(
+                                      'add_ingredient_custom_unit_field'),
+                                  initialValue: _selectedUnitOverride,
                                   decoration: InputDecoration(
                                     labelText: AppLocalizations.of(context)!
                                         .unitOptional,
@@ -483,9 +497,9 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                     DropdownMenuItem(
                                       value: null,
                                       child: Text(
-                                          AppLocalizations.of(context)!.noUnit,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                        AppLocalizations.of(context)!.noUnit,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
                                     ..._units.map((unit) {
                                       return DropdownMenuItem(
@@ -506,9 +520,11 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                               // Database ingredient: always show dropdown, pre-filled with default
                               : DropdownButtonFormField<String>(
                                   key: const Key('add_ingredient_unit_field'),
-                                  value: _selectedUnitOverride ?? _selectedIngredient?.unit?.value,
+                                  initialValue: _selectedUnitOverride ??
+                                      _selectedIngredient?.unit?.value,
                                   decoration: InputDecoration(
-                                    labelText: AppLocalizations.of(context)!.unit,
+                                    labelText:
+                                        AppLocalizations.of(context)!.unit,
                                     border: const OutlineInputBorder(),
                                   ),
                                   isExpanded: true,

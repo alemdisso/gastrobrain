@@ -1,10 +1,11 @@
-// Create a new file: lib/widgets/meal_recording_dialog.dart
+// lib/widgets/meal_recording_dialog.dart
 
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../database/database_helper.dart';
 import '../core/validators/entity_validator.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/sorting_utils.dart';
 import 'package:intl/intl.dart';
 
 class MealRecordingDialog extends StatefulWidget {
@@ -84,9 +85,9 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
       final recipes = await _dbHelper.getAllRecipes();
       if (mounted) {
         setState(() {
-          _availableRecipes =
-              recipes.where((r) => r.id != widget.primaryRecipe.id).toList()
-                ..sort((a, b) => a.name.compareTo(b.name));
+          final filtered =
+              recipes.where((r) => r.id != widget.primaryRecipe.id).toList();
+          _availableRecipes = SortingUtils.sortByName(filtered, (r) => r.name);
           _isLoadingRecipes = false;
         });
       }
@@ -96,7 +97,9 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
           _isLoadingRecipes = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${AppLocalizations.of(context)!.errorLoadingRecipes} $e')),
+          SnackBar(
+              content: Text(
+                  '${AppLocalizations.of(context)!.errorLoadingRecipes} $e')),
         );
       }
     }
@@ -126,7 +129,8 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.errorSelectingDate)),
+          SnackBar(
+              content: Text(AppLocalizations.of(context)!.errorSelectingDate)),
         );
       }
     }
@@ -135,7 +139,9 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
   Future<void> _showAddRecipeDialog() async {
     if (_availableRecipes.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.noAdditionalRecipesAvailable)),
+        SnackBar(
+            content: Text(
+                AppLocalizations.of(context)!.noAdditionalRecipesAvailable)),
       );
       return;
     }
@@ -228,7 +234,8 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${AppLocalizations.of(context)!.errorPrefix} $e')),
+        SnackBar(
+            content: Text('${AppLocalizations.of(context)!.errorPrefix} $e')),
       );
     }
   }
@@ -245,7 +252,8 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(AppLocalizations.of(context)!.cookRecipeTitle(widget.primaryRecipe.name)),
+      title: Text(AppLocalizations.of(context)!
+          .cookRecipeTitle(widget.primaryRecipe.name)),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -258,11 +266,13 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
                 key: const Key('meal_recording_date_selector'),
                 leading: const Icon(Icons.calendar_today),
                 title: Text(
-                  AppLocalizations.of(context)!.cookedOnDate(_formatDate(_cookedAt)),
+                  AppLocalizations.of(context)!
+                      .cookedOnDate(_formatDate(_cookedAt)),
                 ),
                 subtitle: widget.plannedDate != null
                     ? Text(
-                        AppLocalizations.of(context)!.plannedForDate(_formatDate(widget.plannedDate!)),
+                        AppLocalizations.of(context)!
+                            .plannedForDate(_formatDate(widget.plannedDate!)),
                         style: Theme.of(context).textTheme.bodySmall,
                       )
                     : null,
@@ -283,7 +293,8 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return AppLocalizations.of(context)!.pleaseEnterNumberOfServings;
+                    return AppLocalizations.of(context)!
+                        .pleaseEnterNumberOfServings;
                   }
                   if (int.tryParse(value) == null || int.parse(value) < 1) {
                     return AppLocalizations.of(context)!.pleaseEnterValidNumber;
@@ -310,7 +321,8 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
                       if (widget.allowRecipeChange)
                         TextButton.icon(
                           icon: const Icon(Icons.add),
-                          label: Text(AppLocalizations.of(context)!.buttonAddRecipe),
+                          label: Text(
+                              AppLocalizations.of(context)!.buttonAddRecipe),
                           onPressed:
                               _isLoadingRecipes ? null : _showAddRecipeDialog,
                         ),
@@ -344,7 +356,8 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
                                     _additionalRecipes.removeAt(index);
                                   });
                                 },
-                                tooltip: AppLocalizations.of(context)!.removeTooltip,
+                                tooltip:
+                                    AppLocalizations.of(context)!.removeTooltip,
                               )
                             : null,
                         contentPadding: EdgeInsets.zero,
@@ -363,7 +376,8 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
                       key: const Key('meal_recording_prep_time_field'),
                       controller: _prepTimeController,
                       decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)!.actualPrepTimeMin,
+                        labelText:
+                            AppLocalizations.of(context)!.actualPrepTimeMin,
                         border: const OutlineInputBorder(),
                         prefixIcon: const Icon(Icons.timer),
                       ),
@@ -385,7 +399,8 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
                       key: const Key('meal_recording_cook_time_field'),
                       controller: _cookTimeController,
                       decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)!.actualCookTimeMin,
+                        labelText:
+                            AppLocalizations.of(context)!.actualCookTimeMin,
                         border: const OutlineInputBorder(),
                         prefixIcon: const Icon(Icons.timer),
                       ),

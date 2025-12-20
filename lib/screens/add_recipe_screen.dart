@@ -339,7 +339,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                 const SizedBox(height: 16),
                 DropdownButtonFormField<FrequencyType>(
                   key: const Key('add_recipe_frequency_field'),
-                  value: _selectedFrequency,
+                  initialValue: _selectedFrequency,
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.desiredFrequency,
                     border: const OutlineInputBorder(),
@@ -361,7 +361,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                 const SizedBox(height: 16),
                 DropdownButtonFormField<RecipeCategory>(
                   key: const Key('add_recipe_category_field'),
-                  value: _selectedCategory,
+                  initialValue: _selectedCategory,
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.category,
                     border: const OutlineInputBorder(),

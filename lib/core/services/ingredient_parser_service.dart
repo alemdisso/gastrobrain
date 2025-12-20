@@ -198,7 +198,8 @@ class IngredientParserService {
     
     // Bunch variants
     _unitStringMap['maço'] = 'bunch';
-    _unitStringMap['macos'] = 'bunch';
+    _unitStringMap['maços'] = 'bunch';  // plural with cedilla (proper Portuguese)
+    _unitStringMap['macos'] = 'bunch';  // plural without cedilla (robustness)
     _unitStringMap['bunch'] = 'bunch';
     _unitStringMap['bunches'] = 'bunch';
     
@@ -433,7 +434,7 @@ class IngredientParserService {
       throw StateError('IngredientParserService must be initialized before use');
     }
     
-    final trimmedLine = line.trim();
+    String trimmedLine = line.trim();
     if (trimmedLine.isEmpty) {
       return ParsedIngredientResult(
         quantity: 0,
@@ -443,7 +444,28 @@ class IngredientParserService {
         matches: [],
       );
     }
-    
+
+    // Step 0: Extract parenthetical text to notes
+    // Extract end-line parenthetical text first
+    String? endLineNote;
+    final endMatch = RegExp(r'\s*\(([^)]+)\)\s*$').firstMatch(trimmedLine);
+    if (endMatch != null) {
+      endLineNote = endMatch.group(1)!.trim();
+      trimmedLine = trimmedLine.substring(0, endMatch.start).trim();
+    }
+
+    // Extract all remaining (mid-line) parenthetical text
+    List<String> midLineNotes = [];
+    final midMatches = RegExp(r'\(([^)]+)\)').allMatches(trimmedLine);
+    for (var match in midMatches) {
+      midLineNotes.add(match.group(1)!.trim());
+    }
+
+    // Clean the line: remove all parentheses and their content
+    trimmedLine = trimmedLine.replaceAll(RegExp(r'\s*\([^)]+\)\s*'), ' ').trim();
+    // Normalize multiple spaces to single space
+    trimmedLine = trimmedLine.replaceAll(RegExp(r'\s+'), ' ');
+
     // Step 1: Extract quantity from beginning
     // Match: mixed number, slash fraction, unicode fraction, decimal, or integer
     // Pattern explanation:
@@ -548,12 +570,38 @@ class IngredientParserService {
         notes = 'a gosto';
       }
     }
-    
+
+    // Combine all notes: mid-line parenthetical | parser-detected + end-line parenthetical
+    String? finalNotes;
+    List<String> allNotes = [];
+
+    // Add mid-line parenthetical notes (joined with |)
+    if (midLineNotes.isNotEmpty) {
+      allNotes.add(midLineNotes.join('|'));
+    }
+
+    // Combine parser-detected notes with end-line parenthetical note
+    List<String> endPart = [];
+    if (notes != null && notes.isNotEmpty) {
+      endPart.add(notes);
+    }
+    if (endLineNote != null && endLineNote.isNotEmpty) {
+      endPart.add(endLineNote);
+    }
+    if (endPart.isNotEmpty) {
+      allNotes.add(endPart.join(' '));
+    }
+
+    // Join all parts with " | "
+    if (allNotes.isNotEmpty) {
+      finalNotes = allNotes.join(' | ');
+    }
+
     return ParsedIngredientResult(
       quantity: quantity,
       unit: unit,
       ingredientName: ingredientName,
-      notes: notes,
+      notes: finalNotes,
       matches: matches,
     );
   }

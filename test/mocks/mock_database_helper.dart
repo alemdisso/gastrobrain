@@ -26,6 +26,11 @@ class MockDatabaseHelper implements DatabaseHelper {
   Map<String, List<ProteinType>> recipeProteinTypes = {};
   List<Map<String, dynamic>>? returnCustomMealsForRecommendations;
 
+  // Error simulation properties
+  bool _shouldFailNextOperation = false;
+  String _nextOperationError = 'Simulated database error';
+  String? _failOnSpecificOperation;
+
   @override
   Future<int> deleteMealPlan(String id) async {
     if (!_mealPlans.containsKey(id)) return 0;
@@ -149,6 +154,39 @@ class MockDatabaseHelper implements DatabaseHelper {
     _mockDatabase = db;
   }
 
+  /// Configure the mock to fail on a specific operation.
+  ///
+  /// This method sets up error simulation for testing error handling.
+  /// When the specified operation is called, it will throw an exception.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// mockDb.failOnOperation('updateMeal');
+  /// // Next call to updateMeal will throw
+  /// ```
+  void failOnOperation(String operationName) {
+    _shouldFailNextOperation = true;
+    _failOnSpecificOperation = operationName;
+  }
+
+  /// Reset error simulation state.
+  ///
+  /// This method clears all error simulation flags and resets the error
+  /// message to the default. Use this between tests to ensure a clean state.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// mockDb.failOnOperation('updateMeal');
+  /// // ... test error handling ...
+  /// mockDb.resetErrorSimulation();
+  /// // Next call to updateMeal will succeed
+  /// ```
+  void resetErrorSimulation() {
+    _shouldFailNextOperation = false;
+    _failOnSpecificOperation = null;
+    _nextOperationError = 'Simulated database error';
+  }
+
   // Reset all data
   void resetAllData() {
     _recipes.clear();
@@ -172,6 +210,15 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<List<Recipe>> getAllRecipes() async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'getAllRecipes')) {
+      final errorMessage = _nextOperationError;
+      resetErrorSimulation();
+      throw Exception(errorMessage);
+    }
+
     return _recipes.values.toList();
   }
 
@@ -244,6 +291,15 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<Meal?> getMeal(String id) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'getMeal')) {
+      final errorMessage = _nextOperationError;
+      resetErrorSimulation();
+      throw Exception(errorMessage);
+    }
+
     return _meals[id];
   }
 
@@ -304,6 +360,18 @@ class MockDatabaseHelper implements DatabaseHelper {
     return limitedMeals;
   }
 
+  @override
+  Future<List<Meal>> getAllMeals() async {
+    final allMeals = _meals.values.toList();
+
+    // Load meal recipes for each meal
+    for (final meal in allMeals) {
+      meal.mealRecipes = await getMealRecipesForMeal(meal.id);
+    }
+
+    return allMeals;
+  }
+
 // Add this to your MockDatabaseHelper class
   Future<List<Map<String, dynamic>>> getRecentMealsForRecommendations({
     required DateTime startDate,
@@ -342,6 +410,15 @@ class MockDatabaseHelper implements DatabaseHelper {
   // MEAL RECIPE OPERATIONS
   @override
   Future<String> insertMealRecipe(MealRecipe mealRecipe) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'insertMealRecipe')) {
+      final errorMessage = _nextOperationError;
+      resetErrorSimulation();
+      throw Exception(errorMessage);
+    }
+
     _mealRecipes[mealRecipe.id] = mealRecipe;
 
     // Update last cooked date and count
@@ -350,6 +427,10 @@ class MockDatabaseHelper implements DatabaseHelper {
       _lastCookedDates[mealRecipe.recipeId] = meal.cookedAt;
       _mealCounts[mealRecipe.recipeId] =
           (_mealCounts[mealRecipe.recipeId] ?? 0) + 1;
+
+      // Also update the meal's mealRecipes list to keep it in sync
+      meal.mealRecipes ??= [];
+      meal.mealRecipes!.add(mealRecipe);
     }
 
     return mealRecipe.id;
@@ -539,12 +620,12 @@ class MockDatabaseHelper implements DatabaseHelper {
               })
           .toList();
     }
-    
+
     // Return recipe ingredients from our mock data
     final recipeIngredients = _recipeIngredients.values
         .where((ri) => ri.recipeId == recipeId)
         .toList();
-    
+
     // Convert to map format expected by the code
     return recipeIngredients.map((ri) {
       final ingredient = _ingredients[ri.ingredientId];
@@ -567,18 +648,18 @@ class MockDatabaseHelper implements DatabaseHelper {
   Future<int> getEnrichedRecipeCount() async {
     // Count recipes that have 3 or more ingredients
     int enrichedCount = 0;
-    
+
     for (final recipeId in _recipes.keys) {
       // Count ingredients for this recipe
       final ingredientCount = _recipeIngredients.values
           .where((ri) => ri.recipeId == recipeId)
           .length;
-      
+
       if (ingredientCount >= 3) {
         enrichedCount++;
       }
     }
-    
+
     return enrichedCount;
   }
 
@@ -587,7 +668,7 @@ class MockDatabaseHelper implements DatabaseHelper {
     final totalRecipes = await getRecipesCount();
     final enrichedRecipes = await getEnrichedRecipeCount();
     final incompleteRecipes = totalRecipes - enrichedRecipes;
-    
+
     return {
       'total': totalRecipes,
       'enriched': enrichedRecipes,
@@ -689,8 +770,19 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<int> updateMeal(Meal meal) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'updateMeal')) {
+      final errorMessage = _nextOperationError;
+      resetErrorSimulation();
+      throw Exception(errorMessage);
+    }
+
     // Check if the meal exists
-    if (!_meals.containsKey(meal.id)) return 0;
+    if (!_meals.containsKey(meal.id)) {
+      throw Exception('Meal not found: ${meal.id}');
+    }
 
     // Store the original meal to handle recipeId changes
     final originalMeal = _meals[meal.id];
@@ -754,6 +846,17 @@ class MockDatabaseHelper implements DatabaseHelper {
       return !normalizedStart.isAfter(planEndDate) &&
           !normalizedEnd.isBefore(plan.weekStartDate);
     }).toList();
+  }
+
+  @override
+  Future<List<MealPlan>> getAllMealPlans() async {
+    return _mealPlans.values.toList();
+  }
+
+  @override
+  Future<List<MealPlanItem>> getMealPlanItems(String mealPlanId) async {
+    final plan = _mealPlans[mealPlanId];
+    return plan?.items ?? [];
   }
 
   @override
@@ -1025,4 +1128,22 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   MigrationRunner? get migrationRunner => null; // Mock: no migration runner
+
+  // === BACKUP/RESTORE METHODS (Mock Implementation) ===
+
+  @override
+  Future<void> closeDatabase() async {
+    // Mock: do nothing - in tests we don't need to close the database
+  }
+
+  @override
+  Future<void> reopenDatabase() async {
+    // Mock: do nothing - in tests the database is always "open"
+  }
+
+  @override
+  Future<String> getDatabasePath() async {
+    // Mock: return a test database path
+    return '/mock/test/database.db';
+  }
 }

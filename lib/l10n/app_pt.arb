@@ -90,6 +90,48 @@
   "@apply": {
     "description": "Botão para aplicar filtros"
   },
+  "filtersActive": "Filtros ativos",
+  "@filtersActive": {
+    "description": "Cabeçalho do banner mostrado quando filtros estão aplicados"
+  },
+  "clearFilters": "Limpar filtros",
+  "@clearFilters": {
+    "description": "Botão para limpar todos os filtros ativos"
+  },
+  "showingXOfYRecipes": "Mostrando {filtered} de {total} receitas",
+  "@showingXOfYRecipes": {
+    "description": "Contagem de receitas quando filtros estão ativos",
+    "placeholders": {
+      "filtered": {
+        "type": "int",
+        "description": "Número de receitas após filtragem"
+      },
+      "total": {
+        "type": "int",
+        "description": "Número total de receitas"
+      }
+    }
+  },
+  "filterByName": "Nome",
+  "@filterByName": {
+    "description": "Rótulo do tipo de filtro para busca por nome"
+  },
+  "filterByDifficulty": "Dificuldade",
+  "@filterByDifficulty": {
+    "description": "Rótulo do tipo de filtro para dificuldade"
+  },
+  "filterByRating": "Avaliação",
+  "@filterByRating": {
+    "description": "Rótulo do tipo de filtro para avaliação"
+  },
+  "filterByFrequency": "Frequência",
+  "@filterByFrequency": {
+    "description": "Rótulo do tipo de filtro para frequência de preparo"
+  },
+  "filterByCategory": "Categoria",
+  "@filterByCategory": {
+    "description": "Rótulo do tipo de filtro para categoria"
+  },
   "addRecipe": "Adicionar Receita",
   "@addRecipe": {
     "description": "Dica do botão adicionar receita"
@@ -262,15 +304,9 @@
   "@mealUpdatedSuccessfully": {
     "description": "Mensagem de sucesso para atualização de refeição"
   },
-  "errorEditingMeal": "Erro ao editar refeição: {error}",
+  "errorEditingMeal": "Erro ao editar refeição",
   "@errorEditingMeal": {
-    "description": "Mensagem de erro quando falha ao editar refeição",
-    "placeholders": {
-      "error": {
-        "type": "String",
-        "description": "A mensagem de erro"
-      }
-    }
+    "description": "Mensagem de erro quando falha ao editar refeição"    
   },
   "recipesCount": "{count} receitas",
   "@recipesCount": {
@@ -1699,5 +1735,147 @@
         "type": "int"
       }
     }
+  },
+  "backupAllData": "Backup de Todos os Dados",
+  "@backupAllData": {
+    "description": "Texto do botão para fazer backup de todos os dados"
+  },
+  "restoreFromBackup": "Restaurar do Backup",
+  "@restoreFromBackup": {
+    "description": "Texto do botão para restaurar do backup"
+  },
+  "databaseBackup": "Backup do Banco de Dados",
+  "@databaseBackup": {
+    "description": "Título da seção de backup do banco de dados"
+  },
+  "backupDescription": "Crie um backup completo de todos os seus dados incluindo receitas, ingredientes, planos de refeições e histórico de refeições. Salve em um local seguro.",
+  "@backupDescription": {
+    "description": "Descrição do recurso de backup"
+  },
+  "restoreDescription": "Restaure todos os seus dados de um arquivo de backup anterior. AVISO: Isso irá substituir TODOS os dados existentes.",
+  "@restoreDescription": {
+    "description": "Descrição do recurso de restauração"
+  },
+  "backupSuccess": "Backup criado com sucesso!",
+  "@backupSuccess": {
+    "description": "Mensagem de sucesso após backup"
+  },
+  "backupSuccessDetails": "Seu banco de dados foi copiado com sucesso.\n\nArquivo: {filePath}",
+  "@backupSuccessDetails": {
+    "description": "Mensagem de sucesso detalhada com caminho do arquivo",
+    "placeholders": {
+      "filePath": {
+        "type": "String"
+      }
+    }
+  },
+  "restoreWarningTitle": "Restaurar do Backup?",
+  "@restoreWarningTitle": {
+    "description": "Título do diálogo de aviso de restauração"
+  },
+  "restoreWarningMessage": "Isso irá substituir TODOS os dados existentes com os dados do arquivo de backup.\n\nSuas receitas, ingredientes, planos de refeições e histórico de refeições atuais serão permanentemente excluídos.\n\nTem certeza que deseja continuar?",
+  "@restoreWarningMessage": {
+    "description": "Mensagem de aviso antes da restauração"
+  },
+  "restoreSuccess": "Dados Restaurados com Sucesso!",
+  "@restoreSuccess": {
+    "description": "Mensagem de sucesso após restauração"
+  },
+  "restoreSuccessMessage": "Seus dados foram restaurados do backup. O aplicativo será atualizado agora.",
+  "@restoreSuccessMessage": {
+    "description": "Mensagem de sucesso detalhada após restauração"
+  },
+  "backupFailed": "Falha no Backup",
+  "@backupFailed": {
+    "description": "Mensagem de erro quando o backup falha"
+  },
+  "restoreFailed": "Falha na Restauração",
+  "@restoreFailed": {
+    "description": "Mensagem de erro quando a restauração falha"
+  },
+  "backupCancelled": "Backup cancelado",
+  "@backupCancelled": {
+    "description": "Mensagem quando o usuário cancela o backup"
+  },
+  "restoreCancelled": "Restauração cancelada",
+  "@restoreCancelled": {
+    "description": "Mensagem quando o usuário cancela a restauração"
+  },
+  "selectBackupFile": "Selecionar Arquivo de Backup",
+  "@selectBackupFile": {
+    "description": "Título do diálogo de seleção de arquivo de backup"
+  },
+  "backupFilePath": "Caminho do Arquivo de Backup",
+  "@backupFilePath": {
+    "description": "Rótulo do campo de entrada do caminho do arquivo de backup"
+  },
+  "ok": "OK",
+  "@ok": {
+    "description": "Rótulo do botão OK"
+  },
+  "currentDatabaseSize": "Tamanho do banco de dados: {size}",
+  "@currentDatabaseSize": {
+    "description": "Mostra o tamanho atual do arquivo do banco de dados",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "backingUp": "Criando backup...",
+  "@backingUp": {
+    "description": "Mensagem de progresso durante o backup"
+  },
+  "restoring": "Restaurando dados...",
+  "@restoring": {
+    "description": "Mensagem de progresso durante a restauração"
+  },
+  "recipeManagement": "Gestão de Receitas",
+  "@recipeManagement": {
+    "description": "Section header for recipe management tools"
+  },
+  "dataManagement": "Gestão de Dados",
+  "@dataManagement": {
+    "description": "Section header for data management tools"
+  },
+  "toolsScreenTitle": "Ferramentas",
+  "@toolsScreenTitle": {
+    "description": "Title for tools screen"
+  },
+  "toolsScreenSubtitle": "Utilitários para gerenciar suas receitas, ingredientes e dados.",
+  "@toolsScreenSubtitle": {
+    "description": "Subtitle for tools screen"
+  },
+  "bulkRecipeUpdate": "Atualização em Lote de Receitas",
+  "@bulkRecipeUpdate": {
+    "description": "Title for bulk recipe update tool"
+  },
+  "bulkRecipeUpdateDescription": "Atualize várias receitas de uma vez com dados de ingredientes e instruções.",
+  "@bulkRecipeUpdateDescription": {
+    "description": "Description for bulk recipe update tool"
+  },
+  "exportRecipes": "Exportar Receitas",
+  "@exportRecipes": {
+    "description": "Button text for exporting recipes"
+  },
+  "exportRecipesDescription": "Exporte todos os dados de receitas com ingredientes para formato JSON.",
+  "@exportRecipesDescription": {
+    "description": "Description for recipe export tool"
+  },
+  "exportIngredients": "Exportar Ingredientes",
+  "@exportIngredients": {
+    "description": "Button text for exporting ingredients"
+  },
+  "exportIngredientsDescription": "Exporte todos os dados de ingredientes para formato JSON.",
+  "@exportIngredientsDescription": {
+    "description": "Description for ingredient export tool"
+  },
+  "importRecipes": "Importar Receitas",
+  "@importRecipes": {
+    "description": "Button text for importing recipes"
+  },
+  "importRecipesDescription": "Importe receitas e ingredientes do JSON. Substitui todos os dados existentes.",
+  "@importRecipesDescription": {
+    "description": "Description for recipe import tool"
   }
 }

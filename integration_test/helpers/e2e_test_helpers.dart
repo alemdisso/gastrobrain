@@ -10,7 +10,6 @@ import 'package:gastrobrain/core/providers/recipe_provider.dart';
 /// E2E Test Helper Methods
 ///
 /// Common utilities for end-to-end integration tests.
-/// Extracted from working tests to reduce duplication and improve maintainability.
 class E2ETestHelpers {
   /// Standard app initialization time
   static const appInitializationDuration = Duration(seconds: 10);
@@ -221,8 +220,7 @@ class E2ETestHelpers {
 
     expect(bottomNavBar, findsOneWidget,
         reason: 'Bottom navigation should be visible on main screen');
-    expect(fab, findsOneWidget,
-        reason: 'FAB should be visible on main screen');
+    expect(fab, findsOneWidget, reason: 'FAB should be visible on main screen');
   }
 
   /// Verify we're on a form screen (has text fields)
@@ -360,7 +358,8 @@ class E2ETestHelpers {
   static Future<void> refreshRecipeProvider(WidgetTester tester) async {
     await tester.runAsync(() async {
       final context = tester.element(find.byType(MaterialApp));
-      final recipeProvider = Provider.of<RecipeProvider>(context, listen: false);
+      final recipeProvider =
+          Provider.of<RecipeProvider>(context, listen: false);
       await recipeProvider.loadRecipes(forceRefresh: true);
     });
     await tester.pumpAndSettle();
@@ -410,21 +409,24 @@ class E2ETestHelpers {
     bool? toggleSuccess,
   }) async {
     if (servings != null) {
-      final servingsField = find.byKey(const Key('meal_recording_servings_field'));
+      final servingsField =
+          find.byKey(const Key('meal_recording_servings_field'));
       expect(servingsField, findsOneWidget);
       await tester.enterText(servingsField, servings);
       await tester.pumpAndSettle();
     }
 
     if (prepTime != null) {
-      final prepTimeField = find.byKey(const Key('meal_recording_prep_time_field'));
+      final prepTimeField =
+          find.byKey(const Key('meal_recording_prep_time_field'));
       expect(prepTimeField, findsOneWidget);
       await tester.enterText(prepTimeField, prepTime);
       await tester.pumpAndSettle();
     }
 
     if (cookTime != null) {
-      final cookTimeField = find.byKey(const Key('meal_recording_cook_time_field'));
+      final cookTimeField =
+          find.byKey(const Key('meal_recording_cook_time_field'));
       expect(cookTimeField, findsOneWidget);
       await tester.enterText(cookTimeField, cookTime);
       await tester.pumpAndSettle();
@@ -438,7 +440,8 @@ class E2ETestHelpers {
     }
 
     if (toggleSuccess != null) {
-      final successSwitch = find.byKey(const Key('meal_recording_success_switch'));
+      final successSwitch =
+          find.byKey(const Key('meal_recording_success_switch'));
       expect(successSwitch, findsOneWidget);
       await tester.tap(successSwitch);
       await tester.pumpAndSettle();
@@ -551,8 +554,8 @@ class E2ETestHelpers {
     expect(find.byKey(const Key('recipe_selection_all_tab')), findsOneWidget,
         reason: 'All Recipes tab should exist');
 
-    expect(find.byKey(const Key('recipe_selection_cancel_button')),
-        findsOneWidget,
+    expect(
+        find.byKey(const Key('recipe_selection_cancel_button')), findsOneWidget,
         reason: 'Cancel button should exist');
   }
 
@@ -679,6 +682,366 @@ class E2ETestHelpers {
   }
 
   // ============================================================================
+  // MEAL EDITING HELPERS section
+  // ============================================================================
+
+  /// Navigate to meal history screen for a recipe
+  ///
+  /// This helper:
+  /// 1. Finds the recipe by name in the UI
+  /// 2. Expands the recipe card if not already expanded
+  /// 3. Taps the history icon button to navigate to MealHistoryScreen
+  ///
+  /// Requires the recipe to be visible in the current view. May need to
+  /// scroll to the recipe first if it's off-screen.
+  ///
+  /// Usage:
+  /// ```dart
+  /// await E2ETestHelpers.navigateToMealHistory(tester, 'Test Recipe');
+  /// ```
+  static Future<void> navigateToMealHistory(
+    WidgetTester tester,
+    String recipeName,
+  ) async {
+    // Find the recipe card by name
+    final recipeNameFinder = find.text(recipeName);
+    expect(recipeNameFinder, findsOneWidget,
+        reason: 'Recipe "$recipeName" should be visible in UI');
+
+    // Find the recipe card widget that contains this recipe name
+    final recipeCard = find.ancestor(
+      of: recipeNameFinder,
+      matching: find.byType(Card),
+    );
+    expect(recipeCard, findsOneWidget,
+        reason: 'Recipe card should exist for "$recipeName"');
+
+    // Check if the card is already expanded by looking for the history button
+    final historyButton = find.descendant(
+      of: recipeCard,
+      matching: find.byIcon(Icons.history),
+    );
+
+    // If history button is not visible, expand the card first
+    if (historyButton.evaluate().isEmpty) {
+      final expandButton = find.descendant(
+        of: recipeCard,
+        matching: find.byIcon(Icons.expand_more),
+      );
+      expect(expandButton, findsOneWidget,
+          reason: 'Expand button should exist on recipe card');
+
+      await tester.tap(expandButton);
+      await tester.pumpAndSettle();
+    }
+
+    // Now find and tap the history button
+    final historyButtonExpanded = find.descendant(
+      of: recipeCard,
+      matching: find.byIcon(Icons.history),
+    );
+    expect(historyButtonExpanded, findsOneWidget,
+        reason: 'History button should be visible after expanding card');
+
+    await tester.tap(historyButtonExpanded);
+    await tester.pumpAndSettle(standardSettleDuration);
+  }
+
+  /// Open the edit dialog for a meal at the given index
+  ///
+  /// Assumes the meal history screen is already open and displays a list
+  /// of meals. Each meal card has an edit button (Icons.edit).
+  ///
+  /// The mealIndex parameter specifies which meal to edit (0-based index):
+  /// - 0: First meal (most recent, at the top)
+  /// - 1: Second meal
+  /// - etc.
+  ///
+  /// Usage:
+  /// ```dart
+  /// // Edit the first (most recent) meal
+  /// await E2ETestHelpers.openMealEditDialog(tester);
+  ///
+  /// // Edit the second meal
+  /// await E2ETestHelpers.openMealEditDialog(tester, mealIndex: 1);
+  /// ```
+  static Future<void> openMealEditDialog(
+    WidgetTester tester, {
+    int mealIndex = 0,
+  }) async {
+    final editButtons = find.byIcon(Icons.edit);
+    expect(editButtons.evaluate().length, greaterThan(mealIndex),
+        reason:
+            'Should have at least ${mealIndex + 1} edit button(s), but found ${editButtons.evaluate().length}');
+
+    await tester.tap(editButtons.at(mealIndex));
+    await tester.pumpAndSettle(standardSettleDuration);
+  }
+
+  /// Fill in the meal edit dialog fields
+  ///
+  /// Uses the form field keys from EditMealRecordingDialog
+  /// (edit_meal_recording_* keys).
+  ///
+  /// All parameters are optional - only provide the fields you want to modify.
+  /// Fields that are not provided will retain their current values.
+  ///
+  /// Usage:
+  /// ```dart
+  /// // Update only servings
+  /// await E2ETestHelpers.fillMealEditDialog(
+  ///   tester,
+  ///   servings: '4',
+  /// );
+  ///
+  /// // Update multiple fields
+  /// await E2ETestHelpers.fillMealEditDialog(
+  ///   tester,
+  ///   servings: '2',
+  ///   prepTime: '15',
+  ///   cookTime: '30',
+  ///   notes: 'Updated notes',
+  /// );
+  ///
+  /// // Toggle success flag
+  /// await E2ETestHelpers.fillMealEditDialog(
+  ///   tester,
+  ///   toggleSuccess: true,
+  /// );
+  /// ```
+  static Future<void> fillMealEditDialog(
+    WidgetTester tester, {
+    String? servings,
+    String? prepTime,
+    String? cookTime,
+    String? notes,
+    bool? toggleSuccess,
+  }) async {
+    if (servings != null) {
+      final servingsField =
+          find.byKey(const Key('edit_meal_recording_servings_field'));
+      expect(servingsField, findsOneWidget,
+          reason: 'Servings field should exist in edit dialog');
+      await tester.enterText(servingsField, servings);
+      await tester.pumpAndSettle();
+    }
+
+    if (prepTime != null) {
+      final prepTimeField =
+          find.byKey(const Key('edit_meal_recording_prep_time_field'));
+      expect(prepTimeField, findsOneWidget,
+          reason: 'Prep time field should exist in edit dialog');
+      await tester.enterText(prepTimeField, prepTime);
+      await tester.pumpAndSettle();
+    }
+
+    if (cookTime != null) {
+      final cookTimeField =
+          find.byKey(const Key('edit_meal_recording_cook_time_field'));
+      expect(cookTimeField, findsOneWidget,
+          reason: 'Cook time field should exist in edit dialog');
+      await tester.enterText(cookTimeField, cookTime);
+      await tester.pumpAndSettle();
+    }
+
+    if (notes != null) {
+      final notesField =
+          find.byKey(const Key('edit_meal_recording_notes_field'));
+      expect(notesField, findsOneWidget,
+          reason: 'Notes field should exist in edit dialog');
+      await tester.enterText(notesField, notes);
+      await tester.pumpAndSettle();
+    }
+
+    if (toggleSuccess != null) {
+      final successSwitch =
+          find.byKey(const Key('edit_meal_recording_success_switch'));
+      expect(successSwitch, findsOneWidget,
+          reason: 'Success switch should exist in edit dialog');
+      await tester.tap(successSwitch);
+      await tester.pumpAndSettle();
+    }
+  }
+
+  /// Save the meal edit dialog
+  ///
+  /// Taps the save button in the EditMealRecordingDialog to save changes.
+  /// The dialog has two buttons in its actions:
+  /// - Cancel (TextButton)
+  /// - Save Changes (ElevatedButton)
+  ///
+  /// This method finds and taps the ElevatedButton.
+  ///
+  /// Usage:
+  /// ```dart
+  /// await E2ETestHelpers.saveMealEditDialog(tester);
+  /// ```
+  static Future<void> saveMealEditDialog(WidgetTester tester) async {
+    // Find the save button (ElevatedButton in the dialog actions)
+    final saveButton = find.byType(ElevatedButton);
+    expect(saveButton, findsOneWidget,
+        reason: 'Save button should exist in edit dialog');
+
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle(standardSettleDuration);
+  }
+
+  /// Cancel the meal edit dialog
+  ///
+  /// Taps the cancel button in the EditMealRecordingDialog to discard changes.
+  /// The dialog has two buttons in its actions:
+  /// - Cancel (TextButton)
+  /// - Save Changes (ElevatedButton)
+  ///
+  /// This method finds and taps the TextButton to cancel the edit operation.
+  /// All changes made in the dialog will be discarded.
+  ///
+  /// Usage:
+  /// ```dart
+  /// await E2ETestHelpers.cancelMealEditDialog(tester);
+  /// ```
+  static Future<void> cancelMealEditDialog(WidgetTester tester) async {
+    // Find the cancel button (TextButton in the dialog actions)
+    // Need to find TextButton within the dialog's actions area
+    final cancelButtons = find.byType(TextButton);
+    expect(cancelButtons, findsWidgets,
+        reason: 'Cancel button should exist in edit dialog');
+
+    // The cancel button is typically the first TextButton in the actions
+    await tester.tap(cancelButtons.first);
+    await tester.pumpAndSettle();
+  }
+
+  /// Add a side dish in the edit dialog
+  ///
+  /// This helper:
+  /// 1. Taps the "Add Recipe" button to open the recipe selection dialog
+  /// 2. Finds the recipe by name in the list
+  /// 3. Taps the recipe to add it as a side dish
+  ///
+  /// The recipe must be visible in the recipe selection dialog's list.
+  /// The edit dialog must be already open.
+  ///
+  /// Usage:
+  /// ```dart
+  /// await E2ETestHelpers.addSideDishInEditDialog(tester, 'Side Dish Recipe');
+  /// ```
+  static Future<void> addSideDishInEditDialog(
+    WidgetTester tester,
+    String recipeName,
+  ) async {
+    // Find and tap the "Add Recipe" button
+    // This opens a dialog to select additional recipes as side dishes
+    final addButton = find.byIcon(Icons.add);
+    expect(addButton, findsWidgets,
+        reason: 'Add Recipe button should exist in edit dialog');
+
+    // Tap the last add button (the one in the recipes section)
+    await tester.tap(addButton.last);
+    await tester.pumpAndSettle();
+
+    // Find and tap the recipe in the selection list
+    final recipeItem = find.text(recipeName);
+    expect(recipeItem, findsOneWidget,
+        reason: 'Recipe "$recipeName" should be visible in selection dialog');
+
+    await tester.tap(recipeItem);
+    await tester.pumpAndSettle();
+  }
+
+  /// Remove a side dish in the edit dialog by index
+  ///
+  /// Removes a side dish from the meal by tapping its delete button.
+  /// The index is 0-based and refers to the position in the list of
+  /// side dishes (additional recipes).
+  ///
+  /// Note: This removes side dishes only, not the primary recipe.
+  ///
+  /// Usage:
+  /// ```dart
+  /// // Remove the first side dish
+  /// await E2ETestHelpers.removeSideDishInEditDialog(tester, 0);
+  ///
+  /// // Remove the second side dish
+  /// await E2ETestHelpers.removeSideDishInEditDialog(tester, 1);
+  /// ```
+  static Future<void> removeSideDishInEditDialog(
+    WidgetTester tester,
+    int index,
+  ) async {
+    final deleteButtons = find.byIcon(Icons.delete_outline);
+    expect(deleteButtons.evaluate().length, greaterThan(index),
+        reason:
+            'Should have at least ${index + 1} delete button(s) for side dishes');
+
+    await tester.tap(deleteButtons.at(index));
+    await tester.pumpAndSettle();
+  }
+
+  /// Verify meal fields in database
+  ///
+  /// Verifies that a meal in the database has specific field values.
+  /// All verification parameters are optional - only provided values are checked.
+  ///
+  /// Usage:
+  /// ```dart
+  /// // Verify only servings
+  /// await E2ETestHelpers.verifyMealFieldsInDatabase(
+  ///   dbHelper,
+  ///   mealId,
+  ///   expectedServings: 4,
+  /// );
+  ///
+  /// // Verify multiple fields
+  /// await E2ETestHelpers.verifyMealFieldsInDatabase(
+  ///   dbHelper,
+  ///   mealId,
+  ///   expectedServings: 2,
+  ///   expectedNotes: 'Test notes',
+  ///   expectedPrepTime: 15.0,
+  ///   expectedCookTime: 30.0,
+  ///   expectedWasSuccessful: true,
+  /// );
+  /// ```
+  static Future<void> verifyMealFieldsInDatabase(
+    DatabaseHelper dbHelper,
+    String mealId, {
+    int? expectedServings,
+    String? expectedNotes,
+    double? expectedPrepTime,
+    double? expectedCookTime,
+    bool? expectedWasSuccessful,
+  }) async {
+    final meal = await dbHelper.getMeal(mealId);
+    expect(meal, isNotNull, reason: 'Meal with id $mealId should exist');
+
+    if (expectedServings != null) {
+      expect(meal!.servings, equals(expectedServings),
+          reason: 'Meal servings should be $expectedServings');
+    }
+
+    if (expectedNotes != null) {
+      expect(meal!.notes, equals(expectedNotes),
+          reason: 'Meal notes should be "$expectedNotes"');
+    }
+
+    if (expectedPrepTime != null) {
+      expect(meal!.actualPrepTime, equals(expectedPrepTime),
+          reason: 'Meal prep time should be $expectedPrepTime');
+    }
+
+    if (expectedCookTime != null) {
+      expect(meal!.actualCookTime, equals(expectedCookTime),
+          reason: 'Meal cook time should be $expectedCookTime');
+    }
+
+    if (expectedWasSuccessful != null) {
+      expect(meal!.wasSuccessful, equals(expectedWasSuccessful),
+          reason: 'Meal wasSuccessful should be $expectedWasSuccessful');
+    }
+  }
+
+  // ============================================================================
   // DIAGNOSTIC HELPERS
   // ============================================================================
 
@@ -693,7 +1056,8 @@ class E2ETestHelpers {
     print('AppBars: ${find.byType(AppBar).evaluate().length}');
     print('FABs: ${find.byType(FloatingActionButton).evaluate().length}');
     print('TextFormFields: ${find.byType(TextFormField).evaluate().length}');
-    print('BottomNavBars: ${find.byType(BottomNavigationBar).evaluate().length}');
+    print(
+        'BottomNavBars: ${find.byType(BottomNavigationBar).evaluate().length}');
   }
 
   /// Wait for async operations to complete

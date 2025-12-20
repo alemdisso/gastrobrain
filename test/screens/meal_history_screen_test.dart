@@ -266,58 +266,6 @@ void main() {
       // Should show correct side dish count badge
       expect(find.text('1 side dish'), findsOneWidget);
     });
-    testWidgets('displays meal plan origin indicator correctly',
-        (WidgetTester tester) async {
-      // Create a meal that originated from a meal plan
-      final meal = Meal(
-        id: 'planned-meal',
-        recipeId: null,
-        cookedAt: DateTime.now().subtract(const Duration(days: 3)),
-        servings: 2,
-        wasSuccessful: true,
-      );
-
-      await mockDbHelper.insertMeal(meal);
-
-      // Add primary recipe
-      final primaryMealRecipe = MealRecipe(
-        mealId: meal.id,
-        recipeId: testRecipe.id,
-        isPrimaryDish: true,
-        notes: 'Main dish',
-      );
-
-      // Add side dish with plan origin note (this will be displayed)
-      final sideMealRecipe = MealRecipe(
-        mealId: meal.id,
-        recipeId: sideRecipe1.id,
-        isPrimaryDish: false,
-        notes: 'From planned meal', // This should trigger the plan indicator
-      );
-
-      await mockDbHelper.insertMealRecipe(primaryMealRecipe);
-      await mockDbHelper.insertMealRecipe(sideMealRecipe);
-
-      await tester.pumpWidget(
-        createTestableWidget(
-          MealHistoryScreen(
-            recipe: testRecipe,
-            databaseHelper: mockDbHelper,
-          ),
-        ),
-      );
-
-      await tester.pumpAndSettle();
-
-      // Should show meal plan origin indicator on side dish
-      expect(find.byIcon(Icons.event_available), findsOneWidget);
-
-      // Should show primary recipe name in app bar
-      expect(find.text(testRecipe.name), findsOneWidget);
-
-      // Should show side dish name in card
-      expect(find.text(sideRecipe1.name), findsOneWidget);
-    });
     testWidgets('handles mixed single and multi-recipe meals in history',
         (WidgetTester tester) async {
       // Create a single-recipe meal

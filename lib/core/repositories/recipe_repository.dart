@@ -46,6 +46,15 @@ class RecipeRepository extends BaseRepository<List<Recipe>> {
   /// Gets last cooked date for a specific recipe
   DateTime? getLastCookedDate(String recipeId) => _cachedLastCookedDates[recipeId];
 
+  /// Gets total count of all recipes (without filters)
+  Future<int> getTotalRecipeCount() async {
+    try {
+      return await _dbHelper.getRecipesCount();
+    } catch (e) {
+      return 0; // Return 0 on error to avoid breaking the UI
+    }
+  }
+
   /// Loads all recipes with optional sorting and filtering
   Future<RepositoryResult<List<Recipe>>> getRecipes({
     String? sortBy,

@@ -22,6 +22,7 @@ import '../widgets/edit_meal_recording_dialog.dart';
 import '../widgets/recipe_selection_card.dart';
 import '../widgets/add_side_dish_dialog.dart';
 import '../utils/id_generator.dart';
+import '../utils/sorting_utils.dart';
 import '../l10n/app_localizations.dart';
 
 class WeeklyPlanScreen extends StatefulWidget {
@@ -1028,8 +1029,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       }
     } catch (e) {
       if (mounted) {
-        SnackbarService.showError(context,
-            AppLocalizations.of(context)!.errorEditingMeal(e.toString()));
+        SnackbarService.showError(
+            context, AppLocalizations.of(context)!.errorEditingMeal);
       }
     }
   }
@@ -1554,9 +1555,7 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
             ),
             const SizedBox(height: 8),
             Expanded(
-              child: _showingMenu
-                  ? _buildMenu()
-                  : _buildRecipeSelection(),
+              child: _showingMenu ? _buildMenu() : _buildRecipeSelection(),
             ),
             TextButton(
               key: const Key('recipe_selection_cancel_button'),
@@ -1570,11 +1569,11 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
   }
 
   Widget _buildRecipeSelection() {
-    final filteredRecipes = widget.recipes
+    final filtered = widget.recipes
         .where((recipe) =>
             recipe.name.toLowerCase().contains(_searchQuery.toLowerCase()))
-        .toList()
-      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+        .toList();
+    final filteredRecipes = SortingUtils.sortByName(filtered, (r) => r.name);
 
     return Column(
       children: [
@@ -1652,7 +1651,8 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
                           itemBuilder: (context, index) {
                             final recommendation = _recommendations[index];
                             return RecipeSelectionCard(
-                              key: Key('recipe_card_${recommendation.recipe.id}'),
+                              key: Key(
+                                  'recipe_card_${recommendation.recipe.id}'),
                               recommendation: recommendation,
                               onTap: () =>
                                   _handleRecipeSelection(recommendation.recipe),
@@ -1681,77 +1681,80 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-        // Show selected recipe
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.restaurant),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  _selectedRecipe!.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // Show existing side dishes if any
-        if (_additionalRecipes.isNotEmpty) ...[
-          Text(
-            AppLocalizations.of(context)!.sideDishesLabel,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          ..._additionalRecipes.map((recipe) => ListTile(
-            leading: const Icon(Icons.restaurant_menu, color: Colors.grey),
-            title: Text(recipe.name),
-            trailing: IconButton(
-              icon: const Icon(Icons.remove_circle_outline),
-              onPressed: () => setState(() {
-                _additionalRecipes.remove(recipe);
-              }),
+          // Show selected recipe
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(8),
             ),
-            contentPadding: EdgeInsets.zero,
-          )),
+            child: Row(
+              children: [
+                const Icon(Icons.restaurant),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _selectedRecipe!.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 16),
-        ],
 
-        // Menu options
-        ListTile(
-          leading: const Icon(Icons.save),
-          title: Text(AppLocalizations.of(context)!.save),
-          subtitle: Text(AppLocalizations.of(context)!.addThisRecipeToMealPlan),
-          onTap: () => Navigator.pop(context, {
-            'primaryRecipe': _selectedRecipe!,
-            'additionalRecipes': _additionalRecipes,
-          }),
-        ),
-        ListTile(
-          leading: const Icon(Icons.add),
-          title: Text(_additionalRecipes.isNotEmpty 
-              ? AppLocalizations.of(context)!.manageSideDishes 
-              : AppLocalizations.of(context)!.addSideDishes),
-          subtitle: Text(AppLocalizations.of(context)!.addMoreRecipesToThisMeal),
-          onTap: () => _showEnhancedSideDishDialog(),
-        ),
-        ListTile(
-          leading: const Icon(Icons.arrow_back),
-          title: Text(AppLocalizations.of(context)!.back),
-          subtitle: Text(AppLocalizations.of(context)!.chooseDifferentRecipe),
-          onTap: () => setState(() {
-            _showingMenu = false;
-            _selectedRecipe = null;
-          }),
-        ),
-      ],
+          // Show existing side dishes if any
+          if (_additionalRecipes.isNotEmpty) ...[
+            Text(
+              AppLocalizations.of(context)!.sideDishesLabel,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            ..._additionalRecipes.map((recipe) => ListTile(
+                  leading:
+                      const Icon(Icons.restaurant_menu, color: Colors.grey),
+                  title: Text(recipe.name),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.remove_circle_outline),
+                    onPressed: () => setState(() {
+                      _additionalRecipes.remove(recipe);
+                    }),
+                  ),
+                  contentPadding: EdgeInsets.zero,
+                )),
+            const SizedBox(height: 16),
+          ],
+
+          // Menu options
+          ListTile(
+            leading: const Icon(Icons.save),
+            title: Text(AppLocalizations.of(context)!.save),
+            subtitle:
+                Text(AppLocalizations.of(context)!.addThisRecipeToMealPlan),
+            onTap: () => Navigator.pop(context, {
+              'primaryRecipe': _selectedRecipe!,
+              'additionalRecipes': _additionalRecipes,
+            }),
+          ),
+          ListTile(
+            leading: const Icon(Icons.add),
+            title: Text(_additionalRecipes.isNotEmpty
+                ? AppLocalizations.of(context)!.manageSideDishes
+                : AppLocalizations.of(context)!.addSideDishes),
+            subtitle:
+                Text(AppLocalizations.of(context)!.addMoreRecipesToThisMeal),
+            onTap: () => _showEnhancedSideDishDialog(),
+          ),
+          ListTile(
+            leading: const Icon(Icons.arrow_back),
+            title: Text(AppLocalizations.of(context)!.back),
+            subtitle: Text(AppLocalizations.of(context)!.chooseDifferentRecipe),
+            onTap: () => setState(() {
+              _showingMenu = false;
+              _selectedRecipe = null;
+            }),
+          ),
+        ],
       ),
     );
   }
@@ -1781,8 +1784,6 @@ class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
       onTap: () => _handleRecipeSelection(recipe),
     );
   }
-
-
 
   Future<void> _showEnhancedSideDishDialog() async {
     final result = await showDialog<Map<String, dynamic>>(
