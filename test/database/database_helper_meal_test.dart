@@ -566,5 +566,105 @@ void main() {
       // Should return a list (possibly empty, possibly with existing test data)
       expect(recentMeals, isA<List<Meal>>());
     });
+
+    test('deleteMealRecipesByMealId deletes all meal recipes for a meal', () async {
+      // Create a meal with multiple recipes
+      final mealId = IdGenerator.generateId();
+      final meal = Meal(
+        id: mealId,
+        recipeId: null,
+        cookedAt: DateTime.now(),
+        servings: 2,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+
+      // Add primary and side dish recipes
+      final primaryRecipe = MealRecipe(
+        mealId: mealId,
+        recipeId: testRecipeId1,
+        isPrimaryDish: true,
+      );
+
+      final sideRecipe = MealRecipe(
+        mealId: mealId,
+        recipeId: testRecipeId2,
+        isPrimaryDish: false,
+      );
+
+      await mockDbHelper.insertMealRecipe(primaryRecipe);
+      await mockDbHelper.insertMealRecipe(sideRecipe);
+
+      // Verify we have 2 meal recipes
+      final beforeDelete = await mockDbHelper.getMealRecipesForMeal(mealId);
+      expect(beforeDelete.length, 2);
+
+      // Delete all meal recipes for this meal
+      final deletedCount = await mockDbHelper.deleteMealRecipesByMealId(mealId);
+      expect(deletedCount, 2);
+
+      // Verify all meal recipes are deleted
+      final afterDelete = await mockDbHelper.getMealRecipesForMeal(mealId);
+      expect(afterDelete.length, 0);
+    });
+
+    test('deleteMealRecipesByMealId with excludePrimary keeps primary dish', () async {
+      // Create a meal with multiple recipes
+      final mealId = IdGenerator.generateId();
+      final meal = Meal(
+        id: mealId,
+        recipeId: null,
+        cookedAt: DateTime.now(),
+        servings: 2,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+
+      // Add primary and side dish recipes
+      final primaryRecipe = MealRecipe(
+        mealId: mealId,
+        recipeId: testRecipeId1,
+        isPrimaryDish: true,
+      );
+
+      final sideRecipe1 = MealRecipe(
+        mealId: mealId,
+        recipeId: testRecipeId2,
+        isPrimaryDish: false,
+      );
+
+      final sideRecipe2 = MealRecipe(
+        mealId: mealId,
+        recipeId: testRecipeId2,
+        isPrimaryDish: false,
+      );
+
+      await mockDbHelper.insertMealRecipe(primaryRecipe);
+      await mockDbHelper.insertMealRecipe(sideRecipe1);
+      await mockDbHelper.insertMealRecipe(sideRecipe2);
+
+      // Verify we have 3 meal recipes
+      final beforeDelete = await mockDbHelper.getMealRecipesForMeal(mealId);
+      expect(beforeDelete.length, 3);
+
+      // Delete only non-primary meal recipes
+      final deletedCount = await mockDbHelper.deleteMealRecipesByMealId(
+        mealId,
+        excludePrimary: true,
+      );
+      expect(deletedCount, 2); // Only 2 side dishes deleted
+
+      // Verify only primary dish remains
+      final afterDelete = await mockDbHelper.getMealRecipesForMeal(mealId);
+      expect(afterDelete.length, 1);
+      expect(afterDelete[0].isPrimaryDish, true);
+      expect(afterDelete[0].recipeId, testRecipeId1);
+    });
+
+    test('deleteMealRecipesByMealId returns 0 for non-existent meal', () async {
+      // Try to delete meal recipes for a non-existent meal
+      final deletedCount = await mockDbHelper.deleteMealRecipesByMealId('non-existent-meal-id');
+      expect(deletedCount, 0);
+    });
   });
 }

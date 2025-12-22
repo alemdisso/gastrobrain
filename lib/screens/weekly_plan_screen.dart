@@ -16,6 +16,9 @@ import '../core/services/recommendation_service.dart';
 import '../core/services/snackbar_service.dart';
 import '../core/services/meal_plan_analysis_service.dart';
 import '../core/providers/recipe_provider.dart';
+import '../core/providers/meal_provider.dart';
+import '../core/providers/meal_plan_provider.dart';
+import '../core/errors/gastrobrain_exceptions.dart';
 import '../widgets/weekly_calendar_widget.dart';
 import '../widgets/meal_recording_dialog.dart';
 import '../widgets/edit_meal_recording_dialog.dart';
@@ -737,56 +740,50 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       // Create the meal with a new ID
       final mealId = IdGenerator.generateId();
 
-      // Begin a transaction
-      await _dbHelper.database.then((db) async {
-        return await db.transaction((txn) async {
-          // Create meal object WITHOUT direct recipe_id (using null)
-          final mealMap = {
-            'id': mealId,
-            'recipe_id': null, // Use junction table approach
-            'cooked_at': cookedAt.toIso8601String(),
-            'servings': servings,
-            'notes': notes,
-            'was_successful': wasSuccessful ? 1 : 0,
-            'actual_prep_time': actualPrepTime,
-            'actual_cook_time': actualCookTime,
-          };
+      // Create meal object using the Meal model
+      final meal = Meal(
+        id: mealId,
+        recipeId: null, // Use junction table approach
+        cookedAt: cookedAt,
+        servings: servings,
+        notes: notes,
+        wasSuccessful: wasSuccessful,
+        actualPrepTime: actualPrepTime,
+        actualCookTime: actualCookTime,
+      );
 
-          // Insert the meal
-          await txn.insert('meals', mealMap);
+      // Get providers
+      final mealProvider = context.read<MealProvider>();
+      final mealPlanProvider = context.read<MealPlanProvider>();
 
-          // Create and insert primary recipe association
-          final primaryMealRecipe = MealRecipe(
-            mealId: mealId,
-            recipeId: primaryRecipe.id,
-            isPrimaryDish: true,
-            notes: AppLocalizations.of(context)!.mainDish,
-          );
+      // Record the meal using the provider
+      final success = await mealProvider.recordMeal(meal);
+      if (!success) {
+        throw const GastrobrainException('Failed to record meal');
+      }
 
-          // Insert the primary junction record
-          await txn.insert('meal_recipes', primaryMealRecipe.toMap());
+      // Create and add primary recipe association
+      final primaryMealRecipe = MealRecipe(
+        mealId: mealId,
+        recipeId: primaryRecipe.id,
+        isPrimaryDish: true,
+        notes: AppLocalizations.of(context)!.mainDish,
+      );
+      await mealProvider.addMealRecipe(primaryMealRecipe);
 
-          // Insert all additional recipes as side dishes
-          for (final recipe in finalAdditionalRecipes) {
-            final sideDishMealRecipe = MealRecipe(
-              mealId: mealId,
-              recipeId: recipe.id,
-              isPrimaryDish: false,
-              notes: AppLocalizations.of(context)!.sideDish,
-            );
+      // Add all additional recipes as side dishes
+      for (final recipe in finalAdditionalRecipes) {
+        final sideDishMealRecipe = MealRecipe(
+          mealId: mealId,
+          recipeId: recipe.id,
+          isPrimaryDish: false,
+          notes: AppLocalizations.of(context)!.sideDish,
+        );
+        await mealProvider.addMealRecipe(sideDishMealRecipe);
+      }
 
-            await txn.insert('meal_recipes', sideDishMealRecipe.toMap());
-          }
-
-          // Update the meal plan item to mark it as cooked
-          await txn.update(
-            'meal_plan_items',
-            {'has_been_cooked': 1},
-            where: 'id = ?',
-            whereArgs: [items[0].id],
-          );
-        });
-      });
+      // Mark the meal plan item as cooked using the provider
+      await mealPlanProvider.markMealAsCooked(items[0]);
 
       if (mounted) {
         SnackbarService.showSuccess(

@@ -608,6 +608,30 @@ class MockDatabaseHelper implements DatabaseHelper {
   }
 
   @override
+  Future<int> deleteMealRecipesByMealId(String mealId, {bool excludePrimary = false}) async {
+    int count = 0;
+
+    // Find all meal recipes for this meal
+    final toRemove = <String>[];
+    for (final entry in _mealRecipes.entries) {
+      if (entry.value.mealId == mealId) {
+        // If excludePrimary is true, only delete non-primary dishes
+        if (!excludePrimary || !entry.value.isPrimaryDish) {
+          toRemove.add(entry.key);
+          count++;
+        }
+      }
+    }
+
+    // Remove them
+    for (final id in toRemove) {
+      await deleteMealRecipe(id);
+    }
+
+    return count;
+  }
+
+  @override
   Future<int> deleteRecipeIngredient(String id) {
     throw UnimplementedError('Method not implemented for tests');
   }
@@ -881,6 +905,24 @@ class MockDatabaseHelper implements DatabaseHelper {
 
     // Item not found
     return mealPlanItemRecipe.id;
+  }
+
+  @override
+  Future<int> deleteMealPlanItemRecipesByItemId(String mealPlanItemId) async {
+    int count = 0;
+
+    // Find the item and remove all its recipes
+    for (final plan in _mealPlans.values) {
+      for (final item in plan.items) {
+        if (item.id == mealPlanItemId) {
+          count = item.mealPlanItemRecipes?.length ?? 0;
+          item.mealPlanItemRecipes?.clear();
+          return count;
+        }
+      }
+    }
+
+    return 0; // Item not found
   }
 
   // In-memory storage for recommendation history

@@ -931,5 +931,78 @@ void main() {
       await mockDbHelper.deleteMeal(meal.id);
       await mockDbHelper.deleteRecipe(recipe.id);
     });
+
+    test('deleteMealPlanItemRecipesByItemId deletes all recipes for a meal plan item', () async {
+      // Create a meal plan
+      final weekStart = DateTime(2023, 7, 7); // A Friday
+      final mealPlanId = IdGenerator.generateId();
+      final mealPlan = MealPlan(
+        id: mealPlanId,
+        weekStartDate: weekStart,
+        createdAt: DateTime.now(),
+        modifiedAt: DateTime.now(),
+      );
+      await mockDbHelper.insertMealPlan(mealPlan);
+
+      // Create a meal plan item
+      final itemId = IdGenerator.generateId();
+      final item = MealPlanItem(
+        id: itemId,
+        mealPlanId: mealPlanId,
+        plannedDate: '2023-07-07',
+        mealType: 'lunch',
+      );
+      await mockDbHelper.insertMealPlanItem(item);
+
+      // Add multiple recipe associations
+      final recipe1 = MealPlanItemRecipe(
+        id: IdGenerator.generateId(),
+        mealPlanItemId: itemId,
+        recipeId: testRecipeIds[0],
+        isPrimaryDish: true,
+      );
+
+      final recipe2 = MealPlanItemRecipe(
+        id: IdGenerator.generateId(),
+        mealPlanItemId: itemId,
+        recipeId: testRecipeIds[1],
+        isPrimaryDish: false,
+      );
+
+      final recipe3 = MealPlanItemRecipe(
+        id: IdGenerator.generateId(),
+        mealPlanItemId: itemId,
+        recipeId: testRecipeIds[2],
+        isPrimaryDish: false,
+      );
+
+      await mockDbHelper.insertMealPlanItemRecipe(recipe1);
+      await mockDbHelper.insertMealPlanItemRecipe(recipe2);
+      await mockDbHelper.insertMealPlanItemRecipe(recipe3);
+
+      // Verify we have 3 recipes associated
+      final retrievedItem = await mockDbHelper.getMealPlan(mealPlanId);
+      final itemRecipes = retrievedItem!.items
+          .firstWhere((i) => i.id == itemId)
+          .mealPlanItemRecipes;
+      expect(itemRecipes?.length, 3);
+
+      // Delete all recipes for this meal plan item
+      final deletedCount = await mockDbHelper.deleteMealPlanItemRecipesByItemId(itemId);
+      expect(deletedCount, 3);
+
+      // Verify all recipes are deleted
+      final afterDelete = await mockDbHelper.getMealPlan(mealPlanId);
+      final afterDeleteRecipes = afterDelete!.items
+          .firstWhere((i) => i.id == itemId)
+          .mealPlanItemRecipes;
+      expect(afterDeleteRecipes?.length ?? 0, 0);
+    });
+
+    test('deleteMealPlanItemRecipesByItemId returns 0 for non-existent item', () async {
+      // Try to delete recipes for a non-existent meal plan item
+      final deletedCount = await mockDbHelper.deleteMealPlanItemRecipesByItemId('non-existent-item-id');
+      expect(deletedCount, 0);
+    });
   });
 }
