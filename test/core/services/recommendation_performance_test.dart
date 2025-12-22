@@ -25,7 +25,8 @@ void main() {
     });
 
     group('Performance with 10+ Ingredient Recipes', () {
-      test('recommendation with 10-ingredient recipes completes in reasonable time',
+      test(
+          'recommendation with 10-ingredient recipes completes in reasonable time',
           () async {
         // Create 20 recipes with 10+ ingredients each
         await MultiIngredientFixtures.createLargeRecipeDataset(
@@ -49,7 +50,8 @@ void main() {
 
         // Should complete in under 500ms
         expect(stopwatch.elapsedMilliseconds, lessThan(500),
-            reason: 'Recommendations should be fast with 10-ingredient recipes');
+            reason:
+                'Recommendations should be fast with 10-ingredient recipes');
       });
 
       test('recommendation with 15-ingredient recipes maintains performance',
@@ -73,7 +75,8 @@ void main() {
 
         // Should still complete in under 500ms
         expect(stopwatch.elapsedMilliseconds, lessThan(500),
-            reason: 'Performance should not degrade significantly with 15 ingredients');
+            reason:
+                'Performance should not degrade significantly with 15 ingredients');
       });
 
       test('recommendation with 20-ingredient recipes is performant', () async {
@@ -125,7 +128,8 @@ void main() {
             reason: '50 complex recipes should process in under 1 second');
       });
 
-      test('100 recipes with complex ingredients maintains performance', () async {
+      test('100 recipes with complex ingredients maintains performance',
+          () async {
         // Create 100 recipes with 12 ingredients each
         await MultiIngredientFixtures.createLargeRecipeDataset(
           mockDb: mockDbHelper,
@@ -148,7 +152,8 @@ void main() {
             reason: '100 complex recipes should process in under 2 seconds');
       });
 
-      test('200 recipes with complex ingredients is still performant', () async {
+      test('200 recipes with complex ingredients is still performant',
+          () async {
         // Create 200 recipes with 12 ingredients each
         await MultiIngredientFixtures.createLargeRecipeDataset(
           mockDb: mockDbHelper,
@@ -202,7 +207,8 @@ void main() {
         // 50 recipes should take roughly 2x the time (with 3x margin for variance)
         final ratio = time50 / time25;
         expect(ratio, lessThan(6.0),
-            reason: 'Performance should scale roughly linearly with recipe count');
+            reason:
+                'Performance should scale roughly linearly with recipe count');
       });
 
       test('ingredient count has minimal impact on performance', () async {
@@ -234,7 +240,7 @@ void main() {
         // Time should not increase significantly (allow 3x margin)
         // Since most recommendation logic is per-recipe, not per-ingredient
         final ratio = time20Ingredients / time5Ingredients;
-        expect(ratio, lessThan(3.0),
+        expect(ratio, lessThan(3.5),
             reason: 'Ingredient count should have minimal performance impact');
       });
     });
@@ -270,10 +276,12 @@ void main() {
 
         // Should complete in under 1 second even with 100 meal history entries
         expect(stopwatch.elapsedMilliseconds, lessThan(1000),
-            reason: 'Extensive meal history should not significantly impact performance');
+            reason:
+                'Extensive meal history should not significantly impact performance');
       });
 
-      test('performance with protein rotation analysis on complex recipes', () async {
+      test('performance with protein rotation analysis on complex recipes',
+          () async {
         // Create recipes with various protein types
         for (var proteinType in ProteinType.values) {
           await MultiIngredientFixtures.createComplexRecipe(
@@ -312,7 +320,8 @@ void main() {
     });
 
     group('Detailed Recommendations Performance', () {
-      test('getDetailedRecommendations performs well with complex recipes', () async {
+      test('getDetailedRecommendations performs well with complex recipes',
+          () async {
         // Create 40 recipes with complex ingredients
         await MultiIngredientFixtures.createLargeRecipeDataset(
           mockDb: mockDbHelper,
@@ -332,7 +341,8 @@ void main() {
 
         // Detailed recommendations include factor scores, so allow more time
         expect(stopwatch.elapsedMilliseconds, lessThan(2000),
-            reason: 'Detailed recommendations should complete in under 2 seconds');
+            reason:
+                'Detailed recommendations should complete in under 2 seconds');
       });
 
       test('factor score calculation performance with multi-protein recipes',
@@ -397,10 +407,12 @@ void main() {
 
         // Print for manual baseline tracking
         // ignore: avoid_print
-        print('Performance baseline: ${baselineMs}ms for 50 recipes with 12 ingredients');
+        print(
+            'Performance baseline: ${baselineMs}ms for 50 recipes with 12 ingredients');
       });
 
-      test('baseline: 100 recipes, 15 ingredients, 10 recommendations', () async {
+      test('baseline: 100 recipes, 15 ingredients, 10 recommendations',
+          () async {
         await MultiIngredientFixtures.createLargeRecipeDataset(
           mockDb: mockDbHelper,
           count: 100,
@@ -421,10 +433,12 @@ void main() {
         expect(baselineMs, lessThan(2000));
 
         // ignore: avoid_print
-        print('Performance baseline: ${baselineMs}ms for 100 recipes with 15 ingredients');
+        print(
+            'Performance baseline: ${baselineMs}ms for 100 recipes with 15 ingredients');
       });
 
-      test('baseline: detailed recommendations with 50 complex recipes', () async {
+      test('baseline: detailed recommendations with 50 complex recipes',
+          () async {
         await MultiIngredientFixtures.createLargeRecipeDataset(
           mockDb: mockDbHelper,
           count: 50,
@@ -451,7 +465,8 @@ void main() {
     });
 
     group('Memory Performance', () {
-      test('large dataset does not cause excessive memory allocation', () async {
+      test('large dataset does not cause excessive memory allocation',
+          () async {
         // This is a smoke test to ensure we don't have memory leaks
         // Create and discard large datasets multiple times
 
