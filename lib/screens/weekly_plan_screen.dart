@@ -1042,22 +1042,28 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     double actualCookTime,
     DateTime modifiedAt,
   ) async {
-    final db = await _dbHelper.database;
+    // Fetch existing meal to preserve all fields
+    final existingMeal = await _dbHelper.getMeal(mealId);
+    if (existingMeal == null) {
+      throw NotFoundException('Meal not found with id: $mealId');
+    }
 
-    await db.update(
-      'meals',
-      {
-        'cooked_at': cookedAt.toIso8601String(),
-        'servings': servings,
-        'notes': notes,
-        'was_successful': wasSuccessful ? 1 : 0,
-        'actual_prep_time': actualPrepTime,
-        'actual_cook_time': actualCookTime,
-        'modified_at': modifiedAt.toIso8601String(),
-      },
-      where: 'id = ?',
-      whereArgs: [mealId],
+    // Create updated meal object with new field values
+    final updatedMeal = Meal(
+      id: existingMeal.id,
+      recipeId: existingMeal.recipeId,
+      cookedAt: cookedAt,
+      servings: servings,
+      notes: notes,
+      wasSuccessful: wasSuccessful,
+      actualPrepTime: actualPrepTime,
+      actualCookTime: actualCookTime,
+      modifiedAt: modifiedAt,
+      mealRecipes: existingMeal.mealRecipes, // Preserve meal recipes
     );
+
+    // Update using DatabaseHelper abstraction
+    await _dbHelper.updateMeal(updatedMeal);
   }
 
   Future<void> _handleManageRecipes(
@@ -1136,32 +1142,28 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
 
   Future<void> _updateMealRecipes(String mealId, String primaryRecipeId,
       List<Recipe> additionalRecipes) async {
-    await _dbHelper.database.then((db) async {
-      return await db.transaction((txn) async {
-        // Remove all existing side dishes (keep only primary)
-        await txn.delete(
-          'meal_recipes',
-          where: 'meal_id = ? AND is_primary_dish = 0',
-          whereArgs: [mealId],
-        );
+    // Remove all existing side dishes (keep only primary)
+    await _dbHelper.deleteMealRecipesByMealId(mealId, excludePrimary: true);
 
-        // Add all new additional recipes as side dishes
-        for (final recipe in additionalRecipes) {
-          final sideDishMealRecipe = MealRecipe(
-            mealId: mealId,
-            recipeId: recipe.id,
-            isPrimaryDish: false,
-            notes: AppLocalizations.of(context)!.sideDishAddedLater,
-          );
+    // Add all new additional recipes as side dishes
+    for (final recipe in additionalRecipes) {
+      final sideDishMealRecipe = MealRecipe(
+        mealId: mealId,
+        recipeId: recipe.id,
+        isPrimaryDish: false,
+        notes: AppLocalizations.of(context)!.sideDishAddedLater,
+      );
 
-          await txn.insert('meal_recipes', sideDishMealRecipe.toMap());
-        }
-      });
-    });
+      await _dbHelper.insertMealRecipe(sideDishMealRecipe);
+    }
 
     // Refresh recipe statistics cache to reflect the updated meal data
     if (mounted) {
-      context.read<RecipeProvider>().refresh();
+      try {
+        context.read<RecipeProvider>().refresh();
+      } catch (e) {
+        // Provider not available (e.g., in tests), skip refresh
+      }
     }
   }
 
@@ -1170,40 +1172,32 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     final primaryRecipe = mealData['primaryRecipe'] as Recipe;
     final additionalRecipes = mealData['additionalRecipes'] as List<Recipe>;
 
-    await _dbHelper.database.then((db) async {
-      return await db.transaction((txn) async {
-        // Delete existing junction records for this meal plan item
-        await txn.delete(
-          'meal_plan_item_recipes',
-          where: 'meal_plan_item_id = ?',
-          whereArgs: [existingItem.id],
-        );
+    // Delete existing junction records for this meal plan item
+    await _dbHelper.deleteMealPlanItemRecipesByItemId(existingItem.id);
 
-        // Create new junction records
-        final List<MealPlanItemRecipe> newMealPlanItemRecipes = [];
+    // Create new junction records
+    final List<MealPlanItemRecipe> newMealPlanItemRecipes = [];
 
-        // Add primary recipe
-        newMealPlanItemRecipes.add(MealPlanItemRecipe(
-          mealPlanItemId: existingItem.id,
-          recipeId: primaryRecipe.id,
-          isPrimaryDish: true,
-        ));
+    // Add primary recipe
+    newMealPlanItemRecipes.add(MealPlanItemRecipe(
+      mealPlanItemId: existingItem.id,
+      recipeId: primaryRecipe.id,
+      isPrimaryDish: true,
+    ));
 
-        // Add additional recipes as side dishes
-        for (final additionalRecipe in additionalRecipes) {
-          newMealPlanItemRecipes.add(MealPlanItemRecipe(
-            mealPlanItemId: existingItem.id,
-            recipeId: additionalRecipe.id,
-            isPrimaryDish: false,
-          ));
-        }
+    // Add additional recipes as side dishes
+    for (final additionalRecipe in additionalRecipes) {
+      newMealPlanItemRecipes.add(MealPlanItemRecipe(
+        mealPlanItemId: existingItem.id,
+        recipeId: additionalRecipe.id,
+        isPrimaryDish: false,
+      ));
+    }
 
-        // Insert all new junction records
-        for (final junction in newMealPlanItemRecipes) {
-          await txn.insert('meal_plan_item_recipes', junction.toMap());
-        }
-      });
-    });
+    // Insert all new junction records using DatabaseHelper abstraction
+    for (final junction in newMealPlanItemRecipes) {
+      await _dbHelper.insertMealPlanItemRecipe(junction);
+    }
   }
 
   void _handleDaySelected(DateTime selectedDate, int selectedDayIndex) {
