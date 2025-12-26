@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/recipe.dart';
 import '../screens/recipe_ingredients_screen.dart';
+import '../screens/recipe_instructions_view_screen.dart';
 import '../screens/meal_history_screen.dart';
 import '../l10n/app_localizations.dart';
 
@@ -249,6 +250,24 @@ class _RecipeCardState extends State<RecipeCard> {
                               );
                             },
                             tooltip: AppLocalizations.of(context)!.ingredients,
+                          ),
+                          IconButton.outlined(
+                            icon: const Icon(Icons.description, size: 20),
+                            onPressed: () async {
+                              final result = await Navigator.push<bool>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      RecipeInstructionsViewScreen(
+                                          recipe: widget.recipe),
+                                ),
+                              );
+                              // If instructions were updated, trigger refresh
+                              if (result == true && mounted) {
+                                widget.onEdit();
+                              }
+                            },
+                            tooltip: AppLocalizations.of(context)!.viewInstructions,
                           ),
                           IconButton.outlined(
                             icon: const Icon(Icons.history, size: 20),

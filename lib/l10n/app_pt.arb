@@ -1708,6 +1708,38 @@
   "@instructions": {
     "description": "Rótulo para seção de instruções"
   },
+  "viewInstructions": "Ver Instruções",
+  "@viewInstructions": {
+    "description": "Tooltip do botão para visualizar instruções da receita"
+  },
+  "noInstructionsAvailable": "Nenhuma instrução disponível para esta receita.",
+  "@noInstructionsAvailable": {
+    "description": "Mensagem de estado vazio quando a receita não tem instruções"
+  },
+  "addInstructions": "Adicionar Instruções",
+  "@addInstructions": {
+    "description": "Texto do botão para adicionar instruções"
+  },
+  "editInstructions": "Editar Instruções",
+  "@editInstructions": {
+    "description": "Tooltip do botão para editar instruções da receita"
+  },
+  "instructionsUpdatedSuccessfully": "Instruções atualizadas com sucesso",
+  "@instructionsUpdatedSuccessfully": {
+    "description": "Mensagem de sucesso quando instruções são salvas"
+  },
+  "enterInstructions": "Digite as instruções de preparo...",
+  "@enterInstructions": {
+    "description": "Texto de dica para campo de entrada de instruções"
+  },
+  "instructionsLabel": "Instruções (opcional)",
+  "@instructionsLabel": {
+    "description": "Rótulo para campo de instruções na tela de edição"
+  },
+  "instructionsHint": "Exemplo:\n1. Preaqueça o forno a 180°C\n2. Misture os ingredientes em uma tigela\n3. Asse por 30 minutos",
+  "@instructionsHint": {
+    "description": "Texto de dica mostrando exemplo de formato de instruções"
+  },
   "noneOfTheseCreateNew": "Criar Novo Ingrediente",
   "@noneOfTheseCreateNew": {
     "description": "Texto do botão quando o usuário deseja criar um novo ingrediente em vez de selecionar das correspondências"

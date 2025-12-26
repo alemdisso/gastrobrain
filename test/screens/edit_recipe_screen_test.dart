@@ -37,6 +37,7 @@ void main() {
         prepTimeMinutes: 30,
         cookTimeMinutes: 45,
         rating: 4,
+        instructions: '',
       );
     });
 
@@ -222,6 +223,164 @@ void main() {
 
       // Verify frequency is still weekly
       expect(find.text('Semanal'), findsOneWidget);
+    });
+
+    testWidgets('instructions field initializes with recipe instructions - English',
+        (WidgetTester tester) async {
+      final recipeWithInstructions = Recipe(
+        id: 'test_id',
+        name: 'Test Recipe',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+        difficulty: 3,
+        prepTimeMinutes: 30,
+        cookTimeMinutes: 45,
+        rating: 4,
+        instructions: 'Preheat oven to 180°C\nBake for 30 minutes',
+      );
+
+      await tester.pumpWidget(
+        createTestableWidget(EditRecipeScreen(recipe: recipeWithInstructions)),
+      );
+
+      final instructionsField = find.byKey(const Key('edit_recipe_instructions_field'));
+      expect(instructionsField, findsOneWidget);
+
+      // Verify the field contains the instructions text
+      expect(find.text('Preheat oven to 180°C\nBake for 30 minutes'), findsOneWidget);
+    });
+
+    testWidgets('instructions field initializes with recipe instructions - Portuguese',
+        (WidgetTester tester) async {
+      final recipeWithInstructions = Recipe(
+        id: 'test_id',
+        name: 'Test Recipe',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+        difficulty: 3,
+        prepTimeMinutes: 30,
+        cookTimeMinutes: 45,
+        rating: 4,
+        instructions: 'Preaqueça o forno a 180°C\nAsse por 30 minutos',
+      );
+
+      await tester.pumpWidget(
+        createTestableWidget(EditRecipeScreen(recipe: recipeWithInstructions), locale: const Locale('pt', '')),
+      );
+
+      final instructionsField = find.byKey(const Key('edit_recipe_instructions_field'));
+      expect(instructionsField, findsOneWidget);
+
+      // Verify the field contains the instructions text
+      expect(find.text('Preaqueça o forno a 180°C\nAsse por 30 minutos'), findsOneWidget);
+    });
+
+    testWidgets('instructions field accepts multi-line input - English',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(EditRecipeScreen(recipe: testRecipe)),
+      );
+
+      final instructionsField = find.byKey(const Key('edit_recipe_instructions_field'));
+      expect(instructionsField, findsOneWidget);
+
+      // Enter multi-line text
+      await tester.enterText(
+        instructionsField,
+        'Line 1\nLine 2\nLine 3',
+      );
+      await tester.pump();
+
+      // Verify the multi-line text is displayed
+      expect(find.text('Line 1\nLine 2\nLine 3'), findsOneWidget);
+    });
+
+    testWidgets('instructions field accepts multi-line input - Portuguese',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(EditRecipeScreen(recipe: testRecipe), locale: const Locale('pt', '')),
+      );
+
+      final instructionsField = find.byKey(const Key('edit_recipe_instructions_field'));
+      expect(instructionsField, findsOneWidget);
+
+      // Enter multi-line text
+      await tester.enterText(
+        instructionsField,
+        'Linha 1\nLinha 2\nLinha 3',
+      );
+      await tester.pump();
+
+      // Verify the multi-line text is displayed
+      expect(find.text('Linha 1\nLinha 2\nLinha 3'), findsOneWidget);
+    });
+
+    testWidgets('instructions field handles empty input - English',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(EditRecipeScreen(recipe: testRecipe)),
+      );
+
+      final instructionsField = find.byKey(const Key('edit_recipe_instructions_field'));
+      expect(instructionsField, findsOneWidget);
+
+      // Enter and then clear text
+      await tester.enterText(instructionsField, 'Some instructions');
+      await tester.pump();
+      expect(find.text('Some instructions'), findsOneWidget);
+
+      await tester.enterText(instructionsField, '');
+      await tester.pump();
+
+      // Field should be empty
+      expect(find.text('Some instructions'), findsNothing);
+    });
+
+    testWidgets('instructions field handles empty input - Portuguese',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(EditRecipeScreen(recipe: testRecipe), locale: const Locale('pt', '')),
+      );
+
+      final instructionsField = find.byKey(const Key('edit_recipe_instructions_field'));
+      expect(instructionsField, findsOneWidget);
+
+      // Enter and then clear text
+      await tester.enterText(instructionsField, 'Algumas instruções');
+      await tester.pump();
+      expect(find.text('Algumas instruções'), findsOneWidget);
+
+      await tester.enterText(instructionsField, '');
+      await tester.pump();
+
+      // Field should be empty
+      expect(find.text('Algumas instruções'), findsNothing);
+    });
+
+    testWidgets('instructions field is visible and accessible - English',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(EditRecipeScreen(recipe: testRecipe)),
+      );
+
+      final instructionsField = find.byKey(const Key('edit_recipe_instructions_field'));
+      expect(instructionsField, findsOneWidget);
+
+      // Verify the field is a TextFormField
+      expect(tester.widget(instructionsField), isA<TextFormField>());
+    });
+
+    testWidgets('instructions field is visible and accessible - Portuguese',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(EditRecipeScreen(recipe: testRecipe), locale: const Locale('pt', '')),
+      );
+
+      final instructionsField = find.byKey(const Key('edit_recipe_instructions_field'));
+      expect(instructionsField, findsOneWidget);
+
+      // Verify the field is a TextFormField
+      expect(tester.widget(instructionsField), isA<TextFormField>());
     });
   });
 }

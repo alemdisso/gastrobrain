@@ -20,6 +20,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _notesController;
+  late TextEditingController _instructionsController;
   late TextEditingController _prepTimeController;
   late TextEditingController _cookTimeController;
   late FrequencyType _selectedFrequency;
@@ -34,6 +35,8 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     // Initialize controllers with existing recipe data
     _nameController = TextEditingController(text: widget.recipe.name);
     _notesController = TextEditingController(text: widget.recipe.notes);
+    _instructionsController =
+        TextEditingController(text: widget.recipe.instructions);
     _prepTimeController =
         TextEditingController(text: widget.recipe.prepTimeMinutes.toString());
     _cookTimeController =
@@ -149,6 +152,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         name: _nameController.text,
         desiredFrequency: _selectedFrequency,
         notes: _notesController.text,
+        instructions: _instructionsController.text,
         createdAt: widget.recipe.createdAt,
         difficulty: _difficulty,
         prepTimeMinutes: prepTime ?? 0,
@@ -187,6 +191,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   void dispose() {
     _nameController.dispose();
     _notesController.dispose();
+    _instructionsController.dispose();
     _prepTimeController.dispose();
     _cookTimeController.dispose();
     super.dispose();
@@ -293,6 +298,19 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                     border: const OutlineInputBorder(),
                   ),
                   maxLines: 3,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  key: const Key('edit_recipe_instructions_field'),
+                  controller: _instructionsController,
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!.instructionsLabel,
+                    hintText: AppLocalizations.of(context)!.enterInstructions,
+                    border: const OutlineInputBorder(),
+                  ),
+                  maxLines: null,
+                  minLines: 5,
+                  keyboardType: TextInputType.multiline,
                 ),
                 const SizedBox(height: 24),
                 SizedBox(
