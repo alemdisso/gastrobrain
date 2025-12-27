@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gastrobrain/widgets/add_ingredient_dialog.dart';
 import 'package:gastrobrain/models/ingredient.dart';
+import 'package:gastrobrain/models/recipe_ingredient.dart';
 import '../mocks/mock_database_helper.dart';
 import '../helpers/dialog_test_helpers.dart';
 import '../test_utils/dialog_fixtures.dart';
@@ -140,6 +141,75 @@ void main() {
       // Old labels should not be present
       expect(find.text('Do Banco de Dados'), findsNothing);
       expect(find.text('Personalizado'), findsNothing);
+    });
+  });
+
+  group('AddIngredientDialog - Return Value Testing', () {
+    late MockDatabaseHelper mockDbHelper;
+    late Ingredient testIngredient;
+
+    setUp(() {
+      mockDbHelper = TestSetup.setupMockDatabase();
+      testIngredient = DialogFixtures.createProteinIngredient(
+        id: 'test-ing-1',
+        name: 'Chicken Breast',
+      );
+      mockDbHelper.insertIngredient(testIngredient);
+    });
+
+    tearDown(() {
+      TestSetup.cleanupMockDatabase(mockDbHelper);
+    });
+
+    testWidgets('auto-selects ingredient on exact match with Enter key',
+        (WidgetTester tester) async {
+      final testRecipe = DialogFixtures.createTestRecipe();
+
+      RecipeIngredient? savedIngredient;
+      await DialogTestHelpers.openDialog(
+        tester,
+        dialogBuilder: (context) => AddIngredientDialog(
+          recipe: testRecipe,
+          databaseHelper: mockDbHelper,
+          onSave: (ingredient) {
+            savedIngredient = ingredient;
+          },
+        ),
+      );
+
+      // Wait for ingredients to load
+      await tester.pumpAndSettle();
+
+      // Enter quantity - use key to find the specific field
+      final quantityField = find.byKey(const Key('add_ingredient_quantity_field'));
+      await tester.enterText(quantityField, '500');
+      await tester.pumpAndSettle();
+
+      // Find the autocomplete search field
+      final searchField = find.byKey(const Key('add_ingredient_search_field'));
+      expect(searchField, findsOneWidget);
+
+      // Type exact ingredient name
+      await tester.enterText(searchField, 'Chicken Breast');
+      await tester.pumpAndSettle();
+
+      // Simulate pressing Enter/Done on keyboard
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+
+      // Extra pumps to ensure setState completes
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 100));
+
+      // Try to save
+      await tester.tap(find.text('Adicionar'));
+      await tester.pumpAndSettle();
+
+      // Verify return value
+      expect(savedIngredient, isNotNull);
+      expect(savedIngredient!.recipeId, equals(testRecipe.id));
+      expect(savedIngredient!.ingredientId, equals(testIngredient.id));
+      expect(savedIngredient!.quantity, equals(500.0));
     });
   });
 }

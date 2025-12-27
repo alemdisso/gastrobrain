@@ -374,6 +374,19 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                               border: const OutlineInputBorder(),
                               prefixIcon: const Icon(Icons.search),
                             ),
+                            onFieldSubmitted: (value) {
+                              // Auto-select ingredient if there's an exact match
+                              final exactMatch = _availableIngredients
+                                  .where((ing) =>
+                                      ing.name.toLowerCase() ==
+                                      value.trim().toLowerCase())
+                                  .firstOrNull;
+                              if (exactMatch != null) {
+                                setState(() {
+                                  _selectedIngredient = exactMatch;
+                                });
+                              }
+                            },
                             validator: (value) {
                               if (_selectedIngredient == null) {
                                 return AppLocalizations.of(context)!
