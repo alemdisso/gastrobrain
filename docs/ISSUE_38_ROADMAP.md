@@ -48,8 +48,8 @@ Based on the acceptance criteria from issue #38:
 1. ✗ **meal_cooked_dialog.dart** - Returns cooking details (Map)
 2. ⚠️ **add_ingredient_dialog.dart** - Returns RecipeIngredient (has basic tests, needs expansion)
 3. ✗ **add_new_ingredient_dialog.dart** - Returns Ingredient (no tests)
-4. ✗ **meal_recording_dialog.dart** - Returns meal data (Map) (no tests)
-5. ✗ **add_side_dish_dialog.dart** - Returns recipe selection (Map) (no tests)
+4. ✅ **meal_recording_dialog.dart** - Returns meal data (Map) (20/20 tests - 100%)
+5. ✅ **add_side_dish_dialog.dart** - Returns recipe selection (Map) (24/24 tests - 100%)
 6. ⚠️ **edit_meal_recording_dialog.dart** - Returns updated Meal (has tests, needs expansion)
 
 ## Roadmap Organization
@@ -109,6 +109,14 @@ The roadmap is divided into 4 phases:
 
 ### Phase 2.1: Return Value Testing
 
+**Progress:** 2/6 dialogs complete (33%)
+- ✅ AddSideDishDialog - 24/24 tests (100%)
+- ✅ MealRecordingDialog - 20/20 tests (100%)
+- ⏳ EditMealRecordingDialog - Expansion pending (HIGH priority)
+- ⏳ AddIngredientDialog - Expansion pending (MEDIUM priority)
+- ⏳ MealCookedDialog - Creation pending (MEDIUM priority)
+- ⏳ AddNewIngredientDialog - Creation pending (LOW priority)
+
 #### 2.1.1: MealCookedDialog Tests
 Create `test/widgets/meal_cooked_dialog_test.dart`:
 - [ ] Test: Dialog opens with correct initial state
@@ -122,31 +130,59 @@ Create `test/widgets/meal_cooked_dialog_test.dart`:
 - [ ] Test: Returns null when cancelled
 - [ ] Test: Notes field preserves user input
 
-#### 2.1.2: MealRecordingDialog Tests
+#### 2.1.2: MealRecordingDialog Tests ✅ COMPLETE
 Create `test/widgets/meal_recording_dialog_test.dart`:
-- [ ] Test: Dialog opens with correct initial state
-- [ ] Test: Returns correct meal data on save
-- [ ] Test: Pre-fills notes when provided
-- [ ] Test: Pre-fills planned date when provided
-- [ ] Test: Pre-fills additional recipes when provided
-- [ ] Test: Allows adding side dishes
-- [ ] Test: Allows removing side dishes
-- [ ] Test: Validates all required fields
-- [ ] Test: Returns null when cancelled
-- [ ] Test: Loads available recipes correctly
+- [x] Test: Dialog opens with correct initial state
+- [x] Test: Returns correct meal data on save
+- [x] Test: Pre-fills notes when provided
+- [x] Test: Pre-fills planned date when provided
+- [x] Test: Pre-fills additional recipes when provided
+- [x] Test: Shows add recipe button when allowRecipeChange is true
+- [x] Test: Hides add recipe button when allowRecipeChange is false
+- [x] Test: Allows removing side dishes
+- [x] Test: Validates servings field is required
+- [x] Test: Validates servings must be a valid number
+- [x] Test: Validates prep time must be valid if provided
+- [x] Test: Validates cook time must be valid if provided
+- [x] Test: Returns null when cancelled
+- [x] Test: Loads available recipes from database
+- [x] Test: Allows selecting a different date
+- [x] Test: Toggles success switch
+- [x] Test: Returns correct wasSuccessful value in meal data
+- [x] Test: Safely disposes controllers on cancel
+- [x] Test: Safely disposes controllers on save
 
-#### 2.1.3: AddSideDishDialog Tests
+**Note:** Comprehensive tests for adding side dishes via nested dialog deferred to #237 (DI limitation).
+**Coverage:** 20/20 tests passing (100%). See issue #237 comment for testing gap details.
+
+#### 2.1.3: AddSideDishDialog Tests ✅ COMPLETE
 Create `test/widgets/add_side_dish_dialog_test.dart`:
-- [ ] Test: Dialog opens with available recipes
-- [ ] Test: Returns selected recipes on save
-- [ ] Test: Excludes already selected recipes from list
-- [ ] Test: Excludes primary recipe from list
-- [ ] Test: Search functionality filters recipes
-- [ ] Test: Can add multiple side dishes
-- [ ] Test: Can remove selected side dishes
-- [ ] Test: Returns null when cancelled
-- [ ] Test: Shows current side dishes correctly
-- [ ] Test: onSideDishesChanged callback fires correctly
+- [x] Test: Dialog opens with correct title in single selection mode
+- [x] Test: Dialog opens with correct title in multi-recipe mode
+- [x] Test: Dialog opens with available recipes
+- [x] Test: Returns selected recipe on tap in single selection mode
+- [x] Test: Excludes already selected recipes from list
+- [x] Test: Excludes primary recipe from list
+- [x] Test: Search functionality filters recipes by name
+- [x] Test: Search field shows clear button when text entered
+- [x] Test: Clear button clears search and shows all recipes
+- [x] Test: Shows "no recipes found" when search has no matches
+- [x] Test: Can add multiple side dishes in multi-recipe mode
+- [x] Test: Can remove selected side dishes
+- [x] Test: Returns null when cancelled in single selection mode
+- [x] Test: Returns meal data with side dishes in multi-recipe mode
+- [x] Test: Shows current side dishes correctly in multi-recipe mode
+- [x] Test: onSideDishesChanged callback fires when adding side dish
+- [x] Test: onSideDishesChanged callback fires when removing side dish
+- [x] Test: Shows primary recipe section in multi-recipe mode
+- [x] Test: Hides primary recipe section in single selection mode
+- [x] Test: Search can be disabled via enableSearch parameter
+- [x] Test: Custom search hint text is displayed when provided
+- [x] Test: Recipes are sorted alphabetically by name
+- [x] Test: Dialog shows "no available side dishes" when list is empty
+- [x] Test: Safely disposes search controller
+
+**Coverage:** 24/24 tests passing (100%)
 
 #### 2.1.4: AddNewIngredientDialog Tests
 Create `test/widgets/add_new_ingredient_dialog_test.dart`:
