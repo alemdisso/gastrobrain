@@ -330,12 +330,12 @@ Minimum viable completion:
 
 ### Issue #38 (Minimum Viable)
 
-- [ ] DialogTestHelper exists with core methods
+- [x] DialogTestHelper exists with core methods (Phase 1 ✅)
 - [ ] 3 high-priority dialogs fully tested
 - [ ] Controller disposal regression test passes
 - [ ] All 6 dialogs have cancellation tests
 - [ ] 85% coverage for priority dialogs
-- [ ] Basic documentation complete
+- [x] Basic documentation complete (DIALOG_TESTING_GUIDE.md ✅)
 
 ### Issue #39 (Minimum Viable)
 
