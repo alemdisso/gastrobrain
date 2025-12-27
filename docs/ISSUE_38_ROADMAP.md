@@ -50,7 +50,7 @@ Based on the acceptance criteria from issue #38:
 3. ✗ **add_new_ingredient_dialog.dart** - Returns Ingredient (no tests)
 4. ✅ **meal_recording_dialog.dart** - Returns meal data (Map) (20/20 tests - 100%)
 5. ✅ **add_side_dish_dialog.dart** - Returns recipe selection (Map) (24/24 tests - 100%)
-6. ⚠️ **edit_meal_recording_dialog.dart** - Returns updated Meal (has tests, needs expansion)
+6. ✅ **edit_meal_recording_dialog.dart** - Returns updated Meal (21/21 tests - 100%)
 
 ## Roadmap Organization
 
@@ -109,10 +109,10 @@ The roadmap is divided into 4 phases:
 
 ### Phase 2.1: Return Value Testing
 
-**Progress:** 2/6 dialogs complete (33%)
+**Progress:** 3/6 dialogs complete (50%)
 - ✅ AddSideDishDialog - 24/24 tests (100%)
 - ✅ MealRecordingDialog - 20/20 tests (100%)
-- ⏳ EditMealRecordingDialog - Expansion pending (HIGH priority)
+- ✅ EditMealRecordingDialog - 21/21 tests (100%)
 - ⏳ AddIngredientDialog - Expansion pending (MEDIUM priority)
 - ⏳ MealCookedDialog - Creation pending (MEDIUM priority)
 - ⏳ AddNewIngredientDialog - Creation pending (LOW priority)
@@ -206,13 +206,24 @@ Update `test/widgets/add_ingredient_dialog_test.dart`:
 - [ ] Test: Custom ingredient creation returns correct object
 - [ ] Test: Database ingredient selection returns correct object
 
-#### 2.1.6: Expand EditMealRecordingDialog Tests
+#### 2.1.6: Expand EditMealRecordingDialog Tests ✅ COMPLETE
 Update `test/widgets/edit_meal_recording_dialog_test.dart`:
-- [ ] Test: Returns updated Meal object on save
-- [ ] Test: Verifies only changed fields are different
-- [ ] Test: Verifies unchanged fields remain the same
-- [ ] Test: Database update is called with correct values
-- [ ] Test: Multiple recipe meals return correctly
+- [x] Test: Returns updated meal data on save
+- [x] Test: Returns additional recipes in updated meal data
+- [x] Test: Verifies only changed fields are different
+- [x] Test: Verifies unchanged fields remain the same
+- [x] Test: Returns null when cancelled
+- [x] Test: Allows removing side dishes
+- [x] Test: Shows add recipe button
+- [x] Test: Validates prep time must be valid if provided
+- [x] Test: Validates cook time must be valid if provided
+- [x] Test: Allows selecting a different date
+- [x] Test: Toggles success switch
+- [x] Test: Returns correct wasSuccessful value in meal data
+- [x] Test: Safely disposes controllers on cancel
+- [x] Test: Safely disposes controllers on save
+
+**Coverage:** 21/21 tests passing (100%)
 
 ### Phase 2.2: Cancellation & No Side Effects Testing
 
