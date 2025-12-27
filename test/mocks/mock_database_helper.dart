@@ -31,6 +31,7 @@ class MockDatabaseHelper implements DatabaseHelper {
   String _nextOperationError = 'Simulated database error';
   String? _failOnSpecificOperation;
   bool shouldThrowOnDelete = false;
+  Exception? _customException;
 
   @override
   Future<int> deleteMealPlan(String id) async {
@@ -165,9 +166,10 @@ class MockDatabaseHelper implements DatabaseHelper {
   /// mockDb.failOnOperation('updateMeal');
   /// // Next call to updateMeal will throw
   /// ```
-  void failOnOperation(String operationName) {
+  void failOnOperation(String operationName, {Exception? exception}) {
     _shouldFailNextOperation = true;
     _failOnSpecificOperation = operationName;
+    _customException = exception;
   }
 
   /// Reset error simulation state.
@@ -186,6 +188,7 @@ class MockDatabaseHelper implements DatabaseHelper {
     _shouldFailNextOperation = false;
     _failOnSpecificOperation = null;
     _nextOperationError = 'Simulated database error';
+    _customException = null;
   }
 
   // Reset all data
@@ -306,6 +309,15 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<List<Meal>> getMealsForRecipe(String recipeId) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'getMealsForRecipe')) {
+      final exception = _customException ?? Exception(_nextOperationError);
+      resetErrorSimulation();
+      throw exception;
+    }
+
     // Return meals with direct recipeId reference OR meals linked via junction table
     final directMeals =
         _meals.values.where((meal) => meal.recipeId == recipeId).toList();
