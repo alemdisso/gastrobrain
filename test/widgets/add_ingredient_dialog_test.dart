@@ -2,170 +2,79 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gastrobrain/models/recipe.dart';
-import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/widgets/add_ingredient_dialog.dart';
 import 'package:gastrobrain/models/ingredient.dart';
-import 'package:gastrobrain/models/ingredient_category.dart';
-import 'package:gastrobrain/models/measurement_unit.dart';
-import 'package:gastrobrain/models/protein_type.dart';
-import 'package:gastrobrain/models/recipe_ingredient.dart';
 import '../mocks/mock_database_helper.dart';
-import '../test_utils/test_app_wrapper.dart';
+import '../helpers/dialog_test_helpers.dart';
+import '../test_utils/dialog_fixtures.dart';
 import '../test_utils/test_setup.dart';
 
-// Simple test to verify the dialog appears
+// Test to verify the dialog appears and basic functionality
 void main() {
   group('AddIngredientDialog', () {
-    late Recipe testRecipe;
-
-    setUp(() {
-      testRecipe = Recipe(
-        id: 'test-id',
-        name: 'Test Recipe',
-        desiredFrequency: FrequencyType.weekly,
-        createdAt: DateTime.now(),
-      );
-    });
-
     testWidgets('Dialog opens and displays correctly',
         (WidgetTester tester) async {
-      // Build test app with proper scaffold
-      await tester.pumpWidget(
-        wrapWithLocalizations(Scaffold(
-          body: Builder(
-            builder: (BuildContext context) {
-              return ElevatedButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AddIngredientDialog(
-                      recipe: testRecipe,
-                    ),
-                  );
-                },
-                child: const Text('Show Dialog'),
-              );
-            },
-          ),
-        )),
-      );
+      // Using DialogTestHelpers and DialogFixtures for cleaner test setup
+      final testRecipe = DialogFixtures.createTestRecipe();
 
-      // Tap button to show dialog
-      await tester.tap(find.text('Show Dialog'));
-      await tester.pump();
+      await DialogTestHelpers.openDialog(
+        tester,
+        dialogBuilder: (context) => AddIngredientDialog(
+          recipe: testRecipe,
+        ),
+      );
 
       // Verify the dialog appears with the expected title (Portuguese)
       expect(find.text('Adicionar Ingrediente'), findsOneWidget);
-
-      // Basic verification is complete
-      // Note: Full testing would require mocking database operations
     });
   });
 
-  // Add a new group specifically for DI tests
+  // Tests with Dependency Injection using DialogFixtures and DialogTestHelpers
   group('AddIngredientDialog with Dependency Injection', () {
     late MockDatabaseHelper mockDbHelper;
-    late Recipe testRecipe;
 
     setUp(() {
       // Set up mock database using TestSetup utility
       mockDbHelper = TestSetup.setupMockDatabase();
 
-      // Set up a test recipe
-      testRecipe = Recipe(
-        id: 'test-recipe-id',
-        name: 'Test Recipe',
-        desiredFrequency: FrequencyType.weekly,
-        createdAt: DateTime.now(),
-      );
-
-      // Add test ingredients to mock database
-      mockDbHelper.ingredients['test-ing-1'] = Ingredient(
-        id: 'test-ing-1',
-        name: 'Carrots',
-        category: IngredientCategory.vegetable,
-        unit: MeasurementUnit.gram,
-      );
-
-      mockDbHelper.ingredients['test-ing-2'] = Ingredient(
-        id: 'test-ing-2',
-        name: 'Chicken Breast',
-        category: IngredientCategory.protein,
-        proteinType: ProteinType.chicken,
-        unit: MeasurementUnit.gram,
-      );
+      // Add test ingredients using DialogFixtures
+      final ingredients = DialogFixtures.createMultipleIngredients();
+      for (final ingredient in ingredients) {
+        mockDbHelper.ingredients[ingredient.id] = ingredient;
+      }
     });
 
     tearDown(() {
       TestSetup.cleanupMockDatabase(mockDbHelper);
     });
 
-    // Add the DI-specific test cases here
     testWidgets('loads ingredients from injected database',
         (WidgetTester tester) async {
-      RecipeIngredient? savedIngredient;
+      final testRecipe = DialogFixtures.createTestRecipe();
 
-      // Build the dialog WITH THE TEST RECIPE
-      await tester.pumpWidget(wrapWithLocalizations(Scaffold(
-        body: Builder(
-          builder: (BuildContext context) {
-            return TextButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AddIngredientDialog(
-                    recipe: testRecipe, // Use the test recipe here
-                    databaseHelper: mockDbHelper,
-                    onSave: (ingredient) {
-                      savedIngredient = ingredient;
-                      Navigator.pop(context, ingredient);
-                    },
-                  ),
-                );
-              },
-              child: const Text('Show Dialog'),
-            );
-          },
+      await DialogTestHelpers.openDialog(
+        tester,
+        dialogBuilder: (context) => AddIngredientDialog(
+          recipe: testRecipe,
+          databaseHelper: mockDbHelper,
         ),
-      )));
-      expect(savedIngredient, null);
-    });
+      );
 
-    testWidgets('creates custom ingredient with mock database',
-        (WidgetTester tester) async {
-      // Test body as in the artifact
-    });
-
-    testWidgets('validates input with mock database',
-        (WidgetTester tester) async {
-      // Test body as in the artifact
+      // Verify autocomplete field is present with ingredients loaded
+      expect(find.byType(Autocomplete<Ingredient>), findsOneWidget);
     });
 
     testWidgets('shows autocomplete search field for database ingredients',
         (WidgetTester tester) async {
-      await tester.pumpWidget(wrapWithLocalizations(Scaffold(
-        body: Builder(
-          builder: (BuildContext context) {
-            return TextButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AddIngredientDialog(
-                    recipe: testRecipe,
-                    databaseHelper: mockDbHelper,
-                  ),
-                );
-              },
-              child: const Text('Show Dialog'),
-            );
-          },
-        ),
-      )));
+      final testRecipe = DialogFixtures.createTestRecipe();
 
-      // Open dialog
-      await tester.tap(find.text('Show Dialog'));
-      await tester.pumpAndSettle();
+      await DialogTestHelpers.openDialog(
+        tester,
+        dialogBuilder: (context) => AddIngredientDialog(
+          recipe: testRecipe,
+          databaseHelper: mockDbHelper,
+        ),
+      );
 
       // Verify autocomplete search field is shown
       expect(find.byType(Autocomplete<Ingredient>), findsOneWidget);
@@ -176,28 +85,15 @@ void main() {
 
     testWidgets('shows progressive disclosure link for custom ingredient',
         (WidgetTester tester) async {
-      await tester.pumpWidget(wrapWithLocalizations(Scaffold(
-        body: Builder(
-          builder: (BuildContext context) {
-            return TextButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AddIngredientDialog(
-                    recipe: testRecipe,
-                    databaseHelper: mockDbHelper,
-                  ),
-                );
-              },
-              child: const Text('Show Dialog'),
-            );
-          },
-        ),
-      )));
+      final testRecipe = DialogFixtures.createTestRecipe();
 
-      // Open dialog
-      await tester.tap(find.text('Show Dialog'));
-      await tester.pumpAndSettle();
+      await DialogTestHelpers.openDialog(
+        tester,
+        dialogBuilder: (context) => AddIngredientDialog(
+          recipe: testRecipe,
+          databaseHelper: mockDbHelper,
+        ),
+      );
 
       // Verify progressive disclosure link is shown (Portuguese)
       expect(find.text('Usar ingrediente personalizado'), findsOneWidget);
@@ -208,28 +104,15 @@ void main() {
 
     testWidgets('unit dropdown is always visible for database ingredients',
         (WidgetTester tester) async {
-      await tester.pumpWidget(wrapWithLocalizations(Scaffold(
-        body: Builder(
-          builder: (BuildContext context) {
-            return TextButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AddIngredientDialog(
-                    recipe: testRecipe,
-                    databaseHelper: mockDbHelper,
-                  ),
-                );
-              },
-              child: const Text('Show Dialog'),
-            );
-          },
-        ),
-      )));
+      final testRecipe = DialogFixtures.createTestRecipe();
 
-      // Open dialog
-      await tester.tap(find.text('Show Dialog'));
-      await tester.pumpAndSettle();
+      await DialogTestHelpers.openDialog(
+        tester,
+        dialogBuilder: (context) => AddIngredientDialog(
+          recipe: testRecipe,
+          databaseHelper: mockDbHelper,
+        ),
+      );
 
       // Unit dropdown should be visible (finds at least one)
       expect(find.byType(DropdownButtonFormField<String>), findsWidgets);
@@ -241,28 +124,15 @@ void main() {
 
     testWidgets('no segmented button for database/custom toggle',
         (WidgetTester tester) async {
-      await tester.pumpWidget(wrapWithLocalizations(Scaffold(
-        body: Builder(
-          builder: (BuildContext context) {
-            return TextButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AddIngredientDialog(
-                    recipe: testRecipe,
-                    databaseHelper: mockDbHelper,
-                  ),
-                );
-              },
-              child: const Text('Show Dialog'),
-            );
-          },
-        ),
-      )));
+      final testRecipe = DialogFixtures.createTestRecipe();
 
-      // Open dialog
-      await tester.tap(find.text('Show Dialog'));
-      await tester.pumpAndSettle();
+      await DialogTestHelpers.openDialog(
+        tester,
+        dialogBuilder: (context) => AddIngredientDialog(
+          recipe: testRecipe,
+          databaseHelper: mockDbHelper,
+        ),
+      );
 
       // Verify SegmentedButton is NOT present
       expect(find.byType(SegmentedButton<bool>), findsNothing);

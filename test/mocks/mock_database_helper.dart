@@ -132,6 +132,7 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   // We'll expose these maps for direct manipulation in tests if needed
   Map<String, Recipe> get recipes => _recipes;
+  Map<String, Meal> get meals => _meals;
   Map<String, MealPlan> get mealPlans => _mealPlans;
   Map<String, Ingredient> get ingredients => _ingredients;
 
