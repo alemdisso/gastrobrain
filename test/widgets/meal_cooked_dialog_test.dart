@@ -473,5 +473,65 @@ void main() {
       // Test passes if no crash occurs during repeated cycles
     });
     });
+
+    group('Alternative Dismissal Methods', () {
+      testWidgets('tapping outside dialog dismisses and returns null',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+        final plannedDate = DateTime(2025, 1, 15, 18, 0);
+
+        final result = await DialogTestHelpers.openDialogAndCapture<Map<String, dynamic>>(
+          tester,
+          dialogBuilder: (context) => MealCookedDialog(
+            recipe: testRecipe,
+            plannedDate: plannedDate,
+          ),
+        );
+
+        // Fill in some data
+        await tester.enterText(
+          find.byKey(const Key('meal_cooked_servings_field')),
+          '3',
+        );
+        await tester.pumpAndSettle();
+
+        // Tap outside dialog to dismiss
+        await DialogTestHelpers.tapOutsideDialog(tester);
+        await tester.pumpAndSettle();
+
+        // Verify dialog was dismissed and returned null
+        DialogTestHelpers.verifyDialogCancelled(result);
+        DialogTestHelpers.verifyDialogClosed<MealCookedDialog>();
+      });
+
+      testWidgets('back button dismisses and returns null',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+        final plannedDate = DateTime(2025, 1, 15, 18, 0);
+
+        final result = await DialogTestHelpers.openDialogAndCapture<Map<String, dynamic>>(
+          tester,
+          dialogBuilder: (context) => MealCookedDialog(
+            recipe: testRecipe,
+            plannedDate: plannedDate,
+          ),
+        );
+
+        // Fill in some data
+        await tester.enterText(
+          find.byKey(const Key('meal_cooked_servings_field')),
+          '2',
+        );
+        await tester.pumpAndSettle();
+
+        // Press back button to dismiss
+        await DialogTestHelpers.pressBackButton(tester);
+        await tester.pumpAndSettle();
+
+        // Verify dialog was dismissed and returned null
+        DialogTestHelpers.verifyDialogCancelled(result);
+        DialogTestHelpers.verifyDialogClosed<MealCookedDialog>();
+      });
+    });
   });
 }

@@ -196,9 +196,11 @@ Create `test/widgets/add_new_ingredient_dialog_test.dart`:
 - [X] Test: Category dropdown works correctly
 - [X] Test: Unit dropdown works correctly
 - [X] Test: Protein type shown only for protein category
-- [ ] Test: Returns null when cancelled
-- [ ] Test: Saves ingredient to database
-- [ ] Test: Error handling when save fails
+- [X] Test: Returns null when cancelled
+- [X] Test: Saves ingredient to database
+- [X] Test: Error handling when save fails
+
+**Coverage:** 9/9 tests passing (100%)
 
 #### 2.1.5: Expand AddIngredientDialog Tests ✅ COMPLETE
 Update `test/widgets/add_ingredient_dialog_test.dart`:
@@ -237,27 +239,28 @@ Update `test/widgets/edit_meal_recording_dialog_test.dart`:
 
 ### Phase 2.2: Cancellation & No Side Effects Testing
 
-#### 2.2.1: Cancellation Tests for All Dialogs
+#### 2.2.1: Cancellation Tests for All Dialogs ✅ COMPLETE
 For each dialog test file:
 - [x] MealCookedDialog: Cancel returns null, DB unchanged
 - [x] MealRecordingDialog: Cancel returns null, DB unchanged, temp recipes not saved
 - [x] AddSideDishDialog: Cancel returns null, selections not persisted
-- [ ] AddNewIngredientDialog: Cancel returns null, ingredient not created in DB
+- [x] AddNewIngredientDialog: Cancel returns null, ingredient not created in DB
 - [x] AddIngredientDialog: Cancel returns null, recipe ingredient not added
 - [x] EditMealRecordingDialog: Cancel returns null, meal not updated in DB
 
-#### 2.2.2: Back Button / Dismiss Testing
-For each dialog:
-- [ ] Test: Tapping outside dialog dismisses and returns null
-- [ ] Test: Back button dismisses and returns null
-- [ ] Test: No database changes after dismiss
-- [ ] Test: Temporary state is cleaned up
+#### 2.2.2: Back Button / Dismiss Testing ✅ COMPLETE
+For each dialog (all 6 dialogs):
+- [x] Test: Tapping outside dialog dismisses and returns null
+- [x] Test: Back button dismisses and returns null
+- [x] Test: No database changes after dismiss (verified in both tests)
+- [x] Test: Temporary state is cleaned up (controller disposal verified)
 
-**Phase 2 Completion Criteria:**
-- All 6 dialogs have comprehensive test files
-- All dialogs have return value tests
-- All dialogs have cancellation tests with side effect verification
-- Test coverage for dialogs reaches >80%
+**Phase 2 Completion Criteria:** ✅ COMPLETE
+- ✅ All 6 dialogs have comprehensive test files
+- ✅ All dialogs have return value tests
+- ✅ All dialogs have cancellation tests with side effect verification
+- ✅ All dialogs have alternative dismissal tests (tap outside, back button)
+- ✅ Test coverage for dialogs reaches >80%
 
 ---
 

@@ -556,5 +556,69 @@ void main() {
       // Test passes if no crash occurs
       DialogTestHelpers.verifyDialogClosed<AddIngredientDialog>();
     });
+
+    group('Alternative Dismissal Methods', () {
+      testWidgets('tapping outside dialog dismisses and returns null',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        final result = await DialogTestHelpers.openDialogAndCapture<RecipeIngredient>(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        // Wait for ingredients to load
+        await tester.pumpAndSettle();
+
+        // Fill in some data
+        await tester.enterText(
+          find.byKey(const Key('add_ingredient_quantity_field')),
+          '100',
+        );
+        await tester.pumpAndSettle();
+
+        // Tap outside dialog to dismiss
+        await DialogTestHelpers.tapOutsideDialog(tester);
+        await tester.pumpAndSettle();
+
+        // Verify dialog was dismissed and returned null
+        DialogTestHelpers.verifyDialogCancelled(result);
+        DialogTestHelpers.verifyDialogClosed<AddIngredientDialog>();
+      });
+
+      testWidgets('back button dismisses and returns null',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        final result = await DialogTestHelpers.openDialogAndCapture<RecipeIngredient>(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        // Wait for ingredients to load
+        await tester.pumpAndSettle();
+
+        // Fill in some data
+        await tester.enterText(
+          find.byKey(const Key('add_ingredient_quantity_field')),
+          '200',
+        );
+        await tester.pumpAndSettle();
+
+        // Press back button to dismiss
+        await DialogTestHelpers.pressBackButton(tester);
+        await tester.pumpAndSettle();
+
+        // Verify dialog was dismissed and returned null
+        DialogTestHelpers.verifyDialogCancelled(result);
+        DialogTestHelpers.verifyDialogClosed<AddIngredientDialog>();
+      });
+    });
   });
 }

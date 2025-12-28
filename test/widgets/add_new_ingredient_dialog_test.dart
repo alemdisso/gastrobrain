@@ -382,6 +382,70 @@ void main() {
       });
     });
 
+    group('Alternative Dismissal Methods', () {
+      testWidgets('tapping outside dialog dismisses and returns null',
+          (WidgetTester tester) async {
+        final mockDbHelper = TestSetup.setupMockDatabase();
+
+        final result = await DialogTestHelpers.openDialogAndCapture<Ingredient>(
+          tester,
+          dialogBuilder: (context) => AddNewIngredientDialog(
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        // Fill in some data
+        final nameField =
+            find.byKey(const Key('add_new_ingredient_name_field'));
+        await tester.enterText(nameField, 'Cilantro');
+        await tester.pumpAndSettle();
+
+        // Tap outside dialog to dismiss
+        await DialogTestHelpers.tapOutsideDialog(tester);
+        await tester.pumpAndSettle();
+
+        // Verify dialog was dismissed and returned null
+        DialogTestHelpers.verifyDialogCancelled(result);
+        DialogTestHelpers.verifyDialogClosed<AddNewIngredientDialog>();
+
+        // Verify no database changes
+        expect(mockDbHelper.ingredients.length, equals(0));
+
+        TestSetup.cleanupMockDatabase(mockDbHelper);
+      });
+
+      testWidgets('back button dismisses and returns null',
+          (WidgetTester tester) async {
+        final mockDbHelper = TestSetup.setupMockDatabase();
+
+        final result = await DialogTestHelpers.openDialogAndCapture<Ingredient>(
+          tester,
+          dialogBuilder: (context) => AddNewIngredientDialog(
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        // Fill in some data
+        final nameField =
+            find.byKey(const Key('add_new_ingredient_name_field'));
+        await tester.enterText(nameField, 'Basil');
+        await tester.pumpAndSettle();
+
+        // Press back button to dismiss
+        await DialogTestHelpers.pressBackButton(tester);
+        await tester.pumpAndSettle();
+
+        // Verify dialog was dismissed and returned null
+        DialogTestHelpers.verifyDialogCancelled(result);
+        DialogTestHelpers.verifyDialogClosed<AddNewIngredientDialog>();
+
+        // Verify no database changes
+        expect(mockDbHelper.ingredients.length, equals(0));
+
+        TestSetup.cleanupMockDatabase(mockDbHelper);
+      });
+    });
+
     group('Error Handling', () {
       testWidgets('shows error when save fails',
           (WidgetTester tester) async {

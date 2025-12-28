@@ -881,5 +881,47 @@ void main() {
       await tester.pump();
       await tester.pump();
     });
+
+    group('Alternative Dismissal Methods', () {
+      testWidgets('tapping outside dialog dismisses and returns null',
+          (WidgetTester tester) async {
+        final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+          tester,
+          dialogBuilder: (context) => EditMealRecordingDialog(
+            meal: testMeal,
+            primaryRecipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        // Tap outside dialog to dismiss
+        await DialogTestHelpers.tapOutsideDialog(tester);
+        await tester.pumpAndSettle();
+
+        // Verify dialog was dismissed and returned null
+        DialogTestHelpers.verifyDialogCancelled(result);
+        DialogTestHelpers.verifyDialogClosed<EditMealRecordingDialog>();
+      });
+
+      testWidgets('back button dismisses and returns null',
+          (WidgetTester tester) async {
+        final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+          tester,
+          dialogBuilder: (context) => EditMealRecordingDialog(
+            meal: testMeal,
+            primaryRecipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        // Press back button to dismiss
+        await DialogTestHelpers.pressBackButton(tester);
+        await tester.pumpAndSettle();
+
+        // Verify dialog was dismissed and returned null
+        DialogTestHelpers.verifyDialogCancelled(result);
+        DialogTestHelpers.verifyDialogClosed<EditMealRecordingDialog>();
+      });
+    });
   });
 }

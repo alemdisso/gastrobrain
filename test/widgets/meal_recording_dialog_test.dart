@@ -755,5 +755,61 @@ void main() {
       await tester.pump();
       await tester.pump();
     });
+
+    group('Alternative Dismissal Methods', () {
+      testWidgets('tapping outside dialog dismisses and returns null',
+          (WidgetTester tester) async {
+        final primaryRecipe = DialogFixtures.createPrimaryRecipe();
+
+        final result = await DialogTestHelpers.openDialogAndCapture<Map<String, dynamic>>(
+          tester,
+          dialogBuilder: (context) => MealRecordingDialog(
+            primaryRecipe: primaryRecipe,
+          ),
+        );
+
+        // Fill in some data
+        await tester.enterText(
+          find.byKey(const Key('meal_recording_servings_field')),
+          '3',
+        );
+        await tester.pumpAndSettle();
+
+        // Tap outside dialog to dismiss
+        await DialogTestHelpers.tapOutsideDialog(tester);
+        await tester.pumpAndSettle();
+
+        // Verify dialog was dismissed and returned null
+        DialogTestHelpers.verifyDialogCancelled(result);
+        DialogTestHelpers.verifyDialogClosed<MealRecordingDialog>();
+      });
+
+      testWidgets('back button dismisses and returns null',
+          (WidgetTester tester) async {
+        final primaryRecipe = DialogFixtures.createPrimaryRecipe();
+
+        final result = await DialogTestHelpers.openDialogAndCapture<Map<String, dynamic>>(
+          tester,
+          dialogBuilder: (context) => MealRecordingDialog(
+            primaryRecipe: primaryRecipe,
+          ),
+        );
+
+        // Fill in some data
+        await tester.enterText(
+          find.byKey(const Key('meal_recording_servings_field')),
+          '2',
+        );
+        await tester.pumpAndSettle();
+
+        // Press back button to dismiss
+        await DialogTestHelpers.pressBackButton(tester);
+        await tester.pumpAndSettle();
+
+        // Verify dialog was dismissed and returned null
+        DialogTestHelpers.verifyDialogCancelled(result);
+        DialogTestHelpers.verifyDialogClosed<MealRecordingDialog>();
+      });
+    });
   });
 }

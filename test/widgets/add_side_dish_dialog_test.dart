@@ -919,5 +919,53 @@ void main() {
       await tester.pump();
       await tester.pump();
     });
+
+    group('Alternative Dismissal Methods', () {
+      testWidgets('tapping outside dialog dismisses and returns null',
+          (WidgetTester tester) async {
+        final primaryRecipe = DialogFixtures.createPrimaryRecipe();
+        final availableRecipes = DialogFixtures.createMultipleRecipes(5);
+
+        final result = await DialogTestHelpers.openDialogAndCapture<Map<String, dynamic>>(
+          tester,
+          dialogBuilder: (context) => AddSideDishDialog(
+            availableRecipes: availableRecipes,
+            primaryRecipe: primaryRecipe,
+            excludeRecipes: [primaryRecipe],
+          ),
+        );
+
+        // Tap outside dialog to dismiss
+        await DialogTestHelpers.tapOutsideDialog(tester);
+        await tester.pumpAndSettle();
+
+        // Verify dialog was dismissed and returned null
+        DialogTestHelpers.verifyDialogCancelled(result);
+        DialogTestHelpers.verifyDialogClosed<AddSideDishDialog>();
+      });
+
+      testWidgets('back button dismisses and returns null',
+          (WidgetTester tester) async {
+        final primaryRecipe = DialogFixtures.createPrimaryRecipe();
+        final availableRecipes = DialogFixtures.createMultipleRecipes(5);
+
+        final result = await DialogTestHelpers.openDialogAndCapture<Map<String, dynamic>>(
+          tester,
+          dialogBuilder: (context) => AddSideDishDialog(
+            availableRecipes: availableRecipes,
+            primaryRecipe: primaryRecipe,
+            excludeRecipes: [primaryRecipe],
+          ),
+        );
+
+        // Press back button to dismiss
+        await DialogTestHelpers.pressBackButton(tester);
+        await tester.pumpAndSettle();
+
+        // Verify dialog was dismissed and returned null
+        DialogTestHelpers.verifyDialogCancelled(result);
+        DialogTestHelpers.verifyDialogClosed<AddSideDishDialog>();
+      });
+    });
   });
 }
