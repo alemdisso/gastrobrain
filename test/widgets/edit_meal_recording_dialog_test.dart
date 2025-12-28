@@ -8,7 +8,6 @@ import 'package:gastrobrain/models/meal.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import '../test_utils/test_app_wrapper.dart';
 import '../test_utils/test_setup.dart';
-import '../test_utils/dialog_fixtures.dart';
 import '../helpers/dialog_test_helpers.dart';
 import '../mocks/mock_database_helper.dart';
 
@@ -437,7 +436,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Modify notes
-      final notesField = find.widgetWithText(TextFormField, 'Original test notes');
+      final notesField =
+          find.widgetWithText(TextFormField, 'Original test notes');
       await tester.enterText(notesField, 'Updated test notes');
       await tester.pumpAndSettle();
 
@@ -508,9 +508,12 @@ void main() {
       // Verify only servings changed
       expect(result.value!['servings'], equals(10)); // Changed
       expect(result.value!['notes'], equals(testMeal.notes)); // Unchanged
-      expect(result.value!['wasSuccessful'], equals(testMeal.wasSuccessful)); // Unchanged
-      expect(result.value!['actualPrepTime'], equals(testMeal.actualPrepTime)); // Unchanged
-      expect(result.value!['actualCookTime'], equals(testMeal.actualCookTime)); // Unchanged
+      expect(result.value!['wasSuccessful'],
+          equals(testMeal.wasSuccessful)); // Unchanged
+      expect(result.value!['actualPrepTime'],
+          equals(testMeal.actualPrepTime)); // Unchanged
+      expect(result.value!['actualCookTime'],
+          equals(testMeal.actualCookTime)); // Unchanged
     });
 
     testWidgets('returns null when cancelled', (WidgetTester tester) async {

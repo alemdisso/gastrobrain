@@ -32,14 +32,8 @@ void main() {
     availableRecipes = [primaryRecipe, sideRecipe1, sideRecipe2];
 
     // Insert recipes into mock database
-    for (final recipe in availableRecipes) {
-      mockDbHelper.insertRecipe(recipe);
-    }
+    availableRecipes.forEach(mockDbHelper.insertRecipe);
   });
-
-  tearDown() {
-    TestSetup.cleanupMockDatabase(mockDbHelper);
-  }
 
   group('MealRecordingDialog - Initial State', () {
     testWidgets('dialog opens with correct initial state',
@@ -75,12 +69,15 @@ void main() {
       expect(find.text('Prato principal'), findsOneWidget);
 
       // Verify servings field has default value of 1
-      final servingsField = find.byKey(const Key('meal_recording_servings_field'));
+      final servingsField =
+          find.byKey(const Key('meal_recording_servings_field'));
       expect(servingsField, findsOneWidget);
-      expect(tester.widget<TextFormField>(servingsField).controller!.text, equals('1'));
+      expect(tester.widget<TextFormField>(servingsField).controller!.text,
+          equals('1'));
 
       // Verify prep time is pre-filled from recipe
-      final prepTimeField = find.byKey(const Key('meal_recording_prep_time_field'));
+      final prepTimeField =
+          find.byKey(const Key('meal_recording_prep_time_field'));
       expect(prepTimeField, findsOneWidget);
       expect(
         tester.widget<TextFormField>(prepTimeField).controller!.text,
@@ -88,7 +85,8 @@ void main() {
       );
 
       // Verify cook time is pre-filled from recipe
-      final cookTimeField = find.byKey(const Key('meal_recording_cook_time_field'));
+      final cookTimeField =
+          find.byKey(const Key('meal_recording_cook_time_field'));
       expect(cookTimeField, findsOneWidget);
       expect(
         tester.widget<TextFormField>(cookTimeField).controller!.text,
@@ -96,13 +94,16 @@ void main() {
       );
 
       // Verify success switch is ON by default
-      final successSwitch = find.byKey(const Key('meal_recording_success_switch'));
+      final successSwitch =
+          find.byKey(const Key('meal_recording_success_switch'));
       expect(successSwitch, findsOneWidget);
       expect(tester.widget<Switch>(successSwitch).value, isTrue);
 
       // Verify buttons are present
-      expect(find.byKey(const Key('meal_recording_cancel_button')), findsOneWidget);
-      expect(find.byKey(const Key('meal_recording_save_button')), findsOneWidget);
+      expect(find.byKey(const Key('meal_recording_cancel_button')),
+          findsOneWidget);
+      expect(
+          find.byKey(const Key('meal_recording_save_button')), findsOneWidget);
     });
 
     testWidgets('pre-fills notes when provided', (WidgetTester tester) async {
@@ -273,8 +274,10 @@ void main() {
       expect(result.value!['notes'], equals('Test notes'));
       expect(result.value!['wasSuccessful'], isTrue);
       expect(result.value!['primaryRecipe'], equals(primaryRecipe));
-      expect(result.value!['actualPrepTime'], equals(primaryRecipe.prepTimeMinutes.toDouble()));
-      expect(result.value!['actualCookTime'], equals(primaryRecipe.cookTimeMinutes.toDouble()));
+      expect(result.value!['actualPrepTime'],
+          equals(primaryRecipe.prepTimeMinutes.toDouble()));
+      expect(result.value!['actualCookTime'],
+          equals(primaryRecipe.cookTimeMinutes.toDouble()));
       expect(result.value!['additionalRecipes'], isA<List>());
       expect(result.value!['cookedAt'], isA<DateTime>());
     });
@@ -456,7 +459,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify validation error is shown
-      expect(find.text('Por favor, informe o número de porções'), findsOneWidget);
+      expect(
+          find.text('Por favor, informe o número de porções'), findsOneWidget);
 
       // Verify dialog is still open
       expect(
@@ -642,7 +646,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Get success switch
-      final successSwitch = find.byKey(const Key('meal_recording_success_switch'));
+      final successSwitch =
+          find.byKey(const Key('meal_recording_success_switch'));
       expect(tester.widget<Switch>(successSwitch).value, isTrue);
 
       // Toggle switch
@@ -663,7 +668,8 @@ void main() {
       );
 
       // Toggle success switch to OFF
-      final successSwitch = find.byKey(const Key('meal_recording_success_switch'));
+      final successSwitch =
+          find.byKey(const Key('meal_recording_success_switch'));
       await tester.tap(successSwitch);
       await tester.pumpAndSettle();
 
