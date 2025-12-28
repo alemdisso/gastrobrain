@@ -190,12 +190,12 @@ Create `test/widgets/add_side_dish_dialog_test.dart`:
 
 #### 2.1.4: AddNewIngredientDialog Tests
 Create `test/widgets/add_new_ingredient_dialog_test.dart`:
-- [ ] Test: Dialog opens with empty form
-- [ ] Test: Returns created Ingredient on save
-- [ ] Test: Validates ingredient name
-- [ ] Test: Category dropdown works correctly
-- [ ] Test: Unit dropdown works correctly
-- [ ] Test: Protein type shown only for protein category
+- [X] Test: Dialog opens with empty form
+- [X] Test: Returns created Ingredient on save
+- [X] Test: Validates ingredient name
+- [X] Test: Category dropdown works correctly
+- [X] Test: Unit dropdown works correctly
+- [X] Test: Protein type shown only for protein category
 - [ ] Test: Returns null when cancelled
 - [ ] Test: Saves ingredient to database
 - [ ] Test: Error handling when save fails

@@ -486,6 +486,14 @@ class MockDatabaseHelper implements DatabaseHelper {
   // INGREDIENT OPERATIONS
   @override
   Future<String> insertIngredient(Ingredient ingredient) async {
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'insertIngredient')) {
+      final errorMessage = _nextOperationError;
+      resetErrorSimulation();
+      throw Exception(errorMessage);
+    }
+
     // Validate the ingredient
     EntityValidator.validateIngredient(
       id: ingredient.id,
