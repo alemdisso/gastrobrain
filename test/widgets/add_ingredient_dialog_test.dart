@@ -620,5 +620,116 @@ void main() {
         DialogTestHelpers.verifyDialogClosed<AddIngredientDialog>();
       });
     });
+
+    // Error Handling tests deferred to issue #245
+    // Blocked by issue #244 - MockDatabaseHelper.getAllIngredients() lacks error simulation
+
+    group('Temporary State & Mode Switching', () {
+      testWidgets('switching to custom mode preserves quantity and notes',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        // Wait for ingredients to load
+        await tester.pumpAndSettle();
+
+        // Fill in quantity in DB mode
+        final quantityField =
+            find.byKey(const Key('add_ingredient_quantity_field'));
+        await tester.enterText(quantityField, '250');
+        await tester.pumpAndSettle();
+
+        // Fill in notes in DB mode
+        final notesField = find.byKey(const Key('add_ingredient_notes_field'));
+        await tester.enterText(notesField, 'Finely chopped');
+        await tester.pumpAndSettle();
+
+        // Verify we're in DB mode (custom name field not visible)
+        expect(find.byKey(const Key('add_ingredient_custom_name_field')),
+            findsNothing);
+
+        // Switch to custom mode
+        await tester.tap(find.text('Usar ingrediente personalizado'));
+        await tester.pumpAndSettle();
+
+        // Verify we switched to custom mode (custom name field now visible)
+        expect(find.byKey(const Key('add_ingredient_custom_name_field')),
+            findsOneWidget);
+
+        // Verify quantity was preserved
+        final quantityFieldAfter =
+            find.byKey(const Key('add_ingredient_quantity_field'));
+        expect(tester.widget<TextFormField>(quantityFieldAfter).controller!.text,
+            equals('250'));
+
+        // Verify notes were preserved
+        final notesFieldAfter =
+            find.byKey(const Key('add_ingredient_notes_field'));
+        expect(tester.widget<TextFormField>(notesFieldAfter).controller!.text,
+            equals('Finely chopped'));
+      });
+
+      testWidgets(
+          'custom mode allows creating ingredient without DB selection',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        RecipeIngredient? savedIngredient;
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+            onSave: (ingredient) {
+              savedIngredient = ingredient;
+            },
+          ),
+        );
+
+        // Wait for ingredients to load
+        await tester.pumpAndSettle();
+
+        // Switch to custom mode immediately
+        await tester.tap(find.text('Usar ingrediente personalizado'));
+        await tester.pumpAndSettle();
+
+        // Fill in custom ingredient form
+        final customNameField =
+            find.byKey(const Key('add_ingredient_custom_name_field'));
+        await tester.enterText(customNameField, 'Mystery Spice');
+        await tester.pumpAndSettle();
+
+        // Select category
+        final categoryField =
+            find.byKey(const Key('add_ingredient_custom_category_field'));
+        await tester.tap(categoryField);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Tempero').last);
+        await tester.pumpAndSettle();
+
+        // Fill quantity
+        final quantityField =
+            find.byKey(const Key('add_ingredient_quantity_field'));
+        await tester.enterText(quantityField, '1');
+        await tester.pumpAndSettle();
+
+        // Save
+        await tester.tap(find.text('Adicionar'));
+        await tester.pumpAndSettle();
+
+        // Verify saved ingredient is custom (no ingredientId)
+        expect(savedIngredient, isNotNull);
+        expect(savedIngredient!.ingredientId, isNull);
+        expect(savedIngredient!.customName, equals('Mystery Spice'));
+        expect(savedIngredient!.customCategory, equals('seasoning'));
+      });
+    });
   });
 }

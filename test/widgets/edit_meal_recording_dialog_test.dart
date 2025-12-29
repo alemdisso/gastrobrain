@@ -924,4 +924,111 @@ void main() {
       });
     });
   });
+
+  group('EditMealRecordingDialog - Error Handling', () {
+    testWidgets('shows error when loading recipes fails',
+        (WidgetTester tester) async {
+      // Configure mock to fail on getAllRecipes
+      mockDbHelper.failOnOperation('getAllRecipes');
+
+      await DialogTestHelpers.openDialog(
+        tester,
+        dialogBuilder: (context) => EditMealRecordingDialog(
+          meal: testMeal,
+          primaryRecipe: testRecipe,
+          databaseHelper: mockDbHelper,
+        ),
+      );
+
+      // Wait for the loading attempt to complete
+      await tester.pumpAndSettle();
+
+      // Verify dialog is still open (doesn't close on error)
+      expect(find.byType(EditMealRecordingDialog), findsOneWidget);
+
+      // Verify error snackbar is shown
+      // Note: Looking for any error text (case-insensitive)
+      expect(find.textContaining('rro'), findsOneWidget);
+
+      // Verify loading state reset
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+    });
+  });
+
+  group('EditMealRecordingDialog - Temporary State', () {
+    testWidgets('removing pre-filled side dishes doesnt affect database',
+        (WidgetTester tester) async {
+      // Insert recipes into database first
+      await mockDbHelper.insertRecipe(testRecipe);
+      await mockDbHelper.insertRecipe(sideRecipe);
+
+      // Track initial database state
+      final initialRecipeCount = mockDbHelper.recipes.length;
+      final initialMealCount = mockDbHelper.meals.length;
+
+      final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+        tester,
+        dialogBuilder: (context) => EditMealRecordingDialog(
+          meal: testMeal,
+          primaryRecipe: testRecipe,
+          additionalRecipes: [testRecipe, sideRecipe],
+          databaseHelper: mockDbHelper,
+        ),
+      );
+
+      // Verify both side dishes are shown
+      expect(find.text(testRecipe.name),
+          findsNWidgets(2)); // Primary and as side dish
+      expect(find.text(sideRecipe.name), findsOneWidget);
+
+      // Remove first side dish (which is the testRecipe as side dish)
+      final deleteButtons = find.byIcon(Icons.delete_outline);
+      expect(deleteButtons, findsNWidgets(2)); // One for each side dish
+      await tester.tap(deleteButtons.first);
+      await tester.pumpAndSettle();
+
+      // Save dialog
+      await tester.tap(find.text('Salvar Alterações'));
+      await tester.pumpAndSettle();
+
+      // Verify return value includes only remaining side dish
+      expect(result.hasValue, isTrue);
+      final additionalRecipes = result.value!['additionalRecipes'] as List;
+      expect(additionalRecipes.length, equals(1));
+      expect(additionalRecipes[0], equals(sideRecipe));
+
+      // Verify database wasn't affected by removing the side dish
+      expect(mockDbHelper.recipes.length, equals(initialRecipeCount));
+      expect(mockDbHelper.meals.length, equals(initialMealCount));
+      expect(mockDbHelper.recipes.containsKey(testRecipe.id), isTrue);
+      expect(mockDbHelper.recipes.containsKey(sideRecipe.id), isTrue);
+    });
+
+    testWidgets('removing all side dishes returns empty list',
+        (WidgetTester tester) async {
+      final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+        tester,
+        dialogBuilder: (context) => EditMealRecordingDialog(
+          meal: testMeal,
+          primaryRecipe: testRecipe,
+          additionalRecipes: [sideRecipe],
+          databaseHelper: mockDbHelper,
+        ),
+      );
+
+      // Remove the only side dish
+      final deleteButton = find.byIcon(Icons.delete_outline);
+      await tester.tap(deleteButton);
+      await tester.pumpAndSettle();
+
+      // Save dialog
+      await tester.tap(find.text('Salvar Alterações'));
+      await tester.pumpAndSettle();
+
+      // Verify return value has empty additional recipes list
+      expect(result.hasValue, isTrue);
+      final additionalRecipes = result.value!['additionalRecipes'] as List;
+      expect(additionalRecipes, isEmpty);
+    });
+  });
 }

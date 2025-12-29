@@ -812,4 +812,76 @@ void main() {
       });
     });
   });
+
+  group('MealRecordingDialog - Temporary State', () {
+    testWidgets('removing pre-filled side dishes doesnt affect database',
+        (WidgetTester tester) async {
+      // Track initial database state
+      final initialRecipeCount = mockDbHelper.recipes.length;
+      final initialMealCount = mockDbHelper.meals.length;
+
+      final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+        tester,
+        dialogBuilder: (context) => MealRecordingDialog(
+          primaryRecipe: primaryRecipe,
+          additionalRecipes: [sideRecipe1, sideRecipe2],
+        ),
+      );
+
+      // Verify both side dishes are shown
+      expect(find.text(sideRecipe1.name), findsOneWidget);
+      expect(find.text(sideRecipe2.name), findsOneWidget);
+
+      // Remove first side dish
+      final deleteButtons = find.byIcon(Icons.delete_outline);
+      expect(deleteButtons, findsNWidgets(2)); // One for each side dish
+      await tester.tap(deleteButtons.first);
+      await tester.pumpAndSettle();
+
+      // Verify first side dish was removed from UI
+      expect(find.text(sideRecipe1.name), findsNothing);
+      expect(find.text(sideRecipe2.name), findsOneWidget);
+
+      // Save dialog
+      await tester.tap(find.byKey(const Key('meal_recording_save_button')));
+      await tester.pumpAndSettle();
+
+      // Verify return value includes only remaining side dish
+      expect(result.hasValue, isTrue);
+      final additionalRecipes = result.value!['additionalRecipes'] as List;
+      expect(additionalRecipes.length, equals(1));
+      expect(additionalRecipes[0], equals(sideRecipe2));
+      expect(additionalRecipes.contains(sideRecipe1), isFalse);
+
+      // Verify database wasn't affected by removing the side dish
+      expect(mockDbHelper.recipes.length, equals(initialRecipeCount));
+      expect(mockDbHelper.meals.length, equals(initialMealCount));
+      expect(mockDbHelper.recipes.containsKey(sideRecipe1.id), isTrue);
+    });
+
+    testWidgets('removing all side dishes returns empty list',
+        (WidgetTester tester) async {
+      final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+        tester,
+        dialogBuilder: (context) => MealRecordingDialog(
+          primaryRecipe: primaryRecipe,
+          additionalRecipes: [sideRecipe1],
+        ),
+      );
+
+      // Remove the only side dish
+      final deleteButton = find.byIcon(Icons.delete_outline);
+      await tester.tap(deleteButton);
+      await tester.pumpAndSettle();
+
+      // Save dialog
+      await tester.tap(find.byKey(const Key('meal_recording_save_button')));
+      await tester.pumpAndSettle();
+
+      // Verify return value has empty additional recipes list
+      expect(result.hasValue, isTrue);
+      final additionalRecipes = result.value!['additionalRecipes'] as List;
+      expect(additionalRecipes, isEmpty);
+    });
+  });
 }
