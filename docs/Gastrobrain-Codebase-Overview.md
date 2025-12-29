@@ -158,7 +158,14 @@ Gastrobrain is a comprehensive meal planning and recipe management application b
 ## Testing Infrastructure
 
 ### Test Coverage Overview
-The application maintains comprehensive test coverage with **60+ unit/widget tests** and **8+ end-to-end/integration tests**, ensuring reliability and maintainability across all application layers. The testing infrastructure includes a robust E2E testing framework with helper methods, best practices documentation, and comprehensive coverage of critical user workflows.
+The application maintains comprehensive test coverage with **160+ unit/widget tests** (including 100+ dialog tests) and **8+ end-to-end/integration tests**, ensuring reliability and maintainability across all application layers. The testing infrastructure includes robust dialog testing utilities, E2E testing framework with helper methods, regression test suite, and comprehensive coverage of critical user workflows.
+
+**Test Breakdown:**
+- **Dialog Tests**: 100+ tests across 6 dialogs (return values, cancellation, disposal, validation, error handling)
+- **Service/Core Tests**: 40+ tests (recommendations, database, ingredient matching)
+- **UI/Widget Tests**: 20+ tests (screens, components, navigation)
+- **Integration Tests**: 8+ E2E workflow tests
+- **Regression Tests**: Historical bug prevention (controller disposal, overflow issues)
 
 ### Unit & Widget Tests (`test/` directory)
 
@@ -191,8 +198,16 @@ The application maintains comprehensive test coverage with **60+ unit/widget tes
   - `weekly_calendar_widget_test.dart`: Calendar functionality
   - `recipe_card_test.dart`: Recipe display components
   - `recipe_card_rating_test.dart`: Recipe rating display and interactions
-  - `add_ingredient_dialog_test.dart`: Ingredient management
-  - `edit_meal_recording_dialog_test.dart`: Meal editing interface
+
+- **Dialog Tests** (`test/widgets/`, **100+ tests** across 6 dialogs):
+  - `meal_cooked_dialog_test.dart`: 12 tests - Cooking details capture
+  - `add_ingredient_dialog_test.dart`: 14 tests - Ingredient selection and creation
+  - `meal_recording_dialog_test.dart`: 20 tests - Meal planning workflow
+  - `add_side_dish_dialog_test.dart`: 24 tests - Multi-recipe meal composition
+  - `add_new_ingredient_dialog_test.dart`: 9 tests - Ingredient creation
+  - `edit_meal_recording_dialog_test.dart`: 21 tests - Meal modification
+  - All dialogs tested for: return values, cancellation, controller disposal, validation, error handling
+  - See [docs/DIALOG_TESTING_GUIDE.md](DIALOG_TESTING_GUIDE.md) for patterns and best practices
 
 #### Model & Data Tests
 - **Model Validation** (`test/models/`):
@@ -235,6 +250,19 @@ The application features a comprehensive E2E testing framework with reusable hel
 #### Testing Utilities
 - **`test_utils/test_setup.dart`**: Centralized test configuration and setup
 - **`test_utils/test_app_wrapper.dart`**: Widget testing utilities with localization support
+- **`test/helpers/dialog_test_helpers.dart`**: 18 helper methods for dialog testing
+  - `openDialogAndCapture<T>()`: Opens dialog and captures return value
+  - `tapDialogButton()`, `fillTextField()`, `fillDialogForm()`: User interactions
+  - `pressBackButton()`, `tapOutsideDialog()`: Alternative dismissal methods
+  - `verifyDialogCancelled()`, `verifyNoSideEffects()`: Assertion helpers
+- **`test/test_utils/dialog_fixtures.dart`**: Standardized test data factories
+  - `createTestRecipe()`, `createPrimaryRecipe()`, `createSideRecipe()`
+  - `createMultipleRecipes()`, `createMultipleIngredients()`
+  - Consistent test data across all dialog tests
+- **`test/regression/dialog_regression_test.dart`**: Regression tests for known dialog bugs
+  - Controller disposal crash (commit 07058a2)
+  - RenderFlex overflow on small screens (issue #246)
+  - Links to historical bug fixes with commit hashes
 - **Isolated Test Environment**: Each test uses fresh mock instances to prevent state pollution
 
 #### Key Testing Principles

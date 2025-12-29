@@ -35,6 +35,10 @@ void main() {
     availableRecipes.forEach(mockDbHelper.insertRecipe);
   });
 
+  tearDown(() {
+    TestSetup.cleanupMockDatabase(mockDbHelper);
+  });
+
   group('MealRecordingDialog - Initial State', () {
     testWidgets('dialog opens with correct initial state',
         (WidgetTester tester) async {

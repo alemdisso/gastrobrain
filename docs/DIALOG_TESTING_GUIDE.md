@@ -1,9 +1,10 @@
 <!-- markdownlint-disable -->
 # Dialog Testing Guide
 
-**Version**: 1.0
-**Last Updated**: 2025-12-27
+**Version**: 1.1
+**Last Updated**: 2025-12-28 (Phase 3 learnings added)
 **Related Issue**: #38
+**Related Issues**: #244 (MockDB gaps), #245 (Deferred tests), #237 (DI improvements)
 
 ## Overview
 
@@ -540,6 +541,188 @@ testWidgets('test error', ...);
 
 ---
 
+## Common Pitfalls
+
+### 1. Forgetting to Test Cancellation
+
+**Mistake**: Only testing the "happy path" (successful save).
+
+**Why it's bad**: Controller disposal crashes only occur on cancellation, not on save.
+
+**Fix**: Always include cancellation tests:
+```dart
+testWidgets('returns null when cancelled', (tester) async { ... });
+testWidgets('safely disposes controllers on cancel', (tester) async { ... });
+```
+
+**Reference**: All 6 dialog test files include disposal tests (Phase 2.2.2).
+
+### 2. Not Resetting Mock State Between Tests
+
+**Mistake**: Assuming clean state without explicit reset.
+
+**Why it's bad**: Data from previous tests can leak and cause flaky failures.
+
+**Fix**: Always reset in setUp/tearDown:
+```dart
+setUp(() {
+  mockDbHelper = TestSetup.setupMockDatabase();
+});
+
+tearDown(() {
+  mockDbHelper.resetAllData();
+  mockDbHelper.resetErrorSimulation();
+});
+```
+
+### 3. Using Hardcoded Strings Instead of Localization
+
+**Mistake**: Looking for English text in widget tree:
+```dart
+// ❌ WRONG - breaks in Portuguese locale
+await tester.tap(find.text('Save'));
+```
+
+**Why it's bad**: Tests fail when run with different locales.
+
+**Fix**: Use keys or localized lookups:
+```dart
+// ✅ CORRECT
+await tester.tap(find.byKey(const Key('save_button')));
+
+// OR use the localized text
+final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+await tester.tap(find.text(l10n.save));
+```
+
+### 4. Not Waiting for Animations
+
+**Mistake**: Immediately asserting after triggering action:
+```dart
+// ❌ WRONG
+await tester.tap(find.text('Open Dialog'));
+expect(find.byType(MyDialog), findsOneWidget); // Fails!
+```
+
+**Why it's bad**: Dialog animation hasn't completed.
+
+**Fix**: Always call `pumpAndSettle`:
+```dart
+// ✅ CORRECT
+await tester.tap(find.text('Open Dialog'));
+await tester.pumpAndSettle(); // Wait for animation
+expect(find.byType(MyDialog), findsOneWidget);
+```
+
+### 5. Testing Implementation Details Instead of Behavior
+
+**Mistake**: Testing internal widget structure:
+```dart
+// ❌ WRONG - fragile test
+expect(find.byType(TextField), findsNWidgets(5));
+expect(find.byType(ElevatedButton), findsNWidgets(2));
+```
+
+**Why it's bad**: Breaks when refactoring UI without changing behavior.
+
+**Fix**: Test user-visible behavior:
+```dart
+// ✅ CORRECT - tests what users see/do
+expect(find.text('Servings'), findsOneWidget);
+expect(find.text('Save'), findsOneWidget);
+expect(find.text('Cancel'), findsOneWidget);
+
+// Test interactions
+await DialogTestHelpers.fillTextField(tester, 'Servings', '4');
+await DialogTestHelpers.tapDialogButton(tester, 'Save');
+expect(result.value?['servings'], equals(4));
+```
+
+### 6. Not Testing Alternative Dismissal Methods
+
+**Mistake**: Only testing "Cancel" button, not back button or tap-outside.
+
+**Why it's bad**: Users can dismiss dialogs multiple ways - all must be safe.
+
+**Fix**: Test all dismissal methods (Phase 2.2.2):
+```dart
+testWidgets('safely disposes on back button', (tester) async {
+  await DialogTestHelpers.openDialog(tester, dialogBuilder: ...);
+  await DialogTestHelpers.pressBackButton(tester);
+  await tester.pumpAndSettle();
+  // Should not crash
+});
+
+testWidgets('safely disposes when tapping outside', (tester) async {
+  await DialogTestHelpers.openDialog(tester, dialogBuilder: ...);
+  await DialogTestHelpers.tapOutsideDialog(tester);
+  await tester.pumpAndSettle();
+  // Should not crash
+});
+```
+
+### 7. Mixing Test Concerns
+
+**Mistake**: Testing dialog logic AND screen logic in same test.
+
+**Why it's bad**: Unclear what's being tested, hard to debug failures.
+
+**Fix**: Separate dialog widget tests from screen integration tests:
+- **Dialog tests**: Test dialog in isolation with mock dependencies
+- **Screen tests**: Test screen's dialog interactions via E2E tests
+
+### 8. Ignoring Database Side Effects
+
+**Mistake**: Not verifying that cancellation doesn't save to database.
+
+**Why it's bad**: Canceled operations might still persist data.
+
+**Fix**: Verify no side effects:
+```dart
+testWidgets('no database side effects on cancel', (tester) async {
+  final initialCount = mockDbHelper.meals.length;
+
+  await DialogTestHelpers.openDialog(tester, dialogBuilder: ...);
+  await DialogTestHelpers.fillTextField(tester, 'Servings', '4');
+  await DialogTestHelpers.tapDialogButton(tester, 'Cancel');
+  await tester.pumpAndSettle();
+
+  // Verify nothing was saved
+  expect(mockDbHelper.meals.length, equals(initialCount));
+});
+```
+
+### 9. Not Testing Edge Cases
+
+**Mistake**: Only testing with valid, typical data.
+
+**Why it's bad**: Edge cases often reveal bugs.
+
+**Fix**: Test boundaries:
+```dart
+testWidgets('handles empty string input', (tester) async { ... });
+testWidgets('handles very long text (>1000 chars)', (tester) async { ... });
+testWidgets('handles negative numbers', (tester) async { ... });
+testWidgets('handles special characters in names', (tester) async { ... });
+```
+
+### 10. Assuming DI Support Without Verification
+
+**Mistake**: Writing error simulation tests without checking if dialog supports DI.
+
+**Why it's bad**: Test will fail if dialog creates its own DatabaseHelper.
+
+**Fix**: Check "Known Limitations" section first:
+- ✅ `AddNewIngredientDialog` - Has DI
+- ✅ `AddIngredientDialog` - Has DI
+- ✅ `EditMealRecordingDialog` - Has DI
+- ❌ `MealRecordingDialog` - No DI (issue #237)
+- ❌ `AddSideDishDialog` - Doesn't load DB directly
+
+**See**: Issue #237 for DI improvements, Issue #245 for deferred tests.
+
+---
+
 ## Troubleshooting
 
 ### Common Issues
@@ -598,20 +781,480 @@ void dispose() {
 }
 ```
 
+### Debugging Techniques
+
+#### Using debugDumpApp() to Inspect Widget Tree
+
+When tests fail with "Widget not found", inspect the widget tree:
+
+```dart
+testWidgets('debug example', (tester) async {
+  await tester.pumpWidget(...);
+  await tester.pumpAndSettle();
+
+  // Print entire widget tree
+  debugDumpApp();
+
+  // Or print specific finder results
+  print('Found ${find.byType(TextField).evaluate().length} TextFields');
+});
+```
+
+**Tip**: Run with `flutter test --verbose` to see all print output.
+
+#### Using tester.printToConsole() for Rendered Text
+
+Find what text is actually rendered:
+
+```dart
+testWidgets('check rendered text', (tester) async {
+  await tester.pumpWidget(...);
+
+  // Print all Text widgets
+  find.byType(Text).evaluate().forEach((element) {
+    final widget = element.widget as Text;
+    print('Text widget: ${widget.data}');
+  });
+});
+```
+
+#### Using Keys to Debug Complex Layouts
+
+Add keys during development for easier debugging:
+
+```dart
+// In dialog implementation
+TextField(
+  key: const Key('servings_field'),  // Add during debugging
+  decoration: InputDecoration(labelText: 'Servings'),
+)
+
+// In test
+expect(find.byKey(const Key('servings_field')), findsOneWidget);
+```
+
+#### Checking for Exceptions During Pump
+
+Catch exceptions that occur during rendering:
+
+```dart
+testWidgets('detect rendering errors', (tester) async {
+  await tester.pumpWidget(...);
+
+  try {
+    await tester.pumpAndSettle();
+  } catch (e) {
+    print('Exception during pump: $e');
+    rethrow;
+  }
+
+  // Check if any exception was thrown but swallowed
+  final exception = tester.takeException();
+  if (exception != null) {
+    print('Swallowed exception: $exception');
+  }
+});
+```
+
+#### Using Flutter DevTools with Tests
+
+Run tests in debug mode and attach DevTools:
+
+```bash
+# Run test in debug mode (slower but allows DevTools)
+flutter run test/widgets/my_dialog_test.dart
+
+# Then open DevTools at the provided URL
+# Use Widget Inspector to examine dialog structure
+```
+
+#### Isolating Test Failures
+
+When multiple tests fail, isolate the problem:
+
+```dart
+// Run only one test
+testWidgets('specific test', (tester) async { ... }, skip: false);
+
+// Skip other tests temporarily
+testWidgets('other test', (tester) async { ... }, skip: true);
+```
+
+Or use command line:
+
+```bash
+# Run only tests matching pattern
+flutter test --plain-name "returns correct data on save"
+
+# Run only one test file
+flutter test test/widgets/meal_recording_dialog_test.dart
+```
+
+#### Checking Mock State
+
+Debug mock database state issues:
+
+```dart
+testWidgets('debug mock state', (tester) async {
+  setUp(() {
+    mockDbHelper = TestSetup.setupMockDatabase();
+  });
+
+  // Print mock state
+  print('Recipes in mock DB: ${mockDbHelper.recipes.length}');
+  print('Ingredients in mock DB: ${mockDbHelper.ingredients.length}');
+
+  // Verify mock configuration
+  expect(mockDbHelper.recipes, isNotEmpty,
+    reason: 'Mock DB should have test data');
+});
+```
+
+#### Using Breakpoints in Tests
+
+Set breakpoints in your IDE and run tests in debug mode:
+
+```dart
+testWidgets('with breakpoint', (tester) async {
+  await tester.pumpWidget(...);
+  await tester.pumpAndSettle();
+
+  debugger(); // Breakpoint - execution pauses here
+
+  // Continue stepping through test
+  await tester.tap(find.text('Save'));
+});
+```
+
+**VSCode**: Set breakpoint on line, run "Debug Test" from code lens
+**Android Studio**: Right-click test → "Debug 'testName'"
+
+#### Comparing Expected vs Actual Widget Trees
+
+Use `matchesGoldenFile` for visual regression testing:
+
+```dart
+testWidgets('visual regression test', (tester) async {
+  await tester.pumpWidget(...);
+  await tester.pumpAndSettle();
+
+  // Generate golden file first time
+  await expectLater(
+    find.byType(MealRecordingDialog),
+    matchesGoldenFile('meal_recording_dialog.png'),
+  );
+});
+```
+
+Run with `flutter test --update-goldens` to create baseline images.
+
 ---
 
-## Examples in Codebase
+## Known Limitations & Workarounds
 
-### Reference Tests
+### Dependency Injection Limitations
 
-- **Basic Dialog Test**: `test/widgets/dialogs/add_ingredient_dialog_test.dart`
-- **Advanced Dialog Test**: (To be added in Phase 2)
+**Issue**: Some dialogs create their own `DatabaseHelper` instance instead of accepting one via constructor.
 
-### Reference Implementation
+**Impact**: Cannot test database error scenarios for these dialogs.
 
-- **DialogTestHelpers**: `test/helpers/dialog_test_helpers.dart`
-- **DialogFixtures**: `test/test_utils/dialog_fixtures.dart`
-- **MockDatabaseHelper**: `test/mocks/mock_database_helper.dart`
+**Affected Dialogs**:
+- `MealRecordingDialog` - Creates own DB instance
+- `AddSideDishDialog` - Doesn't directly interact with DB
+
+**Workaround**: Tests for these dialogs are deferred to issue #245, blocked by #237 (DI improvements).
+
+**Testable Dialogs** (have DI support):
+- `AddNewIngredientDialog` ✓
+- `AddIngredientDialog` ✓
+- `EditMealRecordingDialog` ✓
+
+### MockDatabaseHelper Error Simulation Gaps
+
+**Issue**: Not all `MockDatabaseHelper` methods support error simulation via `failOnOperation()`.
+
+**Supported Operations**:
+- `getAllRecipes()` ✓
+- `insertIngredient()` ✓
+- `updateMeal()` ✓
+- `getMeal()` ✓
+
+**Unsupported Operations**:
+- `getAllIngredients()` ✗ - Issue #244
+
+**Workaround**: Tests requiring unsupported operations are deferred to issue #245.
+
+### Nested Dialog Testing
+
+**Issue**: Testing workflows that open dialogs from within dialogs (e.g., adding side dishes from MealRecordingDialog).
+
+**Impact**: Multi-step operations requiring nested dialogs cannot be fully tested.
+
+**Workaround**: Deferred to issue #245, blocked by #237 (DI improvements).
+
+---
+
+## Real-World Examples from Codebase
+
+### Example 1: Complete Return Value Test
+
+From `test/widgets/meal_cooked_dialog_test.dart`:
+
+```dart
+testWidgets('returns correct cooking details on save',
+  (WidgetTester tester) async {
+  final testRecipe = DialogFixtures.createTestRecipe(
+    prepTimeMinutes: 15,
+    cookTimeMinutes: 30,
+  );
+  final plannedDate = DateTime(2025, 1, 15, 18, 0);
+
+  final result = await DialogTestHelpers.openDialogAndCapture<Map<String, dynamic>>(
+    tester,
+    dialogBuilder: (context) => MealCookedDialog(
+      recipe: testRecipe,
+      plannedDate: plannedDate,
+    ),
+  );
+
+  // Fill in servings
+  await tester.enterText(
+    find.byKey(const Key('meal_cooked_servings_field')),
+    '4',
+  );
+  await tester.pumpAndSettle();
+
+  // Fill in notes
+  await tester.enterText(
+    find.byKey(const Key('meal_cooked_notes_field')),
+    'Delicious meal',
+  );
+  await tester.pumpAndSettle();
+
+  // Save
+  await tester.tap(find.text('Salvar'));
+  await tester.pumpAndSettle();
+
+  // Verify return value
+  expect(result.hasValue, isTrue);
+  expect(result.value!['servings'], equals(4));
+  expect(result.value!['notes'], equals('Delicious meal'));
+  expect(result.value!['wasSuccessful'], isTrue);
+});
+```
+
+**Key points**:
+- Uses `DialogTestHelpers.openDialogAndCapture` to capture return value
+- Uses `DialogFixtures` for test data
+- Uses keys for reliable field finding
+- Verifies all returned fields
+
+### Example 2: Cancellation with No Side Effects
+
+From `test/widgets/add_new_ingredient_dialog_test.dart`:
+
+```dart
+testWidgets('returns null when cancelled',
+  (WidgetTester tester) async {
+  final mockDbHelper = TestSetup.setupMockDatabase();
+
+  final result = await DialogTestHelpers.openDialogAndCapture<Ingredient>(
+    tester,
+    dialogBuilder: (context) => AddNewIngredientDialog(
+      databaseHelper: mockDbHelper,
+    ),
+  );
+
+  // Fill in some data
+  await tester.enterText(
+    find.byKey(const Key('add_new_ingredient_name_field')),
+    'Temporary Ingredient',
+  );
+  await tester.pumpAndSettle();
+
+  // Cancel without saving
+  await DialogTestHelpers.tapDialogButton(tester, 'Cancelar');
+  await tester.pumpAndSettle();
+
+  // Verify null returned
+  expect(result.hasValue, isFalse);
+  expect(result.value, isNull);
+
+  // Verify no database side effects
+  expect(mockDbHelper.ingredients.isEmpty, isTrue);
+});
+```
+
+**Key points**:
+- Fills data but doesn't save
+- Verifies null return on cancel
+- Verifies database unchanged (no side effects)
+
+### Example 3: Alternative Dismissal Methods
+
+From `test/widgets/add_side_dish_dialog_test.dart`:
+
+```dart
+testWidgets('safely disposes controllers when dismissed by tapping outside',
+  (WidgetTester tester) async {
+  await DialogTestHelpers.openDialog(
+    tester,
+    dialogBuilder: (context) => AddSideDishDialog(
+      availableRecipes: availableRecipes,
+      primaryRecipe: primaryRecipe,
+      excludeRecipes: [primaryRecipe],
+    ),
+  );
+
+  // Verify dialog is displayed
+  expect(find.byType(AddSideDishDialog), findsOneWidget);
+
+  // Dismiss by tapping outside dialog
+  await DialogTestHelpers.tapOutsideDialog(tester);
+  await tester.pumpAndSettle();
+
+  // Dialog should be closed (test passes if no crash)
+  expect(find.byType(AddSideDishDialog), findsNothing);
+});
+
+testWidgets('safely disposes controllers when back button is pressed',
+  (WidgetTester tester) async {
+  await DialogTestHelpers.openDialog(
+    tester,
+    dialogBuilder: (context) => AddSideDishDialog(
+      availableRecipes: availableRecipes,
+      primaryRecipe: primaryRecipe,
+      excludeRecipes: [primaryRecipe],
+    ),
+  );
+
+  // Verify dialog is displayed
+  expect(find.byType(AddSideDishDialog), findsOneWidget);
+
+  // Dismiss by pressing back button
+  await DialogTestHelpers.pressBackButton(tester);
+  await tester.pumpAndSettle();
+
+  // Dialog should be closed (test passes if no crash)
+  expect(find.byType(AddSideDishDialog), findsNothing);
+});
+```
+
+**Key points**:
+- Tests all dismissal methods (not just Cancel button)
+- Verifies safe controller disposal (no crash = pass)
+- Uses `DialogTestHelpers` for consistent test behavior
+
+### Example 4: Error Handling Test
+
+From `test/widgets/add_new_ingredient_dialog_test.dart`:
+
+```dart
+testWidgets('shows error when database save fails',
+  (WidgetTester tester) async {
+  final mockDbHelper = TestSetup.setupMockDatabase();
+
+  // Configure mock to fail on insert
+  mockDbHelper.failOnOperation('insertIngredient');
+
+  await DialogTestHelpers.openDialog(
+    tester,
+    dialogBuilder: (context) => AddNewIngredientDialog(
+      databaseHelper: mockDbHelper,
+    ),
+  );
+
+  // Fill in valid data
+  await tester.enterText(
+    find.byKey(const Key('add_new_ingredient_name_field')),
+    'Test Ingredient',
+  );
+  await tester.pumpAndSettle();
+
+  // Attempt to save
+  await DialogTestHelpers.tapDialogButton(tester, 'Salvar');
+  await tester.pumpAndSettle();
+
+  // Verify error is shown
+  expect(find.text('Erro ao salvar ingrediente'), findsOneWidget);
+
+  // Verify dialog remains open (not closed on error)
+  expect(find.byType(AddNewIngredientDialog), findsOneWidget);
+});
+```
+
+**Key points**:
+- Uses `failOnOperation()` to simulate database errors
+- Verifies error message is displayed
+- Verifies dialog doesn't auto-close on error
+
+### Example 5: Multi-Field Complex Dialog
+
+From `test/widgets/edit_meal_recording_dialog_test.dart`:
+
+```dart
+testWidgets('returns updated meal data on save',
+  (WidgetTester tester) async {
+  final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+    tester,
+    dialogBuilder: (context) => EditMealRecordingDialog(
+      meal: testMeal,
+      primaryRecipe: testRecipe,
+      databaseHelper: mockDbHelper,
+    ),
+  );
+
+  // Modify servings
+  await tester.enterText(
+    find.widgetWithText(TextFormField, testMeal.servings.toString()),
+    '5',
+  );
+  await tester.pumpAndSettle();
+
+  // Modify notes
+  await tester.enterText(
+    find.widgetWithText(TextFormField, 'Original test notes'),
+    'Updated test notes',
+  );
+  await tester.pumpAndSettle();
+
+  // Toggle success switch
+  await tester.tap(find.byKey(const Key('edit_meal_success_switch')));
+  await tester.pumpAndSettle();
+
+  // Save changes
+  await tester.tap(find.text('Salvar Alterações'));
+  await tester.pumpAndSettle();
+
+  // Verify all updated fields in return value
+  expect(result.hasValue, isTrue);
+  expect(result.value!['servings'], equals(5));
+  expect(result.value!['notes'], equals('Updated test notes'));
+  expect(result.value!['wasSuccessful'], isFalse); // Toggled from true
+});
+```
+
+**Key points**:
+- Tests pre-populated data (edit dialog)
+- Modifies multiple fields
+- Verifies all changes reflected in return value
+
+### Reference Files
+
+**Test Files** (browse for more examples):
+- `test/widgets/meal_cooked_dialog_test.dart` - 12 tests
+- `test/widgets/add_ingredient_dialog_test.dart` - 14 tests
+- `test/widgets/meal_recording_dialog_test.dart` - 20 tests
+- `test/widgets/add_side_dish_dialog_test.dart` - 24 tests
+- `test/widgets/add_new_ingredient_dialog_test.dart` - 9 tests
+- `test/widgets/edit_meal_recording_dialog_test.dart` - 21 tests
+- `test/regression/dialog_regression_test.dart` - Regression tests for known bugs
+
+**Helper/Utility Files**:
+- `test/helpers/dialog_test_helpers.dart` - 18 helper methods
+- `test/test_utils/dialog_fixtures.dart` - Test data factories
+- `test/mocks/mock_database_helper.dart` - Mock with error simulation
+- `test/test_utils/test_setup.dart` - Standardized test setup
 
 ---
 

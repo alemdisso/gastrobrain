@@ -95,10 +95,83 @@ final recommendations = await recommendationService.getRecommendations(
 ```
 
 ### Testing Patterns
+
+**General Testing:**
 - Use `MockDatabaseHelper` for isolated unit tests
 - Test recommendation factors individually and in combination
 - Widget tests should cover responsive layouts
 - Integration tests cover full user workflows
+
+**Dialog Testing** (see [docs/DIALOG_TESTING_GUIDE.md](docs/DIALOG_TESTING_GUIDE.md)):
+
+All dialog tests must follow these patterns:
+
+```dart
+// 1. Setup
+setUp(() {
+  mockDbHelper = TestSetup.setupMockDatabase();
+});
+
+// 2. Test return values
+testWidgets('returns correct data on save', (tester) async {
+  final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+    tester,
+    dialogBuilder: (context) => MyDialog(databaseHelper: mockDbHelper),
+  );
+
+  await DialogTestHelpers.fillDialogForm(tester, {'Field': 'Value'});
+  await DialogTestHelpers.tapDialogButton(tester, 'Save');
+  await tester.pumpAndSettle();
+
+  expect(result.hasValue, isTrue);
+  expect(result.value!['field'], equals('Value'));
+});
+
+// 3. Test cancellation (CRITICAL)
+testWidgets('returns null when cancelled', (tester) async {
+  final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+    tester,
+    dialogBuilder: (context) => MyDialog(databaseHelper: mockDbHelper),
+  );
+
+  await DialogTestHelpers.tapDialogButton(tester, 'Cancel');
+  await tester.pumpAndSettle();
+
+  expect(result.value, isNull);
+  expect(mockDbHelper.dataUnchanged, isTrue); // No side effects
+});
+
+// 4. Test alternative dismissal methods
+testWidgets('safely disposes on back button', (tester) async {
+  await DialogTestHelpers.openDialog(
+    tester,
+    dialogBuilder: (context) => MyDialog(),
+  );
+
+  await DialogTestHelpers.pressBackButton(tester);
+  await tester.pumpAndSettle();
+  // Test passes if no controller disposal crash
+});
+```
+
+**Critical Dialog Testing Rules:**
+1. **Always test cancellation** - Controller disposal crashes only occur on cancel, not save
+2. **Test all dismissal methods** - Cancel button, back button, tap outside
+3. **Verify no side effects** - Database unchanged after cancellation
+4. **Use DialogTestHelpers** - Consistent, reliable dialog interactions
+5. **Use DialogFixtures** - Standardized test data
+6. **Check DI support** - Some dialogs lack dependency injection (see guide)
+
+**Known Dialog Testing Limitations:**
+- `MealRecordingDialog` - No DI support (issue #237)
+- `AddSideDishDialog` - Doesn't load DB directly
+- Nested dialogs - Deferred to issue #245
+- See [docs/DIALOG_TESTING_GUIDE.md](docs/DIALOG_TESTING_GUIDE.md) for workarounds
+
+**Regression Tests:**
+- All dialog bugs documented in `test/regression/dialog_regression_test.dart`
+- Includes controller disposal crash (commit 07058a2)
+- Includes overflow issues (issue #246 - small screens)
 
 ## Key Implementation Notes
 
