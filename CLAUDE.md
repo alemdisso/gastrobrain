@@ -26,7 +26,7 @@ This approach maintains code quality, architectural consistency, and reduces bug
 
 ## Issue Management
 
-For detailed workflows on issue management, GitHub Projects integration, and Git Flow processes, see **[docs/ISSUE_WORKFLOW.md](docs/ISSUE_WORKFLOW.md)**.
+For detailed workflows on issue management, GitHub Projects integration, and Git Flow processes, see **[docs/workflows/ISSUE_WORKFLOW.md](docs/workflows/ISSUE_WORKFLOW.md)**.
 
 **Quick Reference:**
 - Branch format: `{type}/{issue-number}-{short-description}`
@@ -41,7 +41,7 @@ For detailed workflows on issue management, GitHub Projects integration, and Git
 
 ## Architecture & Codebase
 
-For comprehensive architecture details, data models, and testing infrastructure, see **[docs/Gastrobrain-Codebase-Overview.md](docs/Gastrobrain-Codebase-Overview.md)**.
+For comprehensive architecture details, data models, and testing infrastructure, see **[docs/architecture/Gastrobrain-Codebase-Overview.md](docs/architecture/Gastrobrain-Codebase-Overview.md)**.
 
 **Key patterns to follow:**
 - **Dependency injection**: Access services via `ServiceProvider`
@@ -51,7 +51,7 @@ For comprehensive architecture details, data models, and testing infrastructure,
 
 ## Localization (l10n)
 
-All user-facing strings must be localized for English and Portuguese. See **[docs/L10N_PROTOCOL.md](docs/L10N_PROTOCOL.md)** for the complete localization workflow.
+All user-facing strings must be localized for English and Portuguese. See **[docs/workflows/L10N_PROTOCOL.md](docs/workflows/L10N_PROTOCOL.md)** for the complete localization workflow.
 
 **Critical rules:**
 - NEVER use hardcoded strings in UI code
@@ -102,7 +102,7 @@ final recommendations = await recommendationService.getRecommendations(
 - Widget tests should cover responsive layouts
 - Integration tests cover full user workflows
 
-**Dialog Testing** (see [docs/DIALOG_TESTING_GUIDE.md](docs/DIALOG_TESTING_GUIDE.md)):
+**Dialog Testing** (see [docs/testing/DIALOG_TESTING_GUIDE.md](docs/testing/DIALOG_TESTING_GUIDE.md)):
 
 All dialog tests must follow these patterns:
 
@@ -166,12 +166,82 @@ testWidgets('safely disposes on back button', (tester) async {
 - `MealRecordingDialog` - No DI support (issue #237)
 - `AddSideDishDialog` - Doesn't load DB directly
 - Nested dialogs - Deferred to issue #245
-- See [docs/DIALOG_TESTING_GUIDE.md](docs/DIALOG_TESTING_GUIDE.md) for workarounds
+- See [docs/testing/DIALOG_TESTING_GUIDE.md](docs/testing/DIALOG_TESTING_GUIDE.md) for workarounds
 
 **Regression Tests:**
 - All dialog bugs documented in `test/regression/dialog_regression_test.dart`
 - Includes controller disposal crash (commit 07058a2)
 - Includes overflow issues (issue #246 - small screens)
+
+**Edge Case Testing** (see [docs/testing/EDGE_CASE_TESTING_GUIDE.md](docs/testing/EDGE_CASE_TESTING_GUIDE.md) and [docs/testing/EDGE_CASE_CATALOG.md](docs/testing/EDGE_CASE_CATALOG.md)):
+
+**REQUIRED**: All new features must include edge case tests. See the testing guide for comprehensive instructions.
+
+All new features must include edge case tests covering:
+
+```dart
+// 1. Empty states
+testWidgets('shows helpful empty state with no recipes', (tester) async {
+  final mockDb = TestSetup.setupMockDatabase();
+  // mockDb has no recipes by default
+
+  await tester.pumpWidget(/*...*/);
+
+  EdgeCaseTestHelpers.verifyEmptyState(
+    tester,
+    expectedMessage: 'No recipes found',
+  );
+});
+
+// 2. Boundary conditions
+testWidgets('rejects servings = 0', (tester) async {
+  await EdgeCaseTestHelpers.fillFieldWithBoundaryValue(
+    tester,
+    fieldLabel: 'Servings',
+    boundaryType: BoundaryType.zero,
+  );
+
+  await EdgeCaseTestHelpers.triggerFormValidation(tester, submitButtonText: 'Save');
+
+  EdgeCaseTestHelpers.verifyValidationError(
+    tester,
+    expectedError: 'Servings must be at least 1',
+  );
+});
+
+// 3. Error scenarios
+testWidgets('handles database error gracefully', (tester) async {
+  ErrorInjectionHelpers.injectDatabaseError(
+    mockDb,
+    ErrorType.insertFailed,
+    operation: 'insertRecipe',
+  );
+
+  // Attempt operation...
+  EdgeCaseTestHelpers.verifyErrorDisplayed(tester, expectedError: 'Failed to save');
+  EdgeCaseTestHelpers.verifyRecoveryPath(tester, recoveryButtonText: 'Retry');
+});
+```
+
+**Critical Edge Case Testing Rules:**
+1. **Test empty states** - Every list/collection screen must handle empty data
+2. **Test boundary values** - Use `BoundaryValues` fixtures for consistency
+3. **Test error recovery** - Don't just test errors occur, test recovery works
+4. **Inject errors properly** - Use `ErrorInjectionHelpers`, reset in tearDown
+5. **Verify data integrity** - No orphaned records, no partial updates on errors
+
+**Edge Case Testing Workflow** (for all new features):
+1. **Identify**: Review [EDGE_CASE_CATALOG.md](docs/testing/EDGE_CASE_CATALOG.md) for relevant categories
+2. **Plan**: Document new edge cases in catalog before implementing
+3. **Implement**: Use templates from [EDGE_CASE_TESTING_GUIDE.md](docs/testing/EDGE_CASE_TESTING_GUIDE.md)
+4. **Verify**: All edge case tests must pass before merging
+
+**Edge Case Test Organization:**
+- `test/edge_cases/empty_states/` - Empty data scenarios
+- `test/edge_cases/boundary_conditions/` - Extreme values
+- `test/edge_cases/error_scenarios/` - Error handling
+- `test/edge_cases/interaction_patterns/` - Unusual user interactions
+- `test/edge_cases/data_integrity/` - Data consistency
 
 ## Key Implementation Notes
 

@@ -201,11 +201,12 @@ docs/                     # Documentation
 
 ## Documentation
 
-- [**Recommendation Engine**](docs/RECOMMENDATION_ENGINE.md) - Complete guide to the recommendation system
-- [**Issue Workflow**](docs/ISSUE_WORKFLOW.md) - Development workflow and Git Flow practices
-- [**L10N Protocol**](docs/L10N_PROTOCOL.md) - Localization guidelines
-- [**E2E Testing Guide**](docs/E2E_TESTING.md) - End-to-end testing best practices
-- [**Codebase Overview**](docs/Gastrobrain-Codebase-Overview.md) - Architecture and patterns
+- [**Documentation Index**](docs/README.md) - Complete documentation index and quick links
+- [**Codebase Overview**](docs/architecture/Gastrobrain-Codebase-Overview.md) - Architecture and patterns
+- [**Recommendation Engine**](docs/architecture/RECOMMENDATION_ENGINE.md) - Complete guide to the recommendation system
+- [**Testing Guides**](docs/testing/) - Dialog testing, edge case testing, and test patterns
+- [**Issue Workflow**](docs/workflows/ISSUE_WORKFLOW.md) - Development workflow and Git Flow practices
+- [**L10N Protocol**](docs/workflows/L10N_PROTOCOL.md) - Localization guidelines
 - [**Changelog**](CHANGELOG.md) - Release notes and version history
 
 ## Contributing
