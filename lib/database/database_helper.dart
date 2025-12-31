@@ -757,6 +757,26 @@ class DatabaseHelper {
     }
   }
 
+  /// Delete all meal plan item recipe junction records for a given meal plan item
+  ///
+  /// This is used when updating the recipes associated with a meal plan item.
+  /// Typically called before inserting new junction records.
+  ///
+  /// Returns the number of records deleted.
+  Future<int> deleteMealPlanItemRecipesByItemId(String mealPlanItemId) async {
+    final Database db = await database;
+    try {
+      return await db.delete(
+        'meal_plan_item_recipes',
+        where: 'meal_plan_item_id = ?',
+        whereArgs: [mealPlanItemId],
+      );
+    } catch (e) {
+      throw GastrobrainException(
+          'Failed to delete meal plan item recipes: ${e.toString()}');
+    }
+  }
+
   // Ingredient operations
   Future<String> insertIngredient(Ingredient ingredient) async {
     final Database db = await database;
@@ -1208,6 +1228,36 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  /// Delete all meal recipes for a given meal
+  ///
+  /// Optionally excludes the primary dish if [excludePrimary] is true.
+  /// This is useful when updating side dishes while keeping the main dish.
+  ///
+  /// Returns the number of records deleted.
+  Future<int> deleteMealRecipesByMealId(String mealId, {bool excludePrimary = false}) async {
+    final Database db = await database;
+    try {
+      if (excludePrimary) {
+        // Delete only non-primary dishes
+        return await db.delete(
+          'meal_recipes',
+          where: 'meal_id = ? AND is_primary_dish = 0',
+          whereArgs: [mealId],
+        );
+      } else {
+        // Delete all meal recipes for this meal
+        return await db.delete(
+          'meal_recipes',
+          where: 'meal_id = ?',
+          whereArgs: [mealId],
+        );
+      }
+    } catch (e) {
+      throw GastrobrainException(
+          'Failed to delete meal recipes: ${e.toString()}');
+    }
   }
 
   // Helper methods

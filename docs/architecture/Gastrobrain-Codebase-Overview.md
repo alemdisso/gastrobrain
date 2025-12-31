@@ -158,7 +158,15 @@ Gastrobrain is a comprehensive meal planning and recipe management application b
 ## Testing Infrastructure
 
 ### Test Coverage Overview
-The application maintains comprehensive test coverage with **60+ unit/widget tests** and **8+ end-to-end/integration tests**, ensuring reliability and maintainability across all application layers. The testing infrastructure includes a robust E2E testing framework with helper methods, best practices documentation, and comprehensive coverage of critical user workflows.
+The application maintains comprehensive test coverage with **600+ unit/widget tests** (including 458+ edge case tests from Issue #39, 122 dialog tests) and **8+ end-to-end/integration tests**, ensuring reliability and maintainability across all application layers. The testing infrastructure includes robust dialog testing utilities, comprehensive edge case testing framework, E2E testing framework with helper methods, regression test suite, and comprehensive coverage of critical user workflows.
+
+**Test Breakdown:**
+- **Edge Case Tests** (Issue #39): 458+ tests across empty states, boundary conditions, error scenarios, interaction patterns, and data integrity
+- **Dialog Tests**: 122 tests across 6 dialogs (return values, cancellation, disposal, validation, error handling)
+- **Service/Core Tests**: 40+ tests (recommendations, database, ingredient matching)
+- **UI/Widget Tests**: 20+ tests (screens, components, navigation)
+- **Integration Tests**: 8+ E2E workflow tests
+- **Regression Tests**: Historical bug prevention (controller disposal, overflow issues)
 
 ### Unit & Widget Tests (`test/` directory)
 
@@ -187,12 +195,26 @@ The application maintains comprehensive test coverage with **60+ unit/widget tes
   - `meal_history_screen_test.dart`: Historical meal tracking
   - `add_recipe_screen_test.dart`: Recipe creation flow
 
+- **Screen Edge Case Tests** (`test/edge_cases/screens/`):
+  - `meal_history_screen_edge_cases_test.dart`: 21 tests - Various history lengths, meal data variations, data integrity
+  - `weekly_plan_screen_edge_cases_test.dart`: 9 tests - Fully populated weeks, large datasets (100+ meals), data integrity
+  - Tests cover empty states, boundary conditions, and data integrity scenarios
+  - See [docs/EDGE_CASE_CATALOG.md](EDGE_CASE_CATALOG.md) and [docs/EDGE_CASE_TESTING_GUIDE.md](EDGE_CASE_TESTING_GUIDE.md)
+
 - **Widget Tests** (`test/widgets/`):
   - `weekly_calendar_widget_test.dart`: Calendar functionality
   - `recipe_card_test.dart`: Recipe display components
   - `recipe_card_rating_test.dart`: Recipe rating display and interactions
-  - `add_ingredient_dialog_test.dart`: Ingredient management
-  - `edit_meal_recording_dialog_test.dart`: Meal editing interface
+
+- **Dialog Tests** (`test/widgets/`, **100+ tests** across 6 dialogs):
+  - `meal_cooked_dialog_test.dart`: 12 tests - Cooking details capture
+  - `add_ingredient_dialog_test.dart`: 14 tests - Ingredient selection and creation
+  - `meal_recording_dialog_test.dart`: 20 tests - Meal planning workflow
+  - `add_side_dish_dialog_test.dart`: 24 tests - Multi-recipe meal composition
+  - `add_new_ingredient_dialog_test.dart`: 9 tests - Ingredient creation
+  - `edit_meal_recording_dialog_test.dart`: 21 tests - Meal modification
+  - All dialogs tested for: return values, cancellation, controller disposal, validation, error handling
+  - See [docs/DIALOG_TESTING_GUIDE.md](DIALOG_TESTING_GUIDE.md) for patterns and best practices
 
 #### Model & Data Tests
 - **Model Validation** (`test/models/`):
@@ -235,6 +257,73 @@ The application features a comprehensive E2E testing framework with reusable hel
 #### Testing Utilities
 - **`test_utils/test_setup.dart`**: Centralized test configuration and setup
 - **`test_utils/test_app_wrapper.dart`**: Widget testing utilities with localization support
+- **`test/helpers/dialog_test_helpers.dart`**: 18 helper methods for dialog testing
+  - `openDialogAndCapture<T>()`: Opens dialog and captures return value
+  - `tapDialogButton()`, `fillTextField()`, `fillDialogForm()`: User interactions
+  - `pressBackButton()`, `tapOutsideDialog()`: Alternative dismissal methods
+  - `verifyDialogCancelled()`, `verifyNoSideEffects()`: Assertion helpers
+- **`test/test_utils/dialog_fixtures.dart`**: Standardized test data factories
+  - `createTestRecipe()`, `createPrimaryRecipe()`, `createSideRecipe()`
+  - `createMultipleRecipes()`, `createMultipleIngredients()`
+  - Consistent test data across all dialog tests
+- **`test/regression/dialog_regression_test.dart`**: Regression tests for known dialog bugs
+  - Controller disposal crash (commit 07058a2)
+  - RenderFlex overflow on small screens (issue #246)
+  - Links to historical bug fixes with commit hashes
+
+#### Edge Case Testing Infrastructure
+
+The application includes comprehensive edge case testing utilities for testing boundary conditions, error scenarios, and unusual interaction patterns (Issue #39).
+
+**Edge Case Test Helpers:**
+- **`test/helpers/edge_case_test_helpers.dart`**: Core utilities for edge case testing
+  - `verifyEmptyState()`: Verify empty state displays correctly
+  - `fillWithBoundaryValue()`: Fill fields with extreme values
+  - `simulateRapidTaps()`: Test rapid user interactions
+  - `verifyErrorDisplayed()`: Check error messages
+  - `verifyRecoveryPath()`: Verify recovery actions available
+  - `verifyLoadingState()`: Check loading indicators
+  - `triggerFormValidation()`: Trigger and verify validation
+
+**Boundary Value Fixtures:**
+- **`test/fixtures/boundary_fixtures.dart`**: Standardized extreme values
+  - Text boundaries: `emptyString`, `veryLongText` (1000 chars), `extremelyLongText` (10000 chars)
+  - Numeric boundaries: `zero`, `negative`, `maxReasonable`, `decimal`
+  - Special values: `specialChars`, `withEmoji`, `withUnicode`, `sqlInjection`
+  - Collection sizes: `listEmpty`, `listVeryLarge` (1000+ items)
+  - Pre-configured sets: `recipeBoundaries`, `mealBoundaries`, `ingredientBoundaries`
+
+**Error Injection Helpers:**
+- **`test/helpers/error_injection_helpers.dart`**: Simulate errors for testing
+  - `injectDatabaseError()`: Trigger database failures
+  - `simulateConstraintViolation()`: FK/unique violations
+  - `simulateDatabaseLocked()`: Concurrent access errors
+  - `simulateTimeout()`: Timeout scenarios
+  - `resetErrorInjection()`: Clean up after tests
+  - `ValidationErrorHelpers`: Create validation error messages
+  - `RecoveryPathHelpers`: Verify error recovery workflows
+
+**Edge Case Test Organization:**
+- **`test/edge_cases/empty_states/`**: Empty data scenarios (no recipes, no ingredients, etc.)
+- **`test/edge_cases/boundary_conditions/`**: Extreme values (0, negative, 10000+ chars)
+- **`test/edge_cases/error_scenarios/`**: Error handling (DB failures, validation errors)
+- **`test/edge_cases/interaction_patterns/`**: Unusual interactions (rapid taps, concurrent actions)
+- **`test/edge_cases/data_integrity/`**: Data consistency (orphaned records, transactions)
+
+**Edge Case Catalog:**
+- **`docs/EDGE_CASE_CATALOG.md`**: Comprehensive catalog of 150+ edge cases
+  - Organized by category with priority levels (🔴 Critical, 🟠 High, 🟡 Medium, 🟢 Low)
+  - Tracks coverage status (✅ Tested, ⏳ Planned, 🐛 Known Issue)
+  - Documents known issues and regression tests
+  - Updated as new edge cases are discovered
+
+**Edge Case Testing Principles:**
+1. **Test empty states**: Every list/collection screen must handle empty data gracefully
+2. **Use boundary fixtures**: Use `BoundaryValues` for consistent extreme value testing
+3. **Test error recovery**: Verify recovery paths work, not just that errors occur
+4. **Inject errors properly**: Use `ErrorInjectionHelpers`, always reset in `tearDown()`
+5. **Verify data integrity**: No orphaned records, no partial updates on errors
+
 - **Isolated Test Environment**: Each test uses fresh mock instances to prevent state pollution
 
 #### Key Testing Principles

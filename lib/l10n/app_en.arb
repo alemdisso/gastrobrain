@@ -308,6 +308,28 @@
   "@errorEditingMeal": {
     "description": "Error message when editing meal fails"
   },
+  "deleteMeal": "Delete Meal",
+  "@deleteMeal": {
+    "description": "Title for delete meal confirmation dialog"
+  },
+  "deleteMealConfirmation": "Are you sure you want to delete this meal from {mealDate}?",
+  "@deleteMealConfirmation": {
+    "description": "Confirmation message for meal deletion",
+    "placeholders": {
+      "mealDate": {
+        "type": "String",
+        "description": "Date of the meal to be deleted"
+      }
+    }
+  },
+  "mealDeletedSuccessfully": "Meal deleted successfully",
+  "@mealDeletedSuccessfully": {
+    "description": "Success message after meal deletion"
+  },
+  "errorDeletingMeal": "Error deleting meal",
+  "@errorDeletingMeal": {
+    "description": "Error message when deleting meal fails"
+  },
   "recipesCount": "{count} recipes",
   "@recipesCount": {
     "description": "Recipe count display",
@@ -1685,6 +1707,38 @@
   "instructions": "Instructions",
   "@instructions": {
     "description": "Label for instructions section"
+  },
+  "viewInstructions": "View Instructions",
+  "@viewInstructions": {
+    "description": "Button tooltip for viewing recipe instructions"
+  },
+  "noInstructionsAvailable": "No instructions available for this recipe.",
+  "@noInstructionsAvailable": {
+    "description": "Empty state message when recipe has no instructions"
+  },
+  "addInstructions": "Add Instructions",
+  "@addInstructions": {
+    "description": "Button text to add instructions"
+  },
+  "editInstructions": "Edit Instructions",
+  "@editInstructions": {
+    "description": "Button tooltip for editing recipe instructions"
+  },
+  "instructionsUpdatedSuccessfully": "Instructions updated successfully",
+  "@instructionsUpdatedSuccessfully": {
+    "description": "Success message when instructions are saved"
+  },
+  "enterInstructions": "Enter cooking instructions...",
+  "@enterInstructions": {
+    "description": "Hint text for instructions input field"
+  },
+  "instructionsLabel": "Instructions (optional)",
+  "@instructionsLabel": {
+    "description": "Label for instructions field in edit screen"
+  },
+  "instructionsHint": "Example:\n1. Preheat oven to 180°C\n2. Mix ingredients in a bowl\n3. Bake for 30 minutes",
+  "@instructionsHint": {
+    "description": "Hint text showing example instructions format"
   },
   "noneOfTheseCreateNew": "Create New Ingredient",
   "@noneOfTheseCreateNew": {

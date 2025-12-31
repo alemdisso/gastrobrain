@@ -5,6 +5,7 @@ import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/recipe_category.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/widgets/recipe_card.dart';
+import 'package:gastrobrain/screens/recipe_instructions_view_screen.dart';
 import 'package:gastrobrain/l10n/app_localizations.dart';
 
 void main() {
@@ -214,6 +215,161 @@ void main() {
 
       // Should display "Never cooked" (combines mealCount and lastCooked null state)
       expect(find.text('Never cooked'), findsOneWidget);
+    });
+
+    testWidgets('shows instructions button in expanded card',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(
+          RecipeCard(
+            recipe: testRecipe,
+            onEdit: () {},
+            onDelete: () {},
+            onCooked: () {},
+            mealCount: 5,
+            lastCooked: DateTime(2023, 12, 25),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Expand the card to show buttons (if not already expanded)
+      final expandMoreButton = find.byIcon(Icons.expand_more);
+      if (expandMoreButton.evaluate().isNotEmpty) {
+        await tester.tap(expandMoreButton);
+        await tester.pumpAndSettle();
+      }
+
+      // Verify instructions button is visible
+      expect(find.byIcon(Icons.description), findsOneWidget);
+      expect(find.byTooltip('View Instructions'), findsOneWidget);
+    });
+
+    testWidgets('tapping instructions button navigates to view screen',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(
+          RecipeCard(
+            recipe: testRecipe,
+            onEdit: () {},
+            onDelete: () {},
+            onCooked: () {},
+            mealCount: 5,
+            lastCooked: DateTime(2023, 12, 25),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Expand the card to show buttons (if not already expanded)
+      final expandMoreButton = find.byIcon(Icons.expand_more);
+      if (expandMoreButton.evaluate().isNotEmpty) {
+        await tester.tap(expandMoreButton);
+        await tester.pumpAndSettle();
+      }
+
+      // Tap the instructions button
+      await tester.tap(find.byIcon(Icons.description));
+      await tester.pumpAndSettle();
+
+      // Verify navigation to RecipeInstructionsViewScreen
+      expect(find.byType(RecipeInstructionsViewScreen), findsOneWidget);
+    });
+
+    testWidgets('instructions button appears in correct order',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(
+          RecipeCard(
+            recipe: testRecipe,
+            onEdit: () {},
+            onDelete: () {},
+            onCooked: () {},
+            mealCount: 5,
+            lastCooked: DateTime(2023, 12, 25),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Expand the card to show buttons (if not already expanded)
+      final expandMoreButton = find.byIcon(Icons.expand_more);
+      if (expandMoreButton.evaluate().isNotEmpty) {
+        await tester.tap(expandMoreButton);
+        await tester.pumpAndSettle();
+      }
+
+      // Verify button order: Ingredients, Instructions, History, More
+      // Find all action buttons
+      expect(find.byIcon(Icons.list_alt), findsOneWidget); // Ingredients
+      expect(find.byIcon(Icons.description), findsOneWidget); // Instructions
+      expect(find.byIcon(Icons.history), findsOneWidget); // History
+      expect(find.byIcon(Icons.more_vert), findsOneWidget); // More menu
+
+      // Verify instructions button appears between ingredients and history
+      // by checking their positions in the render tree
+      final ingredientsButton = find.byIcon(Icons.list_alt);
+      final instructionsButton = find.byIcon(Icons.description);
+      final historyButton = find.byIcon(Icons.history);
+
+      final ingredientsX = tester.getCenter(ingredientsButton).dx;
+      final instructionsX = tester.getCenter(instructionsButton).dx;
+      final historyX = tester.getCenter(historyButton).dx;
+
+      // Instructions should be between Ingredients and History (left to right)
+      expect(instructionsX, greaterThan(ingredientsX));
+      expect(instructionsX, lessThan(historyX));
+    });
+
+    testWidgets('instructions button works even with empty instructions',
+        (WidgetTester tester) async {
+      final recipeWithoutInstructions = Recipe(
+        id: 'test-recipe-no-instructions',
+        name: 'Recipe Without Instructions',
+        category: RecipeCategory.mainDishes,
+        desiredFrequency: FrequencyType.weekly,
+        difficulty: 3,
+        prepTimeMinutes: 30,
+        cookTimeMinutes: 45,
+        rating: 4,
+        createdAt: DateTime.now(),
+        instructions: '', // Empty instructions
+      );
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          RecipeCard(
+            recipe: recipeWithoutInstructions,
+            onEdit: () {},
+            onDelete: () {},
+            onCooked: () {},
+            mealCount: 5,
+            lastCooked: DateTime(2023, 12, 25),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Expand the card to show buttons (if not already expanded)
+      final expandMoreButton = find.byIcon(Icons.expand_more);
+      if (expandMoreButton.evaluate().isNotEmpty) {
+        await tester.tap(expandMoreButton);
+        await tester.pumpAndSettle();
+      }
+
+      // Button should still be visible even with empty instructions
+      expect(find.byIcon(Icons.description), findsOneWidget);
+
+      // Tap the button and verify navigation works
+      await tester.tap(find.byIcon(Icons.description));
+      await tester.pumpAndSettle();
+
+      // View screen should open (it will show empty state message)
+      expect(find.byType(RecipeInstructionsViewScreen), findsOneWidget);
     });
   });
 }

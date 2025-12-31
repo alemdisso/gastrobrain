@@ -8,6 +8,7 @@ import 'package:gastrobrain/models/meal.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import '../test_utils/test_app_wrapper.dart';
 import '../test_utils/test_setup.dart';
+import '../helpers/dialog_test_helpers.dart';
 import '../mocks/mock_database_helper.dart';
 
 void main() {
@@ -412,6 +413,622 @@ void main() {
       // Verify initial state
       final initialSwitch = tester.widget<Switch>(switchFinder);
       expect(initialSwitch.value, true);
+    });
+  });
+
+  group('EditMealRecordingDialog - Return Value Testing', () {
+    testWidgets('returns updated meal data on save',
+        (WidgetTester tester) async {
+      final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+        tester,
+        dialogBuilder: (context) => EditMealRecordingDialog(
+          meal: testMeal,
+          primaryRecipe: testRecipe,
+          databaseHelper: mockDbHelper,
+        ),
+      );
+
+      // Modify servings
+      await tester.enterText(
+        find.widgetWithText(TextFormField, testMeal.servings.toString()),
+        '5',
+      );
+      await tester.pumpAndSettle();
+
+      // Modify notes
+      final notesField =
+          find.widgetWithText(TextFormField, 'Original test notes');
+      await tester.enterText(notesField, 'Updated test notes');
+      await tester.pumpAndSettle();
+
+      // Save changes
+      await tester.tap(find.text('Salvar Alterações'));
+      await tester.pumpAndSettle();
+
+      // Verify return value
+      expect(result.hasValue, isTrue);
+      expect(result.value, isNotNull);
+      expect(result.value!['mealId'], equals(testMeal.id));
+      expect(result.value!['servings'], equals(5));
+      expect(result.value!['notes'], equals('Updated test notes'));
+      expect(result.value!['wasSuccessful'], isTrue);
+      expect(result.value!['primaryRecipe'], equals(testRecipe));
+      expect(result.value!['actualPrepTime'], equals(20.0));
+      expect(result.value!['actualCookTime'], equals(30.0));
+      expect(result.value!['additionalRecipes'], isA<List>());
+      expect(result.value!['cookedAt'], isA<DateTime>());
+      expect(result.value!['modifiedAt'], isA<DateTime>());
+    });
+
+    testWidgets('returns additional recipes in updated meal data',
+        (WidgetTester tester) async {
+      final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+        tester,
+        dialogBuilder: (context) => EditMealRecordingDialog(
+          meal: testMeal,
+          primaryRecipe: testRecipe,
+          additionalRecipes: [sideRecipe],
+          databaseHelper: mockDbHelper,
+        ),
+      );
+
+      // Save without changes
+      await tester.tap(find.text('Salvar Alterações'));
+      await tester.pumpAndSettle();
+
+      // Verify additional recipes in return value
+      expect(result.hasValue, isTrue);
+      final additionalRecipes = result.value!['additionalRecipes'] as List;
+      expect(additionalRecipes.length, equals(1));
+      expect(additionalRecipes[0], equals(sideRecipe));
+    });
+
+    testWidgets('verifies only changed fields are different',
+        (WidgetTester tester) async {
+      final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+        tester,
+        dialogBuilder: (context) => EditMealRecordingDialog(
+          meal: testMeal,
+          primaryRecipe: testRecipe,
+          databaseHelper: mockDbHelper,
+        ),
+      );
+
+      // Change only servings field
+      await tester.enterText(
+        find.widgetWithText(TextFormField, testMeal.servings.toString()),
+        '10',
+      );
+      await tester.pumpAndSettle();
+
+      // Save
+      await tester.tap(find.text('Salvar Alterações'));
+      await tester.pumpAndSettle();
+
+      // Verify only servings changed
+      expect(result.value!['servings'], equals(10)); // Changed
+      expect(result.value!['notes'], equals(testMeal.notes)); // Unchanged
+      expect(result.value!['wasSuccessful'],
+          equals(testMeal.wasSuccessful)); // Unchanged
+      expect(result.value!['actualPrepTime'],
+          equals(testMeal.actualPrepTime)); // Unchanged
+      expect(result.value!['actualCookTime'],
+          equals(testMeal.actualCookTime)); // Unchanged
+    });
+
+    testWidgets('returns null when cancelled', (WidgetTester tester) async {
+      final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+        tester,
+        dialogBuilder: (context) => EditMealRecordingDialog(
+          meal: testMeal,
+          primaryRecipe: testRecipe,
+          databaseHelper: mockDbHelper,
+        ),
+      );
+
+      // Cancel
+      await tester.tap(find.text('Cancelar'));
+      await tester.pumpAndSettle();
+
+      // Verify null return and dialog closed
+      DialogTestHelpers.verifyDialogCancelled(result);
+      DialogTestHelpers.verifyDialogClosed<EditMealRecordingDialog>();
+    });
+  });
+
+  group('EditMealRecordingDialog - Side Dish Management', () {
+    testWidgets('allows removing side dishes', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => EditMealRecordingDialog(
+                    meal: testMeal,
+                    primaryRecipe: testRecipe,
+                    additionalRecipes: [sideRecipe],
+                    databaseHelper: mockDbHelper,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            ),
+          ),
+        )),
+      );
+
+      // Open dialog
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      // Verify side dish is shown
+      expect(find.text(sideRecipe.name), findsOneWidget);
+      expect(find.text('Acompanhamento'), findsOneWidget);
+
+      // Find and tap delete button
+      final deleteButton = find.byIcon(Icons.delete_outline);
+      expect(deleteButton, findsOneWidget);
+      await tester.tap(deleteButton);
+      await tester.pumpAndSettle();
+
+      // Verify side dish was removed
+      expect(find.text('Acompanhamento'), findsNothing);
+    });
+
+    testWidgets('shows add recipe button', (WidgetTester tester) async {
+      // Insert additional recipes into mock database
+      mockDbHelper.insertRecipe(sideRecipe);
+
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => EditMealRecordingDialog(
+                    meal: testMeal,
+                    primaryRecipe: testRecipe,
+                    databaseHelper: mockDbHelper,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            ),
+          ),
+        )),
+      );
+
+      // Open dialog
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      // Wait for recipes to load
+      await tester.pumpAndSettle();
+
+      // Verify "Add Recipe" button is present
+      expect(find.text('Adicionar Receita'), findsOneWidget);
+    });
+  });
+
+  group('EditMealRecordingDialog - Validation', () {
+    testWidgets('validates prep time must be valid if provided',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => EditMealRecordingDialog(
+                    meal: testMeal,
+                    primaryRecipe: testRecipe,
+                    databaseHelper: mockDbHelper,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            ),
+          ),
+        )),
+      );
+
+      // Open dialog
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      // Enter invalid prep time
+      final prepTimeField = find.widgetWithText(TextFormField, '20.0');
+      await tester.enterText(prepTimeField, '-10');
+      await tester.pumpAndSettle();
+
+      // Try to save
+      await tester.tap(find.text('Salvar Alterações'));
+      await tester.pumpAndSettle();
+
+      // Verify validation error is shown
+      expect(find.text('Informe um tempo válido'), findsAtLeastNWidgets(1));
+
+      // Verify dialog is still open
+      expect(
+        DialogTestHelpers.findDialogByType<EditMealRecordingDialog>(),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('validates cook time must be valid if provided',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => EditMealRecordingDialog(
+                    meal: testMeal,
+                    primaryRecipe: testRecipe,
+                    databaseHelper: mockDbHelper,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            ),
+          ),
+        )),
+      );
+
+      // Open dialog
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      // Enter invalid cook time
+      final cookTimeField = find.widgetWithText(TextFormField, '30.0');
+      await tester.enterText(cookTimeField, '-20');
+      await tester.pumpAndSettle();
+
+      // Try to save
+      await tester.tap(find.text('Salvar Alterações'));
+      await tester.pumpAndSettle();
+
+      // Verify validation error is shown
+      expect(find.text('Informe um tempo válido'), findsAtLeastNWidgets(1));
+    });
+  });
+
+  group('EditMealRecordingDialog - Date Selection', () {
+    testWidgets('allows selecting a different date',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => EditMealRecordingDialog(
+                    meal: testMeal,
+                    primaryRecipe: testRecipe,
+                    databaseHelper: mockDbHelper,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            ),
+          ),
+        )),
+      );
+
+      // Open dialog
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      // Find and tap date selector (ListTile with calendar icon)
+      final dateTile = find.ancestor(
+        of: find.byIcon(Icons.calendar_today),
+        matching: find.byType(ListTile),
+      );
+      expect(dateTile, findsOneWidget);
+      await tester.tap(dateTile);
+      await tester.pumpAndSettle();
+
+      // Date picker should appear
+      expect(find.byType(DatePickerDialog), findsOneWidget);
+    });
+  });
+
+  group('EditMealRecordingDialog - Success Switch', () {
+    testWidgets('toggles success switch', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => EditMealRecordingDialog(
+                    meal: testMeal,
+                    primaryRecipe: testRecipe,
+                    databaseHelper: mockDbHelper,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            ),
+          ),
+        )),
+      );
+
+      // Open dialog
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      // Get success switch
+      final successSwitch = find.byType(Switch);
+      expect(successSwitch, findsOneWidget);
+      expect(tester.widget<Switch>(successSwitch).value, isTrue);
+
+      // Toggle switch
+      await tester.tap(successSwitch);
+      await tester.pumpAndSettle();
+
+      // Verify switch is now OFF
+      expect(tester.widget<Switch>(successSwitch).value, isFalse);
+    });
+
+    testWidgets('returns correct wasSuccessful value in meal data',
+        (WidgetTester tester) async {
+      final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+        tester,
+        dialogBuilder: (context) => EditMealRecordingDialog(
+          meal: testMeal,
+          primaryRecipe: testRecipe,
+          databaseHelper: mockDbHelper,
+        ),
+      );
+
+      // Toggle success switch to OFF
+      final successSwitch = find.byType(Switch);
+      await tester.tap(successSwitch);
+      await tester.pumpAndSettle();
+
+      // Save
+      await tester.tap(find.text('Salvar Alterações'));
+      await tester.pumpAndSettle();
+
+      // Verify wasSuccessful is false in return value
+      expect(result.hasValue, isTrue);
+      expect(result.value!['wasSuccessful'], isFalse);
+    });
+  });
+
+  group('EditMealRecordingDialog - Controller Disposal', () {
+    testWidgets('safely disposes controllers on cancel',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => EditMealRecordingDialog(
+                    meal: testMeal,
+                    primaryRecipe: testRecipe,
+                    databaseHelper: mockDbHelper,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            ),
+          ),
+        )),
+      );
+
+      // Open dialog
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      // Cancel
+      await tester.tap(find.text('Cancelar'));
+      await tester.pumpAndSettle();
+
+      // Verify dialog closed without errors
+      DialogTestHelpers.verifyDialogClosed<EditMealRecordingDialog>();
+
+      // Pump a few more frames to ensure no disposal errors
+      await tester.pump();
+      await tester.pump();
+    });
+
+    testWidgets('safely disposes controllers on save',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => EditMealRecordingDialog(
+                    meal: testMeal,
+                    primaryRecipe: testRecipe,
+                    databaseHelper: mockDbHelper,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            ),
+          ),
+        )),
+      );
+
+      // Open dialog
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      // Save
+      await tester.tap(find.text('Salvar Alterações'));
+      await tester.pumpAndSettle();
+
+      // Verify dialog closed without errors
+      DialogTestHelpers.verifyDialogClosed<EditMealRecordingDialog>();
+
+      // Pump a few more frames to ensure no disposal errors
+      await tester.pump();
+      await tester.pump();
+    });
+
+    group('Alternative Dismissal Methods', () {
+      testWidgets('tapping outside dialog dismisses and returns null',
+          (WidgetTester tester) async {
+        final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+          tester,
+          dialogBuilder: (context) => EditMealRecordingDialog(
+            meal: testMeal,
+            primaryRecipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        // Tap outside dialog to dismiss
+        await DialogTestHelpers.tapOutsideDialog(tester);
+        await tester.pumpAndSettle();
+
+        // Verify dialog was dismissed and returned null
+        DialogTestHelpers.verifyDialogCancelled(result);
+        DialogTestHelpers.verifyDialogClosed<EditMealRecordingDialog>();
+      });
+
+      testWidgets('back button dismisses and returns null',
+          (WidgetTester tester) async {
+        final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+          tester,
+          dialogBuilder: (context) => EditMealRecordingDialog(
+            meal: testMeal,
+            primaryRecipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        // Press back button to dismiss
+        await DialogTestHelpers.pressBackButton(tester);
+        await tester.pumpAndSettle();
+
+        // Verify dialog was dismissed and returned null
+        DialogTestHelpers.verifyDialogCancelled(result);
+        DialogTestHelpers.verifyDialogClosed<EditMealRecordingDialog>();
+      });
+    });
+  });
+
+  group('EditMealRecordingDialog - Error Handling', () {
+    testWidgets('shows error when loading recipes fails',
+        (WidgetTester tester) async {
+      // Configure mock to fail on getAllRecipes
+      mockDbHelper.failOnOperation('getAllRecipes');
+
+      await DialogTestHelpers.openDialog(
+        tester,
+        dialogBuilder: (context) => EditMealRecordingDialog(
+          meal: testMeal,
+          primaryRecipe: testRecipe,
+          databaseHelper: mockDbHelper,
+        ),
+      );
+
+      // Wait for the loading attempt to complete
+      await tester.pumpAndSettle();
+
+      // Verify dialog is still open (doesn't close on error)
+      expect(find.byType(EditMealRecordingDialog), findsOneWidget);
+
+      // Verify error snackbar is shown
+      // Note: Looking for any error text (case-insensitive)
+      expect(find.textContaining('rro'), findsOneWidget);
+
+      // Verify loading state reset
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+    });
+  });
+
+  group('EditMealRecordingDialog - Temporary State', () {
+    testWidgets('removing pre-filled side dishes doesnt affect database',
+        (WidgetTester tester) async {
+      // Insert recipes into database first
+      await mockDbHelper.insertRecipe(testRecipe);
+      await mockDbHelper.insertRecipe(sideRecipe);
+
+      // Track initial database state
+      final initialRecipeCount = mockDbHelper.recipes.length;
+      final initialMealCount = mockDbHelper.meals.length;
+
+      final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+        tester,
+        dialogBuilder: (context) => EditMealRecordingDialog(
+          meal: testMeal,
+          primaryRecipe: testRecipe,
+          additionalRecipes: [testRecipe, sideRecipe],
+          databaseHelper: mockDbHelper,
+        ),
+      );
+
+      // Verify both side dishes are shown
+      expect(find.text(testRecipe.name),
+          findsNWidgets(2)); // Primary and as side dish
+      expect(find.text(sideRecipe.name), findsOneWidget);
+
+      // Remove first side dish (which is the testRecipe as side dish)
+      final deleteButtons = find.byIcon(Icons.delete_outline);
+      expect(deleteButtons, findsNWidgets(2)); // One for each side dish
+      await tester.tap(deleteButtons.first);
+      await tester.pumpAndSettle();
+
+      // Save dialog
+      await tester.tap(find.text('Salvar Alterações'));
+      await tester.pumpAndSettle();
+
+      // Verify return value includes only remaining side dish
+      expect(result.hasValue, isTrue);
+      final additionalRecipes = result.value!['additionalRecipes'] as List;
+      expect(additionalRecipes.length, equals(1));
+      expect(additionalRecipes[0], equals(sideRecipe));
+
+      // Verify database wasn't affected by removing the side dish
+      expect(mockDbHelper.recipes.length, equals(initialRecipeCount));
+      expect(mockDbHelper.meals.length, equals(initialMealCount));
+      expect(mockDbHelper.recipes.containsKey(testRecipe.id), isTrue);
+      expect(mockDbHelper.recipes.containsKey(sideRecipe.id), isTrue);
+    });
+
+    testWidgets('removing all side dishes returns empty list',
+        (WidgetTester tester) async {
+      final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+        tester,
+        dialogBuilder: (context) => EditMealRecordingDialog(
+          meal: testMeal,
+          primaryRecipe: testRecipe,
+          additionalRecipes: [sideRecipe],
+          databaseHelper: mockDbHelper,
+        ),
+      );
+
+      // Remove the only side dish
+      final deleteButton = find.byIcon(Icons.delete_outline);
+      await tester.tap(deleteButton);
+      await tester.pumpAndSettle();
+
+      // Save dialog
+      await tester.tap(find.text('Salvar Alterações'));
+      await tester.pumpAndSettle();
+
+      // Verify return value has empty additional recipes list
+      expect(result.hasValue, isTrue);
+      final additionalRecipes = result.value!['additionalRecipes'] as List;
+      expect(additionalRecipes, isEmpty);
     });
   });
 }

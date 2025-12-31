@@ -30,6 +30,8 @@ class MockDatabaseHelper implements DatabaseHelper {
   bool _shouldFailNextOperation = false;
   String _nextOperationError = 'Simulated database error';
   String? _failOnSpecificOperation;
+  bool shouldThrowOnDelete = false;
+  Exception? _customException;
 
   @override
   Future<int> deleteMealPlan(String id) async {
@@ -130,6 +132,7 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   // We'll expose these maps for direct manipulation in tests if needed
   Map<String, Recipe> get recipes => _recipes;
+  Map<String, Meal> get meals => _meals;
   Map<String, MealPlan> get mealPlans => _mealPlans;
   Map<String, Ingredient> get ingredients => _ingredients;
 
@@ -164,9 +167,10 @@ class MockDatabaseHelper implements DatabaseHelper {
   /// mockDb.failOnOperation('updateMeal');
   /// // Next call to updateMeal will throw
   /// ```
-  void failOnOperation(String operationName) {
+  void failOnOperation(String operationName, {Exception? exception}) {
     _shouldFailNextOperation = true;
     _failOnSpecificOperation = operationName;
+    _customException = exception;
   }
 
   /// Reset error simulation state.
@@ -185,6 +189,7 @@ class MockDatabaseHelper implements DatabaseHelper {
     _shouldFailNextOperation = false;
     _failOnSpecificOperation = null;
     _nextOperationError = 'Simulated database error';
+    _customException = null;
   }
 
   // Reset all data
@@ -204,6 +209,15 @@ class MockDatabaseHelper implements DatabaseHelper {
   // RECIPE OPERATIONS
   @override
   Future<int> insertRecipe(Recipe recipe) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'insertRecipe')) {
+      final exception = _customException ?? Exception(_nextOperationError);
+      resetErrorSimulation();
+      throw exception;
+    }
+
     _recipes[recipe.id] = recipe;
     return 1;
   }
@@ -214,9 +228,9 @@ class MockDatabaseHelper implements DatabaseHelper {
     if (_shouldFailNextOperation &&
         (_failOnSpecificOperation == null ||
             _failOnSpecificOperation == 'getAllRecipes')) {
-      final errorMessage = _nextOperationError;
+      final exception = _customException ?? Exception(_nextOperationError);
       resetErrorSimulation();
-      throw Exception(errorMessage);
+      throw exception;
     }
 
     return _recipes.values.toList();
@@ -252,6 +266,15 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<int> updateRecipe(Recipe recipe) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'updateRecipe')) {
+      final exception = _customException ?? Exception(_nextOperationError);
+      resetErrorSimulation();
+      throw exception;
+    }
+
     if (!_recipes.containsKey(recipe.id)) return 0;
     _recipes[recipe.id] = recipe;
     return 1;
@@ -259,6 +282,15 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<int> deleteRecipe(String id) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'deleteRecipe')) {
+      final exception = _customException ?? Exception(_nextOperationError);
+      resetErrorSimulation();
+      throw exception;
+    }
+
     if (!_recipes.containsKey(id)) return 0;
     _recipes.remove(id);
     return 1;
@@ -278,6 +310,15 @@ class MockDatabaseHelper implements DatabaseHelper {
   // MEAL OPERATIONS
   @override
   Future<int> insertMeal(Meal meal) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'insertMeal')) {
+      final exception = _customException ?? Exception(_nextOperationError);
+      resetErrorSimulation();
+      throw exception;
+    }
+
     _meals[meal.id] = meal;
 
     // If the meal has a recipeId, update last cooked date
@@ -305,6 +346,15 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<List<Meal>> getMealsForRecipe(String recipeId) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'getMealsForRecipe')) {
+      final exception = _customException ?? Exception(_nextOperationError);
+      resetErrorSimulation();
+      throw exception;
+    }
+
     // Return meals with direct recipeId reference OR meals linked via junction table
     final directMeals =
         _meals.values.where((meal) => meal.recipeId == recipeId).toList();
@@ -333,6 +383,10 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<int> deleteMeal(String id) async {
+    if (shouldThrowOnDelete) {
+      throw Exception('Simulated delete error');
+    }
+
     if (!_meals.containsKey(id)) return 0;
 
     // Remove related junction records
@@ -468,6 +522,14 @@ class MockDatabaseHelper implements DatabaseHelper {
   // INGREDIENT OPERATIONS
   @override
   Future<String> insertIngredient(Ingredient ingredient) async {
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'insertIngredient')) {
+      final errorMessage = _nextOperationError;
+      resetErrorSimulation();
+      throw Exception(errorMessage);
+    }
+
     // Validate the ingredient
     EntityValidator.validateIngredient(
       id: ingredient.id,
@@ -489,6 +551,15 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<int> updateIngredient(Ingredient ingredient) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'updateIngredient')) {
+      final exception = _customException ?? Exception(_nextOperationError);
+      resetErrorSimulation();
+      throw exception;
+    }
+
     // Check if ingredient exists
     if (!_ingredients.containsKey(ingredient.id)) return 0;
 
@@ -508,6 +579,15 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<int> deleteIngredient(String id) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'deleteIngredient')) {
+      final exception = _customException ?? Exception(_nextOperationError);
+      resetErrorSimulation();
+      throw exception;
+    }
+
     if (!_ingredients.containsKey(id)) return 0;
 
     _ingredients.remove(id);
@@ -517,10 +597,9 @@ class MockDatabaseHelper implements DatabaseHelper {
   // Not implemented methods - these would need to be added as needed
   @override
   Future<void> addIngredientToRecipe(RecipeIngredient recipeIngredient) async {
-    // Store the recipe ingredient in the map
-    // Use a combination of recipe_id and ingredient_id as the key
-    final key = '${recipeIngredient.recipeId}_${recipeIngredient.ingredientId}';
-    _recipeIngredients[key] = recipeIngredient;
+    // Store the recipe ingredient in the map using its unique ID
+    // This allows the same ingredient to be added multiple times to a recipe
+    _recipeIngredients[recipeIngredient.id] = recipeIngredient;
   }
 
   @override
@@ -603,8 +682,35 @@ class MockDatabaseHelper implements DatabaseHelper {
   }
 
   @override
-  Future<int> deleteRecipeIngredient(String id) {
-    throw UnimplementedError('Method not implemented for tests');
+  Future<int> deleteMealRecipesByMealId(String mealId, {bool excludePrimary = false}) async {
+    int count = 0;
+
+    // Find all meal recipes for this meal
+    final toRemove = <String>[];
+    for (final entry in _mealRecipes.entries) {
+      if (entry.value.mealId == mealId) {
+        // If excludePrimary is true, only delete non-primary dishes
+        if (!excludePrimary || !entry.value.isPrimaryDish) {
+          toRemove.add(entry.key);
+          count++;
+        }
+      }
+    }
+
+    // Remove them
+    for (final id in toRemove) {
+      await deleteMealRecipe(id);
+    }
+
+    return count;
+  }
+
+  @override
+  Future<int> deleteRecipeIngredient(String id) async {
+    if (!_recipeIngredients.containsKey(id)) return 0;
+
+    _recipeIngredients.remove(id);
+    return 1;
   }
 
   @override
@@ -630,6 +736,7 @@ class MockDatabaseHelper implements DatabaseHelper {
     return recipeIngredients.map((ri) {
       final ingredient = _ingredients[ri.ingredientId];
       return {
+        'id': ri.id,
         'recipe_id': ri.recipeId,
         'ingredient_id': ri.ingredientId,
         'quantity': ri.quantity,
@@ -876,6 +983,24 @@ class MockDatabaseHelper implements DatabaseHelper {
 
     // Item not found
     return mealPlanItemRecipe.id;
+  }
+
+  @override
+  Future<int> deleteMealPlanItemRecipesByItemId(String mealPlanItemId) async {
+    int count = 0;
+
+    // Find the item and remove all its recipes
+    for (final plan in _mealPlans.values) {
+      for (final item in plan.items) {
+        if (item.id == mealPlanItemId) {
+          count = item.mealPlanItemRecipes?.length ?? 0;
+          item.mealPlanItemRecipes?.clear();
+          return count;
+        }
+      }
+    }
+
+    return 0; // Item not found
   }
 
   // In-memory storage for recommendation history

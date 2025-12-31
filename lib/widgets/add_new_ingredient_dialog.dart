@@ -180,34 +180,6 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
               ),
               const SizedBox(height: 16),
 
-              // Unit Dropdown
-              DropdownButtonFormField<MeasurementUnit?>(
-                key: const Key('add_new_ingredient_unit_field'),
-                initialValue: _selectedUnit,
-                decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context)!.unitOptional,
-                  border: const OutlineInputBorder(),
-                ),
-                items: [
-                  DropdownMenuItem<MeasurementUnit?>(
-                    value: null,
-                    child: Text(AppLocalizations.of(context)!.noUnit),
-                  ),
-                  ..._units.map((unit) {
-                    return DropdownMenuItem(
-                      value: unit,
-                      child: Text(unit.getLocalizedDisplayName(context)),
-                    );
-                  }),
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    _selectedUnit = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-
               // Protein Type (only shown for protein category)
               if (_selectedCategory == IngredientCategory.protein)
                 DropdownButtonFormField<ProteinType>(
@@ -240,6 +212,34 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
 
               if (_selectedCategory == IngredientCategory.protein)
                 const SizedBox(height: 16),
+
+              // Unit Dropdown
+              DropdownButtonFormField<MeasurementUnit?>(
+                key: const Key('add_new_ingredient_unit_field'),
+                initialValue: _selectedUnit,
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.unitOptional,
+                  border: const OutlineInputBorder(),
+                ),
+                items: [
+                  DropdownMenuItem<MeasurementUnit?>(
+                    value: null,
+                    child: Text(AppLocalizations.of(context)!.noUnit),
+                  ),
+                  ..._units.map((unit) {
+                    return DropdownMenuItem(
+                      value: unit,
+                      child: Text(unit.getLocalizedDisplayName(context)),
+                    );
+                  }),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _selectedUnit = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
 
               // Notes
               TextFormField(

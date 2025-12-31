@@ -306,7 +306,29 @@
   },
   "errorEditingMeal": "Erro ao editar refeição",
   "@errorEditingMeal": {
-    "description": "Mensagem de erro quando falha ao editar refeição"    
+    "description": "Mensagem de erro quando falha ao editar refeição"
+  },
+  "deleteMeal": "Excluir Refeição",
+  "@deleteMeal": {
+    "description": "Título do diálogo de confirmação de exclusão de refeição"
+  },
+  "deleteMealConfirmation": "Tem certeza que deseja excluir esta refeição de {mealDate}?",
+  "@deleteMealConfirmation": {
+    "description": "Mensagem de confirmação para exclusão de refeição",
+    "placeholders": {
+      "mealDate": {
+        "type": "String",
+        "description": "Data da refeição a ser excluída"
+      }
+    }
+  },
+  "mealDeletedSuccessfully": "Refeição excluída com sucesso",
+  "@mealDeletedSuccessfully": {
+    "description": "Mensagem de sucesso após exclusão de refeição"
+  },
+  "errorDeletingMeal": "Erro ao excluir refeição",
+  "@errorDeletingMeal": {
+    "description": "Mensagem de erro quando falha ao excluir refeição"
   },
   "recipesCount": "{count} receitas",
   "@recipesCount": {
@@ -1685,6 +1707,38 @@
   "instructions": "Instruções",
   "@instructions": {
     "description": "Rótulo para seção de instruções"
+  },
+  "viewInstructions": "Ver Instruções",
+  "@viewInstructions": {
+    "description": "Tooltip do botão para visualizar instruções da receita"
+  },
+  "noInstructionsAvailable": "Nenhuma instrução disponível para esta receita.",
+  "@noInstructionsAvailable": {
+    "description": "Mensagem de estado vazio quando a receita não tem instruções"
+  },
+  "addInstructions": "Adicionar Instruções",
+  "@addInstructions": {
+    "description": "Texto do botão para adicionar instruções"
+  },
+  "editInstructions": "Editar Instruções",
+  "@editInstructions": {
+    "description": "Tooltip do botão para editar instruções da receita"
+  },
+  "instructionsUpdatedSuccessfully": "Instruções atualizadas com sucesso",
+  "@instructionsUpdatedSuccessfully": {
+    "description": "Mensagem de sucesso quando instruções são salvas"
+  },
+  "enterInstructions": "Digite as instruções de preparo...",
+  "@enterInstructions": {
+    "description": "Texto de dica para campo de entrada de instruções"
+  },
+  "instructionsLabel": "Instruções (opcional)",
+  "@instructionsLabel": {
+    "description": "Rótulo para campo de instruções na tela de edição"
+  },
+  "instructionsHint": "Exemplo:\n1. Preaqueça o forno a 180°C\n2. Misture os ingredientes em uma tigela\n3. Asse por 30 minutos",
+  "@instructionsHint": {
+    "description": "Texto de dica mostrando exemplo de formato de instruções"
   },
   "noneOfTheseCreateNew": "Criar Novo Ingrediente",
   "@noneOfTheseCreateNew": {
