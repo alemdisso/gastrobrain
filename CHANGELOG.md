@@ -9,6 +9,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.3] - 2025-12-30
+
+### Added
+- Complete dialog testing infrastructure (#38)
+- Comprehensive edge case test suite (#39)
+- Testing documentation guides (4 major guides)
+- Performance benchmarking for critical operations
+
+#### Features & Enhancements
+- Context menu for meal editing (#238)
+- Instructions viewing and editing (#172)
+
+### Changed
+- Reorganized docs/ folder into logical subfolders
+- Updated testing patterns in CLAUDE.md
+- Enhanced test coverage to 100% for critical paths
+
+### Fixed
+- None
+
+### Performance
+- All operations exceed performance thresholds
+- 614 tests execute in 2-3 seconds
+
+### Documentation
+- DIALOG_TESTING_GUIDE.md (1,288 lines)
+- EDGE_CASE_TESTING_GUIDE.md (740+ lines)
+- EDGE_CASE_CATALOG.md (460+ lines)
+- Sprint review analysis for velocity tracking
+
+---
+
 ## [0.1.2] - 2025-12-18
 
 ### Added

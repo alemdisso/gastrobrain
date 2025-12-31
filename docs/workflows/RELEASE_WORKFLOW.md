@@ -71,12 +71,15 @@ git checkout -b release/0.1.3
 
 **Update `pubspec.yaml`**:
 ```yaml
-version: 0.1.3+3  # version+buildNumber
+version: 0.1.3+4  # version+buildNumber
 ```
 
 **Version format**: `MAJOR.MINOR.PATCH+BUILD`
-- Increment build number for each release
-- Example progression: `0.1.2+2` → `0.1.3+3`
+- **Build number ALWAYS increments** (never resets)
+- Build number is independent of version number
+- Example progression: `0.1.2+3` → `0.1.3+4` → `0.1.4+5` → `1.0.0+6`
+
+**IMPORTANT**: The build number must monotonically increase for app store compatibility.
 
 ### Step 3: Update CHANGELOG.md
 
@@ -116,7 +119,7 @@ Add release notes to `CHANGELOG.md`:
 git add pubspec.yaml CHANGELOG.md
 git commit -m "chore: bump version to 0.1.3 for release
 
-- Update version in pubspec.yaml to 0.1.3+3
+- Update version in pubspec.yaml to 0.1.3+4
 - Add CHANGELOG.md entries for 0.1.3 release
 - Document features, changes, and improvements
 
@@ -328,9 +331,14 @@ git branch -d hotfix/0.1.3.1
 ### Build Number Conflicts
 
 **Problem**: Build number doesn't increment properly
-**Solution**: Always increment both version AND build number
-- From `0.1.2+2` → `0.1.3+3` (both increment)
-- Build number should equal or exceed version sequence
+**Solution**: Build number must ALWAYS increment (never reset or decrement)
+- Build number is independent of version number
+- Example: `0.1.2+3` → `0.1.3+4` → `0.1.4+5` → `1.0.0+6`
+- ❌ WRONG: `0.1.2+3` → `0.1.3+3` (build didn't increment)
+- ❌ WRONG: `0.1.2+3` → `0.2.0+1` (build number reset)
+- ✅ CORRECT: Build number always increases monotonically
+
+**Why it matters**: App stores require build numbers to always increase for updates to work properly.
 
 ### Merge Conflicts in CHANGELOG
 
