@@ -168,29 +168,172 @@ Dec 17: ██ #126 (E2E finalization)
 | Most estimates conservative | Trust estimates, but watch for infra work |
 | Unplanned work ~10% | Build buffer into sprint capacity |
 
+### 0.1.3 - User Features & Critical Foundation
+
+**Sprint Duration:** December 18-30, 2025
+**Calendar Days:** 12
+**Active Working Days:** 10 (83% utilization)
+**Planned Issues:** 8
+**Completed Issues:** 9 (including #236 added mid-sprint)
+
+#### Estimation vs Actual
+
+| Issue | Title | Type | Est Points | Weighted Actual | Lines | Ratio | Assessment |
+|-------|-------|------|------------|-----------------|-------|-------|------------|
+| #221 | Organize integration tests | Testing | 1 | 1.0 | 688 | 1.00x | ✅ On target |
+| #238 | Context menu for meal cards | UI | 2 | 1.0 | 3787 | 0.50x | ⚡ Faster |
+| #234 | Refactor _updateMealRecord | Architecture | 2 | 0.33* | 867 | 0.17x | ⚡ Very fast |
+| #235 | Refactor _handleMarkAsCooked | Architecture | 3 | 1.33* | 1221 | 0.44x | ⚡ Faster |
+| #236 | Refactor _updateMealPlanItem | Architecture | N/A | 0.33* | 867 | - | 📋 Unplanned |
+| #172 | Instructions viewing/editing | Feature | 3 | 1.0 | 737 | 0.33x | ⚡ Very fast |
+| #77 | MealHistoryScreen widget tests | Testing | 2 | 1.0 | 8307 | 0.50x | ⚡ Faster |
+| #38 | Dialog testing infrastructure | Testing | 5 | 3.25* | 30252 | 0.65x | ⚡ Faster |
+| #39 | Edge case test suite | Testing | 8 | 0.75* | 22970 | 0.09x | ⚡ Very fast |
+| **TOTAL** | | | **26** | **10.0** | **69696** | **0.38x** | |
+
+*\* Weighted by lines changed when sharing day with other issues*
+
+#### Accuracy by Type (Weighted)
+
+| Type | Issues | Est Total | Weighted Actual | Avg Ratio | Verdict |
+|------|--------|-----------|-----------------|-----------|---------|
+| Testing | #221, #77, #38, #39 | 16 | 6.0 | 0.38x | ⚡ Much faster than expected |
+| Architecture | #234, #235, #236 | 5 | 2.0 | 0.40x | ⚡ Very efficient |
+| Features/UI | #238, #172 | 5 | 2.0 | 0.40x | ⚡ Very efficient |
+
+**Overall:** Estimates were very conservative - actual effort was 38% of estimated (0.38x ratio)
+
+#### Variance Analysis
+
+**Major Underruns:**
+
+**#39 (Edge case test suite)** - Estimated: 8 points → Actual: 0.75 days (0.09x)
+- Root cause: Shared work with #38, efficient test pattern reuse
+- Most work done on same days as #38 (Dec 27, 30)
+- Edge case tests built on foundation from #38
+- Lesson: Related testing tasks have high synergy when done together
+
+**#234, #235, #236 (Architecture refactoring)** - Estimated: 5 points → Actual: 2.0 days (0.40x)
+- All three done in parallel on Dec 23
+- Similar patterns across all refactorings
+- Once pattern established, very fast to replicate
+- Lesson: Similar refactoring tasks are much faster when batched
+
+**#172 (Instructions feature)** - Estimated: 3 points → Actual: 1.0 day (0.33x)
+- Well-specified feature with existing patterns
+- Clean implementation in single day
+- Lesson: Well-specified features with clear patterns are faster than estimated
+
+**On Target:**
+
+**#221 (Organize tests)** - Estimated: 1 point → Actual: 1.0 day
+- Perfect estimate for file reorganization task
+- Lesson: Simple, well-defined tasks estimate accurately
+
+**Fastest:**
+
+**#38 (Dialog testing)** - Estimated: 5 points → Actual: 3.25 days (0.65x)
+- Still faster than estimate despite being largest task
+- Created comprehensive testing infrastructure
+- Enabled fast execution of #39
+- Lesson: Infrastructure tasks still faster than conservative estimates
+
+#### Working Pattern Observations
+
+```
+Dec 19:  ███ #221 (688)
+Dec 20:  ████████ #238 (3787)
+Dec 22:  ██ #235 (354)
+Dec 23:  ████████████ #234, #235, #236 (2601 total)
+Dec 25:  ███ #172 (737)
+Dec 26:  ████████ #77 (8307)
+Dec 27:  ████████████ #38, #39 (7914 total)
+Dec 28:  ████ #38 (2395)
+Dec 29:  ██ #38 (963)
+Dec 30:  ████████████████ #38, #39 (41950 total)
+```
+
+**Patterns:**
+- Quick wins batched at start (Dec 19-20)
+- Architecture refactoring done in parallel (Dec 23)
+- Feature work isolated (Dec 25)
+- Testing clustered at end (Dec 26-30)
+- Final push with massive documentation/test additions (Dec 30)
+
+#### Lessons Learned
+
+1. **Estimates were VERY conservative (0.38x ratio overall)**
+   - Testing estimates particularly conservative (0.38x)
+   - Architecture estimates very conservative (0.40x)
+   - Features/UI also very conservative (0.40x)
+   - Lesson: Can be more aggressive with estimates, especially for well-understood work
+
+2. **Batching similar tasks is extremely efficient**
+   - #234, #235, #236 all done in one day despite 5 point estimate
+   - Similar patterns enable fast replication
+   - Context switching avoided
+   - Lesson: When possible, batch similar refactorings together
+
+3. **Related testing tasks have high synergy**
+   - #38 and #39 shared days, #39 reused #38 patterns
+   - Edge cases built on dialog testing foundation
+   - Total: 13 points estimated → 4.0 days actual (0.31x)
+   - Lesson: Related testing work should be done together for efficiency
+
+4. **Well-specified features are fast**
+   - #172 (instructions) done in 1 day vs. 3 point estimate
+   - Clear requirements + existing patterns = fast execution
+   - Lesson: Good specifications dramatically improve velocity
+
+5. **Documentation and test writing dominated effort**
+   - 69,696 lines changed (mostly test code and documentation)
+   - #38 alone: 30,252 lines
+   - #39: 22,970 lines
+   - #77: 8,307 lines
+   - Lesson: Testing sprints generate massive documentation but estimate conservatively
+
+#### Recommendations for 0.1.4
+
+| Finding | Adjustment |
+|---------|------------|
+| Overall very conservative (0.38x) | Can reduce estimates by ~30-40% for similar work |
+| Batching similar tasks extremely efficient | Group related refactorings/tests together |
+| Related testing tasks have synergy | Don't estimate testing tasks independently |
+| Well-specified features fast | Trust specifications, reduce feature estimates |
+
+#### Notes
+
+- #236 was added mid-sprint (originally planned for 0.1.4)
+- Sprint included comprehensive documentation creation
+- Major testing infrastructure built (#38) enables future work
+- Edge case catalog created (#39) - valuable reference
+- All 8 planned issues + 1 bonus issue completed
+
 ---
 
 ## Cumulative Metrics
 
 ### Estimation Accuracy Trend
 
-| Sprint | Planned Days | Weighted Actual | Ratio | Trend |
-|--------|--------------|-----------------|-------|-------|
+| Sprint | Planned Points | Weighted Actual | Ratio | Trend |
+|--------|----------------|-----------------|-------|-------|
 | 0.1.2 | 12.2 | ~11 | 0.90x | Baseline (slightly conservative) |
-| 0.1.3 | TBD | TBD | TBD | - |
-| 0.1.4 | TBD | TBD | TBD | - |
+| 0.1.3 | 26 | 10.0 | 0.38x | VERY conservative (major underestimate of velocity) |
+| 0.1.4 | 12 | TBD | TBD | - |
 
 ### Type-Based Calibration Factors
 
 Use these multipliers when estimating future work:
 
-| Type | Sample Size | Avg Ratio | Recommended Multiplier |
-|------|-------------|-----------|------------------------|
-| Bug fixes | 2 issues | 0.62x | 1.0x (estimates are conservative) |
-| UI/Features | 3 issues | 0.84x | 1.0x (estimates are good) |
-| Parser/Algorithm | 2 issues | 0.21x | 0.5x (very efficient, can reduce) |
-| Testing (existing patterns) | 3 issues | 0.62x | 1.0x (estimates are conservative) |
-| Testing (new infra) | 1 issue | 4.00x | 2.0-3.0x (main risk area) |
+| Type | Sample Size | Avg Ratio | Recommended Multiplier | Notes |
+|------|-------------|-----------|------------------------|-------|
+| Bug fixes | 2 issues | 0.62x | 1.0x | Conservative (0.1.2) |
+| UI/Features | 5 issues | 0.56x | 0.6-0.7x | Very conservative (0.1.2: 0.84x, 0.1.3: 0.40x) |
+| Parser/Algorithm | 2 issues | 0.21x | 0.5x | Very efficient (0.1.2) |
+| Architecture | 5 issues | 0.40x | 0.5x | Very efficient when batched (0.1.3) |
+| Testing (existing patterns) | 3 issues | 0.62x | 1.0x | Conservative (0.1.2) |
+| Testing (new infra) | 5 issues | 1.27x | 1.0-1.5x | **REVISED**: 0.1.2 was outlier (4.00x), 0.1.3 averaged 0.51x |
+| Testing (related tasks) | 2 issues | 0.31x | 0.3-0.5x | Extremely efficient when done together (0.1.3: #38+#39) |
 
 ---
 
@@ -236,3 +379,9 @@ Use these multipliers when estimating future work:
   - Previous "active days" method overcounted when multiple issues shared a day
   - Revised overall ratio from 1.31x to 0.90x (estimates were slightly conservative)
   - Key insight: Small estimates work well when batched; test infra is main risk
+- **2025-12-31**: Added 0.1.3 retrospective analysis
+  - Sprint completed: 8 planned + 1 unplanned issues (9 total)
+  - Actual ratio: 0.38x (VERY conservative estimates)
+  - Revised testing infrastructure estimates: 0.1.2's 4.00x was outlier, 0.1.3 averaged 0.51x
+  - Key insights: Batching similar tasks is extremely efficient; related testing tasks have high synergy; well-specified features are faster than estimated
+  - Updated calibration factors based on combined 0.1.2 and 0.1.3 data

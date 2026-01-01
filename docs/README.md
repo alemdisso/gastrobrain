@@ -70,15 +70,6 @@ For testing-related work, follow this hierarchy:
    └─ test/edge_cases/performance/ (performance benchmarks)
 ```
 
-**Test Statistics** (Issues #38 & #39 Complete):
-- 📊 **Dialog Tests**: 122 tests across 6 dialogs (Issue #38)
-- 📊 **Edge Case Tests**: 492 tests (458 edge case + 19 regression + 15 performance) (Issue #39)
-- ✅ **All Tests Passing**: 100% success rate
-- 🎯 **Coverage**: 100% of critical error paths
-- ⚡ **Performance**: Excellent (all operations exceed thresholds)
-
----
-
 ## Workflows & Processes
 
 | Document | Purpose | Status |
@@ -98,7 +89,6 @@ Historical planning documents and completed project tracking:
 | [Sprint-Planning-0.1.2-0.1.3.md](archive/Sprint-Planning-0.1.2-0.1.3.md) | Sprint planning for milestones 0.1.2-0.1.3 | 📅 Historical (2025-12-19) |
 | [Sprint-Estimation-Diary.md](archive/Sprint-Estimation-Diary.md) | Sprint estimation tracking and learnings | 📅 Historical (2025-12-19) |
 | [meal-editing-refactoring-plan.md](archive/meal-editing-refactoring-plan.md) | Plan for consolidating meal editing screens (Issue #237) | 📅 Future work (2025-12-19) |
-| [progress-check.md](archive/progress-check.md) | Progress tracking document | 📅 Historical (2025-12-29) |
 
 ---
 
