@@ -62,6 +62,15 @@ Gastrobrain is a comprehensive meal planning and recipe management application b
 - **RecipeExportService**: Exports recipes with full ingredient data to JSON
 - **IngredientTranslationService**: Translates ingredients from English to Portuguese using reviewed translation data
 
+### Meal Management Services
+- **MealEditService**: Centralized meal editing and recording operations
+  - Consolidates meal editing logic from multiple screens into single source of truth
+  - `updateMealWithRecipes()`: Updates meal records with new values and recipe associations
+  - `recordMealWithRecipes()`: Records new meals with primary and additional recipes
+  - Handles atomic operations for meal + recipe association updates
+  - Proper dependency injection via ServiceProvider
+  - Consistent error handling and transaction support
+
 ### Provider Architecture
 - **RecipeProvider**: State management for recipe operations
 - **MealProvider**: State management for meal tracking
