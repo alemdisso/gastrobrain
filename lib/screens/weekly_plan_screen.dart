@@ -15,6 +15,7 @@ import '../core/di/service_provider.dart';
 import '../core/services/recommendation_service.dart';
 import '../core/services/snackbar_service.dart';
 import '../core/services/meal_plan_analysis_service.dart';
+import '../core/services/meal_edit_service.dart';
 import '../core/providers/recipe_provider.dart';
 import '../core/providers/meal_provider.dart';
 import '../core/providers/meal_plan_provider.dart';
@@ -894,12 +895,28 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
 
       if (result == null) return; // User cancelled
 
-      // Extract the updated additional recipes
+      // Extract the updated data from the result
+      final DateTime cookedAt = result['cookedAt'];
+      final int servings = result['servings'];
+      final String notes = result['notes'];
+      final bool wasSuccessful = result['wasSuccessful'];
+      final double actualPrepTime = result['actualPrepTime'];
+      final double actualCookTime = result['actualCookTime'];
       final List<Recipe> updatedAdditionalRecipes = result['additionalRecipes'];
 
-      // Update the meal's additional recipes
-      await _updateMealRecipes(
-          targetMeal.id, recipe.id, updatedAdditionalRecipes);
+      // Update meal and recipe associations using service
+      // Use the screen's database helper instance to ensure test mocks work
+      final mealEditService = MealEditService(_dbHelper);
+      await mealEditService.updateMealWithRecipes(
+        mealId: targetMeal.id,
+        cookedAt: cookedAt,
+        servings: servings,
+        notes: notes,
+        wasSuccessful: wasSuccessful,
+        actualPrepTime: actualPrepTime,
+        actualCookTime: actualCookTime,
+        additionalRecipes: updatedAdditionalRecipes,
+      );
 
       if (mounted) {
         SnackbarService.showSuccess(context,
@@ -1010,14 +1027,20 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       final double actualPrepTime = result['actualPrepTime'];
       final double actualCookTime = result['actualCookTime'];
       final List<Recipe> updatedAdditionalRecipes = result['additionalRecipes'];
-      final DateTime modifiedAt = result['modifiedAt'];
 
-      // Update the meal record
-      await _updateMealRecord(mealId, cookedAt, servings, notes, wasSuccessful,
-          actualPrepTime, actualCookTime, modifiedAt);
-
-      // Update the meal's recipe associations
-      await _updateMealRecipes(mealId, recipe.id, updatedAdditionalRecipes);
+      // Update meal and recipe associations using service
+      // Use the screen's database helper instance to ensure test mocks work
+      final mealEditService = MealEditService(_dbHelper);
+      await mealEditService.updateMealWithRecipes(
+        mealId: mealId,
+        cookedAt: cookedAt,
+        servings: servings,
+        notes: notes,
+        wasSuccessful: wasSuccessful,
+        actualPrepTime: actualPrepTime,
+        actualCookTime: actualCookTime,
+        additionalRecipes: updatedAdditionalRecipes,
+      );
 
       if (mounted) {
         SnackbarService.showSuccess(
@@ -1030,40 +1053,6 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
             context, AppLocalizations.of(context)!.errorEditingMeal);
       }
     }
-  }
-
-  Future<void> _updateMealRecord(
-    String mealId,
-    DateTime cookedAt,
-    int servings,
-    String notes,
-    bool wasSuccessful,
-    double actualPrepTime,
-    double actualCookTime,
-    DateTime modifiedAt,
-  ) async {
-    // Fetch existing meal to preserve all fields
-    final existingMeal = await _dbHelper.getMeal(mealId);
-    if (existingMeal == null) {
-      throw NotFoundException('Meal not found with id: $mealId');
-    }
-
-    // Create updated meal object with new field values
-    final updatedMeal = Meal(
-      id: existingMeal.id,
-      recipeId: existingMeal.recipeId,
-      cookedAt: cookedAt,
-      servings: servings,
-      notes: notes,
-      wasSuccessful: wasSuccessful,
-      actualPrepTime: actualPrepTime,
-      actualCookTime: actualCookTime,
-      modifiedAt: modifiedAt,
-      mealRecipes: existingMeal.mealRecipes, // Preserve meal recipes
-    );
-
-    // Update using DatabaseHelper abstraction
-    await _dbHelper.updateMeal(updatedMeal);
   }
 
   Future<void> _handleManageRecipes(
@@ -1136,33 +1125,6 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       if (mounted) {
         SnackbarService.showError(context,
             AppLocalizations.of(context)!.errorManagingRecipes(e.toString()));
-      }
-    }
-  }
-
-  Future<void> _updateMealRecipes(String mealId, String primaryRecipeId,
-      List<Recipe> additionalRecipes) async {
-    // Remove all existing side dishes (keep only primary)
-    await _dbHelper.deleteMealRecipesByMealId(mealId, excludePrimary: true);
-
-    // Add all new additional recipes as side dishes
-    for (final recipe in additionalRecipes) {
-      final sideDishMealRecipe = MealRecipe(
-        mealId: mealId,
-        recipeId: recipe.id,
-        isPrimaryDish: false,
-        notes: AppLocalizations.of(context)!.sideDishAddedLater,
-      );
-
-      await _dbHelper.insertMealRecipe(sideDishMealRecipe);
-    }
-
-    // Refresh recipe statistics cache to reflect the updated meal data
-    if (mounted) {
-      try {
-        context.read<RecipeProvider>().refresh();
-      } catch (e) {
-        // Provider not available (e.g., in tests), skip refresh
       }
     }
   }

@@ -750,8 +750,8 @@ void main() {
       }
 
       // 13. Verify database state after partial operation
-      // Note: _updateMealRecipeAssociations deletes all side dishes first,
-      // then tries to insert new ones. Since insert failed, we have:
+      // Note: Service deletes all side dishes first, then tries to insert new ones.
+      // Since insert failed, we have:
       // - Deletions succeeded (original side dish removed)
       // - Inserts failed (new side dish NOT added)
       // Result: Only primary recipe remains
