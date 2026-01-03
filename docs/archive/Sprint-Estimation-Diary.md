@@ -15,14 +15,16 @@ Use the analysis script to extract commit data:
 
 ```bash
 # Basic usage - analyze commits from start date to now
-python scripts/analyze_sprint_commits.py --since YYYY-MM-DD --branch develop
+python3 scripts/analyze_sprint_commits.py --since YYYY-MM-DD --branch develop
 
 # With end date (for completed sprints)
-python scripts/analyze_sprint_commits.py --since 2025-12-02 --until 2025-12-17 --branch develop
+python3 scripts/analyze_sprint_commits.py --since 2025-12-02 --until 2025-12-17 --branch develop
 
 # Focus on specific issues only
-python scripts/analyze_sprint_commits.py --since 2025-12-02 --issues "223,228,124"
+python3 scripts/analyze_sprint_commits.py --since 2025-12-02 --issues "223,228,124"
 ```
+
+**Note:** Use `python3` command (not `python`) in WSL/Linux environments.
 
 ### 2. Review Output
 
@@ -309,6 +311,125 @@ Dec 30:  ████████████████ #38, #39 (41950 total)
 - Edge case catalog created (#39) - valuable reference
 - All 8 planned issues + 1 bonus issue completed
 
+### 0.1.4 - Architecture & Critical Bug Fixes
+
+**Sprint Duration:** January 2-3, 2026
+**Calendar Days:** 2
+**Active Working Days:** 2 (100% utilization)
+**Planned Issues:** 4
+**Completed Issues:** 4
+
+#### Estimation vs Actual
+
+| Issue | Title | Type | Est Points | Weighted Actual | Lines | Ratio | Assessment |
+|-------|-------|------|------------|-----------------|-------|-------|------------|
+| #250 | Save Changes button obscured by Android navigation bar | Bug | 2 | 0.16* | 446 | 0.08x | ⚡ Very fast |
+| #252 | Recipe card chevron inaccessible behind FAB | Bug | 2 | 0.0* | 12 | 0.00x | ⚡ Trivial |
+| #244 | Add error simulation to MockDatabaseHelper | Testing | 3 | 0.56* | 1523 | 0.19x | ⚡ Very fast |
+| #237 | Consolidate meal editing logic into shared service | Architecture | 5 | 1.27 | 1560 | 0.25x | ⚡ Very fast |
+| **TOTAL** | | | **12** | **2.0** | **3541** | **0.17x** | |
+
+*\* Weighted by lines changed when sharing day with other issues*
+
+#### Accuracy by Type (Weighted)
+
+| Type | Issues | Est Total | Weighted Actual | Avg Ratio | Verdict |
+|------|--------|-----------|-----------------|-----------|---------|
+| Bug fixes | #250, #252 | 4 | 0.16 | 0.04x | ⚡ Extremely fast (trivial fixes) |
+| Testing | #244 | 3 | 0.56 | 0.19x | ⚡ Very fast (extending patterns) |
+| Architecture | #237 | 5 | 1.27 | 0.25x | ⚡ Very fast (well-prepared) |
+
+**Overall:** Estimates were EXTREMELY conservative - actual effort was 17% of estimated (0.17x ratio)
+
+#### Variance Analysis
+
+**All Issues Significantly Faster Than Estimated:**
+
+**#252 (Recipe chevron fix)** - Estimated: 2 points → Actual: 0.0 days (0.00x)
+- Root cause: Trivial fix - already solved in #250 pattern
+- Only 12 lines changed
+- Essentially zero effort once #250 pattern was understood
+- Lesson: Related UI fixes have near-zero marginal cost
+
+**#250 (Save button fix)** - Estimated: 2 points → Actual: 0.16 days (0.08x)
+- Standard SafeArea pattern application
+- 446 lines changed but straightforward implementation
+- Lesson: Well-understood UI patterns are much faster than estimated
+
+**#244 (MockDatabaseHelper error simulation)** - Estimated: 3 points → Actual: 0.56 days (0.19x)
+- Extending existing test patterns (not new infrastructure)
+- 1523 lines but mostly repetitive copy-paste work
+- Lesson: Extending existing patterns is very efficient
+
+**#237 (Meal editing service)** - Estimated: 5 points → Actual: 1.27 days (0.25x)
+- Well-prepared with prerequisites (#234, #235, #236) completed
+- Clear roadmap and implementation plan
+- 1560 lines changed across 5 files
+- Lesson: Thorough planning and prerequisites dramatically improve velocity
+
+#### Working Pattern Observations
+
+```
+Jan 2:  ████████████████████ #244 (1523), #237 (726), #250 (446), #252 (12)
+Jan 3:  ████████ #237 (834)
+```
+
+**Patterns:**
+- All issues started on same day (Jan 2)
+- Three small issues (#250, #252, #244) completed in parallel on day 1
+- #237 (largest) continued to day 2
+- Highly efficient batching and parallel work
+- Clean 2-day sprint execution
+
+#### Lessons Learned
+
+1. **Estimates EXTREMELY conservative (0.17x ratio overall)**
+   - Bug fixes: 0.04x (near-instant when using known patterns)
+   - Testing: 0.19x (extending patterns is very efficient)
+   - Architecture: 0.25x (thorough preparation pays off massively)
+   - Lesson: When work is well-prepared and patterns are established, execution is 5-6x faster than estimated
+
+2. **Related bug fixes have near-zero marginal cost**
+   - #252 was essentially free after #250 (0.00x ratio)
+   - Similar UI issues should be batched and estimated together
+   - Lesson: Don't estimate similar fixes independently
+
+3. **Prerequisites and planning eliminate uncertainty**
+   - #237 had prerequisites #234, #235, #236 completed in 0.1.3
+   - Detailed roadmap created before implementation
+   - Result: 0.25x ratio (4x faster than estimated)
+   - Lesson: Investment in planning and prerequisites dramatically improves velocity
+
+4. **Extending patterns vs creating patterns**
+   - #244 extended existing MockDatabaseHelper patterns (0.19x)
+   - No new infrastructure needed
+   - Mostly copy-paste work
+   - Lesson: Distinguish "extend pattern" from "create pattern" when estimating
+
+5. **Ultra-short sprints are viable**
+   - 2-day sprint completed all 4 issues
+   - 100% utilization
+   - Clear scope and execution
+   - Lesson: Well-defined work can be executed in very short sprints
+
+#### Recommendations for Future Sprints
+
+| Finding | Adjustment |
+|---------|------------|
+| Overall extremely conservative (0.17x) | Reduce estimates by 70-80% for well-prepared work |
+| Related bug fixes nearly free | Estimate as single unit when using same pattern |
+| Prerequisites eliminate risk | Trust aggressive estimates when work is well-prepared |
+| Pattern extension very fast | Use 0.2x multiplier for "extend existing pattern" tasks |
+| Ultra-short sprints viable | Don't artificially extend sprints - ship when ready |
+
+#### Notes
+
+- Sprint benefited enormously from 0.1.3 preparation (#234, #235, #236)
+- All issues had clear scope and known solutions
+- No unknowns or discoveries during implementation
+- Perfect example of how preparation reduces execution time
+- Fastest sprint ratio to date (0.17x)
+
 ---
 
 ## Cumulative Metrics
@@ -319,7 +440,7 @@ Dec 30:  ████████████████ #38, #39 (41950 total)
 |--------|----------------|-----------------|-------|-------|
 | 0.1.2 | 12.2 | ~11 | 0.90x | Baseline (slightly conservative) |
 | 0.1.3 | 26 | 10.0 | 0.38x | VERY conservative (major underestimate of velocity) |
-| 0.1.4 | 12 | TBD | TBD | - |
+| 0.1.4 | 12 | 2.0 | 0.17x | EXTREMELY conservative (well-prepared work) |
 
 ### Type-Based Calibration Factors
 
@@ -327,13 +448,23 @@ Use these multipliers when estimating future work:
 
 | Type | Sample Size | Avg Ratio | Recommended Multiplier | Notes |
 |------|-------------|-----------|------------------------|-------|
-| Bug fixes | 2 issues | 0.62x | 1.0x | Conservative (0.1.2) |
+| Bug fixes (new patterns) | 2 issues | 0.62x | 0.5-1.0x | Conservative (0.1.2) |
+| Bug fixes (known patterns) | 2 issues | 0.04x | 0.1-0.2x | **NEW**: Trivial when pattern established (0.1.4) |
+| Bug fixes (related/batched) | - | 0.00x | 0.0x | **NEW**: Near-zero marginal cost for similar fixes (0.1.4: #252) |
 | UI/Features | 5 issues | 0.56x | 0.6-0.7x | Very conservative (0.1.2: 0.84x, 0.1.3: 0.40x) |
 | Parser/Algorithm | 2 issues | 0.21x | 0.5x | Very efficient (0.1.2) |
-| Architecture | 5 issues | 0.40x | 0.5x | Very efficient when batched (0.1.3) |
+| Architecture (unprepared) | 5 issues | 0.40x | 0.5x | Very efficient when batched (0.1.3) |
+| Architecture (well-prepared) | 1 issue | 0.25x | 0.2-0.3x | **NEW**: Extremely fast with prerequisites (0.1.4: #237) |
 | Testing (existing patterns) | 3 issues | 0.62x | 1.0x | Conservative (0.1.2) |
+| Testing (extend patterns) | 1 issue | 0.19x | 0.2x | **NEW**: Very fast copy-paste work (0.1.4: #244) |
 | Testing (new infra) | 5 issues | 1.27x | 1.0-1.5x | **REVISED**: 0.1.2 was outlier (4.00x), 0.1.3 averaged 0.51x |
 | Testing (related tasks) | 2 issues | 0.31x | 0.3-0.5x | Extremely efficient when done together (0.1.3: #38+#39) |
+
+**Key Insights from 0.1.4:**
+- **Well-prepared work is 5-6x faster** than estimated (0.17x average)
+- **Prerequisites eliminate uncertainty** - #237 was 0.25x after #234, #235, #236
+- **Pattern reuse is nearly free** - #252 was 0.00x after #250 established pattern
+- **Extending vs creating patterns** - Distinguish when estimating (0.19x vs 1.27x)
 
 ---
 
@@ -385,3 +516,9 @@ Use these multipliers when estimating future work:
   - Revised testing infrastructure estimates: 0.1.2's 4.00x was outlier, 0.1.3 averaged 0.51x
   - Key insights: Batching similar tasks is extremely efficient; related testing tasks have high synergy; well-specified features are faster than estimated
   - Updated calibration factors based on combined 0.1.2 and 0.1.3 data
+- **2026-01-03**: Added 0.1.4 retrospective analysis
+  - Sprint completed: 4 issues in 2 days (100% utilization)
+  - Actual ratio: 0.17x (EXTREMELY conservative - fastest sprint to date)
+  - Key insight: Well-prepared work with prerequisites is 5-6x faster than estimated
+  - New calibration factors: Bug fixes with known patterns (0.04x), architecture with prerequisites (0.25x), extending patterns (0.19x)
+  - Critical finding: Related bug fixes have near-zero marginal cost when using same pattern
