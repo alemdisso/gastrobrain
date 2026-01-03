@@ -543,11 +543,14 @@ class _ToolsScreenState extends State<ToolsScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      body: SafeArea(
+        top: false, // Tab bar handles top (if embedded in tabs)
+        bottom: true,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             Text(
               l10n.toolsScreenTitle,
               style: Theme.of(context).textTheme.headlineMedium,
@@ -826,6 +829,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

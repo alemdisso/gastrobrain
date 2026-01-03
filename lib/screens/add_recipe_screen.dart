@@ -312,15 +312,18 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.addNewRecipe),
       ),
-      body: SingleChildScrollView(
-        // Added ScrollView
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+      body: SafeArea(
+        top: false, // AppBar handles top
+        bottom: true,
+        child: SingleChildScrollView(
+          // Added ScrollView
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 TextFormField(
                   key: const Key('add_recipe_name_field'),
                   controller: _nameController,
@@ -473,6 +476,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

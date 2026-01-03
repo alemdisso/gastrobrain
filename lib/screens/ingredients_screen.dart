@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import '../models/ingredient.dart';
 import '../models/ingredient_category.dart';
@@ -258,6 +260,10 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
                     : _ingredients.isEmpty
                         ? _buildEmptyView()
                         : ListView.builder(
+                            padding: EdgeInsets.only(
+                              bottom: max(80.0, MediaQuery.of(context).size.height * 0.3),
+                            ),
+                            physics: const AlwaysScrollableScrollPhysics(),
                             itemCount: _getFilteredIngredients().length,
                             itemBuilder: (context, index) {
                               final ingredient =

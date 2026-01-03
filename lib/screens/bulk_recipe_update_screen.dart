@@ -954,11 +954,14 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       );
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return SafeArea(
+      top: false, // AppBar handles top
+      bottom: true,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           // Recipe Enrichment Progress Card
           _buildEnrichmentProgressCard(context, localizations),
           const SizedBox(height: 16),
@@ -984,6 +987,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
           // Navigation Controls
           _buildNavigationControls(context, localizations),
         ],
+      ),
       ),
     );
   }

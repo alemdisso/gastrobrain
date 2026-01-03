@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/recipe.dart';
-import '../models/meal_recipe.dart';
 import '../models/meal.dart';
 import '../utils/id_generator.dart';
 import '../widgets/meal_recording_dialog.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/services/snackbar_service.dart';
+import '../core/di/service_provider.dart';
+import '../core/services/meal_edit_service.dart';
 import '../core/providers/recipe_provider.dart';
-import '../core/providers/meal_provider.dart';
 import '../l10n/app_localizations.dart';
 
 class CookMealScreen extends StatefulWidget {
@@ -77,40 +77,19 @@ class _CookMealScreenState extends State<CookMealScreen> {
         wasSuccessful: wasSuccessful,
         actualPrepTime: actualPrepTime,
         actualCookTime: actualCookTime,
-        modifiedAt: DateTime.now(),
       );
 
-      // Get providers
-      final mealProvider = context.read<MealProvider>();
-      final recipeProvider = context.read<RecipeProvider>();
-
-      // Record the meal using the provider
-      final success = await mealProvider.recordMeal(meal);
-      if (!success) {
-        throw const GastrobrainException('Failed to record meal');
-      }
-
-      // Create and add primary recipe association
-      final primaryMealRecipe = MealRecipe(
-        mealId: mealId,
-        recipeId: primaryRecipe.id,
-        isPrimaryDish: true,
-        notes: AppLocalizations.of(context)!.mainDish,
+      // Record meal with recipes using service
+      // Create service instance to use consistent database helper
+      final mealEditService = MealEditService(ServiceProvider.database.helper);
+      await mealEditService.recordMealWithRecipes(
+        meal: meal,
+        primaryRecipe: primaryRecipe,
+        additionalRecipes: additionalRecipes,
       );
-      await mealProvider.addMealRecipe(primaryMealRecipe);
-
-      // Add all additional recipes as side dishes
-      for (final recipe in additionalRecipes) {
-        final sideDishMealRecipe = MealRecipe(
-          mealId: mealId,
-          recipeId: recipe.id,
-          isPrimaryDish: false,
-          notes: AppLocalizations.of(context)!.sideDish,
-        );
-        await mealProvider.addMealRecipe(sideDishMealRecipe);
-      }
 
       // Refresh meal statistics in the RecipeProvider to reflect the new meal
+      final recipeProvider = context.read<RecipeProvider>();
       await recipeProvider.refreshMealStats();
 
       if (mounted) {

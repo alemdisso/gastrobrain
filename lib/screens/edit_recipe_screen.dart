@@ -203,12 +203,15 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.editRecipe),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
+      body: SafeArea(
+        top: false, // AppBar handles top
+        bottom: true,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextFormField(
@@ -329,6 +332,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

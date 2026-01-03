@@ -164,13 +164,8 @@ void main() {
 
         print('\n=== SAVING CHANGES ===');
 
-        // Find and tap save button
-        await E2ETestHelpers.scrollDown(tester);
-        final saveButton = find.byType(ElevatedButton);
-        expect(saveButton, findsWidgets, reason: 'Save button should exist');
-
-        await tester.tap(saveButton.last);
-        await tester.pumpAndSettle();
+        // Find and tap save button using helper (handles ensureVisible)
+        await E2ETestHelpers.tapSaveButton(tester);
         print('✓ Save button tapped');
 
         // Wait for async operations

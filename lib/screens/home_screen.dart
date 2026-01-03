@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/recipe.dart';
@@ -548,6 +550,10 @@ class _HomePageState extends State<HomePage> {
               return RefreshIndicator(
                 onRefresh: () => recipeProvider.loadRecipes(forceRefresh: true),
                 child: ListView.builder(
+                  padding: EdgeInsets.only(
+                    bottom: max(80.0, MediaQuery.of(context).size.height * 0.3),
+                  ),
+                  physics: const AlwaysScrollableScrollPhysics(),
                   itemCount: filteredRecipes.length,
                   itemBuilder: (context, index) {
                     final recipe = filteredRecipes[index];
