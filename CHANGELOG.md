@@ -9,6 +9,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.4] - 2026-01-03
+
+### Added
+
+#### Architecture
+- MealEditService for centralized meal editing operations (#237)
+  - Consolidates ~125 lines of duplicated meal editing logic from three screens
+  - `updateMealWithRecipes()` method for atomic meal and recipe updates
+  - `recordMealWithRecipes()` method for new meal recording with multiple recipes
+  - Proper dependency injection via ServiceProvider
+  - Consistent error handling and transaction support
+
+#### Testing Infrastructure
+- Comprehensive error simulation for MockDatabaseHelper (#244)
+  - Error simulation support for 22+ database methods
+  - Custom exception support for specific error types
+  - Auto-reset after throwing for easy test writing
+  - Documentation: `MOCK_DATABASE_ERROR_SIMULATION.md`
+
+### Changed
+
+#### Architecture
+- Refactored CookMealScreen to use MealEditService (#237)
+  - Simplified meal recording logic from ~40 lines to ~15 lines
+  - Removed direct MealProvider dependency for meal recording
+- Refactored WeeklyPlanScreen to use MealEditService (#237)
+  - Removed `_updateMealRecord()` helper method (~25 lines)
+  - Removed `_updateMealRecipes()` helper method (~25 lines)
+  - Cleaner meal editing workflow with service abstraction
+
+#### Documentation
+- Added MealEditService to architecture documentation
+- Updated Sprint Estimation Diary with 0.1.4 retrospective
+- Updated sprint analysis script instructions to use python3
+
+### Fixed
+- Save Changes button obscured by Android navigation bar (#250)
+  - Applied SafeArea wrapper to EditRecipeScreen
+  - Ensures buttons are always accessible above system navigation
+- Recipe card chevron inaccessible behind FAB in filtered lists (#252)
+  - Added dynamic bottom padding to recipe list
+  - Enabled AlwaysScrollableScrollPhysics for better scroll behavior
+  - Fixed accessibility issue when filtering recipes
+
+### Performance
+- Net code reduction: +177 lines added, -105 lines removed (service consolidation)
+- Eliminated ~125 lines of duplicated meal editing logic
+- All 1498 tests passing in ~3 seconds
+
+### Sprint Metrics
+- Duration: 2 days (fastest sprint to date)
+- Estimation accuracy: 0.17x ratio (extremely efficient execution)
+- 100% utilization with all 4 planned issues completed
+
+---
+
 ## [0.1.3] - 2025-12-30
 
 ### Added
