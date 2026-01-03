@@ -43,11 +43,29 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<MealPlan?> getMealPlan(String id) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'getMealPlan')) {
+      final exception = _customException ?? Exception(_nextOperationError);
+      resetErrorSimulation();
+      throw exception;
+    }
+
     return _mealPlans[id];
   }
 
   @override
   Future<MealPlan?> getMealPlanForWeek(DateTime date) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'getMealPlanForWeek')) {
+      final exception = _customException ?? Exception(_nextOperationError);
+      resetErrorSimulation();
+      throw exception;
+    }
+
     final normalizedDate = DateTime(date.year, date.month, date.day);
 
     // Find a plan that contains the given date within its week range
@@ -70,6 +88,15 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<List<MealPlanItem>> getMealPlanItemsForDate(DateTime date) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'getMealPlanItemsForDate')) {
+      final exception = _customException ?? Exception(_nextOperationError);
+      resetErrorSimulation();
+      throw exception;
+    }
+
     final dateString = MealPlanItem.formatPlannedDate(date);
 
     List<MealPlanItem> result = [];
@@ -238,6 +265,15 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<Recipe?> getRecipe(String id) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'getRecipe')) {
+      final exception = _customException ?? Exception(_nextOperationError);
+      resetErrorSimulation();
+      throw exception;
+    }
+
     return _recipes[id];
   }
 
@@ -302,6 +338,15 @@ class MockDatabaseHelper implements DatabaseHelper {
     String? sortOrder,
     Map<String, dynamic>? filters,
   }) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'getRecipesWithSortAndFilter')) {
+      final exception = _customException ?? Exception(_nextOperationError);
+      resetErrorSimulation();
+      throw exception;
+    }
+
     // A simple implementation that returns all recipes
     // In a real implementation, we would apply sorting and filtering
     return _recipes.values.toList();
@@ -383,6 +428,16 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<int> deleteMeal(String id) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'deleteMeal')) {
+      final exception = _customException ?? Exception(_nextOperationError);
+      resetErrorSimulation();
+      throw exception;
+    }
+
+    // Legacy error simulation support (for backwards compatibility)
     if (shouldThrowOnDelete) {
       throw Exception('Simulated delete error');
     }
@@ -398,6 +453,15 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<List<Meal>> getRecentMeals({int limit = 10}) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'getRecentMeals')) {
+      final exception = _customException ?? Exception(_nextOperationError);
+      resetErrorSimulation();
+      throw exception;
+    }
+
     // For testing, return all meals sorted by cooked date (most recent first)
     // The analysis service will do its own date filtering
     final sortedMeals = _meals.values.toList()
@@ -416,6 +480,15 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<List<Meal>> getAllMeals() async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'getAllMeals')) {
+      final exception = _customException ?? Exception(_nextOperationError);
+      resetErrorSimulation();
+      throw exception;
+    }
+
     final allMeals = _meals.values.toList();
 
     // Load meal recipes for each meal
@@ -492,6 +565,15 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<List<MealRecipe>> getMealRecipesForMeal(String mealId) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'getMealRecipesForMeal')) {
+      final exception = _customException ?? Exception(_nextOperationError);
+      resetErrorSimulation();
+      throw exception;
+    }
+
     return _mealRecipes.values.where((mr) => mr.mealId == mealId).toList();
   }
 
@@ -546,6 +628,15 @@ class MockDatabaseHelper implements DatabaseHelper {
 
   @override
   Future<List<Ingredient>> getAllIngredients() async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'getAllIngredients')) {
+      final exception = _customException ?? Exception(_nextOperationError);
+      resetErrorSimulation();
+      throw exception;
+    }
+
     return _ingredients.values.toList();
   }
 

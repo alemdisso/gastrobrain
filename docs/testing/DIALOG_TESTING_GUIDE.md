@@ -332,6 +332,8 @@ group('input validation', () {
 
 ### 4. Error Handling Testing
 
+**For comprehensive error simulation patterns and supported methods, see [MOCK_DATABASE_ERROR_SIMULATION.md](./MOCK_DATABASE_ERROR_SIMULATION.md).**
+
 **Test database error scenarios:**
 
 ```dart
@@ -1277,9 +1279,8 @@ When writing tests for a new dialog, ensure you cover:
 
 ## Related Documentation
 
-- **Issue #38 Roadmap**: `docs/ISSUE_38_ROADMAP.md`
-- **Testing Roadmap Summary**: `docs/TESTING_ROADMAP_SUMMARY.md`
-- **Codebase Overview**: `docs/Gastrobrain-Codebase-Overview.md`
+- **Testing Roadmap Summary**: `docs/testing/TESTING_ROADMAP_SUMMARY.md`
+- **Codebase Overview**: `docs/archive/Gastrobrain-Codebase-Overview.md`
 
 ---
 

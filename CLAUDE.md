@@ -102,6 +102,24 @@ final recommendations = await recommendationService.getRecommendations(
 - Widget tests should cover responsive layouts
 - Integration tests cover full user workflows
 
+**Error Simulation Testing** (see [docs/testing/MOCK_DATABASE_ERROR_SIMULATION.md](docs/testing/MOCK_DATABASE_ERROR_SIMULATION.md)):
+
+`MockDatabaseHelper` supports comprehensive error simulation for testing error handling:
+
+```dart
+// Configure mock to fail on next operation
+mockDb.failOnOperation('getAllIngredients');
+
+// Next call throws exception
+await mockDb.getAllIngredients(); // Throws Exception('Simulated database error')
+```
+
+Key capabilities:
+- 22+ supported database methods (recipes, meals, ingredients, meal plans)
+- Custom exceptions for specific error types
+- Auto-reset after throwing for easy test writing
+- See documentation for complete method list and usage patterns
+
 **Dialog Testing** (see [docs/testing/DIALOG_TESTING_GUIDE.md](docs/testing/DIALOG_TESTING_GUIDE.md)):
 
 All dialog tests must follow these patterns:
