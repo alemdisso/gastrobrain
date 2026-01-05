@@ -1,5 +1,7 @@
 # Gastrobrain
 
+[![codecov](https://codecov.io/gh/alemdisso/gastrobrain/graph/badge.svg)](https://codecov.io/gh/alemdisso/gastrobrain)
+
 A personal cooking companion app that helps you plan, organize, and track your culinary journey with intelligent recommendations and comprehensive meal management.
 
 ## About
@@ -113,6 +115,32 @@ flutter test --coverage
 # Analyze code quality
 flutter analyze
 ```
+
+### Test Coverage
+
+Generate and view coverage reports locally:
+
+```bash
+# Generate coverage
+flutter test --coverage
+
+# View summary (requires lcov)
+lcov --summary coverage/lcov.info
+
+# Generate HTML report
+genhtml coverage/lcov.info -o coverage/html
+xdg-open coverage/html/index.html  # Linux
+```
+
+**Installing lcov:**
+```bash
+# Ubuntu/Debian/WSL
+sudo apt-get install lcov
+```
+
+**Current coverage:** [![codecov](https://codecov.io/gh/alemdisso/gastrobrain/graph/badge.svg)](https://codecov.io/gh/alemdisso/gastrobrain)
+
+**Full report:** [Codecov Dashboard](https://codecov.io/gh/alemdisso/gastrobrain)
 
 ## Project Structure
 
