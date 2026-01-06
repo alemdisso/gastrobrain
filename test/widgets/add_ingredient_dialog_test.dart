@@ -731,5 +731,343 @@ void main() {
         expect(savedIngredient!.customCategory, equals('seasoning'));
       });
     });
+
+    group('Editing Existing Ingredient', () {
+      testWidgets('pre-fills form with existing ingredient data',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+        final existingIngredient = {
+          'ingredient_id': testIngredient.id,
+          'quantity': 350.0,
+          'unit_override': 'cup',
+          'preparation_notes': 'Diced finely',
+        };
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+            existingIngredient: existingIngredient,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Verify dialog title is "Edit Ingredient" (line 283)
+        expect(find.text('Editar Ingrediente'), findsOneWidget);
+
+        // Verify quantity is pre-filled (lines 64-67)
+        final quantityField = find.byKey(const Key('add_ingredient_quantity_field'));
+        expect(tester.widget<TextFormField>(quantityField).controller!.text,
+            equals('350.0'));
+
+        // Verify notes are pre-filled (lines 64-67)
+        final notesField = find.byKey(const Key('add_ingredient_notes_field'));
+        expect(tester.widget<TextFormField>(notesField).controller!.text,
+            equals('Diced finely'));
+
+        // Verify button text is "Save Changes" (line 612)
+        expect(find.text('Salvar Alterações'), findsOneWidget);
+        expect(find.text('Adicionar'), findsNothing);
+      });
+
+      testWidgets('updates ingredient when saving changes',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+        final existingIngredient = {
+          'ingredient_id': testIngredient.id,
+          'quantity': 200.0,
+        };
+
+        RecipeIngredient? savedIngredient;
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+            existingIngredient: existingIngredient,
+            onSave: (ingredient) {
+              savedIngredient = ingredient;
+            },
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Change quantity
+        final quantityField = find.byKey(const Key('add_ingredient_quantity_field'));
+        await tester.enterText(quantityField, '500');
+        await tester.pumpAndSettle();
+
+        // Save changes
+        await tester.tap(find.text('Salvar Alterações'));
+        await tester.pumpAndSettle();
+
+        // Verify update was called (line 177)
+        expect(savedIngredient, isNotNull);
+        expect(savedIngredient!.quantity, equals(500.0));
+        expect(savedIngredient!.ingredientId, equals(testIngredient.id));
+      });
+
+      testWidgets('pre-fills custom ingredient data when editing',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+        final existingCustomIngredient = {
+          'quantity': 100.0,
+          'custom_name': 'Custom Spice',
+          'custom_category': 'seasoning',
+          'custom_unit': 'tsp',
+          'preparation_notes': 'Grind fresh',
+        };
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+            existingIngredient: existingCustomIngredient,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Should be in custom mode (lines 70-79)
+        final customNameField = find.byKey(const Key('add_ingredient_custom_name_field'));
+        expect(customNameField, findsOneWidget);
+        expect(tester.widget<TextFormField>(customNameField).controller!.text,
+            equals('Custom Spice'));
+
+        // Verify quantity is pre-filled
+        final quantityField = find.byKey(const Key('add_ingredient_quantity_field'));
+        expect(tester.widget<TextFormField>(quantityField).controller!.text,
+            equals('100.0'));
+
+        // Verify notes are pre-filled
+        final notesField = find.byKey(const Key('add_ingredient_notes_field'));
+        expect(tester.widget<TextFormField>(notesField).controller!.text,
+            equals('Grind fresh'));
+      });
+    });
+
+    group('Validation Messages', () {
+      testWidgets('shows error when saving without selecting ingredient',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Fill only quantity, no ingredient selected
+        final quantityField = find.byKey(const Key('add_ingredient_quantity_field'));
+        await tester.enterText(quantityField, '100');
+        await tester.pumpAndSettle();
+
+        // Try to save without selecting ingredient
+        await tester.tap(find.text('Adicionar'));
+        await tester.pumpAndSettle();
+
+        // Dialog should still be open (validation failed)
+        expect(find.text('Adicionar Ingrediente'), findsOneWidget);
+      });
+
+      testWidgets('shows error when quantity is empty',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Select ingredient but leave quantity empty
+        final searchField = find.byKey(const Key('add_ingredient_search_field'));
+        await tester.enterText(searchField, 'Chicken Breast');
+        await tester.pumpAndSettle();
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        await tester.pumpAndSettle();
+
+        // Try to save with empty quantity
+        await tester.tap(find.text('Adicionar'));
+        await tester.pumpAndSettle();
+
+        // Should show validation error (lines 483-484)
+        expect(find.text('Por favor, informe uma quantidade'), findsOneWidget);
+      });
+
+      testWidgets('shows error when quantity is invalid',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Enter invalid quantity
+        final quantityField = find.byKey(const Key('add_ingredient_quantity_field'));
+        await tester.enterText(quantityField, 'abc');
+        await tester.pumpAndSettle();
+
+        // Try to save
+        await tester.tap(find.text('Adicionar'));
+        await tester.pumpAndSettle();
+
+        // Should show validation error (lines 487-488)
+        expect(find.text('Por favor, informe um número válido'), findsOneWidget);
+      });
+
+      testWidgets('shows error when custom ingredient name is empty',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Switch to custom mode
+        await tester.tap(find.text('Usar ingrediente personalizado'));
+        await tester.pumpAndSettle();
+
+        // Fill quantity but leave name empty
+        final quantityField = find.byKey(const Key('add_ingredient_quantity_field'));
+        await tester.enterText(quantityField, '50');
+        await tester.pumpAndSettle();
+
+        // Try to save without name
+        await tester.tap(find.text('Adicionar'));
+        await tester.pumpAndSettle();
+
+        // Should show validation error (lines 306-307)
+        expect(find.text('Por favor, informe o nome do ingrediente'), findsOneWidget);
+      });
+    });
+
+    group('Error Handling', () {
+      testWidgets('handles database error when loading ingredients',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        // Configure mock to fail on getAllIngredients
+        mockDbHelper.failOnOperation('getAllIngredients');
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        // Wait for error to be handled
+        await tester.pumpAndSettle();
+
+        // Verify error snackbar is shown (Portuguese)
+        expect(
+            find.text(
+                'An unexpected error occurred while loading ingredients'),
+            findsOneWidget);
+
+        // Verify dialog is still visible (not crashed)
+        expect(find.text('Adicionar Ingrediente'), findsOneWidget);
+        expect(find.byType(CircularProgressIndicator), findsNothing);
+      });
+
+      testWidgets(
+          'handles GastrobrainException when loading ingredients',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        // Import the exception class
+        final customException =
+            Exception('Custom error loading ingredients');
+
+        mockDbHelper.failOnOperation('getAllIngredients',
+            exception: customException);
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Should show generic error message since it's not a GastrobrainException
+        expect(
+            find.text(
+                'An unexpected error occurred while loading ingredients'),
+            findsOneWidget);
+      });
+
+      testWidgets('handles database error when adding ingredient',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+        final testIngredient = DialogFixtures.createProteinIngredient(
+          id: 'test-ing-1',
+          name: 'Test Ingredient',
+        );
+        mockDbHelper.insertIngredient(testIngredient);
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Fill in form
+        final searchField = find.byKey(const Key('add_ingredient_search_field'));
+        await tester.enterText(searchField, 'Test Ingredient');
+        await tester.pumpAndSettle();
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        await tester.pumpAndSettle();
+
+        final quantityField = find.byKey(const Key('add_ingredient_quantity_field'));
+        await tester.enterText(quantityField, '100');
+        await tester.pumpAndSettle();
+
+        // Configure mock to fail on add
+        mockDbHelper.failOnOperation('addIngredientToRecipe');
+
+        // Try to save
+        await tester.tap(find.text('Adicionar'));
+        await tester.pumpAndSettle();
+
+        // Verify error message is shown
+        expect(find.text('An unexpected error occurred'), findsOneWidget);
+
+        // Dialog should still be open
+        expect(find.text('Adicionar Ingrediente'), findsOneWidget);
+      });
+    });
   });
 }
