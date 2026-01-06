@@ -688,6 +688,15 @@ class MockDatabaseHelper implements DatabaseHelper {
   // Not implemented methods - these would need to be added as needed
   @override
   Future<void> addIngredientToRecipe(RecipeIngredient recipeIngredient) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'addIngredientToRecipe')) {
+      final exception = _customException ?? Exception(_nextOperationError);
+      resetErrorSimulation();
+      throw exception;
+    }
+
     // Store the recipe ingredient in the map using its unique ID
     // This allows the same ingredient to be added multiple times to a recipe
     _recipeIngredients[recipeIngredient.id] = recipeIngredient;
@@ -1029,8 +1038,22 @@ class MockDatabaseHelper implements DatabaseHelper {
   }
 
   @override
-  Future<int> updateRecipeIngredient(RecipeIngredient recipeIngredient) {
-    throw UnimplementedError('Method not implemented for tests');
+  Future<int> updateRecipeIngredient(RecipeIngredient recipeIngredient) async {
+    // Check if error simulation is enabled for this operation
+    if (_shouldFailNextOperation &&
+        (_failOnSpecificOperation == null ||
+            _failOnSpecificOperation == 'updateRecipeIngredient')) {
+      final exception = _customException ?? Exception(_nextOperationError);
+      resetErrorSimulation();
+      throw exception;
+    }
+
+    // Check if recipe ingredient exists
+    if (!_recipeIngredients.containsKey(recipeIngredient.id)) return 0;
+
+    // Update the recipe ingredient
+    _recipeIngredients[recipeIngredient.id] = recipeIngredient;
+    return 1;
   }
 
   @override
