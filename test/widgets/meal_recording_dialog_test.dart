@@ -971,6 +971,53 @@ void main() {
     });
   });
 
+  group('MealRecordingDialog - Error Handling', () {
+    testWidgets('shows error when loading recipes fails',
+        (WidgetTester tester) async {
+      // Configure mock to fail on getAllRecipes
+      mockDbHelper.failOnOperation('getAllRecipes');
+
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => MealRecordingDialog(
+                    primaryRecipe: primaryRecipe,
+                    databaseHelper: mockDbHelper,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            ),
+          ),
+        )),
+      );
+
+      // Open dialog
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      // Wait for error to be handled
+      await tester.pumpAndSettle();
+
+      // Verify error snackbar is shown (Portuguese)
+      expect(find.textContaining('Erro ao carregar receitas'), findsOneWidget);
+
+      // Verify dialog is still visible (not crashed)
+      expect(DialogTestHelpers.findDialogByType<MealRecordingDialog>(),
+          findsOneWidget);
+
+      // Verify loading indicator is gone (loading state reset)
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+
+      // Verify "Add Recipe" button is still present and functional
+      expect(find.text('Adicionar Receita'), findsOneWidget);
+    });
+  });
+
   group('MealRecordingDialog - Add Side Dish Dialog', () {
     testWidgets('opens add side dish dialog and shows available recipes',
         (WidgetTester tester) async {

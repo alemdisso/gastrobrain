@@ -621,9 +621,6 @@ void main() {
       });
     });
 
-    // Error Handling tests deferred to issue #245
-    // Blocked by issue #244 - MockDatabaseHelper.getAllIngredients() lacks error simulation
-
     group('Temporary State & Mode Switching', () {
       testWidgets('switching to custom mode preserves quantity and notes',
           (WidgetTester tester) async {
