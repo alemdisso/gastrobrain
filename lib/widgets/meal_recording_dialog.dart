@@ -14,6 +14,7 @@ class MealRecordingDialog extends StatefulWidget {
   final DateTime? plannedDate;
   final String? notes;
   final bool allowRecipeChange;
+  final DatabaseHelper? databaseHelper;
 
   const MealRecordingDialog({
     super.key,
@@ -22,6 +23,7 @@ class MealRecordingDialog extends StatefulWidget {
     this.plannedDate,
     this.notes,
     this.allowRecipeChange = true,
+    this.databaseHelper,
   });
 
   @override
@@ -39,13 +41,16 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
 
   // For managing additional recipes
   final List<Recipe> _additionalRecipes = [];
-  final DatabaseHelper _dbHelper = DatabaseHelper();
+  late final DatabaseHelper _dbHelper;
   List<Recipe> _availableRecipes = [];
   bool _isLoadingRecipes = false;
 
   @override
   void initState() {
     super.initState();
+
+    // Initialize database helper using dependency injection
+    _dbHelper = widget.databaseHelper ?? DatabaseHelper();
 
     // Pre-fill with recipe's expected times
     _prepTimeController.text = widget.primaryRecipe.prepTimeMinutes.toString();
