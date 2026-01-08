@@ -88,56 +88,103 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
     });
   }
 
-  Widget _buildPrimaryRecipeSection() {
-    if (widget.primaryRecipe == null) return const SizedBox.shrink();
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.restaurant, color: Colors.green),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              '${widget.primaryRecipe!.name} (${AppLocalizations.of(context)!.mainDish})',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCurrentSideDishesSection() {
-    if (_currentSideDishes.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          AppLocalizations.of(context)!.sideDishesLabel,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-          ),
-        ),
-        const SizedBox(height: 8),
-        ..._currentSideDishes.map((recipe) => ListTile(
-              leading: const Icon(Icons.restaurant_menu, color: Colors.grey),
-              title: Text(recipe.name),
-              trailing: IconButton(
-                icon: const Icon(Icons.remove_circle_outline),
-                onPressed: () => _removeSideDish(recipe),
+  Widget _buildSelectedDishesCard() {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Primary recipe section
+            if (widget.primaryRecipe != null) ...[
+              Row(
+                children: [
+                  const Icon(Icons.restaurant, color: Colors.green, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      widget.primaryRecipe!.name,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      AppLocalizations.of(context)!.mainDish,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.green.shade900,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              contentPadding: EdgeInsets.zero,
-            )),
-        const SizedBox(height: 16),
-      ],
+            ],
+
+            // Divider if both primary and sides exist
+            if (widget.primaryRecipe != null && _currentSideDishes.isNotEmpty)
+              const Divider(height: 20),
+
+            // Side dishes section
+            if (_currentSideDishes.isNotEmpty) ...[
+              Text(
+                AppLocalizations.of(context)!.sideDishesLabel,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 4),
+              // List of side dishes (limit to 5 items visible)
+              ...(_currentSideDishes.length <= 5
+                  ? _currentSideDishes
+                  : _currentSideDishes.take(5))
+                  .map((recipe) => ListTile(
+                        dense: true,
+                        visualDensity: VisualDensity.compact,
+                        leading: const Icon(
+                          Icons.restaurant_menu,
+                          size: 18,
+                          color: Colors.grey,
+                        ),
+                        title: Text(recipe.name),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.remove_circle_outline),
+                          onPressed: () => _removeSideDish(recipe),
+                          tooltip: AppLocalizations.of(context)!.remove,
+                        ),
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 8),
+                      ))
+                  .toList(),
+              if (_currentSideDishes.length > 5)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4.0),
+                  child: Text(
+                    '+${_currentSideDishes.length - 5} more',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 
@@ -162,63 +209,60 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Upper sections (scrollable when needed)
-            Flexible(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Primary recipe section (only in multi-recipe mode)
-                    if (isMultiRecipeMode) _buildPrimaryRecipeSection(),
+            // FIXED: Search field (always visible at top)
+            if (widget.enableSearch) ...[
+              TextField(
+                key: const Key('add_side_dish_search_field'),
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: widget.searchHint ??
+                      AppLocalizations.of(context)!.searchSideDishesHint,
+                  prefixIcon: const Icon(Icons.search),
+                  border: const OutlineInputBorder(),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            setState(() {
+                              _searchQuery = '';
+                              _searchController.clear();
+                            });
+                          },
+                        )
+                      : null,
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    _searchQuery = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 12),
+            ],
 
-                    // Current side dishes section (only in multi-recipe mode)
-                    if (isMultiRecipeMode) _buildCurrentSideDishesSection(),
+            // Selected dishes section (Card container)
+            if (isMultiRecipeMode &&
+                (_currentSideDishes.isNotEmpty || widget.primaryRecipe != null))
+              _buildSelectedDishesCard(),
 
-                    // Add side dish section
-                    Text(
-                      AppLocalizations.of(context)!.addSideDish,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
+            // DIVIDER: Visual separation
+            const Divider(thickness: 1),
 
-                    if (widget.enableSearch) ...[
-                      TextField(
-                        key: const Key('add_side_dish_search_field'),
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: widget.searchHint ??
-                              AppLocalizations.of(context)!
-                                  .searchSideDishesHint,
-                          prefixIcon: const Icon(Icons.search),
-                          border: const OutlineInputBorder(),
-                          suffixIcon: _searchQuery.isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear),
-                                  onPressed: () {
-                                    setState(() {
-                                      _searchQuery = '';
-                                      _searchController.clear();
-                                    });
-                                  },
-                                )
-                              : null,
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            _searchQuery = value;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-                  ],
+            // Section header
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                AppLocalizations.of(context)!.addSideDish,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
                 ),
               ),
             ),
 
-            // Recipe list (always visible, takes remaining space)
+            // SCROLLABLE: Available recipes list
             Expanded(
+              key: const Key('available_recipes_list'),
               child: filteredRecipes.isEmpty
                   ? Center(
                       child: Column(
