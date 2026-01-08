@@ -92,97 +92,88 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Primary recipe section
-            if (widget.primaryRecipe != null) ...[
-              Row(
-                children: [
-                  const Icon(Icons.restaurant, color: Colors.green, size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      widget.primaryRecipe!.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade100,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      AppLocalizations.of(context)!.mainDish,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.green.shade900,
-                        fontWeight: FontWeight.w500,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 160),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Primary recipe section
+                if (widget.primaryRecipe != null) ...[
+                  Row(
+                    children: [
+                      const Icon(Icons.restaurant, color: Colors.green, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          widget.primaryRecipe!.name,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
-                    ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade100,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          AppLocalizations.of(context)!.mainDish,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.green.shade900,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
-              ),
-            ],
 
-            // Divider if both primary and sides exist
-            if (widget.primaryRecipe != null && _currentSideDishes.isNotEmpty)
-              const Divider(height: 20),
+                // Divider if both primary and sides exist
+                if (widget.primaryRecipe != null && _currentSideDishes.isNotEmpty)
+                  const Divider(height: 20),
 
-            // Side dishes section
-            if (_currentSideDishes.isNotEmpty) ...[
-              Text(
-                AppLocalizations.of(context)!.sideDishesLabel,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 4),
-              // List of side dishes (limit to 5 items visible)
-              ...(_currentSideDishes.length <= 5
-                  ? _currentSideDishes
-                  : _currentSideDishes.take(5))
-                  .map((recipe) => ListTile(
-                        dense: true,
-                        visualDensity: VisualDensity.compact,
-                        leading: const Icon(
-                          Icons.restaurant_menu,
-                          size: 18,
-                          color: Colors.grey,
-                        ),
-                        title: Text(recipe.name),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.remove_circle_outline),
-                          onPressed: () => _removeSideDish(recipe),
-                          tooltip: AppLocalizations.of(context)!.remove,
-                        ),
-                        contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 8),
-                      ))
-                  .toList(),
-              if (_currentSideDishes.length > 5)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4.0),
-                  child: Text(
-                    '+${_currentSideDishes.length - 5} more',
+                // Side dishes section (scrollable)
+                if (_currentSideDishes.isNotEmpty) ...[
+                  Text(
+                    AppLocalizations.of(context)!.sideDishesLabel,
                     style: const TextStyle(
-                      fontSize: 11,
+                      fontSize: 12,
                       color: Colors.grey,
-                      fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                ),
-            ],
-          ],
+                  const SizedBox(height: 4),
+                  // All side dishes (scrollable within card)
+                  ..._currentSideDishes
+                      .map((recipe) => ListTile(
+                            dense: true,
+                            visualDensity: VisualDensity.compact,
+                            leading: const Icon(
+                              Icons.restaurant_menu,
+                              size: 18,
+                              color: Colors.grey,
+                            ),
+                            title: Text(recipe.name),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.remove_circle_outline),
+                              onPressed: () => _removeSideDish(recipe),
+                              tooltip: AppLocalizations.of(context)!.remove,
+                            ),
+                            contentPadding:
+                                const EdgeInsets.symmetric(horizontal: 8),
+                          ))
+                      .toList(),
+                ],
+              ],
+            ),
+          ),
         ),
       ),
     );
