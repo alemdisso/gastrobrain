@@ -120,7 +120,7 @@ void main() {
           equals(sideRecipe1.id));
     });
 
-    // TODO: Fix failing test - see issue tracking this
+    // TODO(#254): Fix failing test - investigate recipe filtering logic
     // This test is currently failing and needs investigation
     // testWidgets('excludes already selected recipes from list',
     //     (WidgetTester tester) async {
