@@ -234,7 +234,11 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
             // Selected dishes section (Card container)
             if (isMultiRecipeMode &&
                 (_currentSideDishes.isNotEmpty || widget.primaryRecipe != null))
-              _buildSelectedDishesCard(),
+              Flexible(
+                flex: 0,
+                fit: FlexFit.loose,
+                child: _buildSelectedDishesCard(),
+              ),
 
             // DIVIDER: Visual separation
             const Divider(thickness: 1),
