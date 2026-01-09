@@ -868,6 +868,30 @@
   "@dinner": {
     "description": "Nomes dos tipos de refeição"
   },
+  "mealTypeLunch": "Almoço",
+  "@mealTypeLunch": {
+    "description": "Rótulo do tipo de refeição para almoço"
+  },
+  "mealTypeDinner": "Jantar",
+  "@mealTypeDinner": {
+    "description": "Rótulo do tipo de refeição para jantar"
+  },
+  "mealTypePrep": "Preparação",
+  "@mealTypePrep": {
+    "description": "Rótulo do tipo de refeição para preparação"
+  },
+  "mealTypeQuestion": "Esta refeição foi para quando?",
+  "@mealTypeQuestion": {
+    "description": "Pergunta solicitando que o usuário selecione o tipo de refeição"
+  },
+  "mealTypeSkip": "Pular",
+  "@mealTypeSkip": {
+    "description": "Botão para pular seleção de tipo de refeição"
+  },
+  "mealTypeSave": "Salvar",
+  "@mealTypeSave": {
+    "description": "Botão para salvar seleção de tipo de refeição"
+  },
   "today": "Hoje",
   "@today": {
     "description": "Rótulo para indicador de hoje"

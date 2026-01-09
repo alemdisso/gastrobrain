@@ -1,4 +1,5 @@
 import 'meal_recipe.dart';
+import 'meal_type.dart';
 
 class Meal {
   String id;
@@ -11,6 +12,7 @@ class Meal {
   double actualCookTime; // Track real cook time for future reference
   DateTime? modifiedAt; // Track when the meal was last modified
   List<MealRecipe>? mealRecipes; // List of recipes in this meal
+  MealType? mealType; // Type of meal (lunch, dinner, prep)
 
   Meal({
     required this.id,
@@ -23,6 +25,7 @@ class Meal {
     this.actualCookTime = 0,
     this.modifiedAt,
     this.mealRecipes,
+    this.mealType,
   });
 
   // Convert a Meal into a Map
@@ -38,6 +41,7 @@ class Meal {
       'actual_prep_time': actualPrepTime,
       'actual_cook_time': actualCookTime,
       'modified_at': modifiedAt?.toIso8601String(),
+      'meal_type': mealType?.value,
       // Note: mealRecipes must be saved separately
     };
   }
@@ -56,6 +60,7 @@ class Meal {
       modifiedAt: map['modified_at'] != null
           ? DateTime.parse(map['modified_at'])
           : null,
+      mealType: MealType.fromString(map['meal_type']),
       // Note: mealRecipes must be loaded separately
     );
   }

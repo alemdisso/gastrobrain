@@ -3,6 +3,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gastrobrain/models/meal.dart';
 import 'package:gastrobrain/models/meal_recipe.dart';
+import 'package:gastrobrain/models/meal_type.dart';
 
 void main() {
   group('Meal', () {
@@ -385,5 +386,186 @@ void main() {
 
     expect(recoveredUtc.cookedAt.toIso8601String(), utcDate.toIso8601String());
     expect(recoveredLocal.cookedAt.toIso8601String(), localDate.toIso8601String());
+  });
+
+  group('Meal Type', () {
+    test('creates with null mealType by default', () {
+      final now = DateTime.now();
+
+      final meal = Meal(
+        id: 'test_id',
+        cookedAt: now,
+      );
+
+      expect(meal.mealType, isNull);
+    });
+
+    test('creates with mealType specified', () {
+      final now = DateTime.now();
+
+      final meal = Meal(
+        id: 'test_id',
+        cookedAt: now,
+        mealType: MealType.lunch,
+      );
+
+      expect(meal.mealType, equals(MealType.lunch));
+    });
+
+    test('toMap includes meal_type when null', () {
+      final now = DateTime.now();
+
+      final meal = Meal(
+        id: 'test_id',
+        cookedAt: now,
+        mealType: null,
+      );
+
+      final map = meal.toMap();
+
+      expect(map.containsKey('meal_type'), isTrue);
+      expect(map['meal_type'], isNull);
+    });
+
+    test('toMap includes meal_type value when specified', () {
+      final now = DateTime.now();
+
+      final mealLunch = Meal(
+        id: 'test_lunch',
+        cookedAt: now,
+        mealType: MealType.lunch,
+      );
+
+      final mealDinner = Meal(
+        id: 'test_dinner',
+        cookedAt: now,
+        mealType: MealType.dinner,
+      );
+
+      final mealPrep = Meal(
+        id: 'test_prep',
+        cookedAt: now,
+        mealType: MealType.prep,
+      );
+
+      expect(mealLunch.toMap()['meal_type'], equals('lunch'));
+      expect(mealDinner.toMap()['meal_type'], equals('dinner'));
+      expect(mealPrep.toMap()['meal_type'], equals('prep'));
+    });
+
+    test('fromMap correctly parses null meal_type', () {
+      final now = DateTime.now();
+
+      final map = {
+        'id': 'test_id',
+        'cooked_at': now.toIso8601String(),
+        'servings': 2,
+        'notes': 'Test',
+        'was_successful': 1,
+        'meal_type': null,
+      };
+
+      final meal = Meal.fromMap(map);
+
+      expect(meal.mealType, isNull);
+    });
+
+    test('fromMap correctly parses meal_type values', () {
+      final now = DateTime.now();
+
+      final mapLunch = {
+        'id': 'test_lunch',
+        'cooked_at': now.toIso8601String(),
+        'servings': 2,
+        'notes': 'Test',
+        'was_successful': 1,
+        'meal_type': 'lunch',
+      };
+
+      final mapDinner = {
+        'id': 'test_dinner',
+        'cooked_at': now.toIso8601String(),
+        'servings': 2,
+        'notes': 'Test',
+        'was_successful': 1,
+        'meal_type': 'dinner',
+      };
+
+      final mapPrep = {
+        'id': 'test_prep',
+        'cooked_at': now.toIso8601String(),
+        'servings': 2,
+        'notes': 'Test',
+        'was_successful': 1,
+        'meal_type': 'prep',
+      };
+
+      expect(Meal.fromMap(mapLunch).mealType, equals(MealType.lunch));
+      expect(Meal.fromMap(mapDinner).mealType, equals(MealType.dinner));
+      expect(Meal.fromMap(mapPrep).mealType, equals(MealType.prep));
+    });
+
+    test('fromMap handles missing meal_type field', () {
+      final now = DateTime.now();
+
+      final map = {
+        'id': 'test_id',
+        'cooked_at': now.toIso8601String(),
+        'servings': 2,
+        'notes': 'Test',
+        'was_successful': 1,
+        // meal_type field is missing (backward compatibility)
+      };
+
+      final meal = Meal.fromMap(map);
+
+      expect(meal.mealType, isNull);
+    });
+
+    test('round-trip serialization preserves mealType', () {
+      final now = DateTime.now();
+
+      final original = Meal(
+        id: 'round_trip_test',
+        cookedAt: now,
+        servings: 3,
+        mealType: MealType.dinner,
+      );
+
+      // Convert to map and back
+      final map = original.toMap();
+      final recovered = Meal.fromMap(map);
+
+      expect(recovered.mealType, equals(MealType.dinner));
+
+      // Convert recovered back to map
+      final secondMap = recovered.toMap();
+
+      expect(secondMap['meal_type'], equals('dinner'));
+      expect(secondMap['meal_type'], equals(map['meal_type']));
+    });
+
+    test('round-trip serialization preserves null mealType', () {
+      final now = DateTime.now();
+
+      final original = Meal(
+        id: 'round_trip_null_test',
+        cookedAt: now,
+        servings: 3,
+        mealType: null,
+      );
+
+      // Convert to map and back
+      final map = original.toMap();
+      final recovered = Meal.fromMap(map);
+
+      expect(recovered.mealType, isNull);
+
+      // Convert recovered back to map
+      final secondMap = recovered.toMap();
+
+      expect(secondMap['meal_type'], isNull);
+      expect(secondMap['meal_type'], equals(map['meal_type']));
+    });
   });
 }

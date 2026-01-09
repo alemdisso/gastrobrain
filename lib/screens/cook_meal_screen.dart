@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/recipe.dart';
 import '../models/meal.dart';
+import '../models/meal_type.dart';
 import '../utils/id_generator.dart';
 import '../widgets/meal_recording_dialog.dart';
+import '../widgets/meal_type_dialog.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/services/snackbar_service.dart';
 import '../core/di/service_provider.dart';
@@ -44,6 +46,18 @@ class _CookMealScreenState extends State<CookMealScreen> {
     // If dialog was cancelled or widget unmounted
     if (result == null || !mounted) return;
 
+    // Show meal type selector dialog
+    MealType? mealType;
+    if (mounted) {
+      mealType = await showDialog<MealType>(
+        context: context,
+        builder: (context) => const MealTypeDialog(),
+      );
+    }
+
+    // Add meal type to result (can be null if skipped)
+    result['mealType'] = mealType;
+
     // Process and save the meal
     await _saveMeal(result);
   }
@@ -63,6 +77,7 @@ class _CookMealScreenState extends State<CookMealScreen> {
       final double actualCookTime = mealData['actualCookTime'];
       final Recipe primaryRecipe = mealData['primaryRecipe'];
       final List<Recipe> additionalRecipes = mealData['additionalRecipes'];
+      final MealType? mealType = mealData['mealType'];
 
       // Create the meal with a new ID
       final mealId = IdGenerator.generateId();
@@ -77,6 +92,7 @@ class _CookMealScreenState extends State<CookMealScreen> {
         wasSuccessful: wasSuccessful,
         actualPrepTime: actualPrepTime,
         actualCookTime: actualCookTime,
+        mealType: mealType,
       );
 
       // Record meal with recipes using service
