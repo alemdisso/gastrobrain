@@ -430,17 +430,211 @@ Jan 3:  ████████ #237 (834)
 - Perfect example of how preparation reduces execution time
 - Fastest sprint ratio to date (0.17x)
 
+### 0.1.5 - Test Coverage & Polish
+
+**Sprint Duration:** January 5-9, 2026
+**Calendar Days:** 5
+**Active Working Days:** 5 (100% utilization)
+**Planned Issues:** 7
+**Completed Issues:** 8 (including #254 added mid-sprint)
+
+#### Estimation vs Actual
+
+| Issue | Title | Type | Est Days | Weighted Actual | Lines | Ratio | Assessment |
+|-------|-------|------|----------|-----------------|-------|-------|------------|
+| #230 | Test coverage reporting | Infrastructure | 0.5 | 1.0 | 28 | 2.00x | 🔴 Over |
+| #247 | AddIngredientDialog coverage (75.6% → 89%) | Testing | 0.5 | 0.82* | 457 | 1.64x | 🔴 Over |
+| #248 | EditMealRecordingDialog coverage (89.6%) | Testing | 0.5 | 0.18* | 98 | 0.36x | ⚡ Faster |
+| #249 | MealRecordingDialog coverage (79.8% → 96.7%) | Testing | 0.5 | 0.93* | 715 | 1.86x | 🔴 Over |
+| #245 | Deferred error handling tests | Testing | 0.16 | 0.07* | 50 | 0.44x | ⚡ Faster |
+| #251 | AddSideDishDialog visual hierarchy | UI/Polish | 0.44 | 1.61† | 391 | 3.66x | 🔴 Major overrun |
+| #199 | Meal type selection feature | Feature | 0.88 | 2.27‡ | 508 | 2.58x | 🔴 Over |
+| #254 | Update TODO comment | Docs | N/A | ~0 | 2 | - | 📋 Trivial |
+| **TOTAL** | | | **3.48** | **6.88§** | **2249*** | **1.98x** | |
+
+*\* Weighted by lines changed when sharing day with other issues*
+*\*\* Total excludes roadmap deletions (2187 lines of cleanup work on Jan 9)*
+*† #251: 1.01 days visible work + 0.6 days hidden adb/Android Studio overhead (30% of total)*
+*‡ #199: 0.87 days visible work + 1.4 days hidden adb/Android Studio overhead (70% of total)*
+*§ Total includes 2.0 days of sprint-wide hidden tooling overhead*
+
+#### Accuracy by Type (Weighted)
+
+| Type | Issues | Est Total | Weighted Actual | Avg Ratio | Verdict |
+|------|--------|-----------|-----------------|-----------|---------|
+| Infrastructure | #230 | 0.5 | 1.0 | 2.00x | 🔴 Overran (Codecov setup) |
+| Testing (coverage) | #247, #248, #249 | 1.5 | 1.93 | 1.29x | 🔴 Overran (new discovery) |
+| Testing (simple) | #245 | 0.16 | 0.07 | 0.44x | ⚡ Faster than expected |
+| UI/Polish | #251 | 0.44 | 1.61 | 3.66x | 🔴 Major overrun (iteration + tooling) |
+| Feature | #199 | 0.88 | 2.27 | 2.58x | 🔴 Overran (sprint-wide tooling issues) |
+
+**Overall:** First sprint to overrun estimates - actual effort was 198% of estimated (1.98x ratio including 2.0 days of hidden tooling overhead)
+
+#### Variance Analysis
+
+**Major Overruns:**
+
+**#199 (Meal type selection)** - Estimated: 0.88 days → Actual: 2.27 days (2.58x)
+- Root cause: Sprint-wide adb/Android Studio tooling issues during testing phase
+- Visible work (0.87 days): Database migration, models, screens, widgets, tests
+- Hidden work (1.4 days / 70% of total overhead): adb/Android Studio debugging during final testing
+- Feature implementation itself was fast (~0.5 days for visible work)
+- **Critical lesson: Testing phase can have massive hidden overhead not visible in commits**
+- Previously thought to be "perfect estimate" until tooling overhead was properly attributed
+
+**#251 (AddSideDishDialog UI)** - Estimated: 0.44 days → Actual: 1.61 days (3.66x)
+- Root cause: UI polish required multiple iterations PLUS hidden tooling overhead
+- Visible work (1.01 days): (1) visual hierarchy, (2) scrolling improvements, (3) overflow fix
+- Hidden work (0.6 days / 30% of total overhead): adb/Android Studio debugging
+- User feedback drove additional improvements mid-implementation
+- Overflow issue discovered during testing (RenderFlex 144px error)
+- **Critical lesson: Mobile/UI work has invisible tooling overhead not tracked in commits**
+
+**#230 (Coverage infrastructure)** - Estimated: 0.5 days → Actual: 1.0 days (2.00x)
+- Codecov setup and documentation took full day
+- Integration, badge configuration, and documentation more involved than expected
+- Lesson: External service integrations take longer than expected even with good docs
+
+**#249 (MealRecordingDialog)** - Estimated: 0.5 days → Actual: 0.93 days (1.86x)
+- Comprehensive coverage improvement (79.8% → 96.7%)
+- Required understanding existing patterns and writing new tests
+- Lesson: Coverage improvements without existing patterns are slower
+
+**#247 (AddIngredientDialog)** - Estimated: 0.5 days → Actual: 0.82 days (1.64x)
+- Coverage improvement (75.6% → 89%) PLUS hidden work
+- Required MockDatabaseHelper enhancements (error simulation, new methods)
+- Additional infrastructure work not explicitly estimated
+- Lesson: Test coverage tasks may reveal infrastructure gaps - estimate conservatively
+
+**Faster than Expected:**
+
+**#248 (EditMealRecordingDialog)** - Estimated: 0.5 days → Actual: 0.18 days (0.36x)
+- Already at 89.6% coverage - analysis only, no code changes needed
+- Pragmatic decision: 89.6% with strong workflow tests > 90% with low-value tests
+- Lesson: Coverage targets should be pragmatic, not absolute
+
+**#245 (Deferred error tests)** - Estimated: 0.16 days → Actual: 0.07 days (0.44x)
+- Small, well-defined task with clear scope
+- Two specific tests to implement
+- Lesson: Small, focused tasks estimate well
+
+#### Working Pattern Observations
+
+```
+Jan 5:  ██ #230 (28)
+Jan 6:  █████ #247 (457), #248 (98)
+Jan 7:  ███████ #249 (715), #245 (50)
+Jan 8:  ███ #251 (391)
+Jan 9:  █████████ #199 (508), #251 (6), plus cleanup (2187 lines of roadmap deletions)
+```
+
+**Patterns:**
+- Infrastructure first (Jan 5: #230 Codecov setup)
+- Coverage improvements batched (Jan 6-7: #247, #248, #249, #245)
+- UI polish mid-sprint (Jan 8: #251 main work)
+- Feature work at end (Jan 9: #199)
+- Large cleanup day (Jan 9: roadmap deletions after issues completed)
+- 100% utilization - every day had active work
+
+#### Lessons Learned
+
+1. **First sprint to overrun estimates (1.98x ratio including hidden overhead)**
+   - Previous sprints: 0.90x, 0.38x, 0.17x (all under estimate)
+   - Those sprints benefited from well-prepared work and pattern reuse
+   - This sprint had discovery, iteration, new infrastructure, AND massive sprint-wide tooling overhead
+   - **CRITICAL: Can't use previous sprint ratios to predict all future work types**
+
+2. **Hidden tooling/environment overhead is MASSIVE and sprint-wide**
+   - Total: 2.0 full days lost to adb/Android Studio debugging (29% of actual time!)
+   - #199: 1.4 days (70%) - testing phase tooling issues
+   - #251: 0.6 days (30%) - UI iteration tooling issues
+   - Zero trace in commit history but doubled the sprint ratio (1.98x vs hypothetical 0.99x)
+   - **CRITICAL: Add 25-35% buffer for mobile/UI sprints with testing phases**
+
+3. **Don't use outlier sprints for future estimates**
+   - 0.1.4 was exceptional (0.17x, 6.00 points/day) - well-prepared work, simpler than expected
+   - 0.1.5 estimates were based on 0.1.4's velocity - huge mistake
+   - Normal velocity: 1.1-2.8 points/day (0.1.2, 0.1.3, 0.1.5)
+   - **Lesson: Use median/normal velocity, not best-case outliers**
+
+4. **Coverage improvement tasks need conservative estimates**
+   - #247, #249 took 1.64x-1.86x longer than estimated
+   - Prior testing data (0.38x, 0.19x) was for extending existing patterns
+   - Raw coverage improvement requires understanding, writing new tests, infrastructure
+   - Lesson: Distinguish "extend patterns" (fast) from "improve coverage" (slower)
+
+5. **UI polish requires massive iteration buffer**
+   - #251 took 3.66x when including hidden overhead
+   - Three visible commits (1.01 days) + 0.6 days of invisible tooling
+   - User feedback and discovered issues compound
+   - **Lesson: UI polish estimates should include 3-4x buffer (iteration + tooling)**
+
+6. **External service integrations underestimated**
+   - #230 (Codecov) took 2.0x longer than estimated
+   - Even with good documentation, integrations have hidden complexity
+   - Lesson: Double estimates for external service integrations
+
+7. **Hidden infrastructure work in coverage tasks**
+   - #247 required MockDatabaseHelper enhancements not explicitly estimated
+   - Test infrastructure dependencies should be identified upfront
+   - Lesson: Coverage improvement tasks should explicitly estimate infrastructure work
+
+8. **Pragmatic coverage targets work well**
+   - #248 completed at 89.6% with analysis only (no code changes)
+   - Strong workflow coverage more valuable than hitting arbitrary 90% threshold
+   - Lesson: Coverage targets should be pragmatic, not absolute
+
+9. **Feature implementation CAN be fast despite testing overhead**
+   - #199 visible work: 0.87 days (near-perfect for feature complexity)
+   - Total with tooling: 2.27 days (2.58x overrun due to testing phase overhead)
+   - Feature estimates were accurate - testing phase overhead was not
+   - **Lesson: Separate "implementation estimate" from "testing/validation overhead estimate"**
+
+#### Recommendations for 0.1.6
+
+| Finding | Adjustment |
+|---------|------------|
+| **CRITICAL: Sprint-wide tooling overhead (2.0 days = 29%)** | Add 25-35% buffer for mobile/UI sprints with testing phases |
+| Hidden overhead distributed across issues | Expect ~70% of tooling overhead in testing/validation, ~30% in UI iteration |
+| UI polish requires massive iteration (3.66x) | Add 3-4x buffer for UI tasks (iteration + tooling + feedback) |
+| Feature testing phase massively underestimated (2.58x) | Explicitly estimate testing/validation overhead separate from implementation |
+| Don't use outlier velocity (0.1.4 was 6.0x faster) | Use median velocity (2.0-2.8 points/day) for milestone sizing |
+| Coverage improvement tasks overran (1.64x-1.86x) | Use 1.5-2.0x multiplier for coverage improvement vs pattern extension |
+| External integrations underestimated (2.0x) | Double estimates for external service integrations |
+| Hidden infrastructure work | Explicitly estimate test infrastructure enhancements |
+| Pragmatic coverage targets | Accept <90% if coverage is pragmatic and valuable |
+| **Milestone sizing** | Target 8-12 points per 5-day sprint (reduced from 10-15 due to overhead discovery) |
+
+#### Notes
+
+- #254 was added mid-sprint (trivial TODO update)
+- All 7 planned issues completed successfully
+- Sprint included comprehensive cleanup (2187 lines of roadmap deletions on Jan 9)
+- Coverage infrastructure (#230) enables future quality tracking
+- Three dialogs now have >89% coverage with pragmatic test suites
+- First sprint to overrun estimates - important data point for calibration
+- Jan 9 had exceptionally high line count due to roadmap deletions (not implementation)
+- **Revised analysis:** Initial estimate was 1.69x (1 day overhead), corrected to 1.98x (2 days overhead: 70% on #199 testing, 30% on #251 UI)
+
 ---
 
 ## Cumulative Metrics
 
 ### Estimation Accuracy Trend
 
-| Sprint | Planned Points | Weighted Actual | Ratio | Trend |
-|--------|----------------|-----------------|-------|-------|
-| 0.1.2 | 12.2 | ~11 | 0.90x | Baseline (slightly conservative) |
-| 0.1.3 | 26 | 10.0 | 0.38x | VERY conservative (major underestimate of velocity) |
-| 0.1.4 | 12 | 2.0 | 0.17x | EXTREMELY conservative (well-prepared work) |
+| Sprint | Planned Points | Weighted Actual | Ratio | Points/Day | Trend |
+|--------|----------------|-----------------|-------|------------|-------|
+| 0.1.2 | 12.2 | ~11 | 0.90x | 1.11 | Baseline (slightly conservative, mixed work) |
+| 0.1.3 | 26 | 10.0 | 0.38x | 2.60 | VERY conservative (pattern reuse) |
+| 0.1.4 | 12 | 2.0 | 0.17x | 6.00 | **OUTLIER** - Extremely well-prepared work |
+| 0.1.5 | 14 | 6.88 | 1.98x | 2.03 | OVERRAN - Discovery work + MASSIVE hidden overhead |
+
+**Critical Insights:**
+- **Sprint ratio depends heavily on work type** - Can't use one sprint to predict another
+- **0.1.4 was an outlier** (6.00 points/day) - Don't use for future estimates
+- **Normal velocity: 1.1-2.8 points/day** (0.1.2, 0.1.3, 0.1.5)
+- **Median velocity: ~2.5 points/day** - Use this for milestone sizing
+- **Hidden overhead is CRITICAL** - Tooling/environment issues added 29% to 0.1.5 (2 full days)
 
 ### Type-Based Calibration Factors
 
@@ -502,6 +696,75 @@ Use these multipliers when estimating future work:
 
 ---
 
+## Milestone Sizing Guidelines
+
+Use historical velocity data to size future milestones and prevent overcommitment.
+
+### Velocity Reference Data
+
+| Sprint | Points | Days | Points/Day | Work Type |
+|--------|--------|------|------------|-----------|
+| 0.1.2 | 12.2 | 11 | 1.11 | Mixed (features, bugs, testing) |
+| 0.1.3 | 26 | 10 | 2.60 | Well-prepared (pattern reuse) |
+| 0.1.4 | 12 | 2 | 6.00 | **OUTLIER** (extremely well-prepared) |
+| 0.1.5 | 14 | 6.88 | 2.03 | Discovery + iteration + MASSIVE overhead (29%) |
+
+**Normal Velocity Range:** 1.1 - 2.8 points/day
+**Median Velocity:** ~2.5 points/day
+**Outlier (ignore):** 6.0 points/day (0.1.4)
+
+### Milestone Sizing Recommendations
+
+**For 5-Day Sprints:**
+- **Conservative (recommended):** 10-12 points (~2.0-2.4 points/day)
+- **Normal:** 12-15 points (~2.4-3.0 points/day)
+- **Aggressive (risky):** 15+ points (>3.0 points/day)
+
+**For 10-Day Sprints:**
+- **Conservative (recommended):** 20-25 points (~2.0-2.5 points/day)
+- **Normal:** 25-30 points (~2.5-3.0 points/day)
+- **Aggressive (risky):** 30+ points (>3.0 points/day)
+
+### Adjustment Factors
+
+**Increase capacity (+20-30%) if:**
+- All work is well-prepared with prerequisites completed
+- Issues are similar and can be batched
+- Extending existing patterns (not creating new ones)
+
+**Decrease capacity (-30-50%) if:**
+- Work involves discovery or research
+- New infrastructure or patterns needed
+- UI polish requiring iteration and feedback
+- External service integrations
+- Mobile/UI work with potential tooling issues
+
+**Critical Rules:**
+1. **Never use outlier velocity** (0.1.4's 6.0 points/day) for planning
+2. **Use median velocity** (2.5 points/day) as baseline
+3. **Add 25-35% overhead buffer** for mobile/UI sprints with testing phases
+4. **Limit milestones to 8-12 points per 5 days** for mobile/UI work (revised down from 10-15)
+5. **Review velocity after each sprint** - don't assume it's constant
+
+### Examples
+
+**Good Milestone (5 days, 12 points):**
+- 3x S-sized features (2 points each) = 6 points
+- 2x M-sized features (3 points each) = 6 points
+- Expected velocity: 12 points / 5 days = 2.4 points/day ✅
+
+**Risky Milestone (5 days, 20 points):**
+- Assumes 4.0 points/day velocity
+- Higher than normal range (1.1-2.8 points/day)
+- Likely to overrun unless work is extremely well-prepared ❌
+
+**Well-Balanced Milestone (10 days, 25 points):**
+- Mix of features, testing, and polish
+- Expected velocity: 25 points / 10 days = 2.5 points/day ✅
+- Includes 10% buffer for overhead
+
+---
+
 ## Document History
 
 - **2025-12-18**: Created with 0.1.2 retrospective analysis
@@ -522,3 +785,14 @@ Use these multipliers when estimating future work:
   - Key insight: Well-prepared work with prerequisites is 5-6x faster than estimated
   - New calibration factors: Bug fixes with known patterns (0.04x), architecture with prerequisites (0.25x), extending patterns (0.19x)
   - Critical finding: Related bug fixes have near-zero marginal cost when using same pattern
+- **2026-01-10**: Added 0.1.5 retrospective analysis (REVISED with accurate overhead distribution)
+  - Sprint completed: 7 planned + 1 trivial issue (8 total) in 5 days (100% utilization)
+  - Actual ratio: 1.98x (FIRST sprint to overrun estimates)
+  - **CRITICAL discovery: Massive sprint-wide hidden tooling overhead** (2.0 full days = 29% of actual time)
+  - Overhead distribution: #199 (70% / 1.4 days testing phase), #251 (30% / 0.6 days UI iteration)
+  - Zero trace in commit history but doubled the sprint ratio from hypothetical 0.99x to actual 1.98x
+  - Identified 0.1.4 as outlier (6.00 points/day) - should not be used for future estimates
+  - Established normal velocity range: 1.1-2.8 points/day, median: ~2.5 points/day
+  - **NEW: Milestone Sizing Guidelines** section added with velocity-based capacity planning
+  - Key findings: UI polish requires 3-4x buffer, feature testing phase massively underestimated (2.58x), sprint-wide tooling overhead = 25-35% buffer needed
+  - Recommendations: Target 8-12 points per 5-day sprint (reduced from 10-15), add 25-35% buffer for mobile/UI sprints with testing phases, separate implementation estimates from testing/validation overhead
