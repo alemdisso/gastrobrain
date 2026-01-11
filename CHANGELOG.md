@@ -9,6 +9,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.5] - 2026-01-09
+
+### Added
+
+#### Features
+- Meal type selection when recording cooked meals (#199)
+  - New MealType enum with LUNCH, DINNER, PREP options
+  - MealTypeDialog for intuitive selection during meal recording
+  - Database migration to add meal_type column to meals table
+  - Meal type filtering and display in meal history
+  - Localized meal type labels (English/Portuguese)
+
+#### Testing Infrastructure
+- Codecov integration for test coverage tracking (#230)
+  - Coverage badge in README
+  - CI/CD workflow integration
+  - Test coverage documentation in docs/testing/
+- Improved test coverage for dialog widgets
+  - AddIngredientDialog: 75.6% → 89.0% coverage (#247)
+  - MealRecordingDialog: 79.8% → 96.7% coverage (#249)
+  - EditMealRecordingDialog: 89.6% coverage (already adequate) (#248)
+- Deferred error handling tests for dialog loading failures (#245)
+  - AddIngredientDialog: Ingredient loading error test
+  - MealRecordingDialog: Recipe loading error test
+- Enhanced error simulation support in MockDatabaseHelper (#247)
+  - New methods: addIngredientToRecipe, updateRecipeIngredient
+  - Comprehensive error injection for testing error paths
+
+### Changed
+
+#### UI/UX Improvements
+- Visual hierarchy improvements in AddSideDishDialog (#251)
+  - Better card-based layout for selected side dishes
+  - Improved scrolling behavior for large lists
+  - Fixed RenderFlex overflow errors with proper flex widgets
+  - Enhanced space allocation between selected dishes and available recipes
+  - Always-scrollable physics for better user experience
+
+---
+
 ## [0.1.4] - 2026-01-03
 
 ### Added
@@ -57,11 +97,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Net code reduction: +177 lines added, -105 lines removed (service consolidation)
 - Eliminated ~125 lines of duplicated meal editing logic
 - All 1498 tests passing in ~3 seconds
-
-### Sprint Metrics
-- Duration: 2 days (fastest sprint to date)
-- Estimation accuracy: 0.17x ratio (extremely efficient execution)
-- 100% utilization with all 4 planned issues completed
 
 ---
 

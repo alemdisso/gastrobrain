@@ -27,6 +27,7 @@ import '../core/migration/migration_runner.dart';
 import '../core/migration/migration.dart';
 import '../core/migration/migrations/001_initial_schema.dart';
 import '../core/migration/migrations/002_ingredient_enum_conversion.dart';
+import '../core/migration/migrations/003_add_meal_type.dart';
 import '../core/repositories/base_repository.dart';
 
 class DatabaseHelper {
@@ -42,6 +43,7 @@ class DatabaseHelper {
   static List<Migration> get _migrations => [
     InitialSchemaMigration(),
     IngredientEnumConversionMigration(),
+    AddMealTypeMigration(),
     // Future migrations will be added here
   ];
 

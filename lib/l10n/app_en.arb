@@ -886,6 +886,30 @@
   "@dinner": {
     "description": "Meal type names"
   },
+  "mealTypeLunch": "Lunch",
+  "@mealTypeLunch": {
+    "description": "Meal type label for lunch"
+  },
+  "mealTypeDinner": "Dinner",
+  "@mealTypeDinner": {
+    "description": "Meal type label for dinner"
+  },
+  "mealTypePrep": "Meal Prep",
+  "@mealTypePrep": {
+    "description": "Meal type label for meal prep"
+  },
+  "mealTypeQuestion": "When was this meal for?",
+  "@mealTypeQuestion": {
+    "description": "Question asking user to select meal type"
+  },
+  "mealTypeSkip": "Skip",
+  "@mealTypeSkip": {
+    "description": "Button to skip meal type selection"
+  },
+  "mealTypeSave": "Save",
+  "@mealTypeSave": {
+    "description": "Button to save meal type selection"
+  },
   "today": "Today",
   "@today": {
     "description": "Label for today indicator"

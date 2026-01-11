@@ -410,6 +410,31 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
+                                    // Show meal type if available
+                                    if (meal.mealType != null) ...[
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondaryContainer,
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        child: Text(
+                                          meal.mealType!.getDisplayName(
+                                              AppLocalizations.of(context)!),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSecondaryContainer,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                     const Spacer(),
                                     // Show side dish count if there are any
                                     if (meal.mealRecipes != null &&

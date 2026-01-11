@@ -888,4 +888,351 @@ void main() {
       expect(additionalRecipes, isEmpty);
     });
   });
+
+  group('MealRecordingDialog - Recipe Loading', () {
+    testWidgets('successfully loads available recipes from database',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => MealRecordingDialog(
+                    primaryRecipe: primaryRecipe,
+                    databaseHelper: mockDbHelper,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            ),
+          ),
+        )),
+      );
+
+      // Open dialog
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      // Wait for recipes to load (covers lines 86-91)
+      await tester.pumpAndSettle();
+
+      // Verify dialog opened successfully
+      expect(DialogTestHelpers.findDialogByType<MealRecordingDialog>(),
+          findsOneWidget);
+
+      // Verify add recipe button exists (recipes loaded successfully)
+      expect(find.text('Adicionar Receita'), findsOneWidget);
+    });
+
+    testWidgets('handles empty available recipes when adding side dish',
+        (WidgetTester tester) async {
+      // Setup: Only one recipe in database (the primary one)
+      final emptyMockDb = TestSetup.setupMockDatabase();
+      emptyMockDb.insertRecipe(primaryRecipe);
+
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => MealRecordingDialog(
+                    primaryRecipe: primaryRecipe,
+                    databaseHelper: emptyMockDb,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            ),
+          ),
+        )),
+      );
+
+      // Open dialog
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      // Wait for recipes to load
+      await tester.pumpAndSettle();
+
+      // Tap add recipe button
+      await tester.tap(find.text('Adicionar Receita'));
+      await tester.pumpAndSettle();
+
+      // Verify snackbar with "no recipes available" message (covers lines 140-146)
+      expect(find.text('Nenhuma receita adicional disponível.'), findsOneWidget);
+
+      // Verify add recipe dialog did NOT open
+      expect(find.text('Selecione um acompanhamento:'),
+          findsNothing);
+    });
+  });
+
+  group('MealRecordingDialog - Error Handling', () {
+    testWidgets('shows error when loading recipes fails',
+        (WidgetTester tester) async {
+      // Configure mock to fail on getAllRecipes
+      mockDbHelper.failOnOperation('getAllRecipes');
+
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => MealRecordingDialog(
+                    primaryRecipe: primaryRecipe,
+                    databaseHelper: mockDbHelper,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            ),
+          ),
+        )),
+      );
+
+      // Open dialog
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      // Wait for error to be handled
+      await tester.pumpAndSettle();
+
+      // Verify error snackbar is shown (Portuguese)
+      expect(find.textContaining('Erro ao carregar receitas'), findsOneWidget);
+
+      // Verify dialog is still visible (not crashed)
+      expect(DialogTestHelpers.findDialogByType<MealRecordingDialog>(),
+          findsOneWidget);
+
+      // Verify loading indicator is gone (loading state reset)
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+
+      // Verify "Add Recipe" button is still present and functional
+      expect(find.text('Adicionar Receita'), findsOneWidget);
+    });
+  });
+
+  group('MealRecordingDialog - Add Side Dish Dialog', () {
+    testWidgets('opens add side dish dialog and shows available recipes',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => MealRecordingDialog(
+                    primaryRecipe: primaryRecipe,
+                    databaseHelper: mockDbHelper,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            ),
+          ),
+        )),
+      );
+
+      // Open main dialog
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      // Wait for recipes to load
+      await tester.pumpAndSettle();
+
+      // Tap add recipe button
+      await tester.tap(find.text('Adicionar Receita'));
+      await tester.pumpAndSettle();
+
+      // Verify add recipe dialog opened (covers lines 149-187)
+      expect(find.text('Adicionar Receita'), findsNWidgets(2)); // Title + button
+      expect(find.text('Selecione um acompanhamento:'),
+          findsOneWidget);
+
+      // Verify available recipes are shown (excluding primary recipe)
+      expect(find.text(sideRecipe1.name), findsOneWidget);
+      expect(find.text(sideRecipe2.name), findsOneWidget);
+      expect(find.text(primaryRecipe.name), findsOneWidget); // Still shown in main dialog
+
+      // Verify cancel button
+      expect(find.text('Cancelar'), findsWidgets);
+    });
+
+    testWidgets('adds selected side dish to meal',
+        (WidgetTester tester) async {
+      final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+        tester,
+        dialogBuilder: (context) => MealRecordingDialog(
+          primaryRecipe: primaryRecipe,
+          databaseHelper: mockDbHelper,
+        ),
+      );
+
+      // Wait for recipes to load
+      await tester.pumpAndSettle();
+
+      // Tap add recipe button
+      await tester.tap(find.text('Adicionar Receita'));
+      await tester.pumpAndSettle();
+
+      // Select a side dish
+      await tester.tap(find.text(sideRecipe1.name));
+      await tester.pumpAndSettle();
+
+      // Verify side dish was added (covers lines 189-193)
+      expect(find.text(sideRecipe1.name), findsOneWidget);
+      expect(find.text('Acompanhamento'), findsOneWidget);
+
+      // Save and verify
+      await tester.tap(find.byKey(const Key('meal_recording_save_button')));
+      await tester.pumpAndSettle();
+
+      expect(result.hasValue, isTrue);
+      final additionalRecipes = result.value!['additionalRecipes'] as List;
+      expect(additionalRecipes.length, equals(1));
+      expect((additionalRecipes[0] as Recipe).id, equals(sideRecipe1.id));
+    });
+
+    testWidgets('cancels add side dish dialog without adding',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => MealRecordingDialog(
+                    primaryRecipe: primaryRecipe,
+                    databaseHelper: mockDbHelper,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            ),
+          ),
+        )),
+      );
+
+      // Open main dialog
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      // Wait for recipes to load
+      await tester.pumpAndSettle();
+
+      // Tap add recipe button
+      await tester.tap(find.text('Adicionar Receita'));
+      await tester.pumpAndSettle();
+
+      // Tap cancel button (covers line 182)
+      final cancelButtons = find.text('Cancelar');
+      await tester.tap(cancelButtons.last);
+      await tester.pumpAndSettle();
+
+      // Verify add dialog closed
+      expect(find.text('Selecione um acompanhamento:'),
+          findsNothing);
+
+      // Verify no side dishes were added
+      expect(find.text('Acompanhamento'), findsNothing);
+    });
+
+    testWidgets('can add multiple side dishes',
+        (WidgetTester tester) async {
+      final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+        tester,
+        dialogBuilder: (context) => MealRecordingDialog(
+          primaryRecipe: primaryRecipe,
+          databaseHelper: mockDbHelper,
+        ),
+      );
+
+      // Wait for recipes to load
+      await tester.pumpAndSettle();
+
+      // Add first side dish
+      await tester.tap(find.text('Adicionar Receita'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(sideRecipe1.name));
+      await tester.pumpAndSettle();
+
+      // Verify first side dish added
+      expect(find.text(sideRecipe1.name), findsOneWidget);
+
+      // Add second side dish
+      await tester.tap(find.text('Adicionar Receita'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(sideRecipe2.name));
+      await tester.pumpAndSettle();
+
+      // Verify both side dishes are shown
+      expect(find.text(sideRecipe1.name), findsOneWidget);
+      expect(find.text(sideRecipe2.name), findsOneWidget);
+      expect(find.text('Acompanhamento'), findsNWidgets(2));
+
+      // Save and verify
+      await tester.tap(find.byKey(const Key('meal_recording_save_button')));
+      await tester.pumpAndSettle();
+
+      expect(result.hasValue, isTrue);
+      final additionalRecipes = result.value!['additionalRecipes'] as List;
+      expect(additionalRecipes.length, equals(2));
+    });
+
+    testWidgets('does not show already-added recipes in dialog',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => MealRecordingDialog(
+                    primaryRecipe: primaryRecipe,
+                    databaseHelper: mockDbHelper,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            ),
+          ),
+        )),
+      );
+
+      // Open main dialog
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
+
+      // Add first side dish
+      await tester.tap(find.text('Adicionar Receita'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(sideRecipe1.name));
+      await tester.pumpAndSettle();
+
+      // Open add dialog again
+      await tester.tap(find.text('Adicionar Receita'));
+      await tester.pumpAndSettle();
+
+      // Verify sideRecipe1 is NOT in the list (covers line 167-168)
+      // It should be filtered out since it's already added
+      final sideRecipe1InDialog = find.descendant(
+        of: find.byType(AlertDialog).last,
+        matching: find.text(sideRecipe1.name),
+      );
+      expect(sideRecipe1InDialog, findsNothing);
+
+      // But sideRecipe2 should still be available
+      expect(find.text(sideRecipe2.name), findsOneWidget);
+    });
+  });
 }
