@@ -23,6 +23,44 @@ Review, validation, and merge
 
 ### **Tier 1: Planning Skills** ✅ (Prompts Ready)
 
+#### 0. Issue Creation Skill ⭐
+**Status:** ✅ Prompt ready
+**Location:** `.github/skills/gastrobrain-issue-creator/`
+**Triggers:** "Create an issue for...", "I found a bug...", "Feature request...", user reports problem
+
+**Purpose:**
+- Transform informal reports into structured GitHub issues
+- Interactive 6-checkpoint process for accuracy
+- Support bug reports, feature requests, technical debt
+- Provide technical context and implementation guidance
+- Estimate story points with reasoning
+- Detect and reference related issues
+- Generate exact GitHub CLI commands
+
+**Checkpoint Flow:**
+1. Understanding the Problem (clarify type, scope, priority)
+2. Issue Details (title, context, current/expected behavior)
+3. Implementation Guidance (solution, tasks, technical notes)
+4. Acceptance & Testing (criteria, test cases)
+5. Labels & Priority (with reasoning, story point estimate)
+6. Final Review (complete markdown + CLI commands)
+
+**Key Features:**
+- Never creates issues without user confirmation
+- Detects active work context (current branch, related issues)
+- Handles multiple issue types with appropriate templates
+- Provides reasoning for all recommendations
+- Allows revision at any checkpoint
+
+**Outputs:**
+- Complete, well-structured GitHub issue
+- Proper labels and priority
+- Story point estimate with justification
+- Related issue references
+- Ready-to-execute gh CLI commands
+
+---
+
 #### 1. Sprint Planning Skill
 **Status:** ✅ Prompt ready  
 **Location:** `sprint-planning-skill-prompt.md` (from earlier conversation)  
@@ -175,8 +213,47 @@ Review, validation, and merge
 
 ---
 
-#### 7. UI Component Implementation Skill
-**Status:** 📋 Prompt needed  
+#### 7. UI Styling & Visual Polish Skill ⭐
+**Status:** ✅ Prompt ready
+**Location:** `.github/skills/gastrobrain-ui-polish/`
+**Triggers:** "Polish the UI for...", "Help me style...", "This feels unfinished visually"
+
+**Purpose:**
+- Guide systematic visual refinement of Flutter UI
+- Define visual identity and personality
+- Create design tokens (color, typography, spacing, components)
+- Apply consistent styling patterns
+- Document reusable visual patterns
+- Maintain visual consistency across features
+
+**Checkpoint Flow:**
+1. Visual Analysis (identify gaps and inconsistencies)
+2. Identity Definition (define visual personality) [if needed]
+3. Design Tokens Definition (create color, typography, spacing system)
+4. Application Plan (map UI elements to tokens, prioritize)
+5. Implementation (apply changes with Flutter best practices)
+6. Refinement Iteration (polish based on review)
+7. Pattern Documentation (capture for future use)
+
+**Key Features:**
+- Transforms functional UI into polished, professional interfaces
+- Creates reusable design token system
+- Considers bilingual support (EN/PT-BR)
+- Tests across screen sizes
+- Documents patterns for consistency
+- Flutter Material Design best practices
+
+**Outputs:**
+- Polished UI with consistent visual identity
+- Design tokens file (lib/theme/design_tokens.dart)
+- Theme configuration
+- Component patterns documented
+- Before/after insights captured
+
+---
+
+#### 8. UI Component Implementation Skill
+**Status:** 📋 Prompt needed
 **Priority:** Medium (Phase 3)
 
 **Triggers:** "Implement UI for #XXX", "create widget for #XXX", "Phase 2 - UI"
@@ -198,8 +275,8 @@ Review, validation, and merge
 
 ---
 
-#### 8. Service/Repository Implementation Skill
-**Status:** 📋 Prompt needed  
+#### 9. Service/Repository Implementation Skill
+**Status:** 📋 Prompt needed
 **Priority:** Low (Phase 4)
 
 **Triggers:** "Implement service for #XXX", "create repository", "Phase 2 - service layer"
@@ -221,8 +298,8 @@ Review, validation, and merge
 
 ---
 
-#### 9. Refactoring Skill
-**Status:** 📋 Prompt needed  
+#### 10. Refactoring Skill
+**Status:** 📋 Prompt needed
 **Priority:** Low (Phase 4)
 
 **Triggers:** "Refactor according to #XXX", "extract service", "consolidate code"
@@ -246,8 +323,8 @@ Review, validation, and merge
 
 ### **Tier 3: Quality & Finalization Skills**
 
-#### 10. Issue Closing Skill
-**Status:** 📋 Prompt needed  
+#### 11. Issue Closing Skill
+**Status:** 📋 Prompt needed
 **Priority:** Low (Phase 4)
 
 **Triggers:** "Close #XXX", "finalize #XXX", "issue complete"
@@ -275,6 +352,13 @@ Review, validation, and merge
 ### Complete Issue Workflow
 
 ```
+┌─────────────────────────────────────────────────────────────┐
+│                    ISSUE CREATION (Optional)                 │
+│  Skill #0: Issue Creation                                    │
+│  Input: User report, bug discovery, feature idea             │
+│  Output: Well-structured GitHub issue with estimate          │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                    SPRINT PLANNING                           │
 │  Skill #1: Sprint Planning                                   │
@@ -479,22 +563,26 @@ Claude: [Uses Skill #10: Issue Closing]
 ### Phase 1: Core Skills (Weeks 1-2) ✅ READY
 
 **Already Have Prompts:**
+0. ✅ Issue Creation Skill
 1. ✅ Sprint Planning Skill
 2. ✅ Issue Roadmap Skill
 3. ✅ Testing Implementation Skill
 4. ✅ Database Migration Skill
 5. ✅ Code Review Skill
+7. ✅ UI Styling & Visual Polish Skill
 
-**Action:** Create these 5 skills using provided prompts
+**Action:** Create these 7 skills using provided prompts
 
 **Expected Impact:**
+- Transform informal reports into structured issues
 - Complete sprint planning automation
 - Systematic issue planning
 - One-test-at-a-time testing
 - Safe database migrations
 - Systematic pre-merge reviews
+- Professional UI polish with reusable design tokens
 
-**Estimated Time:** 1-2 days to create all 5 skills
+**Estimated Time:** 1-2 days to create all 7 skills
 
 ---
 
@@ -598,11 +686,13 @@ Claude: [Uses Skill #10: Issue Closing]
 ## Skill Priority Matrix
 
 ### Immediate Value (Create First) ✅
+- Issue Creation (transforms informal reports to structured issues)
 - Sprint Planning
 - Issue Roadmap
 - Testing Implementation
 - Database Migration
 - Code Review
+- UI Styling & Visual Polish (systematic visual refinement)
 
 ### High Value (Create Soon)
 - Localization Update
