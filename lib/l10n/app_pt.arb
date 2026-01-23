@@ -278,6 +278,10 @@
   "@history": {
     "description": "Texto do tooltip de histórico"
   },
+  "overview": "Visão Geral",
+  "@overview": {
+    "description": "Rótulo da aba de visão geral nos detalhes da receita"
+  },
   "historyTitle": "Histórico: {recipeName}",
   "@historyTitle": {
     "description": "Título da tela de histórico de refeições",
@@ -1129,6 +1133,10 @@
   "errorLoadingData": "Erro ao carregar dados:",
   "@errorLoadingData": {
     "description": "Mensagem de erro para carregar dados"
+  },
+  "errorViewingRecipeDetails": "Erro ao visualizar detalhes da receita",
+  "@errorViewingRecipeDetails": {
+    "description": "Mensagem de erro ao falhar ao visualizar detalhes da receita"
   },
   "errorRefreshingRecommendations": "Erro ao atualizar recomendações:",
   "@errorRefreshingRecommendations": {
