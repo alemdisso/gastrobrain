@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../models/recipe.dart';
 import '../screens/recipe_ingredients_screen.dart';
 import '../screens/recipe_instructions_view_screen.dart';
 import '../screens/meal_history_screen.dart';
+import '../core/providers/recipe_provider.dart';
 import '../l10n/app_localizations.dart';
 
 class RecipeCard extends StatefulWidget {
@@ -262,9 +264,9 @@ class _RecipeCardState extends State<RecipeCard> {
                                           recipe: widget.recipe),
                                 ),
                               );
-                              // If instructions were updated, trigger refresh
+                              // If instructions were updated, refresh the recipe list
                               if (result == true && mounted) {
-                                widget.onEdit();
+                                context.read<RecipeProvider>().loadRecipes(forceRefresh: true);
                               }
                             },
                             tooltip: AppLocalizations.of(context)!.viewInstructions,

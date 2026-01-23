@@ -28,6 +28,7 @@ import '../widgets/add_side_dish_dialog.dart';
 import '../utils/id_generator.dart';
 import '../utils/sorting_utils.dart';
 import '../l10n/app_localizations.dart';
+import '../screens/recipe_details_screen.dart';
 
 class WeeklyPlanScreen extends StatefulWidget {
   final DatabaseHelper? databaseHelper;
@@ -630,13 +631,40 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     if (action == null) return;
 
     if (action == 'view') {
-      // Implement viewing recipe details
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(AppLocalizations.of(context)!
-                  .viewRecipeDetailsNotImplemented)),
-        );
+      // Navigate to recipe details screen
+      try {
+        final recipe = await _dbHelper.getRecipe(recipeId);
+        if (recipe == null) {
+          if (mounted) {
+            SnackbarService.showError(
+                context, AppLocalizations.of(context)!.recipeNotFound);
+          }
+          return;
+        }
+
+        if (mounted) {
+          final hasChanges = await Navigator.push<bool>(
+            context,
+            MaterialPageRoute(
+              builder: (context) => RecipeDetailsScreen(
+                recipe: recipe,
+                databaseHelper: _dbHelper,
+              ),
+            ),
+          );
+
+          // If changes were made to the recipe, refresh the meal plan
+          if (hasChanges == true && mounted) {
+            _loadData();
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          SnackbarService.showError(
+              context,
+              AppLocalizations.of(context)!
+                  .errorViewingRecipeDetails);
+        }
       }
     } else if (action == 'change') {
       // Reuse the slot tap handler to change the recipe

@@ -278,6 +278,10 @@
   "@history": {
     "description": "History tooltip text"
   },
+  "overview": "Overview",
+  "@overview": {
+    "description": "Overview tab label in recipe details"
+  },
   "historyTitle": "History: {recipeName}",
   "@historyTitle": {
     "description": "Title for meal history screen",
@@ -1147,6 +1151,10 @@
   "errorLoadingData": "Error loading data:",
   "@errorLoadingData": {
     "description": "Error message for loading data"
+  },
+  "errorViewingRecipeDetails": "Error viewing recipe details",
+  "@errorViewingRecipeDetails": {
+    "description": "Error message when failing to view recipe details"
   },
   "errorRefreshingRecommendations": "Error refreshing recommendations:",
   "@errorRefreshingRecommendations": {
