@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/recipe.dart';
 import '../screens/recipe_ingredients_screen.dart';
 import '../screens/recipe_instructions_view_screen.dart';
+import '../screens/recipe_details_screen.dart';
 import '../screens/meal_history_screen.dart';
 import '../core/providers/recipe_provider.dart';
 import '../l10n/app_localizations.dart';
@@ -63,10 +64,13 @@ class _RecipeCardState extends State<RecipeCard> {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Title Row
+      child: InkWell(
+        onTap: _handleCardTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Title Row
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: Text(
@@ -329,6 +333,21 @@ class _RecipeCardState extends State<RecipeCard> {
           ],
         ],
       ),
+    ),
+  );
+}
+
+  Future<void> _handleCardTap() async {
+    final hasChanges = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => RecipeDetailsScreen(recipe: widget.recipe),
+      ),
     );
+
+    // If changes were made to the recipe, refresh the recipe list
+    if (hasChanges == true && mounted) {
+      context.read<RecipeProvider>().loadRecipes(forceRefresh: true);
+    }
   }
 }
