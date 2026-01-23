@@ -57,6 +57,13 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
     _currentRecipe = widget.recipe;
     _instructions = widget.recipe.instructions;
     _loadIngredients();
+
+    // Listen to tab changes to rebuild AppBar actions
+    _tabController.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -308,6 +315,20 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
     }
   }
 
+  List<Widget> _buildAppBarActions() {
+    // Only show edit button on Overview tab (index 2)
+    if (_tabController.index == 2) {
+      return [
+        IconButton(
+          icon: const Icon(Icons.edit),
+          tooltip: AppLocalizations.of(context)!.editRecipe,
+          onPressed: _editRecipe,
+        ),
+      ];
+    }
+    return [];
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -326,13 +347,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
               Navigator.pop(context, _hasChanges);
             },
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.edit),
-              tooltip: AppLocalizations.of(context)!.editRecipe,
-              onPressed: _editRecipe,
-            ),
-          ],
+          actions: _buildAppBarActions(),
           bottom: TabBar(
             controller: _tabController,
             tabs: [
