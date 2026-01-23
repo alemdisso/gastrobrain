@@ -9,6 +9,7 @@ import '../core/services/snackbar_service.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/quantity_formatter.dart';
 import '../screens/meal_history_screen.dart';
+import '../screens/edit_recipe_screen.dart';
 
 /// Unified screen for viewing complete recipe details including overview,
 /// ingredients, instructions, and meal history.
@@ -275,6 +276,38 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
     }
   }
 
+  Future<void> _editRecipe() async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditRecipeScreen(recipe: _currentRecipe),
+      ),
+    );
+
+    if (result == true && mounted) {
+      // Recipe was edited, reload the recipe data
+      try {
+        final updatedRecipe = await _dbHelper.getRecipe(_currentRecipe.id);
+        if (updatedRecipe != null && mounted) {
+          setState(() {
+            _currentRecipe = updatedRecipe;
+            _instructions = updatedRecipe.instructions;
+            _hasChanges = true;
+          });
+          // Reload ingredients in case they changed
+          _loadIngredients();
+        }
+      } catch (e) {
+        if (mounted) {
+          SnackbarService.showError(
+            context,
+            AppLocalizations.of(context)!.errorLoadingData,
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -293,13 +326,16 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
               Navigator.pop(context, _hasChanges);
             },
           ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.edit),
+              tooltip: AppLocalizations.of(context)!.editRecipe,
+              onPressed: _editRecipe,
+            ),
+          ],
           bottom: TabBar(
             controller: _tabController,
             tabs: [
-              Tab(
-                icon: const Icon(Icons.info_outline),
-                text: AppLocalizations.of(context)!.overview,
-              ),
               Tab(
                 icon: const Icon(Icons.list_alt),
                 text: AppLocalizations.of(context)!.ingredients,
@@ -307,6 +343,10 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
               Tab(
                 icon: const Icon(Icons.description),
                 text: AppLocalizations.of(context)!.instructions,
+              ),
+              Tab(
+                icon: const Icon(Icons.info_outline),
+                text: AppLocalizations.of(context)!.overview,
               ),
               Tab(
                 icon: const Icon(Icons.history),
@@ -318,9 +358,9 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
         body: TabBarView(
           controller: _tabController,
           children: [
-            _buildOverviewTab(),
             _buildIngredientsTab(),
             _buildInstructionsTab(),
+            _buildOverviewTab(),
             _buildHistoryTab(),
           ],
         ),
@@ -675,13 +715,13 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
   Widget? _buildFloatingActionButton() {
     // Show appropriate FAB based on current tab
     switch (_tabController.index) {
-      case 1: // Ingredients tab
+      case 0: // Ingredients tab
         return FloatingActionButton(
           onPressed: _addIngredient,
           tooltip: AppLocalizations.of(context)!.addIngredient,
           child: const Icon(Icons.add),
         );
-      case 2: // Instructions tab
+      case 1: // Instructions tab
         final bool hasInstructions = _instructions.isNotEmpty;
         return FloatingActionButton(
           onPressed: _editInstructions,
