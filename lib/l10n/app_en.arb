@@ -250,6 +250,10 @@
   "@ingredientDeletedSuccessfully": {
     "description": "Success message for ingredient deletion"
   },
+  "recipeDeletedSuccessfully": "Recipe deleted successfully",
+  "@recipeDeletedSuccessfully": {
+    "description": "Success message for recipe deletion"
+  },
   "tryAgain": "Try Again",
   "@tryAgain": {
     "description": "Try again button text"

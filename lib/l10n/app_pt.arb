@@ -250,6 +250,10 @@
   "@ingredientDeletedSuccessfully": {
     "description": "Mensagem de sucesso para exclusão de ingrediente"
   },
+  "recipeDeletedSuccessfully": "Receita excluída com sucesso",
+  "@recipeDeletedSuccessfully": {
+    "description": "Mensagem de sucesso para exclusão de receita"
+  },
   "tryAgain": "Tentar Novamente",
   "@tryAgain": {
     "description": "Texto do botão tentar novamente"
