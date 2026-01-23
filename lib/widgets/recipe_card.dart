@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/recipe.dart';
-import '../screens/recipe_ingredients_screen.dart';
-import '../screens/recipe_instructions_view_screen.dart';
-import '../screens/meal_history_screen.dart';
+import '../screens/recipe_details_screen.dart';
 import '../core/providers/recipe_provider.dart';
-import '../l10n/app_localizations.dart';
 
 class RecipeCard extends StatefulWidget {
   final Recipe recipe;
@@ -31,42 +27,22 @@ class RecipeCard extends StatefulWidget {
 }
 
 class _RecipeCardState extends State<RecipeCard> {
-  DateTime? lastCooked;
-  int totalMeals = 0;
-  static final Set<String> _expandedIds = {};
-
-  bool get isExpanded => _expandedIds.contains(widget.recipe.id);
-
   @override
   void initState() {
     super.initState();
-    //_loadMealStats();
-  }
-
-  String _formatDateTime(DateTime? dateTime, BuildContext context) {
-    if (dateTime == null) return AppLocalizations.of(context)!.never;
-    final locale = Localizations.localeOf(context).toString();
-    return DateFormat.yMd(locale).format(dateTime);
-  }
-
-  void _toggleExpanded() {
-    setState(() {
-      if (isExpanded) {
-        _expandedIds.remove(widget.recipe.id);
-      } else {
-        _expandedIds.add(widget.recipe.id);
-      }
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Title Row
+      child: InkWell(
+        onTap: _handleCardTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Title Row
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: Text(
@@ -142,193 +118,26 @@ class _RecipeCardState extends State<RecipeCard> {
                     ],
                   ),
                 ),
-                // Right side - Actions
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: Icon(
-                        isExpanded ? Icons.expand_less : Icons.expand_more,
-                        size: 20,
-                      ),
-                      onPressed: _toggleExpanded,
-                      tooltip: isExpanded
-                          ? AppLocalizations.of(context)!.showLess
-                          : AppLocalizations.of(context)!.showMore,
-                      padding: EdgeInsets.zero,
-                      constraints:
-                          const BoxConstraints(minWidth: 24, minHeight: 24),
-                    ),
-                  ],
-                ),
               ],
             ),
           ),
-          if (isExpanded) ...[
-            const Divider(height: 1),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Detailed time information
-                  Row(
-                    children: [
-                      Icon(Icons.timer_outlined,
-                          size: 16, color: Colors.grey[600]),
-                      const SizedBox(width: 4),
-                      Flexible(
-                        child: Text(
-                          AppLocalizations.of(context)!
-                              .detailedPrepTime(widget.recipe.prepTimeMinutes),
-                          style: TextStyle(color: Colors.grey[600]),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Icon(Icons.restaurant_outlined,
-                          size: 16, color: Colors.grey[600]),
-                      const SizedBox(width: 4),
-                      Flexible(
-                        child: Text(
-                          AppLocalizations.of(context)!
-                              .detailedCookTime(widget.recipe.cookTimeMinutes),
-                          style: TextStyle(color: Colors.grey[600]),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (widget.recipe.notes.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      widget.recipe.notes,
-                      style: TextStyle(
-                        color: Colors.grey[700],
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.mealCount == 0 && widget.lastCooked == null
-                                  ? AppLocalizations.of(context)!.neverCooked
-                                  : AppLocalizations.of(context)!
-                                      .detailedTimesCooked(widget.mealCount),
-                              style: const TextStyle(fontSize: 13),
-                            ),
-                            if (widget.lastCooked != null) ...[
-                              Text(
-                                AppLocalizations.of(context)!.detailedLastCooked(
-                                    _formatDateTime(widget.lastCooked, context)),
-                                style: const TextStyle(fontSize: 13),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Wrap(
-                        spacing: 8,
-                        children: [
-                          IconButton.outlined(
-                            icon: const Icon(Icons.list_alt, size: 20),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => RecipeIngredientsScreen(
-                                      recipe: widget.recipe),
-                                ),
-                              );
-                            },
-                            tooltip: AppLocalizations.of(context)!.ingredients,
-                          ),
-                          IconButton.outlined(
-                            icon: const Icon(Icons.description, size: 20),
-                            onPressed: () async {
-                              final result = await Navigator.push<bool>(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      RecipeInstructionsViewScreen(
-                                          recipe: widget.recipe),
-                                ),
-                              );
-                              // If instructions were updated, refresh the recipe list
-                              if (result == true && mounted) {
-                                context.read<RecipeProvider>().loadRecipes(forceRefresh: true);
-                              }
-                            },
-                            tooltip: AppLocalizations.of(context)!.viewInstructions,
-                          ),
-                          IconButton.outlined(
-                            icon: const Icon(Icons.history, size: 20),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      MealHistoryScreen(recipe: widget.recipe),
-                                ),
-                              );
-                            },
-                            tooltip: AppLocalizations.of(context)!.history,
-                          ),
-                          PopupMenuButton<String>(
-                            icon: const Icon(Icons.more_vert, size: 20),
-                            onSelected: (value) {
-                              switch (value) {
-                                case 'edit':
-                                  widget.onEdit();
-                                  break;
-                                case 'delete':
-                                  widget.onDelete();
-                                  break;
-                              }
-                            },
-                            itemBuilder: (context) => [
-                              PopupMenuItem(
-                                value: 'edit',
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.edit),
-                                    const SizedBox(width: 8),
-                                    Text(AppLocalizations.of(context)!.edit),
-                                  ],
-                                ),
-                              ),
-                              PopupMenuItem(
-                                value: 'delete',
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.delete),
-                                    const SizedBox(width: 8),
-                                    Text(AppLocalizations.of(context)!.delete),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
         ],
       ),
+    ),
+  );
+}
+
+  Future<void> _handleCardTap() async {
+    final hasChanges = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => RecipeDetailsScreen(recipe: widget.recipe),
+      ),
     );
+
+    // If changes were made to the recipe, refresh the recipe list
+    if (hasChanges == true && mounted) {
+      context.read<RecipeProvider>().loadRecipes(forceRefresh: true);
+    }
   }
 }

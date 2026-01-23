@@ -316,17 +316,97 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
   }
 
   List<Widget> _buildAppBarActions() {
-    // Only show edit button on Overview tab (index 2)
+    final actions = <Widget>[];
+
+    // Edit button only on Overview tab (index 2)
     if (_tabController.index == 2) {
-      return [
+      actions.add(
         IconButton(
           icon: const Icon(Icons.edit),
           tooltip: AppLocalizations.of(context)!.editRecipe,
           onPressed: _editRecipe,
         ),
-      ];
+      );
     }
-    return [];
+
+    // Delete button always available via popup menu
+    actions.add(
+      PopupMenuButton<String>(
+        icon: const Icon(Icons.more_vert),
+        onSelected: (value) {
+          if (value == 'delete') {
+            _deleteRecipe();
+          }
+        },
+        itemBuilder: (context) => [
+          PopupMenuItem(
+            value: 'delete',
+            child: Row(
+              children: [
+                Icon(Icons.delete, color: Theme.of(context).colorScheme.error),
+                const SizedBox(width: 8),
+                Text(
+                  AppLocalizations.of(context)!.deleteRecipe,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return actions;
+  }
+
+  Future<void> _deleteRecipe() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!.deleteRecipe),
+          content: Text(AppLocalizations.of(context)!.deleteConfirmation(_currentRecipe.name)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(AppLocalizations.of(context)!.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.error,
+              ),
+              child: Text(AppLocalizations.of(context)!.delete),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      try {
+        await _dbHelper.deleteRecipe(_currentRecipe.id);
+        if (mounted) {
+          // Pop back with a special flag indicating deletion
+          Navigator.pop(context, true);
+          SnackbarService.showSuccess(
+            context,
+            AppLocalizations.of(context)!.recipeDeletedSuccessfully,
+          );
+        }
+      } on GastrobrainException catch (e) {
+        if (mounted) {
+          SnackbarService.showError(context, e.message);
+        }
+      } catch (e) {
+        if (mounted) {
+          SnackbarService.showError(
+            context,
+            AppLocalizations.of(context)!.unexpectedError,
+          );
+        }
+      }
+    }
   }
 
   @override
