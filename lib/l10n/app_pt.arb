@@ -1967,5 +1967,99 @@
   "importRecipesDescription": "Importe receitas e ingredientes do JSON. Substitui todos os dados existentes.",
   "@importRecipesDescription": {
     "description": "Description for recipe import tool"
+  },
+  "planningTabLabel": "Planejamento",
+  "@planningTabLabel": {
+    "description": "Tab label for planning mode in weekly meal plan screen"
+  },
+  "summaryTabLabel": "Resumo",
+  "@summaryTabLabel": {
+    "description": "Tab label for summary mode in weekly meal plan screen"
+  },
+  "weekOf": "Semana de {dateRange}",
+  "@weekOf": {
+    "description": "Week date range label",
+    "placeholders": {
+      "dateRange": {
+        "type": "String",
+        "example": "23 Jan - 29 Jan"
+      }
+    }
+  },
+  "mealsPlannedCount": "{count} de 14 refeições planejadas",
+  "@mealsPlannedCount": {
+    "description": "Total meals planned count",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "8"
+      }
+    }
+  },
+  "proteinDistributionHeader": "Distribuição de Proteínas",
+  "@proteinDistributionHeader": {
+    "description": "Header for protein distribution section in summary"
+  },
+  "timeByDayHeader": "Tempo por Dia",
+  "@timeByDayHeader": {
+    "description": "Header for time by day section in summary"
+  },
+  "recipeVarietyHeader": "Variedade de Receitas",
+  "@recipeVarietyHeader": {
+    "description": "Header for recipe variety section in summary"
+  },
+  "uniqueRecipesCount": "{count} receitas únicas",
+  "@uniqueRecipesCount": {
+    "description": "Count of unique recipes in meal plan",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "8"
+      }
+    }
+  },
+  "repeatedRecipesCount": "{count} receitas usadas múltiplas vezes",
+  "@repeatedRecipesCount": {
+    "description": "Count of recipes used more than once",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "noProteinsPlanned": "Nenhuma proteína planejada ainda",
+  "@noProteinsPlanned": {
+    "description": "Empty state message when no proteins are planned"
+  },
+  "noMealsPlannedYet": "Nenhuma refeição planejada ainda",
+  "@noMealsPlannedYet": {
+    "description": "Empty state message when no meals are planned"
+  },
+  "summaryCalculationError": "Falha ao calcular resumo",
+  "@summaryCalculationError": {
+    "description": "Error message when summary calculation fails"
+  },
+  "retryButton": "Tentar novamente",
+  "@retryButton": {
+    "description": "Retry button text"
+  },
+  "mealsLabel": "refeições",
+  "@mealsLabel": {
+    "description": "Label for meals count"
+  },
+  "minutesShort": "min",
+  "@minutesShort": {
+    "description": "Short form for minutes"
+  },
+  "timesUsed": "({count}×)",
+  "@timesUsed": {
+    "description": "Times a recipe is used indicator",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
   }
 }

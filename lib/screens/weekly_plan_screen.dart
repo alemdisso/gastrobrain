@@ -41,7 +41,8 @@ class WeeklyPlanScreen extends StatefulWidget {
   State<WeeklyPlanScreen> createState() => _WeeklyPlanScreenState();
 }
 
-class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
+class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
+    with SingleTickerProviderStateMixin {
   late DatabaseHelper _dbHelper;
   late RecommendationService _recommendationService;
   late MealPlanAnalysisService _mealPlanAnalysis;
@@ -52,6 +53,10 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   final ScrollController _scrollController = ScrollController();
   // Cache for recommendations to improve performance
   final Map<String, List<Recipe>> _recommendationCache = {};
+  // Tab controller for Planning/Summary tabs
+  late TabController _tabController;
+  // Summary data
+  Map<String, dynamic>? _summaryData;
 
   // Helper method to create cache key
   String _getRecommendationCacheKey(DateTime date, String mealType) {
@@ -80,6 +85,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     _recommendationService =
         ServiceProvider.recommendations.recommendationService;
     _mealPlanAnalysis = MealPlanAnalysisService(_dbHelper);
+    _tabController = TabController(length: 2, vsync: this);
     _loadData();
   }
 
@@ -243,6 +249,9 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
 
         // Clear the recommendation cache when meal plan changes
         _recommendationCache.clear();
+
+        // Calculate summary data
+        await _calculateSummaryData();
       }
     } catch (e) {
       if (mounted) {
@@ -1203,6 +1212,493 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     });
   }
 
+  Future<void> _calculateSummaryData() async {
+    if (_currentMealPlan == null) {
+      setState(() {
+        _summaryData = {
+          'totalPlanned': 0,
+          'percentage': 0.0,
+          'proteins': <ProteinType, int>{},
+          'timeByDay': <String, double>{},
+          'uniqueRecipes': 0,
+          'repeatedRecipes': <MapEntry<String, int>>[],
+        };
+      });
+      return;
+    }
+
+    try {
+      final items = _currentMealPlan!.items;
+      final totalPlanned = items.length;
+      final percentage = totalPlanned / 14.0;
+
+      // Protein distribution - get proteins from recipe ingredients
+      final proteins = <ProteinType, int>{};
+      for (final item in items) {
+        for (final mealRecipe in item.mealPlanItemRecipes ?? []) {
+          if (mealRecipe.isPrimaryDish) {
+            // Get protein types from recipe ingredients
+            final ingredientMaps =
+                await _dbHelper.getRecipeIngredients(mealRecipe.recipeId);
+            for (final ingredientMap in ingredientMaps) {
+              final proteinTypeStr = ingredientMap['protein_type'] as String?;
+              if (proteinTypeStr != null && proteinTypeStr != 'none') {
+                try {
+                  final proteinType = ProteinType.values.firstWhere(
+                    (type) => type.name == proteinTypeStr,
+                  );
+                  if (proteinType.isMainProtein) {
+                    proteins[proteinType] = (proteins[proteinType] ?? 0) + 1;
+                    break; // Only count the first main protein per recipe
+                  }
+                } catch (e) {
+                  // Skip unknown protein types
+                  continue;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // Time by day - initialize all days first
+      final timeByDay = <String, double>{
+        'Friday': 0.0,
+        'Saturday': 0.0,
+        'Sunday': 0.0,
+        'Monday': 0.0,
+        'Tuesday': 0.0,
+        'Wednesday': 0.0,
+        'Thursday': 0.0,
+      };
+
+      for (final item in items) {
+        final date = DateTime.parse(item.plannedDate);
+        final dayName = _getDayName(date.weekday);
+
+        double dayTime = 0;
+        for (final mealRecipe in item.mealPlanItemRecipes ?? []) {
+          final recipe = await _dbHelper.getRecipe(mealRecipe.recipeId);
+          if (recipe != null) {
+            dayTime +=
+                (recipe.prepTimeMinutes + recipe.cookTimeMinutes).toDouble();
+          }
+        }
+        timeByDay[dayName] = (timeByDay[dayName] ?? 0) + dayTime;
+      }
+
+      // Recipe variety
+      final recipeIds = <String>[];
+      for (final item in items) {
+        for (final mealRecipe in item.mealPlanItemRecipes ?? []) {
+          recipeIds.add(mealRecipe.recipeId);
+        }
+      }
+
+      final uniqueCount = recipeIds.toSet().length;
+      final recipeCounts = <String, int>{};
+      for (final id in recipeIds) {
+        recipeCounts[id] = (recipeCounts[id] ?? 0) + 1;
+      }
+
+      final repeatedRecipes = recipeCounts.entries
+          .where((e) => e.value > 1)
+          .toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+
+      if (mounted) {
+        setState(() {
+          _summaryData = {
+            'totalPlanned': totalPlanned,
+            'percentage': percentage,
+            'proteins': proteins,
+            'timeByDay': timeByDay,
+            'uniqueRecipes': uniqueCount,
+            'repeatedRecipes': repeatedRecipes,
+          };
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _summaryData = {
+            'totalPlanned': 0,
+            'percentage': 0.0,
+            'proteins': <ProteinType, int>{},
+            'timeByDay': <String, double>{},
+            'uniqueRecipes': 0,
+            'repeatedRecipes': <MapEntry<String, int>>[],
+            'error': e.toString(),
+          };
+        });
+      }
+    }
+  }
+
+  String _getDayName(int weekday) {
+    switch (weekday) {
+      case DateTime.monday:
+        return 'Monday';
+      case DateTime.tuesday:
+        return 'Tuesday';
+      case DateTime.wednesday:
+        return 'Wednesday';
+      case DateTime.thursday:
+        return 'Thursday';
+      case DateTime.friday:
+        return 'Friday';
+      case DateTime.saturday:
+        return 'Saturday';
+      case DateTime.sunday:
+        return 'Sunday';
+      default:
+        return 'Unknown';
+    }
+  }
+
+  Widget _buildSummaryView() {
+    if (_summaryData == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_summaryData!.containsKey('error')) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text(
+              AppLocalizations.of(context)!.summaryCalculationError,
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _loadData,
+              child: Text(AppLocalizations.of(context)!.retryButton),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildOverviewCard(),
+          const SizedBox(height: 24),
+          _buildProteinSection(),
+          const SizedBox(height: 32),
+          _buildTimeSection(),
+          const SizedBox(height: 32),
+          _buildVarietySection(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOverviewCard() {
+    final totalPlanned = _summaryData!['totalPlanned'] as int;
+    final percentage = _summaryData!['percentage'] as double;
+
+    // Format date range
+    final endDate = _currentWeekStart.add(const Duration(days: 6));
+    final dateRange =
+        '${_currentWeekStart.day}/${_currentWeekStart.month} - ${endDate.day}/${endDate.month}';
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: const Color(0xFFFFF8DC), // Cream background
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              AppLocalizations.of(context)!.weekOf(dateRange),
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              AppLocalizations.of(context)!.mealsPlannedCount(totalPlanned),
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2C2C2C), // Charcoal
+              ),
+            ),
+            const SizedBox(height: 12),
+            LinearProgressIndicator(
+              value: percentage,
+              backgroundColor: Colors.grey[300],
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(Color(0xFFD4755F)),
+              minHeight: 8,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '${(percentage * 100).round()}%',
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProteinSection() {
+    final proteins = _summaryData!['proteins'] as Map<ProteinType, int>;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppLocalizations.of(context)!.proteinDistributionHeader,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2C2C2C), // Charcoal
+          ),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          height: 2,
+          width: 200,
+          color: const Color(0xFFD4755F), // Terracotta line
+        ),
+        const SizedBox(height: 12),
+        proteins.isEmpty
+            ? Text(
+                AppLocalizations.of(context)!.noProteinsPlanned,
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
+              )
+            : Column(
+                children: proteins.entries.map((entry) {
+                  final protein = entry.key;
+                  final count = entry.value;
+                  final totalPlanned = _summaryData!['totalPlanned'] as int;
+                  final percentage =
+                      totalPlanned > 0 ? (count / totalPlanned) : 0.0;
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: Text(
+                            protein.getLocalizedDisplayName(context),
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 5,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  height: 20,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFD4755F),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: FractionallySizedBox(
+                                    alignment: Alignment.centerLeft,
+                                    widthFactor: percentage,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFD4755F),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              SizedBox(
+                                width: 80,
+                                child: Text(
+                                  '$count ${AppLocalizations.of(context)!.mealsLabel} (${(percentage * 100).round()}%)',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+      ],
+    );
+  }
+
+  Widget _buildTimeSection() {
+    final timeByDay = _summaryData!['timeByDay'] as Map<String, double>;
+
+    // Order days Friday through Thursday
+    final orderedDays = [
+      'Friday',
+      'Saturday',
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday'
+    ];
+
+    // Find max time for scaling
+    final maxTime = timeByDay.values.isEmpty
+        ? 1.0
+        : timeByDay.values.reduce((a, b) => a > b ? a : b);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppLocalizations.of(context)!.timeByDayHeader,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2C2C2C), // Charcoal
+          ),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          height: 2,
+          width: 150,
+          color: const Color(0xFFD4755F), // Terracotta line
+        ),
+        const SizedBox(height: 12),
+        Column(
+          children: orderedDays.map((day) {
+            final time = timeByDay[day] ?? 0.0;
+            final percentage = maxTime > 0 ? (time / maxTime) : 0.0;
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 80,
+                    child: Text(
+                      day.substring(0, 3), // Show first 3 letters
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            height: 16,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: percentage,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color:
+                                      const Color(0xFF6B8E23), // Olive Green
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          width: 60,
+                          child: Text(
+                            '${time.round()} ${AppLocalizations.of(context)!.minutesShort}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVarietySection() {
+    final uniqueRecipes = _summaryData!['uniqueRecipes'] as int;
+    final repeatedRecipes =
+        _summaryData!['repeatedRecipes'] as List<MapEntry<String, int>>;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppLocalizations.of(context)!.recipeVarietyHeader,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2C2C2C), // Charcoal
+          ),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          height: 2,
+          width: 170,
+          color: const Color(0xFFD4755F), // Terracotta line
+        ),
+        const SizedBox(height: 12),
+        Text(
+          AppLocalizations.of(context)!.uniqueRecipesCount(uniqueRecipes),
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        if (repeatedRecipes.isNotEmpty) ...[
+          Text(
+            AppLocalizations.of(context)!
+                .repeatedRecipesCount(repeatedRecipes.length),
+            style: const TextStyle(fontSize: 16),
+          ),
+          const SizedBox(height: 8),
+          ...repeatedRecipes.map((entry) {
+            return FutureBuilder<Recipe?>(
+              future: _dbHelper.getRecipe(entry.key),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) return const SizedBox.shrink();
+                final recipe = snapshot.data!;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Text(
+                    '• ${recipe.name} ${AppLocalizations.of(context)!.timesUsed(entry.value)}',
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+                );
+              },
+            );
+          }),
+        ],
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final formattedDate =
@@ -1342,19 +1838,36 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
             ),
           ),
 
-          // Main calendar widget
+          // TabBar for Planning/Summary
+          TabBar(
+            controller: _tabController,
+            tabs: [
+              Tab(text: AppLocalizations.of(context)!.planningTabLabel),
+              Tab(text: AppLocalizations.of(context)!.summaryTabLabel),
+            ],
+          ),
+
+          // Main content - TabBarView
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : WeeklyCalendarWidget(
-                    weekStartDate: _currentWeekStart,
-                    mealPlan: _currentMealPlan,
-                    timeContext: _currentWeekContext,
-                    onSlotTap: _handleSlotTap,
-                    onMealTap: _handleMealTap,
-                    onDaySelected: _handleDaySelected,
-                    scrollController: _scrollController,
-                    databaseHelper: _dbHelper,
+                : TabBarView(
+                    controller: _tabController,
+                    children: [
+                      // Planning tab - existing calendar
+                      WeeklyCalendarWidget(
+                        weekStartDate: _currentWeekStart,
+                        mealPlan: _currentMealPlan,
+                        timeContext: _currentWeekContext,
+                        onSlotTap: _handleSlotTap,
+                        onMealTap: _handleMealTap,
+                        onDaySelected: _handleDaySelected,
+                        scrollController: _scrollController,
+                        databaseHelper: _dbHelper,
+                      ),
+                      // Summary tab - new summary view
+                      _buildSummaryView(),
+                    ],
                   ),
           ),
         ],
@@ -1365,6 +1878,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _tabController.dispose();
     // Clear any resources used by the recommendation service if needed
     _recommendationCache.clear();
     super.dispose();

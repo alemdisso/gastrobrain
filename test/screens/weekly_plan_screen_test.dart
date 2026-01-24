@@ -1176,6 +1176,431 @@ void main() {
       }
     });
   });
+
+  // Summary Tab Tests (Issue #32)
+  group('WeeklyPlanScreen Summary Tab', () {
+    // Helper to get the Friday of the current week (matches screen logic)
+    DateTime getCurrentWeekFriday() {
+      final now = DateTime.now();
+      final int weekday = now.weekday;
+      final daysToSubtract = weekday < 5 ? weekday + 2 : weekday - 5;
+      return now.subtract(Duration(days: daysToSubtract));
+    }
+
+    testWidgets('Summary tab displays correctly with meal plan data',
+        (WidgetTester tester) async {
+      // Set up mock data - use current week so it matches what screen loads
+      final weekStart = getCurrentWeekFriday();
+
+      // Create simple recipes
+      final recipe1 = Recipe(
+        id: 'recipe-1',
+        name: 'Test Recipe 1',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+        prepTimeMinutes: 15,
+        cookTimeMinutes: 30,
+      );
+
+      final recipe2 = Recipe(
+        id: 'recipe-2',
+        name: 'Test Recipe 2',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+        prepTimeMinutes: 20,
+        cookTimeMinutes: 40,
+      );
+
+      await mockDbHelper.insertRecipe(recipe1);
+      await mockDbHelper.insertRecipe(recipe2);
+
+      // Create meal plan with 4 meals
+      final mealPlanId = IdGenerator.generateId();
+      final mealPlan = MealPlan(
+        id: mealPlanId,
+        weekStartDate: weekStart,
+        notes: 'Test Plan',
+        createdAt: DateTime.now(),
+        modifiedAt: DateTime.now(),
+      );
+
+      mockDbHelper.mealPlans[mealPlanId] = mealPlan;
+
+      // Add 4 meal plan items
+      for (int i = 0; i < 4; i++) {
+        final itemId = IdGenerator.generateId();
+        final planItem = MealPlanItem(
+          id: itemId,
+          mealPlanId: mealPlanId,
+          plannedDate: MealPlanItem.formatPlannedDate(
+              weekStart.add(Duration(days: i))),
+          mealType: MealPlanItem.lunch,
+        );
+
+        planItem.mealPlanItemRecipes = [
+          MealPlanItemRecipe(
+            mealPlanItemId: itemId,
+            recipeId: i % 2 == 0 ? recipe1.id : recipe2.id,
+            isPrimaryDish: true,
+          )
+        ];
+
+        mealPlan.items.add(planItem);
+      }
+
+      // Build the widget
+      await tester.pumpWidget(
+        createTestableWidget(WeeklyPlanScreen(databaseHelper: mockDbHelper)),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Verify Planning tab is displayed by default
+      expect(find.text('Planning'), findsOneWidget);
+      expect(find.text('Summary'), findsOneWidget);
+
+      // Switch to Summary tab
+      await tester.tap(find.text('Summary'));
+      await tester.pumpAndSettle();
+
+      // Verify summary data is displayed
+      expect(find.textContaining('4 of 14 meals planned'), findsOneWidget);
+
+      // Verify protein distribution section exists
+      expect(find.text('Protein Distribution'), findsOneWidget);
+
+      // Verify time by day section exists
+      expect(find.text('Time by Day'), findsOneWidget);
+
+      // Verify recipe variety section exists
+      expect(find.text('Recipe Variety'), findsOneWidget);
+    });
+
+    testWidgets('Summary tab shows empty state with no meals',
+        (WidgetTester tester) async {
+      // No meal plan data - empty state
+
+      await tester.pumpWidget(
+        createTestableWidget(WeeklyPlanScreen(databaseHelper: mockDbHelper)),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Switch to Summary tab
+      await tester.tap(find.text('Summary'));
+      await tester.pumpAndSettle();
+
+      // Verify empty state
+      expect(find.textContaining('0 of 14 meals planned'), findsOneWidget);
+      expect(find.text('No proteins planned yet'), findsOneWidget);
+    });
+
+    testWidgets('Summary tab switches back to Planning tab',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(WeeklyPlanScreen(databaseHelper: mockDbHelper)),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Switch to Summary tab
+      await tester.tap(find.text('Summary'));
+      await tester.pumpAndSettle();
+
+      // Verify we're on Summary tab
+      expect(find.text('Protein Distribution'), findsOneWidget);
+
+      // Switch back to Planning tab
+      await tester.tap(find.text('Planning'));
+      await tester.pumpAndSettle();
+
+      // Verify we're back on Planning tab (calendar should be visible)
+      expect(find.byType(WeeklyPlanScreen), findsOneWidget);
+    });
+
+    testWidgets('Summary updates when week changes',
+        (WidgetTester tester) async {
+      // Create meal plan for current week
+      final weekStart = getCurrentWeekFriday();
+      final mealPlanId = IdGenerator.generateId();
+      final mealPlan = MealPlan(
+        id: mealPlanId,
+        weekStartDate: weekStart,
+        notes: 'Current Week',
+        createdAt: DateTime.now(),
+        modifiedAt: DateTime.now(),
+      );
+
+      mockDbHelper.mealPlans[mealPlanId] = mealPlan;
+
+      // Add one meal to current week
+      final recipe = Recipe(
+        id: 'test-recipe',
+        name: 'Test Recipe',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+      );
+      await mockDbHelper.insertRecipe(recipe);
+
+      final itemId = IdGenerator.generateId();
+      final planItem = MealPlanItem(
+        id: itemId,
+        mealPlanId: mealPlanId,
+        plannedDate: MealPlanItem.formatPlannedDate(weekStart),
+        mealType: MealPlanItem.lunch,
+      );
+
+      planItem.mealPlanItemRecipes = [
+        MealPlanItemRecipe(
+          mealPlanItemId: itemId,
+          recipeId: recipe.id,
+          isPrimaryDish: true,
+        )
+      ];
+
+      mealPlan.items.add(planItem);
+
+      await tester.pumpWidget(
+        createTestableWidget(WeeklyPlanScreen(databaseHelper: mockDbHelper)),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Switch to Summary tab
+      await tester.tap(find.text('Summary'));
+      await tester.pumpAndSettle();
+
+      // Verify current week has 1 meal
+      expect(find.textContaining('1 of 14 meals planned'), findsOneWidget);
+
+      // Change to next week (which should be empty)
+      await tester.tap(find.byIcon(Icons.navigate_next));
+      await tester.pumpAndSettle();
+
+      // Summary should now show 0 meals
+      expect(find.textContaining('0 of 14 meals planned'), findsOneWidget);
+    });
+
+    testWidgets('Summary shows correct progress percentage',
+        (WidgetTester tester) async {
+      final weekStart = getCurrentWeekFriday();
+      final mealPlanId = IdGenerator.generateId();
+      final mealPlan = MealPlan(
+        id: mealPlanId,
+        weekStartDate: weekStart,
+        notes: 'Test Plan',
+        createdAt: DateTime.now(),
+        modifiedAt: DateTime.now(),
+      );
+
+      mockDbHelper.mealPlans[mealPlanId] = mealPlan;
+
+      final recipe = Recipe(
+        id: 'test-recipe',
+        name: 'Test Recipe',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+      );
+      await mockDbHelper.insertRecipe(recipe);
+
+      // Add 7 meals (50% of 14)
+      for (int i = 0; i < 7; i++) {
+        final itemId = IdGenerator.generateId();
+        final planItem = MealPlanItem(
+          id: itemId,
+          mealPlanId: mealPlanId,
+          plannedDate: MealPlanItem.formatPlannedDate(
+              weekStart.add(Duration(days: i % 7))),
+          mealType: i % 2 == 0 ? MealPlanItem.lunch : MealPlanItem.dinner,
+        );
+
+        planItem.mealPlanItemRecipes = [
+          MealPlanItemRecipe(
+            mealPlanItemId: itemId,
+            recipeId: recipe.id,
+            isPrimaryDish: true,
+          )
+        ];
+
+        mealPlan.items.add(planItem);
+      }
+
+      await tester.pumpWidget(
+        createTestableWidget(WeeklyPlanScreen(databaseHelper: mockDbHelper)),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Switch to Summary tab
+      await tester.tap(find.text('Summary'));
+      await tester.pumpAndSettle();
+
+      // Verify 50% progress
+      expect(find.textContaining('7 of 14 meals planned'), findsOneWidget);
+      expect(find.textContaining('50%'), findsOneWidget);
+
+      // Verify LinearProgressIndicator exists
+      expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    });
+
+    testWidgets('Summary displays unique and repeated recipes correctly',
+        (WidgetTester tester) async {
+      final weekStart = getCurrentWeekFriday();
+      final mealPlanId = IdGenerator.generateId();
+      final mealPlan = MealPlan(
+        id: mealPlanId,
+        weekStartDate: weekStart,
+        notes: 'Test Plan',
+        createdAt: DateTime.now(),
+        modifiedAt: DateTime.now(),
+      );
+
+      mockDbHelper.mealPlans[mealPlanId] = mealPlan;
+
+      // Create 3 different recipes
+      final recipe1 = Recipe(
+        id: 'recipe-1',
+        name: 'Spaghetti Bolognese',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+      );
+
+      final recipe2 = Recipe(
+        id: 'recipe-2',
+        name: 'Grilled Chicken',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+      );
+
+      final recipe3 = Recipe(
+        id: 'recipe-3',
+        name: 'Caesar Salad',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+      );
+
+      await mockDbHelper.insertRecipe(recipe1);
+      await mockDbHelper.insertRecipe(recipe2);
+      await mockDbHelper.insertRecipe(recipe3);
+
+      // Plan: recipe1 used 3 times, recipe2 used 2 times, recipe3 used once
+      final recipeSequence = [
+        recipe1.id,
+        recipe1.id,
+        recipe2.id,
+        recipe1.id,
+        recipe2.id,
+        recipe3.id,
+      ];
+
+      for (int i = 0; i < recipeSequence.length; i++) {
+        final itemId = IdGenerator.generateId();
+        final planItem = MealPlanItem(
+          id: itemId,
+          mealPlanId: mealPlanId,
+          plannedDate: MealPlanItem.formatPlannedDate(
+              weekStart.add(Duration(days: i % 7))),
+          mealType: i % 2 == 0 ? MealPlanItem.lunch : MealPlanItem.dinner,
+        );
+
+        planItem.mealPlanItemRecipes = [
+          MealPlanItemRecipe(
+            mealPlanItemId: itemId,
+            recipeId: recipeSequence[i],
+            isPrimaryDish: true,
+          )
+        ];
+
+        mealPlan.items.add(planItem);
+      }
+
+      await tester.pumpWidget(
+        createTestableWidget(WeeklyPlanScreen(databaseHelper: mockDbHelper)),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Switch to Summary tab
+      await tester.tap(find.text('Summary'));
+      await tester.pumpAndSettle();
+
+      // Verify recipe variety metrics
+      expect(find.textContaining('3 unique recipes'), findsOneWidget);
+      expect(
+          find.textContaining('2 recipes used multiple times'), findsOneWidget);
+
+      // Verify repeated recipes are listed (use FutureBuilder, so wait)
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Spaghetti Bolognese'), findsOneWidget);
+      expect(find.textContaining('Grilled Chicken'), findsOneWidget);
+    });
+
+    testWidgets('Summary displays time by day correctly',
+        (WidgetTester tester) async {
+      final weekStart = getCurrentWeekFriday(); // Friday
+      final mealPlanId = IdGenerator.generateId();
+      final mealPlan = MealPlan(
+        id: mealPlanId,
+        weekStartDate: weekStart,
+        notes: 'Test Plan',
+        createdAt: DateTime.now(),
+        modifiedAt: DateTime.now(),
+      );
+
+      mockDbHelper.mealPlans[mealPlanId] = mealPlan;
+
+      // Create recipe with specific prep/cook times
+      final recipe = Recipe(
+        id: 'timed-recipe',
+        name: 'Timed Recipe',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+        prepTimeMinutes: 20,
+        cookTimeMinutes: 40,
+      );
+
+      await mockDbHelper.insertRecipe(recipe);
+
+      // Add meal on Friday (60 minutes total)
+      final itemId = IdGenerator.generateId();
+      final planItem = MealPlanItem(
+        id: itemId,
+        mealPlanId: mealPlanId,
+        plannedDate: MealPlanItem.formatPlannedDate(weekStart), // Friday
+        mealType: MealPlanItem.lunch,
+      );
+
+      planItem.mealPlanItemRecipes = [
+        MealPlanItemRecipe(
+          mealPlanItemId: itemId,
+          recipeId: recipe.id,
+          isPrimaryDish: true,
+        )
+      ];
+
+      mealPlan.items.add(planItem);
+
+      await tester.pumpWidget(
+        createTestableWidget(WeeklyPlanScreen(databaseHelper: mockDbHelper)),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Switch to Summary tab
+      await tester.tap(find.text('Summary'));
+      await tester.pumpAndSettle();
+
+      // Verify time by day section shows Friday with 60 minutes
+      expect(find.textContaining('Fri'), findsOneWidget);
+      expect(find.textContaining('60 min'), findsOneWidget);
+
+      // Verify other days show 0 min
+      expect(find.textContaining('Sat'), findsOneWidget);
+      expect(find.textContaining('Sun'), findsOneWidget);
+      expect(find.textContaining('Mon'), findsOneWidget);
+    });
+  });
 }
 
 /// A simple mock of RecommendationService for testing
