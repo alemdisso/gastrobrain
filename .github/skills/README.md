@@ -14,6 +14,19 @@ All skills follow a **checkpoint-based approach**:
 
 ### ✅ Implemented Skills
 
+#### [UX Design](gastrobrain-ux-design/)
+**User experience design before implementation**
+
+```
+Triggers: "Design the UX for #XXX", "help me redesign [screen]", "what should the user flow be?"
+Checkpoints: Goal → Current State → Flow → IA → Wireframe → A11y (6 total)
+Time: ~30-60 min depending on complexity
+```
+
+**Why it works:** Clear design direction before coding, "Cultured & Flavorful" identity enforced, accessibility baked in.
+
+---
+
 #### [Testing Implementation](gastrobrain-testing-implementation/)
 **ONE test at a time to prevent pattern error propagation**
 
@@ -92,6 +105,19 @@ See [Skills Master Index](../../docs/architecture/gastrobrain-skills-master-inde
 ---
 
 ## Quick Usage Examples
+
+### UX Design
+```
+You: "Design the UX for #285 - weekly meal planning screen redesign"
+Skill: Fetches issue, analyzes user goals and pain points
+       CHECKPOINT 1/6: Goal & Context → "Ready? (y/n)"
+       CHECKPOINT 2/6: Current State Assessment → "Ready? (y/n)"
+       CHECKPOINT 3/6: User Flow Mapping → "Ready? (y/n)"
+       CHECKPOINT 4/6: Information Architecture + Visual Identity Check → "Ready? (y/n)"
+       CHECKPOINT 5/6: Wireframe (ASCII art) + Interaction Design → "Ready? (y/n)"
+       CHECKPOINT 6/6: Accessibility Review + Complete Handoff → "Ready for implementation? (y/n)"
+       Produces: Complete design artifacts ready for UI Component Implementation skill
+```
 
 ### Testing Implementation
 ```
@@ -202,9 +228,9 @@ For comprehensive overview including:
 - **Success metrics and guidelines**
 
 ### Skills Status
-- ✅ **Implemented** (3): Testing, Database Migration, Code Review
+- ✅ **Implemented** (4): UX Design, Testing, Database Migration, Code Review
 - 📋 **Creation prompts ready** (2): Sprint Planning, Issue Roadmap
-- 🔮 **Planned** (5): Localization, UI Component, Service/Repository, Refactoring, Issue Closing
+- 🔮 **Planned** (4): Localization, UI Component, Service/Repository, Refactoring, Issue Closing
 
 See: [**Skills Master Index**](../../docs/architecture/gastrobrain-skills-master-index.md)
 
@@ -268,6 +294,6 @@ Each skill directory contains:
 
 ---
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 **Last Updated:** January 2026
-**Skills Implemented:** 3/10 (Testing, Database, Code Review)
+**Skills Implemented:** 4/10 (UX Design, Testing, Database, Code Review)
