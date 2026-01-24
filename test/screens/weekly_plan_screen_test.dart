@@ -1269,8 +1269,8 @@ void main() {
       // Verify protein distribution section exists
       expect(find.text('Protein Distribution'), findsOneWidget);
 
-      // Verify time by day section exists
-      expect(find.text('Time by Day'), findsOneWidget);
+      // Verify planned meals section exists
+      expect(find.text('Planned Meals'), findsOneWidget);
 
       // Verify recipe variety section exists
       expect(find.text('Recipe Variety'), findsOneWidget);
@@ -1536,70 +1536,6 @@ void main() {
       expect(find.textContaining('Grilled Chicken'), findsOneWidget);
     });
 
-    testWidgets('Summary displays time by day correctly',
-        (WidgetTester tester) async {
-      final weekStart = getCurrentWeekFriday(); // Friday
-      final mealPlanId = IdGenerator.generateId();
-      final mealPlan = MealPlan(
-        id: mealPlanId,
-        weekStartDate: weekStart,
-        notes: 'Test Plan',
-        createdAt: DateTime.now(),
-        modifiedAt: DateTime.now(),
-      );
-
-      mockDbHelper.mealPlans[mealPlanId] = mealPlan;
-
-      // Create recipe with specific prep/cook times
-      final recipe = Recipe(
-        id: 'timed-recipe',
-        name: 'Timed Recipe',
-        desiredFrequency: FrequencyType.weekly,
-        createdAt: DateTime.now(),
-        prepTimeMinutes: 20,
-        cookTimeMinutes: 40,
-      );
-
-      await mockDbHelper.insertRecipe(recipe);
-
-      // Add meal on Friday (60 minutes total)
-      final itemId = IdGenerator.generateId();
-      final planItem = MealPlanItem(
-        id: itemId,
-        mealPlanId: mealPlanId,
-        plannedDate: MealPlanItem.formatPlannedDate(weekStart), // Friday
-        mealType: MealPlanItem.lunch,
-      );
-
-      planItem.mealPlanItemRecipes = [
-        MealPlanItemRecipe(
-          mealPlanItemId: itemId,
-          recipeId: recipe.id,
-          isPrimaryDish: true,
-        )
-      ];
-
-      mealPlan.items.add(planItem);
-
-      await tester.pumpWidget(
-        createTestableWidget(WeeklyPlanScreen(databaseHelper: mockDbHelper)),
-      );
-
-      await tester.pumpAndSettle();
-
-      // Switch to Summary tab
-      await tester.tap(find.text('Summary'));
-      await tester.pumpAndSettle();
-
-      // Verify time by day section shows Friday with 60 minutes
-      expect(find.textContaining('Fri'), findsOneWidget);
-      expect(find.textContaining('60 min'), findsOneWidget);
-
-      // Verify other days show 0 min
-      expect(find.textContaining('Sat'), findsOneWidget);
-      expect(find.textContaining('Sun'), findsOneWidget);
-      expect(find.textContaining('Mon'), findsOneWidget);
-    });
   });
 }
 

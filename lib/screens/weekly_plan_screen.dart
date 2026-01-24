@@ -1218,8 +1218,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         _summaryData = {
           'totalPlanned': 0,
           'percentage': 0.0,
-          'proteins': <ProteinType, int>{},
-          'timeByDay': <String, double>{},
+          'proteinsByDay': <String, Set<ProteinType>>{},
+          'plannedMeals': <Map<String, dynamic>>[],
           'uniqueRecipes': 0,
           'repeatedRecipes': <MapEntry<String, int>>[],
         };
@@ -1232,59 +1232,56 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
       final totalPlanned = items.length;
       final percentage = totalPlanned / 14.0;
 
-      // Protein distribution - get proteins from recipe ingredients
-      final proteins = <ProteinType, int>{};
-      for (final item in items) {
-        for (final mealRecipe in item.mealPlanItemRecipes ?? []) {
-          if (mealRecipe.isPrimaryDish) {
-            // Get protein types from recipe ingredients
-            final ingredientMaps =
-                await _dbHelper.getRecipeIngredients(mealRecipe.recipeId);
-            for (final ingredientMap in ingredientMaps) {
-              final proteinTypeStr = ingredientMap['protein_type'] as String?;
-              if (proteinTypeStr != null && proteinTypeStr != 'none') {
-                try {
-                  final proteinType = ProteinType.values.firstWhere(
-                    (type) => type.name == proteinTypeStr,
-                  );
-                  if (proteinType.isMainProtein) {
-                    proteins[proteinType] = (proteins[proteinType] ?? 0) + 1;
-                    break; // Only count the first main protein per recipe
-                  }
-                } catch (e) {
-                  // Skip unknown protein types
-                  continue;
-                }
-              }
-            }
-          }
-        }
-      }
+      // Protein sequence by day
+      final proteinsByDay = <String, Set<ProteinType>>{};
 
-      // Time by day - initialize all days first
-      final timeByDay = <String, double>{
-        'Friday': 0.0,
-        'Saturday': 0.0,
-        'Sunday': 0.0,
-        'Monday': 0.0,
-        'Tuesday': 0.0,
-        'Wednesday': 0.0,
-        'Thursday': 0.0,
-      };
+      // Planned meals list
+      final plannedMeals = <Map<String, dynamic>>[];
 
       for (final item in items) {
         final date = DateTime.parse(item.plannedDate);
         final dayName = _getDayName(date.weekday);
 
-        double dayTime = 0;
+        proteinsByDay[dayName] ??= <ProteinType>{};
+
+        final mealRecipes = <String>[];
         for (final mealRecipe in item.mealPlanItemRecipes ?? []) {
           final recipe = await _dbHelper.getRecipe(mealRecipe.recipeId);
           if (recipe != null) {
-            dayTime +=
-                (recipe.prepTimeMinutes + recipe.cookTimeMinutes).toDouble();
+            mealRecipes.add(recipe.name);
+
+            // Get protein from primary dish
+            if (mealRecipe.isPrimaryDish) {
+              final ingredientMaps =
+                  await _dbHelper.getRecipeIngredients(mealRecipe.recipeId);
+              for (final ingredientMap in ingredientMaps) {
+                final proteinTypeStr = ingredientMap['protein_type'] as String?;
+                if (proteinTypeStr != null && proteinTypeStr != 'none') {
+                  try {
+                    final proteinType = ProteinType.values.firstWhere(
+                      (type) => type.name == proteinTypeStr,
+                    );
+                    if (proteinType.isMainProtein) {
+                      proteinsByDay[dayName]!.add(proteinType);
+                      break;
+                    }
+                  } catch (e) {
+                    continue;
+                  }
+                }
+              }
+            }
           }
         }
-        timeByDay[dayName] = (timeByDay[dayName] ?? 0) + dayTime;
+
+        if (mealRecipes.isNotEmpty) {
+          plannedMeals.add({
+            'day': dayName,
+            'date': date,
+            'mealType': item.mealType,
+            'recipes': mealRecipes,
+          });
+        }
       }
 
       // Recipe variety
@@ -1311,8 +1308,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
           _summaryData = {
             'totalPlanned': totalPlanned,
             'percentage': percentage,
-            'proteins': proteins,
-            'timeByDay': timeByDay,
+            'proteinsByDay': proteinsByDay,
+            'plannedMeals': plannedMeals,
             'uniqueRecipes': uniqueCount,
             'repeatedRecipes': repeatedRecipes,
           };
@@ -1324,8 +1321,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
           _summaryData = {
             'totalPlanned': 0,
             'percentage': 0.0,
-            'proteins': <ProteinType, int>{},
-            'timeByDay': <String, double>{},
+            'proteinsByDay': <String, Set<ProteinType>>{},
+            'plannedMeals': <Map<String, dynamic>>[],
             'uniqueRecipes': 0,
             'repeatedRecipes': <MapEntry<String, int>>[],
             'error': e.toString(),
@@ -1388,11 +1385,11 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildOverviewCard(),
+          const SizedBox(height: 20),
+          _buildProteinSequenceSection(),
           const SizedBox(height: 24),
-          _buildProteinSection(),
-          const SizedBox(height: 32),
-          _buildTimeSection(),
-          const SizedBox(height: 32),
+          _buildPlannedMealsSection(),
+          const SizedBox(height: 24),
           _buildVarietySection(),
         ],
       ),
@@ -1403,146 +1400,32 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
     final totalPlanned = _summaryData!['totalPlanned'] as int;
     final percentage = _summaryData!['percentage'] as double;
 
-    // Format date range
-    final endDate = _currentWeekStart.add(const Duration(days: 6));
-    final dateRange =
-        '${_currentWeekStart.day}/${_currentWeekStart.month} - ${endDate.day}/${endDate.month}';
-
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: const Color(0xFFFFF8DC), // Cream background
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              AppLocalizations.of(context)!.weekOf(dateRange),
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.calendar_month,
+            color: Color(0xFF6B8E23),
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '${AppLocalizations.of(context)!.mealsPlannedCount(totalPlanned)} (${(percentage * 100).round()}%)',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2C2C2C),
             ),
-            const SizedBox(height: 8),
-            Text(
-              AppLocalizations.of(context)!.mealsPlannedCount(totalPlanned),
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2C2C2C), // Charcoal
-              ),
-            ),
-            const SizedBox(height: 12),
-            LinearProgressIndicator(
-              value: percentage,
-              backgroundColor: Colors.grey[300],
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(Color(0xFFD4755F)),
-              minHeight: 8,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '${(percentage * 100).round()}%',
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildProteinSection() {
-    final proteins = _summaryData!['proteins'] as Map<ProteinType, int>;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          AppLocalizations.of(context)!.proteinDistributionHeader,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF2C2C2C), // Charcoal
-          ),
-        ),
-        const SizedBox(height: 4),
-        Container(
-          height: 2,
-          width: 200,
-          color: const Color(0xFFD4755F), // Terracotta line
-        ),
-        const SizedBox(height: 12),
-        proteins.isEmpty
-            ? Text(
-                AppLocalizations.of(context)!.noProteinsPlanned,
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
-              )
-            : Column(
-                children: proteins.entries.map((entry) {
-                  final protein = entry.key;
-                  final count = entry.value;
-                  final totalPlanned = _summaryData!['totalPlanned'] as int;
-                  final percentage =
-                      totalPlanned > 0 ? (count / totalPlanned) : 0.0;
-
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: Text(
-                            protein.getLocalizedDisplayName(context),
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 5,
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  height: 20,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFD4755F),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: FractionallySizedBox(
-                                    alignment: Alignment.centerLeft,
-                                    widthFactor: percentage,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFD4755F),
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              SizedBox(
-                                width: 80,
-                                child: Text(
-                                  '$count ${AppLocalizations.of(context)!.mealsLabel} (${(percentage * 100).round()}%)',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
-      ],
-    );
-  }
-
-  Widget _buildTimeSection() {
-    final timeByDay = _summaryData!['timeByDay'] as Map<String, double>;
+  Widget _buildProteinSequenceSection() {
+    final proteinsByDay =
+        _summaryData!['proteinsByDay'] as Map<String, Set<ProteinType>>;
 
     // Order days Friday through Thursday
     final orderedDays = [
@@ -1555,87 +1438,145 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
       'Thursday'
     ];
 
-    // Find max time for scaling
-    final maxTime = timeByDay.values.isEmpty
-        ? 1.0
-        : timeByDay.values.reduce((a, b) => a > b ? a : b);
+    final hasProteins = proteinsByDay.values.any((proteins) => proteins.isNotEmpty);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          AppLocalizations.of(context)!.timeByDayHeader,
+          AppLocalizations.of(context)!.proteinDistributionHeader,
           style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF2C2C2C), // Charcoal
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF2C2C2C),
           ),
         ),
-        const SizedBox(height: 4),
-        Container(
-          height: 2,
-          width: 150,
-          color: const Color(0xFFD4755F), // Terracotta line
-        ),
-        const SizedBox(height: 12),
-        Column(
-          children: orderedDays.map((day) {
-            final time = timeByDay[day] ?? 0.0;
-            final percentage = maxTime > 0 ? (time / maxTime) : 0.0;
+        const SizedBox(height: 8),
+        hasProteins
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: orderedDays.where((day) {
+                  final proteins = proteinsByDay[day] ?? {};
+                  return proteins.isNotEmpty;
+                }).map((day) {
+                  final proteins = proteinsByDay[day]!;
+                  final proteinNames = proteins
+                      .map((p) => p.getLocalizedDisplayName(context))
+                      .join(', ');
 
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 80,
-                    child: Text(
-                      day.substring(0, 3), // Show first 3 letters
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ),
-                  Expanded(
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Container(
-                            height: 16,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[300],
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: FractionallySizedBox(
-                              alignment: Alignment.centerLeft,
-                              widthFactor: percentage,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color:
-                                      const Color(0xFF6B8E23), // Olive Green
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                              ),
+                        SizedBox(
+                          width: 50,
+                          child: Text(
+                            day.substring(0, 3),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF6B8E23),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          width: 60,
+                        Expanded(
                           child: Text(
-                            '${time.round()} ${AppLocalizations.of(context)!.minutesShort}',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            proteinNames,
+                            style: const TextStyle(fontSize: 14),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ],
+                  );
+                }).toList(),
+              )
+            : Text(
+                AppLocalizations.of(context)!.noProteinsPlanned,
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
               ),
-            );
-          }).toList(),
+      ],
+    );
+  }
+
+  Widget _buildPlannedMealsSection() {
+    final plannedMeals =
+        _summaryData!['plannedMeals'] as List<Map<String, dynamic>>;
+
+    if (plannedMeals.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Planned Meals',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2C2C2C),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            AppLocalizations.of(context)!.noMealsPlannedYet,
+            style: const TextStyle(fontSize: 14, color: Colors.grey),
+          ),
+        ],
+      );
+    }
+
+    // Sort by date
+    plannedMeals.sort((a, b) {
+      final dateA = a['date'] as DateTime;
+      final dateB = b['date'] as DateTime;
+      return dateA.compareTo(dateB);
+    });
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Planned Meals',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF2C2C2C),
+          ),
         ),
+        const SizedBox(height: 8),
+        ...plannedMeals.map((meal) {
+          final day = meal['day'] as String;
+          final mealType = meal['mealType'] as String;
+          final recipes = meal['recipes'] as List<String>;
+
+          // Capitalize meal type
+          final formattedMealType = mealType[0].toUpperCase() + mealType.substring(1);
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 90,
+                  child: Text(
+                    '${day.substring(0, 3)} $formattedMealType',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF6B8E23),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    recipes.join(', '),
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
       ],
     );
   }
