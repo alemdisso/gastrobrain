@@ -1435,12 +1435,9 @@ void main() {
       await tester.tap(find.text('Summary'));
       await tester.pumpAndSettle();
 
-      // Verify 50% progress
+      // Verify 50% progress in compact overview
       expect(find.textContaining('7 of 14 meals planned'), findsOneWidget);
       expect(find.textContaining('50%'), findsOneWidget);
-
-      // Verify LinearProgressIndicator exists
-      expect(find.byType(LinearProgressIndicator), findsOneWidget);
     });
 
     testWidgets('Summary displays unique and repeated recipes correctly',
@@ -1529,11 +1526,12 @@ void main() {
       expect(
           find.textContaining('2 recipes used multiple times'), findsOneWidget);
 
-      // Verify repeated recipes are listed (use FutureBuilder, so wait)
+      // Verify repeated recipes are listed with counts (use FutureBuilder, so wait)
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('Spaghetti Bolognese'), findsOneWidget);
-      expect(find.textContaining('Grilled Chicken'), findsOneWidget);
+      // Check for recipes in variety section (with usage count)
+      expect(find.textContaining('Spaghetti Bolognese (3×)'), findsOneWidget);
+      expect(find.textContaining('Grilled Chicken (2×)'), findsOneWidget);
     });
 
   });
