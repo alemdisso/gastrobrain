@@ -28,6 +28,7 @@ import '../core/migration/migration.dart';
 import '../core/migration/migrations/001_initial_schema.dart';
 import '../core/migration/migrations/002_ingredient_enum_conversion.dart';
 import '../core/migration/migrations/003_add_meal_type.dart';
+import '../core/migration/migrations/004_add_shopping_list_tables.dart';
 import '../core/repositories/base_repository.dart';
 
 class DatabaseHelper {
@@ -44,6 +45,7 @@ class DatabaseHelper {
     InitialSchemaMigration(),
     IngredientEnumConversionMigration(),
     AddMealTypeMigration(),
+    AddShoppingListTablesMigration(),
     // Future migrations will be added here
   ];
 
@@ -275,6 +277,31 @@ class DatabaseHelper {
         meal_type TEXT,
         user_id TEXT
       );
+    ''');
+
+    // Create shopping_lists table
+    await db.execute('''
+      CREATE TABLE shopping_lists(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        date_created INTEGER NOT NULL,
+        start_date INTEGER NOT NULL,
+        end_date INTEGER NOT NULL
+      )
+    ''');
+
+    // Create shopping_list_items table
+    await db.execute('''
+      CREATE TABLE shopping_list_items(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        shopping_list_id INTEGER NOT NULL,
+        ingredient_name TEXT NOT NULL,
+        quantity REAL NOT NULL,
+        unit TEXT NOT NULL,
+        category TEXT NOT NULL,
+        is_purchased INTEGER NOT NULL DEFAULT 0,
+        FOREIGN KEY (shopping_list_id) REFERENCES shopping_lists(id) ON DELETE CASCADE
+      )
     ''');
   }
 
