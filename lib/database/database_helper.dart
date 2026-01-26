@@ -21,6 +21,8 @@ import '../models/meal_plan_item.dart';
 import '../models/meal_plan_item_recipe.dart';
 import '../models/recipe_recommendation.dart';
 import '../models/recommendation_results.dart';
+import '../models/shopping_list.dart';
+import '../models/shopping_list_item.dart';
 import '../core/validators/entity_validator.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/migration/migration_runner.dart';
@@ -1892,6 +1894,117 @@ class DatabaseHelper {
     _database = null;
     _migrationRunner = null;
     await database; // This will trigger _initDatabase()
+  }
+
+  // ============================================
+  // SHOPPING LIST OPERATIONS
+  // ============================================
+
+  /// Insert a new shopping list
+  Future<int> insertShoppingList(ShoppingList shoppingList) async {
+    final db = await database;
+    return await db.insert('shopping_lists', shoppingList.toMap());
+  }
+
+  /// Get a shopping list by ID
+  Future<ShoppingList?> getShoppingList(int id) async {
+    final db = await database;
+    final results = await db.query(
+      'shopping_lists',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (results.isEmpty) return null;
+    return ShoppingList.fromMap(results.first);
+  }
+
+  /// Get a shopping list for a specific date range
+  Future<ShoppingList?> getShoppingListForDateRange(
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    final db = await database;
+    final startMillis = startDate.millisecondsSinceEpoch;
+    final endMillis = endDate.millisecondsSinceEpoch;
+
+    final results = await db.query(
+      'shopping_lists',
+      where: 'start_date = ? AND end_date = ?',
+      whereArgs: [startMillis, endMillis],
+      orderBy: 'date_created DESC',
+      limit: 1,
+    );
+
+    if (results.isEmpty) return null;
+    return ShoppingList.fromMap(results.first);
+  }
+
+  /// Delete a shopping list
+  Future<void> deleteShoppingList(int id) async {
+    final db = await database;
+    await db.delete(
+      'shopping_lists',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    // Note: shopping_list_items will be cascade deleted due to foreign key
+  }
+
+  // ============================================
+  // SHOPPING LIST ITEM OPERATIONS
+  // ============================================
+
+  /// Insert a new shopping list item
+  Future<int> insertShoppingListItem(ShoppingListItem item) async {
+    final db = await database;
+    return await db.insert('shopping_list_items', item.toMap());
+  }
+
+  /// Get a shopping list item by ID
+  Future<ShoppingListItem?> getShoppingListItem(int id) async {
+    final db = await database;
+    final results = await db.query(
+      'shopping_list_items',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (results.isEmpty) return null;
+    return ShoppingListItem.fromMap(results.first);
+  }
+
+  /// Get all items for a shopping list
+  Future<List<ShoppingListItem>> getShoppingListItems(int shoppingListId) async {
+    final db = await database;
+    final results = await db.query(
+      'shopping_list_items',
+      where: 'shopping_list_id = ?',
+      whereArgs: [shoppingListId],
+    );
+
+    return results.map((map) => ShoppingListItem.fromMap(map)).toList();
+  }
+
+  /// Update a shopping list item
+  Future<void> updateShoppingListItem(ShoppingListItem item) async {
+    final db = await database;
+    await db.update(
+      'shopping_list_items',
+      item.toMap(),
+      where: 'id = ?',
+      whereArgs: [item.id],
+    );
+  }
+
+  /// Delete a shopping list item
+  Future<void> deleteShoppingListItem(int id) async {
+    final db = await database;
+    await db.delete(
+      'shopping_list_items',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   /// Get the database file path
