@@ -1967,6 +1967,100 @@
   "importRecipesDescription": "Import recipes and ingredients from JSON. Replaces all existing data.",
   "@importRecipesDescription": {
     "description": "Description for recipe import tool"
+  },
+  "planningTabLabel": "Planning",
+  "@planningTabLabel": {
+    "description": "Tab label for planning mode in weekly meal plan screen"
+  },
+  "summaryTabLabel": "Summary",
+  "@summaryTabLabel": {
+    "description": "Tab label for summary mode in weekly meal plan screen"
+  },
+  "weekOf": "Week of {dateRange}",
+  "@weekOf": {
+    "description": "Week date range label",
+    "placeholders": {
+      "dateRange": {
+        "type": "String",
+        "example": "Jan 23 - Jan 29"
+      }
+    }
+  },
+  "mealsPlannedCount": "{count} of 14 meals planned",
+  "@mealsPlannedCount": {
+    "description": "Total meals planned count",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "8"
+      }
+    }
+  },
+  "proteinDistributionHeader": "Protein Distribution",
+  "@proteinDistributionHeader": {
+    "description": "Header for protein distribution section in summary"
+  },
+  "timeByDayHeader": "Time by Day",
+  "@timeByDayHeader": {
+    "description": "Header for time by day section in summary"
+  },
+  "recipeVarietyHeader": "Recipe Variety",
+  "@recipeVarietyHeader": {
+    "description": "Header for recipe variety section in summary"
+  },
+  "uniqueRecipesCount": "{count} unique recipes",
+  "@uniqueRecipesCount": {
+    "description": "Count of unique recipes in meal plan",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "8"
+      }
+    }
+  },
+  "repeatedRecipesCount": "{count} recipes used multiple times",
+  "@repeatedRecipesCount": {
+    "description": "Count of recipes used more than once",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "noProteinsPlanned": "No proteins planned yet",
+  "@noProteinsPlanned": {
+    "description": "Empty state message when no proteins are planned"
+  },
+  "noMealsPlannedYet": "No meals planned yet",
+  "@noMealsPlannedYet": {
+    "description": "Empty state message when no meals are planned"
+  },
+  "summaryCalculationError": "Failed to calculate summary",
+  "@summaryCalculationError": {
+    "description": "Error message when summary calculation fails"
+  },
+  "retryButton": "Retry",
+  "@retryButton": {
+    "description": "Retry button text"
+  },
+  "mealsLabel": "meals",
+  "@mealsLabel": {
+    "description": "Label for meals count"
+  },
+  "minutesShort": "min",
+  "@minutesShort": {
+    "description": "Short form for minutes"
+  },
+  "timesUsed": "({count}×)",
+  "@timesUsed": {
+    "description": "Times a recipe is used indicator",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
   }
 
 }

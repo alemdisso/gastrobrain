@@ -41,7 +41,8 @@ class WeeklyPlanScreen extends StatefulWidget {
   State<WeeklyPlanScreen> createState() => _WeeklyPlanScreenState();
 }
 
-class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
+class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
+    with SingleTickerProviderStateMixin {
   late DatabaseHelper _dbHelper;
   late RecommendationService _recommendationService;
   late MealPlanAnalysisService _mealPlanAnalysis;
@@ -52,6 +53,10 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   final ScrollController _scrollController = ScrollController();
   // Cache for recommendations to improve performance
   final Map<String, List<Recipe>> _recommendationCache = {};
+  // Tab controller for Planning/Summary tabs
+  late TabController _tabController;
+  // Summary data
+  Map<String, dynamic>? _summaryData;
 
   // Helper method to create cache key
   String _getRecommendationCacheKey(DateTime date, String mealType) {
@@ -80,6 +85,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     _recommendationService =
         ServiceProvider.recommendations.recommendationService;
     _mealPlanAnalysis = MealPlanAnalysisService(_dbHelper);
+    _tabController = TabController(length: 2, vsync: this);
     _loadData();
   }
 
@@ -243,6 +249,9 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
 
         // Clear the recommendation cache when meal plan changes
         _recommendationCache.clear();
+
+        // Calculate summary data
+        await _calculateSummaryData();
       }
     } catch (e) {
       if (mounted) {
@@ -1203,6 +1212,434 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     });
   }
 
+  Future<void> _calculateSummaryData() async {
+    if (_currentMealPlan == null) {
+      setState(() {
+        _summaryData = {
+          'totalPlanned': 0,
+          'percentage': 0.0,
+          'proteinsByDay': <String, Set<ProteinType>>{},
+          'plannedMeals': <Map<String, dynamic>>[],
+          'uniqueRecipes': 0,
+          'repeatedRecipes': <MapEntry<String, int>>[],
+        };
+      });
+      return;
+    }
+
+    try {
+      final items = _currentMealPlan!.items;
+      final totalPlanned = items.length;
+      final percentage = totalPlanned / 14.0;
+
+      // Protein sequence by day
+      final proteinsByDay = <String, Set<ProteinType>>{};
+
+      // Planned meals list
+      final plannedMeals = <Map<String, dynamic>>[];
+
+      for (final item in items) {
+        final date = DateTime.parse(item.plannedDate);
+        final dayName = _getDayName(date.weekday);
+
+        proteinsByDay[dayName] ??= <ProteinType>{};
+
+        final mealRecipes = <String>[];
+        for (final mealRecipe in item.mealPlanItemRecipes ?? []) {
+          final recipe = await _dbHelper.getRecipe(mealRecipe.recipeId);
+          if (recipe != null) {
+            mealRecipes.add(recipe.name);
+
+            // Get protein from primary dish
+            if (mealRecipe.isPrimaryDish) {
+              final ingredientMaps =
+                  await _dbHelper.getRecipeIngredients(mealRecipe.recipeId);
+              for (final ingredientMap in ingredientMaps) {
+                final proteinTypeStr = ingredientMap['protein_type'] as String?;
+                if (proteinTypeStr != null && proteinTypeStr != 'none') {
+                  try {
+                    final proteinType = ProteinType.values.firstWhere(
+                      (type) => type.name == proteinTypeStr,
+                    );
+                    if (proteinType.isMainProtein) {
+                      proteinsByDay[dayName]!.add(proteinType);
+                      break;
+                    }
+                  } catch (e) {
+                    continue;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        if (mealRecipes.isNotEmpty) {
+          plannedMeals.add({
+            'day': dayName,
+            'date': date,
+            'mealType': item.mealType,
+            'recipes': mealRecipes,
+          });
+        }
+      }
+
+      // Recipe variety
+      final recipeIds = <String>[];
+      for (final item in items) {
+        for (final mealRecipe in item.mealPlanItemRecipes ?? []) {
+          recipeIds.add(mealRecipe.recipeId);
+        }
+      }
+
+      final uniqueCount = recipeIds.toSet().length;
+      final recipeCounts = <String, int>{};
+      for (final id in recipeIds) {
+        recipeCounts[id] = (recipeCounts[id] ?? 0) + 1;
+      }
+
+      final repeatedRecipes = recipeCounts.entries
+          .where((e) => e.value > 1)
+          .toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+
+      if (mounted) {
+        setState(() {
+          _summaryData = {
+            'totalPlanned': totalPlanned,
+            'percentage': percentage,
+            'proteinsByDay': proteinsByDay,
+            'plannedMeals': plannedMeals,
+            'uniqueRecipes': uniqueCount,
+            'repeatedRecipes': repeatedRecipes,
+          };
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _summaryData = {
+            'totalPlanned': 0,
+            'percentage': 0.0,
+            'proteinsByDay': <String, Set<ProteinType>>{},
+            'plannedMeals': <Map<String, dynamic>>[],
+            'uniqueRecipes': 0,
+            'repeatedRecipes': <MapEntry<String, int>>[],
+            'error': e.toString(),
+          };
+        });
+      }
+    }
+  }
+
+  String _getDayName(int weekday) {
+    switch (weekday) {
+      case DateTime.monday:
+        return 'Monday';
+      case DateTime.tuesday:
+        return 'Tuesday';
+      case DateTime.wednesday:
+        return 'Wednesday';
+      case DateTime.thursday:
+        return 'Thursday';
+      case DateTime.friday:
+        return 'Friday';
+      case DateTime.saturday:
+        return 'Saturday';
+      case DateTime.sunday:
+        return 'Sunday';
+      default:
+        return 'Unknown';
+    }
+  }
+
+  Widget _buildSummaryView() {
+    if (_summaryData == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_summaryData!.containsKey('error')) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text(
+              AppLocalizations.of(context)!.summaryCalculationError,
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _loadData,
+              child: Text(AppLocalizations.of(context)!.retryButton),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildOverviewCard(),
+          const SizedBox(height: 20),
+          _buildProteinSequenceSection(),
+          const SizedBox(height: 24),
+          _buildPlannedMealsSection(),
+          const SizedBox(height: 24),
+          _buildVarietySection(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOverviewCard() {
+    final totalPlanned = _summaryData!['totalPlanned'] as int;
+    final percentage = _summaryData!['percentage'] as double;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.calendar_month,
+            color: Color(0xFF6B8E23),
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '${AppLocalizations.of(context)!.mealsPlannedCount(totalPlanned)} (${(percentage * 100).round()}%)',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2C2C2C),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProteinSequenceSection() {
+    final proteinsByDay =
+        _summaryData!['proteinsByDay'] as Map<String, Set<ProteinType>>;
+
+    // Order days Friday through Thursday
+    final orderedDays = [
+      'Friday',
+      'Saturday',
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday'
+    ];
+
+    final hasProteins = proteinsByDay.values.any((proteins) => proteins.isNotEmpty);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppLocalizations.of(context)!.proteinDistributionHeader,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF2C2C2C),
+          ),
+        ),
+        const SizedBox(height: 8),
+        hasProteins
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: orderedDays.where((day) {
+                  final proteins = proteinsByDay[day] ?? {};
+                  return proteins.isNotEmpty;
+                }).map((day) {
+                  final proteins = proteinsByDay[day]!;
+                  final proteinNames = proteins
+                      .map((p) => p.getLocalizedDisplayName(context))
+                      .join(', ');
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: 50,
+                          child: Text(
+                            day.substring(0, 3),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF6B8E23),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            proteinNames,
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              )
+            : Text(
+                AppLocalizations.of(context)!.noProteinsPlanned,
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+      ],
+    );
+  }
+
+  Widget _buildPlannedMealsSection() {
+    final plannedMeals =
+        _summaryData!['plannedMeals'] as List<Map<String, dynamic>>;
+
+    if (plannedMeals.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Planned Meals',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2C2C2C),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            AppLocalizations.of(context)!.noMealsPlannedYet,
+            style: const TextStyle(fontSize: 14, color: Colors.grey),
+          ),
+        ],
+      );
+    }
+
+    // Sort by date
+    plannedMeals.sort((a, b) {
+      final dateA = a['date'] as DateTime;
+      final dateB = b['date'] as DateTime;
+      return dateA.compareTo(dateB);
+    });
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Planned Meals',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF2C2C2C),
+          ),
+        ),
+        const SizedBox(height: 8),
+        ...plannedMeals.map((meal) {
+          final day = meal['day'] as String;
+          final mealType = meal['mealType'] as String;
+          final recipes = meal['recipes'] as List<String>;
+
+          // Capitalize meal type
+          final formattedMealType = mealType[0].toUpperCase() + mealType.substring(1);
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 90,
+                  child: Text(
+                    '${day.substring(0, 3)} $formattedMealType',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF6B8E23),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    recipes.join(', '),
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ],
+    );
+  }
+
+  Widget _buildVarietySection() {
+    final uniqueRecipes = _summaryData!['uniqueRecipes'] as int;
+    final repeatedRecipes =
+        _summaryData!['repeatedRecipes'] as List<MapEntry<String, int>>;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppLocalizations.of(context)!.recipeVarietyHeader,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2C2C2C), // Charcoal
+          ),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          height: 2,
+          width: 170,
+          color: const Color(0xFFD4755F), // Terracotta line
+        ),
+        const SizedBox(height: 12),
+        Text(
+          AppLocalizations.of(context)!.uniqueRecipesCount(uniqueRecipes),
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        if (repeatedRecipes.isNotEmpty) ...[
+          Text(
+            AppLocalizations.of(context)!
+                .repeatedRecipesCount(repeatedRecipes.length),
+            style: const TextStyle(fontSize: 16),
+          ),
+          const SizedBox(height: 8),
+          ...repeatedRecipes.map((entry) {
+            return FutureBuilder<Recipe?>(
+              future: _dbHelper.getRecipe(entry.key),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) return const SizedBox.shrink();
+                final recipe = snapshot.data!;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Text(
+                    '• ${recipe.name} ${AppLocalizations.of(context)!.timesUsed(entry.value)}',
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+                );
+              },
+            );
+          }),
+        ],
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final formattedDate =
@@ -1342,19 +1779,36 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
             ),
           ),
 
-          // Main calendar widget
+          // TabBar for Planning/Summary
+          TabBar(
+            controller: _tabController,
+            tabs: [
+              Tab(text: AppLocalizations.of(context)!.planningTabLabel),
+              Tab(text: AppLocalizations.of(context)!.summaryTabLabel),
+            ],
+          ),
+
+          // Main content - TabBarView
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : WeeklyCalendarWidget(
-                    weekStartDate: _currentWeekStart,
-                    mealPlan: _currentMealPlan,
-                    timeContext: _currentWeekContext,
-                    onSlotTap: _handleSlotTap,
-                    onMealTap: _handleMealTap,
-                    onDaySelected: _handleDaySelected,
-                    scrollController: _scrollController,
-                    databaseHelper: _dbHelper,
+                : TabBarView(
+                    controller: _tabController,
+                    children: [
+                      // Planning tab - existing calendar
+                      WeeklyCalendarWidget(
+                        weekStartDate: _currentWeekStart,
+                        mealPlan: _currentMealPlan,
+                        timeContext: _currentWeekContext,
+                        onSlotTap: _handleSlotTap,
+                        onMealTap: _handleMealTap,
+                        onDaySelected: _handleDaySelected,
+                        scrollController: _scrollController,
+                        databaseHelper: _dbHelper,
+                      ),
+                      // Summary tab - new summary view
+                      _buildSummaryView(),
+                    ],
                   ),
           ),
         ],
@@ -1365,6 +1819,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _tabController.dispose();
     // Clear any resources used by the recommendation service if needed
     _recommendationCache.clear();
     super.dispose();
