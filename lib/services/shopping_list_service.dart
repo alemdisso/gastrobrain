@@ -3,6 +3,15 @@ import '../database/database_helper.dart';
 class ShoppingListService {
   final DatabaseHelper dbHelper;
 
+  /// Ingredients to exclude when quantity is zero ("to taste")
+  static const List<String> _excludedStaples = [
+    'Salt',
+    'Water',
+    'Oil',
+    'Black Pepper',
+    'Sugar',
+  ];
+
   ShoppingListService(this.dbHelper);
 
   /// Convert quantity from one unit to another
@@ -38,6 +47,27 @@ class ShoppingListService {
 
     // Units are incompatible
     throw UnitConversionException('Cannot convert $fromUnit to $toUnit');
+  }
+
+  /// Apply exclusion rule (salt rule) to filter ingredients
+  ///
+  /// Excludes ingredients that are:
+  /// - "To taste" (quantity == 0)
+  /// - AND in the excluded staples list
+  ///
+  /// Returns filtered list of ingredients.
+  List<Map<String, dynamic>> applyExclusionRule(List<Map<String, dynamic>> ingredients) {
+    return ingredients.where((ingredient) {
+      final quantity = ingredient['quantity'] as double;
+      final name = ingredient['name'] as String;
+
+      // Exclude if quantity is 0 AND name is in exclusion list
+      if (quantity == 0 && _excludedStaples.contains(name)) {
+        return false;
+      }
+
+      return true;
+    }).toList();
   }
 }
 

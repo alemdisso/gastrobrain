@@ -60,4 +60,60 @@ void main() {
       expect(service.convertToCommonUnit(1000, 'ML', 'l'), 1);
     });
   });
+
+  group('Exclusion Rule (Salt Rule)', () {
+    test('excludes salt with quantity zero', () {
+      final ingredients = [
+        {'name': 'Salt', 'quantity': 0.0, 'unit': 'g'},
+        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g'},
+      ];
+
+      final filtered = service.applyExclusionRule(ingredients);
+
+      expect(filtered.length, 1);
+      expect(filtered[0]['name'], 'Tomato');
+    });
+
+    test('includes salt with quantity greater than zero', () {
+      final ingredients = [
+        {'name': 'Salt', 'quantity': 5.0, 'unit': 'g'},
+        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g'},
+      ];
+
+      final filtered = service.applyExclusionRule(ingredients);
+
+      expect(filtered.length, 2);
+      expect(filtered[0]['name'], 'Salt');
+      expect(filtered[1]['name'], 'Tomato');
+    });
+
+    test('includes non-excluded ingredients with quantity zero', () {
+      final ingredients = [
+        {'name': 'Oregano', 'quantity': 0.0, 'unit': 'g'},
+        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g'},
+      ];
+
+      final filtered = service.applyExclusionRule(ingredients);
+
+      expect(filtered.length, 2);
+      expect(filtered[0]['name'], 'Oregano');
+      expect(filtered[1]['name'], 'Tomato');
+    });
+
+    test('excludes all items in exclusion list when quantity is zero', () {
+      final ingredients = [
+        {'name': 'Salt', 'quantity': 0.0, 'unit': 'g'},
+        {'name': 'Water', 'quantity': 0.0, 'unit': 'ml'},
+        {'name': 'Oil', 'quantity': 0.0, 'unit': 'ml'},
+        {'name': 'Black Pepper', 'quantity': 0.0, 'unit': 'g'},
+        {'name': 'Sugar', 'quantity': 0.0, 'unit': 'g'},
+        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g'},
+      ];
+
+      final filtered = service.applyExclusionRule(ingredients);
+
+      expect(filtered.length, 1);
+      expect(filtered[0]['name'], 'Tomato');
+    });
+  });
 }
