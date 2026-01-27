@@ -1,4 +1,7 @@
 import '../database/database_helper.dart';
+import '../models/shopping_list.dart';
+import '../models/shopping_list_item.dart';
+import 'package:intl/intl.dart';
 
 class ShoppingListService {
   final DatabaseHelper dbHelper;
@@ -170,6 +173,82 @@ class ShoppingListService {
     }
 
     return grouped;
+  }
+
+  /// Generate a shopping list from a date range
+  ///
+  /// Extracts ingredients from all meal plan items within the date range,
+  /// applies exclusion rules, aggregates quantities, groups by category,
+  /// and saves to the database.
+  ///
+  /// Returns the created ShoppingList.
+  Future<ShoppingList> generateFromDateRange({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    // 1. Generate list name
+    final listName = _generateListName(startDate, endDate);
+
+    // 2. Extract ingredients from meal plan items in date range
+    final ingredients = await _extractIngredientsInRange(startDate, endDate);
+
+    // 3. Apply exclusion rule (salt rule)
+    final filtered = applyExclusionRule(ingredients);
+
+    // 4. Aggregate ingredients
+    final aggregated = aggregateIngredients(filtered);
+
+    // 5. Group by category
+    final grouped = groupByCategory(aggregated);
+
+    // 6. Create shopping list
+    final shoppingList = ShoppingList(
+      name: listName,
+      dateCreated: DateTime.now(),
+      startDate: startDate,
+      endDate: endDate,
+    );
+
+    // 7. Save shopping list to database
+    final listId = await dbHelper.insertShoppingList(shoppingList);
+
+    // 8. Create and save shopping list items
+    for (final entry in grouped.entries) {
+      final category = entry.key;
+      final items = entry.value;
+
+      for (final ingredientData in items) {
+        final item = ShoppingListItem(
+          shoppingListId: listId,
+          ingredientName: ingredientData['name'] as String,
+          quantity: ingredientData['quantity'] as double,
+          unit: ingredientData['unit'] as String,
+          category: category,
+          isPurchased: false,
+        );
+
+        await dbHelper.insertShoppingListItem(item);
+      }
+    }
+
+    // 9. Return the created shopping list with ID
+    return shoppingList.copyWith(id: listId);
+  }
+
+  /// Generate a display name for the shopping list
+  String _generateListName(DateTime start, DateTime end) {
+    final formatter = DateFormat('MMM d');
+    return '${formatter.format(start)}-${end.day}';
+  }
+
+  /// Extract ingredients from meal plan items in date range
+  Future<List<Map<String, dynamic>>> _extractIngredientsInRange(
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    // TODO: Implement ingredient extraction
+    // For now, return empty list
+    return [];
   }
 }
 

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gastrobrain/services/shopping_list_service.dart';
+import 'package:gastrobrain/models/shopping_list.dart';
 import '../mocks/mock_database_helper.dart';
 
 void main() {
@@ -228,6 +229,26 @@ void main() {
       expect(grouped['Spices']?.length, 1);
       expect(grouped['Spices']?[0]['name'], 'Oregano');
       expect(grouped['Spices']?[0]['quantity'], 0.0);
+    });
+  });
+
+  group('Main Generation Method', () {
+    test('generates shopping list from empty date range', () async {
+      final startDate = DateTime(2026, 1, 24);
+      final endDate = DateTime(2026, 1, 30);
+
+      // Generate shopping list (should work even with no meal plan items)
+      final shoppingList = await service.generateFromDateRange(
+        startDate: startDate,
+        endDate: endDate,
+      );
+
+      expect(shoppingList, isNotNull);
+      expect(shoppingList, isA<ShoppingList>());
+      expect(shoppingList.id, isNotNull);
+      expect(shoppingList.startDate, startDate);
+      expect(shoppingList.endDate, endDate);
+      expect(shoppingList.name, 'Jan 24-30');
     });
   });
 }
