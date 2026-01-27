@@ -43,7 +43,7 @@ For detailed workflows on issue management, GitHub Projects integration, and Git
 
 ## Environment Notes
 
-**Local Development (WSL)**: This project runs in a WSL environment for local development. For local code validation, use `flutter analyze` and `flutter test`. Note that `flutter build apk`, `flutter build ios`, and `flutter run` are not supported in the local WSL environment. Physical device testing and full builds must be done outside WSL (e.g., via GitHub Actions CI/CD, which successfully builds APKs).
+**Local Development (Windows)**: This project runs directly in Windows for local development. For local code validation, use `flutter analyze` and `flutter test`. Note that `flutter build apk`, `flutter build ios`, and `flutter run` may have limitations in the local development environment. Physical device testing and full builds are typically done via GitHub Actions CI/CD, which successfully builds APKs.
 
 ## Architecture & Codebase
 
