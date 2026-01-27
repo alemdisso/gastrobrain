@@ -41,7 +41,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       if (shoppingList == null) {
         if (mounted) {
           setState(() {
-            _errorMessage = 'Shopping list not found';
+            _errorMessage = AppLocalizations.of(context)!.shoppingListNotFound;
             _isLoading = false;
           });
         }
@@ -107,10 +107,17 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       grouped[item.category]!.add(item);
     }
 
+    final l10n = AppLocalizations.of(context)!;
+
     return ListView(
       children: grouped.entries.map((entry) {
+        // Translate category name if it's 'Other'
+        final categoryName = entry.key == 'Other'
+            ? l10n.otherCategory
+            : entry.key;
+
         return ExpansionTile(
-          title: Text(entry.key),
+          title: Text(categoryName),
           initiallyExpanded: true,
           children: entry.value.map((item) {
             return CheckboxListTile(

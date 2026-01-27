@@ -2101,6 +2101,14 @@
   "regenerateList": "Regenerate List",
   "@regenerateList": {
     "description": "Button to regenerate shopping list"
+  },
+  "shoppingListNotFound": "Shopping list not found",
+  "@shoppingListNotFound": {
+    "description": "Error message when shopping list cannot be found"
+  },
+  "otherCategory": "Other",
+  "@otherCategory": {
+    "description": "Default category for ingredients without a specific category"
   }
 
 }
