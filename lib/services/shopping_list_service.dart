@@ -246,9 +246,41 @@ class ShoppingListService {
     DateTime startDate,
     DateTime endDate,
   ) async {
-    // TODO: Implement ingredient extraction
-    // For now, return empty list
-    return [];
+    final List<Map<String, dynamic>> allIngredients = [];
+
+    // 1. Get all meal plans that overlap with the date range
+    final mealPlans = await dbHelper.getMealPlansByDateRange(startDate, endDate);
+
+    // 2. For each meal plan, process its items
+    for (final mealPlan in mealPlans) {
+      for (final item in mealPlan.items) {
+        // Parse the planned date
+        final itemDate = DateTime.parse(item.plannedDate);
+
+        // Check if this item falls within our date range
+        if (itemDate.isBefore(startDate) || itemDate.isAfter(endDate)) {
+          continue;
+        }
+
+        // 3. Get the recipes for this meal plan item
+        final recipeMaps = await dbHelper.database.then((db) => db.query(
+          'meal_plan_item_recipes',
+          where: 'meal_plan_item_id = ?',
+          whereArgs: [item.id],
+        ));
+
+        // 4. For each recipe, get its ingredients
+        for (final recipeMap in recipeMaps) {
+          final recipeId = recipeMap['recipe_id'] as String;
+          final ingredients = await dbHelper.getRecipeIngredients(recipeId);
+
+          // 5. Add each ingredient to our list
+          allIngredients.addAll(ingredients);
+        }
+      }
+    }
+
+    return allIngredients;
   }
 
   /// Toggle the purchased state of a shopping list item
