@@ -248,31 +248,33 @@ class ShoppingListService {
   ) async {
     final List<Map<String, dynamic>> allIngredients = [];
 
+    // Convert dates to ISO date strings for comparison
+    final startDateStr = startDate.toIso8601String().split('T')[0];
+    final endDateStr = endDate.toIso8601String().split('T')[0];
+
     // 1. Get all meal plans that overlap with the date range
     final mealPlans = await dbHelper.getMealPlansByDateRange(startDate, endDate);
 
     // 2. For each meal plan, process its items
     for (final mealPlan in mealPlans) {
-      for (final item in mealPlan.items) {
-        // Parse the planned date
-        final itemDate = DateTime.parse(item.plannedDate);
+      // Load items with recipes for this meal plan
+      final itemsWithRecipes = await dbHelper.getMealPlanItems(mealPlan.id);
 
-        // Check if this item falls within our date range
-        if (itemDate.isBefore(startDate) || itemDate.isAfter(endDate)) {
+      for (final item in itemsWithRecipes) {
+        // Check if this item falls within our date range (string comparison)
+        if (item.plannedDate.compareTo(startDateStr) < 0 ||
+            item.plannedDate.compareTo(endDateStr) > 0) {
           continue;
         }
 
         // 3. Get the recipes for this meal plan item
-        final recipeMaps = await dbHelper.database.then((db) => db.query(
-          'meal_plan_item_recipes',
-          where: 'meal_plan_item_id = ?',
-          whereArgs: [item.id],
-        ));
+        if (item.mealPlanItemRecipes == null || item.mealPlanItemRecipes!.isEmpty) {
+          continue;
+        }
 
         // 4. For each recipe, get its ingredients
-        for (final recipeMap in recipeMaps) {
-          final recipeId = recipeMap['recipe_id'] as String;
-          final ingredients = await dbHelper.getRecipeIngredients(recipeId);
+        for (final mealPlanItemRecipe in item.mealPlanItemRecipes!) {
+          final ingredients = await dbHelper.getRecipeIngredients(mealPlanItemRecipe.recipeId);
 
           // 5. Add each ingredient to our list
           allIngredients.addAll(ingredients);
