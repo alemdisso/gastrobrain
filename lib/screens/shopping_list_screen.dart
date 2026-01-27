@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import '../models/shopping_list.dart';
 import '../models/shopping_list_item.dart';
+import '../database/database_helper.dart';
 import '../core/di/service_provider.dart';
 import '../l10n/app_localizations.dart';
 
 class ShoppingListScreen extends StatefulWidget {
   final int shoppingListId;
+  final DatabaseHelper? databaseHelper;
 
   const ShoppingListScreen({
     super.key,
     required this.shoppingListId,
+    this.databaseHelper,
   });
 
   @override
@@ -22,9 +25,12 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   bool _isLoading = true;
   String? _errorMessage;
 
+  late final DatabaseHelper _dbHelper;
+
   @override
   void initState() {
     super.initState();
+    _dbHelper = widget.databaseHelper ?? ServiceProvider.database.helper;
     _loadShoppingList();
   }
 
@@ -35,8 +41,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     });
 
     try {
-      final shoppingList = await ServiceProvider.database.helper
-          .getShoppingList(widget.shoppingListId);
+      final shoppingList = await _dbHelper.getShoppingList(widget.shoppingListId);
 
       if (shoppingList == null) {
         if (mounted) {
@@ -48,8 +53,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
         return;
       }
 
-      final items = await ServiceProvider.database.helper
-          .getShoppingListItems(widget.shoppingListId);
+      final items = await _dbHelper.getShoppingListItems(widget.shoppingListId);
 
       if (mounted) {
         setState(() {
