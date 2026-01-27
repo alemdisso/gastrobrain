@@ -188,4 +188,46 @@ void main() {
       expect(aggregated[0]['unit'], 'kg');
     });
   });
+
+  group('Category Grouping', () {
+    test('groups ingredients by category', () {
+      final ingredients = [
+        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g', 'category': 'Vegetables'},
+        {'name': 'Chicken', 'quantity': 600.0, 'unit': 'g', 'category': 'Proteins'},
+        {'name': 'Onion', 'quantity': 200.0, 'unit': 'g', 'category': 'Vegetables'},
+      ];
+
+      final grouped = service.groupByCategory(ingredients);
+
+      expect(grouped.keys.length, 2);
+      expect(grouped['Vegetables']?.length, 2);
+      expect(grouped['Proteins']?.length, 1);
+    });
+
+    test('handles missing category by defaulting to Other', () {
+      final ingredients = [
+        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g', 'category': 'Vegetables'},
+        {'name': 'Mystery Item', 'quantity': 100.0, 'unit': 'g', 'category': null},
+      ];
+
+      final grouped = service.groupByCategory(ingredients);
+
+      expect(grouped.keys.contains('Other'), isTrue);
+      expect(grouped['Other']?.length, 1);
+      expect(grouped['Other']?[0]['name'], 'Mystery Item');
+    });
+
+    test('preserves to taste items in grouping', () {
+      final ingredients = [
+        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g', 'category': 'Vegetables'},
+        {'name': 'Oregano', 'quantity': 0.0, 'unit': 'g', 'category': 'Spices'},
+      ];
+
+      final grouped = service.groupByCategory(ingredients);
+
+      expect(grouped['Spices']?.length, 1);
+      expect(grouped['Spices']?[0]['name'], 'Oregano');
+      expect(grouped['Spices']?[0]['quantity'], 0.0);
+    });
+  });
 }

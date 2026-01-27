@@ -152,6 +152,25 @@ class ShoppingListService {
 
     return result;
   }
+
+  /// Group ingredients by category
+  ///
+  /// Takes aggregated ingredients and groups them by category.
+  /// Returns a map where keys are category names and values are lists of ingredients.
+  Map<String, List<Map<String, dynamic>>> groupByCategory(List<Map<String, dynamic>> ingredients) {
+    final Map<String, List<Map<String, dynamic>>> grouped = {};
+
+    for (final ingredient in ingredients) {
+      final category = ingredient['category'] as String? ?? 'Other';
+
+      if (!grouped.containsKey(category)) {
+        grouped[category] = [];
+      }
+      grouped[category]!.add(ingredient);
+    }
+
+    return grouped;
+  }
 }
 
 /// Exception thrown when units cannot be converted
