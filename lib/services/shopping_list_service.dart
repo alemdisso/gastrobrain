@@ -250,6 +250,17 @@ class ShoppingListService {
     // For now, return empty list
     return [];
   }
+
+  /// Toggle the purchased state of a shopping list item
+  ///
+  /// Retrieves the item, flips its isPurchased state, and updates the database.
+  Future<void> toggleItemPurchased(int itemId) async {
+    final item = await dbHelper.getShoppingListItem(itemId);
+    if (item == null) return;
+
+    final updated = item.copyWith(isPurchased: !item.isPurchased);
+    await dbHelper.updateShoppingListItem(updated);
+  }
 }
 
 /// Exception thrown when units cannot be converted

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gastrobrain/services/shopping_list_service.dart';
 import 'package:gastrobrain/models/shopping_list.dart';
+import 'package:gastrobrain/models/shopping_list_item.dart';
 import '../mocks/mock_database_helper.dart';
 
 void main() {
@@ -249,6 +250,71 @@ void main() {
       expect(shoppingList.startDate, startDate);
       expect(shoppingList.endDate, endDate);
       expect(shoppingList.name, 'Jan 24-30');
+    });
+  });
+
+  group('Toggle Purchased', () {
+    test('toggles item from unpurchased to purchased', () async {
+      // Create a shopping list
+      final shoppingList = await service.generateFromDateRange(
+        startDate: DateTime(2026, 1, 24),
+        endDate: DateTime(2026, 1, 30),
+      );
+
+      // Manually add an item
+      final itemId = await dbHelper.insertShoppingListItem(
+        ShoppingListItem(
+          shoppingListId: shoppingList.id!,
+          ingredientName: 'Tomato',
+          quantity: 500,
+          unit: 'g',
+          category: 'Vegetables',
+          isPurchased: false,
+        ),
+      );
+
+      // Toggle it
+      await service.toggleItemPurchased(itemId);
+
+      // Verify it's purchased
+      final item = await dbHelper.getShoppingListItem(itemId);
+      expect(item, isNotNull);
+      expect(item!.isPurchased, true);
+    });
+
+    test('toggles item from purchased to unpurchased', () async {
+      // Create a shopping list
+      final shoppingList = await service.generateFromDateRange(
+        startDate: DateTime(2026, 1, 24),
+        endDate: DateTime(2026, 1, 30),
+      );
+
+      // Manually add an item that's already purchased
+      final itemId = await dbHelper.insertShoppingListItem(
+        ShoppingListItem(
+          shoppingListId: shoppingList.id!,
+          ingredientName: 'Chicken',
+          quantity: 600,
+          unit: 'g',
+          category: 'Proteins',
+          isPurchased: true,
+        ),
+      );
+
+      // Toggle it
+      await service.toggleItemPurchased(itemId);
+
+      // Verify it's unpurchased
+      final item = await dbHelper.getShoppingListItem(itemId);
+      expect(item, isNotNull);
+      expect(item!.isPurchased, false);
+    });
+
+    test('handles non-existent item gracefully', () async {
+      // Try to toggle an item that doesn't exist
+      // Should not throw an error
+      await service.toggleItemPurchased(9999);
+      // Test passes if no exception is thrown
     });
   });
 }
