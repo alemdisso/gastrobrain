@@ -91,14 +91,54 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
 
     if (_errorMessage != null) {
       return Center(
-        child: Text(_errorMessage!),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.error_outline,
+                size: 48,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                _errorMessage!,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
     if (_items.isEmpty) {
       final l10n = AppLocalizations.of(context)!;
       return Center(
-        child: Text(l10n.emptyShoppingList),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.shopping_cart_outlined,
+                size: 64,
+                color: Colors.grey[400],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                l10n.emptyShoppingList,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
       );
     }
 
@@ -114,6 +154,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       children: grouped.entries.map((entry) {
         // Translate category name if it's 'Other'
         final categoryName = entry.key == 'Other'
@@ -121,14 +162,38 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
             : entry.key;
 
         return ExpansionTile(
-          title: Text(categoryName),
+          title: Text(
+            categoryName,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
           initiallyExpanded: true,
           children: entry.value.map((item) {
             return CheckboxListTile(
-              title: Text(item.ingredientName),
-              subtitle: Text(_formatQuantity(item)),
+              title: Text(
+                item.ingredientName,
+                style: TextStyle(
+                  decoration: item.isPurchased
+                      ? TextDecoration.lineThrough
+                      : TextDecoration.none,
+                  color: item.isPurchased
+                      ? Colors.grey[600]
+                      : null,
+                ),
+              ),
+              subtitle: Text(
+                _formatQuantity(item),
+                style: TextStyle(
+                  color: item.isPurchased
+                      ? Colors.grey[500]
+                      : null,
+                ),
+              ),
               value: item.isPurchased,
               onChanged: (value) => _togglePurchased(item),
+              activeColor: Theme.of(context).colorScheme.primary,
             );
           }).toList(),
         );
