@@ -89,13 +89,13 @@ void main() {
 
       final listId = await mockDbHelper.insertShoppingList(shoppingList);
 
-      // Add items in different categories
+      // Add items in different categories (using enum values)
       final item1 = ShoppingListItem(
         shoppingListId: listId,
         ingredientName: 'Chicken Breast',
         quantity: 500,
         unit: 'g',
-        category: 'Meat',
+        category: 'protein',
         isPurchased: false,
       );
 
@@ -103,8 +103,8 @@ void main() {
         shoppingListId: listId,
         ingredientName: 'Tomatoes',
         quantity: 3,
-        unit: 'units',
-        category: 'Vegetables',
+        unit: 'piece',
+        category: 'vegetable',
         isPurchased: false,
       );
 
@@ -123,17 +123,17 @@ void main() {
       // Wait for loading
       await tester.pumpAndSettle();
 
-      // Should display categories
-      expect(find.text('Meat'), findsOneWidget);
-      expect(find.text('Vegetables'), findsOneWidget);
+      // Should display localized categories (in English since test uses English locale)
+      expect(find.text('Protein'), findsOneWidget);
+      expect(find.text('Vegetable'), findsOneWidget);
 
       // Should display items
       expect(find.text('Chicken Breast'), findsOneWidget);
       expect(find.text('Tomatoes'), findsOneWidget);
 
-      // Should display quantities
+      // Should display quantities with localized units
       expect(find.text('500.0 g'), findsOneWidget);
-      expect(find.text('3.0 units'), findsOneWidget);
+      expect(find.text('3.0 Piece'), findsOneWidget);
     });
 
     testWidgets('displays "to taste" items with warning indicator', (tester) async {
@@ -153,7 +153,7 @@ void main() {
         ingredientName: 'Salt',
         quantity: 0,
         unit: 'g',
-        category: 'Seasonings',
+        category: 'seasoning',
         isPurchased: false,
       );
 

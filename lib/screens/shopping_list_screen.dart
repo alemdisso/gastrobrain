@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/shopping_list.dart';
 import '../models/shopping_list_item.dart';
+import '../models/ingredient_category.dart';
+import '../models/measurement_unit.dart';
 import '../database/database_helper.dart';
 import '../core/di/service_provider.dart';
 import '../l10n/app_localizations.dart';
@@ -151,15 +153,12 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       grouped[item.category]!.add(item);
     }
 
-    final l10n = AppLocalizations.of(context)!;
-
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       children: grouped.entries.map((entry) {
-        // Translate category name if it's 'Other'
-        final categoryName = entry.key == 'Other'
-            ? l10n.otherCategory
-            : entry.key;
+        // Translate category name using IngredientCategory enum
+        final category = IngredientCategory.fromString(entry.key);
+        final categoryName = category.getLocalizedDisplayName(context);
 
         return ExpansionTile(
           title: Text(
@@ -206,7 +205,12 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       final l10n = AppLocalizations.of(context)!;
       return '${l10n.toTaste} ⚠️';
     }
-    return '${item.quantity} ${item.unit}';
+
+    // Localize unit using MeasurementUnit enum
+    final unit = MeasurementUnit.fromString(item.unit);
+    final localizedUnit = unit?.getLocalizedDisplayName(context) ?? item.unit;
+
+    return '${item.quantity} $localizedUnit';
   }
 
   Future<void> _togglePurchased(ShoppingListItem item) async {
