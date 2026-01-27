@@ -21,9 +21,9 @@ class AddShoppingListTablesMigration extends Migration {
   Future<void> up(DatabaseExecutor db) async {
     print('Creating shopping_lists table...');
 
-    // Create shopping_lists table
+    // Create shopping_lists table (idempotent with IF NOT EXISTS)
     await db.execute('''
-      CREATE TABLE shopping_lists(
+      CREATE TABLE IF NOT EXISTS shopping_lists(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         date_created INTEGER NOT NULL,
@@ -34,9 +34,9 @@ class AddShoppingListTablesMigration extends Migration {
 
     print('Creating shopping_list_items table...');
 
-    // Create shopping_list_items table
+    // Create shopping_list_items table (idempotent with IF NOT EXISTS)
     await db.execute('''
-      CREATE TABLE shopping_list_items(
+      CREATE TABLE IF NOT EXISTS shopping_list_items(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         shopping_list_id INTEGER NOT NULL,
         ingredient_name TEXT NOT NULL,
