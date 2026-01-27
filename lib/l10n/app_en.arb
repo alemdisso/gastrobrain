@@ -2061,6 +2061,18 @@
         "example": "2"
       }
     }
+  },
+  "shoppingListTitle": "Shopping List",
+  "@shoppingListTitle": {
+    "description": "Title for shopping list screen"
+  },
+  "emptyShoppingList": "No items in this shopping list",
+  "@emptyShoppingList": {
+    "description": "Message shown when shopping list is empty"
+  },
+  "toTaste": "to taste",
+  "@toTaste": {
+    "description": "Label for ingredients that are to taste"
   }
 
 }
