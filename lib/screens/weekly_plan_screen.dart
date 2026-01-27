@@ -29,6 +29,7 @@ import '../utils/id_generator.dart';
 import '../utils/sorting_utils.dart';
 import '../l10n/app_localizations.dart';
 import '../screens/recipe_details_screen.dart';
+import '../screens/shopping_list_screen.dart';
 
 class WeeklyPlanScreen extends StatefulWidget {
   final DatabaseHelper? databaseHelper;
@@ -1212,6 +1213,64 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
     });
   }
 
+  Future<void> _handleGenerateShoppingList() async {
+    try {
+      // Show loading indicator
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              const SizedBox(width: 16),
+              Text(AppLocalizations.of(context)!.generatingShoppingList),
+            ],
+          ),
+          duration: const Duration(seconds: 30),
+        ),
+      );
+
+      // Calculate end date (6 days after start, since Friday-Thursday is 7 days)
+      final endDate = _currentWeekStart.add(const Duration(days: 6));
+
+      // Generate the shopping list
+      final shoppingList = await ServiceProvider.shoppingList.generateFromDateRange(
+        startDate: _currentWeekStart,
+        endDate: endDate,
+      );
+
+      // Hide loading indicator
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+      // Navigate to the shopping list screen
+      if (mounted) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ShoppingListScreen(
+              shoppingListId: shoppingList.id!,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${AppLocalizations.of(context)!.errorGeneratingShoppingList} $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _calculateSummaryData() async {
     if (_currentMealPlan == null) {
       setState(() {
@@ -1812,6 +1871,11 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
                   ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _handleGenerateShoppingList,
+        icon: const Icon(Icons.shopping_cart),
+        label: Text(AppLocalizations.of(context)!.generateShoppingList),
       ),
     );
   }

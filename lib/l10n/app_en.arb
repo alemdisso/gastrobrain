@@ -2073,6 +2073,18 @@
   "toTaste": "to taste",
   "@toTaste": {
     "description": "Label for ingredients that are to taste"
+  },
+  "generateShoppingList": "Generate Shopping List",
+  "@generateShoppingList": {
+    "description": "Button to generate shopping list from meal plan"
+  },
+  "generatingShoppingList": "Generating shopping list...",
+  "@generatingShoppingList": {
+    "description": "Message shown while generating shopping list"
+  },
+  "errorGeneratingShoppingList": "Error generating shopping list:",
+  "@errorGeneratingShoppingList": {
+    "description": "Error message prefix when shopping list generation fails"
   }
 
 }

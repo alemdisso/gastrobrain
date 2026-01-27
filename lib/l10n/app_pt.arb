@@ -2073,5 +2073,17 @@
   "toTaste": "a gosto",
   "@toTaste": {
     "description": "Label for ingredients that are to taste"
+  },
+  "generateShoppingList": "Gerar Lista de Compras",
+  "@generateShoppingList": {
+    "description": "Button to generate shopping list from meal plan"
+  },
+  "generatingShoppingList": "Gerando lista de compras...",
+  "@generatingShoppingList": {
+    "description": "Message shown while generating shopping list"
+  },
+  "errorGeneratingShoppingList": "Erro ao gerar lista de compras:",
+  "@errorGeneratingShoppingList": {
+    "description": "Error message prefix when shopping list generation fails"
   }
 }
