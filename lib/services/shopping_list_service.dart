@@ -69,6 +69,89 @@ class ShoppingListService {
       return true;
     }).toList();
   }
+
+  /// Aggregate ingredients with the same name
+  ///
+  /// Groups ingredients by name (case-insensitive) and combines quantities.
+  /// Attempts to convert units within each group.
+  /// Converts to larger unit if quantity >= 1000 (g→kg, ml→L).
+  ///
+  /// Returns list of aggregated ingredients.
+  List<Map<String, dynamic>> aggregateIngredients(List<Map<String, dynamic>> ingredients) {
+    // Group by ingredient name (case-insensitive)
+    final Map<String, List<Map<String, dynamic>>> nameGroups = {};
+
+    for (final ingredient in ingredients) {
+      final name = ingredient['name'] as String;
+      final key = name.toLowerCase();
+
+      if (!nameGroups.containsKey(key)) {
+        nameGroups[key] = [];
+      }
+      nameGroups[key]!.add(ingredient);
+    }
+
+    // Aggregate each group
+    final List<Map<String, dynamic>> result = [];
+
+    for (final group in nameGroups.values) {
+      if (group.isEmpty) continue;
+
+      // Within each name group, further group by compatible units
+      final Map<String, Map<String, dynamic>> unitGroups = {};
+
+      for (final item in group) {
+        final unit = (item['unit'] as String).toLowerCase();
+
+        // Try to find a compatible unit group
+        String? compatibleKey;
+        for (final key in unitGroups.keys) {
+          try {
+            // Test if units are compatible
+            convertToCommonUnit(1.0, unit, key);
+            compatibleKey = key;
+            break;
+          } catch (e) {
+            // Not compatible, continue searching
+          }
+        }
+
+        if (compatibleKey != null) {
+          // Add to existing compatible group
+          final existing = unitGroups[compatibleKey]!;
+          final existingQuantity = existing['quantity'] as double;
+          final existingUnit = existing['unit'] as String;
+          final itemQuantity = item['quantity'] as double;
+
+          // Convert and add
+          final converted = convertToCommonUnit(itemQuantity, unit, existingUnit.toLowerCase());
+          existing['quantity'] = existingQuantity + converted;
+        } else {
+          // Create new unit group
+          unitGroups[unit] = Map<String, dynamic>.from(item);
+        }
+      }
+
+      // Convert to larger units if needed and add to result
+      for (final item in unitGroups.values) {
+        final quantity = item['quantity'] as double;
+        final unit = (item['unit'] as String).toLowerCase();
+
+        // Convert to larger unit if >= 1000
+        if (unit == 'g' && quantity >= 1000) {
+          item['quantity'] = quantity / 1000;
+          item['unit'] = 'kg';
+        } else if (unit == 'ml' && quantity >= 1000) {
+          item['quantity'] = quantity / 1000;
+          item['unit'] = 'L';
+        }
+
+        result.add(item);
+      }
+    }
+
+    return result;
+  }
 }
 
 /// Exception thrown when units cannot be converted

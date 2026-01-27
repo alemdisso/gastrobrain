@@ -116,4 +116,76 @@ void main() {
       expect(filtered[0]['name'], 'Tomato');
     });
   });
+
+  group('Ingredient Aggregation', () {
+    test('aggregates same ingredient with same unit', () {
+      final ingredients = [
+        {'name': 'Tomato', 'quantity': 200.0, 'unit': 'g', 'category': 'Vegetables'},
+        {'name': 'Tomato', 'quantity': 300.0, 'unit': 'g', 'category': 'Vegetables'},
+      ];
+
+      final aggregated = service.aggregateIngredients(ingredients);
+
+      expect(aggregated.length, 1);
+      expect(aggregated[0]['name'], 'Tomato');
+      expect(aggregated[0]['quantity'], 500.0);
+      expect(aggregated[0]['unit'], 'g');
+      expect(aggregated[0]['category'], 'Vegetables');
+    });
+
+    test('aggregates and converts compatible units', () {
+      final ingredients = [
+        {'name': 'Flour', 'quantity': 200.0, 'unit': 'g', 'category': 'Grains'},
+        {'name': 'Flour', 'quantity': 1.0, 'unit': 'kg', 'category': 'Grains'},
+      ];
+
+      final aggregated = service.aggregateIngredients(ingredients);
+
+      expect(aggregated.length, 1);
+      expect(aggregated[0]['name'], 'Flour');
+      // 200g + 1kg = 1200g = 1.2kg (auto-converted because >= 1000)
+      expect(aggregated[0]['quantity'], 1.2);
+      expect(aggregated[0]['unit'], 'kg');
+    });
+
+    test('aggregates with case-insensitive name matching', () {
+      final ingredients = [
+        {'name': 'Tomato', 'quantity': 200.0, 'unit': 'g', 'category': 'Vegetables'},
+        {'name': 'tomato', 'quantity': 300.0, 'unit': 'g', 'category': 'Vegetables'},
+        {'name': 'TOMATO', 'quantity': 100.0, 'unit': 'g', 'category': 'Vegetables'},
+      ];
+
+      final aggregated = service.aggregateIngredients(ingredients);
+
+      expect(aggregated.length, 1);
+      expect(aggregated[0]['name'], 'Tomato'); // Uses first occurrence's casing
+      expect(aggregated[0]['quantity'], 600.0);
+    });
+
+    test('keeps incompatible units as separate items', () {
+      final ingredients = [
+        {'name': 'Flour', 'quantity': 500.0, 'unit': 'g', 'category': 'Grains'},
+        {'name': 'Flour', 'quantity': 2.0, 'unit': 'cups', 'category': 'Grains'},
+      ];
+
+      final aggregated = service.aggregateIngredients(ingredients);
+
+      // Should remain as 2 separate items since g and cups are incompatible
+      expect(aggregated.length, 2);
+    });
+
+    test('converts to larger unit when quantity reaches 1000', () {
+      final ingredients = [
+        {'name': 'Rice', 'quantity': 600.0, 'unit': 'g', 'category': 'Grains'},
+        {'name': 'Rice', 'quantity': 400.0, 'unit': 'g', 'category': 'Grains'},
+      ];
+
+      final aggregated = service.aggregateIngredients(ingredients);
+
+      expect(aggregated.length, 1);
+      expect(aggregated[0]['name'], 'Rice');
+      expect(aggregated[0]['quantity'], 1.0); // 1000g = 1kg
+      expect(aggregated[0]['unit'], 'kg');
+    });
+  });
 }
