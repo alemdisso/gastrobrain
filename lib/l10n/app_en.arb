@@ -2085,6 +2085,22 @@
   "errorGeneratingShoppingList": "Error generating shopping list:",
   "@errorGeneratingShoppingList": {
     "description": "Error message prefix when shopping list generation fails"
+  },
+  "shoppingListExists": "Shopping List Already Exists",
+  "@shoppingListExists": {
+    "description": "Title for dialog when shopping list already exists"
+  },
+  "shoppingListExistsMessage": "A shopping list already exists for this week. What would you like to do?",
+  "@shoppingListExistsMessage": {
+    "description": "Message shown when shopping list already exists"
+  },
+  "viewExistingList": "View Existing List",
+  "@viewExistingList": {
+    "description": "Button to view existing shopping list"
+  },
+  "regenerateList": "Regenerate List",
+  "@regenerateList": {
+    "description": "Button to regenerate shopping list"
   }
 
 }

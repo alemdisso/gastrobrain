@@ -1215,6 +1215,65 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
 
   Future<void> _handleGenerateShoppingList() async {
     try {
+      // Calculate end date (6 days after start, since Friday-Thursday is 7 days)
+      final endDate = _currentWeekStart.add(const Duration(days: 6));
+
+      // Check if a shopping list already exists for this date range
+      final existingList = await _dbHelper.getShoppingListForDateRange(
+        _currentWeekStart,
+        endDate,
+      );
+
+      if (existingList != null) {
+        // Show dialog asking if user wants to view existing or regenerate
+        if (!mounted) return;
+        final action = await showDialog<String>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(AppLocalizations.of(context)!.shoppingListExists),
+            content: Text(AppLocalizations.of(context)!.shoppingListExistsMessage),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'cancel'),
+                child: Text(AppLocalizations.of(context)!.cancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'view'),
+                child: Text(AppLocalizations.of(context)!.viewExistingList),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, 'regenerate'),
+                child: Text(AppLocalizations.of(context)!.regenerateList),
+              ),
+            ],
+          ),
+        );
+
+        if (action == null || action == 'cancel') {
+          return; // User cancelled
+        }
+
+        if (action == 'view') {
+          // Navigate to existing list
+          if (mounted) {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ShoppingListScreen(
+                  shoppingListId: existingList.id!,
+                ),
+              ),
+            );
+          }
+          return;
+        }
+
+        // If action == 'regenerate', delete the existing list and continue
+        if (action == 'regenerate') {
+          await _dbHelper.deleteShoppingList(existingList.id!);
+        }
+      }
+
       // Show loading indicator
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1233,9 +1292,6 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
           duration: const Duration(seconds: 30),
         ),
       );
-
-      // Calculate end date (6 days after start, since Friday-Thursday is 7 days)
-      final endDate = _currentWeekStart.add(const Duration(days: 6));
 
       // Generate the shopping list
       final shoppingList = await ServiceProvider.shoppingList.generateFromDateRange(

@@ -2085,5 +2085,21 @@
   "errorGeneratingShoppingList": "Erro ao gerar lista de compras:",
   "@errorGeneratingShoppingList": {
     "description": "Error message prefix when shopping list generation fails"
+  },
+  "shoppingListExists": "Lista de Compras Já Existe",
+  "@shoppingListExists": {
+    "description": "Title for dialog when shopping list already exists"
+  },
+  "shoppingListExistsMessage": "Uma lista de compras já existe para esta semana. O que você gostaria de fazer?",
+  "@shoppingListExistsMessage": {
+    "description": "Message shown when shopping list already exists"
+  },
+  "viewExistingList": "Ver Lista Existente",
+  "@viewExistingList": {
+    "description": "Button to view existing shopping list"
+  },
+  "regenerateList": "Regenerar Lista",
+  "@regenerateList": {
+    "description": "Button to regenerate shopping list"
   }
 }
