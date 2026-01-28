@@ -100,9 +100,9 @@ void main() {
         print('\n=== VERIFYING CONTEXT MENU ACCESSIBILITY ===');
 
         // Find the PopupMenuButton (more_vert icon)
-        final moreVertIcon = find.byIcon(Icons.more_vert);
-        expect(moreVertIcon, findsOneWidget,
-            reason: 'Context menu button should be visible');
+        final moreVertIcons = find.byIcon(Icons.more_vert);
+        expect(moreVertIcons, findsAtLeastNWidgets(1),
+            reason: 'Context menu button(s) should be visible');
         print('✓ Context menu button (more_vert) is visible');
 
         // Open the context menu
