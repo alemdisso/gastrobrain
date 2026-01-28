@@ -136,7 +136,7 @@ void main() {
         quantity: 500,
         unit: 'g',
         category: 'Vegetables',
-        isPurchased: false,
+        toBuy: false,
       );
 
       final itemId = await dbHelper.insertShoppingListItem(item);
@@ -148,7 +148,7 @@ void main() {
       expect(retrieved.quantity, 500);
       expect(retrieved.unit, 'g');
       expect(retrieved.category, 'Vegetables');
-      expect(retrieved.isPurchased, false);
+      expect(retrieved.toBuy, false);
     });
 
     test('can get all items for a shopping list', () async {
@@ -201,19 +201,19 @@ void main() {
         quantity: 500,
         unit: 'g',
         category: 'Vegetables',
-        isPurchased: false,
+        toBuy: false,
       );
 
       final itemId = await dbHelper.insertShoppingListItem(item);
 
       // Update the item (mark as purchased)
-      final updatedItem = item.copyWith(id: itemId, isPurchased: true);
+      final updatedItem = item.copyWith(id: itemId, toBuy: true);
       await dbHelper.updateShoppingListItem(updatedItem);
 
       // Retrieve and verify
       final retrieved = await dbHelper.getShoppingListItem(itemId);
       expect(retrieved, isNotNull);
-      expect(retrieved!.isPurchased, true);
+      expect(retrieved!.toBuy, true);
     });
 
     test('can delete shopping list item', () async {

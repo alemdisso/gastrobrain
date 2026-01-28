@@ -2109,5 +2109,17 @@
   "otherCategory": "Outros",
   "@otherCategory": {
     "description": "Default category for ingredients without a specific category"
+  },
+  "showAll": "Mostrar Tudo",
+  "@showAll": {
+    "description": "Filter option to show all shopping list items"
+  },
+  "showToBuyOnly": "Apenas a Comprar",
+  "@showToBuyOnly": {
+    "description": "Filter option to show only items marked as 'to buy'"
+  },
+  "hideToTaste": "Ocultar 'A Gosto'",
+  "@hideToTaste": {
+    "description": "Filter option to hide ingredients with quantity zero (to taste)"
   }
 }

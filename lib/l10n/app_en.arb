@@ -2109,6 +2109,18 @@
   "otherCategory": "Other",
   "@otherCategory": {
     "description": "Default category for ingredients without a specific category"
+  },
+  "showAll": "Show All",
+  "@showAll": {
+    "description": "Filter option to show all shopping list items"
+  },
+  "showToBuyOnly": "To Buy Only",
+  "@showToBuyOnly": {
+    "description": "Filter option to show only items marked as 'to buy'"
+  },
+  "hideToTaste": "Hide 'To Taste'",
+  "@hideToTaste": {
+    "description": "Filter option to hide ingredients with quantity zero (to taste)"
   }
 
 }

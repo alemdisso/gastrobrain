@@ -67,27 +67,27 @@ void main() {
         quantity: 500,
         unit: 'g',
         category: 'Meat',
-        isPurchased: false,
+        toBuy: true,
       );
 
       final itemId = await mockDbHelper.insertShoppingListItem(item);
 
-      // Act: Toggle purchased status
-      await shoppingListService.toggleItemPurchased(itemId);
+      // Act: Toggle "to buy" status
+      await shoppingListService.toggleItemToBuy(itemId);
 
-      // Assert: Item should now be purchased
+      // Assert: Item should now be marked as "not needed"
       final updatedItem = await mockDbHelper.getShoppingListItem(itemId);
       expect(updatedItem, isNotNull);
-      expect(updatedItem!.isPurchased, isTrue,
-        reason: 'Item should be marked as purchased');
+      expect(updatedItem!.toBuy, isFalse,
+        reason: 'Item should be marked as not needed');
 
       // Act: Toggle again
-      await shoppingListService.toggleItemPurchased(itemId);
+      await shoppingListService.toggleItemToBuy(itemId);
 
-      // Assert: Item should now be unpurchased
+      // Assert: Item should now be "to buy" again
       final reToggledItem = await mockDbHelper.getShoppingListItem(itemId);
-      expect(reToggledItem!.isPurchased, isFalse,
-        reason: 'Item should be marked as unpurchased after second toggle');
+      expect(reToggledItem!.toBuy, isTrue,
+        reason: 'Item should be marked as "to buy" after second toggle');
     });
 
     test('retrieves shopping list by date range correctly', () async {
@@ -154,7 +154,7 @@ void main() {
         quantity: 500,
         unit: 'g',
         category: 'Meat',
-        isPurchased: false,
+        toBuy: false,
       );
 
       final item2 = ShoppingListItem(
@@ -163,7 +163,7 @@ void main() {
         quantity: 200,
         unit: 'g',
         category: 'Grains',
-        isPurchased: false,
+        toBuy: false,
       );
 
       await mockDbHelper.insertShoppingListItem(item1);

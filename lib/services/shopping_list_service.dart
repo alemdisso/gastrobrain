@@ -57,10 +57,19 @@ class ShoppingListService {
   /// Excludes ingredients that are:
   /// - "To taste" (quantity == 0)
   /// - AND in the excluded staples list
+  /// - OR have null/invalid required fields
   ///
   /// Returns filtered list of ingredients.
   List<Map<String, dynamic>> applyExclusionRule(List<Map<String, dynamic>> ingredients) {
     return ingredients.where((ingredient) {
+      // Skip ingredients with null required fields
+      if (ingredient['name'] == null ||
+          ingredient['quantity'] == null ||
+          ingredient['unit'] == null ||
+          ingredient['category'] == null) {
+        return false;
+      }
+
       final quantity = ingredient['quantity'] as double;
       final name = ingredient['name'] as String;
 
@@ -224,7 +233,7 @@ class ShoppingListService {
           quantity: ingredientData['quantity'] as double,
           unit: ingredientData['unit'] as String,
           category: category,
-          isPurchased: false,
+          toBuy: true,
         );
 
         await dbHelper.insertShoppingListItem(item);
@@ -285,14 +294,14 @@ class ShoppingListService {
     return allIngredients;
   }
 
-  /// Toggle the purchased state of a shopping list item
+  /// Toggle the "to buy" state of a shopping list item
   ///
-  /// Retrieves the item, flips its isPurchased state, and updates the database.
-  Future<void> toggleItemPurchased(int itemId) async {
+  /// Retrieves the item, flips its toBuy state, and updates the database.
+  Future<void> toggleItemToBuy(int itemId) async {
     final item = await dbHelper.getShoppingListItem(itemId);
     if (item == null) return;
 
-    final updated = item.copyWith(isPurchased: !item.isPurchased);
+    final updated = item.copyWith(toBuy: !item.toBuy);
     await dbHelper.updateShoppingListItem(updated);
   }
 }

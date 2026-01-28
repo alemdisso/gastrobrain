@@ -31,6 +31,7 @@ import '../core/migration/migrations/001_initial_schema.dart';
 import '../core/migration/migrations/002_ingredient_enum_conversion.dart';
 import '../core/migration/migrations/003_add_meal_type.dart';
 import '../core/migration/migrations/004_add_shopping_list_tables.dart';
+import '../core/migration/migrations/005_rename_is_purchased_to_to_buy.dart';
 import '../core/repositories/base_repository.dart';
 
 class DatabaseHelper {
@@ -48,6 +49,7 @@ class DatabaseHelper {
     IngredientEnumConversionMigration(),
     AddMealTypeMigration(),
     AddShoppingListTablesMigration(),
+    RenameIsPurchasedToToBuyMigration(),
     // Future migrations will be added here
   ];
 

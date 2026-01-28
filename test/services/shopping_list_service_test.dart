@@ -66,8 +66,8 @@ void main() {
   group('Exclusion Rule (Salt Rule)', () {
     test('excludes salt with quantity zero', () {
       final ingredients = [
-        {'name': 'Salt', 'quantity': 0.0, 'unit': 'g'},
-        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g'},
+        {'name': 'Salt', 'quantity': 0.0, 'unit': 'g', 'category': 'Seasonings'},
+        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g', 'category': 'Vegetables'},
       ];
 
       final filtered = service.applyExclusionRule(ingredients);
@@ -78,8 +78,8 @@ void main() {
 
     test('includes salt with quantity greater than zero', () {
       final ingredients = [
-        {'name': 'Salt', 'quantity': 5.0, 'unit': 'g'},
-        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g'},
+        {'name': 'Salt', 'quantity': 5.0, 'unit': 'g', 'category': 'Seasonings'},
+        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g', 'category': 'Vegetables'},
       ];
 
       final filtered = service.applyExclusionRule(ingredients);
@@ -91,8 +91,8 @@ void main() {
 
     test('includes non-excluded ingredients with quantity zero', () {
       final ingredients = [
-        {'name': 'Oregano', 'quantity': 0.0, 'unit': 'g'},
-        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g'},
+        {'name': 'Oregano', 'quantity': 0.0, 'unit': 'g', 'category': 'Spices'},
+        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g', 'category': 'Vegetables'},
       ];
 
       final filtered = service.applyExclusionRule(ingredients);
@@ -104,12 +104,12 @@ void main() {
 
     test('excludes all items in exclusion list when quantity is zero', () {
       final ingredients = [
-        {'name': 'Salt', 'quantity': 0.0, 'unit': 'g'},
-        {'name': 'Water', 'quantity': 0.0, 'unit': 'ml'},
-        {'name': 'Oil', 'quantity': 0.0, 'unit': 'ml'},
-        {'name': 'Black Pepper', 'quantity': 0.0, 'unit': 'g'},
-        {'name': 'Sugar', 'quantity': 0.0, 'unit': 'g'},
-        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g'},
+        {'name': 'Salt', 'quantity': 0.0, 'unit': 'g', 'category': 'Seasonings'},
+        {'name': 'Water', 'quantity': 0.0, 'unit': 'ml', 'category': 'Liquids'},
+        {'name': 'Oil', 'quantity': 0.0, 'unit': 'ml', 'category': 'Fats'},
+        {'name': 'Black Pepper', 'quantity': 0.0, 'unit': 'g', 'category': 'Seasonings'},
+        {'name': 'Sugar', 'quantity': 0.0, 'unit': 'g', 'category': 'Seasonings'},
+        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g', 'category': 'Vegetables'},
       ];
 
       final filtered = service.applyExclusionRule(ingredients);
@@ -253,15 +253,15 @@ void main() {
     });
   });
 
-  group('Toggle Purchased', () {
-    test('toggles item from unpurchased to purchased', () async {
+  group('Toggle To Buy', () {
+    test('toggles item from "to buy" to "not needed"', () async {
       // Create a shopping list
       final shoppingList = await service.generateFromDateRange(
         startDate: DateTime(2026, 1, 24),
         endDate: DateTime(2026, 1, 30),
       );
 
-      // Manually add an item
+      // Manually add an item marked as "to buy"
       final itemId = await dbHelper.insertShoppingListItem(
         ShoppingListItem(
           shoppingListId: shoppingList.id!,
@@ -269,27 +269,27 @@ void main() {
           quantity: 500,
           unit: 'g',
           category: 'Vegetables',
-          isPurchased: false,
+          toBuy: true,
         ),
       );
 
       // Toggle it
-      await service.toggleItemPurchased(itemId);
+      await service.toggleItemToBuy(itemId);
 
-      // Verify it's purchased
+      // Verify it's not needed
       final item = await dbHelper.getShoppingListItem(itemId);
       expect(item, isNotNull);
-      expect(item!.isPurchased, true);
+      expect(item!.toBuy, false);
     });
 
-    test('toggles item from purchased to unpurchased', () async {
+    test('toggles item from "not needed" to "to buy"', () async {
       // Create a shopping list
       final shoppingList = await service.generateFromDateRange(
         startDate: DateTime(2026, 1, 24),
         endDate: DateTime(2026, 1, 30),
       );
 
-      // Manually add an item that's already purchased
+      // Manually add an item that's not needed
       final itemId = await dbHelper.insertShoppingListItem(
         ShoppingListItem(
           shoppingListId: shoppingList.id!,
@@ -297,23 +297,23 @@ void main() {
           quantity: 600,
           unit: 'g',
           category: 'Proteins',
-          isPurchased: true,
+          toBuy: false,
         ),
       );
 
       // Toggle it
-      await service.toggleItemPurchased(itemId);
+      await service.toggleItemToBuy(itemId);
 
-      // Verify it's unpurchased
+      // Verify it's marked as "to buy"
       final item = await dbHelper.getShoppingListItem(itemId);
       expect(item, isNotNull);
-      expect(item!.isPurchased, false);
+      expect(item!.toBuy, true);
     });
 
     test('handles non-existent item gracefully', () async {
       // Try to toggle an item that doesn't exist
       // Should not throw an error
-      await service.toggleItemPurchased(9999);
+      await service.toggleItemToBuy(9999);
       // Test passes if no exception is thrown
     });
   });

@@ -67,7 +67,7 @@ void main() {
           quantity: 9999.9,
           unit: 'kg',
           category: 'Grains',
-          isPurchased: false,
+          toBuy: false,
         );
 
         // Act: Insert item with large quantity
@@ -98,7 +98,7 @@ void main() {
           quantity: 0,
           unit: 'g',
           category: 'Seasonings',
-          isPurchased: false,
+          toBuy: false,
         );
 
         // Act: Insert zero quantity item
@@ -131,7 +131,7 @@ void main() {
           quantity: 100,
           unit: 'g',
           category: 'Other',
-          isPurchased: false,
+          toBuy: false,
         );
 
         // Act: Insert item with long name
@@ -159,7 +159,7 @@ void main() {
       test('handles toggle on non-existent item gracefully', () async {
         // Act: Try to toggle non-existent item
         // Should not throw error
-        await shoppingListService.toggleItemPurchased(99999);
+        await shoppingListService.toggleItemToBuy(99999);
 
         // Assert: No exception thrown (test completes successfully)
         expect(true, isTrue, reason: 'Toggle on non-existent item should not crash');

@@ -6,6 +6,7 @@ import '../models/measurement_unit.dart';
 import '../database/database_helper.dart';
 import '../core/di/service_provider.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/quantity_formatter.dart';
 
 class ShoppingListScreen extends StatefulWidget {
   final int shoppingListId;
@@ -26,6 +27,8 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   List<ShoppingListItem> _items = [];
   bool _isLoading = true;
   String? _errorMessage;
+  bool _showToBuyOnly = false;
+  bool _hideToTaste = false;
 
   late final DatabaseHelper _dbHelper;
 
@@ -81,6 +84,35 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_shoppingList?.name ?? l10n.shoppingListTitle),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Row(
+              children: [
+                FilterChip(
+                  label: Text(_showToBuyOnly ? l10n.showToBuyOnly : l10n.showAll),
+                  selected: _showToBuyOnly,
+                  onSelected: (selected) {
+                    setState(() {
+                      _showToBuyOnly = selected;
+                    });
+                  },
+                ),
+                const SizedBox(width: 8),
+                FilterChip(
+                  label: Text(l10n.hideToTaste),
+                  selected: _hideToTaste,
+                  onSelected: (selected) {
+                    setState(() {
+                      _hideToTaste = selected;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
       body: _buildBody(context),
     );
@@ -144,17 +176,37 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       );
     }
 
+    // Apply filters
+    var filteredItems = _items.where((item) {
+      // Filter by "to buy" status
+      if (_showToBuyOnly && !item.toBuy) {
+        return false;
+      }
+
+      // Filter out "to taste" items
+      if (_hideToTaste && item.quantity == 0) {
+        return false;
+      }
+
+      return true;
+    }).toList();
+
     // Group items by category
     final grouped = <String, List<ShoppingListItem>>{};
-    for (final item in _items) {
+    for (final item in filteredItems) {
       if (!grouped.containsKey(item.category)) {
         grouped[item.category] = [];
       }
       grouped[item.category]!.add(item);
     }
 
+    // Sort items alphabetically within each category
+    for (final items in grouped.values) {
+      items.sort((a, b) => a.ingredientName.toLowerCase().compareTo(b.ingredientName.toLowerCase()));
+    }
+
     return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
       children: grouped.entries.map((entry) {
         // Translate category name using IngredientCategory enum
         final category = IngredientCategory.fromString(entry.key);
@@ -168,31 +220,52 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
               fontSize: 16,
             ),
           ),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
+          childrenPadding: EdgeInsets.zero,
+          dense: true,
           initiallyExpanded: true,
           children: entry.value.map((item) {
-            return CheckboxListTile(
-              title: Text(
-                item.ingredientName,
-                style: TextStyle(
-                  decoration: item.isPurchased
-                      ? TextDecoration.lineThrough
-                      : TextDecoration.none,
-                  color: item.isPurchased
-                      ? Colors.grey[600]
-                      : null,
+            return InkWell(
+              onTap: () => _toggleToBuy(item),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                child: Row(
+                  children: [
+                    // Checkbox
+                    Checkbox(
+                      value: item.toBuy,
+                      onChanged: (value) => _toggleToBuy(item),
+                      activeColor: Theme.of(context).colorScheme.primary,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    const SizedBox(width: 8),
+                    // Ingredient name (flexible to take available space)
+                    Expanded(
+                      child: Text(
+                        item.ingredientName,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: !item.toBuy
+                              ? Colors.grey[600]
+                              : null,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Quantity (fixed width on the right)
+                    Text(
+                      _formatQuantity(item),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: !item.toBuy
+                            ? Colors.grey[500]
+                            : Colors.grey[700],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              subtitle: Text(
-                _formatQuantity(item),
-                style: TextStyle(
-                  color: item.isPurchased
-                      ? Colors.grey[500]
-                      : null,
-                ),
-              ),
-              value: item.isPurchased,
-              onChanged: (value) => _togglePurchased(item),
-              activeColor: Theme.of(context).colorScheme.primary,
             );
           }).toList(),
         );
@@ -210,11 +283,14 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     final unit = MeasurementUnit.fromString(item.unit);
     final localizedUnit = unit?.getLocalizedDisplayName(context) ?? item.unit;
 
-    return '${item.quantity} $localizedUnit';
+    // Format quantity using QuantityFormatter (shows fractions, removes trailing zeros)
+    final formattedQuantity = QuantityFormatter.format(item.quantity);
+
+    return '$formattedQuantity $localizedUnit';
   }
 
-  Future<void> _togglePurchased(ShoppingListItem item) async {
-    await ServiceProvider.shoppingList.toggleItemPurchased(item.id!);
+  Future<void> _toggleToBuy(ShoppingListItem item) async {
+    await ServiceProvider.shoppingList.toggleItemToBuy(item.id!);
     await _loadShoppingList();
   }
 }

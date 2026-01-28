@@ -20,7 +20,7 @@ void main() {
       expect(item.quantity, 500);
       expect(item.unit, 'g');
       expect(item.category, 'Vegetables');
-      expect(item.isPurchased, false); // Default value
+      expect(item.toBuy, true); // Default value
     });
 
     test('converts to map correctly', () {
@@ -31,7 +31,7 @@ void main() {
         quantity: 500,
         unit: 'g',
         category: 'Vegetables',
-        isPurchased: true,
+        toBuy: true,
       );
 
       final map = item.toMap();
@@ -42,7 +42,7 @@ void main() {
       expect(map['quantity'], 500.0);
       expect(map['unit'], 'g');
       expect(map['category'], 'Vegetables');
-      expect(map['is_purchased'], 1); // SQLite uses 1 for true
+      expect(map['to_buy'], 1); // SQLite uses 1 for true
     });
 
     test('creates from map correctly', () {
@@ -53,7 +53,7 @@ void main() {
         'quantity': 500.0,
         'unit': 'g',
         'category': 'Vegetables',
-        'is_purchased': 1,
+        'to_buy': 1,
       };
 
       final item = ShoppingListItem.fromMap(map);
@@ -64,7 +64,7 @@ void main() {
       expect(item.quantity, 500.0);
       expect(item.unit, 'g');
       expect(item.category, 'Vegetables');
-      expect(item.isPurchased, true);
+      expect(item.toBuy, true);
     });
 
     test('copyWith creates new instance with updated fields', () {
@@ -75,17 +75,17 @@ void main() {
         quantity: 500,
         unit: 'g',
         category: 'Vegetables',
-        isPurchased: false,
+        toBuy: true,
       );
 
-      final updated = original.copyWith(isPurchased: true);
+      final updated = original.copyWith(toBuy: false);
 
-      expect(updated.isPurchased, true);
+      expect(updated.toBuy, false);
       expect(updated.id, 42);
       expect(updated.ingredientName, 'Tomato');
 
       // Original should remain unchanged
-      expect(original.isPurchased, false);
+      expect(original.toBuy, true);
     });
 
     test('equality based on id', () {
@@ -129,7 +129,7 @@ void main() {
         quantity: 500,
         unit: 'g',
         category: 'Vegetables',
-        isPurchased: true,
+        toBuy: true,
       );
 
       // Serialize to map and back
@@ -142,7 +142,7 @@ void main() {
       expect(restored.quantity, original.quantity);
       expect(restored.unit, original.unit);
       expect(restored.category, original.category);
-      expect(restored.isPurchased, original.isPurchased);
+      expect(restored.toBuy, original.toBuy);
     });
   });
 }

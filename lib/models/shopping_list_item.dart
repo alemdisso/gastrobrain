@@ -7,7 +7,7 @@ class ShoppingListItem {
   final double quantity;
   final String unit;
   final String category;
-  final bool isPurchased;
+  final bool toBuy;
 
   ShoppingListItem({
     this.id,
@@ -16,7 +16,7 @@ class ShoppingListItem {
     required this.quantity,
     required this.unit,
     required this.category,
-    this.isPurchased = false,
+    this.toBuy = true,
   });
 
   /// Convert a ShoppingListItem to a Map for database storage
@@ -28,7 +28,7 @@ class ShoppingListItem {
       'quantity': quantity,
       'unit': unit,
       'category': category,
-      'is_purchased': isPurchased ? 1 : 0,
+      'to_buy': toBuy ? 1 : 0,
     };
   }
 
@@ -41,7 +41,7 @@ class ShoppingListItem {
       quantity: map['quantity'] as double,
       unit: map['unit'] as String,
       category: map['category'] as String,
-      isPurchased: map['is_purchased'] == 1,
+      toBuy: map['to_buy'] == 1,
     );
   }
 
@@ -53,7 +53,7 @@ class ShoppingListItem {
     double? quantity,
     String? unit,
     String? category,
-    bool? isPurchased,
+    bool? toBuy,
   }) {
     return ShoppingListItem(
       id: id ?? this.id,
@@ -62,7 +62,7 @@ class ShoppingListItem {
       quantity: quantity ?? this.quantity,
       unit: unit ?? this.unit,
       category: category ?? this.category,
-      isPurchased: isPurchased ?? this.isPurchased,
+      toBuy: toBuy ?? this.toBuy,
     );
   }
 
