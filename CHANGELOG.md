@@ -9,6 +9,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.6] - 2026-01-29
+
+### Added
+
+#### Major Features
+- Shopping List Generation (#5)
+  - Complete shopping list workflow from meal plans
+  - Automatic ingredient aggregation with unit conversion
+  - Category-based grouping (Produce, Proteins, Dairy, etc.)
+  - Toggle purchased functionality
+  - Regeneration with confirmation dialog
+  - Smart exclusion rules (e.g., salt auto-excluded)
+  - Full localization (English/Portuguese) with category and unit translations
+  - Comprehensive test coverage (unit, widget, integration, edge cases)
+
+- Meal Plan Summary Analytics (#32)
+  - Weekly meal summary section with key metrics
+  - Protein distribution by day
+  - Cooking time allocation
+  - Recipe variety metrics (unique recipes, repeats)
+  - Simple, foundation-ready design for future enhancements
+
+#### Navigation & UX Improvements
+- Recipe navigation from meal plan (#33)
+  - Tap meal cards to view full recipe details
+  - Seamless navigation flow with state refresh
+  - MVP implementation focused on core functionality
+
+- Recipe card tap navigation (#264)
+  - Improved RecipeCard UI with simplified design
+  - Direct tap navigation to recipe details
+  - Delete functionality added to RecipeDetailsScreen
+  - Updated E2E tests for new navigation patterns
+
+#### Polish & Architecture
+- "To Taste" ingredients display improvements (#196)
+  - Better handling of zero-quantity ingredients
+  - Improved UI presentation for ingredients without specific amounts
+
+- RecipesScreen extraction refactor (#231)
+  - Separated RecipesScreen into dedicated component
+  - Improved code organization and maintainability
+  - Clean architecture separation
+
+### Changed
+
+#### Documentation
+- Added comprehensive 0.1.6 sprint retrospective
+  - Analysis of 6 issues completed in 7 calendar days
+  - Velocity tracking: 3.00 points/day (highest sustainable to date)
+  - Estimation philosophy: 1-point minimum for task overhead
+  - Updated cumulative metrics and trend analysis
+
+### Fixed
+
+- RegExp deprecation warnings (#242)
+  - Resolved automatically by SDK update
+  - No code changes required
+
+### Performance
+
+- Shopping list generation optimized for large meal plans
+- Efficient ingredient aggregation with minimal database queries
+- All 614 tests continue to pass in 2-3 seconds
+
+### Notes
+
+- This release completes the core meal planning → shopping workflow
+- Shopping list feature delivered with comprehensive specification and testing
+- Sprint completed 90% of planned work (18/20 points)
+- Unplanned improvements added 24% additional value
+- 0.1.7 milestone continues the 0.1.x series
+
+---
+
 ## [0.1.5] - 2026-01-09
 
 ### Added
