@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:provider/provider.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/recipe_category.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/widgets/recipe_card.dart';
-import 'package:gastrobrain/screens/recipe_instructions_view_screen.dart';
+import 'package:gastrobrain/screens/recipe_details_screen.dart';
+import 'package:gastrobrain/core/providers/recipe_provider.dart';
+import 'package:gastrobrain/core/errors/gastrobrain_exceptions.dart';
 import 'package:gastrobrain/l10n/app_localizations.dart';
 
 void main() {
   group('RecipeCard Layout Tests', () {
     late Recipe testRecipe;
+    late MockRecipeProvider mockRecipeProvider;
 
     Widget createTestableWidget(Widget child,
         {Locale locale = const Locale('en', '')}) {
@@ -26,7 +30,10 @@ void main() {
           Locale('en', ''),
           Locale('pt', ''),
         ],
-        home: Scaffold(body: child),
+        home: ChangeNotifierProvider<RecipeProvider>.value(
+          value: mockRecipeProvider,
+          child: Scaffold(body: child),
+        ),
       );
     }
 
@@ -42,48 +49,7 @@ void main() {
         rating: 4,
         createdAt: DateTime.now(),
       );
-    });
-
-    testWidgets(
-        'expanded recipe card should not have text overflow with long last cooked date',
-        (WidgetTester tester) async {
-      // Create a date that will format to a long string
-      final longDate = DateTime(2023, 12, 25); // "25/12/2023" - reasonably long
-
-      // Build the widget in a constrained width to simulate mobile
-      await tester.pumpWidget(
-        createTestableWidget(
-          SizedBox(
-            width: 350, // Simulate narrow mobile screen
-            child: RecipeCard(
-              recipe: testRecipe,
-              onEdit: () {},
-              onDelete: () {},
-              onCooked: () {},
-              mealCount: 15, // High count to make "Times cooked: 15" longer
-              lastCooked: longDate,
-            ),
-          ),
-        ),
-      );
-
-      // First, expand the card to see the problematic section
-      final expandButton = find.byIcon(Icons.expand_more);
-      expect(expandButton, findsOneWidget);
-
-      await tester.tap(expandButton);
-      await tester.pumpAndSettle();
-
-      // Look for the "Last cooked" text
-      final lastCookedText = find.textContaining('Last Cooked: ');
-      expect(lastCookedText, findsOneWidget);
-
-      // This is where we would check for overflow, but Flutter's testing
-      // framework makes it challenging to detect RenderFlex overflow directly
-      // Let's at least verify the widgets exist and are rendered
-      final actionButtons = find.byType(IconButton);
-      expect(actionButtons,
-          findsAtLeast(2)); // Should find multiple action buttons
+      mockRecipeProvider = MockRecipeProvider();
     });
 
     testWidgets('recipe card displays localized category - English',
@@ -125,99 +91,7 @@ void main() {
       expect(find.text('Pratos principais'), findsOneWidget);
     });
 
-    testWidgets('recipe card displays date in English locale format (MM/DD/YYYY)',
-        (WidgetTester tester) async {
-      final testDate = DateTime(2023, 12, 25);
-
-      await tester.pumpWidget(
-        createTestableWidget(
-          RecipeCard(
-            recipe: testRecipe,
-            onEdit: () {},
-            onDelete: () {},
-            onCooked: () {},
-            mealCount: 5,
-            lastCooked: testDate,
-          ),
-          locale: const Locale('en', 'US'),
-        ),
-      );
-
-      await tester.pumpAndSettle();
-
-      // Expand the card to see the last cooked date
-      final expandButton = find.byIcon(Icons.expand_more);
-      if (expandButton.evaluate().isNotEmpty) {
-        await tester.tap(expandButton);
-        await tester.pumpAndSettle();
-      }
-
-      // Should display date in English format (MM/DD/YYYY)
-      // DateFormat.yMd('en_US') formats 2023-12-25 as "12/25/2023"
-      expect(find.textContaining('12/25/2023'), findsOneWidget);
-    });
-
-    testWidgets('recipe card displays date in Portuguese locale format (DD/MM/YYYY)',
-        (WidgetTester tester) async {
-      final testDate = DateTime(2023, 12, 25);
-
-      await tester.pumpWidget(
-        createTestableWidget(
-          RecipeCard(
-            recipe: testRecipe,
-            onEdit: () {},
-            onDelete: () {},
-            onCooked: () {},
-            mealCount: 5,
-            lastCooked: testDate,
-          ),
-          locale: const Locale('pt', 'BR'),
-        ),
-      );
-
-      await tester.pumpAndSettle();
-
-      // Expand the card to see the last cooked date
-      final expandButton = find.byIcon(Icons.expand_more);
-      if (expandButton.evaluate().isNotEmpty) {
-        await tester.tap(expandButton);
-        await tester.pumpAndSettle();
-      }
-
-      // Should display date in Portuguese format (DD/MM/YYYY)
-      // DateFormat.yMd('pt_BR') formats 2023-12-25 as "25/12/2023"
-      expect(find.textContaining('25/12/2023'), findsOneWidget);
-    });
-
-    testWidgets('recipe card displays "Never cooked" when lastCooked is null and mealCount is 0',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(
-        createTestableWidget(
-          RecipeCard(
-            recipe: testRecipe,
-            onEdit: () {},
-            onDelete: () {},
-            onCooked: () {},
-            mealCount: 0,
-            lastCooked: null,
-          ),
-        ),
-      );
-
-      await tester.pumpAndSettle();
-
-      // Expand the card
-      final expandButton = find.byIcon(Icons.expand_more);
-      if (expandButton.evaluate().isNotEmpty) {
-        await tester.tap(expandButton);
-        await tester.pumpAndSettle();
-      }
-
-      // Should display "Never cooked" (combines mealCount and lastCooked null state)
-      expect(find.text('Never cooked'), findsOneWidget);
-    });
-
-    testWidgets('shows instructions button in expanded card',
+    testWidgets('recipe card displays recipe name',
         (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestableWidget(
@@ -232,21 +106,13 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
-
-      // Expand the card to show buttons (if not already expanded)
-      final expandMoreButton = find.byIcon(Icons.expand_more);
-      if (expandMoreButton.evaluate().isNotEmpty) {
-        await tester.tap(expandMoreButton);
-        await tester.pumpAndSettle();
-      }
-
-      // Verify instructions button is visible
-      expect(find.byIcon(Icons.description), findsOneWidget);
-      expect(find.byTooltip('View Instructions'), findsOneWidget);
+      // Should display recipe name
+      expect(
+          find.text('Test Recipe with a Very Long Name That Might Cause Issues'),
+          findsOneWidget);
     });
 
-    testWidgets('tapping instructions button navigates to view screen',
+    testWidgets('recipe card displays rating stars and total time',
         (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestableWidget(
@@ -261,24 +127,18 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      // Should display total time (30 + 45 = 75 min)
+      expect(find.text('75 min'), findsOneWidget);
 
-      // Expand the card to show buttons (if not already expanded)
-      final expandMoreButton = find.byIcon(Icons.expand_more);
-      if (expandMoreButton.evaluate().isNotEmpty) {
-        await tester.tap(expandMoreButton);
-        await tester.pumpAndSettle();
-      }
+      // Should display 4 filled stars and 1 empty star (rating = 4)
+      expect(find.byIcon(Icons.star), findsNWidgets(4));
+      expect(find.byIcon(Icons.star_border), findsNWidgets(1));
 
-      // Tap the instructions button
-      await tester.tap(find.byIcon(Icons.description));
-      await tester.pumpAndSettle();
-
-      // Verify navigation to RecipeInstructionsViewScreen
-      expect(find.byType(RecipeInstructionsViewScreen), findsOneWidget);
+      // Should display timer icon (difficulty = 3, which is < 4)
+      expect(find.byIcon(Icons.timer), findsOneWidget);
     });
 
-    testWidgets('instructions button appears in correct order',
+    testWidgets('tapping recipe card navigates to RecipeDetailsScreen',
         (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestableWidget(
@@ -293,56 +153,23 @@ void main() {
         ),
       );
 
+      // Find and tap the card
+      final cardFinder = find.byType(InkWell);
+      expect(cardFinder, findsOneWidget);
+
+      await tester.tap(cardFinder);
       await tester.pumpAndSettle();
 
-      // Expand the card to show buttons (if not already expanded)
-      final expandMoreButton = find.byIcon(Icons.expand_more);
-      if (expandMoreButton.evaluate().isNotEmpty) {
-        await tester.tap(expandMoreButton);
-        await tester.pumpAndSettle();
-      }
-
-      // Verify button order: Ingredients, Instructions, History, More
-      // Find all action buttons
-      expect(find.byIcon(Icons.list_alt), findsOneWidget); // Ingredients
-      expect(find.byIcon(Icons.description), findsOneWidget); // Instructions
-      expect(find.byIcon(Icons.history), findsOneWidget); // History
-      expect(find.byIcon(Icons.more_vert), findsOneWidget); // More menu
-
-      // Verify instructions button appears between ingredients and history
-      // by checking their positions in the render tree
-      final ingredientsButton = find.byIcon(Icons.list_alt);
-      final instructionsButton = find.byIcon(Icons.description);
-      final historyButton = find.byIcon(Icons.history);
-
-      final ingredientsX = tester.getCenter(ingredientsButton).dx;
-      final instructionsX = tester.getCenter(instructionsButton).dx;
-      final historyX = tester.getCenter(historyButton).dx;
-
-      // Instructions should be between Ingredients and History (left to right)
-      expect(instructionsX, greaterThan(ingredientsX));
-      expect(instructionsX, lessThan(historyX));
+      // Should navigate to RecipeDetailsScreen
+      expect(find.byType(RecipeDetailsScreen), findsOneWidget);
     });
 
-    testWidgets('instructions button works even with empty instructions',
+    testWidgets('recipe card with InkWell has ripple effect',
         (WidgetTester tester) async {
-      final recipeWithoutInstructions = Recipe(
-        id: 'test-recipe-no-instructions',
-        name: 'Recipe Without Instructions',
-        category: RecipeCategory.mainDishes,
-        desiredFrequency: FrequencyType.weekly,
-        difficulty: 3,
-        prepTimeMinutes: 30,
-        cookTimeMinutes: 45,
-        rating: 4,
-        createdAt: DateTime.now(),
-        instructions: '', // Empty instructions
-      );
-
       await tester.pumpWidget(
         createTestableWidget(
           RecipeCard(
-            recipe: recipeWithoutInstructions,
+            recipe: testRecipe,
             onEdit: () {},
             onDelete: () {},
             onCooked: () {},
@@ -352,24 +179,87 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
-
-      // Expand the card to show buttons (if not already expanded)
-      final expandMoreButton = find.byIcon(Icons.expand_more);
-      if (expandMoreButton.evaluate().isNotEmpty) {
-        await tester.tap(expandMoreButton);
-        await tester.pumpAndSettle();
-      }
-
-      // Button should still be visible even with empty instructions
-      expect(find.byIcon(Icons.description), findsOneWidget);
-
-      // Tap the button and verify navigation works
-      await tester.tap(find.byIcon(Icons.description));
-      await tester.pumpAndSettle();
-
-      // View screen should open (it will show empty state message)
-      expect(find.byType(RecipeInstructionsViewScreen), findsOneWidget);
+      // Verify InkWell exists with border radius
+      final inkWell = tester.widget<InkWell>(find.byType(InkWell));
+      expect(inkWell.borderRadius, equals(BorderRadius.circular(12)));
     });
   });
+}
+
+/// Mock RecipeProvider for testing
+class MockRecipeProvider extends ChangeNotifier implements RecipeProvider {
+  @override
+  List<Recipe> get recipes => [];
+
+  @override
+  bool get isLoading => false;
+
+  @override
+  GastrobrainException? get error => null;
+
+  @override
+  bool get hasError => false;
+
+  @override
+  bool get hasData => false;
+
+  @override
+  String? get currentSortBy => 'name';
+
+  @override
+  String? get currentSortOrder => 'asc';
+
+  @override
+  Map<String, dynamic> get filters => {};
+
+  @override
+  bool get hasActiveFilters => false;
+
+  @override
+  int get totalRecipeCount => 0;
+
+  @override
+  int get filteredRecipeCount => 0;
+
+  @override
+  Future<void> loadRecipes({bool forceRefresh = false}) async {}
+
+  @override
+  Future<bool> createRecipe(Recipe recipe) async => true;
+
+  @override
+  Future<bool> updateRecipe(Recipe recipe) async => true;
+
+  @override
+  Future<bool> deleteRecipe(String id) async => true;
+
+  @override
+  Future<void> setSorting({String? sortBy, String? sortOrder}) async {}
+
+  @override
+  Future<void> setFilters(Map<String, dynamic> filters) async {}
+
+  @override
+  Future<void> clearFilters() async {}
+
+  @override
+  void clearError() {}
+
+  @override
+  Future<void> refreshMealStats() async {}
+
+  @override
+  Future<void> refresh() async {}
+
+  @override
+  int getMealCount(String recipeId) => 0;
+
+  @override
+  DateTime? getLastCookedDate(String recipeId) => null;
+
+  @override
+  Future<Recipe?> getRecipe(String id) async => null;
+
+  @override
+  void updateMealStats(String recipeId, int mealCount, DateTime? lastCooked) {}
 }

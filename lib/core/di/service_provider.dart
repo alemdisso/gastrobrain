@@ -4,6 +4,7 @@ import 'package:gastrobrain/core/di/providers/recommendation_provider.dart';
 import 'package:gastrobrain/core/di/providers/migration_provider.dart';
 import 'package:gastrobrain/core/di/providers/export_provider.dart';
 import 'package:gastrobrain/core/services/meal_edit_service.dart';
+import 'package:gastrobrain/services/shopping_list_service.dart';
 
 /// Central hub for accessing all application services
 class ServiceProvider {
@@ -18,6 +19,7 @@ class ServiceProvider {
 
   // Static access to services
   static MealEditService get mealEdit => MealEditService(database.helper);
+  static ShoppingListService get shoppingList => ShoppingListService(database.helper);
 
   // You can add more services here as needed
 }

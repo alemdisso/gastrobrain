@@ -13,6 +13,8 @@ import 'package:gastrobrain/models/meal_plan_item.dart';
 import 'package:gastrobrain/models/meal_plan_item_recipe.dart';
 import 'package:gastrobrain/models/ingredient.dart';
 import 'package:gastrobrain/models/recipe_ingredient.dart';
+import 'package:gastrobrain/models/shopping_list.dart';
+import 'package:gastrobrain/models/shopping_list_item.dart';
 import 'package:gastrobrain/core/validators/entity_validator.dart';
 import 'package:gastrobrain/core/migration/migration.dart';
 import 'package:gastrobrain/core/migration/migration_runner.dart';
@@ -152,6 +154,10 @@ class MockDatabaseHelper implements DatabaseHelper {
   final Map<String, MealPlanItemRecipe> _mealPlanItemRecipes = {};
   final Map<String, Ingredient> _ingredients = {};
   final Map<String, RecipeIngredient> _recipeIngredients = {};
+  final Map<int, ShoppingList> _shoppingLists = {};
+  final Map<int, ShoppingListItem> _shoppingListItems = {};
+  int _nextShoppingListId = 1;
+  int _nextShoppingListItemId = 1;
 
   // Additional storage for recommendation-specific data
   final Map<String, DateTime?> _lastCookedDates = {};
@@ -229,6 +235,10 @@ class MockDatabaseHelper implements DatabaseHelper {
     _mealPlanItemRecipes.clear();
     _ingredients.clear();
     _recipeIngredients.clear();
+    _shoppingLists.clear();
+    _shoppingListItems.clear();
+    _nextShoppingListId = 1;
+    _nextShoppingListItemId = 1;
     _lastCookedDates.clear();
     _mealCounts.clear();
   }
@@ -1384,5 +1394,71 @@ class MockDatabaseHelper implements DatabaseHelper {
   Future<String> getDatabasePath() async {
     // Mock: return a test database path
     return '/mock/test/database.db';
+  }
+
+  // SHOPPING LIST OPERATIONS
+  @override
+  Future<int> insertShoppingList(ShoppingList shoppingList) async {
+    final id = _nextShoppingListId++;
+    final listWithId = shoppingList.copyWith(id: id);
+    _shoppingLists[id] = listWithId;
+    return id;
+  }
+
+  @override
+  Future<ShoppingList?> getShoppingList(int id) async {
+    return _shoppingLists[id];
+  }
+
+  @override
+  Future<ShoppingList?> getShoppingListForDateRange(DateTime startDate, DateTime endDate) async {
+    try {
+      return _shoppingLists.values.firstWhere((list) {
+        return list.startDate.isAtSameMomentAs(startDate) &&
+               list.endDate.isAtSameMomentAs(endDate);
+      });
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> deleteShoppingList(int id) async {
+    _shoppingLists.remove(id);
+    // Also remove associated items
+    _shoppingListItems.removeWhere((key, item) => item.shoppingListId == id);
+  }
+
+  // SHOPPING LIST ITEM OPERATIONS
+  @override
+  Future<int> insertShoppingListItem(ShoppingListItem item) async {
+    final id = _nextShoppingListItemId++;
+    final itemWithId = item.copyWith(id: id);
+    _shoppingListItems[id] = itemWithId;
+    return id;
+  }
+
+  @override
+  Future<ShoppingListItem?> getShoppingListItem(int id) async {
+    return _shoppingListItems[id];
+  }
+
+  @override
+  Future<List<ShoppingListItem>> getShoppingListItems(int shoppingListId) async {
+    return _shoppingListItems.values
+        .where((item) => item.shoppingListId == shoppingListId)
+        .toList();
+  }
+
+  @override
+  Future<void> updateShoppingListItem(ShoppingListItem item) async {
+    if (item.id != null) {
+      _shoppingListItems[item.id!] = item;
+    }
+  }
+
+  @override
+  Future<void> deleteShoppingListItem(int id) async {
+    _shoppingListItems.remove(id);
   }
 }

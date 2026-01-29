@@ -250,6 +250,10 @@
   "@ingredientDeletedSuccessfully": {
     "description": "Mensagem de sucesso para exclusão de ingrediente"
   },
+  "recipeDeletedSuccessfully": "Receita excluída com sucesso",
+  "@recipeDeletedSuccessfully": {
+    "description": "Mensagem de sucesso para exclusão de receita"
+  },
   "tryAgain": "Tentar Novamente",
   "@tryAgain": {
     "description": "Texto do botão tentar novamente"
@@ -277,6 +281,10 @@
   "history": "Histórico",
   "@history": {
     "description": "Texto do tooltip de histórico"
+  },
+  "overview": "Visão Geral",
+  "@overview": {
+    "description": "Rótulo da aba de visão geral nos detalhes da receita"
   },
   "historyTitle": "Histórico: {recipeName}",
   "@historyTitle": {
@@ -1130,6 +1138,10 @@
   "@errorLoadingData": {
     "description": "Mensagem de erro para carregar dados"
   },
+  "errorViewingRecipeDetails": "Erro ao visualizar detalhes da receita",
+  "@errorViewingRecipeDetails": {
+    "description": "Mensagem de erro ao falhar ao visualizar detalhes da receita"
+  },
   "errorRefreshingRecommendations": "Erro ao atualizar recomendações:",
   "@errorRefreshingRecommendations": {
     "description": "Mensagem de erro para atualizar recomendações"
@@ -1955,5 +1967,159 @@
   "importRecipesDescription": "Importe receitas e ingredientes do JSON. Substitui todos os dados existentes.",
   "@importRecipesDescription": {
     "description": "Description for recipe import tool"
+  },
+  "planningTabLabel": "Planejamento",
+  "@planningTabLabel": {
+    "description": "Tab label for planning mode in weekly meal plan screen"
+  },
+  "summaryTabLabel": "Resumo",
+  "@summaryTabLabel": {
+    "description": "Tab label for summary mode in weekly meal plan screen"
+  },
+  "weekOf": "Semana de {dateRange}",
+  "@weekOf": {
+    "description": "Week date range label",
+    "placeholders": {
+      "dateRange": {
+        "type": "String",
+        "example": "23 Jan - 29 Jan"
+      }
+    }
+  },
+  "mealsPlannedCount": "{count} de 14 refeições planejadas",
+  "@mealsPlannedCount": {
+    "description": "Total meals planned count",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "8"
+      }
+    }
+  },
+  "proteinDistributionHeader": "Distribuição de Proteínas",
+  "@proteinDistributionHeader": {
+    "description": "Header for protein distribution section in summary"
+  },
+  "timeByDayHeader": "Tempo por Dia",
+  "@timeByDayHeader": {
+    "description": "Header for time by day section in summary"
+  },
+  "recipeVarietyHeader": "Variedade de Receitas",
+  "@recipeVarietyHeader": {
+    "description": "Header for recipe variety section in summary"
+  },
+  "uniqueRecipesCount": "{count} receitas únicas",
+  "@uniqueRecipesCount": {
+    "description": "Count of unique recipes in meal plan",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "8"
+      }
+    }
+  },
+  "repeatedRecipesCount": "{count} receitas usadas múltiplas vezes",
+  "@repeatedRecipesCount": {
+    "description": "Count of recipes used more than once",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "noProteinsPlanned": "Nenhuma proteína planejada ainda",
+  "@noProteinsPlanned": {
+    "description": "Empty state message when no proteins are planned"
+  },
+  "noMealsPlannedYet": "Nenhuma refeição planejada ainda",
+  "@noMealsPlannedYet": {
+    "description": "Empty state message when no meals are planned"
+  },
+  "summaryCalculationError": "Falha ao calcular resumo",
+  "@summaryCalculationError": {
+    "description": "Error message when summary calculation fails"
+  },
+  "retryButton": "Tentar novamente",
+  "@retryButton": {
+    "description": "Retry button text"
+  },
+  "mealsLabel": "refeições",
+  "@mealsLabel": {
+    "description": "Label for meals count"
+  },
+  "minutesShort": "min",
+  "@minutesShort": {
+    "description": "Short form for minutes"
+  },
+  "timesUsed": "({count}×)",
+  "@timesUsed": {
+    "description": "Times a recipe is used indicator",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "shoppingListTitle": "Lista de Compras",
+  "@shoppingListTitle": {
+    "description": "Title for shopping list screen"
+  },
+  "emptyShoppingList": "Nenhum item nesta lista de compras",
+  "@emptyShoppingList": {
+    "description": "Message shown when shopping list is empty"
+  },
+  "toTaste": "a gosto",
+  "@toTaste": {
+    "description": "Label for ingredients that are to taste"
+  },
+  "generateShoppingList": "Gerar Lista de Compras",
+  "@generateShoppingList": {
+    "description": "Button to generate shopping list from meal plan"
+  },
+  "generatingShoppingList": "Gerando lista de compras...",
+  "@generatingShoppingList": {
+    "description": "Message shown while generating shopping list"
+  },
+  "errorGeneratingShoppingList": "Erro ao gerar lista de compras:",
+  "@errorGeneratingShoppingList": {
+    "description": "Error message prefix when shopping list generation fails"
+  },
+  "shoppingListExists": "Lista de Compras Já Existe",
+  "@shoppingListExists": {
+    "description": "Title for dialog when shopping list already exists"
+  },
+  "shoppingListExistsMessage": "Uma lista de compras já existe para esta semana. O que você gostaria de fazer?",
+  "@shoppingListExistsMessage": {
+    "description": "Message shown when shopping list already exists"
+  },
+  "viewExistingList": "Ver Lista Existente",
+  "@viewExistingList": {
+    "description": "Button to view existing shopping list"
+  },
+  "regenerateList": "Regenerar Lista",
+  "@regenerateList": {
+    "description": "Button to regenerate shopping list"
+  },
+  "shoppingListNotFound": "Lista de compras não encontrada",
+  "@shoppingListNotFound": {
+    "description": "Error message when shopping list cannot be found"
+  },
+  "otherCategory": "Outros",
+  "@otherCategory": {
+    "description": "Default category for ingredients without a specific category"
+  },
+  "showAll": "Mostrar Tudo",
+  "@showAll": {
+    "description": "Filter option to show all shopping list items"
+  },
+  "showToBuyOnly": "Apenas a Comprar",
+  "@showToBuyOnly": {
+    "description": "Filter option to show only items marked as 'to buy'"
+  },
+  "hideToTaste": "Ocultar 'A Gosto'",
+  "@hideToTaste": {
+    "description": "Filter option to hide ingredients with quantity zero (to taste)"
   }
 }

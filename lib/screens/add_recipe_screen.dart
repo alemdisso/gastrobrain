@@ -133,6 +133,10 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                     if (snapshot.hasData) {
                       final ingredientName = snapshot.data?.name ??
                           AppLocalizations.of(context)!.unknown;
+                      // Hide quantity/unit for zero quantities ("to taste" ingredients)
+                      if (ingredient.quantity == 0) {
+                        return Text(ingredientName);
+                      }
                       final unitString =
                           ingredient.unitOverride ?? snapshot.data?.unit?.value ?? '';
                       final measurementUnit = MeasurementUnit.fromString(unitString);
@@ -144,6 +148,10 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   },
                 )
               : Text(() {
+                  // Hide quantity/unit for zero quantities ("to taste" ingredients)
+                  if (ingredient.quantity == 0) {
+                    return ingredient.customName ?? '';
+                  }
                   final customUnitString = ingredient.customUnit ?? '';
                   final measurementUnit = MeasurementUnit.fromString(customUnitString);
                   final localizedUnit = measurementUnit?.getLocalizedDisplayName(context) ?? customUnitString;

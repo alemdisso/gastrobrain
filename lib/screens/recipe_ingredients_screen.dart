@@ -247,29 +247,31 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      '${QuantityFormatter.format(ingredient['quantity'])} $localizedUnit',
-                                    ),
-                                    if (ingredient['unit_override'] != null)
-                                      Padding(
-                                        padding: const EdgeInsets.only(left: 4),
-                                        child: Tooltip(
-                                          message: AppLocalizations.of(context)!
-                                              .unitOverridden(MeasurementUnit
-                                                          .fromString(
-                                                              ingredient[
-                                                                  'unit'])
-                                                      ?.getLocalizedDisplayName(
-                                                          context) ??
-                                                  ingredient['unit'] ??
-                                                  AppLocalizations.of(context)!
-                                                      .noUnit),
-                                        ),
+                                // Hide quantity/unit for zero quantities ("to taste" ingredients)
+                                if (ingredient['quantity'] != 0)
+                                  Row(
+                                    children: [
+                                      Text(
+                                        '${QuantityFormatter.format(ingredient['quantity'])} $localizedUnit',
                                       ),
-                                  ],
-                                ),
+                                      if (ingredient['unit_override'] != null)
+                                        Padding(
+                                          padding: const EdgeInsets.only(left: 4),
+                                          child: Tooltip(
+                                            message: AppLocalizations.of(context)!
+                                                .unitOverridden(MeasurementUnit
+                                                            .fromString(
+                                                                ingredient[
+                                                                    'unit'])
+                                                        ?.getLocalizedDisplayName(
+                                                            context) ??
+                                                    ingredient['unit'] ??
+                                                    AppLocalizations.of(context)!
+                                                        .noUnit),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
                                 if (ingredient['preparation_notes'] != null)
                                   Text(
                                     ingredient['preparation_notes'],

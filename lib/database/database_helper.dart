@@ -21,6 +21,8 @@ import '../models/meal_plan_item.dart';
 import '../models/meal_plan_item_recipe.dart';
 import '../models/recipe_recommendation.dart';
 import '../models/recommendation_results.dart';
+import '../models/shopping_list.dart';
+import '../models/shopping_list_item.dart';
 import '../core/validators/entity_validator.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/migration/migration_runner.dart';
@@ -28,6 +30,8 @@ import '../core/migration/migration.dart';
 import '../core/migration/migrations/001_initial_schema.dart';
 import '../core/migration/migrations/002_ingredient_enum_conversion.dart';
 import '../core/migration/migrations/003_add_meal_type.dart';
+import '../core/migration/migrations/004_add_shopping_list_tables.dart';
+import '../core/migration/migrations/005_rename_is_purchased_to_to_buy.dart';
 import '../core/repositories/base_repository.dart';
 
 class DatabaseHelper {
@@ -44,6 +48,8 @@ class DatabaseHelper {
     InitialSchemaMigration(),
     IngredientEnumConversionMigration(),
     AddMealTypeMigration(),
+    AddShoppingListTablesMigration(),
+    RenameIsPurchasedToToBuyMigration(),
     // Future migrations will be added here
   ];
 
@@ -275,6 +281,31 @@ class DatabaseHelper {
         meal_type TEXT,
         user_id TEXT
       );
+    ''');
+
+    // Create shopping_lists table
+    await db.execute('''
+      CREATE TABLE shopping_lists(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        date_created INTEGER NOT NULL,
+        start_date INTEGER NOT NULL,
+        end_date INTEGER NOT NULL
+      )
+    ''');
+
+    // Create shopping_list_items table
+    await db.execute('''
+      CREATE TABLE shopping_list_items(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        shopping_list_id INTEGER NOT NULL,
+        ingredient_name TEXT NOT NULL,
+        quantity REAL NOT NULL,
+        unit TEXT NOT NULL,
+        category TEXT NOT NULL,
+        is_purchased INTEGER NOT NULL DEFAULT 0,
+        FOREIGN KEY (shopping_list_id) REFERENCES shopping_lists(id) ON DELETE CASCADE
+      )
     ''');
   }
 
@@ -1865,6 +1896,117 @@ class DatabaseHelper {
     _database = null;
     _migrationRunner = null;
     await database; // This will trigger _initDatabase()
+  }
+
+  // ============================================
+  // SHOPPING LIST OPERATIONS
+  // ============================================
+
+  /// Insert a new shopping list
+  Future<int> insertShoppingList(ShoppingList shoppingList) async {
+    final db = await database;
+    return await db.insert('shopping_lists', shoppingList.toMap());
+  }
+
+  /// Get a shopping list by ID
+  Future<ShoppingList?> getShoppingList(int id) async {
+    final db = await database;
+    final results = await db.query(
+      'shopping_lists',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (results.isEmpty) return null;
+    return ShoppingList.fromMap(results.first);
+  }
+
+  /// Get a shopping list for a specific date range
+  Future<ShoppingList?> getShoppingListForDateRange(
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    final db = await database;
+    final startMillis = startDate.millisecondsSinceEpoch;
+    final endMillis = endDate.millisecondsSinceEpoch;
+
+    final results = await db.query(
+      'shopping_lists',
+      where: 'start_date = ? AND end_date = ?',
+      whereArgs: [startMillis, endMillis],
+      orderBy: 'date_created DESC',
+      limit: 1,
+    );
+
+    if (results.isEmpty) return null;
+    return ShoppingList.fromMap(results.first);
+  }
+
+  /// Delete a shopping list
+  Future<void> deleteShoppingList(int id) async {
+    final db = await database;
+    await db.delete(
+      'shopping_lists',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    // Note: shopping_list_items will be cascade deleted due to foreign key
+  }
+
+  // ============================================
+  // SHOPPING LIST ITEM OPERATIONS
+  // ============================================
+
+  /// Insert a new shopping list item
+  Future<int> insertShoppingListItem(ShoppingListItem item) async {
+    final db = await database;
+    return await db.insert('shopping_list_items', item.toMap());
+  }
+
+  /// Get a shopping list item by ID
+  Future<ShoppingListItem?> getShoppingListItem(int id) async {
+    final db = await database;
+    final results = await db.query(
+      'shopping_list_items',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (results.isEmpty) return null;
+    return ShoppingListItem.fromMap(results.first);
+  }
+
+  /// Get all items for a shopping list
+  Future<List<ShoppingListItem>> getShoppingListItems(int shoppingListId) async {
+    final db = await database;
+    final results = await db.query(
+      'shopping_list_items',
+      where: 'shopping_list_id = ?',
+      whereArgs: [shoppingListId],
+    );
+
+    return results.map((map) => ShoppingListItem.fromMap(map)).toList();
+  }
+
+  /// Update a shopping list item
+  Future<void> updateShoppingListItem(ShoppingListItem item) async {
+    final db = await database;
+    await db.update(
+      'shopping_list_items',
+      item.toMap(),
+      where: 'id = ?',
+      whereArgs: [item.id],
+    );
+  }
+
+  /// Delete a shopping list item
+  Future<void> deleteShoppingListItem(int id) async {
+    final db = await database;
+    await db.delete(
+      'shopping_list_items',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   /// Get the database file path

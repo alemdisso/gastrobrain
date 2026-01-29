@@ -689,8 +689,8 @@ class E2ETestHelpers {
   ///
   /// This helper:
   /// 1. Finds the recipe by name in the UI
-  /// 2. Expands the recipe card if not already expanded
-  /// 3. Taps the history icon button to navigate to MealHistoryScreen
+  /// 2. Taps the recipe card to navigate to RecipeDetailsScreen
+  /// 3. Taps the History tab to view meal history
   ///
   /// Requires the recipe to be visible in the current view. May need to
   /// scroll to the recipe first if it's off-screen.
@@ -716,34 +716,20 @@ class E2ETestHelpers {
     expect(recipeCard, findsOneWidget,
         reason: 'Recipe card should exist for "$recipeName"');
 
-    // Check if the card is already expanded by looking for the history button
-    final historyButton = find.descendant(
-      of: recipeCard,
+    // Tap the recipe card to navigate to RecipeDetailsScreen
+    await tester.tap(recipeCard);
+    await tester.pumpAndSettle(standardSettleDuration);
+
+    // Now we're on RecipeDetailsScreen, find and tap the History tab
+    // Use the icon instead of text to avoid localization issues
+    final historyTab = find.descendant(
+      of: find.byType(Tab),
       matching: find.byIcon(Icons.history),
     );
+    expect(historyTab, findsOneWidget,
+        reason: 'History tab should be visible in RecipeDetailsScreen');
 
-    // If history button is not visible, expand the card first
-    if (historyButton.evaluate().isEmpty) {
-      final expandButton = find.descendant(
-        of: recipeCard,
-        matching: find.byIcon(Icons.expand_more),
-      );
-      expect(expandButton, findsOneWidget,
-          reason: 'Expand button should exist on recipe card');
-
-      await tester.tap(expandButton);
-      await tester.pumpAndSettle();
-    }
-
-    // Now find and tap the history button
-    final historyButtonExpanded = find.descendant(
-      of: recipeCard,
-      matching: find.byIcon(Icons.history),
-    );
-    expect(historyButtonExpanded, findsOneWidget,
-        reason: 'History button should be visible after expanding card');
-
-    await tester.tap(historyButtonExpanded);
+    await tester.tap(historyTab);
     await tester.pumpAndSettle(standardSettleDuration);
   }
 

@@ -97,35 +97,8 @@ void main() {
         expect(find.text(testRecipeName), findsOneWidget,
             reason: 'Test recipe should appear in recipes list');
 
-        // Expand the recipe card to see the history button
-        final recipeCard = find.ancestor(
-          of: find.text(testRecipeName),
-          matching: find.byType(Card),
-        );
-        expect(recipeCard, findsOneWidget);
-
-        // Find and tap the expand button
-        final expandButton = find.descendant(
-          of: recipeCard,
-          matching: find.byIcon(Icons.expand_more),
-        );
-
-        if (expandButton.evaluate().isNotEmpty) {
-          await tester.tap(expandButton);
-          await tester.pumpAndSettle();
-          print('✓ Recipe card expanded');
-        }
-
-        // Find and tap the history button (icon: Icons.history)
-        final historyButton = find.descendant(
-          of: recipeCard,
-          matching: find.byIcon(Icons.history),
-        );
-        expect(historyButton, findsOneWidget,
-            reason: 'History button should be visible in expanded recipe card');
-
-        await tester.tap(historyButton);
-        await tester.pumpAndSettle();
+        // Navigate to meal history screen
+        await E2ETestHelpers.navigateToMealHistory(tester, testRecipeName);
         print('✓ Navigated to Meal History Screen');
 
         // Verify we're on the meal history screen
@@ -353,27 +326,8 @@ void main() {
         await tester.pumpAndSettle();
         print('✓ On Recipes tab');
 
-        // Expand recipe card
-        final recipeCard = find.ancestor(
-          of: find.text(testRecipeName),
-          matching: find.byType(Card),
-        );
-        final expandButton = find.descendant(
-          of: recipeCard,
-          matching: find.byIcon(Icons.expand_more),
-        );
-        if (expandButton.evaluate().isNotEmpty) {
-          await tester.tap(expandButton);
-          await tester.pumpAndSettle();
-        }
-
-        // Tap history button
-        final historyButton = find.descendant(
-          of: recipeCard,
-          matching: find.byIcon(Icons.history),
-        );
-        await tester.tap(historyButton);
-        await tester.pumpAndSettle();
+        // Navigate to meal history screen
+        await E2ETestHelpers.navigateToMealHistory(tester, testRecipeName);
         print('✓ Navigated to Meal History Screen');
 
         // ======================================================================

@@ -311,6 +311,172 @@ Dec 30:  ████████████████ #38, #39 (41950 total)
 - Edge case catalog created (#39) - valuable reference
 - All 8 planned issues + 1 bonus issue completed
 
+### 0.1.6 - Shopping List & Polish
+
+**Sprint Duration:** January 22-28, 2026
+**Calendar Days:** 7
+**Active Working Days:** 6 (86% utilization)
+**Planned Issues:** 6 (20 points)
+**Completed Issues:** 6 (5 planned + 1 unplanned; #242 Resolved by SDK Update)
+
+#### Estimation vs Actual
+
+| Issue | Title | Type | Est Points | Weighted Actual | Lines | Ratio | Assessment |
+|-------|-------|------|------------|-----------------|-------|-------|------------|
+| #231 | Extract RecipesScreen refactor | Architecture | 1 | 0.96* | 1230 | 0.96x | ✅ On target |
+| #196 | "To Taste" ingredients display | Polish | 1 | 0.04* | 54 | 0.04x | ⚡ Very fast |
+| #33 | Recipe navigation from meal plan | UX Fix | 3 | 0.57* | 844 | 0.19x | ⚡ Very fast |
+| #264 | RecipeCard UI improvements | Refactor | N/A | 1.43* | 759 | - | 📋 Unplanned |
+| #32 | Meal summary section | Feature | 5 | 1.0 | 2544 | 0.20x | ⚡ Very fast |
+| #5 | Shopping List Generation | Feature | 8 | 2.0 | 4812 | 0.25x | ⚡ Very fast |
+| #242 | Fix RegExp deprecation warnings | Tech Debt | 2 | - | - | - | Not needed |
+| **TOTAL** | | | **18*** | **6.0** | **10243** | **0.33x** | |
+
+*\* Weighted by lines changed when sharing day with other issues*
+*\*\* Total excludes #242 (Resolved by SDK Update)*
+
+#### Accuracy by Type (Weighted)
+
+| Type | Issues | Est Total | Weighted Actual | Avg Ratio | Verdict |
+|------|--------|-----------|-----------------|-----------|---------|
+| Architecture | #231 | 1 | 0.96 | 0.96x | ✅ Perfect estimate |
+| Polish | #196 | 1 | 0.04 | 0.04x | ⚡ Extremely fast (trivial) |
+| UX/Features | #33, #32 | 8 | 1.57 | 0.20x | ⚡ Much faster than expected |
+| Major Feature | #5 | 8 | 2.0 | 0.25x | ⚡ Very fast (well-specified) |
+
+**Overall:** Estimates were very conservative - actual effort was 33% of estimated (0.33x ratio)
+
+#### Variance Analysis
+
+**Major Underruns:**
+
+**#5 (Shopping List Generation)** - Estimated: 8 points → Actual: 2.0 days (0.25x)
+- Root cause: Well-specified feature with comprehensive planning document
+- 26 commits show thorough implementation but faster than expected
+- Clear roadmap and incremental approach enabled fast execution
+- Complete test coverage (unit, widget, integration, edge cases)
+- Lesson: Detailed feature specifications dramatically improve velocity
+
+**#32 (Meal summary section)** - Estimated: 5 points → Actual: 1.0 day (0.20x)
+- "Keep simple" approach worked perfectly
+- No external libraries, basic widgets
+- Foundation laid for future enhancements
+- Lesson: Simple MVP scope estimates should be more aggressive
+
+**#33 (Recipe navigation)** - Estimated: 3 points → Actual: 0.57 days (0.19x)
+- MVP scope clearly defined in issue
+- Straightforward implementation once scope limited
+- Lesson: Clear MVP boundaries enable accurate (aggressive) estimates
+
+**#196 (To Taste ingredients)** - Estimated: 1 point → Actual: 0.04 days (0.04x)
+- Extremely small change (54 lines)
+- Batched with #231 on same day
+
+
+**On Target:**
+
+**#231 (Extract RecipesScreen)** - Estimated: 1 point → Actual: 0.96 days (0.96x)
+- Nearly perfect estimate for refactoring task
+- 1230 lines changed but straightforward extraction
+- Lesson: Simple refactorings estimate accurately
+
+**Unplanned Work:**
+
+**#264 (RecipeCard improvements)** - Unplanned → Actual: 1.43 days
+- Related to #33 but expanded scope
+- Improved recipe card UI and navigation
+- Added tap navigation to RecipeDetailsScreen
+- 4 commits, 759 lines
+- Lesson: Related improvements discovered during implementation add ~25% to sprint
+
+**Deferred:**
+
+**#242 (RegExp warnings)** - Estimated: 2 points → Deferred
+- Not critical for milestone completion
+- Prioritized features over tech debt
+- Lesson: Flexible prioritization enables focus on value
+
+#### Working Pattern Observations
+
+```
+Jan 22:  ████████ #231 (1230), #196 (54)
+Jan 23:  ████████ #33 (844), #264 (647)
+Jan 24:  ████ #32 (2544)
+Jan 25:  - (untagged: skills/docs - 2664 lines)
+Jan 26:  ████ #5 (start)
+Jan 27:  ████████ #5 (continue)
+Jan 28:  ████ #264 (finalize), #5 (tests)
+```
+
+**Patterns:**
+- Quick wins first (Jan 22: #231, #196)
+- UX fixes next (Jan 23: #33, #264)
+- Features in sequence (Jan 24: #32, Jan 26-28: #5)
+- Major feature (#5) spanned 3 days with 26 commits
+- Parallel work on Jan 23 and Jan 28 (multiple issues)
+- High utilization (86%) with focused days
+
+#### Lessons Learned
+
+1. **Estimates very conservative again (0.33x ratio overall)**
+   - Similar to 0.1.3 (0.38x) and 0.1.4 (0.17x)
+   - Well-prepared work continues to be 3-4x faster than estimated
+   - Lesson: Continue using aggressive estimates for well-specified work
+
+2. **Detailed feature specifications are game-changers**
+   - #5 had comprehensive spec document
+   - Clear requirements, data models, algorithms documented
+   - Result: 8-point feature done in 2 days (0.25x)
+   - Lesson: Invest time in specifications - pays off 3-4x in execution
+
+3. **MVP scope clarity enables fast execution**
+   - #32, #33 both had explicit "keep simple" / "MVP scope" guidance
+   - No scope creep, no over-engineering
+   - Result: 0.19x-0.20x ratios
+   - Lesson: "Keep simple" must be explicit in estimates and execution
+
+4. **Unplanned work is consistent (~10-25%)**
+   - #264 added 1.43 days (~24% of total)
+   - Similar pattern in previous sprints
+   - Lesson: Build 20-25% buffer for emergent work
+
+5. **Small tasks have inherent 1-point floor**
+   - #196 was 1 point but took 0.04 days (trivial work)
+   - 1 point represents minimum overhead: read issue, branch, commit, document, push
+   - Better to have "fat to burn" on small tasks than introduce decimal complexity
+   - Lesson: Keep 1 point as minimum; scale UP larger estimates instead
+
+6. **Flexible prioritization works well**
+   - #242 deferred without impact
+   - Focus on value delivery over completionism
+   - Lesson: Not all planned work must complete if priorities shift
+
+7. **Architecture refactoring estimates accurate**
+   - #231 was nearly perfect (0.96x)
+   - Second sprint in a row with good architecture estimates
+   - Lesson: Refactoring velocity is now well-calibrated
+
+#### Recommendations for Future Sprints
+
+| Finding | Adjustment |
+|---------|------------|
+| Overall very conservative (0.33x) | Scale UP larger estimates to match velocity (e.g., 8pt → 12-15pt) |
+| Detailed specs enable fast execution | Invest in feature specs before estimating |
+| MVP scope prevents over-engineering | Explicitly mark "keep simple" tasks with lower estimates |
+| Unplanned work ~25% | Build 20-25% buffer into sprint capacity |
+| Small tasks have 1-point floor | Keep 1pt minimum for task overhead; scale larger tasks instead |
+| Architecture estimates calibrated | Trust 1:1 ratio for simple refactorings |
+
+#### Notes
+
+- Sprint successfully delivered 90% of planned work (18/20 points)
+- #242 deferred (non-critical tech debt)
+- #264 added mid-sprint (related to #33)
+- Major feature (#5) completed with comprehensive testing
+- All features have full localization (EN/PT)
+- Shopping list workflow completes core meal planning functionality
+- 0.1.7 milestone continues the 0.1.x series
+
 ### 0.1.4 - Architecture & Critical Bug Fixes
 
 **Sprint Duration:** January 2-3, 2026
@@ -628,13 +794,15 @@ Jan 9:  █████████ #199 (508), #251 (6), plus cleanup (2187 lin
 | 0.1.3 | 26 | 10.0 | 0.38x | 2.60 | VERY conservative (pattern reuse) |
 | 0.1.4 | 12 | 2.0 | 0.17x | 6.00 | **OUTLIER** - Extremely well-prepared work |
 | 0.1.5 | 14 | 6.88 | 1.98x | 2.03 | OVERRAN - Discovery work + MASSIVE hidden overhead |
+| 0.1.6 | 18 | 6.0 | 0.33x | 3.00 | VERY conservative (well-specified features) |
 
 **Critical Insights:**
 - **Sprint ratio depends heavily on work type** - Can't use one sprint to predict another
 - **0.1.4 was an outlier** (6.00 points/day) - Don't use for future estimates
-- **Normal velocity: 1.1-2.8 points/day** (0.1.2, 0.1.3, 0.1.5)
+- **Normal velocity: 1.1-3.0 points/day** (0.1.2, 0.1.3, 0.1.5, 0.1.6)
 - **Median velocity: ~2.5 points/day** - Use this for milestone sizing
 - **Hidden overhead is CRITICAL** - Tooling/environment issues added 29% to 0.1.5 (2 full days)
+- **Well-specified features are fast** - 0.1.6 showed 0.33x ratio with detailed specs
 
 ### Type-Based Calibration Factors
 
@@ -796,3 +964,15 @@ Use historical velocity data to size future milestones and prevent overcommitmen
   - **NEW: Milestone Sizing Guidelines** section added with velocity-based capacity planning
   - Key findings: UI polish requires 3-4x buffer, feature testing phase massively underestimated (2.58x), sprint-wide tooling overhead = 25-35% buffer needed
   - Recommendations: Target 8-12 points per 5-day sprint (reduced from 10-15), add 25-35% buffer for mobile/UI sprints with testing phases, separate implementation estimates from testing/validation overhead
+- **2026-01-29**: Added 0.1.6 retrospective analysis
+  - Sprint completed: 5 planned + 1 unplanned issue (6 total) in 7 calendar days (6 active, 86% utilization)
+  - Actual ratio: 0.33x (VERY conservative - back to fast execution pattern)
+  - Completed: 18 out of 20 planned points (90% completion, #242 deferred)
+  - Velocity: 3.00 points/day (highest sustainable velocity to date)
+  - Key insight: Detailed feature specifications enable fast execution (0.25x for 8-point feature)
+  - Major feature (#5 Shopping List) completed in 2 days with comprehensive testing (26 commits)
+  - MVP scope clarity prevented over-engineering (#32, #33: 0.19x-0.20x ratios)
+  - Unplanned work (#264) added ~24% to sprint, consistent with previous sprints
+  - Lesson: Well-specified features with clear MVP boundaries execute 3-4x faster than estimated
+  - Updated normal velocity range to 1.1-3.0 points/day (adding 0.1.6 data)
+  - Estimation philosophy: Keep 1-point minimum for task overhead; scale UP larger estimates rather than introducing sub-point complexity
