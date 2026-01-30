@@ -4,7 +4,8 @@
       "Bash(gh issue view:*)",
       "Bash(flutter test:*)",
       "Bash(git add:*)",
-      "Bash(flutter analyze:*)"
+      "Bash(flutter analyze:*)",
+      "Bash(gh issue:*)"
     ]
   }
 }
