@@ -255,7 +255,7 @@ The `WeeklyPlanScreen` class is responsible for:
 
 **Rationale:** Refactoring before polish makes visual changes easier and cleaner.
 
-**Phase 1: Structural Cleanup (Separate PR)**
+**Phase 1: Structural Cleanup (Separate Issue/Branch)**
 1. Extract services (MealPlanService, SummaryCalculationService, MealActionHandler)
 2. Extract large widgets to separate files (RecipeSelectionDialog, WeekNavigationWidget)
 3. Consolidate duplicated logic
