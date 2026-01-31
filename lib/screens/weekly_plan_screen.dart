@@ -5,7 +5,6 @@ import '../models/meal.dart';
 import '../models/meal_recipe.dart';
 import '../models/meal_plan.dart';
 import '../models/meal_plan_item.dart';
-import '../models/meal_plan_item_recipe.dart';
 import '../models/meal_plan_summary.dart';
 import '../models/recipe_recommendation.dart';
 import '../models/recommendation_results.dart' as model;
