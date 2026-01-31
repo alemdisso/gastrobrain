@@ -17,6 +17,7 @@ import '../core/services/recommendation_service.dart';
 import '../core/services/snackbar_service.dart';
 import '../core/services/meal_plan_analysis_service.dart';
 import '../core/services/meal_plan_summary_service.dart';
+import '../core/services/meal_plan_service.dart';
 import '../core/services/meal_edit_service.dart';
 import '../core/providers/recipe_provider.dart';
 import '../core/providers/meal_provider.dart';
@@ -49,6 +50,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
   late RecommendationService _recommendationService;
   late MealPlanAnalysisService _mealPlanAnalysis;
   late MealPlanSummaryService _mealPlanSummary;
+  late MealPlanService _mealPlanService;
   DateTime _currentWeekStart = _getFriday(DateTime.now());
   MealPlan? _currentMealPlan;
   bool _isLoading = true;
@@ -89,6 +91,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         ServiceProvider.recommendations.recommendationService;
     _mealPlanAnalysis = MealPlanAnalysisService(_dbHelper);
     _mealPlanSummary = MealPlanSummaryService(_dbHelper);
+    _mealPlanService = MealPlanService(_dbHelper);
     _tabController = TabController(length: 2, vsync: this);
     _loadData();
   }
@@ -395,121 +398,24 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
       final primaryRecipe = mealData['primaryRecipe'] as Recipe;
       final additionalRecipes = mealData['additionalRecipes'] as List<Recipe>;
 
-      // Create or update meal plan
-      if (_currentMealPlan == null) {
-        // Create new meal plan for this week
-        final newPlanId = IdGenerator.generateId();
-        final newPlan = MealPlan.forWeek(
-          newPlanId,
-          _currentWeekStart,
-        );
+      // Get or create meal plan for this week
+      final mealPlan = _currentMealPlan ??
+          await _mealPlanService.getOrCreateMealPlan(_currentWeekStart);
 
-        // Add the meal to the plan
-        final planItemId = IdGenerator.generateId();
-        final planItem = MealPlanItem(
-          id: planItemId,
-          mealPlanId: newPlan.id,
-          plannedDate: MealPlanItem.formatPlannedDate(date),
-          mealType: mealType,
-        );
+      // Add or update the meal in the slot
+      final updatedPlan = await _mealPlanService.addOrUpdateMealToSlot(
+        mealPlan: mealPlan,
+        date: date,
+        mealType: mealType,
+        primaryRecipe: primaryRecipe,
+        additionalRecipes: additionalRecipes,
+      );
 
-        // Create junction records for all recipes
-        final List<MealPlanItemRecipe> mealPlanItemRecipes = [];
-
-        // Add primary recipe
-        mealPlanItemRecipes.add(MealPlanItemRecipe(
-          mealPlanItemId: planItemId,
-          recipeId: primaryRecipe.id,
-          isPrimaryDish: true,
-        ));
-
-        // Add additional recipes as side dishes
-        for (final additionalRecipe in additionalRecipes) {
-          mealPlanItemRecipes.add(MealPlanItemRecipe(
-            mealPlanItemId: planItemId,
-            recipeId: additionalRecipe.id,
-            isPrimaryDish: false,
-          ));
-        }
-
-        // Set the recipes list for the item
-        planItem.mealPlanItemRecipes = mealPlanItemRecipes;
-
-        newPlan.addItem(planItem);
-
-        // Save to database
-        await _dbHelper.insertMealPlan(newPlan);
-        await _dbHelper.insertMealPlanItem(planItem);
-
-        // Save all junction records
-        for (final junction in mealPlanItemRecipes) {
-          await _dbHelper.insertMealPlanItemRecipe(junction);
-        }
-
-        setState(() {
-          _currentMealPlan = newPlan;
-        });
-      } else {
-        // Check if there's already a meal in this slot
-        final existingItems =
-            _currentMealPlan!.getItemsForDateAndMealType(date, mealType);
-
-        if (existingItems.isNotEmpty) {
-          // Remove existing items for this slot
-          for (final item in existingItems) {
-            await _dbHelper.deleteMealPlanItem(item.id);
-            _currentMealPlan!.removeItem(item.id);
-          }
-        }
-
-        // Add the new meal to the plan
-        final planItemId = IdGenerator.generateId();
-        final planItem = MealPlanItem(
-          id: planItemId,
-          mealPlanId: _currentMealPlan!.id,
-          plannedDate: MealPlanItem.formatPlannedDate(date),
-          mealType: mealType,
-        );
-
-        // Create junction records for all recipes
-        final List<MealPlanItemRecipe> mealPlanItemRecipes = [];
-
-        // Add primary recipe
-        mealPlanItemRecipes.add(MealPlanItemRecipe(
-          mealPlanItemId: planItemId,
-          recipeId: primaryRecipe.id,
-          isPrimaryDish: true,
-        ));
-
-        // Add additional recipes as side dishes
-        for (final additionalRecipe in additionalRecipes) {
-          mealPlanItemRecipes.add(MealPlanItemRecipe(
-            mealPlanItemId: planItemId,
-            recipeId: additionalRecipe.id,
-            isPrimaryDish: false,
-          ));
-        }
-
-        // Set the recipes list for the item
-        planItem.mealPlanItemRecipes = mealPlanItemRecipes;
-
-        _currentMealPlan!.addItem(planItem);
-
-        // Save to database
-        await _dbHelper.insertMealPlanItem(planItem);
-
-        // Save all junction records
-        for (final junction in mealPlanItemRecipes) {
-          await _dbHelper.insertMealPlanItemRecipe(junction);
-        }
-
-        await _dbHelper.updateMealPlan(_currentMealPlan!);
-
-        setState(() {
-          // Force a reload to ensure the calendar widget refreshes
-          _loadData();
-        });
-      }
+      setState(() {
+        _currentMealPlan = updatedPlan;
+        // Force a reload to ensure the calendar widget refreshes
+        _loadData();
+      });
     }
   }
 
@@ -621,16 +527,14 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
     } else if (action == 'remove') {
       // Remove the meal from the plan
       if (_currentMealPlan != null) {
-        final items =
-            _currentMealPlan!.getItemsForDateAndMealType(date, mealType);
+        final updatedPlan = await _mealPlanService.removeMealFromSlot(
+          mealPlan: _currentMealPlan!,
+          date: date,
+          mealType: mealType,
+        );
 
-        for (final item in items) {
-          await _dbHelper.deleteMealPlanItem(item.id);
-          _currentMealPlan!.removeItem(item.id);
-        }
-
-        await _dbHelper.updateMealPlan(_currentMealPlan!);
         setState(() {
+          _currentMealPlan = updatedPlan;
           // Force a reload to ensure the calendar widget refreshes
           _loadData();
         });
@@ -1099,32 +1003,11 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
     final primaryRecipe = mealData['primaryRecipe'] as Recipe;
     final additionalRecipes = mealData['additionalRecipes'] as List<Recipe>;
 
-    // Delete existing junction records for this meal plan item
-    await _dbHelper.deleteMealPlanItemRecipesByItemId(existingItem.id);
-
-    // Create new junction records
-    final List<MealPlanItemRecipe> newMealPlanItemRecipes = [];
-
-    // Add primary recipe
-    newMealPlanItemRecipes.add(MealPlanItemRecipe(
-      mealPlanItemId: existingItem.id,
-      recipeId: primaryRecipe.id,
-      isPrimaryDish: true,
-    ));
-
-    // Add additional recipes as side dishes
-    for (final additionalRecipe in additionalRecipes) {
-      newMealPlanItemRecipes.add(MealPlanItemRecipe(
-        mealPlanItemId: existingItem.id,
-        recipeId: additionalRecipe.id,
-        isPrimaryDish: false,
-      ));
-    }
-
-    // Insert all new junction records using DatabaseHelper abstraction
-    for (final junction in newMealPlanItemRecipes) {
-      await _dbHelper.insertMealPlanItemRecipe(junction);
-    }
+    await _mealPlanService.updateMealItemRecipes(
+      mealPlanItem: existingItem,
+      primaryRecipe: primaryRecipe,
+      additionalRecipes: additionalRecipes,
+    );
   }
 
   void _handleDaySelected(DateTime selectedDate, int selectedDayIndex) {
