@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/protein_type.dart';
 import '../models/meal.dart';
 import '../models/meal_recipe.dart';
 import '../models/meal_plan.dart';
 import '../models/meal_plan_item.dart';
 import '../models/meal_plan_summary.dart';
-import '../models/recipe_recommendation.dart';
-import '../models/recommendation_results.dart' as model;
 import '../models/recipe.dart';
 import '../models/time_context.dart';
 import '../database/database_helper.dart';
@@ -19,6 +16,7 @@ import '../core/services/meal_plan_summary_service.dart';
 import '../core/services/meal_plan_service.dart';
 import '../core/services/meal_action_service.dart';
 import '../core/services/meal_edit_service.dart';
+import '../core/services/recommendation_cache_service.dart';
 import '../core/providers/recipe_provider.dart';
 import '../core/providers/meal_provider.dart';
 import '../core/providers/meal_plan_provider.dart';
@@ -53,37 +51,16 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
   late MealPlanSummaryService _mealPlanSummary;
   late MealPlanService _mealPlanService;
   late MealActionService _mealActionService;
+  late RecommendationCacheService _recommendationCache;
   DateTime _currentWeekStart = _getFriday(DateTime.now());
   MealPlan? _currentMealPlan;
   bool _isLoading = true;
   List<Recipe> _availableRecipes = [];
   final ScrollController _scrollController = ScrollController();
-  // Cache for recommendations to improve performance
-  final Map<String, List<Recipe>> _recommendationCache = {};
   // Tab controller for Planning/Summary tabs
   late TabController _tabController;
   // Summary data
   MealPlanSummary? _summaryData;
-
-  // Helper method to create cache key
-  String _getRecommendationCacheKey(DateTime date, String mealType) {
-    return '${date.toIso8601String()}-$mealType';
-  }
-
-  /// Invalidates the cached recommendations for a specific meal slot
-  void _invalidateRecommendationCache(DateTime date, String mealType) {
-    final cacheKey = _getRecommendationCacheKey(date, mealType);
-
-    // Remove this specific slot from the cache
-    if (_recommendationCache.containsKey(cacheKey)) {
-      _recommendationCache.remove(cacheKey);
-    }
-  }
-
-  /// Clears all cached recommendations
-  void _clearAllRecommendationCache() {
-    _recommendationCache.clear();
-  }
 
   @override
   void initState() {
@@ -95,6 +72,11 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
     _mealPlanSummary = MealPlanSummaryService(_dbHelper);
     _mealPlanService = MealPlanService(_dbHelper);
     _mealActionService = MealActionService(_dbHelper);
+    _recommendationCache = RecommendationCacheService(
+      _dbHelper,
+      _recommendationService,
+      _mealPlanAnalysis,
+    );
     _tabController = TabController(length: 2, vsync: this);
     _loadData();
   }
@@ -164,7 +146,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
   }
 
   Future<void> _loadData() async {
-    _clearAllRecommendationCache();
+    _recommendationCache.clearAllCache();
     setState(() {
       _isLoading = true;
     });
@@ -184,7 +166,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         });
 
         // Clear the recommendation cache when meal plan changes
-        _recommendationCache.clear();
+        _recommendationCache.clearAllCache();
 
         // Calculate summary data
         await _calculateSummaryData();
@@ -205,147 +187,12 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
   }
 
   void _changeWeek(int weekOffset) {
-    _clearAllRecommendationCache();
+    _recommendationCache.clearAllCache();
     setState(() {
       _currentWeekStart = _currentWeekStart.add(Duration(days: weekOffset * 7));
       _currentMealPlan = null;
     });
     _loadData();
-  }
-
-  /// Build enhanced context for recipe recommendations using dual-context analysis
-  Future<Map<String, dynamic>> _buildRecommendationContext({
-    DateTime? forDate,
-    String? mealType,
-  }) async {
-    // Get planned context (current meal plan) - handle null case
-    final plannedRecipeIds = _currentMealPlan != null
-        ? await _mealPlanAnalysis.getPlannedRecipeIds(_currentMealPlan)
-        : <String>[];
-    final plannedProteins = _currentMealPlan != null
-        ? await _mealPlanAnalysis.getPlannedProteinsForWeek(_currentMealPlan)
-        : <ProteinType>[];
-
-    // Get recently cooked context (meal history)
-    final recentRecipeIds =
-        await _mealPlanAnalysis.getRecentlyCookedRecipeIds(dayWindow: 5);
-    final recentProteins =
-        await _mealPlanAnalysis.getRecentlyCookedProteins(dayWindow: 5);
-
-    // Calculate penalty strategy - handle null meal plan
-    final penaltyStrategy = _currentMealPlan != null
-        ? await _mealPlanAnalysis.calculateProteinPenaltyStrategy(
-            _currentMealPlan!,
-            forDate ?? DateTime.now(),
-            mealType ?? MealPlanItem.lunch,
-          )
-        : null;
-
-    return {
-      'forDate': forDate,
-      'mealType': mealType,
-      'plannedRecipeIds': plannedRecipeIds,
-      'recentlyCookedRecipeIds': recentRecipeIds,
-      'plannedProteins': plannedProteins,
-      'recentProteins': recentProteins,
-      'penaltyStrategy': penaltyStrategy,
-      // Backward compatibility
-      'excludeIds': plannedRecipeIds,
-    };
-  }
-
-  /// Returns simple recipes without scores for caching.
-  /// For recommendations with scores, use _getDetailedSlotRecommendations instead.
-  Future<List<Recipe>> getSlotRecommendations(DateTime date, String mealType,
-      {int count = 5}) async {
-    final cacheKey = _getRecommendationCacheKey(date, mealType);
-
-    // Check if we have cached recommendations
-    if (_recommendationCache.containsKey(cacheKey)) {
-      return _recommendationCache[cacheKey]!;
-    }
-
-    // Build context for recommendations
-    final context = await _buildRecommendationContext(
-      forDate: date,
-      mealType: mealType,
-    );
-
-    // Determine if this is a weekday
-    final isWeekday = date.weekday >= 1 && date.weekday <= 5;
-
-// Get recommendations with meal plan integration
-    final recommendations = await _recommendationService.getRecommendations(
-      count: count,
-      excludeIds: context['plannedRecipeIds'] ?? [],
-      // Pass meal plan for integrated protein rotation and variety scoring
-      mealPlan: _currentMealPlan,
-      forDate: date,
-      mealType: mealType,
-      weekdayMeal: isWeekday,
-      maxDifficulty: isWeekday ? 4 : null,
-    );
-
-    // Cache the recommendations
-    _recommendationCache[cacheKey] = recommendations;
-
-    return recommendations;
-  }
-
-  Future<({List<RecipeRecommendation> recommendations, String historyId})>
-      _getDetailedSlotRecommendations(DateTime date, String mealType,
-          {int count = 5}) async {
-    // Build context for recommendations
-    final context = await _buildRecommendationContext(
-      forDate: date,
-      mealType: mealType,
-    );
-
-    // Determine if this is a weekday
-    final isWeekday = date.weekday >= 1 && date.weekday <= 5;
-
-    // Get detailed recommendations with scores and meal plan integration
-    final recommendations =
-        await _recommendationService.getDetailedRecommendations(
-      count: count,
-      excludeIds: context['plannedRecipeIds'] ?? [],
-      // Pass meal plan for integrated protein rotation and variety scoring
-      mealPlan: _currentMealPlan,
-      forDate: date,
-      mealType: mealType,
-      weekdayMeal: isWeekday,
-      maxDifficulty: isWeekday ? 4 : null,
-    );
-
-    // Convert service RecommendationResults to model RecommendationResults for database storage
-    final modelResults = model.RecommendationResults(
-      recommendations: recommendations.recommendations,
-      totalEvaluated: recommendations.totalEvaluated,
-      queryParameters: recommendations.queryParameters,
-      generatedAt: recommendations.generatedAt,
-    );
-
-    // Save recommendation history and get the history ID
-    final historyId = await _dbHelper.saveRecommendationHistory(
-      modelResults,
-      'meal_planning',
-      targetDate: date,
-      mealType: mealType,
-    );
-
-    return (
-      recommendations: recommendations.recommendations,
-      historyId: historyId
-    );
-  }
-
-  Future<({List<RecipeRecommendation> recommendations, String historyId})>
-      _refreshDetailedRecommendations(DateTime date, String mealType) async {
-    // Clear the cache for this slot
-    _invalidateRecommendationCache(date, mealType);
-
-    // Get fresh detailed recommendations
-    return await _getDetailedSlotRecommendations(date, mealType, count: 8);
   }
 
   Future<void> _handleSlotTap(DateTime date, String mealType) async {
@@ -360,7 +207,9 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
     }
 
     // Get detailed recommendations with scores for this slot
-    final recommendationContext = await _buildRecommendationContext(
+    final recommendationContext =
+        await _recommendationCache.buildRecommendationContext(
+      mealPlan: _currentMealPlan,
       forDate: date,
       mealType: mealType,
     );
@@ -392,8 +241,9 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         recipes: recipes,
         detailedRecommendations: topRecommendations,
         allScoredRecipes: allRecommendations.recommendations,
-        onRefreshDetailedRecommendations: () =>
-            _refreshDetailedRecommendations(date, mealType),
+        onRefreshDetailedRecommendations: () => _recommendationCache
+            .refreshDetailedRecommendations(
+                mealPlan: _currentMealPlan, date: date, mealType: mealType),
       ),
     );
 
@@ -719,7 +569,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
             primaryRecipe: recipes.primary,
             additionalRecipes: recipes.additional,
             plannedDate: date,
-            notes: targetMeal.notes ?? '',
+            notes: targetMeal.notes,
           ),
         );
       }
@@ -1163,7 +1013,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
     _scrollController.dispose();
     _tabController.dispose();
     // Clear any resources used by the recommendation service if needed
-    _recommendationCache.clear();
+    _recommendationCache.clearAllCache();
     super.dispose();
   }
 }
