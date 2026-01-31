@@ -24,7 +24,7 @@ class AppTheme {
       // ========================================================================
       // COLOR SCHEME
       // ========================================================================
-      colorScheme: ColorScheme.light(
+      colorScheme: const ColorScheme.light(
         // Primary colors (warm amber/paprika)
         primary: DesignTokens.primary,
         onPrimary: DesignTokens.textOnPrimary,
@@ -57,7 +57,7 @@ class AppTheme {
       // ========================================================================
       // TYPOGRAPHY
       // ========================================================================
-      textTheme: TextTheme(
+      textTheme: const TextTheme(
         // Display
         displayLarge: TextStyle(
           fontSize: DesignTokens.displaySize,
@@ -164,7 +164,7 @@ class AppTheme {
       // ========================================================================
 
       /// AppBar Theme
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: DesignTokens.surface,
         foregroundColor: DesignTokens.textPrimary,
         elevation: 0,
@@ -181,7 +181,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: DesignTokens.surface,
         elevation: DesignTokens.elevation1,
-        shadowColor: Color.fromRGBO(0, 0, 0, 0.08),
+        shadowColor: const Color.fromRGBO(0, 0, 0, 0.08),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(DesignTokens.borderRadiusMedium),
         ),
@@ -203,7 +203,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(DesignTokens.borderRadiusSmall),
           ),
-          textStyle: TextStyle(
+          textStyle: const TextStyle(
             fontSize: DesignTokens.bodySize,
             fontWeight: DesignTokens.weightMedium,
           ),
@@ -223,7 +223,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(DesignTokens.borderRadiusSmall),
           ),
-          textStyle: TextStyle(
+          textStyle: const TextStyle(
             fontSize: DesignTokens.bodySize,
             fontWeight: DesignTokens.weightMedium,
           ),
@@ -236,7 +236,7 @@ class AppTheme {
           foregroundColor: DesignTokens.primary,
           disabledForegroundColor: DesignTokens.textDisabled,
           padding: DesignTokens.buttonPadding,
-          textStyle: TextStyle(
+          textStyle: const TextStyle(
             fontSize: DesignTokens.bodySize,
             fontWeight: DesignTokens.weightMedium,
           ),
@@ -299,15 +299,15 @@ class AppTheme {
             width: DesignTokens.borderWidthHairline,
           ),
         ),
-        labelStyle: TextStyle(
+        labelStyle: const TextStyle(
           fontSize: DesignTokens.bodySize,
           color: DesignTokens.textSecondary,
         ),
-        hintStyle: TextStyle(
+        hintStyle: const TextStyle(
           fontSize: DesignTokens.bodySize,
           color: DesignTokens.textTertiary,
         ),
-        errorStyle: TextStyle(
+        errorStyle: const TextStyle(
           fontSize: DesignTokens.bodySmallSize,
           color: DesignTokens.error,
         ),
@@ -320,12 +320,12 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(DesignTokens.borderRadiusLarge),
         ),
-        titleTextStyle: TextStyle(
+        titleTextStyle: const TextStyle(
           fontSize: DesignTokens.heading2Size,
           fontWeight: DesignTokens.weightSemibold,
           color: DesignTokens.textPrimary,
         ),
-        contentTextStyle: TextStyle(
+        contentTextStyle: const TextStyle(
           fontSize: DesignTokens.bodySize,
           color: DesignTokens.textPrimary,
           height: DesignTokens.normalLineHeight,
@@ -333,7 +333,7 @@ class AppTheme {
       ),
 
       /// Bottom Navigation Bar Theme
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: DesignTokens.surface,
         selectedItemColor: DesignTokens.primary,
         unselectedItemColor: DesignTokens.textSecondary,
@@ -352,7 +352,7 @@ class AppTheme {
       /// Snackbar Theme
       snackBarTheme: SnackBarThemeData(
         backgroundColor: DesignTokens.textPrimary,
-        contentTextStyle: TextStyle(
+        contentTextStyle: const TextStyle(
           fontSize: DesignTokens.bodySize,
           color: Colors.white,
         ),
@@ -372,11 +372,11 @@ class AppTheme {
           horizontal: DesignTokens.spacingSm,
           vertical: DesignTokens.spacingXs,
         ),
-        labelStyle: TextStyle(
+        labelStyle: const TextStyle(
           fontSize: DesignTokens.bodySmallSize,
           color: DesignTokens.textPrimary,
         ),
-        secondaryLabelStyle: TextStyle(
+        secondaryLabelStyle: const TextStyle(
           fontSize: DesignTokens.bodySmallSize,
           color: DesignTokens.textOnPrimary,
         ),
@@ -393,7 +393,7 @@ class AppTheme {
       ),
 
       /// List Tile Theme
-      listTileTheme: ListTileThemeData(
+      listTileTheme: const ListTileThemeData(
         contentPadding: DesignTokens.listItemPadding,
         titleTextStyle: TextStyle(
           fontSize: DesignTokens.bodySize,
@@ -419,7 +419,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      colorScheme: ColorScheme.dark(
+      colorScheme: const ColorScheme.dark(
         primary: DesignTokens.primary,
         onPrimary: DesignTokens.textOnPrimary,
         secondary: DesignTokens.accent,
