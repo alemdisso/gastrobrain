@@ -6,6 +6,7 @@ import '../models/meal_recipe.dart';
 import '../models/meal_plan.dart';
 import '../models/meal_plan_item.dart';
 import '../models/meal_plan_item_recipe.dart';
+import '../models/meal_plan_summary.dart';
 import '../models/recipe_recommendation.dart';
 import '../models/recommendation_results.dart' as model;
 import '../models/recipe.dart';
@@ -15,6 +16,7 @@ import '../core/di/service_provider.dart';
 import '../core/services/recommendation_service.dart';
 import '../core/services/snackbar_service.dart';
 import '../core/services/meal_plan_analysis_service.dart';
+import '../core/services/meal_plan_summary_service.dart';
 import '../core/services/meal_edit_service.dart';
 import '../core/providers/recipe_provider.dart';
 import '../core/providers/meal_provider.dart';
@@ -46,6 +48,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
   late DatabaseHelper _dbHelper;
   late RecommendationService _recommendationService;
   late MealPlanAnalysisService _mealPlanAnalysis;
+  late MealPlanSummaryService _mealPlanSummary;
   DateTime _currentWeekStart = _getFriday(DateTime.now());
   MealPlan? _currentMealPlan;
   bool _isLoading = true;
@@ -56,7 +59,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
   // Tab controller for Planning/Summary tabs
   late TabController _tabController;
   // Summary data
-  Map<String, dynamic>? _summaryData;
+  MealPlanSummary? _summaryData;
 
   // Helper method to create cache key
   String _getRecommendationCacheKey(DateTime date, String mealType) {
@@ -85,6 +88,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
     _recommendationService =
         ServiceProvider.recommendations.recommendationService;
     _mealPlanAnalysis = MealPlanAnalysisService(_dbHelper);
+    _mealPlanSummary = MealPlanSummaryService(_dbHelper);
     _tabController = TabController(length: 2, vsync: this);
     _loadData();
   }
@@ -1254,143 +1258,11 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
   }
 
   Future<void> _calculateSummaryData() async {
-    if (_currentMealPlan == null) {
+    final summary = await _mealPlanSummary.calculateSummary(_currentMealPlan);
+    if (mounted) {
       setState(() {
-        _summaryData = {
-          'totalPlanned': 0,
-          'percentage': 0.0,
-          'proteinsByDay': <String, Set<ProteinType>>{},
-          'plannedMeals': <Map<String, dynamic>>[],
-          'uniqueRecipes': 0,
-          'repeatedRecipes': <MapEntry<String, int>>[],
-        };
+        _summaryData = summary;
       });
-      return;
-    }
-
-    try {
-      final items = _currentMealPlan!.items;
-      final totalPlanned = items.length;
-      final percentage = totalPlanned / 14.0;
-
-      // Protein sequence by day
-      final proteinsByDay = <String, Set<ProteinType>>{};
-
-      // Planned meals list
-      final plannedMeals = <Map<String, dynamic>>[];
-
-      for (final item in items) {
-        final date = DateTime.parse(item.plannedDate);
-        final dayName = _getDayName(date.weekday);
-
-        proteinsByDay[dayName] ??= <ProteinType>{};
-
-        final mealRecipes = <String>[];
-        for (final mealRecipe in item.mealPlanItemRecipes ?? []) {
-          final recipe = await _dbHelper.getRecipe(mealRecipe.recipeId);
-          if (recipe != null) {
-            mealRecipes.add(recipe.name);
-
-            // Get protein from primary dish
-            if (mealRecipe.isPrimaryDish) {
-              final ingredientMaps =
-                  await _dbHelper.getRecipeIngredients(mealRecipe.recipeId);
-              for (final ingredientMap in ingredientMaps) {
-                final proteinTypeStr = ingredientMap['protein_type'] as String?;
-                if (proteinTypeStr != null && proteinTypeStr != 'none') {
-                  try {
-                    final proteinType = ProteinType.values.firstWhere(
-                      (type) => type.name == proteinTypeStr,
-                    );
-                    if (proteinType.isMainProtein) {
-                      proteinsByDay[dayName]!.add(proteinType);
-                      break;
-                    }
-                  } catch (e) {
-                    continue;
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        if (mealRecipes.isNotEmpty) {
-          plannedMeals.add({
-            'day': dayName,
-            'date': date,
-            'mealType': item.mealType,
-            'recipes': mealRecipes,
-          });
-        }
-      }
-
-      // Recipe variety
-      final recipeIds = <String>[];
-      for (final item in items) {
-        for (final mealRecipe in item.mealPlanItemRecipes ?? []) {
-          recipeIds.add(mealRecipe.recipeId);
-        }
-      }
-
-      final uniqueCount = recipeIds.toSet().length;
-      final recipeCounts = <String, int>{};
-      for (final id in recipeIds) {
-        recipeCounts[id] = (recipeCounts[id] ?? 0) + 1;
-      }
-
-      final repeatedRecipes = recipeCounts.entries
-          .where((e) => e.value > 1)
-          .toList()
-        ..sort((a, b) => b.value.compareTo(a.value));
-
-      if (mounted) {
-        setState(() {
-          _summaryData = {
-            'totalPlanned': totalPlanned,
-            'percentage': percentage,
-            'proteinsByDay': proteinsByDay,
-            'plannedMeals': plannedMeals,
-            'uniqueRecipes': uniqueCount,
-            'repeatedRecipes': repeatedRecipes,
-          };
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _summaryData = {
-            'totalPlanned': 0,
-            'percentage': 0.0,
-            'proteinsByDay': <String, Set<ProteinType>>{},
-            'plannedMeals': <Map<String, dynamic>>[],
-            'uniqueRecipes': 0,
-            'repeatedRecipes': <MapEntry<String, int>>[],
-            'error': e.toString(),
-          };
-        });
-      }
-    }
-  }
-
-  String _getDayName(int weekday) {
-    switch (weekday) {
-      case DateTime.monday:
-        return 'Monday';
-      case DateTime.tuesday:
-        return 'Tuesday';
-      case DateTime.wednesday:
-        return 'Wednesday';
-      case DateTime.thursday:
-        return 'Thursday';
-      case DateTime.friday:
-        return 'Friday';
-      case DateTime.saturday:
-        return 'Saturday';
-      case DateTime.sunday:
-        return 'Sunday';
-      default:
-        return 'Unknown';
     }
   }
 
@@ -1399,7 +1271,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_summaryData!.containsKey('error')) {
+    if (_summaryData!.hasError) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1438,8 +1310,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
   }
 
   Widget _buildOverviewCard() {
-    final totalPlanned = _summaryData!['totalPlanned'] as int;
-    final percentage = _summaryData!['percentage'] as double;
+    final totalPlanned = _summaryData!.totalPlanned;
+    final percentage = _summaryData!.percentage;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -1465,8 +1337,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
   }
 
   Widget _buildProteinSequenceSection() {
-    final proteinsByDay =
-        _summaryData!['proteinsByDay'] as Map<String, Set<ProteinType>>;
+    final proteinsByDay = _summaryData!.proteinsByDay;
 
     // Order days Friday through Thursday
     final orderedDays = [
@@ -1542,8 +1413,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
   }
 
   Widget _buildPlannedMealsSection() {
-    final plannedMeals =
-        _summaryData!['plannedMeals'] as List<Map<String, dynamic>>;
+    final plannedMeals = _summaryData!.plannedMeals;
 
     if (plannedMeals.isEmpty) {
       return Column(
@@ -1567,11 +1437,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
     }
 
     // Sort by date
-    plannedMeals.sort((a, b) {
-      final dateA = a['date'] as DateTime;
-      final dateB = b['date'] as DateTime;
-      return dateA.compareTo(dateB);
-    });
+    final sortedMeals = List<PlannedMealInfo>.from(plannedMeals)
+      ..sort((a, b) => a.date.compareTo(b.date));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1585,10 +1452,10 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
           ),
         ),
         const SizedBox(height: 8),
-        ...plannedMeals.map((meal) {
-          final day = meal['day'] as String;
-          final mealType = meal['mealType'] as String;
-          final recipes = meal['recipes'] as List<String>;
+        ...sortedMeals.map((meal) {
+          final day = meal.day;
+          final mealType = meal.mealType;
+          final recipes = meal.recipes;
 
           // Capitalize meal type
           final formattedMealType =
@@ -1625,9 +1492,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
   }
 
   Widget _buildVarietySection() {
-    final uniqueRecipes = _summaryData!['uniqueRecipes'] as int;
-    final repeatedRecipes =
-        _summaryData!['repeatedRecipes'] as List<MapEntry<String, int>>;
+    final uniqueRecipes = _summaryData!.uniqueRecipes;
+    final repeatedRecipes = _summaryData!.repeatedRecipes;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1662,20 +1528,13 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
             style: const TextStyle(fontSize: 16),
           ),
           const SizedBox(height: 8),
-          ...repeatedRecipes.map((entry) {
-            return FutureBuilder<Recipe?>(
-              future: _dbHelper.getRecipe(entry.key),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) return const SizedBox.shrink();
-                final recipe = snapshot.data!;
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Text(
-                    '• ${recipe.name} ${AppLocalizations.of(context)!.timesUsed(entry.value)}',
-                    style: const TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                );
-              },
+          ...repeatedRecipes.map((repetition) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Text(
+                '• ${repetition.recipeName} ${AppLocalizations.of(context)!.timesUsed(repetition.count)}',
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
+              ),
             );
           }),
         ],
