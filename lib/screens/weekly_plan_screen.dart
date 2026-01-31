@@ -17,6 +17,7 @@ import '../core/services/snackbar_service.dart';
 import '../core/services/meal_plan_analysis_service.dart';
 import '../core/services/meal_plan_summary_service.dart';
 import '../core/services/meal_plan_service.dart';
+import '../core/services/meal_action_service.dart';
 import '../core/services/meal_edit_service.dart';
 import '../core/providers/recipe_provider.dart';
 import '../core/providers/meal_provider.dart';
@@ -50,6 +51,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
   late MealPlanAnalysisService _mealPlanAnalysis;
   late MealPlanSummaryService _mealPlanSummary;
   late MealPlanService _mealPlanService;
+  late MealActionService _mealActionService;
   DateTime _currentWeekStart = _getFriday(DateTime.now());
   MealPlan? _currentMealPlan;
   bool _isLoading = true;
@@ -91,6 +93,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
     _mealPlanAnalysis = MealPlanAnalysisService(_dbHelper);
     _mealPlanSummary = MealPlanSummaryService(_dbHelper);
     _mealPlanService = MealPlanService(_dbHelper);
+    _mealActionService = MealActionService(_dbHelper);
     _tabController = TabController(length: 2, vsync: this);
     _loadData();
   }
@@ -544,10 +547,13 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
   Future<void> _handleMarkAsCooked(
       DateTime date, String mealType, String recipeId) async {
     try {
-      // First, get details of the meal plan item
-      final items =
-          _currentMealPlan?.getItemsForDateAndMealType(date, mealType) ?? [];
-      if (items.isEmpty) {
+      // Find the planned meal for this slot
+      final mealPlanItem = _mealActionService.findPlannedMealForSlot(
+        _currentMealPlan,
+        date,
+        mealType,
+      );
+      if (mealPlanItem == null) {
         if (mounted) {
           SnackbarService.showError(
               context, AppLocalizations.of(context)!.plannedMealNotFound);
@@ -555,29 +561,17 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         return;
       }
 
-      // Get the primary recipe
-      final recipe = await _dbHelper.getRecipe(recipeId);
-      if (recipe == null) {
+      // Get recipes from the meal plan item
+      final recipes = await _mealActionService.getRecipesFromMealPlanItem(
+        mealPlanItem,
+        recipeId,
+      );
+      if (recipes == null) {
         if (mounted) {
           SnackbarService.showError(
               context, AppLocalizations.of(context)!.recipeNotFound);
         }
         return;
-      }
-
-      // Get any additional recipes already in the plan
-      List<Recipe> additionalRecipes = [];
-      if (items[0].mealPlanItemRecipes != null) {
-        for (final mealRecipe in items[0].mealPlanItemRecipes!) {
-          if (mealRecipe.recipeId != recipeId) {
-            // Skip the primary recipe
-            final additionalRecipe =
-                await _dbHelper.getRecipe(mealRecipe.recipeId);
-            if (additionalRecipe != null) {
-              additionalRecipes.add(additionalRecipe);
-            }
-          }
-        }
       }
 
       // Show the meal recording dialog
@@ -586,10 +580,10 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         result = await showDialog<Map<String, dynamic>>(
           context: context,
           builder: (context) => MealRecordingDialog(
-            primaryRecipe: recipe,
-            additionalRecipes: additionalRecipes,
+            primaryRecipe: recipes.primary,
+            additionalRecipes: recipes.additional,
             plannedDate: date,
-            notes: items[0].notes,
+            notes: mealPlanItem.notes,
           ),
         );
       }
@@ -652,7 +646,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
       }
 
       // Mark the meal plan item as cooked using the provider
-      await mealPlanProvider.markMealAsCooked(items[0]);
+      await mealPlanProvider.markMealAsCooked(mealPlanItem);
 
       if (mounted) {
         SnackbarService.showSuccess(
@@ -675,11 +669,13 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
   Future<void> _handleAddSideDish(
       DateTime date, String mealType, String recipeId) async {
     try {
-      // First, find the existing cooked meal
-      // We need to look in the meals table for a meal that was created from this planned meal
-      final items =
-          _currentMealPlan?.getItemsForDateAndMealType(date, mealType) ?? [];
-      if (items.isEmpty || !items[0].hasBeenCooked) {
+      // Find the planned meal for this slot
+      final mealPlanItem = _mealActionService.findPlannedMealForSlot(
+        _currentMealPlan,
+        date,
+        mealType,
+      );
+      if (mealPlanItem == null || !mealPlanItem.hasBeenCooked) {
         if (mounted) {
           SnackbarService.showError(
               context, AppLocalizations.of(context)!.mealNotFoundOrNotCooked);
@@ -687,34 +683,11 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         return;
       }
 
-      // Find the actual meal record
-      // We'll search for meals cooked on the same date as the planned date
-      final plannedDateOnly = MealPlanItem.formatPlannedDate(date);
-      final searchDate = DateTime.parse(plannedDateOnly);
-
-      // Get all meals for the primary recipe from that day
-      final allMealsForRecipe = await _dbHelper.getMealsForRecipe(recipeId);
-
-      // Find the meal that was cooked on the planned date (or close to it)
-      Meal? targetMeal;
-      for (final meal in allMealsForRecipe) {
-        final mealDate = DateTime(
-          meal.cookedAt.year,
-          meal.cookedAt.month,
-          meal.cookedAt.day,
-        );
-        final plannedDateNormalized = DateTime(
-          searchDate.year,
-          searchDate.month,
-          searchDate.day,
-        );
-
-        if (mealDate.isAtSameMomentAs(plannedDateNormalized)) {
-          targetMeal = meal;
-          break;
-        }
-      }
-
+      // Find the cooked meal record
+      final targetMeal = await _mealActionService.findCookedMealForSlot(
+        date,
+        recipeId,
+      );
       if (targetMeal == null) {
         if (mounted) {
           SnackbarService.showError(
@@ -723,28 +696,17 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         return;
       }
 
-      // Get the primary recipe
-      final recipe = await _dbHelper.getRecipe(recipeId);
-      if (recipe == null) {
+      // Get recipes from the cooked meal
+      final recipes = await _mealActionService.getRecipesFromCookedMeal(
+        targetMeal,
+        recipeId,
+      );
+      if (recipes == null) {
         if (mounted) {
           SnackbarService.showError(
               context, AppLocalizations.of(context)!.recipeNotFound);
         }
         return;
-      }
-
-      // Get current additional recipes from the meal
-      List<Recipe> currentAdditionalRecipes = [];
-      if (targetMeal.mealRecipes != null) {
-        for (final mealRecipe in targetMeal.mealRecipes!) {
-          if (!mealRecipe.isPrimaryDish) {
-            final additionalRecipe =
-                await _dbHelper.getRecipe(mealRecipe.recipeId);
-            if (additionalRecipe != null) {
-              currentAdditionalRecipes.add(additionalRecipe);
-            }
-          }
-        }
       }
 
       // Show the meal recording dialog in "edit mode"
@@ -753,10 +715,10 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         result = await showDialog<Map<String, dynamic>>(
           context: context,
           builder: (context) => MealRecordingDialog(
-            primaryRecipe: recipe,
-            additionalRecipes: currentAdditionalRecipes,
+            primaryRecipe: recipes.primary,
+            additionalRecipes: recipes.additional,
             plannedDate: date,
-            notes: targetMeal?.notes ?? '',
+            notes: targetMeal.notes ?? '',
           ),
         );
       }
@@ -803,10 +765,13 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
   Future<void> _handleEditCookedMeal(
       DateTime date, String mealType, String recipeId) async {
     try {
-      // Find the cooked meal plan item
-      final items =
-          _currentMealPlan?.getItemsForDateAndMealType(date, mealType) ?? [];
-      if (items.isEmpty || !items[0].hasBeenCooked) {
+      // Find the planned meal for this slot
+      final mealPlanItem = _mealActionService.findPlannedMealForSlot(
+        _currentMealPlan,
+        date,
+        mealType,
+      );
+      if (mealPlanItem == null || !mealPlanItem.hasBeenCooked) {
         if (mounted) {
           SnackbarService.showError(
               context, AppLocalizations.of(context)!.mealNotFoundOrNotCooked);
@@ -814,31 +779,11 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         return;
       }
 
-      // Find the actual meal record by searching for meals cooked on the planned date
-      final plannedDateOnly = MealPlanItem.formatPlannedDate(date);
-      final searchDate = DateTime.parse(plannedDateOnly);
-
-      final allMealsForRecipe = await _dbHelper.getMealsForRecipe(recipeId);
-
-      Meal? targetMeal;
-      for (final meal in allMealsForRecipe) {
-        final mealDate = DateTime(
-          meal.cookedAt.year,
-          meal.cookedAt.month,
-          meal.cookedAt.day,
-        );
-        final plannedDateNormalized = DateTime(
-          searchDate.year,
-          searchDate.month,
-          searchDate.day,
-        );
-
-        if (mealDate.isAtSameMomentAs(plannedDateNormalized)) {
-          targetMeal = meal;
-          break;
-        }
-      }
-
+      // Find the cooked meal record
+      final targetMeal = await _mealActionService.findCookedMealForSlot(
+        date,
+        recipeId,
+      );
       if (targetMeal == null) {
         if (mounted) {
           SnackbarService.showError(
@@ -847,28 +792,17 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         return;
       }
 
-      // Get the primary recipe
-      final recipe = await _dbHelper.getRecipe(recipeId);
-      if (recipe == null) {
+      // Get recipes from the cooked meal
+      final recipes = await _mealActionService.getRecipesFromCookedMeal(
+        targetMeal,
+        recipeId,
+      );
+      if (recipes == null) {
         if (mounted) {
           SnackbarService.showError(
               context, AppLocalizations.of(context)!.recipeNotFound);
         }
         return;
-      }
-
-      // Get current additional recipes from the meal
-      List<Recipe> currentAdditionalRecipes = [];
-      if (targetMeal.mealRecipes != null) {
-        for (final mealRecipe in targetMeal.mealRecipes!) {
-          if (!mealRecipe.isPrimaryDish) {
-            final additionalRecipe =
-                await _dbHelper.getRecipe(mealRecipe.recipeId);
-            if (additionalRecipe != null) {
-              currentAdditionalRecipes.add(additionalRecipe);
-            }
-          }
-        }
       }
 
       // Show the edit dialog
@@ -877,9 +811,9 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         result = await showDialog<Map<String, dynamic>>(
           context: context,
           builder: (context) => EditMealRecordingDialog(
-            meal: targetMeal!,
-            primaryRecipe: recipe,
-            additionalRecipes: currentAdditionalRecipes,
+            meal: targetMeal,
+            primaryRecipe: recipes.primary,
+            additionalRecipes: recipes.additional,
           ),
         );
       }
