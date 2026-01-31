@@ -23,11 +23,9 @@ import '../core/errors/gastrobrain_exceptions.dart';
 import '../widgets/weekly_calendar_widget.dart';
 import '../widgets/meal_recording_dialog.dart';
 import '../widgets/edit_meal_recording_dialog.dart';
-import '../widgets/recipe_selection_card.dart';
-import '../widgets/add_side_dish_dialog.dart';
 import '../widgets/recipe_selection_dialog.dart';
+import '../widgets/week_navigation_widget.dart';
 import '../utils/id_generator.dart';
-import '../utils/sorting_utils.dart';
 import '../l10n/app_localizations.dart';
 import '../screens/recipe_details_screen.dart';
 import '../screens/shopping_list_screen.dart';
@@ -128,32 +126,6 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
     }
   }
 
-  /// Calculates the relative week distance from the current week
-  /// Returns positive number for future weeks, negative for past weeks
-  int get _weekDistanceFromCurrent {
-    final now = DateTime.now();
-    final currentWeekFriday = _getFriday(now);
-    final differenceInDays =
-        _currentWeekStart.difference(currentWeekFriday).inDays;
-    return (differenceInDays / 7).round();
-  }
-
-  /// Returns a formatted string showing relative time distance
-  String get _relativeTimeDistance {
-    final distance = _weekDistanceFromCurrent;
-    if (distance == 0) {
-      return AppLocalizations.of(context)!.thisWeekRelative;
-    } else if (distance == 1) {
-      return AppLocalizations.of(context)!.nextWeekRelative;
-    } else if (distance == -1) {
-      return AppLocalizations.of(context)!.previousWeekRelative;
-    } else if (distance > 0) {
-      return AppLocalizations.of(context)!.futureWeeksRelative(distance);
-    } else {
-      return AppLocalizations.of(context)!.pastWeeksRelative(distance);
-    }
-  }
-
   /// Jumps to the current week
   void _jumpToCurrentWeek() {
     final now = DateTime.now();
@@ -178,54 +150,6 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         _currentMealPlan = null;
       });
       _loadData();
-    }
-  }
-
-  /// Gets the context indicator color
-  Color _getContextColor() {
-    switch (_currentWeekContext) {
-      case TimeContext.past:
-        return Colors.grey.withAlpha(51);
-      case TimeContext.current:
-        return Theme.of(context).colorScheme.primaryContainer.withAlpha(128);
-      case TimeContext.future:
-        return Theme.of(context).colorScheme.primary.withAlpha(76);
-    }
-  }
-
-  /// Gets the context border color
-  Color _getContextBorderColor() {
-    switch (_currentWeekContext) {
-      case TimeContext.past:
-        return Colors.grey.withAlpha(128);
-      case TimeContext.current:
-        return Theme.of(context).colorScheme.primary.withAlpha(128);
-      case TimeContext.future:
-        return Theme.of(context).colorScheme.primary.withAlpha(128);
-    }
-  }
-
-  /// Gets the context text color
-  Color _getContextTextColor() {
-    switch (_currentWeekContext) {
-      case TimeContext.past:
-        return Colors.grey[700] ?? Colors.grey;
-      case TimeContext.current:
-        return Theme.of(context).colorScheme.onPrimaryContainer;
-      case TimeContext.future:
-        return Theme.of(context).colorScheme.primary;
-    }
-  }
-
-  /// Gets the context icon
-  IconData _getContextIcon() {
-    switch (_currentWeekContext) {
-      case TimeContext.past:
-        return Icons.history;
-      case TimeContext.current:
-        return Icons.today;
-      case TimeContext.future:
-        return Icons.schedule;
     }
   }
 
@@ -672,9 +596,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
       } catch (e) {
         if (mounted) {
           SnackbarService.showError(
-              context,
-              AppLocalizations.of(context)!
-                  .errorViewingRecipeDetails);
+              context, AppLocalizations.of(context)!.errorViewingRecipeDetails);
         }
       }
     } else if (action == 'change') {
@@ -1232,7 +1154,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
           context: context,
           builder: (context) => AlertDialog(
             title: Text(AppLocalizations.of(context)!.shoppingListExists),
-            content: Text(AppLocalizations.of(context)!.shoppingListExistsMessage),
+            content:
+                Text(AppLocalizations.of(context)!.shoppingListExistsMessage),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, 'cancel'),
@@ -1295,7 +1218,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
       );
 
       // Generate the shopping list
-      final shoppingList = await ServiceProvider.shoppingList.generateFromDateRange(
+      final shoppingList =
+          await ServiceProvider.shoppingList.generateFromDateRange(
         startDate: _currentWeekStart,
         endDate: endDate,
       );
@@ -1320,7 +1244,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${AppLocalizations.of(context)!.errorGeneratingShoppingList} $e'),
+            content: Text(
+                '${AppLocalizations.of(context)!.errorGeneratingShoppingList} $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -1554,7 +1479,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
       'Thursday'
     ];
 
-    final hasProteins = proteinsByDay.values.any((proteins) => proteins.isNotEmpty);
+    final hasProteins =
+        proteinsByDay.values.any((proteins) => proteins.isNotEmpty);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1665,7 +1591,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
           final recipes = meal['recipes'] as List<String>;
 
           // Capitalize meal type
-          final formattedMealType = mealType[0].toUpperCase() + mealType.substring(1);
+          final formattedMealType =
+              mealType[0].toUpperCase() + mealType.substring(1);
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 6),
@@ -1758,9 +1685,6 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
 
   @override
   Widget build(BuildContext context) {
-    final formattedDate =
-        '${_currentWeekStart.day}/${_currentWeekStart.month}/${_currentWeekStart.year}';
-
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.weeklyMealPlan),
@@ -1775,124 +1699,14 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
       body: Column(
         children: [
           // Week navigation controls
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.navigate_before),
-                  onPressed: () => _changeWeek(-1),
-                  tooltip: AppLocalizations.of(context)!.previousWeek,
-                ),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: _currentWeekContext != TimeContext.current
-                        ? _jumpToCurrentWeek
-                        : null,
-                    child: Column(
-                      children: [
-                        Text(
-                          AppLocalizations.of(context)!.weekOf(formattedDate),
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Time context indicator
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: _getContextColor(),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: _getContextBorderColor(),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    _getContextIcon(),
-                                    size: 14,
-                                    color: _getContextTextColor(),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    _currentWeekContext
-                                        .getLocalizedDisplayName(context),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      color: _getContextTextColor(),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            // Relative time distance with tap hint
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  _relativeTimeDistance,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(
-                                        color: Colors.grey[600],
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                ),
-                                // Show subtle jump hint for non-current weeks
-                                if (_currentWeekContext !=
-                                    TimeContext.current) ...[
-                                  const SizedBox(width: 4),
-                                  Icon(
-                                    Icons.my_location,
-                                    size: 14,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .primary
-                                        .withAlpha(128),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ],
-                        ),
-                        // Add subtle hint text for non-current weeks
-                        if (_currentWeekContext != TimeContext.current)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2),
-                            child: Text(
-                              AppLocalizations.of(context)!
-                                  .tapToJumpToCurrentWeek,
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .primary
-                                    .withAlpha(153),
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.navigate_next),
-                  onPressed: () => _changeWeek(1),
-                  tooltip: AppLocalizations.of(context)!.nextWeek,
-                ),
-              ],
-            ),
+          WeekNavigationWidget(
+            weekStartDate: _currentWeekStart,
+            timeContext: _currentWeekContext,
+            onPreviousWeek: () => _changeWeek(-1),
+            onNextWeek: () => _changeWeek(1),
+            onJumpToCurrentWeek: _currentWeekContext != TimeContext.current
+                ? _jumpToCurrentWeek
+                : null,
           ),
 
           // TabBar for Planning/Summary
