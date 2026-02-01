@@ -13,10 +13,14 @@ class WeeklySummaryWidget extends StatelessWidget {
   /// Callback when user wants to retry loading data (on error)
   final VoidCallback onRetry;
 
+  /// Optional scroll controller (used when embedded in bottom sheet)
+  final ScrollController? scrollController;
+
   const WeeklySummaryWidget({
     super.key,
     required this.summaryData,
     required this.onRetry,
+    this.scrollController,
   });
 
   @override
@@ -47,6 +51,7 @@ class WeeklySummaryWidget extends StatelessWidget {
     }
 
     return SingleChildScrollView(
+      controller: scrollController,
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,9 +181,9 @@ class WeeklySummaryWidget extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Planned Meals',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context)!.plannedMeals,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: Color(0xFF2C2C2C),
@@ -200,9 +205,9 @@ class WeeklySummaryWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Planned Meals',
-          style: TextStyle(
+        Text(
+          AppLocalizations.of(context)!.plannedMeals,
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: Color(0xFF2C2C2C),

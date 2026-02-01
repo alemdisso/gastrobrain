@@ -65,27 +65,15 @@ class WeekNavigationWidget extends StatelessWidget {
     return date.subtract(Duration(days: daysToSubtract));
   }
 
-  /// Gets the context indicator color
+  /// Gets the context indicator color (for background)
   Color _getContextColor(BuildContext context) {
     switch (timeContext) {
       case TimeContext.past:
-        return Colors.grey.withAlpha(51);
+        return Theme.of(context).colorScheme.onSurfaceVariant;
       case TimeContext.current:
-        return Theme.of(context).colorScheme.primaryContainer.withAlpha(128);
+        return Theme.of(context).colorScheme.primaryContainer;
       case TimeContext.future:
-        return Theme.of(context).colorScheme.primary.withAlpha(76);
-    }
-  }
-
-  /// Gets the context border color
-  Color _getContextBorderColor(BuildContext context) {
-    switch (timeContext) {
-      case TimeContext.past:
-        return Colors.grey.withAlpha(128);
-      case TimeContext.current:
-        return Theme.of(context).colorScheme.primary.withAlpha(128);
-      case TimeContext.future:
-        return Theme.of(context).colorScheme.primary.withAlpha(128);
+        return Theme.of(context).colorScheme.primary;
     }
   }
 
@@ -93,7 +81,7 @@ class WeekNavigationWidget extends StatelessWidget {
   Color _getContextTextColor(BuildContext context) {
     switch (timeContext) {
       case TimeContext.past:
-        return Colors.grey[700] ?? Colors.grey;
+        return Theme.of(context).colorScheme.onSurfaceVariant;
       case TimeContext.current:
         return Theme.of(context).colorScheme.onPrimaryContainer;
       case TimeContext.future:
@@ -119,116 +107,89 @@ class WeekNavigationWidget extends StatelessWidget {
         '${weekStartDate.day}/${weekStartDate.month}/${weekStartDate.year}';
 
     return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Column(
         children: [
-          IconButton(
-            icon: const Icon(Icons.navigate_before),
-            onPressed: onPreviousWeek,
-            tooltip: AppLocalizations.of(context)!.previousWeek,
-          ),
-          Expanded(
-            child: GestureDetector(
-              onTap: onJumpToCurrentWeek,
-              child: Column(
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.weekOf(formattedDate),
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Time context indicator
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: _getContextColor(context),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: _getContextBorderColor(context),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              _getContextIcon(),
-                              size: 14,
-                              color: _getContextTextColor(context),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              timeContext.getLocalizedDisplayName(context),
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: _getContextTextColor(context),
-                              ),
-                            ),
-                          ],
-                        ),
+          // Row 1: Navigation arrows + Week date + Context badge
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.chevron_left),
+                onPressed: onPreviousWeek,
+                tooltip: AppLocalizations.of(context)!.previousWeek,
+              ),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.weekOf(formattedDate),
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                    const SizedBox(width: 8),
+                    // Simplified context badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: _getContextColor(context).withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(4),
                       ),
-                      const SizedBox(width: 8),
-                      // Relative time distance with tap hint
-                      Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          Icon(
+                            _getContextIcon(),
+                            size: 14,
+                            color: _getContextTextColor(context),
+                          ),
+                          const SizedBox(width: 4),
                           Text(
-                            _getRelativeTimeDistance(context),
+                            timeContext.getLocalizedDisplayName(context),
                             style: Theme.of(context)
                                 .textTheme
                                 .bodySmall
                                 ?.copyWith(
-                                  color: Colors.grey[600],
-                                  fontWeight: FontWeight.w500,
+                                  color: _getContextTextColor(context),
                                 ),
                           ),
-                          // Show subtle jump hint for non-current weeks
-                          if (timeContext != TimeContext.current) ...[
-                            const SizedBox(width: 4),
-                            Icon(
-                              Icons.my_location,
-                              size: 14,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .primary
-                                  .withAlpha(128),
-                            ),
-                          ],
                         ],
                       ),
-                    ],
-                  ),
-                  // Add subtle hint text for non-current weeks
-                  if (timeContext != TimeContext.current)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2),
-                      child: Text(
-                        AppLocalizations.of(context)!.tapToJumpToCurrentWeek,
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .primary
-                              .withAlpha(153),
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
                     ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.chevron_right),
+                onPressed: onNextWeek,
+                tooltip: AppLocalizations.of(context)!.nextWeek,
+              ),
+            ],
+          ),
+
+          // Row 2: Relative time + Jump button (conditional)
+          if (timeContext != TimeContext.current)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox(width: 48), // Align with left arrow
+                  Text(
+                    _getRelativeTimeDistance(context),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.home, size: 20),
+                    onPressed: onJumpToCurrentWeek,
+                    tooltip: AppLocalizations.of(context)!.tapToJumpToCurrentWeek,
+                  ),
                 ],
               ),
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.navigate_next),
-            onPressed: onNextWeek,
-            tooltip: AppLocalizations.of(context)!.nextWeek,
-          ),
         ],
       ),
     );

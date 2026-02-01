@@ -2121,6 +2121,38 @@
   "hideToTaste": "Hide 'To Taste'",
   "@hideToTaste": {
     "description": "Filter option to hide ingredients with quantity zero (to taste)"
+  },
+  "previewIngredients": "Preview Ingredients",
+  "@previewIngredients": {
+    "description": "Shopping list option to preview ingredients during planning"
+  },
+  "previewIngredientsSubtitle": "See what you'd need to buy",
+  "@previewIngredientsSubtitle": {
+    "description": "Subtitle for preview ingredients option"
+  },
+  "createListForShopping": "Create list for shopping",
+  "@createListForShopping": {
+    "description": "Subtitle for generate shopping list option"
+  },
+  "viewExistingList": "View Existing List",
+  "@viewExistingList": {
+    "description": "Shopping list option to view existing list"
+  },
+  "viewExistingListSubtitle": "Open current shopping list",
+  "@viewExistingListSubtitle": {
+    "description": "Subtitle for view existing list option"
+  },
+  "previewModeComingSoon": "Preview mode coming soon!",
+  "@previewModeComingSoon": {
+    "description": "Placeholder message for preview mode feature"
+  },
+  "failedToLoadShoppingList": "Failed to load shopping list",
+  "@failedToLoadShoppingList": {
+    "description": "Error message when shopping list cannot be loaded"
+  },
+  "plannedMeals": "Planned Meals",
+  "@plannedMeals": {
+    "description": "Header for the planned meals section in weekly summary"
   }
 
 }

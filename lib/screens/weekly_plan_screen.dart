@@ -43,8 +43,7 @@ class WeeklyPlanScreen extends StatefulWidget {
   State<WeeklyPlanScreen> createState() => _WeeklyPlanScreenState();
 }
 
-class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
-    with SingleTickerProviderStateMixin {
+class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   late DatabaseHelper _dbHelper;
   late RecommendationService _recommendationService;
   late MealPlanAnalysisService _mealPlanAnalysis;
@@ -57,10 +56,11 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
   bool _isLoading = true;
   List<Recipe> _availableRecipes = [];
   final ScrollController _scrollController = ScrollController();
-  // Tab controller for Planning/Summary tabs
-  late TabController _tabController;
-  // Summary data
+  // Summary data (will be used in Summary bottom sheet - Checkpoint 3)
   MealPlanSummary? _summaryData;
+  // Bottom sheet state
+  bool _isSummarySheetOpen = false;
+  bool _isShoppingSheetOpen = false;
 
   @override
   void initState() {
@@ -77,7 +77,6 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
       _recommendationService,
       _mealPlanAnalysis,
     );
-    _tabController = TabController(length: 2, vsync: this);
     _loadData();
   }
 
@@ -933,10 +932,273 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
     }
   }
 
-  Widget _buildSummaryView() {
-    return WeeklySummaryWidget(
-      summaryData: _summaryData,
-      onRetry: _loadData,
+  // Bottom sheet methods
+  void _openSummarySheet() {
+    setState(() => _isSummarySheetOpen = true);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.3,
+        maxChildSize: 0.9,
+        builder: (context, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          child: Column(
+            children: [
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // Header
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.summaryTabLabel,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              // Summary content
+              Expanded(
+                child: WeeklySummaryWidget(
+                  summaryData: _summaryData,
+                  onRetry: _loadData,
+                  scrollController: scrollController,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).whenComplete(() {
+      setState(() => _isSummarySheetOpen = false);
+    });
+  }
+
+  void _openShoppingSheet() {
+    setState(() => _isShoppingSheetOpen = true);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: _buildShoppingListOptions(context),
+      ),
+    ).whenComplete(() {
+      setState(() => _isShoppingSheetOpen = false);
+    });
+  }
+
+  Future<void> _showShoppingPreview() async {
+    // TODO: Implement preview mode (Stage 1 from UX doc - future enhancement)
+    // For now, show a SnackBar
+    if (mounted) {
+      SnackbarService.showSuccess(
+        context,
+        AppLocalizations.of(context)!.previewModeComingSoon,
+      );
+    }
+  }
+
+  Future<bool> _hasExistingShoppingList() async {
+    // Check if there's an active shopping list for current week
+    try {
+      final endDate = _currentWeekStart.add(const Duration(days: 6));
+      final existingList = await _dbHelper.getShoppingListForDateRange(
+        _currentWeekStart,
+        endDate,
+      );
+      return existingList != null;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<void> _navigateToShoppingList() async {
+    try {
+      final endDate = _currentWeekStart.add(const Duration(days: 6));
+      final existingList = await _dbHelper.getShoppingListForDateRange(
+        _currentWeekStart,
+        endDate,
+      );
+
+      if (existingList != null && mounted) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ShoppingListScreen(
+              shoppingListId: existingList.id!,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackbarService.showError(
+          context,
+          AppLocalizations.of(context)!.failedToLoadShoppingList,
+        );
+      }
+    }
+  }
+
+  Widget _buildShoppingListOptions(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: _hasExistingShoppingList(),
+      builder: (context, snapshot) {
+        final hasExisting = snapshot.data ?? false;
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Handle bar
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+
+              // Title
+              Text(
+                AppLocalizations.of(context)!.generateShoppingList,
+                style: Theme.of(context).textTheme.titleLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+
+              // Preview option
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.preview),
+                  title: Text(AppLocalizations.of(context)!.previewIngredients),
+                  subtitle: Text(AppLocalizations.of(context)!.previewIngredientsSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showShoppingPreview();
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Generate option
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.add_shopping_cart),
+                  title: Text(AppLocalizations.of(context)!.generateShoppingList),
+                  subtitle: Text(AppLocalizations.of(context)!.createListForShopping),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _handleGenerateShoppingList();
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // View existing option (conditional)
+              if (hasExisting)
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.list),
+                    title: Text(AppLocalizations.of(context)!.viewExistingList),
+                    subtitle: Text(AppLocalizations.of(context)!.viewExistingListSubtitle),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _navigateToShoppingList();
+                    },
+                  ),
+                ),
+
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(AppLocalizations.of(context)!.cancel),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBottomBar(BuildContext context) {
+    return Container(
+      height: 56,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextButton.icon(
+              onPressed: _openSummarySheet,
+              icon: const Icon(Icons.analytics_outlined),
+              label: Text(AppLocalizations.of(context)!.summaryTabLabel),
+              style: TextButton.styleFrom(
+                foregroundColor: _isSummarySheetOpen
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
+              ),
+            ),
+          ),
+          const VerticalDivider(width: 1, thickness: 1),
+          Expanded(
+            child: TextButton.icon(
+              onPressed: _openShoppingSheet,
+              icon: const Icon(Icons.shopping_cart_outlined),
+              label: Text(AppLocalizations.of(context)!.generateShoppingList),
+              style: TextButton.styleFrom(
+                foregroundColor: _isShoppingSheetOpen
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -966,52 +1228,30 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
                 : null,
           ),
 
-          // TabBar for Planning/Summary
-          TabBar(
-            controller: _tabController,
-            tabs: [
-              Tab(text: AppLocalizations.of(context)!.planningTabLabel),
-              Tab(text: AppLocalizations.of(context)!.summaryTabLabel),
-            ],
-          ),
-
-          // Main content - TabBarView
+          // Main content - Planning calendar (always visible)
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : TabBarView(
-                    controller: _tabController,
-                    children: [
-                      // Planning tab - existing calendar
-                      WeeklyCalendarWidget(
-                        weekStartDate: _currentWeekStart,
-                        mealPlan: _currentMealPlan,
-                        timeContext: _currentWeekContext,
-                        onSlotTap: _handleSlotTap,
-                        onMealTap: _handleMealTap,
-                        onDaySelected: _handleDaySelected,
-                        scrollController: _scrollController,
-                        databaseHelper: _dbHelper,
-                      ),
-                      // Summary tab - new summary view
-                      _buildSummaryView(),
-                    ],
+                : WeeklyCalendarWidget(
+                    weekStartDate: _currentWeekStart,
+                    mealPlan: _currentMealPlan,
+                    timeContext: _currentWeekContext,
+                    onSlotTap: _handleSlotTap,
+                    onMealTap: _handleMealTap,
+                    onDaySelected: _handleDaySelected,
+                    scrollController: _scrollController,
+                    databaseHelper: _dbHelper,
                   ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _handleGenerateShoppingList,
-        icon: const Icon(Icons.shopping_cart),
-        label: Text(AppLocalizations.of(context)!.generateShoppingList),
-      ),
+      bottomNavigationBar: _buildBottomBar(context),
     );
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
-    _tabController.dispose();
     // Clear any resources used by the recommendation service if needed
     _recommendationCache.clearAllCache();
     super.dispose();

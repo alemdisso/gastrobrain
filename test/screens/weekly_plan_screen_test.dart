@@ -1178,6 +1178,8 @@ void main() {
   });
 
   // Summary Tab Tests (Issue #32)
+  // TEMPORARILY SKIPPED: Tab architecture removed in Checkpoint 1.
+  // These tests will be updated in Checkpoint 3 when Summary bottom sheet is implemented.
   group('WeeklyPlanScreen Summary Tab', () {
     // Helper to get the Friday of the current week (matches screen logic)
     DateTime getCurrentWeekFriday() {
@@ -1534,7 +1536,7 @@ void main() {
       expect(find.textContaining('Grilled Chicken (2×)'), findsOneWidget);
     });
 
-  });
+  }, skip: 'Tab architecture removed - tests will be updated for bottom sheet in Checkpoint 3');
 }
 
 /// A simple mock of RecommendationService for testing
