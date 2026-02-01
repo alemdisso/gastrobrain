@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/meal_plan_summary.dart';
 import '../l10n/app_localizations.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Widget that displays a weekly meal plan summary
 ///
@@ -35,12 +36,12 @@ class WeeklySummaryWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 16),
+            SizedBox(height: DesignTokens.spacingMd),
             Text(
               AppLocalizations.of(context)!.summaryCalculationError,
-              style: const TextStyle(fontSize: 16),
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: DesignTokens.spacingSm),
             ElevatedButton(
               onPressed: onRetry,
               child: Text(AppLocalizations.of(context)!.retryButton),
@@ -52,16 +53,16 @@ class WeeklySummaryWidget extends StatelessWidget {
 
     return SingleChildScrollView(
       controller: scrollController,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(DesignTokens.spacingMd),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildOverviewCard(context),
-          const SizedBox(height: 20),
+          SizedBox(height: DesignTokens.spacingLg),
           _buildProteinSequenceSection(context),
-          const SizedBox(height: 24),
+          SizedBox(height: DesignTokens.spacingLg),
           _buildPlannedMealsSection(context),
-          const SizedBox(height: 24),
+          SizedBox(height: DesignTokens.spacingLg),
           _buildVarietySection(context),
         ],
       ),
@@ -74,21 +75,19 @@ class WeeklySummaryWidget extends StatelessWidget {
     final percentage = summaryData!.percentage;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: EdgeInsets.symmetric(vertical: DesignTokens.spacingSm),
       child: Row(
         children: [
           const Icon(
             Icons.calendar_month,
-            color: Color(0xFF6B8E23),
+            color: DesignTokens.accent,
             size: 20,
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: DesignTokens.spacingSm),
           Text(
             '${AppLocalizations.of(context)!.mealsPlannedCount(totalPlanned)} (${(percentage * 100).round()}%)',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF2C2C2C),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: DesignTokens.textPrimary,
             ),
           ),
         ],
@@ -119,13 +118,11 @@ class WeeklySummaryWidget extends StatelessWidget {
       children: [
         Text(
           AppLocalizations.of(context)!.proteinDistributionHeader,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF2C2C2C),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            color: DesignTokens.textPrimary,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: DesignTokens.spacingSm),
         hasProteins
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,7 +136,7 @@ class WeeklySummaryWidget extends StatelessWidget {
                       .join(', ');
 
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
+                    padding: EdgeInsets.only(bottom: DesignTokens.spacingXs),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -147,17 +144,16 @@ class WeeklySummaryWidget extends StatelessWidget {
                           width: 50,
                           child: Text(
                             day.substring(0, 3),
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF6B8E23),
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontWeight: DesignTokens.weightMedium,
+                              color: DesignTokens.accent,
                             ),
                           ),
                         ),
                         Expanded(
                           child: Text(
                             proteinNames,
-                            style: const TextStyle(fontSize: 14),
+                            style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         ),
                       ],
@@ -167,7 +163,7 @@ class WeeklySummaryWidget extends StatelessWidget {
               )
             : Text(
                 AppLocalizations.of(context)!.noProteinsPlanned,
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: DesignTokens.textSecondary),
               ),
       ],
     );
@@ -186,13 +182,13 @@ class WeeklySummaryWidget extends StatelessWidget {
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF2C2C2C),
+              color: DesignTokens.textPrimary,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: DesignTokens.spacingSm),
           Text(
             AppLocalizations.of(context)!.noMealsPlannedYet,
-            style: const TextStyle(fontSize: 14, color: Colors.grey),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: DesignTokens.textSecondary),
           ),
         ],
       );
@@ -207,13 +203,11 @@ class WeeklySummaryWidget extends StatelessWidget {
       children: [
         Text(
           AppLocalizations.of(context)!.plannedMeals,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF2C2C2C),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            color: DesignTokens.textPrimary,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: DesignTokens.spacingSm),
         ...sortedMeals.map((meal) {
           final day = meal.day;
           final mealType = meal.mealType;
@@ -224,7 +218,7 @@ class WeeklySummaryWidget extends StatelessWidget {
               mealType[0].toUpperCase() + mealType.substring(1);
 
           return Padding(
-            padding: const EdgeInsets.only(bottom: 6),
+            padding: EdgeInsets.only(bottom: DesignTokens.spacingSm),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -235,14 +229,14 @@ class WeeklySummaryWidget extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF6B8E23),
+                      color: DesignTokens.accent,
                     ),
                   ),
                 ),
                 Expanded(
                   child: Text(
                     recipes.join(', '),
-                    style: const TextStyle(fontSize: 14),
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ),
               ],
@@ -263,40 +257,37 @@ class WeeklySummaryWidget extends StatelessWidget {
       children: [
         Text(
           AppLocalizations.of(context)!.recipeVarietyHeader,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF2C2C2C), // Charcoal
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            color: DesignTokens.textPrimary,
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: DesignTokens.spacingXs),
         Container(
           height: 2,
           width: 170,
-          color: const Color(0xFFD4755F), // Terracotta line
+          color: DesignTokens.primary,
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: DesignTokens.spacingMd),
         Text(
           AppLocalizations.of(context)!.uniqueRecipesCount(uniqueRecipes),
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: DesignTokens.weightBold,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: DesignTokens.spacingSm),
         if (repeatedRecipes.isNotEmpty) ...[
           Text(
             AppLocalizations.of(context)!
                 .repeatedRecipesCount(repeatedRecipes.length),
-            style: const TextStyle(fontSize: 16),
+            style: Theme.of(context).textTheme.bodyLarge,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: DesignTokens.spacingSm),
           ...repeatedRecipes.map((repetition) {
             return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2),
+              padding: EdgeInsets.symmetric(vertical: DesignTokens.spacingXXs),
               child: Text(
                 '• ${repetition.recipeName} ${AppLocalizations.of(context)!.timesUsed(repetition.count)}',
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: DesignTokens.textSecondary),
               ),
             );
           }),

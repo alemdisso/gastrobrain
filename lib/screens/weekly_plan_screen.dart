@@ -17,6 +17,7 @@ import '../core/services/meal_plan_service.dart';
 import '../core/services/meal_action_service.dart';
 import '../core/services/meal_edit_service.dart';
 import '../core/services/recommendation_cache_service.dart';
+import '../core/theme/design_tokens.dart';
 import '../core/providers/recipe_provider.dart';
 import '../core/providers/meal_provider.dart';
 import '../core/providers/meal_plan_provider.dart';
@@ -879,7 +880,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                 height: 20,
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: DesignTokens.spacingMd),
               Text(AppLocalizations.of(context)!.generatingShoppingList),
             ],
           ),
@@ -947,23 +948,28 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         builder: (context, scrollController) => Container(
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            borderRadius: BorderRadius.vertical(
+            top: Radius.circular(DesignTokens.borderRadiusLarge),
+          ),
           ),
           child: Column(
             children: [
               // Handle bar
               Container(
-                margin: const EdgeInsets.symmetric(vertical: 8),
+                margin: EdgeInsets.symmetric(vertical: DesignTokens.spacingSm),
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(DesignTokens.spacingXXs),
                 ),
               ),
               // Header
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: EdgeInsets.symmetric(
+                horizontal: DesignTokens.spacingMd,
+                vertical: DesignTokens.spacingSm,
+              ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -1005,7 +1011,9 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       builder: (context) => Container(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(DesignTokens.borderRadiusLarge),
+          ),
         ),
         child: _buildShoppingListOptions(context),
       ),
@@ -1074,7 +1082,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         final hasExisting = snapshot.data ?? false;
 
         return Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(DesignTokens.spacingMd),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1082,12 +1090,12 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
               // Handle bar
               Center(
                 child: Container(
-                  margin: const EdgeInsets.only(bottom: 16),
+                  margin: EdgeInsets.only(bottom: DesignTokens.spacingMd),
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(DesignTokens.spacingXXs),
                   ),
                 ),
               ),
@@ -1098,7 +1106,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                 style: Theme.of(context).textTheme.titleLarge,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: DesignTokens.spacingLg),
 
               // Preview option
               Card(
@@ -1113,7 +1121,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                   },
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: DesignTokens.spacingMd),
 
               // Generate option
               Card(
@@ -1128,7 +1136,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                   },
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: DesignTokens.spacingMd),
 
               // View existing option (conditional)
               if (hasExisting)
@@ -1145,7 +1153,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                   ),
                 ),
 
-              const SizedBox(height: 12),
+              SizedBox(height: DesignTokens.spacingMd),
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(AppLocalizations.of(context)!.cancel),
@@ -1162,13 +1170,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       height: 56,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
+        boxShadow: DesignTokens.shadowLevel2,
       ),
       child: Row(
         children: [

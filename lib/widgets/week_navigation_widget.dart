@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/time_context.dart';
 import '../l10n/app_localizations.dart';
+import '../core/theme/design_tokens.dart';
 
 /// A reusable widget for navigating between weeks in a meal planning interface.
 ///
@@ -134,7 +135,7 @@ class WeekNavigationWidget extends StatelessWidget {
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: _getContextColor(context).withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(DesignTokens.spacingXs),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
