@@ -134,7 +134,7 @@ class WeekNavigationWidget extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: _getContextColor(context).withOpacity(0.2),
+                        color: _getContextColor(context).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(DesignTokens.spacingXs),
                       ),
                       child: Row(
