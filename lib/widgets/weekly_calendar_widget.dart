@@ -7,6 +7,7 @@ import '../models/meal_plan_item.dart';
 import '../models/recipe.dart';
 import '../models/time_context.dart';
 import '../core/di/service_provider.dart';
+import '../core/theme/design_tokens.dart';
 import '../database/database_helper.dart';
 import '../l10n/app_localizations.dart';
 
@@ -223,7 +224,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
   Color _getContextBackgroundColor(BuildContext context) {
     switch (widget.timeContext) {
       case TimeContext.past:
-        return Colors.grey.withAlpha(25); // Very subtle gray background
+        return DesignTokens.textSecondary.withValues(alpha: 0.1); // Very subtle gray background
       case TimeContext.current:
         return Colors.transparent; // No special background
       case TimeContext.future:
@@ -238,7 +239,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
   Color _getContextBorderColor(BuildContext context) {
     switch (widget.timeContext) {
       case TimeContext.past:
-        return Colors.grey.withAlpha(76);
+        return Theme.of(context).colorScheme.outline.withValues(alpha: 0.3);
       case TimeContext.current:
         return Theme.of(context).colorScheme.outline.withAlpha(76);
       case TimeContext.future:
@@ -286,11 +287,11 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
     if (isLandscape && screenWidth < 960) {
       // Use a more horizontal layout with smaller meal cards
       return GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2, // Two columns
           childAspectRatio: 2.5, // Wider than tall
-          crossAxisSpacing: 8,
-          mainAxisSpacing: 8,
+          crossAxisSpacing: DesignTokens.spacingSm,
+          mainAxisSpacing: DesignTokens.spacingSm,
         ),
         itemCount: 14, // 7 days * 2 meal types
         itemBuilder: (context, index) {
@@ -301,7 +302,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
           return _buildCompactMealTile(date,
               isLunch ? MealPlanItem.lunch : MealPlanItem.dinner, dayIndex);
         },
-        padding: const EdgeInsets.all(8),
+        padding: EdgeInsets.all(DesignTokens.spacingSm),
       );
     }
 
@@ -358,16 +359,15 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
         key: _generateSlotKey(dayIndex, mealType),
         onTap: () => _handleTap(date, mealType, plannedMeal, hasPlannedMeal),
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: EdgeInsets.all(DesignTokens.spacingSm),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 '${_getLocalizedWeekdayNames(context)[dayIndex]} ${_getLocalizedMealType(context, mealType)}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  fontWeight: DesignTokens.weightBold,
                 ),
               ),
               hasPlannedMeal
@@ -375,14 +375,13 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                       recipe.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 14),
+                      style: Theme.of(context).textTheme.bodyMedium,
                     )
                   : Text(
                       AppLocalizations.of(context)!.addMeal,
-                      style: const TextStyle(
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontStyle: FontStyle.italic,
-                        color: Colors.grey,
-                        fontSize: 14,
+                        color: DesignTokens.textSecondary,
                       ),
                     ),
             ],
@@ -419,13 +418,13 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
           }
         },
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: EdgeInsets.all(DesignTokens.spacingMd),
           child: Column(
             children: [
               Text(
                 _getLocalizedWeekdayNames(context)[dayIndex],
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  fontWeight: DesignTokens.weightBold,
                   color: isSelected
                       ? Theme.of(context).colorScheme.primary
                       : (isToday
@@ -435,9 +434,8 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
               ),
               Text(
                 date.day.toString(),
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: isSelected ? DesignTokens.weightBold : DesignTokens.weightRegular,
                   color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
               ),
@@ -462,7 +460,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
       baseColor: baseColor,
       isToday: isToday,
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: EdgeInsets.all(DesignTokens.spacingSm),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -471,37 +469,36 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
               children: [
                 Text(
                   _getLocalizedWeekdayNames(context)[dayIndex],
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: DesignTokens.weightBold,
                     color: isToday
                         ? Theme.of(context).colorScheme.primary
                         : Theme.of(context).textTheme.bodyMedium?.color,
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: DesignTokens.spacingSm),
                 Text(
                   _formatDate(date),
                   style: TextStyle(
                     color: isToday
                         ? Theme.of(context).colorScheme.primary
-                        : Colors.grey,
+                        : DesignTokens.textSecondary,
                   ),
                 ),
                 if (isToday) ...[
-                  const SizedBox(width: 8),
+                  SizedBox(width: DesignTokens.spacingSm),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: DesignTokens.spacingSm,
+                        vertical: DesignTokens.spacingXXs),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primary,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(DesignTokens.borderRadiusMedium),
                     ),
                     child: Text(
                       AppLocalizations.of(context)!.today,
-                      style: TextStyle(
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: Theme.of(context).colorScheme.onPrimary,
-                        fontSize: 12,
                       ),
                     ),
                   ),
@@ -514,7 +511,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
             // Lunch section
             _buildMealSection(date, MealPlanItem.lunch, dayIndex),
 
-            const SizedBox(height: 8),
+            SizedBox(height: DesignTokens.spacingSm),
 
             // Dinner section
             _buildMealSection(date, MealPlanItem.dinner, dayIndex),
@@ -555,29 +552,30 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
 
     final screenWidth = MediaQuery.of(context).size.width;
     final EdgeInsets contentPadding =
-        screenWidth < 360 ? const EdgeInsets.all(8) : const EdgeInsets.all(12);
+        screenWidth < 360 ? EdgeInsets.all(DesignTokens.spacingSm) : EdgeInsets.all(DesignTokens.spacingMd);
 
     return InkWell(
       key: _generateSlotKey(dayIndex, mealType),
       onTap: () => _handleTap(date, mealType, plannedMeal, hasPlannedMeal),
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(DesignTokens.borderRadiusSmall),
       child: Container(
         padding: contentPadding,
         decoration: BoxDecoration(
           color: backgroundColor,
           border: Border.all(color: borderColor),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(DesignTokens.borderRadiusSmall),
         ),
         child: Row(
           children: [
             // Meal type indicator
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: EdgeInsets.symmetric(
+                  horizontal: DesignTokens.spacingMd, vertical: DesignTokens.spacingSm),
               decoration: BoxDecoration(
                 color: mealType == MealPlanItem.lunch
                     ? Theme.of(context).colorScheme.primary.withAlpha(40)
                     : Theme.of(context).colorScheme.secondary.withAlpha(40),
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(DesignTokens.spacingXs),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withAlpha(13),
@@ -598,11 +596,11 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                         ? Theme.of(context).colorScheme.primary
                         : Theme.of(context).colorScheme.secondary,
                   ),
-                  const SizedBox(width: 4),
+                  SizedBox(width: DesignTokens.spacingXs),
                   Text(
                     mealType == MealPlanItem.lunch ? AppLocalizations.of(context)!.lunch : AppLocalizations.of(context)!.dinner,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: DesignTokens.weightBold,
                       color: mealType == MealPlanItem.lunch
                           ? Theme.of(context).colorScheme.primary
                           : Theme.of(context).colorScheme.secondary,
@@ -612,7 +610,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
               ),
             ),
 
-            const SizedBox(width: 16),
+            SizedBox(width: DesignTokens.spacingMd),
 
             // Recipe info or placeholder (no opacity changes)
             Expanded(
@@ -625,9 +623,8 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                             Expanded(
                               child: Text(
                                 recipe.name,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: DesignTokens.weightBold,
                                 ),
                               ),
                             ),
@@ -635,25 +632,25 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                                 plannedMeal.mealPlanItemRecipes!.length >
                                     1) ...[
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: DesignTokens.spacingSm,
+                                    vertical: DesignTokens.spacingXXs),
                                 decoration: BoxDecoration(
                                   color: Theme.of(context)
                                       .colorScheme
                                       .primaryContainer,
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(DesignTokens.borderRadiusSmall),
                                 ),
                                 child: Text(
                                   AppLocalizations.of(context)!.additionalRecipesCount(plannedMeal.mealPlanItemRecipes!.length - 1),
-                                  style: TextStyle(
-                                    fontSize: 12,
+                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
                                     color: Theme.of(context)
                                         .colorScheme
                                         .onPrimaryContainer,
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              SizedBox(width: DesignTokens.spacingSm),
                             ],
                             if (hasBeenCooked)
                               const Tooltip(
@@ -666,7 +663,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                               ),
                           ],
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: DesignTokens.spacingXs),
                         Row(
                           children: [
                             // Difficulty stars (reduced to 3 stars to save space)
@@ -679,19 +676,19 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                                 size: 12,
                                 color: index < recipe.difficulty
                                     ? Colors.amber
-                                    : Colors.grey,
+                                    : DesignTokens.textSecondary,
                               ),
                             ),
-                            const SizedBox(width: 4),
+                            SizedBox(width: DesignTokens.spacingXs),
                             // Time
-                            const Icon(Icons.timer,
-                                size: 12, color: Colors.grey),
-                            const SizedBox(width: 2),
+                            Icon(Icons.timer,
+                                size: 12, color: DesignTokens.textSecondary),
+                            SizedBox(width: DesignTokens.spacingXXs),
                             Expanded(
                               child: Text(
                                   '${recipe.prepTimeMinutes + recipe.cookTimeMinutes}min',
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontSize: 11),
+                                  style: Theme.of(context).textTheme.labelSmall,
                               ),
                             ),
                           ],
@@ -700,15 +697,14 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                     )
                   : Row(
                       children: [
-                        const Icon(Icons.add, color: Colors.grey),
-                        const SizedBox(width: 8),
+                        Icon(Icons.add, color: DesignTokens.textSecondary),
+                        SizedBox(width: DesignTokens.spacingSm),
                         Expanded(
                           child: Text(
                             AppLocalizations.of(context)!.addMeal,
-                            style: const TextStyle(
-                              color: Colors.grey,
+                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                              color: DesignTokens.textSecondary,
                               fontStyle: FontStyle.italic,
-                              fontSize: 12,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
