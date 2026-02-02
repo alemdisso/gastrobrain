@@ -8,6 +8,7 @@ import '../models/frequency_type.dart';
 import '../widgets/recipe_card.dart';
 import '../l10n/app_localizations.dart';
 import '../core/providers/recipe_provider.dart';
+import '../core/theme/design_tokens.dart';
 import 'add_recipe_screen.dart';
 import 'edit_recipe_screen.dart';
 import 'cook_meal_screen.dart';
@@ -95,7 +96,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context)!.errorOccurred),
-            backgroundColor: Colors.red,
+            backgroundColor: DesignTokens.error,
           ),
         );
       }
@@ -244,8 +245,8 @@ class _RecipesScreenState extends State<RecipesScreen> {
                                   ? Icons.battery_full
                                   : Icons.battery_0_bar,
                               color: index < (selectedDifficulty ?? -1)
-                                  ? Colors.green
-                                  : Colors.grey,
+                                  ? DesignTokens.success
+                                  : DesignTokens.textSecondary,
                             ),
                             onPressed: () {
                               setState(() {
@@ -266,8 +267,8 @@ class _RecipesScreenState extends State<RecipesScreen> {
                                   ? Icons.star
                                   : Icons.star_border,
                               color: index < (selectedRating ?? -1)
-                                  ? Colors.amber
-                                  : Colors.grey,
+                                  ? Colors.amber // Keep standard rating color
+                                  : DesignTokens.textSecondary,
                             ),
                             onPressed: () {
                               setState(() {
@@ -407,7 +408,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: EdgeInsets.all(DesignTokens.spacingSm),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
@@ -434,7 +435,10 @@ class _RecipesScreenState extends State<RecipesScreen> {
 
               return Container(
                 color: Theme.of(context).colorScheme.primaryContainer,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: EdgeInsets.symmetric(
+                  horizontal: DesignTokens.spacingMd,
+                  vertical: DesignTokens.spacingSm,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -445,7 +449,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
                           size: 20,
                           color: Theme.of(context).colorScheme.onPrimaryContainer,
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: DesignTokens.spacingSm),
                         Expanded(
                           child: Text(
                             '${AppLocalizations.of(context)!.filtersActive}: ${_getFilterDescription(context, provider)}',
