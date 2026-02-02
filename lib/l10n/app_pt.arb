@@ -2121,5 +2121,37 @@
   "hideToTaste": "Ocultar 'A Gosto'",
   "@hideToTaste": {
     "description": "Filter option to hide ingredients with quantity zero (to taste)"
+  },
+  "previewIngredients": "Visualizar Ingredientes",
+  "@previewIngredients": {
+    "description": "Shopping list option to preview ingredients during planning"
+  },
+  "previewIngredientsSubtitle": "Veja o que você precisaria comprar",
+  "@previewIngredientsSubtitle": {
+    "description": "Subtitle for preview ingredients option"
+  },
+  "createListForShopping": "Criar lista para compras",
+  "@createListForShopping": {
+    "description": "Subtitle for generate shopping list option"
+  },
+  "viewExistingList": "Ver Lista Existente",
+  "@viewExistingList": {
+    "description": "Shopping list option to view existing list"
+  },
+  "viewExistingListSubtitle": "Abrir lista de compras atual",
+  "@viewExistingListSubtitle": {
+    "description": "Subtitle for view existing list option"
+  },
+  "previewModeComingSoon": "Modo de visualização em breve!",
+  "@previewModeComingSoon": {
+    "description": "Placeholder message for preview mode feature"
+  },
+  "failedToLoadShoppingList": "Falha ao carregar lista de compras",
+  "@failedToLoadShoppingList": {
+    "description": "Error message when shopping list cannot be loaded"
+  },
+  "plannedMeals": "Refeições Planejadas",
+  "@plannedMeals": {
+    "description": "Header for the planned meals section in weekly summary"
   }
 }

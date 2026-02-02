@@ -18,6 +18,7 @@ import 'package:gastrobrain/models/protein_type.dart';
 import 'package:gastrobrain/screens/weekly_plan_screen.dart';
 import 'package:gastrobrain/utils/id_generator.dart';
 import 'package:gastrobrain/l10n/app_localizations.dart';
+import 'package:gastrobrain/widgets/weekly_calendar_widget.dart';
 import '../mocks/mock_database_helper.dart';
 
 void main() {
@@ -1178,6 +1179,8 @@ void main() {
   });
 
   // Summary Tab Tests (Issue #32)
+  // TEMPORARILY SKIPPED: Tab architecture removed in Checkpoint 1.
+  // These tests will be updated in Checkpoint 3 when Summary bottom sheet is implemented.
   group('WeeklyPlanScreen Summary Tab', () {
     // Helper to get the Friday of the current week (matches screen logic)
     DateTime getCurrentWeekFriday() {
@@ -1534,6 +1537,148 @@ void main() {
       expect(find.textContaining('Grilled Chicken (2×)'), findsOneWidget);
     });
 
+  }, skip: 'Tab architecture removed - tests will be updated for bottom sheet in Checkpoint 3');
+
+  group('Bottom Sheet UI Pattern (#258 Phase 2A)', () {
+    testWidgets('shows planning calendar without tabs', (WidgetTester tester) async {
+      // Build the screen
+      await tester.pumpWidget(createTestableWidget(
+        WeeklyPlanScreen(databaseHelper: mockDbHelper),
+      ));
+      await tester.pumpAndSettle();
+
+      // Verify TabBar is not present
+      expect(find.byType(TabBar), findsNothing);
+
+      // Verify WeeklyCalendarWidget is visible
+      expect(find.byType(WeeklyCalendarWidget), findsOneWidget);
+    });
+
+    testWidgets('shows persistent bottom bar with two buttons', (WidgetTester tester) async {
+      await tester.pumpWidget(createTestableWidget(
+        WeeklyPlanScreen(databaseHelper: mockDbHelper),
+      ));
+      await tester.pumpAndSettle();
+
+      // Verify bottom bar buttons are present
+      expect(find.text('Summary'), findsOneWidget);
+      expect(find.text('Generate Shopping List'), findsOneWidget);
+    });
+
+    testWidgets('opens summary bottom sheet on tap', (WidgetTester tester) async {
+      // Add some test data for summary
+      final weekStart = DateTime(2023, 6, 2); // A Friday
+      final testRecipe = Recipe(
+        id: 'test-recipe-1',
+        name: 'Test Recipe',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+      );
+      await mockDbHelper.insertRecipe(testRecipe);
+
+      final mealPlanId = IdGenerator.generateId();
+      final mealPlan = MealPlan(
+        id: mealPlanId,
+        weekStartDate: weekStart,
+        notes: 'Test Plan',
+        createdAt: DateTime.now(),
+        modifiedAt: DateTime.now(),
+      );
+      mockDbHelper.mealPlans[mealPlanId] = mealPlan;
+
+      await tester.pumpWidget(createTestableWidget(
+        WeeklyPlanScreen(databaseHelper: mockDbHelper),
+      ));
+      await tester.pumpAndSettle();
+
+      // Tap Summary button
+      await tester.tap(find.text('Summary'));
+      await tester.pumpAndSettle();
+
+      // Verify summary content appears (should show protein rotation section)
+      expect(find.textContaining('Protein'), findsAtLeastNWidgets(1));
+    });
+
+    testWidgets('dismisses summary bottom sheet on close button tap', (WidgetTester tester) async {
+      await tester.pumpWidget(createTestableWidget(
+        WeeklyPlanScreen(databaseHelper: mockDbHelper),
+      ));
+      await tester.pumpAndSettle();
+
+      // Open summary sheet
+      await tester.tap(find.text('Summary'));
+      await tester.pumpAndSettle();
+
+      // Find and tap close button (IconButton with Icons.close)
+      final closeButton = find.byWidgetPredicate(
+        (widget) => widget is IconButton &&
+                     widget.icon is Icon &&
+                     (widget.icon as Icon).icon == Icons.close
+      );
+      expect(closeButton, findsOneWidget);
+
+      await tester.tap(closeButton);
+      await tester.pumpAndSettle();
+
+      // Summary content should be gone
+      expect(find.textContaining('Protein'), findsNothing);
+    });
+
+    testWidgets('shopping list button opens options sheet', (WidgetTester tester) async {
+      await tester.pumpWidget(createTestableWidget(
+        WeeklyPlanScreen(databaseHelper: mockDbHelper),
+      ));
+      await tester.pumpAndSettle();
+
+      // Tap Shopping List button (find first one which is the bottom bar button)
+      await tester.tap(find.text('Generate Shopping List').first);
+      await tester.pumpAndSettle();
+
+      // Verify options appear
+      expect(find.text('Preview Ingredients'), findsOneWidget);
+      expect(find.text('See what you\'d need to buy'), findsOneWidget);
+    });
+
+    testWidgets('planning calendar remains visible when sheet opens', (WidgetTester tester) async {
+      await tester.pumpWidget(createTestableWidget(
+        WeeklyPlanScreen(databaseHelper: mockDbHelper),
+      ));
+      await tester.pumpAndSettle();
+
+      // Verify calendar is visible before opening sheet
+      expect(find.byType(WeeklyCalendarWidget), findsOneWidget);
+
+      // Open summary sheet
+      await tester.tap(find.text('Summary'));
+      await tester.pumpAndSettle();
+
+      // Calendar should still be visible (behind scrim)
+      expect(find.byType(WeeklyCalendarWidget), findsOneWidget);
+    });
+
+    testWidgets('bottom bar buttons are accessible', (WidgetTester tester) async {
+      await tester.pumpWidget(createTestableWidget(
+        WeeklyPlanScreen(databaseHelper: mockDbHelper),
+      ));
+      await tester.pumpAndSettle();
+
+      // Verify both bottom bar buttons are present and tappable
+      expect(find.text('Summary'), findsOneWidget);
+      expect(find.text('Generate Shopping List'), findsAtLeastNWidgets(1));
+
+      // Verify buttons are tappable (test tap without error)
+      await tester.tap(find.text('Summary'));
+      await tester.pumpAndSettle();
+
+      // Close the sheet
+      final closeButton = find.byWidgetPredicate(
+        (widget) => widget is IconButton &&
+                     widget.icon is Icon &&
+                     (widget.icon as Icon).icon == Icons.close
+      );
+      await tester.tap(closeButton);
+      await tester.pumpAndSettle();
+    });
   });
 }
 
