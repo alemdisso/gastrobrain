@@ -184,6 +184,35 @@ class ShoppingListService {
     return grouped;
   }
 
+  /// Calculate projected ingredients for a date range without database writes
+  ///
+  /// This is used for preview mode (Stage 1) where users want to see
+  /// what ingredients they would need without generating a shopping list.
+  ///
+  /// Returns a map of category names to lists of ingredient data.
+  /// Each ingredient is a Map with keys: name, quantity, unit, category.
+  ///
+  /// Does NOT write to database - ephemeral calculation only.
+  Future<Map<String, List<Map<String, dynamic>>>> calculateProjectedIngredients({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    // 1. Extract ingredients from meal plan items in date range
+    final ingredients = await _extractIngredientsInRange(startDate, endDate);
+
+    // 2. Apply exclusion rule (salt rule - filter "to taste" staples)
+    final filtered = applyExclusionRule(ingredients);
+
+    // 3. Aggregate ingredients (combine quantities for same ingredient)
+    final aggregated = aggregateIngredients(filtered);
+
+    // 4. Group by category
+    final grouped = groupByCategory(aggregated);
+
+    // No database writes - return grouped data directly
+    return grouped;
+  }
+
   /// Generate a shopping list from a date range
   ///
   /// Extracts ingredients from all meal plan items within the date range,

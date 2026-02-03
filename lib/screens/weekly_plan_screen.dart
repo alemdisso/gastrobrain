@@ -17,6 +17,7 @@ import '../core/services/meal_plan_service.dart';
 import '../core/services/meal_action_service.dart';
 import '../core/services/meal_edit_service.dart';
 import '../core/services/recommendation_cache_service.dart';
+import '../services/shopping_list_service.dart';
 import '../core/theme/design_tokens.dart';
 import '../core/providers/recipe_provider.dart';
 import '../core/providers/meal_provider.dart';
@@ -28,6 +29,7 @@ import '../widgets/edit_meal_recording_dialog.dart';
 import '../widgets/recipe_selection_dialog.dart';
 import '../widgets/week_navigation_widget.dart';
 import '../widgets/weekly_summary_widget.dart';
+import '../widgets/shopping_list_preview_bottom_sheet.dart';
 import '../utils/id_generator.dart';
 import '../l10n/app_localizations.dart';
 import '../screens/recipe_details_screen.dart';
@@ -1024,13 +1026,44 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   }
 
   Future<void> _showShoppingPreview() async {
-    // TODO: Implement preview mode (Stage 1 from UX doc - future enhancement)
-    // For now, show a SnackBar
-    if (mounted) {
-      SnackbarService.showSuccess(
-        context,
-        AppLocalizations.of(context)!.previewModeComingSoon,
+    try {
+      // Calculate date range for current week
+      final startDate = _currentWeekStart;
+      final endDate = _currentWeekStart.add(const Duration(days: 6));
+
+      // Get shopping list service
+      final shoppingListService = ShoppingListService(_dbHelper);
+
+      // Calculate projected ingredients (no database writes)
+      final groupedIngredients = await shoppingListService.calculateProjectedIngredients(
+        startDate: startDate,
+        endDate: endDate,
       );
+
+      // Show preview bottom sheet
+      if (mounted) {
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.transparent,
+          isScrollControlled: true,
+          builder: (context) => DraggableScrollableSheet(
+            initialChildSize: 0.7,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
+            builder: (context, scrollController) => ShoppingListPreviewBottomSheet(
+              groupedIngredients: groupedIngredients,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      // Handle errors gracefully
+      if (mounted) {
+        SnackbarService.showError(
+          context,
+          AppLocalizations.of(context)!.shoppingListPreviewError,
+        );
+      }
     }
   }
 

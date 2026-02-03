@@ -168,6 +168,9 @@ class MockDatabaseHelper implements DatabaseHelper {
   Map<String, Meal> get meals => _meals;
   Map<String, MealPlan> get mealPlans => _mealPlans;
   Map<String, Ingredient> get ingredients => _ingredients;
+  Map<String, RecipeIngredient> get recipeIngredients => _recipeIngredients;
+  Map<String, MealPlanItem> get mealPlanItems => _mealPlanItems;
+  Map<String, MealPlanItemRecipe> get mealPlanItemRecipes => _mealPlanItemRecipes;
 
   // Database property implementation
   // Note: For integration tests that need direct database access,
@@ -845,13 +848,19 @@ class MockDatabaseHelper implements DatabaseHelper {
     // Convert to map format expected by the code
     return recipeIngredients.map((ri) {
       final ingredient = _ingredients[ri.ingredientId];
+      // Determine unit: custom_unit, unit_override, or ingredient's unit
+      final unit = ri.customUnit ??
+                   ri.unitOverride ??
+                   ingredient?.unit?.value ??
+                   'units';
       return {
         'id': ri.id,
         'recipe_id': ri.recipeId,
         'ingredient_id': ri.ingredientId,
         'quantity': ri.quantity,
-        'name': ingredient?.name ?? 'Unknown',
-        'category': ingredient?.category.name ?? 'other',
+        'name': ingredient?.name ?? ri.customName ?? 'Unknown',
+        'category': ingredient?.category.name ?? ri.customCategory ?? 'other',
+        'unit': unit,
       };
     }).toList();
   }

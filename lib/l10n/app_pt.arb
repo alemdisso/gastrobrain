@@ -2146,6 +2146,10 @@
   "@previewModeComingSoon": {
     "description": "Placeholder message for preview mode feature"
   },
+  "shoppingListPreviewTitle": "Ingredientes Projetados",
+  "shoppingListPreviewEmpty": "Nenhuma refeição planejada - nada para visualizar",
+  "shoppingListPreviewError": "Erro ao carregar ingredientes",
+  "shoppingListPreviewLoading": "Calculando ingredientes...",
   "failedToLoadShoppingList": "Falha ao carregar lista de compras",
   "@failedToLoadShoppingList": {
     "description": "Error message when shopping list cannot be loaded"
