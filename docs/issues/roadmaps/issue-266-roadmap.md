@@ -33,97 +33,344 @@ Before starting implementation:
 
 ### Understand Existing Code
 
-- [ ] Read `lib/screens/weekly_plan_screen.dart` - Focus on shopping list bottom sheet (line ~990-1050)
-- [ ] Read `lib/services/shopping_list_service.dart` - Understand current ingredient aggregation logic
-- [ ] Read `lib/screens/shopping_list_screen.dart` - Review category grouping display patterns
-- [ ] Read placeholder implementation at `_showShoppingPreview()` (line 1026)
-- [ ] Review existing bottom sheet patterns in `WeeklyPlanScreen` (summary sheet, shopping options sheet)
+- [x] Read `lib/screens/weekly_plan_screen.dart` - Focus on shopping list bottom sheet (line ~990-1050)
+- [x] Read `lib/services/shopping_list_service.dart` - Understand current ingredient aggregation logic
+- [x] Read `lib/screens/shopping_list_screen.dart` - Review category grouping display patterns
+- [x] Read placeholder implementation at `_showShoppingPreview()` (line 1026)
+- [x] Review existing bottom sheet patterns in `WeeklyPlanScreen` (summary sheet, shopping options sheet)
 
 ### Identify Similar Patterns
 
-- [ ] Check how `ShoppingListService.generateShoppingList()` aggregates ingredients from meal plans
-- [ ] Check how `ShoppingListScreen` displays grouped ingredients
-- [ ] Check how bottom sheets are implemented in #258 (DraggableScrollableSheet pattern)
-- [ ] Identify category grouping logic (Proteins, Vegetables, Grains, etc.)
+- [x] Check how `ShoppingListService.generateShoppingList()` aggregates ingredients from meal plans
+- [x] Check how `ShoppingListScreen` displays grouped ingredients
+- [x] Check how bottom sheets are implemented in #258 (DraggableScrollableSheet pattern)
+- [x] Identify category grouping logic (Proteins, Vegetables, Grains, etc.)
 
 ### Plan Service Layer Changes
 
-- [ ] Determine if existing aggregation logic can be extracted/reused
-- [ ] Plan signature for new `calculateProjectedIngredients(DateTime startDate, DateTime endDate)` method
-- [ ] Confirm return type: `Map<String, List<Ingredient>>` (category → ingredients)
-- [ ] Verify no database writes in projection logic
+- [x] Determine if existing aggregation logic can be extracted/reused
+- [x] Plan signature for new `calculateProjectedIngredients(DateTime startDate, DateTime endDate)` method
+- [x] Confirm return type: `Map<String, List<Ingredient>>` (category → ingredients)
+- [x] Verify no database writes in projection logic
 
 ### Plan UI Component
 
-- [ ] Design `ShoppingListPreviewBottomSheet` widget structure
-- [ ] Plan loading state display
-- [ ] Plan empty state message
-- [ ] Plan error state handling
-- [ ] Design category section headers and ingredient list items
+- [x] Design `ShoppingListPreviewBottomSheet` widget structure
+- [x] Plan loading state display
+- [x] Plan empty state message
+- [x] Plan error state handling
+- [x] Design category section headers and ingredient list items
 
-## Phase 2: Implementation
+---
+
+## Phase 1: Analysis & Understanding ✅ COMPLETE
+
+**Completed:** 2026-02-03
+
+### Requirements Summary
+
+Stage 1 (Preview Mode) provides read-only preview of projected ingredients during meal planning. Users can see "What would I need to buy?" before committing to recipes, enabling better planning decisions. Preview is ephemeral (no database writes), updates when navigating weeks, and displays ingredients grouped by category using existing aggregation logic from #5.
+
+**Key insight:** User noted that current aggregation has limitations (no imperial/metric conversion, no smart aggregation like cloves→heads), but we should maintain existing logic for consistency. Future enhancements should apply to all stages.
+
+### Technical Design Decision
+
+**Selected Approach:** Extract & Reuse
+
+**Rationale:**
+- Reuses existing tested aggregation logic from generateFromDateRange() (per user guidance)
+- Minimal change principle - just expose existing pipeline without database writes
+- Service method is reusable by Stage 2 (#267)
+- Fits established pattern: Map<String, dynamic> for ingredient data
+- No unnecessary abstraction (no new model needed for ephemeral display data)
+
+**Method Signature:**
+```dart
+Future<Map<String, List<Map<String, dynamic>>>> calculateProjectedIngredients({
+  required DateTime startDate,
+  required DateTime endDate,
+})
+```
+
+**Alternatives Considered:**
+- Create PreviewIngredient model with dedicated service: Rejected because creates unnecessary abstraction for ephemeral data, would need refactoring for Stage 2 anyway, violates YAGNI
+
+### Patterns to Follow
+
+| Pattern | Location | Usage |
+|---------|----------|-------|
+| Ingredient Aggregation Pipeline | lib/services/shopping_list_service.dart:194-211 | Extract steps 2-5 (no DB writes) |
+| Category-Based Display | lib/screens/shopping_list_screen.dart:215-269 | ExpansionTile with localized categories |
+| Bottom Sheet Modal | lib/screens/weekly_plan_screen.dart:1009-1024 | Container + surface color + rounded corners |
+| Quantity Formatting | lib/screens/shopping_list_screen.dart:258 | Use QuantityFormatter.format() |
+| Category Localization | IngredientCategory enum | getLocalizedDisplayName(context) |
+
+### Code Examples
+
+#### Service Method (calculateProjectedIngredients)
+```dart
+/// Calculate projected ingredients for a date range without database writes
+///
+/// This is used for preview mode (Stage 1) where users want to see
+/// what ingredients they would need without generating a shopping list.
+///
+/// Returns a map of category names to lists of ingredient data.
+/// Each ingredient is a Map with keys: name, quantity, unit, category.
+///
+/// Does NOT write to database - ephemeral calculation only.
+Future<Map<String, List<Map<String, dynamic>>>> calculateProjectedIngredients({
+  required DateTime startDate,
+  required DateTime endDate,
+}) async {
+  // Reuse existing aggregation pipeline
+  final ingredients = await _extractIngredientsInRange(startDate, endDate);
+  final filtered = applyExclusionRule(ingredients);
+  final aggregated = aggregateIngredients(filtered);
+  final grouped = groupByCategory(aggregated);
+  return grouped; // No database writes
+}
+```
+
+#### Widget Structure (ShoppingListPreviewBottomSheet)
+```dart
+class ShoppingListPreviewBottomSheet extends StatelessWidget {
+  final Map<String, List<Map<String, dynamic>>> groupedIngredients;
+
+  // Bottom sheet with:
+  // - Handle/grip at top
+  // - Title (localized)
+  // - ExpansionTile per category (initially expanded)
+  // - Read-only ingredient list (NO checkboxes)
+  // - Empty state if no ingredients
+}
+```
+
+#### WeeklyPlanScreen Integration
+```dart
+Future<void> _showShoppingPreview() async {
+  try {
+    final endDate = _currentWeekStart.add(const Duration(days: 6));
+    final service = ShoppingListService(_dbHelper);
+    final grouped = await service.calculateProjectedIngredients(
+      startDate: _currentWeekStart,
+      endDate: endDate,
+    );
+
+    if (mounted) {
+      showModalBottomSheet(
+        context: context,
+        builder: (context) => ShoppingListPreviewBottomSheet(
+          groupedIngredients: grouped,
+        ),
+      );
+    }
+  } catch (e) {
+    // Error handling with SnackBar
+  }
+}
+```
+
+### Edge Cases Identified
+
+| Edge Case | Handling Strategy |
+|-----------|-------------------|
+| Empty meal plan | Show empty state: "No meals planned - nothing to preview" |
+| Single ingredient | ExpansionTile handles gracefully, bottom sheet still functional |
+| Many ingredients (20+) | ListView scrolling, ExpansionTiles collapse/expand |
+| Duplicate ingredients | aggregateIngredients() sums quantities (existing logic) |
+| Incompatible units | Display as separate entries (no conversion, per user guidance) |
+| Missing recipe data | Skip missing, show available (handled by _extractIngredientsInRange) |
+| Database error | Try-catch in caller, display user-friendly SnackBar |
+| Week navigation | Uses _currentWeekStart (reactive to navigation) |
+| "To taste" ingredients | applyExclusionRule() filters (salt, oil, etc.) |
+
+### Risk Assessment
+
+| Risk | Level | Mitigation |
+|------|-------|------------|
+| Performance with large meal plans | 🟡 Medium | Test with 20+ ingredients, profile if >500ms |
+| Breaking existing shopping list | 🟢 Low | Only add new method, no changes to existing |
+| Inconsistent aggregation | 🟢 Low | Reuse exact same logic for preview and generation |
+| Memory with grouped data | 🟢 Low | Data is ephemeral, disposed with bottom sheet |
+
+### Testing Requirements
+
+**Unit Tests (test/unit/shopping_list_service_projection_test.dart):**
+- [ ] calculateProjectedIngredients() returns grouped ingredients correctly
+- [ ] Empty meal plan returns empty map
+- [ ] Single meal with ingredients returns correct structure
+- [ ] Multiple meals aggregate ingredients correctly
+- [ ] Date range filtering works
+- [ ] Duplicate ingredients aggregate quantities
+- [ ] Incompatible units remain separate
+- [ ] "To taste" staples excluded
+- [ ] Missing recipe data handled gracefully
+- [ ] Database error throws exception
+
+**Widget Tests (test/widget/shopping_list_preview_bottom_sheet_test.dart):**
+- [ ] Preview displays grouped ingredients
+- [ ] Category headers display with localized names
+- [ ] Ingredient items show name + formatted quantity
+- [ ] Empty state displays with message
+- [ ] Multiple categories render
+- [ ] Items sort alphabetically within categories
+- [ ] Bottom sheet scrolls with many ingredients
+- [ ] No checkboxes present (read-only verification)
+
+**Integration Tests (test/widget/weekly_plan_screen_test.dart):**
+- [ ] "Preview Ingredients" button opens bottom sheet
+- [ ] Preview shows ingredients from current week
+- [ ] Preview updates when navigating to different week
+- [ ] Empty meal plan shows empty state
+- [ ] Database error shows error message
+
+**Edge Case Tests:**
+- [ ] test/edge_cases/empty_states/shopping_list_preview_empty_test.dart
+- [ ] test/edge_cases/boundary_conditions/shopping_list_preview_boundary_test.dart
+- [ ] test/edge_cases/error_scenarios/shopping_list_preview_error_test.dart
+
+### Implementation Checklist (for Phase 2)
+
+- [x] Step 1: Add calculateProjectedIngredients() to ShoppingListService (reuse existing methods)
+- [x] Step 2: Create ShoppingListPreviewBottomSheet widget (ExpansionTile pattern, no checkboxes)
+- [x] Step 3: Wire up in WeeklyPlanScreen._showShoppingPreview() (replace TODO)
+- [x] Step 4: Add localization strings (4 strings EN/PT)
+- [x] Step 5: Run flutter analyze and flutter gen-l10n
+
+### Files Summary
+
+**To Create:**
+- lib/widgets/shopping_list_preview_bottom_sheet.dart (NEW widget)
+
+**To Modify:**
+- lib/services/shopping_list_service.dart (add method at line ~187)
+- lib/screens/weekly_plan_screen.dart (replace lines 1026-1035)
+- lib/l10n/app_en.arb (add 4 strings)
+- lib/l10n/app_pt.arb (add 4 translations)
+
+### Key Decisions
+
+1. **Reuse existing aggregation logic** - No improvements to aggregation in this issue (maintain consistency with #5)
+2. **Return Map<String, dynamic>** - Matches internal data structure, no unnecessary conversion
+3. **Error handling in caller** - Preview is UI feature, errors display at screen layer
+4. **StatelessWidget for preview** - No interactive state needed (read-only)
+5. **DraggableScrollableSheet** - Better UX for variable content size
+
+---
+
+*Phase 1 analysis completed on 2026-02-03*
+*Ready for Phase 2 implementation*
+
+---
+
+## Phase 2: Implementation ✅ COMPLETE
+
+**Completed:** 2026-02-03
+
+All implementation checkpoints completed successfully:
+
+1. ✅ **Service Method Added** - calculateProjectedIngredients() in ShoppingListService
+   - Location: lib/services/shopping_list_service.dart (line 187)
+   - Reuses existing aggregation pipeline (no code duplication)
+   - Returns Map<String, List<Map<String, dynamic>>>
+   - No database writes (ephemeral calculation)
+
+2. ✅ **Widget Created** - ShoppingListPreviewBottomSheet
+   - Location: lib/widgets/shopping_list_preview_bottom_sheet.dart (175 lines)
+   - StatelessWidget with read-only display
+   - ExpansionTile pattern for categories
+   - Empty state handling
+   - No checkboxes (matches Stage 1 requirements)
+
+3. ✅ **Screen Integration** - WeeklyPlanScreen updated
+   - Location: lib/screens/weekly_plan_screen.dart (replaced _showShoppingPreview)
+   - Calculates date range from _currentWeekStart
+   - DraggableScrollableSheet for better UX
+   - Proper error handling with SnackBar
+
+4. ✅ **Localization Added** - 4 strings in EN/PT
+   - shoppingListPreviewTitle, shoppingListPreviewEmpty
+   - shoppingListPreviewError, shoppingListPreviewLoading
+   - flutter gen-l10n executed successfully
+
+5. ✅ **Quality Verified**
+   - flutter analyze: No issues found!
+   - File lengths: All under 400 lines (except pre-existing screen)
+   - Pattern compliance: Follows established patterns
+   - Dependency injection: Ready for testing
+
+**Files Modified:**
+- lib/services/shopping_list_service.dart (+28 lines)
+- lib/widgets/shopping_list_preview_bottom_sheet.dart (NEW - 175 lines)
+- lib/screens/weekly_plan_screen.dart (+40 lines, removed TODO)
+- lib/l10n/app_en.arb (+16 lines)
+- lib/l10n/app_pt.arb (+4 lines)
+
+---
+
+## Phase 2: Implementation (Details)
 
 ### Extract Projection Logic in Service
 
-- [ ] Open `lib/services/shopping_list_service.dart`
-- [ ] Create `calculateProjectedIngredients(DateTime startDate, DateTime endDate)` method
+- [x] Open `lib/services/shopping_list_service.dart`
+- [x] Create `calculateProjectedIngredients(DateTime startDate, DateTime endDate)` method
   - Query meal plan items for date range
   - Aggregate ingredients from all recipes
   - Group by category
   - Return `Map<String, List<Ingredient>>` (no database writes)
-- [ ] Extract/reuse aggregation logic from existing `generateShoppingList()` if applicable
-- [ ] Handle edge cases (empty meal plan, missing recipes)
-- [ ] Add error handling (database errors, null safety)
+- [x] Extract/reuse aggregation logic from existing `generateShoppingList()` if applicable
+- [x] Handle edge cases (empty meal plan, missing recipes)
+- [x] Add error handling (database errors, null safety)
 
 ### Create Preview Bottom Sheet Widget
 
-- [ ] Create `lib/widgets/shopping_list_preview_bottom_sheet.dart`
-- [ ] Implement `ShoppingListPreviewBottomSheet` as StatelessWidget
+- [x] Create `lib/widgets/shopping_list_preview_bottom_sheet.dart`
+- [x] Implement `ShoppingListPreviewBottomSheet` as StatelessWidget
   - Accept `Map<String, List<Ingredient>> groupedIngredients` parameter
   - Use `DraggableScrollableSheet` for bottom sheet behavior
-- [ ] Add header with title (localized)
-- [ ] Implement category sections with headers
-- [ ] Display ingredient items (name, quantity, unit) - read-only
-- [ ] Add loading state widget
-- [ ] Add empty state widget with message
-- [ ] Add error state widget
-- [ ] Style with design tokens from #258
+- [x] Add header with title (localized)
+- [x] Implement category sections with headers
+- [x] Display ingredient items (name, quantity, unit) - read-only
+- [x] Add loading state widget
+- [x] Add empty state widget with message
+- [x] Add error state widget
+- [x] Style with design tokens from #258
 
 ### Wire Up in WeeklyPlanScreen
 
-- [ ] Open `lib/screens/weekly_plan_screen.dart`
-- [ ] Replace `_showShoppingPreview()` placeholder implementation
+- [x] Open `lib/screens/weekly_plan_screen.dart`
+- [x] Replace `_showShoppingPreview()` placeholder implementation
   - Calculate date range from `_currentWeekStart`
   - Show loading indicator
   - Call `ShoppingListService.calculateProjectedIngredients()`
   - Show `ShoppingListPreviewBottomSheet` with results
   - Handle errors with user-friendly message
-- [ ] Remove TODO comment
-- [ ] Test preview updates when navigating weeks
+- [x] Remove TODO comment
+- [x] Test preview updates when navigating weeks
 
 ### Add Localization
 
-- [ ] Open `lib/l10n/app_en.arb`
-- [ ] Add strings:
+- [x] Open `lib/l10n/app_en.arb`
+- [x] Add strings:
   - `shoppingListPreviewTitle`: "Projected Ingredients"
   - `shoppingListPreviewEmpty`: "No meals planned - nothing to preview"
   - `shoppingListPreviewError`: "Error loading ingredients"
   - `shoppingListPreviewLoading`: "Calculating ingredients..."
-- [ ] Open `lib/l10n/app_pt.arb`
-- [ ] Add Portuguese translations:
+- [x] Open `lib/l10n/app_pt.arb`
+- [x] Add Portuguese translations:
   - `shoppingListPreviewTitle`: "Ingredientes Projetados"
   - `shoppingListPreviewEmpty`: "Nenhuma refeição planejada - nada para visualizar"
   - `shoppingListPreviewError`: "Erro ao carregar ingredientes"
   - `shoppingListPreviewLoading`: "Calculando ingredientes..."
-- [ ] Run `flutter gen-l10n` to generate localization code
-- [ ] Update widget to use `AppLocalizations.of(context)!.shoppingListPreview*`
+- [x] Run `flutter gen-l10n` to generate localization code
+- [x] Update widget to use `AppLocalizations.of(context)!.shoppingListPreview*`
 
 ### Code Quality
 
-- [ ] Run `flutter analyze` - resolve any issues
-- [ ] Verify no hardcoded strings remain
-- [ ] Add code comments explaining Stage 1 workflow
-- [ ] Ensure proper error handling throughout
+- [x] Run `flutter analyze` - resolve any issues
+- [x] Verify no hardcoded strings remain
+- [x] Add code comments explaining Stage 1 workflow
+- [x] Ensure proper error handling throughout
 
 ## Phase 3: Testing
 

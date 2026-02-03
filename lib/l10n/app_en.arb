@@ -2146,6 +2146,22 @@
   "@previewModeComingSoon": {
     "description": "Placeholder message for preview mode feature"
   },
+  "shoppingListPreviewTitle": "Projected Ingredients",
+  "@shoppingListPreviewTitle": {
+    "description": "Title for preview bottom sheet showing projected ingredients"
+  },
+  "shoppingListPreviewEmpty": "No meals planned - nothing to preview",
+  "@shoppingListPreviewEmpty": {
+    "description": "Message shown when meal plan is empty and there are no ingredients to preview"
+  },
+  "shoppingListPreviewError": "Error loading ingredients",
+  "@shoppingListPreviewError": {
+    "description": "Error message when preview calculation fails"
+  },
+  "shoppingListPreviewLoading": "Calculating ingredients...",
+  "@shoppingListPreviewLoading": {
+    "description": "Loading message while calculating projected ingredients"
+  },
   "failedToLoadShoppingList": "Failed to load shopping list",
   "@failedToLoadShoppingList": {
     "description": "Error message when shopping list cannot be loaded"
