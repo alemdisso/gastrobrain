@@ -141,15 +141,15 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify previous week button
-      expect(find.byIcon(Icons.navigate_before), findsOneWidget,
+      expect(find.byIcon(Icons.chevron_left), findsOneWidget,
           reason: 'Should show previous week button');
 
       // Verify next week button
-      expect(find.byIcon(Icons.navigate_next), findsOneWidget,
+      expect(find.byIcon(Icons.chevron_right), findsOneWidget,
           reason: 'Should show next week button');
 
       // Verify week navigation works by tapping next week
-      await tester.tap(find.byIcon(Icons.navigate_next));
+      await tester.tap(find.byIcon(Icons.chevron_right));
       await tester.pumpAndSettle();
 
       // Should still show empty slots after navigation
@@ -201,7 +201,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Navigate to next week
-      await tester.tap(find.byIcon(Icons.navigate_next));
+      await tester.tap(find.byIcon(Icons.chevron_right));
       await tester.pumpAndSettle();
 
       // Verify empty state persists
@@ -209,9 +209,9 @@ void main() {
           reason: 'Next week should also show empty state');
 
       // Navigate to previous week (2 weeks back from current)
-      await tester.tap(find.byIcon(Icons.navigate_before));
+      await tester.tap(find.byIcon(Icons.chevron_left));
       await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.navigate_before));
+      await tester.tap(find.byIcon(Icons.chevron_left));
       await tester.pumpAndSettle();
 
       // Verify empty state still persists
@@ -289,7 +289,7 @@ void main() {
 
       // Rapidly tap next week multiple times
       for (int i = 0; i < 5; i++) {
-        await tester.tap(find.byIcon(Icons.navigate_next));
+        await tester.tap(find.byIcon(Icons.chevron_right));
         await tester.pump(const Duration(milliseconds: 100));
       }
       await tester.pumpAndSettle();
