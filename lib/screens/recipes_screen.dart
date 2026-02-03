@@ -408,7 +408,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
       body: Column(
         children: [
           Padding(
-            padding: EdgeInsets.all(DesignTokens.spacingSm),
+            padding: const EdgeInsets.all(DesignTokens.spacingSm),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
@@ -430,12 +430,13 @@ class _RecipesScreenState extends State<RecipesScreen> {
                 return const SizedBox.shrink();
               }
 
-              final filteredCount = _getFilteredRecipes(provider.recipes).length;
+              final filteredCount =
+                  _getFilteredRecipes(provider.recipes).length;
               final totalCount = provider.totalRecipeCount;
 
               return Container(
                 color: Theme.of(context).colorScheme.primaryContainer,
-                padding: EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: DesignTokens.spacingMd,
                   vertical: DesignTokens.spacingSm,
                 ),
@@ -447,9 +448,10 @@ class _RecipesScreenState extends State<RecipesScreen> {
                         Icon(
                           Icons.filter_list,
                           size: 20,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
                         ),
-                        SizedBox(width: DesignTokens.spacingSm),
+                        const SizedBox(width: DesignTokens.spacingSm),
                         Expanded(
                           child: Text(
                             '${AppLocalizations.of(context)!.filtersActive}: ${_getFilterDescription(context, provider)}',
@@ -465,11 +467,13 @@ class _RecipesScreenState extends State<RecipesScreen> {
                         ),
                         TextButton.icon(
                           icon: const Icon(Icons.clear, size: 16),
-                          label: Text(AppLocalizations.of(context)!.clearFilters),
+                          label:
+                              Text(AppLocalizations.of(context)!.clearFilters),
                           onPressed: _clearAllFilters,
                           style: TextButton.styleFrom(
-                            foregroundColor:
-                                Theme.of(context).colorScheme.onPrimaryContainer,
+                            foregroundColor: Theme.of(context)
+                                .colorScheme
+                                .onPrimaryContainer,
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 4),
                           ),
@@ -485,7 +489,8 @@ class _RecipesScreenState extends State<RecipesScreen> {
                           totalCount,
                         ),
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
@@ -573,10 +578,12 @@ class _RecipesScreenState extends State<RecipesScreen> {
 
                 // Build recipes list
                 return RefreshIndicator(
-                  onRefresh: () => recipeProvider.loadRecipes(forceRefresh: true),
+                  onRefresh: () =>
+                      recipeProvider.loadRecipes(forceRefresh: true),
                   child: ListView.builder(
                     padding: EdgeInsets.only(
-                      bottom: max(80.0, MediaQuery.of(context).size.height * 0.3),
+                      bottom:
+                          max(80.0, MediaQuery.of(context).size.height * 0.3),
                     ),
                     physics: const AlwaysScrollableScrollPhysics(),
                     itemCount: filteredRecipes.length,
