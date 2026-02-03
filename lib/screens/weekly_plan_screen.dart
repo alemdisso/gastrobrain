@@ -1117,87 +1117,89 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
 
         return Container(
           padding: const EdgeInsets.all(DesignTokens.spacingMd),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Handle bar
-              Center(
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: DesignTokens.spacingMd),
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    borderRadius:
-                        BorderRadius.circular(DesignTokens.spacingXXs),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Handle bar
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: DesignTokens.spacingMd),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      borderRadius:
+                          BorderRadius.circular(DesignTokens.spacingXXs),
+                    ),
                   ),
                 ),
-              ),
 
-              // Title
-              Text(
-                AppLocalizations.of(context)!.generateShoppingList,
-                style: Theme.of(context).textTheme.titleLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: DesignTokens.spacingLg),
-
-              // Preview option
-              Card(
-                child: ListTile(
-                  leading: const Icon(Icons.preview),
-                  title: Text(AppLocalizations.of(context)!.previewIngredients),
-                  subtitle: Text(
-                      AppLocalizations.of(context)!.previewIngredientsSubtitle),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _showShoppingPreview();
-                  },
+                // Title
+                Text(
+                  AppLocalizations.of(context)!.generateShoppingList,
+                  style: Theme.of(context).textTheme.titleLarge,
+                  textAlign: TextAlign.center,
                 ),
-              ),
-              const SizedBox(height: DesignTokens.spacingMd),
+                const SizedBox(height: DesignTokens.spacingLg),
 
-              // Generate option
-              Card(
-                child: ListTile(
-                  leading: const Icon(Icons.add_shopping_cart),
-                  title:
-                      Text(AppLocalizations.of(context)!.generateShoppingList),
-                  subtitle:
-                      Text(AppLocalizations.of(context)!.createListForShopping),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _handleGenerateShoppingList();
-                  },
-                ),
-              ),
-              const SizedBox(height: DesignTokens.spacingMd),
-
-              // View existing option (conditional)
-              if (hasExisting)
+                // Preview option
                 Card(
                   child: ListTile(
-                    leading: const Icon(Icons.list),
-                    title: Text(AppLocalizations.of(context)!.viewExistingList),
+                    leading: const Icon(Icons.preview),
+                    title: Text(AppLocalizations.of(context)!.previewIngredients),
                     subtitle: Text(
-                        AppLocalizations.of(context)!.viewExistingListSubtitle),
+                        AppLocalizations.of(context)!.previewIngredientsSubtitle),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       Navigator.pop(context);
-                      _navigateToShoppingList();
+                      _showShoppingPreview();
                     },
                   ),
                 ),
+                const SizedBox(height: DesignTokens.spacingMd),
 
-              const SizedBox(height: DesignTokens.spacingMd),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(AppLocalizations.of(context)!.cancel),
-              ),
-            ],
+                // Generate option
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.add_shopping_cart),
+                    title:
+                        Text(AppLocalizations.of(context)!.generateShoppingList),
+                    subtitle:
+                        Text(AppLocalizations.of(context)!.createListForShopping),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _handleGenerateShoppingList();
+                    },
+                  ),
+                ),
+                const SizedBox(height: DesignTokens.spacingMd),
+
+                // View existing option (conditional)
+                if (hasExisting)
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.list),
+                      title: Text(AppLocalizations.of(context)!.viewExistingList),
+                      subtitle: Text(
+                          AppLocalizations.of(context)!.viewExistingListSubtitle),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _navigateToShoppingList();
+                      },
+                    ),
+                  ),
+
+                const SizedBox(height: DesignTokens.spacingMd),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(AppLocalizations.of(context)!.cancel),
+                ),
+              ],
+            ),
           ),
         );
       },
