@@ -36,12 +36,12 @@ class WeeklySummaryWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            SizedBox(height: DesignTokens.spacingMd),
+            const SizedBox(height: DesignTokens.spacingMd),
             Text(
               AppLocalizations.of(context)!.summaryCalculationError,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
-            SizedBox(height: DesignTokens.spacingSm),
+            const SizedBox(height: DesignTokens.spacingSm),
             ElevatedButton(
               onPressed: onRetry,
               child: Text(AppLocalizations.of(context)!.retryButton),
@@ -53,16 +53,16 @@ class WeeklySummaryWidget extends StatelessWidget {
 
     return SingleChildScrollView(
       controller: scrollController,
-      padding: EdgeInsets.all(DesignTokens.spacingMd),
+      padding: const EdgeInsets.all(DesignTokens.spacingMd),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildOverviewCard(context),
-          SizedBox(height: DesignTokens.spacingLg),
+          const SizedBox(height: DesignTokens.spacingLg),
           _buildProteinSequenceSection(context),
-          SizedBox(height: DesignTokens.spacingLg),
+          const SizedBox(height: DesignTokens.spacingLg),
           _buildPlannedMealsSection(context),
-          SizedBox(height: DesignTokens.spacingLg),
+          const SizedBox(height: DesignTokens.spacingLg),
           _buildVarietySection(context),
         ],
       ),
@@ -75,7 +75,7 @@ class WeeklySummaryWidget extends StatelessWidget {
     final percentage = summaryData!.percentage;
 
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: DesignTokens.spacingSm),
+      padding: const EdgeInsets.symmetric(vertical: DesignTokens.spacingSm),
       child: Row(
         children: [
           const Icon(
@@ -83,12 +83,12 @@ class WeeklySummaryWidget extends StatelessWidget {
             color: DesignTokens.accent,
             size: 20,
           ),
-          SizedBox(width: DesignTokens.spacingSm),
+          const SizedBox(width: DesignTokens.spacingSm),
           Text(
             '${AppLocalizations.of(context)!.mealsPlannedCount(totalPlanned)} (${(percentage * 100).round()}%)',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: DesignTokens.textPrimary,
-            ),
+                  color: DesignTokens.textPrimary,
+                ),
           ),
         ],
       ),
@@ -119,10 +119,10 @@ class WeeklySummaryWidget extends StatelessWidget {
         Text(
           AppLocalizations.of(context)!.proteinDistributionHeader,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: DesignTokens.textPrimary,
-          ),
+                color: DesignTokens.textPrimary,
+              ),
         ),
-        SizedBox(height: DesignTokens.spacingSm),
+        const SizedBox(height: DesignTokens.spacingSm),
         hasProteins
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,7 +136,8 @@ class WeeklySummaryWidget extends StatelessWidget {
                       .join(', ');
 
                   return Padding(
-                    padding: EdgeInsets.only(bottom: DesignTokens.spacingXs),
+                    padding:
+                        const EdgeInsets.only(bottom: DesignTokens.spacingXs),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -144,10 +145,13 @@ class WeeklySummaryWidget extends StatelessWidget {
                           width: 50,
                           child: Text(
                             day.substring(0, 3),
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: DesignTokens.weightMedium,
-                              color: DesignTokens.accent,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  fontWeight: DesignTokens.weightMedium,
+                                  color: DesignTokens.accent,
+                                ),
                           ),
                         ),
                         Expanded(
@@ -163,7 +167,10 @@ class WeeklySummaryWidget extends StatelessWidget {
               )
             : Text(
                 AppLocalizations.of(context)!.noProteinsPlanned,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: DesignTokens.textSecondary),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: DesignTokens.textSecondary),
               ),
       ],
     );
@@ -185,10 +192,13 @@ class WeeklySummaryWidget extends StatelessWidget {
               color: DesignTokens.textPrimary,
             ),
           ),
-          SizedBox(height: DesignTokens.spacingSm),
+          const SizedBox(height: DesignTokens.spacingSm),
           Text(
             AppLocalizations.of(context)!.noMealsPlannedYet,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: DesignTokens.textSecondary),
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: DesignTokens.textSecondary),
           ),
         ],
       );
@@ -204,10 +214,10 @@ class WeeklySummaryWidget extends StatelessWidget {
         Text(
           AppLocalizations.of(context)!.plannedMeals,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: DesignTokens.textPrimary,
-          ),
+                color: DesignTokens.textPrimary,
+              ),
         ),
-        SizedBox(height: DesignTokens.spacingSm),
+        const SizedBox(height: DesignTokens.spacingSm),
         ...sortedMeals.map((meal) {
           final day = meal.day;
           final mealType = meal.mealType;
@@ -218,7 +228,7 @@ class WeeklySummaryWidget extends StatelessWidget {
               mealType[0].toUpperCase() + mealType.substring(1);
 
           return Padding(
-            padding: EdgeInsets.only(bottom: DesignTokens.spacingSm),
+            padding: const EdgeInsets.only(bottom: DesignTokens.spacingSm),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -258,36 +268,40 @@ class WeeklySummaryWidget extends StatelessWidget {
         Text(
           AppLocalizations.of(context)!.recipeVarietyHeader,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            color: DesignTokens.textPrimary,
-          ),
+                color: DesignTokens.textPrimary,
+              ),
         ),
-        SizedBox(height: DesignTokens.spacingXs),
+        const SizedBox(height: DesignTokens.spacingXs),
         Container(
           height: 2,
           width: 170,
           color: DesignTokens.primary,
         ),
-        SizedBox(height: DesignTokens.spacingMd),
+        const SizedBox(height: DesignTokens.spacingMd),
         Text(
           AppLocalizations.of(context)!.uniqueRecipesCount(uniqueRecipes),
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: DesignTokens.weightBold,
-          ),
+                fontWeight: DesignTokens.weightBold,
+              ),
         ),
-        SizedBox(height: DesignTokens.spacingSm),
+        const SizedBox(height: DesignTokens.spacingSm),
         if (repeatedRecipes.isNotEmpty) ...[
           Text(
             AppLocalizations.of(context)!
                 .repeatedRecipesCount(repeatedRecipes.length),
             style: Theme.of(context).textTheme.bodyLarge,
           ),
-          SizedBox(height: DesignTokens.spacingSm),
+          const SizedBox(height: DesignTokens.spacingSm),
           ...repeatedRecipes.map((repetition) {
             return Padding(
-              padding: EdgeInsets.symmetric(vertical: DesignTokens.spacingXXs),
+              padding:
+                  const EdgeInsets.symmetric(vertical: DesignTokens.spacingXXs),
               child: Text(
                 '• ${repetition.recipeName} ${AppLocalizations.of(context)!.timesUsed(repetition.count)}',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: DesignTokens.textSecondary),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: DesignTokens.textSecondary),
               ),
             );
           }),

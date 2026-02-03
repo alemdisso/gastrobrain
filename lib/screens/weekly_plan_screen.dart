@@ -241,8 +241,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         recipes: recipes,
         detailedRecommendations: topRecommendations,
         allScoredRecipes: allRecommendations.recommendations,
-        onRefreshDetailedRecommendations: () => _recommendationCache
-            .refreshDetailedRecommendations(
+        onRefreshDetailedRecommendations: () =>
+            _recommendationCache.refreshDetailedRecommendations(
                 mealPlan: _currentMealPlan, date: date, mealType: mealType),
       ),
     );
@@ -880,7 +880,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                 height: 20,
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
-              SizedBox(width: DesignTokens.spacingMd),
+              const SizedBox(width: DesignTokens.spacingMd),
               Text(AppLocalizations.of(context)!.generatingShoppingList),
             ],
           ),
@@ -948,15 +948,16 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         builder: (context, scrollController) => Container(
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.vertical(
-            top: Radius.circular(DesignTokens.borderRadiusLarge),
-          ),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(DesignTokens.borderRadiusLarge),
+            ),
           ),
           child: Column(
             children: [
               // Handle bar
               Container(
-                margin: EdgeInsets.symmetric(vertical: DesignTokens.spacingSm),
+                margin: const EdgeInsets.symmetric(
+                    vertical: DesignTokens.spacingSm),
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
@@ -966,10 +967,10 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
               ),
               // Header
               Padding(
-                padding: EdgeInsets.symmetric(
-                horizontal: DesignTokens.spacingMd,
-                vertical: DesignTokens.spacingSm,
-              ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: DesignTokens.spacingMd,
+                  vertical: DesignTokens.spacingSm,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -1011,7 +1012,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       builder: (context) => Container(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.vertical(
+          borderRadius: const BorderRadius.vertical(
             top: Radius.circular(DesignTokens.borderRadiusLarge),
           ),
         ),
@@ -1082,7 +1083,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         final hasExisting = snapshot.data ?? false;
 
         return Container(
-          padding: EdgeInsets.all(DesignTokens.spacingMd),
+          padding: const EdgeInsets.all(DesignTokens.spacingMd),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1090,12 +1091,13 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
               // Handle bar
               Center(
                 child: Container(
-                  margin: EdgeInsets.only(bottom: DesignTokens.spacingMd),
+                  margin: const EdgeInsets.only(bottom: DesignTokens.spacingMd),
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    borderRadius: BorderRadius.circular(DesignTokens.spacingXXs),
+                    borderRadius:
+                        BorderRadius.circular(DesignTokens.spacingXXs),
                   ),
                 ),
               ),
@@ -1106,14 +1108,15 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                 style: Theme.of(context).textTheme.titleLarge,
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: DesignTokens.spacingLg),
+              const SizedBox(height: DesignTokens.spacingLg),
 
               // Preview option
               Card(
                 child: ListTile(
                   leading: const Icon(Icons.preview),
                   title: Text(AppLocalizations.of(context)!.previewIngredients),
-                  subtitle: Text(AppLocalizations.of(context)!.previewIngredientsSubtitle),
+                  subtitle: Text(
+                      AppLocalizations.of(context)!.previewIngredientsSubtitle),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     Navigator.pop(context);
@@ -1121,14 +1124,16 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                   },
                 ),
               ),
-              SizedBox(height: DesignTokens.spacingMd),
+              const SizedBox(height: DesignTokens.spacingMd),
 
               // Generate option
               Card(
                 child: ListTile(
                   leading: const Icon(Icons.add_shopping_cart),
-                  title: Text(AppLocalizations.of(context)!.generateShoppingList),
-                  subtitle: Text(AppLocalizations.of(context)!.createListForShopping),
+                  title:
+                      Text(AppLocalizations.of(context)!.generateShoppingList),
+                  subtitle:
+                      Text(AppLocalizations.of(context)!.createListForShopping),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     Navigator.pop(context);
@@ -1136,7 +1141,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                   },
                 ),
               ),
-              SizedBox(height: DesignTokens.spacingMd),
+              const SizedBox(height: DesignTokens.spacingMd),
 
               // View existing option (conditional)
               if (hasExisting)
@@ -1144,7 +1149,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                   child: ListTile(
                     leading: const Icon(Icons.list),
                     title: Text(AppLocalizations.of(context)!.viewExistingList),
-                    subtitle: Text(AppLocalizations.of(context)!.viewExistingListSubtitle),
+                    subtitle: Text(
+                        AppLocalizations.of(context)!.viewExistingListSubtitle),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       Navigator.pop(context);
@@ -1153,7 +1159,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                   ),
                 ),
 
-              SizedBox(height: DesignTokens.spacingMd),
+              const SizedBox(height: DesignTokens.spacingMd),
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(AppLocalizations.of(context)!.cancel),
