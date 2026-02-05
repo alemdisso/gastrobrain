@@ -10,6 +10,7 @@ import '../core/providers/recipe_provider.dart';
 import '../widgets/edit_meal_recording_dialog.dart';
 import 'cook_meal_screen.dart';
 import '../l10n/app_localizations.dart';
+import '../core/theme/button_styles.dart';
 
 class MealHistoryScreen extends StatefulWidget {
   final Recipe recipe;
@@ -282,11 +283,9 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
             onPressed: () => Navigator.of(context).pop(false),
             child: Text(AppLocalizations.of(context)!.cancel),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
+            style: ButtonStyles.destructive,
             child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],

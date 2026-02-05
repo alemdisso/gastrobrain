@@ -7,6 +7,7 @@ import '../models/recipe_category.dart';
 import '../models/frequency_type.dart';
 import '../widgets/recipe_card.dart';
 import '../l10n/app_localizations.dart';
+import '../core/theme/button_styles.dart';
 import '../core/providers/recipe_provider.dart';
 import '../core/theme/design_tokens.dart';
 import 'add_recipe_screen.dart';
@@ -79,8 +80,9 @@ class _RecipesScreenState extends State<RecipesScreen> {
             onPressed: () => Navigator.pop(context, false),
             child: Text(AppLocalizations.of(context)!.cancel),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
+            style: ButtonStyles.destructive,
             child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],

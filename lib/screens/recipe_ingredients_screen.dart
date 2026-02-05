@@ -9,6 +9,7 @@ import '../widgets/add_ingredient_dialog.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/services/snackbar_service.dart';
 import '../l10n/app_localizations.dart';
+import '../core/theme/button_styles.dart';
 import '../utils/quantity_formatter.dart';
 
 class RecipeIngredientsScreen extends StatefulWidget {
@@ -92,11 +93,9 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
               onPressed: () => Navigator.pop(context, false),
               child: Text(AppLocalizations.of(context)!.buttonCancel),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.error,
-              ),
+              style: ButtonStyles.destructive,
               child: Text(AppLocalizations.of(context)!.delete),
             ),
           ],
