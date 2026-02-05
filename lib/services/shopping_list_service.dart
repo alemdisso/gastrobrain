@@ -273,6 +273,58 @@ class ShoppingListService {
     return shoppingList.copyWith(id: listId);
   }
 
+  /// Generate a shopping list from curated (user-selected) ingredients
+  ///
+  /// This is used in Stage 2 (Refinement Mode) where users have already
+  /// reviewed and selected which ingredients they want to include.
+  ///
+  /// The curatedIngredients parameter should already be filtered, aggregated,
+  /// and grouped - it comes directly from user selection in the refinement sheet.
+  ///
+  /// Returns the created ShoppingList.
+  Future<ShoppingList> generateFromCuratedIngredients({
+    required DateTime startDate,
+    required DateTime endDate,
+    required Map<String, List<Map<String, dynamic>>> curatedIngredients,
+  }) async {
+    // 1. Generate list name
+    final listName = _generateListName(startDate, endDate);
+
+    // 2. Create shopping list
+    final shoppingList = ShoppingList(
+      name: listName,
+      dateCreated: DateTime.now(),
+      startDate: startDate,
+      endDate: endDate,
+    );
+
+    // 3. Save shopping list to database
+    final listId = await dbHelper.insertShoppingList(shoppingList);
+
+    // 4. Create and save shopping list items from curated ingredients
+    // The curated ingredients are already filtered, aggregated, and grouped
+    for (final entry in curatedIngredients.entries) {
+      final category = entry.key;
+      final items = entry.value;
+
+      for (final ingredientData in items) {
+        final item = ShoppingListItem(
+          shoppingListId: listId,
+          ingredientName: ingredientData['name'] as String,
+          quantity: ingredientData['quantity'] as double,
+          unit: ingredientData['unit'] as String,
+          category: category,
+          toBuy: true,
+        );
+
+        await dbHelper.insertShoppingListItem(item);
+      }
+    }
+
+    // 5. Return the created shopping list with ID
+    return shoppingList.copyWith(id: listId);
+  }
+
   /// Generate a display name for the shopping list
   String _generateListName(DateTime start, DateTime end) {
     final formatter = DateFormat('MMM d');

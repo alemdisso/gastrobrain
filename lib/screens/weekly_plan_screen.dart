@@ -30,6 +30,7 @@ import '../widgets/recipe_selection_dialog.dart';
 import '../widgets/week_navigation_widget.dart';
 import '../widgets/weekly_summary_widget.dart';
 import '../widgets/shopping_list_preview_bottom_sheet.dart';
+import '../widgets/shopping_list_refinement_bottom_sheet.dart';
 import '../utils/id_generator.dart';
 import '../l10n/app_localizations.dart';
 import '../screens/recipe_details_screen.dart';
@@ -871,8 +872,37 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         }
       }
 
-      // Show loading indicator
+      // Stage 2: Show refinement sheet for user to curate ingredients
+      final shoppingListService = ShoppingListService(_dbHelper);
+
+      // Calculate projected ingredients (no database writes)
+      final groupedIngredients = await shoppingListService.calculateProjectedIngredients(
+        startDate: _currentWeekStart,
+        endDate: endDate,
+      );
+
+      // Show refinement sheet and wait for user selection
       if (!mounted) return;
+      final selectedIngredients = await showModalBottomSheet<Map<String, List<Map<String, dynamic>>>>(
+        context: context,
+        backgroundColor: Colors.transparent,
+        isScrollControlled: true,
+        builder: (context) => DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) => ShoppingListRefinementBottomSheet(
+            groupedIngredients: groupedIngredients,
+          ),
+        ),
+      );
+
+      // If user cancelled refinement, exit early
+      if (selectedIngredients == null || !mounted) {
+        return;
+      }
+
+      // Show loading indicator
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -890,11 +920,12 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         ),
       );
 
-      // Generate the shopping list
+      // Generate the shopping list from curated ingredients
       final shoppingList =
-          await ServiceProvider.shoppingList.generateFromDateRange(
+          await ServiceProvider.shoppingList.generateFromCuratedIngredients(
         startDate: _currentWeekStart,
         endDate: endDate,
+        curatedIngredients: selectedIngredients,
       );
 
       // Hide loading indicator

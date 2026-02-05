@@ -2150,6 +2150,12 @@
   "shoppingListPreviewEmpty": "Nenhuma refeição planejada - nada para visualizar",
   "shoppingListPreviewError": "Erro ao carregar ingredientes",
   "shoppingListPreviewLoading": "Calculando ingredientes...",
+  "shoppingListRefinementTitle": "Refine Sua Lista de Compras",
+  "shoppingListRefinementSubtitle": "{selected} de {total} itens selecionados",
+  "shoppingListRefinementEmpty": "Nenhuma refeição planejada - nada para refinar",
+  "shoppingListRefinementEmptyError": "Por favor, selecione pelo menos um item para gerar sua lista de compras",
+  "selectAll": "Selecionar Tudo",
+  "deselectAll": "Desmarcar Tudo",
   "failedToLoadShoppingList": "Falha ao carregar lista de compras",
   "@failedToLoadShoppingList": {
     "description": "Error message when shopping list cannot be loaded"

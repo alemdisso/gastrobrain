@@ -2162,6 +2162,40 @@
   "@shoppingListPreviewLoading": {
     "description": "Loading message while calculating projected ingredients"
   },
+  "shoppingListRefinementTitle": "Refine Your Shopping List",
+  "@shoppingListRefinementTitle": {
+    "description": "Title for refinement bottom sheet (Stage 2)"
+  },
+  "shoppingListRefinementSubtitle": "{selected} of {total} items selected",
+  "@shoppingListRefinementSubtitle": {
+    "description": "Subtitle showing count of selected items in refinement sheet",
+    "placeholders": {
+      "selected": {
+        "type": "int",
+        "example": "15"
+      },
+      "total": {
+        "type": "int",
+        "example": "20"
+      }
+    }
+  },
+  "shoppingListRefinementEmpty": "No meals planned - nothing to refine",
+  "@shoppingListRefinementEmpty": {
+    "description": "Message shown when meal plan is empty in refinement mode"
+  },
+  "shoppingListRefinementEmptyError": "Please select at least one item to generate your shopping list",
+  "@shoppingListRefinementEmptyError": {
+    "description": "Error message when user tries to generate list with no items selected"
+  },
+  "selectAll": "Select All",
+  "@selectAll": {
+    "description": "Button to select all items in refinement sheet"
+  },
+  "deselectAll": "Deselect All",
+  "@deselectAll": {
+    "description": "Button to deselect all items in refinement sheet"
+  },
   "failedToLoadShoppingList": "Failed to load shopping list",
   "@failedToLoadShoppingList": {
     "description": "Error message when shopping list cannot be loaded"
