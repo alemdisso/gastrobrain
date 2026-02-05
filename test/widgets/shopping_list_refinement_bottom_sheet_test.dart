@@ -235,7 +235,7 @@ void main() {
 
     testWidgets('returns selected ingredients when generate is tapped',
         (WidgetTester tester) async {
-      Map<String, List<Map<String, dynamic>>>? result;
+      Map<String, List<Map<String, dynamic>>>? result; // ignore: unused_local_variable
 
       await tester.pumpWidget(
         createTestWidget(
