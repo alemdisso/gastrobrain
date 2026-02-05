@@ -243,7 +243,6 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
               decoration: InputDecoration(
                 hintText: AppLocalizations.of(context)!.searchIngredients,
                 prefixIcon: const Icon(Icons.search),
-                border: const OutlineInputBorder(),
               ),
               onChanged: (value) {
                 setState(() {

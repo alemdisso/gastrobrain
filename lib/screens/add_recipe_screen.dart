@@ -102,7 +102,6 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
-        border: const OutlineInputBorder(),
         suffixText: AppLocalizations.of(context)!.minutes,
       ),
       keyboardType: TextInputType.number,
@@ -337,7 +336,6 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   controller: _nameController,
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.recipeName,
-                    border: const OutlineInputBorder(),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -353,7 +351,6 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   initialValue: _selectedFrequency,
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.desiredFrequency,
-                    border: const OutlineInputBorder(),
                   ),
                   items: frequencies.map((frequency) {
                     return DropdownMenuItem<FrequencyType>(
@@ -375,7 +372,6 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   initialValue: _selectedCategory,
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.category,
-                    border: const OutlineInputBorder(),
                   ),
                   items: RecipeCategory.values.map((category) {
                     return DropdownMenuItem<RecipeCategory>(
@@ -418,7 +414,6 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   controller: _notesController,
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.notes,
-                    border: const OutlineInputBorder(),
                   ),
                   maxLines: 3,
                 ),

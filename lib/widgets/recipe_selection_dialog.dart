@@ -245,7 +245,6 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
                     decoration: InputDecoration(
                       hintText: AppLocalizations.of(context)!.searchRecipesHint,
                       prefixIcon: const Icon(Icons.search),
-                      border: const OutlineInputBorder(),
                     ),
                     onChanged: (value) {
                       setState(() {

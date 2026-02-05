@@ -852,7 +852,7 @@ class E2ETestHelpers {
 
   /// Confirm deletion in the confirmation dialog
   ///
-  /// Finds and taps the Delete/Confirm button (second TextButton) in the
+  /// Finds and taps the Delete/Confirm button (ElevatedButton with destructive style) in the
   /// confirmation dialog to proceed with deletion.
   ///
   /// Usage:
@@ -860,14 +860,14 @@ class E2ETestHelpers {
   /// await E2ETestHelpers.confirmDeletion(tester);
   /// ```
   static Future<void> confirmDeletion(WidgetTester tester) async {
-    // The delete button is the second TextButton in the dialog
-    // (first is Cancel, second is Delete)
-    final textButtons = find.byType(TextButton);
-    expect(textButtons.evaluate().length, greaterThanOrEqualTo(2),
-        reason: 'Dialog should have at least 2 buttons (Cancel and Delete)');
+    // The delete button is an ElevatedButton (with destructive style)
+    // The cancel button is a TextButton
+    final deleteButton = find.byType(ElevatedButton);
+    expect(deleteButton, findsOneWidget,
+        reason: 'Dialog should have a Delete button (ElevatedButton)');
 
-    // Tap the second TextButton (Delete)
-    await tester.tap(textButtons.at(1));
+    // Tap the ElevatedButton (Delete)
+    await tester.tap(deleteButton);
     await tester.pumpAndSettle();
   }
 

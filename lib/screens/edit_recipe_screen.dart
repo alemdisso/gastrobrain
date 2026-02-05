@@ -97,7 +97,6 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
-        border: const OutlineInputBorder(),
         suffixText: AppLocalizations.of(context)!.minutes,
       ),
       keyboardType: TextInputType.number,
@@ -219,8 +218,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                   controller: _nameController,
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.recipeName,
-                    border: const OutlineInputBorder(),
-                  ),
+                              ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return AppLocalizations.of(context)!
@@ -235,8 +233,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                   initialValue: _selectedFrequency,
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.desiredFrequency,
-                    border: const OutlineInputBorder(),
-                  ),
+                              ),
                   items: FrequencyType.values.map((frequency) {
                     return DropdownMenuItem<FrequencyType>(
                       value: frequency,
@@ -257,8 +254,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                   initialValue: _selectedCategory,
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.category,
-                    border: const OutlineInputBorder(),
-                  ),
+                              ),
                   items: RecipeCategory.values.map((category) {
                     return DropdownMenuItem<RecipeCategory>(
                       value: category,
@@ -298,8 +294,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                   controller: _notesController,
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.notes,
-                    border: const OutlineInputBorder(),
-                  ),
+                              ),
                   maxLines: 3,
                 ),
                 const SizedBox(height: 16),
@@ -309,8 +304,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.instructionsLabel,
                     hintText: AppLocalizations.of(context)!.enterInstructions,
-                    border: const OutlineInputBorder(),
-                  ),
+                              ),
                   maxLines: null,
                   minLines: 5,
                   keyboardType: TextInputType.multiline,
