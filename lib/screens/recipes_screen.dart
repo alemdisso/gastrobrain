@@ -416,7 +416,6 @@ class _RecipesScreenState extends State<RecipesScreen> {
               decoration: InputDecoration(
                 hintText: AppLocalizations.of(context)!.searchRecipes,
                 prefixIcon: const Icon(Icons.search),
-                border: const OutlineInputBorder(),
               ),
               onChanged: (value) {
                 setState(() {

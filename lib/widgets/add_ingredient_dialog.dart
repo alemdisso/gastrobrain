@@ -299,7 +299,6 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                         decoration: InputDecoration(
                           labelText:
                               AppLocalizations.of(context)!.ingredientName,
-                          border: const OutlineInputBorder(),
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -317,7 +316,6 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                         decoration: InputDecoration(
                           labelText:
                               AppLocalizations.of(context)!.categoryLabel,
-                          border: const OutlineInputBorder(),
                         ),
                         items: _categories.map((category) {
                           return DropdownMenuItem(
@@ -371,8 +369,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                   AppLocalizations.of(context)!.ingredientLabel,
                               hintText: AppLocalizations.of(context)!
                                   .searchOrCreateIngredient,
-                              border: const OutlineInputBorder(),
-                              prefixIcon: const Icon(Icons.search),
+                                  prefixIcon: const Icon(Icons.search),
                             ),
                             onFieldSubmitted: (value) {
                               // Auto-select ingredient if there's an exact match
@@ -474,8 +471,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                             controller: _quantityController,
                             decoration: InputDecoration(
                               labelText: AppLocalizations.of(context)!.quantity,
-                              border: const OutlineInputBorder(),
-                            ),
+                                ),
                             keyboardType: const TextInputType.numberWithOptions(
                                 decimal: true),
                             validator: (value) {
@@ -503,8 +499,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                   decoration: InputDecoration(
                                     labelText: AppLocalizations.of(context)!
                                         .unitOptional,
-                                    border: const OutlineInputBorder(),
-                                  ),
+                                            ),
                                   isExpanded: true,
                                   items: [
                                     DropdownMenuItem(
@@ -538,8 +533,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                   decoration: InputDecoration(
                                     labelText:
                                         AppLocalizations.of(context)!.unit,
-                                    border: const OutlineInputBorder(),
-                                  ),
+                                            ),
                                   isExpanded: true,
                                   items: _units.map((unit) {
                                     return DropdownMenuItem(

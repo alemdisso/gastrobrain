@@ -209,7 +209,6 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
                   hintText: widget.searchHint ??
                       AppLocalizations.of(context)!.searchSideDishesHint,
                   prefixIcon: const Icon(Icons.search),
-                  border: const OutlineInputBorder(),
                   suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(
                           icon: const Icon(Icons.clear),

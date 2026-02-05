@@ -1253,8 +1253,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
               initialValue: _selectedRecipe,
               decoration: InputDecoration(
                 labelText: localizations.recipeName,
-                border: const OutlineInputBorder(),
-                contentPadding:
+                      contentPadding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),
               items: _recipesNeedingIngredients.map((recipe) {

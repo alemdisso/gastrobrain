@@ -143,8 +143,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
                 controller: _nameController,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.ingredientName,
-                  border: const OutlineInputBorder(),
-                ),
+                        ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return AppLocalizations.of(context)!
@@ -161,8 +160,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
                 initialValue: _selectedCategory,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.categoryLabel,
-                  border: const OutlineInputBorder(),
-                ),
+                        ),
                 items: _categories.map((category) {
                   return DropdownMenuItem(
                     value: category,
@@ -187,8 +185,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
                   initialValue: _selectedProteinType,
                   decoration: InputDecoration(
                     labelText: AppLocalizations.of(context)!.proteinTypeLabel,
-                    border: const OutlineInputBorder(),
-                  ),
+                            ),
                   items: ProteinType.values.map((type) {
                     return DropdownMenuItem(
                       value: type,
@@ -219,8 +216,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
                 initialValue: _selectedUnit,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.unitOptional,
-                  border: const OutlineInputBorder(),
-                ),
+                        ),
                 items: [
                   DropdownMenuItem<MeasurementUnit?>(
                     value: null,
@@ -247,8 +243,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
                 controller: _notesController,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.notesOptional,
-                  border: const OutlineInputBorder(),
-                  hintText:
+                          hintText:
                       AppLocalizations.of(context)!.anyAdditionalInformation,
                 ),
                 maxLines: 2,

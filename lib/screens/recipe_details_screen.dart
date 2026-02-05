@@ -207,7 +207,6 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
             controller: controller,
             decoration: InputDecoration(
               hintText: AppLocalizations.of(context)!.enterInstructions,
-              border: const OutlineInputBorder(),
             ),
             maxLines: null,
             minLines: 10,

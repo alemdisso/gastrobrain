@@ -292,8 +292,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
                 controller: _servingsController,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.numberOfServings,
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(Icons.people),
+                        prefixIcon: const Icon(Icons.people),
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
@@ -383,8 +382,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
                       decoration: InputDecoration(
                         labelText:
                             AppLocalizations.of(context)!.actualPrepTimeMin,
-                        border: const OutlineInputBorder(),
-                        prefixIcon: const Icon(Icons.timer),
+                                    prefixIcon: const Icon(Icons.timer),
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
@@ -406,8 +404,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
                       decoration: InputDecoration(
                         labelText:
                             AppLocalizations.of(context)!.actualCookTimeMin,
-                        border: const OutlineInputBorder(),
-                        prefixIcon: const Icon(Icons.timer),
+                                    prefixIcon: const Icon(Icons.timer),
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
@@ -449,8 +446,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
                 controller: _notesController,
                 decoration: InputDecoration(
                   labelText: AppLocalizations.of(context)!.notesOptional,
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(Icons.note),
+                        prefixIcon: const Icon(Icons.note),
                 ),
                 maxLines: 3,
               ),
