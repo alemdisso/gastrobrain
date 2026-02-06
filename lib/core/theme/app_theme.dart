@@ -405,6 +405,28 @@ class AppTheme {
           color: DesignTokens.textSecondary,
         ),
       ),
+
+      /// Tab Bar Theme
+      tabBarTheme: const TabBarThemeData(
+        indicatorColor: DesignTokens.primary,
+        indicatorSize: TabBarIndicatorSize.tab,
+        labelColor: DesignTokens.primary,
+        unselectedLabelColor: DesignTokens.textSecondary,
+        labelStyle: TextStyle(
+          fontSize: DesignTokens.bodySmallSize,
+          fontWeight: DesignTokens.weightMedium,
+        ),
+        unselectedLabelStyle: TextStyle(
+          fontSize: DesignTokens.bodySmallSize,
+          fontWeight: DesignTokens.weightRegular,
+        ),
+        indicator: UnderlineTabIndicator(
+          borderSide: BorderSide(
+            color: DesignTokens.primary,
+            width: DesignTokens.borderWidthThin,
+          ),
+        ),
+      ),
     );
   }
 

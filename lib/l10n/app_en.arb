@@ -16,6 +16,10 @@
   "@ingredients": {
     "description": "Tab label for ingredients section"
   },
+  "bulkRecipeUpdate": "Bulk Recipe Update",
+  "@bulkRecipeUpdate": {
+    "description": "Title for bulk recipe update tool screen"
+  },
   "deleteRecipe": "Delete Recipe",
   "@deleteRecipe": {
     "description": "Title for delete recipe confirmation dialog"

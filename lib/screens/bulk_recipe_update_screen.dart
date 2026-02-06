@@ -859,7 +859,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Bulk Recipe Update'),
+          title: Text(AppLocalizations.of(context)!.bulkRecipeUpdate),
           actions: [
             // Progress indicator in app bar
             if (_recipesNeedingIngredients.isNotEmpty)

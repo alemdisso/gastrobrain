@@ -16,6 +16,10 @@
   "@ingredients": {
     "description": "Rótulo da aba para seção de ingredientes"
   },
+  "bulkRecipeUpdate": "Atualização em Massa de Receitas",
+  "@bulkRecipeUpdate": {
+    "description": "Título da tela de atualização em massa de receitas"
+  },
   "deleteRecipe": "Excluir Receita",
   "@deleteRecipe": {
     "description": "Título do diálogo de confirmação para excluir receita"
