@@ -322,7 +322,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Confirm deletion - find and tap the Delete button in the AlertDialog
-      await tester.tap(find.widgetWithText(TextButton, 'Delete').last);
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Delete').last);
       await tester.pumpAndSettle();
 
       // Wait for async operations to complete

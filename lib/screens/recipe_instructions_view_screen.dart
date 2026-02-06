@@ -131,8 +131,7 @@ class _RecipeInstructionsViewScreenState
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.recipe.name),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+          leading: BackButton(
             onPressed: () {
               Navigator.pop(context, _hasChanges);
             },

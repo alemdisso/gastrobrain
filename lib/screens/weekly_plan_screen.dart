@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/protein_type.dart';
 import '../models/meal.dart';
 import '../models/meal_recipe.dart';
 import '../models/meal_plan.dart';
 import '../models/meal_plan_item.dart';
-import '../models/meal_plan_item_recipe.dart';
-import '../models/recipe_recommendation.dart';
-import '../models/recommendation_results.dart' as model;
+import '../models/meal_plan_summary.dart';
 import '../models/recipe.dart';
 import '../models/time_context.dart';
 import '../database/database_helper.dart';
@@ -15,7 +12,13 @@ import '../core/di/service_provider.dart';
 import '../core/services/recommendation_service.dart';
 import '../core/services/snackbar_service.dart';
 import '../core/services/meal_plan_analysis_service.dart';
+import '../core/services/meal_plan_summary_service.dart';
+import '../core/services/meal_plan_service.dart';
+import '../core/services/meal_action_service.dart';
 import '../core/services/meal_edit_service.dart';
+import '../core/services/recommendation_cache_service.dart';
+import '../services/shopping_list_service.dart';
+import '../core/theme/design_tokens.dart';
 import '../core/providers/recipe_provider.dart';
 import '../core/providers/meal_provider.dart';
 import '../core/providers/meal_plan_provider.dart';
@@ -23,10 +26,12 @@ import '../core/errors/gastrobrain_exceptions.dart';
 import '../widgets/weekly_calendar_widget.dart';
 import '../widgets/meal_recording_dialog.dart';
 import '../widgets/edit_meal_recording_dialog.dart';
-import '../widgets/recipe_selection_card.dart';
-import '../widgets/add_side_dish_dialog.dart';
+import '../widgets/recipe_selection_dialog.dart';
+import '../widgets/week_navigation_widget.dart';
+import '../widgets/weekly_summary_widget.dart';
+import '../widgets/shopping_list_preview_bottom_sheet.dart';
+import '../widgets/shopping_list_refinement_bottom_sheet.dart';
 import '../utils/id_generator.dart';
-import '../utils/sorting_utils.dart';
 import '../l10n/app_localizations.dart';
 import '../screens/recipe_details_screen.dart';
 import '../screens/shopping_list_screen.dart';
@@ -42,42 +47,24 @@ class WeeklyPlanScreen extends StatefulWidget {
   State<WeeklyPlanScreen> createState() => _WeeklyPlanScreenState();
 }
 
-class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
-    with SingleTickerProviderStateMixin {
+class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   late DatabaseHelper _dbHelper;
   late RecommendationService _recommendationService;
   late MealPlanAnalysisService _mealPlanAnalysis;
+  late MealPlanSummaryService _mealPlanSummary;
+  late MealPlanService _mealPlanService;
+  late MealActionService _mealActionService;
+  late RecommendationCacheService _recommendationCache;
   DateTime _currentWeekStart = _getFriday(DateTime.now());
   MealPlan? _currentMealPlan;
   bool _isLoading = true;
   List<Recipe> _availableRecipes = [];
   final ScrollController _scrollController = ScrollController();
-  // Cache for recommendations to improve performance
-  final Map<String, List<Recipe>> _recommendationCache = {};
-  // Tab controller for Planning/Summary tabs
-  late TabController _tabController;
-  // Summary data
-  Map<String, dynamic>? _summaryData;
-
-  // Helper method to create cache key
-  String _getRecommendationCacheKey(DateTime date, String mealType) {
-    return '${date.toIso8601String()}-$mealType';
-  }
-
-  /// Invalidates the cached recommendations for a specific meal slot
-  void _invalidateRecommendationCache(DateTime date, String mealType) {
-    final cacheKey = _getRecommendationCacheKey(date, mealType);
-
-    // Remove this specific slot from the cache
-    if (_recommendationCache.containsKey(cacheKey)) {
-      _recommendationCache.remove(cacheKey);
-    }
-  }
-
-  /// Clears all cached recommendations
-  void _clearAllRecommendationCache() {
-    _recommendationCache.clear();
-  }
+  // Summary data (will be used in Summary bottom sheet - Checkpoint 3)
+  MealPlanSummary? _summaryData;
+  // Bottom sheet state
+  bool _isSummarySheetOpen = false;
+  bool _isShoppingSheetOpen = false;
 
   @override
   void initState() {
@@ -86,7 +73,14 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
     _recommendationService =
         ServiceProvider.recommendations.recommendationService;
     _mealPlanAnalysis = MealPlanAnalysisService(_dbHelper);
-    _tabController = TabController(length: 2, vsync: this);
+    _mealPlanSummary = MealPlanSummaryService(_dbHelper);
+    _mealPlanService = MealPlanService(_dbHelper);
+    _mealActionService = MealActionService(_dbHelper);
+    _recommendationCache = RecommendationCacheService(
+      _dbHelper,
+      _recommendationService,
+      _mealPlanAnalysis,
+    );
     _loadData();
   }
 
@@ -127,32 +121,6 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
     }
   }
 
-  /// Calculates the relative week distance from the current week
-  /// Returns positive number for future weeks, negative for past weeks
-  int get _weekDistanceFromCurrent {
-    final now = DateTime.now();
-    final currentWeekFriday = _getFriday(now);
-    final differenceInDays =
-        _currentWeekStart.difference(currentWeekFriday).inDays;
-    return (differenceInDays / 7).round();
-  }
-
-  /// Returns a formatted string showing relative time distance
-  String get _relativeTimeDistance {
-    final distance = _weekDistanceFromCurrent;
-    if (distance == 0) {
-      return AppLocalizations.of(context)!.thisWeekRelative;
-    } else if (distance == 1) {
-      return AppLocalizations.of(context)!.nextWeekRelative;
-    } else if (distance == -1) {
-      return AppLocalizations.of(context)!.previousWeekRelative;
-    } else if (distance > 0) {
-      return AppLocalizations.of(context)!.futureWeeksRelative(distance);
-    } else {
-      return AppLocalizations.of(context)!.pastWeeksRelative(distance);
-    }
-  }
-
   /// Jumps to the current week
   void _jumpToCurrentWeek() {
     final now = DateTime.now();
@@ -180,56 +148,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
     }
   }
 
-  /// Gets the context indicator color
-  Color _getContextColor() {
-    switch (_currentWeekContext) {
-      case TimeContext.past:
-        return Colors.grey.withAlpha(51);
-      case TimeContext.current:
-        return Theme.of(context).colorScheme.primaryContainer.withAlpha(128);
-      case TimeContext.future:
-        return Theme.of(context).colorScheme.primary.withAlpha(76);
-    }
-  }
-
-  /// Gets the context border color
-  Color _getContextBorderColor() {
-    switch (_currentWeekContext) {
-      case TimeContext.past:
-        return Colors.grey.withAlpha(128);
-      case TimeContext.current:
-        return Theme.of(context).colorScheme.primary.withAlpha(128);
-      case TimeContext.future:
-        return Theme.of(context).colorScheme.primary.withAlpha(128);
-    }
-  }
-
-  /// Gets the context text color
-  Color _getContextTextColor() {
-    switch (_currentWeekContext) {
-      case TimeContext.past:
-        return Colors.grey[700] ?? Colors.grey;
-      case TimeContext.current:
-        return Theme.of(context).colorScheme.onPrimaryContainer;
-      case TimeContext.future:
-        return Theme.of(context).colorScheme.primary;
-    }
-  }
-
-  /// Gets the context icon
-  IconData _getContextIcon() {
-    switch (_currentWeekContext) {
-      case TimeContext.past:
-        return Icons.history;
-      case TimeContext.current:
-        return Icons.today;
-      case TimeContext.future:
-        return Icons.schedule;
-    }
-  }
-
   Future<void> _loadData() async {
-    _clearAllRecommendationCache();
+    _recommendationCache.clearAllCache();
     setState(() {
       _isLoading = true;
     });
@@ -249,7 +169,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         });
 
         // Clear the recommendation cache when meal plan changes
-        _recommendationCache.clear();
+        _recommendationCache.clearAllCache();
 
         // Calculate summary data
         await _calculateSummaryData();
@@ -270,147 +190,12 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
   }
 
   void _changeWeek(int weekOffset) {
-    _clearAllRecommendationCache();
+    _recommendationCache.clearAllCache();
     setState(() {
       _currentWeekStart = _currentWeekStart.add(Duration(days: weekOffset * 7));
       _currentMealPlan = null;
     });
     _loadData();
-  }
-
-  /// Build enhanced context for recipe recommendations using dual-context analysis
-  Future<Map<String, dynamic>> _buildRecommendationContext({
-    DateTime? forDate,
-    String? mealType,
-  }) async {
-    // Get planned context (current meal plan) - handle null case
-    final plannedRecipeIds = _currentMealPlan != null
-        ? await _mealPlanAnalysis.getPlannedRecipeIds(_currentMealPlan)
-        : <String>[];
-    final plannedProteins = _currentMealPlan != null
-        ? await _mealPlanAnalysis.getPlannedProteinsForWeek(_currentMealPlan)
-        : <ProteinType>[];
-
-    // Get recently cooked context (meal history)
-    final recentRecipeIds =
-        await _mealPlanAnalysis.getRecentlyCookedRecipeIds(dayWindow: 5);
-    final recentProteins =
-        await _mealPlanAnalysis.getRecentlyCookedProteins(dayWindow: 5);
-
-    // Calculate penalty strategy - handle null meal plan
-    final penaltyStrategy = _currentMealPlan != null
-        ? await _mealPlanAnalysis.calculateProteinPenaltyStrategy(
-            _currentMealPlan!,
-            forDate ?? DateTime.now(),
-            mealType ?? MealPlanItem.lunch,
-          )
-        : null;
-
-    return {
-      'forDate': forDate,
-      'mealType': mealType,
-      'plannedRecipeIds': plannedRecipeIds,
-      'recentlyCookedRecipeIds': recentRecipeIds,
-      'plannedProteins': plannedProteins,
-      'recentProteins': recentProteins,
-      'penaltyStrategy': penaltyStrategy,
-      // Backward compatibility
-      'excludeIds': plannedRecipeIds,
-    };
-  }
-
-  /// Returns simple recipes without scores for caching.
-  /// For recommendations with scores, use _getDetailedSlotRecommendations instead.
-  Future<List<Recipe>> getSlotRecommendations(DateTime date, String mealType,
-      {int count = 5}) async {
-    final cacheKey = _getRecommendationCacheKey(date, mealType);
-
-    // Check if we have cached recommendations
-    if (_recommendationCache.containsKey(cacheKey)) {
-      return _recommendationCache[cacheKey]!;
-    }
-
-    // Build context for recommendations
-    final context = await _buildRecommendationContext(
-      forDate: date,
-      mealType: mealType,
-    );
-
-    // Determine if this is a weekday
-    final isWeekday = date.weekday >= 1 && date.weekday <= 5;
-
-// Get recommendations with meal plan integration
-    final recommendations = await _recommendationService.getRecommendations(
-      count: count,
-      excludeIds: context['plannedRecipeIds'] ?? [],
-      // Pass meal plan for integrated protein rotation and variety scoring
-      mealPlan: _currentMealPlan,
-      forDate: date,
-      mealType: mealType,
-      weekdayMeal: isWeekday,
-      maxDifficulty: isWeekday ? 4 : null,
-    );
-
-    // Cache the recommendations
-    _recommendationCache[cacheKey] = recommendations;
-
-    return recommendations;
-  }
-
-  Future<({List<RecipeRecommendation> recommendations, String historyId})>
-      _getDetailedSlotRecommendations(DateTime date, String mealType,
-          {int count = 5}) async {
-    // Build context for recommendations
-    final context = await _buildRecommendationContext(
-      forDate: date,
-      mealType: mealType,
-    );
-
-    // Determine if this is a weekday
-    final isWeekday = date.weekday >= 1 && date.weekday <= 5;
-
-    // Get detailed recommendations with scores and meal plan integration
-    final recommendations =
-        await _recommendationService.getDetailedRecommendations(
-      count: count,
-      excludeIds: context['plannedRecipeIds'] ?? [],
-      // Pass meal plan for integrated protein rotation and variety scoring
-      mealPlan: _currentMealPlan,
-      forDate: date,
-      mealType: mealType,
-      weekdayMeal: isWeekday,
-      maxDifficulty: isWeekday ? 4 : null,
-    );
-
-    // Convert service RecommendationResults to model RecommendationResults for database storage
-    final modelResults = model.RecommendationResults(
-      recommendations: recommendations.recommendations,
-      totalEvaluated: recommendations.totalEvaluated,
-      queryParameters: recommendations.queryParameters,
-      generatedAt: recommendations.generatedAt,
-    );
-
-    // Save recommendation history and get the history ID
-    final historyId = await _dbHelper.saveRecommendationHistory(
-      modelResults,
-      'meal_planning',
-      targetDate: date,
-      mealType: mealType,
-    );
-
-    return (
-      recommendations: recommendations.recommendations,
-      historyId: historyId
-    );
-  }
-
-  Future<({List<RecipeRecommendation> recommendations, String historyId})>
-      _refreshDetailedRecommendations(DateTime date, String mealType) async {
-    // Clear the cache for this slot
-    _invalidateRecommendationCache(date, mealType);
-
-    // Get fresh detailed recommendations
-    return await _getDetailedSlotRecommendations(date, mealType, count: 8);
   }
 
   Future<void> _handleSlotTap(DateTime date, String mealType) async {
@@ -425,7 +210,9 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
     }
 
     // Get detailed recommendations with scores for this slot
-    final recommendationContext = await _buildRecommendationContext(
+    final recommendationContext =
+        await _recommendationCache.buildRecommendationContext(
+      mealPlan: _currentMealPlan,
       forDate: date,
       mealType: mealType,
     );
@@ -453,12 +240,13 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
     // Show recipe selection dialog with detailed recommendations
     final mealData = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (context) => _RecipeSelectionDialog(
+      builder: (context) => RecipeSelectionDialog(
         recipes: recipes,
         detailedRecommendations: topRecommendations,
         allScoredRecipes: allRecommendations.recommendations,
         onRefreshDetailedRecommendations: () =>
-            _refreshDetailedRecommendations(date, mealType),
+            _recommendationCache.refreshDetailedRecommendations(
+                mealPlan: _currentMealPlan, date: date, mealType: mealType),
       ),
     );
 
@@ -466,121 +254,24 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
       final primaryRecipe = mealData['primaryRecipe'] as Recipe;
       final additionalRecipes = mealData['additionalRecipes'] as List<Recipe>;
 
-      // Create or update meal plan
-      if (_currentMealPlan == null) {
-        // Create new meal plan for this week
-        final newPlanId = IdGenerator.generateId();
-        final newPlan = MealPlan.forWeek(
-          newPlanId,
-          _currentWeekStart,
-        );
+      // Get or create meal plan for this week
+      final mealPlan = _currentMealPlan ??
+          await _mealPlanService.getOrCreateMealPlan(_currentWeekStart);
 
-        // Add the meal to the plan
-        final planItemId = IdGenerator.generateId();
-        final planItem = MealPlanItem(
-          id: planItemId,
-          mealPlanId: newPlan.id,
-          plannedDate: MealPlanItem.formatPlannedDate(date),
-          mealType: mealType,
-        );
+      // Add or update the meal in the slot
+      final updatedPlan = await _mealPlanService.addOrUpdateMealToSlot(
+        mealPlan: mealPlan,
+        date: date,
+        mealType: mealType,
+        primaryRecipe: primaryRecipe,
+        additionalRecipes: additionalRecipes,
+      );
 
-        // Create junction records for all recipes
-        final List<MealPlanItemRecipe> mealPlanItemRecipes = [];
-
-        // Add primary recipe
-        mealPlanItemRecipes.add(MealPlanItemRecipe(
-          mealPlanItemId: planItemId,
-          recipeId: primaryRecipe.id,
-          isPrimaryDish: true,
-        ));
-
-        // Add additional recipes as side dishes
-        for (final additionalRecipe in additionalRecipes) {
-          mealPlanItemRecipes.add(MealPlanItemRecipe(
-            mealPlanItemId: planItemId,
-            recipeId: additionalRecipe.id,
-            isPrimaryDish: false,
-          ));
-        }
-
-        // Set the recipes list for the item
-        planItem.mealPlanItemRecipes = mealPlanItemRecipes;
-
-        newPlan.addItem(planItem);
-
-        // Save to database
-        await _dbHelper.insertMealPlan(newPlan);
-        await _dbHelper.insertMealPlanItem(planItem);
-
-        // Save all junction records
-        for (final junction in mealPlanItemRecipes) {
-          await _dbHelper.insertMealPlanItemRecipe(junction);
-        }
-
-        setState(() {
-          _currentMealPlan = newPlan;
-        });
-      } else {
-        // Check if there's already a meal in this slot
-        final existingItems =
-            _currentMealPlan!.getItemsForDateAndMealType(date, mealType);
-
-        if (existingItems.isNotEmpty) {
-          // Remove existing items for this slot
-          for (final item in existingItems) {
-            await _dbHelper.deleteMealPlanItem(item.id);
-            _currentMealPlan!.removeItem(item.id);
-          }
-        }
-
-        // Add the new meal to the plan
-        final planItemId = IdGenerator.generateId();
-        final planItem = MealPlanItem(
-          id: planItemId,
-          mealPlanId: _currentMealPlan!.id,
-          plannedDate: MealPlanItem.formatPlannedDate(date),
-          mealType: mealType,
-        );
-
-        // Create junction records for all recipes
-        final List<MealPlanItemRecipe> mealPlanItemRecipes = [];
-
-        // Add primary recipe
-        mealPlanItemRecipes.add(MealPlanItemRecipe(
-          mealPlanItemId: planItemId,
-          recipeId: primaryRecipe.id,
-          isPrimaryDish: true,
-        ));
-
-        // Add additional recipes as side dishes
-        for (final additionalRecipe in additionalRecipes) {
-          mealPlanItemRecipes.add(MealPlanItemRecipe(
-            mealPlanItemId: planItemId,
-            recipeId: additionalRecipe.id,
-            isPrimaryDish: false,
-          ));
-        }
-
-        // Set the recipes list for the item
-        planItem.mealPlanItemRecipes = mealPlanItemRecipes;
-
-        _currentMealPlan!.addItem(planItem);
-
-        // Save to database
-        await _dbHelper.insertMealPlanItem(planItem);
-
-        // Save all junction records
-        for (final junction in mealPlanItemRecipes) {
-          await _dbHelper.insertMealPlanItemRecipe(junction);
-        }
-
-        await _dbHelper.updateMealPlan(_currentMealPlan!);
-
-        setState(() {
-          // Force a reload to ensure the calendar widget refreshes
-          _loadData();
-        });
-      }
+      setState(() {
+        _currentMealPlan = updatedPlan;
+        // Force a reload to ensure the calendar widget refreshes
+        _loadData();
+      });
     }
   }
 
@@ -671,9 +362,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
       } catch (e) {
         if (mounted) {
           SnackbarService.showError(
-              context,
-              AppLocalizations.of(context)!
-                  .errorViewingRecipeDetails);
+              context, AppLocalizations.of(context)!.errorViewingRecipeDetails);
         }
       }
     } else if (action == 'change') {
@@ -694,16 +383,14 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
     } else if (action == 'remove') {
       // Remove the meal from the plan
       if (_currentMealPlan != null) {
-        final items =
-            _currentMealPlan!.getItemsForDateAndMealType(date, mealType);
+        final updatedPlan = await _mealPlanService.removeMealFromSlot(
+          mealPlan: _currentMealPlan!,
+          date: date,
+          mealType: mealType,
+        );
 
-        for (final item in items) {
-          await _dbHelper.deleteMealPlanItem(item.id);
-          _currentMealPlan!.removeItem(item.id);
-        }
-
-        await _dbHelper.updateMealPlan(_currentMealPlan!);
         setState(() {
+          _currentMealPlan = updatedPlan;
           // Force a reload to ensure the calendar widget refreshes
           _loadData();
         });
@@ -714,10 +401,13 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
   Future<void> _handleMarkAsCooked(
       DateTime date, String mealType, String recipeId) async {
     try {
-      // First, get details of the meal plan item
-      final items =
-          _currentMealPlan?.getItemsForDateAndMealType(date, mealType) ?? [];
-      if (items.isEmpty) {
+      // Find the planned meal for this slot
+      final mealPlanItem = _mealActionService.findPlannedMealForSlot(
+        _currentMealPlan,
+        date,
+        mealType,
+      );
+      if (mealPlanItem == null) {
         if (mounted) {
           SnackbarService.showError(
               context, AppLocalizations.of(context)!.plannedMealNotFound);
@@ -725,29 +415,17 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         return;
       }
 
-      // Get the primary recipe
-      final recipe = await _dbHelper.getRecipe(recipeId);
-      if (recipe == null) {
+      // Get recipes from the meal plan item
+      final recipes = await _mealActionService.getRecipesFromMealPlanItem(
+        mealPlanItem,
+        recipeId,
+      );
+      if (recipes == null) {
         if (mounted) {
           SnackbarService.showError(
               context, AppLocalizations.of(context)!.recipeNotFound);
         }
         return;
-      }
-
-      // Get any additional recipes already in the plan
-      List<Recipe> additionalRecipes = [];
-      if (items[0].mealPlanItemRecipes != null) {
-        for (final mealRecipe in items[0].mealPlanItemRecipes!) {
-          if (mealRecipe.recipeId != recipeId) {
-            // Skip the primary recipe
-            final additionalRecipe =
-                await _dbHelper.getRecipe(mealRecipe.recipeId);
-            if (additionalRecipe != null) {
-              additionalRecipes.add(additionalRecipe);
-            }
-          }
-        }
       }
 
       // Show the meal recording dialog
@@ -756,10 +434,10 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         result = await showDialog<Map<String, dynamic>>(
           context: context,
           builder: (context) => MealRecordingDialog(
-            primaryRecipe: recipe,
-            additionalRecipes: additionalRecipes,
+            primaryRecipe: recipes.primary,
+            additionalRecipes: recipes.additional,
             plannedDate: date,
-            notes: items[0].notes,
+            notes: mealPlanItem.notes,
           ),
         );
       }
@@ -822,7 +500,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
       }
 
       // Mark the meal plan item as cooked using the provider
-      await mealPlanProvider.markMealAsCooked(items[0]);
+      await mealPlanProvider.markMealAsCooked(mealPlanItem);
 
       if (mounted) {
         SnackbarService.showSuccess(
@@ -845,11 +523,13 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
   Future<void> _handleAddSideDish(
       DateTime date, String mealType, String recipeId) async {
     try {
-      // First, find the existing cooked meal
-      // We need to look in the meals table for a meal that was created from this planned meal
-      final items =
-          _currentMealPlan?.getItemsForDateAndMealType(date, mealType) ?? [];
-      if (items.isEmpty || !items[0].hasBeenCooked) {
+      // Find the planned meal for this slot
+      final mealPlanItem = _mealActionService.findPlannedMealForSlot(
+        _currentMealPlan,
+        date,
+        mealType,
+      );
+      if (mealPlanItem == null || !mealPlanItem.hasBeenCooked) {
         if (mounted) {
           SnackbarService.showError(
               context, AppLocalizations.of(context)!.mealNotFoundOrNotCooked);
@@ -857,34 +537,11 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         return;
       }
 
-      // Find the actual meal record
-      // We'll search for meals cooked on the same date as the planned date
-      final plannedDateOnly = MealPlanItem.formatPlannedDate(date);
-      final searchDate = DateTime.parse(plannedDateOnly);
-
-      // Get all meals for the primary recipe from that day
-      final allMealsForRecipe = await _dbHelper.getMealsForRecipe(recipeId);
-
-      // Find the meal that was cooked on the planned date (or close to it)
-      Meal? targetMeal;
-      for (final meal in allMealsForRecipe) {
-        final mealDate = DateTime(
-          meal.cookedAt.year,
-          meal.cookedAt.month,
-          meal.cookedAt.day,
-        );
-        final plannedDateNormalized = DateTime(
-          searchDate.year,
-          searchDate.month,
-          searchDate.day,
-        );
-
-        if (mealDate.isAtSameMomentAs(plannedDateNormalized)) {
-          targetMeal = meal;
-          break;
-        }
-      }
-
+      // Find the cooked meal record
+      final targetMeal = await _mealActionService.findCookedMealForSlot(
+        date,
+        recipeId,
+      );
       if (targetMeal == null) {
         if (mounted) {
           SnackbarService.showError(
@@ -893,28 +550,17 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         return;
       }
 
-      // Get the primary recipe
-      final recipe = await _dbHelper.getRecipe(recipeId);
-      if (recipe == null) {
+      // Get recipes from the cooked meal
+      final recipes = await _mealActionService.getRecipesFromCookedMeal(
+        targetMeal,
+        recipeId,
+      );
+      if (recipes == null) {
         if (mounted) {
           SnackbarService.showError(
               context, AppLocalizations.of(context)!.recipeNotFound);
         }
         return;
-      }
-
-      // Get current additional recipes from the meal
-      List<Recipe> currentAdditionalRecipes = [];
-      if (targetMeal.mealRecipes != null) {
-        for (final mealRecipe in targetMeal.mealRecipes!) {
-          if (!mealRecipe.isPrimaryDish) {
-            final additionalRecipe =
-                await _dbHelper.getRecipe(mealRecipe.recipeId);
-            if (additionalRecipe != null) {
-              currentAdditionalRecipes.add(additionalRecipe);
-            }
-          }
-        }
       }
 
       // Show the meal recording dialog in "edit mode"
@@ -923,10 +569,10 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         result = await showDialog<Map<String, dynamic>>(
           context: context,
           builder: (context) => MealRecordingDialog(
-            primaryRecipe: recipe,
-            additionalRecipes: currentAdditionalRecipes,
+            primaryRecipe: recipes.primary,
+            additionalRecipes: recipes.additional,
             plannedDate: date,
-            notes: targetMeal?.notes ?? '',
+            notes: targetMeal.notes,
           ),
         );
       }
@@ -973,10 +619,13 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
   Future<void> _handleEditCookedMeal(
       DateTime date, String mealType, String recipeId) async {
     try {
-      // Find the cooked meal plan item
-      final items =
-          _currentMealPlan?.getItemsForDateAndMealType(date, mealType) ?? [];
-      if (items.isEmpty || !items[0].hasBeenCooked) {
+      // Find the planned meal for this slot
+      final mealPlanItem = _mealActionService.findPlannedMealForSlot(
+        _currentMealPlan,
+        date,
+        mealType,
+      );
+      if (mealPlanItem == null || !mealPlanItem.hasBeenCooked) {
         if (mounted) {
           SnackbarService.showError(
               context, AppLocalizations.of(context)!.mealNotFoundOrNotCooked);
@@ -984,31 +633,11 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         return;
       }
 
-      // Find the actual meal record by searching for meals cooked on the planned date
-      final plannedDateOnly = MealPlanItem.formatPlannedDate(date);
-      final searchDate = DateTime.parse(plannedDateOnly);
-
-      final allMealsForRecipe = await _dbHelper.getMealsForRecipe(recipeId);
-
-      Meal? targetMeal;
-      for (final meal in allMealsForRecipe) {
-        final mealDate = DateTime(
-          meal.cookedAt.year,
-          meal.cookedAt.month,
-          meal.cookedAt.day,
-        );
-        final plannedDateNormalized = DateTime(
-          searchDate.year,
-          searchDate.month,
-          searchDate.day,
-        );
-
-        if (mealDate.isAtSameMomentAs(plannedDateNormalized)) {
-          targetMeal = meal;
-          break;
-        }
-      }
-
+      // Find the cooked meal record
+      final targetMeal = await _mealActionService.findCookedMealForSlot(
+        date,
+        recipeId,
+      );
       if (targetMeal == null) {
         if (mounted) {
           SnackbarService.showError(
@@ -1017,28 +646,17 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         return;
       }
 
-      // Get the primary recipe
-      final recipe = await _dbHelper.getRecipe(recipeId);
-      if (recipe == null) {
+      // Get recipes from the cooked meal
+      final recipes = await _mealActionService.getRecipesFromCookedMeal(
+        targetMeal,
+        recipeId,
+      );
+      if (recipes == null) {
         if (mounted) {
           SnackbarService.showError(
               context, AppLocalizations.of(context)!.recipeNotFound);
         }
         return;
-      }
-
-      // Get current additional recipes from the meal
-      List<Recipe> currentAdditionalRecipes = [];
-      if (targetMeal.mealRecipes != null) {
-        for (final mealRecipe in targetMeal.mealRecipes!) {
-          if (!mealRecipe.isPrimaryDish) {
-            final additionalRecipe =
-                await _dbHelper.getRecipe(mealRecipe.recipeId);
-            if (additionalRecipe != null) {
-              currentAdditionalRecipes.add(additionalRecipe);
-            }
-          }
-        }
       }
 
       // Show the edit dialog
@@ -1047,9 +665,9 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         result = await showDialog<Map<String, dynamic>>(
           context: context,
           builder: (context) => EditMealRecordingDialog(
-            meal: targetMeal!,
-            primaryRecipe: recipe,
-            additionalRecipes: currentAdditionalRecipes,
+            meal: targetMeal,
+            primaryRecipe: recipes.primary,
+            additionalRecipes: recipes.additional,
           ),
         );
       }
@@ -1141,7 +759,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
           ? null
           : await showDialog<Map<String, dynamic>>(
               context: context,
-              builder: (context) => _RecipeSelectionDialog(
+              builder: (context) => RecipeSelectionDialog(
                 recipes: _availableRecipes,
                 detailedRecommendations: const [], // No recommendations needed for editing
                 initialPrimaryRecipe: primaryRecipe,
@@ -1172,32 +790,11 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
     final primaryRecipe = mealData['primaryRecipe'] as Recipe;
     final additionalRecipes = mealData['additionalRecipes'] as List<Recipe>;
 
-    // Delete existing junction records for this meal plan item
-    await _dbHelper.deleteMealPlanItemRecipesByItemId(existingItem.id);
-
-    // Create new junction records
-    final List<MealPlanItemRecipe> newMealPlanItemRecipes = [];
-
-    // Add primary recipe
-    newMealPlanItemRecipes.add(MealPlanItemRecipe(
-      mealPlanItemId: existingItem.id,
-      recipeId: primaryRecipe.id,
-      isPrimaryDish: true,
-    ));
-
-    // Add additional recipes as side dishes
-    for (final additionalRecipe in additionalRecipes) {
-      newMealPlanItemRecipes.add(MealPlanItemRecipe(
-        mealPlanItemId: existingItem.id,
-        recipeId: additionalRecipe.id,
-        isPrimaryDish: false,
-      ));
-    }
-
-    // Insert all new junction records using DatabaseHelper abstraction
-    for (final junction in newMealPlanItemRecipes) {
-      await _dbHelper.insertMealPlanItemRecipe(junction);
-    }
+    await _mealPlanService.updateMealItemRecipes(
+      mealPlanItem: existingItem,
+      primaryRecipe: primaryRecipe,
+      additionalRecipes: additionalRecipes,
+    );
   }
 
   void _handleDaySelected(DateTime selectedDate, int selectedDayIndex) {
@@ -1231,7 +828,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
           context: context,
           builder: (context) => AlertDialog(
             title: Text(AppLocalizations.of(context)!.shoppingListExists),
-            content: Text(AppLocalizations.of(context)!.shoppingListExistsMessage),
+            content:
+                Text(AppLocalizations.of(context)!.shoppingListExistsMessage),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, 'cancel'),
@@ -1274,8 +872,37 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         }
       }
 
-      // Show loading indicator
+      // Stage 2: Show refinement sheet for user to curate ingredients
+      final shoppingListService = ShoppingListService(_dbHelper);
+
+      // Calculate projected ingredients (no database writes)
+      final groupedIngredients = await shoppingListService.calculateProjectedIngredients(
+        startDate: _currentWeekStart,
+        endDate: endDate,
+      );
+
+      // Show refinement sheet and wait for user selection
       if (!mounted) return;
+      final selectedIngredients = await showModalBottomSheet<Map<String, List<Map<String, dynamic>>>>(
+        context: context,
+        backgroundColor: Colors.transparent,
+        isScrollControlled: true,
+        builder: (context) => DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) => ShoppingListRefinementBottomSheet(
+            groupedIngredients: groupedIngredients,
+          ),
+        ),
+      );
+
+      // If user cancelled refinement, exit early
+      if (selectedIngredients == null || !mounted) {
+        return;
+      }
+
+      // Show loading indicator
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -1285,7 +912,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
                 height: 20,
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: DesignTokens.spacingMd),
               Text(AppLocalizations.of(context)!.generatingShoppingList),
             ],
           ),
@@ -1293,10 +920,12 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         ),
       );
 
-      // Generate the shopping list
-      final shoppingList = await ServiceProvider.shoppingList.generateFromDateRange(
+      // Generate the shopping list from curated ingredients
+      final shoppingList =
+          await ServiceProvider.shoppingList.generateFromCuratedIngredients(
         startDate: _currentWeekStart,
         endDate: endDate,
+        curatedIngredients: selectedIngredients,
       );
 
       // Hide loading indicator
@@ -1319,7 +948,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${AppLocalizations.of(context)!.errorGeneratingShoppingList} $e'),
+            content: Text(
+                '${AppLocalizations.of(context)!.errorGeneratingShoppingList} $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -1328,438 +958,326 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
   }
 
   Future<void> _calculateSummaryData() async {
-    if (_currentMealPlan == null) {
+    final summary = await _mealPlanSummary.calculateSummary(_currentMealPlan);
+    if (mounted) {
       setState(() {
-        _summaryData = {
-          'totalPlanned': 0,
-          'percentage': 0.0,
-          'proteinsByDay': <String, Set<ProteinType>>{},
-          'plannedMeals': <Map<String, dynamic>>[],
-          'uniqueRecipes': 0,
-          'repeatedRecipes': <MapEntry<String, int>>[],
-        };
+        _summaryData = summary;
       });
-      return;
     }
+  }
 
+  // Bottom sheet methods
+  void _openSummarySheet() {
+    setState(() => _isSummarySheetOpen = true);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.3,
+        maxChildSize: 0.9,
+        builder: (context, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(DesignTokens.borderRadiusLarge),
+            ),
+          ),
+          child: Column(
+            children: [
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.symmetric(
+                    vertical: DesignTokens.spacingSm),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  borderRadius: BorderRadius.circular(DesignTokens.spacingXXs),
+                ),
+              ),
+              // Header
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: DesignTokens.spacingMd,
+                  vertical: DesignTokens.spacingSm,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.summaryTabLabel,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              // Summary content
+              Expanded(
+                child: WeeklySummaryWidget(
+                  summaryData: _summaryData,
+                  onRetry: _loadData,
+                  scrollController: scrollController,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).whenComplete(() {
+      setState(() => _isSummarySheetOpen = false);
+    });
+  }
+
+  void _openShoppingSheet() {
+    setState(() => _isShoppingSheetOpen = true);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(DesignTokens.borderRadiusLarge),
+          ),
+        ),
+        child: _buildShoppingListOptions(context),
+      ),
+    ).whenComplete(() {
+      setState(() => _isShoppingSheetOpen = false);
+    });
+  }
+
+  Future<void> _showShoppingPreview() async {
     try {
-      final items = _currentMealPlan!.items;
-      final totalPlanned = items.length;
-      final percentage = totalPlanned / 14.0;
+      // Calculate date range for current week
+      final startDate = _currentWeekStart;
+      final endDate = _currentWeekStart.add(const Duration(days: 6));
 
-      // Protein sequence by day
-      final proteinsByDay = <String, Set<ProteinType>>{};
+      // Get shopping list service
+      final shoppingListService = ShoppingListService(_dbHelper);
 
-      // Planned meals list
-      final plannedMeals = <Map<String, dynamic>>[];
+      // Calculate projected ingredients (no database writes)
+      final groupedIngredients = await shoppingListService.calculateProjectedIngredients(
+        startDate: startDate,
+        endDate: endDate,
+      );
 
-      for (final item in items) {
-        final date = DateTime.parse(item.plannedDate);
-        final dayName = _getDayName(date.weekday);
-
-        proteinsByDay[dayName] ??= <ProteinType>{};
-
-        final mealRecipes = <String>[];
-        for (final mealRecipe in item.mealPlanItemRecipes ?? []) {
-          final recipe = await _dbHelper.getRecipe(mealRecipe.recipeId);
-          if (recipe != null) {
-            mealRecipes.add(recipe.name);
-
-            // Get protein from primary dish
-            if (mealRecipe.isPrimaryDish) {
-              final ingredientMaps =
-                  await _dbHelper.getRecipeIngredients(mealRecipe.recipeId);
-              for (final ingredientMap in ingredientMaps) {
-                final proteinTypeStr = ingredientMap['protein_type'] as String?;
-                if (proteinTypeStr != null && proteinTypeStr != 'none') {
-                  try {
-                    final proteinType = ProteinType.values.firstWhere(
-                      (type) => type.name == proteinTypeStr,
-                    );
-                    if (proteinType.isMainProtein) {
-                      proteinsByDay[dayName]!.add(proteinType);
-                      break;
-                    }
-                  } catch (e) {
-                    continue;
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        if (mealRecipes.isNotEmpty) {
-          plannedMeals.add({
-            'day': dayName,
-            'date': date,
-            'mealType': item.mealType,
-            'recipes': mealRecipes,
-          });
-        }
-      }
-
-      // Recipe variety
-      final recipeIds = <String>[];
-      for (final item in items) {
-        for (final mealRecipe in item.mealPlanItemRecipes ?? []) {
-          recipeIds.add(mealRecipe.recipeId);
-        }
-      }
-
-      final uniqueCount = recipeIds.toSet().length;
-      final recipeCounts = <String, int>{};
-      for (final id in recipeIds) {
-        recipeCounts[id] = (recipeCounts[id] ?? 0) + 1;
-      }
-
-      final repeatedRecipes = recipeCounts.entries
-          .where((e) => e.value > 1)
-          .toList()
-        ..sort((a, b) => b.value.compareTo(a.value));
-
+      // Show preview bottom sheet
       if (mounted) {
-        setState(() {
-          _summaryData = {
-            'totalPlanned': totalPlanned,
-            'percentage': percentage,
-            'proteinsByDay': proteinsByDay,
-            'plannedMeals': plannedMeals,
-            'uniqueRecipes': uniqueCount,
-            'repeatedRecipes': repeatedRecipes,
-          };
-        });
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.transparent,
+          isScrollControlled: true,
+          builder: (context) => DraggableScrollableSheet(
+            initialChildSize: 0.7,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
+            builder: (context, scrollController) => ShoppingListPreviewBottomSheet(
+              groupedIngredients: groupedIngredients,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      // Handle errors gracefully
+      if (mounted) {
+        SnackbarService.showError(
+          context,
+          AppLocalizations.of(context)!.shoppingListPreviewError,
+        );
+      }
+    }
+  }
+
+  Future<bool> _hasExistingShoppingList() async {
+    // Check if there's an active shopping list for current week
+    try {
+      final endDate = _currentWeekStart.add(const Duration(days: 6));
+      final existingList = await _dbHelper.getShoppingListForDateRange(
+        _currentWeekStart,
+        endDate,
+      );
+      return existingList != null;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<void> _navigateToShoppingList() async {
+    try {
+      final endDate = _currentWeekStart.add(const Duration(days: 6));
+      final existingList = await _dbHelper.getShoppingListForDateRange(
+        _currentWeekStart,
+        endDate,
+      );
+
+      if (existingList != null && mounted) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ShoppingListScreen(
+              shoppingListId: existingList.id!,
+            ),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _summaryData = {
-            'totalPlanned': 0,
-            'percentage': 0.0,
-            'proteinsByDay': <String, Set<ProteinType>>{},
-            'plannedMeals': <Map<String, dynamic>>[],
-            'uniqueRecipes': 0,
-            'repeatedRecipes': <MapEntry<String, int>>[],
-            'error': e.toString(),
-          };
-        });
+        SnackbarService.showError(
+          context,
+          AppLocalizations.of(context)!.failedToLoadShoppingList,
+        );
       }
     }
   }
 
-  String _getDayName(int weekday) {
-    switch (weekday) {
-      case DateTime.monday:
-        return 'Monday';
-      case DateTime.tuesday:
-        return 'Tuesday';
-      case DateTime.wednesday:
-        return 'Wednesday';
-      case DateTime.thursday:
-        return 'Thursday';
-      case DateTime.friday:
-        return 'Friday';
-      case DateTime.saturday:
-        return 'Saturday';
-      case DateTime.sunday:
-        return 'Sunday';
-      default:
-        return 'Unknown';
-    }
-  }
+  Widget _buildShoppingListOptions(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: _hasExistingShoppingList(),
+      builder: (context, snapshot) {
+        final hasExisting = snapshot.data ?? false;
 
-  Widget _buildSummaryView() {
-    if (_summaryData == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_summaryData!.containsKey('error')) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(
-              AppLocalizations.of(context)!.summaryCalculationError,
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            ElevatedButton(
-              onPressed: _loadData,
-              child: Text(AppLocalizations.of(context)!.retryButton),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildOverviewCard(),
-          const SizedBox(height: 20),
-          _buildProteinSequenceSection(),
-          const SizedBox(height: 24),
-          _buildPlannedMealsSection(),
-          const SizedBox(height: 24),
-          _buildVarietySection(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOverviewCard() {
-    final totalPlanned = _summaryData!['totalPlanned'] as int;
-    final percentage = _summaryData!['percentage'] as double;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.calendar_month,
-            color: Color(0xFF6B8E23),
-            size: 20,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            '${AppLocalizations.of(context)!.mealsPlannedCount(totalPlanned)} (${(percentage * 100).round()}%)',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF2C2C2C),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProteinSequenceSection() {
-    final proteinsByDay =
-        _summaryData!['proteinsByDay'] as Map<String, Set<ProteinType>>;
-
-    // Order days Friday through Thursday
-    final orderedDays = [
-      'Friday',
-      'Saturday',
-      'Sunday',
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday'
-    ];
-
-    final hasProteins = proteinsByDay.values.any((proteins) => proteins.isNotEmpty);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          AppLocalizations.of(context)!.proteinDistributionHeader,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF2C2C2C),
-          ),
-        ),
-        const SizedBox(height: 8),
-        hasProteins
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: orderedDays.where((day) {
-                  final proteins = proteinsByDay[day] ?? {};
-                  return proteins.isNotEmpty;
-                }).map((day) {
-                  final proteins = proteinsByDay[day]!;
-                  final proteinNames = proteins
-                      .map((p) => p.getLocalizedDisplayName(context))
-                      .join(', ');
-
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: 50,
-                          child: Text(
-                            day.substring(0, 3),
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF6B8E23),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            proteinNames,
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              )
-            : Text(
-                AppLocalizations.of(context)!.noProteinsPlanned,
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-      ],
-    );
-  }
-
-  Widget _buildPlannedMealsSection() {
-    final plannedMeals =
-        _summaryData!['plannedMeals'] as List<Map<String, dynamic>>;
-
-    if (plannedMeals.isEmpty) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Planned Meals',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF2C2C2C),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            AppLocalizations.of(context)!.noMealsPlannedYet,
-            style: const TextStyle(fontSize: 14, color: Colors.grey),
-          ),
-        ],
-      );
-    }
-
-    // Sort by date
-    plannedMeals.sort((a, b) {
-      final dateA = a['date'] as DateTime;
-      final dateB = b['date'] as DateTime;
-      return dateA.compareTo(dateB);
-    });
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Planned Meals',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF2C2C2C),
-          ),
-        ),
-        const SizedBox(height: 8),
-        ...plannedMeals.map((meal) {
-          final day = meal['day'] as String;
-          final mealType = meal['mealType'] as String;
-          final recipes = meal['recipes'] as List<String>;
-
-          // Capitalize meal type
-          final formattedMealType = mealType[0].toUpperCase() + mealType.substring(1);
-
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        return Container(
+          padding: const EdgeInsets.all(DesignTokens.spacingMd),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(
-                  width: 90,
-                  child: Text(
-                    '${day.substring(0, 3)} $formattedMealType',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF6B8E23),
+                // Handle bar
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: DesignTokens.spacingMd),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      borderRadius:
+                          BorderRadius.circular(DesignTokens.spacingXXs),
                     ),
                   ),
                 ),
-                Expanded(
-                  child: Text(
-                    recipes.join(', '),
-                    style: const TextStyle(fontSize: 14),
+
+                // Title
+                Text(
+                  AppLocalizations.of(context)!.generateShoppingList,
+                  style: Theme.of(context).textTheme.titleLarge,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: DesignTokens.spacingLg),
+
+                // Preview option
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.preview),
+                    title: Text(AppLocalizations.of(context)!.previewIngredients),
+                    subtitle: Text(
+                        AppLocalizations.of(context)!.previewIngredientsSubtitle),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showShoppingPreview();
+                    },
                   ),
+                ),
+                const SizedBox(height: DesignTokens.spacingMd),
+
+                // Generate option
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.add_shopping_cart),
+                    title:
+                        Text(AppLocalizations.of(context)!.generateShoppingList),
+                    subtitle:
+                        Text(AppLocalizations.of(context)!.createListForShopping),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _handleGenerateShoppingList();
+                    },
+                  ),
+                ),
+                const SizedBox(height: DesignTokens.spacingMd),
+
+                // View existing option (conditional)
+                if (hasExisting)
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.list),
+                      title: Text(AppLocalizations.of(context)!.viewExistingList),
+                      subtitle: Text(
+                          AppLocalizations.of(context)!.viewExistingListSubtitle),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _navigateToShoppingList();
+                      },
+                    ),
+                  ),
+
+                const SizedBox(height: DesignTokens.spacingMd),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(AppLocalizations.of(context)!.cancel),
                 ),
               ],
             ),
-          );
-        }).toList(),
-      ],
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildVarietySection() {
-    final uniqueRecipes = _summaryData!['uniqueRecipes'] as int;
-    final repeatedRecipes =
-        _summaryData!['repeatedRecipes'] as List<MapEntry<String, int>>;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          AppLocalizations.of(context)!.recipeVarietyHeader,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF2C2C2C), // Charcoal
+  Widget _buildBottomBar(BuildContext context) {
+    return Container(
+      height: 56,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        boxShadow: DesignTokens.shadowLevel2,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextButton.icon(
+              onPressed: _openSummarySheet,
+              icon: const Icon(Icons.analytics_outlined),
+              label: Text(AppLocalizations.of(context)!.summaryTabLabel),
+              style: TextButton.styleFrom(
+                foregroundColor: _isSummarySheetOpen
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
+              ),
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Container(
-          height: 2,
-          width: 170,
-          color: const Color(0xFFD4755F), // Terracotta line
-        ),
-        const SizedBox(height: 12),
-        Text(
-          AppLocalizations.of(context)!.uniqueRecipesCount(uniqueRecipes),
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+          const VerticalDivider(width: 1, thickness: 1),
+          Expanded(
+            child: TextButton.icon(
+              onPressed: _openShoppingSheet,
+              icon: const Icon(Icons.shopping_cart_outlined),
+              label: Text(AppLocalizations.of(context)!.generateShoppingList),
+              style: TextButton.styleFrom(
+                foregroundColor: _isShoppingSheetOpen
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
+              ),
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        if (repeatedRecipes.isNotEmpty) ...[
-          Text(
-            AppLocalizations.of(context)!
-                .repeatedRecipesCount(repeatedRecipes.length),
-            style: const TextStyle(fontSize: 16),
-          ),
-          const SizedBox(height: 8),
-          ...repeatedRecipes.map((entry) {
-            return FutureBuilder<Recipe?>(
-              future: _dbHelper.getRecipe(entry.key),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) return const SizedBox.shrink();
-                final recipe = snapshot.data!;
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Text(
-                    '• ${recipe.name} ${AppLocalizations.of(context)!.timesUsed(entry.value)}',
-                    style: const TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                );
-              },
-            );
-          }),
         ],
-      ],
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final formattedDate =
-        '${_currentWeekStart.day}/${_currentWeekStart.month}/${_currentWeekStart.year}';
-
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.weeklyMealPlan),
@@ -1774,596 +1292,42 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen>
       body: Column(
         children: [
           // Week navigation controls
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.navigate_before),
-                  onPressed: () => _changeWeek(-1),
-                  tooltip: AppLocalizations.of(context)!.previousWeek,
-                ),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: _currentWeekContext != TimeContext.current
-                        ? _jumpToCurrentWeek
-                        : null,
-                    child: Column(
-                      children: [
-                        Text(
-                          AppLocalizations.of(context)!.weekOf(formattedDate),
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Time context indicator
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: _getContextColor(),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: _getContextBorderColor(),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    _getContextIcon(),
-                                    size: 14,
-                                    color: _getContextTextColor(),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    _currentWeekContext
-                                        .getLocalizedDisplayName(context),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      color: _getContextTextColor(),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            // Relative time distance with tap hint
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  _relativeTimeDistance,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(
-                                        color: Colors.grey[600],
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                ),
-                                // Show subtle jump hint for non-current weeks
-                                if (_currentWeekContext !=
-                                    TimeContext.current) ...[
-                                  const SizedBox(width: 4),
-                                  Icon(
-                                    Icons.my_location,
-                                    size: 14,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .primary
-                                        .withAlpha(128),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ],
-                        ),
-                        // Add subtle hint text for non-current weeks
-                        if (_currentWeekContext != TimeContext.current)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2),
-                            child: Text(
-                              AppLocalizations.of(context)!
-                                  .tapToJumpToCurrentWeek,
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .primary
-                                    .withAlpha(153),
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.navigate_next),
-                  onPressed: () => _changeWeek(1),
-                  tooltip: AppLocalizations.of(context)!.nextWeek,
-                ),
-              ],
-            ),
+          WeekNavigationWidget(
+            weekStartDate: _currentWeekStart,
+            timeContext: _currentWeekContext,
+            onPreviousWeek: () => _changeWeek(-1),
+            onNextWeek: () => _changeWeek(1),
+            onJumpToCurrentWeek: _currentWeekContext != TimeContext.current
+                ? _jumpToCurrentWeek
+                : null,
           ),
 
-          // TabBar for Planning/Summary
-          TabBar(
-            controller: _tabController,
-            tabs: [
-              Tab(text: AppLocalizations.of(context)!.planningTabLabel),
-              Tab(text: AppLocalizations.of(context)!.summaryTabLabel),
-            ],
-          ),
-
-          // Main content - TabBarView
+          // Main content - Planning calendar (always visible)
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : TabBarView(
-                    controller: _tabController,
-                    children: [
-                      // Planning tab - existing calendar
-                      WeeklyCalendarWidget(
-                        weekStartDate: _currentWeekStart,
-                        mealPlan: _currentMealPlan,
-                        timeContext: _currentWeekContext,
-                        onSlotTap: _handleSlotTap,
-                        onMealTap: _handleMealTap,
-                        onDaySelected: _handleDaySelected,
-                        scrollController: _scrollController,
-                        databaseHelper: _dbHelper,
-                      ),
-                      // Summary tab - new summary view
-                      _buildSummaryView(),
-                    ],
+                : WeeklyCalendarWidget(
+                    weekStartDate: _currentWeekStart,
+                    mealPlan: _currentMealPlan,
+                    timeContext: _currentWeekContext,
+                    onSlotTap: _handleSlotTap,
+                    onMealTap: _handleMealTap,
+                    onDaySelected: _handleDaySelected,
+                    scrollController: _scrollController,
+                    databaseHelper: _dbHelper,
                   ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _handleGenerateShoppingList,
-        icon: const Icon(Icons.shopping_cart),
-        label: Text(AppLocalizations.of(context)!.generateShoppingList),
-      ),
+      bottomNavigationBar: _buildBottomBar(context),
     );
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
-    _tabController.dispose();
     // Clear any resources used by the recommendation service if needed
-    _recommendationCache.clear();
+    _recommendationCache.clearAllCache();
     super.dispose();
-  }
-}
-
-// Helper dialog for recipe selection
-class _RecipeSelectionDialog extends StatefulWidget {
-  final List<Recipe> recipes;
-  final List<RecipeRecommendation> detailedRecommendations;
-  final List<RecipeRecommendation> allScoredRecipes;
-  final Future<({List<RecipeRecommendation> recommendations, String historyId})>
-      Function()? onRefreshDetailedRecommendations;
-  final Recipe? initialPrimaryRecipe;
-  final List<Recipe>? initialAdditionalRecipes;
-
-  const _RecipeSelectionDialog({
-    required this.recipes,
-    this.detailedRecommendations = const [],
-    this.allScoredRecipes = const [],
-    this.onRefreshDetailedRecommendations,
-    this.initialPrimaryRecipe,
-    this.initialAdditionalRecipes,
-  });
-  @override
-  _RecipeSelectionDialogState createState() => _RecipeSelectionDialogState();
-}
-
-class _RecipeSelectionDialogState extends State<_RecipeSelectionDialog>
-    with SingleTickerProviderStateMixin {
-  String _searchQuery = '';
-  late TabController _tabController;
-  bool _isLoading = false;
-  late List<RecipeRecommendation> _recommendations;
-  String? _recommendationHistoryId; // Store the history ID for feedback
-  Recipe? _selectedRecipe;
-  bool _showingMenu = false;
-  List<Recipe> _additionalRecipes = [];
-
-  @override
-  void initState() {
-    super.initState();
-    // Initialize tab controller for the two tabs
-    _tabController = TabController(length: 2, vsync: this);
-
-    // Check if we're editing an existing meal
-    if (widget.initialPrimaryRecipe != null) {
-      // Pre-populate with existing meal data
-      _selectedRecipe = widget.initialPrimaryRecipe;
-      _additionalRecipes = List.from(widget.initialAdditionalRecipes ?? []);
-      _showingMenu = true;
-    } else {
-      // Start on the Recommended tab if we have recommendations
-      if (widget.detailedRecommendations.isNotEmpty) {
-        _tabController.index = 0;
-      } else {
-        _tabController.index =
-            1; // Default to All Recipes if no recommendations
-      }
-    }
-
-    // Initialize recommendations from widget prop
-    _recommendations = List.from(widget.detailedRecommendations);
-  }
-
-  Future<void> _handleFeedback(
-      String recipeId, UserResponse userResponse) async {
-    // Handle feedback that indicates user doesn't want this recipe now
-    // Remove from current session immediately for better UX
-    if (userResponse == UserResponse.notToday ||
-        userResponse == UserResponse.lessOften ||
-        userResponse == UserResponse.moreOften ||
-        userResponse == UserResponse.neverAgain) {
-      setState(() {
-        _recommendations.removeWhere((rec) => rec.recipe.id == recipeId);
-      });
-    }
-
-    // Only process database feedback if we have a recommendation history ID
-    if (_recommendationHistoryId == null) return;
-
-    try {
-      // Update the recommendation response in the database
-      final dbHelper = ServiceProvider.database.dbHelper;
-      final success = await dbHelper.updateRecommendationResponse(
-        _recommendationHistoryId!,
-        recipeId,
-        userResponse,
-      );
-
-      if (!success) {
-        // Show error message if feedback couldn't be saved
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context)!.feedbackSaveError),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      // Handle any errors silently for now, or show a message
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.feedbackSaveError),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _handleRefresh() async {
-    if (widget.onRefreshDetailedRecommendations == null) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // Get fresh detailed recommendations
-      final result = await widget.onRefreshDetailedRecommendations!();
-
-      if (mounted) {
-        setState(() {
-          _recommendations = result.recommendations;
-          _recommendationHistoryId = result.historyId;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  '${AppLocalizations.of(context)!.errorRefreshingRecommendations} $e')),
-        );
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      // Make dialog use more screen space on small devices
-      insetPadding:
-          const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              _showingMenu
-                  ? AppLocalizations.of(context)!.mealOptions
-                  : AppLocalizations.of(context)!.selectRecipe,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: _showingMenu ? _buildMenu() : _buildRecipeSelection(),
-            ),
-            TextButton(
-              key: const Key('recipe_selection_cancel_button'),
-              onPressed: () => Navigator.pop(context),
-              child: Text(AppLocalizations.of(context)!.cancel),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRecipeSelection() {
-    final filtered = widget.recipes
-        .where((recipe) =>
-            recipe.name.toLowerCase().contains(_searchQuery.toLowerCase()))
-        .toList();
-    final filteredRecipes = SortingUtils.sortByName(filtered, (r) => r.name);
-
-    return Column(
-      children: [
-        // Tab bar for switching between Recommended and All Recipes
-        TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(
-              key: const Key('recipe_selection_recommended_tab'),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(AppLocalizations.of(context)!.tryThis),
-                  if (widget.onRefreshDetailedRecommendations != null)
-                    GestureDetector(
-                      onTap: _isLoading ? null : _handleRefresh,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 4.0),
-                        child: Icon(
-                          Icons.refresh,
-                          size: 18,
-                          color: _isLoading
-                              ? Colors.grey.withValues(alpha: 128)
-                              : Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            Tab(
-              key: const Key('recipe_selection_all_tab'),
-              text: AppLocalizations.of(context)!.allRecipes,
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-
-        // Only show search on All Recipes tab
-        AnimatedBuilder(
-          animation: _tabController,
-          builder: (context, child) {
-            return _tabController.index == 1
-                ? TextField(
-                    decoration: InputDecoration(
-                      hintText: AppLocalizations.of(context)!.searchRecipesHint,
-                      prefixIcon: const Icon(Icons.search),
-                      border: const OutlineInputBorder(),
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                    },
-                  )
-                : const SizedBox.shrink();
-          },
-        ),
-        const SizedBox(height: 16),
-
-        Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              // Recommended tab
-              _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _recommendations.isEmpty
-                      ? Center(
-                          child: Text(AppLocalizations.of(context)!
-                              .noRecommendationsAvailable))
-                      : ListView.builder(
-                          itemCount: _recommendations.length,
-                          itemBuilder: (context, index) {
-                            final recommendation = _recommendations[index];
-                            return RecipeSelectionCard(
-                              key: Key(
-                                  'recipe_card_${recommendation.recipe.id}'),
-                              recommendation: recommendation,
-                              onTap: () =>
-                                  _handleRecipeSelection(recommendation.recipe),
-                              onFeedback: (userResponse) => _handleFeedback(
-                                  recommendation.recipe.id, userResponse),
-                            );
-                          },
-                        ),
-              // All Recipes tab
-              ListView.builder(
-                itemCount: filteredRecipes.length,
-                itemBuilder: (context, index) {
-                  final recipe = filteredRecipes[index];
-                  return _buildRecipeListTile(recipe);
-                },
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMenu() {
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Show selected recipe
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.restaurant),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    _selectedRecipe!.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Show existing side dishes if any
-          if (_additionalRecipes.isNotEmpty) ...[
-            Text(
-              AppLocalizations.of(context)!.sideDishesLabel,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            ..._additionalRecipes.map((recipe) => ListTile(
-                  leading:
-                      const Icon(Icons.restaurant_menu, color: Colors.grey),
-                  title: Text(recipe.name),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.remove_circle_outline),
-                    onPressed: () => setState(() {
-                      _additionalRecipes.remove(recipe);
-                    }),
-                  ),
-                  contentPadding: EdgeInsets.zero,
-                )),
-            const SizedBox(height: 16),
-          ],
-
-          // Menu options
-          ListTile(
-            leading: const Icon(Icons.save),
-            title: Text(AppLocalizations.of(context)!.save),
-            subtitle:
-                Text(AppLocalizations.of(context)!.addThisRecipeToMealPlan),
-            onTap: () => Navigator.pop(context, {
-              'primaryRecipe': _selectedRecipe!,
-              'additionalRecipes': _additionalRecipes,
-            }),
-          ),
-          ListTile(
-            leading: const Icon(Icons.add),
-            title: Text(_additionalRecipes.isNotEmpty
-                ? AppLocalizations.of(context)!.manageSideDishes
-                : AppLocalizations.of(context)!.addSideDishes),
-            subtitle:
-                Text(AppLocalizations.of(context)!.addMoreRecipesToThisMeal),
-            onTap: () => _showEnhancedSideDishDialog(),
-          ),
-          ListTile(
-            leading: const Icon(Icons.arrow_back),
-            title: Text(AppLocalizations.of(context)!.back),
-            subtitle: Text(AppLocalizations.of(context)!.chooseDifferentRecipe),
-            onTap: () => setState(() {
-              _showingMenu = false;
-              _selectedRecipe = null;
-            }),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Helper method to build consistent recipe list tiles
-  Widget _buildRecipeListTile(Recipe recipe) {
-    // Find the real recommendation for this recipe
-    final realRecommendation = widget.allScoredRecipes
-        .where((rec) => rec.recipe.id == recipe.id)
-        .firstOrNull;
-
-    final recommendation = realRecommendation ??
-        RecipeRecommendation(
-          recipe: recipe,
-          totalScore: 50.0,
-          factorScores: {
-            'frequency': 50.0,
-            'protein_rotation': 50.0,
-            'variety_encouragement': 50.0,
-            'rating': 50.0,
-          },
-        );
-
-    return RecipeSelectionCard(
-      key: Key('recipe_card_${recipe.id}'),
-      recommendation: recommendation,
-      onTap: () => _handleRecipeSelection(recipe),
-    );
-  }
-
-  Future<void> _showEnhancedSideDishDialog() async {
-    final result = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (context) => AddSideDishDialog(
-        availableRecipes: widget.recipes,
-        excludeRecipes: [_selectedRecipe!],
-        searchHint: 'Search side dishes...',
-        enableSearch: true,
-        primaryRecipe: _selectedRecipe,
-        currentSideDishes: _additionalRecipes,
-      ),
-    );
-
-    if (result != null && mounted) {
-      // The enhanced dialog returns the complete meal composition
-      Navigator.pop(context, result);
-    }
-  }
-
-  void _handleRecipeSelection(Recipe recipe) {
-    setState(() {
-      _selectedRecipe = recipe;
-      _showingMenu = true;
-    });
   }
 }

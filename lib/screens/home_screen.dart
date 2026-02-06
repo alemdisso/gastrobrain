@@ -32,7 +32,6 @@ class _HomePageState extends State<HomePage> {
             ),
       body: screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: (index) {
           setState(() {

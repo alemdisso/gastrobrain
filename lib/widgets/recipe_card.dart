@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/recipe.dart';
 import '../screens/recipe_details_screen.dart';
 import '../core/providers/recipe_provider.dart';
+import '../core/theme/design_tokens.dart';
 
 class RecipeCard extends StatefulWidget {
   final Recipe recipe;
@@ -35,97 +36,123 @@ class _RecipeCardState extends State<RecipeCard> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      margin: const EdgeInsets.symmetric(
+        horizontal: DesignTokens.spacingSm,
+        vertical: DesignTokens.spacingXs,
+      ),
       child: InkWell(
         onTap: _handleCardTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(DesignTokens.borderRadiusMedium),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Title Row
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Text(
-              widget.recipe.name,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                DesignTokens.spacingMd,
+                DesignTokens.spacingMd,
+                DesignTokens.spacingMd,
+                DesignTokens.spacingSm,
+              ),
+              child: Text(
+                widget.recipe.name,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: DesignTokens.weightBold,
+                    ),
               ),
             ),
-          ),
-          // Info and Actions Row
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 8, 12),
-            child: Row(
-              children: [
-                // Left side - Information
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Category row
-                      Row(
-                        children: [
-                          const Icon(Icons.category,
-                              size: 16, color: Colors.blue),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            child: Text(
-                              widget.recipe.category
-                                  .getLocalizedDisplayName(context),
-                              style: TextStyle(
-                                color: Colors.blue.shade700,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+            // Info and Actions Row
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                DesignTokens.spacingMd,
+                0,
+                DesignTokens.spacingSm,
+                DesignTokens.spacingMd,
+              ),
+              child: Row(
+                children: [
+                  // Left side - Information
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Category row
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.category,
+                              size: 16,
+                              color: Theme.of(context).colorScheme.primary,
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      // Time and rating row
-                      Row(
-                        children: [
-                          Icon(
-                            widget.recipe.difficulty >= 4
-                                ? Icons.warning
-                                : Icons.timer,
-                            size: 16,
-                            color: widget.recipe.difficulty >= 4
-                                ? Colors.orange
-                                : null,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${widget.recipe.prepTimeMinutes + widget.recipe.cookTimeMinutes} min',
-                            style: TextStyle(
+                            const SizedBox(width: DesignTokens.spacingXs),
+                            Flexible(
+                              child: Text(
+                                widget.recipe.category
+                                    .getLocalizedDisplayName(context),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                      fontWeight: DesignTokens.weightMedium,
+                                    ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: DesignTokens.spacingSm),
+                        // Time and rating row
+                        Row(
+                          children: [
+                            Icon(
+                              widget.recipe.difficulty >= 4
+                                  ? Icons.warning
+                                  : Icons.timer,
+                              size: 16,
                               color: widget.recipe.difficulty >= 4
-                                  ? Colors.orange
+                                  ? DesignTokens.warning
                                   : null,
                             ),
-                          ),
-                          const SizedBox(width: 16),
-                          // Rating stars (5-star scale)
-                          ...List.generate(5, (index) {
-                            return Icon(
-                              index < widget.recipe.rating ? Icons.star : Icons.star_border,
-                              size: 16,
-                              color: index < widget.recipe.rating ? Colors.amber : Colors.grey,
-                            );
-                          }),
-                        ],
-                      ),
-                    ],
+                            const SizedBox(width: DesignTokens.spacingXs),
+                            Text(
+                              '${widget.recipe.prepTimeMinutes + widget.recipe.cookTimeMinutes} min',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: widget.recipe.difficulty >= 4
+                                        ? DesignTokens.warning
+                                        : null,
+                                  ),
+                            ),
+                            const SizedBox(width: DesignTokens.spacingMd),
+                            // Rating stars (5-star scale)
+                            ...List.generate(5, (index) {
+                              return Icon(
+                                index < widget.recipe.rating
+                                    ? Icons.star
+                                    : Icons.star_border,
+                                size: 16,
+                                color: index < widget.recipe.rating
+                                    ? Colors.amber // Keep standard rating color
+                                    : DesignTokens.textSecondary,
+                              );
+                            }),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Future<void> _handleCardTap() async {
     final hasChanges = await Navigator.push<bool>(

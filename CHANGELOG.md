@@ -9,6 +9,103 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.7] - 2026-02-06
+
+### Added
+
+#### Visual Foundation (Milestone 0.1.7a)
+- Design Tokens System (#257)
+  - Comprehensive design token library with color, typography, spacing, and component tokens
+  - Warm, food-inspired color palette (amber/paprika primary, emerald/herb green accent)
+  - Standardized typography scale with Brazilian Portuguese support
+  - 8px-based spacing system for consistent rhythm
+  - Complete documentation in `docs/design/`
+
+- Visual Identity Documentation (#257)
+  - Defined Gastrobrain personality: Warm, Confident, Cultured & Flavorful, Clear, Rooted
+  - Color psychology and accessibility guidelines
+  - Typography standards and usage patterns
+  - Spacing and component styling principles
+
+- ThemeData Implementation (#257)
+  - Complete Material 3 theme configuration using design tokens
+  - Centralized theme in `AppTheme.lightTheme`
+  - Component themes for buttons, inputs, cards, dialogs, navigation, and more
+  - Dark theme foundation structure for future implementation
+
+#### Component Standardization (Milestone 0.1.7b)
+- Button Styles Standardization (#260)
+  - Unified button styling across all button types (Elevated, Outlined, Text, Icon)
+  - Destructive button pattern for delete/remove actions
+  - Complete documentation in `docs/design/button_patterns.md`
+  - All buttons now use theme configuration (zero hardcoded styles)
+
+- Form Input Styles Standardization (#261)
+  - Consistent TextField and form input styling across app
+  - Unified label, hint, and error text presentation
+  - Proper focus states and validation styling
+  - Complete documentation in `docs/design/input_patterns.md`
+
+- Navigation Element Styles Standardization (#262)
+  - BottomNavigationBar theme configuration
+  - AppBar theme configuration
+  - TabBar theme configuration (new)
+  - BackButton widget standardization
+  - Complete documentation in `docs/design/navigation_patterns.md`
+
+### Changed
+
+#### Visual & UI Improvements
+- All UI components now use design tokens consistently
+- Color scheme updated to warm, food-inspired palette
+- Typography improved with better hierarchy and readability
+- Spacing standardized across all screens using 8px grid
+- Navigation elements follow consistent theming
+
+#### Code Quality
+- Removed 100% of hardcoded UI styling across codebase
+- Centralized all theming in `lib/core/theme/`
+- Improved code maintainability with theme-based approach
+- Enhanced localization support for Bulk Recipe Update screen
+
+### Fixed
+- None (this release focuses on visual foundation and polish)
+
+### Documentation
+
+#### Design Documentation
+- `docs/design/visual_identity.md` - Complete visual identity guide
+- `docs/design/design-tokens.md` - Design token reference
+- `docs/design/theme_usage.md` - Theme usage guidelines
+- `docs/design/button_patterns.md` - Button usage patterns
+- `docs/design/input_patterns.md` - Form input patterns
+- `docs/design/navigation_patterns.md` - Navigation patterns
+
+#### Analysis Documentation
+- `docs/issues/analysis/issue-257-theme-analysis.md` - Theme implementation analysis
+- `docs/issues/analysis/issue-260-button-analysis.md` - Button standardization analysis
+- `docs/issues/analysis/issue-261-input-analysis.md` - Input standardization analysis
+- `docs/issues/analysis/issue-262-navigation-analysis.md` - Navigation standardization analysis
+
+### Testing
+- Added 16 navigation theme verification tests
+- All 1,675 tests passing (100% pass rate)
+- Theme configuration verification tests
+- Widget tests for navigation compliance
+
+### Technical Debt
+- Achieved 100% theme compliance across entire codebase
+- Zero hardcoded colors, typography, or spacing values
+- All UI elements use centralized theme configuration
+- Foundation ready for dark mode implementation
+
+### Performance
+- No performance impact from theme standardization
+- Improved app consistency and visual polish
+- Better maintainability for future UI changes
+
+---
+
 ## [0.1.6] - 2026-01-29
 
 ### Added

@@ -7,6 +7,7 @@ import 'l10n/app_localizations.dart';
 import 'core/providers/recipe_provider.dart';
 import 'core/providers/meal_provider.dart';
 import 'core/providers/meal_plan_provider.dart';
+import 'core/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -56,10 +57,7 @@ class GastrobrainApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Gastrobrain',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          useMaterial3: true,
-        ),
+        theme: AppTheme.lightTheme,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         locale: const Locale('pt', 'BR'), // Set Portuguese Brazil as default

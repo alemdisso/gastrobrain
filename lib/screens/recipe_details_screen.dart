@@ -207,7 +207,6 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
             controller: controller,
             decoration: InputDecoration(
               hintText: AppLocalizations.of(context)!.enterInstructions,
-              border: const OutlineInputBorder(),
             ),
             maxLines: null,
             minLines: 10,
@@ -421,8 +420,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
       child: Scaffold(
         appBar: AppBar(
           title: Text(_currentRecipe.name),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+          leading: BackButton(
             onPressed: () {
               Navigator.pop(context, _hasChanges);
             },

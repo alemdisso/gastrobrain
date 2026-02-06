@@ -106,3 +106,4 @@ lib/l10n/app_localizations*.dart
 coverage/
 *.lcov
 devtools_options.yaml
+.claude/settings.local.json

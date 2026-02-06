@@ -191,16 +191,23 @@ class E2ETestHelpers {
   /// await E2ETestHelpers.tapSaveButton(tester);
   /// ```
   static Future<void> tapSaveButton(WidgetTester tester) async {
-    // Scroll down to reveal save button
-    await scrollDown(tester);
-
     final saveButtons = find.byType(ElevatedButton);
     expect(saveButtons, findsWidgets, reason: 'Save button should exist');
 
     final saveButton = saveButtons.last;
-    await tester.ensureVisible(saveButton);
+
+    // Use dragUntilVisible to aggressively scroll the button into view
+    final scrollable = find.byType(Scrollable).first;
+    await tester.dragUntilVisible(
+      saveButton,
+      scrollable,
+      const Offset(0, -50), // Scroll down in small increments
+    );
     await tester.pumpAndSettle();
-    await tester.tap(saveButton);
+
+    // Tap with warnIfMissed: false to handle edge cases where the button
+    // might be slightly obscured but is functionally tappable
+    await tester.tap(saveButton, warnIfMissed: false);
     await tester.pumpAndSettle(standardSettleDuration);
   }
 
@@ -845,7 +852,7 @@ class E2ETestHelpers {
 
   /// Confirm deletion in the confirmation dialog
   ///
-  /// Finds and taps the Delete/Confirm button (second TextButton) in the
+  /// Finds and taps the Delete/Confirm button (ElevatedButton with destructive style) in the
   /// confirmation dialog to proceed with deletion.
   ///
   /// Usage:
@@ -853,14 +860,14 @@ class E2ETestHelpers {
   /// await E2ETestHelpers.confirmDeletion(tester);
   /// ```
   static Future<void> confirmDeletion(WidgetTester tester) async {
-    // The delete button is the second TextButton in the dialog
-    // (first is Cancel, second is Delete)
-    final textButtons = find.byType(TextButton);
-    expect(textButtons.evaluate().length, greaterThanOrEqualTo(2),
-        reason: 'Dialog should have at least 2 buttons (Cancel and Delete)');
+    // The delete button is an ElevatedButton (with destructive style)
+    // The cancel button is a TextButton
+    final deleteButton = find.byType(ElevatedButton);
+    expect(deleteButton, findsOneWidget,
+        reason: 'Dialog should have a Delete button (ElevatedButton)');
 
-    // Tap the second TextButton (Delete)
-    await tester.tap(textButtons.at(1));
+    // Tap the ElevatedButton (Delete)
+    await tester.tap(deleteButton);
     await tester.pumpAndSettle();
   }
 

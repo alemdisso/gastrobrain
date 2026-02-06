@@ -7,7 +7,9 @@ import '../models/recipe_category.dart';
 import '../models/frequency_type.dart';
 import '../widgets/recipe_card.dart';
 import '../l10n/app_localizations.dart';
+import '../core/theme/button_styles.dart';
 import '../core/providers/recipe_provider.dart';
+import '../core/theme/design_tokens.dart';
 import 'add_recipe_screen.dart';
 import 'edit_recipe_screen.dart';
 import 'cook_meal_screen.dart';
@@ -78,8 +80,9 @@ class _RecipesScreenState extends State<RecipesScreen> {
             onPressed: () => Navigator.pop(context, false),
             child: Text(AppLocalizations.of(context)!.cancel),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
+            style: ButtonStyles.destructive,
             child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],
@@ -95,7 +98,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context)!.errorOccurred),
-            backgroundColor: Colors.red,
+            backgroundColor: DesignTokens.error,
           ),
         );
       }
@@ -244,8 +247,8 @@ class _RecipesScreenState extends State<RecipesScreen> {
                                   ? Icons.battery_full
                                   : Icons.battery_0_bar,
                               color: index < (selectedDifficulty ?? -1)
-                                  ? Colors.green
-                                  : Colors.grey,
+                                  ? DesignTokens.success
+                                  : DesignTokens.textSecondary,
                             ),
                             onPressed: () {
                               setState(() {
@@ -266,8 +269,8 @@ class _RecipesScreenState extends State<RecipesScreen> {
                                   ? Icons.star
                                   : Icons.star_border,
                               color: index < (selectedRating ?? -1)
-                                  ? Colors.amber
-                                  : Colors.grey,
+                                  ? Colors.amber // Keep standard rating color
+                                  : DesignTokens.textSecondary,
                             ),
                             onPressed: () {
                               setState(() {
@@ -407,13 +410,12 @@ class _RecipesScreenState extends State<RecipesScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(DesignTokens.spacingSm),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: AppLocalizations.of(context)!.searchRecipes,
                 prefixIcon: const Icon(Icons.search),
-                border: const OutlineInputBorder(),
               ),
               onChanged: (value) {
                 setState(() {
@@ -429,12 +431,16 @@ class _RecipesScreenState extends State<RecipesScreen> {
                 return const SizedBox.shrink();
               }
 
-              final filteredCount = _getFilteredRecipes(provider.recipes).length;
+              final filteredCount =
+                  _getFilteredRecipes(provider.recipes).length;
               final totalCount = provider.totalRecipeCount;
 
               return Container(
                 color: Theme.of(context).colorScheme.primaryContainer,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: DesignTokens.spacingMd,
+                  vertical: DesignTokens.spacingSm,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -443,9 +449,10 @@ class _RecipesScreenState extends State<RecipesScreen> {
                         Icon(
                           Icons.filter_list,
                           size: 20,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: DesignTokens.spacingSm),
                         Expanded(
                           child: Text(
                             '${AppLocalizations.of(context)!.filtersActive}: ${_getFilterDescription(context, provider)}',
@@ -461,11 +468,13 @@ class _RecipesScreenState extends State<RecipesScreen> {
                         ),
                         TextButton.icon(
                           icon: const Icon(Icons.clear, size: 16),
-                          label: Text(AppLocalizations.of(context)!.clearFilters),
+                          label:
+                              Text(AppLocalizations.of(context)!.clearFilters),
                           onPressed: _clearAllFilters,
                           style: TextButton.styleFrom(
-                            foregroundColor:
-                                Theme.of(context).colorScheme.onPrimaryContainer,
+                            foregroundColor: Theme.of(context)
+                                .colorScheme
+                                .onPrimaryContainer,
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 4),
                           ),
@@ -481,7 +490,8 @@ class _RecipesScreenState extends State<RecipesScreen> {
                           totalCount,
                         ),
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
@@ -569,10 +579,12 @@ class _RecipesScreenState extends State<RecipesScreen> {
 
                 // Build recipes list
                 return RefreshIndicator(
-                  onRefresh: () => recipeProvider.loadRecipes(forceRefresh: true),
+                  onRefresh: () =>
+                      recipeProvider.loadRecipes(forceRefresh: true),
                   child: ListView.builder(
                     padding: EdgeInsets.only(
-                      bottom: max(80.0, MediaQuery.of(context).size.height * 0.3),
+                      bottom:
+                          max(80.0, MediaQuery.of(context).size.height * 0.3),
                     ),
                     physics: const AlwaysScrollableScrollPhysics(),
                     itemCount: filteredRecipes.length,
