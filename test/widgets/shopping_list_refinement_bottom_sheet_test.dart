@@ -9,8 +9,18 @@ void main() {
     // Test data: grouped ingredients (using correct category enum values)
     final testIngredients = {
       'vegetable': [
-        {'name': 'Tomato', 'quantity': 2.0, 'unit': 'units', 'category': 'vegetable'},
-        {'name': 'Onion', 'quantity': 1.0, 'unit': 'units', 'category': 'vegetable'},
+        {
+          'name': 'Tomato',
+          'quantity': 2.0,
+          'unit': 'units',
+          'category': 'vegetable'
+        },
+        {
+          'name': 'Onion',
+          'quantity': 1.0,
+          'unit': 'units',
+          'category': 'vegetable'
+        },
       ],
       'dairy': [
         {'name': 'Milk', 'quantity': 1.0, 'unit': 'L', 'category': 'dairy'},
@@ -32,14 +42,16 @@ void main() {
           Locale('en', ''),
           Locale('pt', ''),
         ],
-        locale: const Locale('pt', ''), // Use Portuguese for consistent test strings
+        locale: const Locale(
+            'pt', ''), // Use Portuguese for consistent test strings
         home: Scaffold(
           body: child,
         ),
       );
     }
 
-    testWidgets('displays title and subtitle correctly', (WidgetTester tester) async {
+    testWidgets('displays title and subtitle correctly',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestWidget(
           ShoppingListRefinementBottomSheet(
@@ -58,7 +70,8 @@ void main() {
 
     // TODO: Uncomment ONE test at a time after previous test passes
 
-    testWidgets('displays all ingredients grouped by category', (WidgetTester tester) async {
+    testWidgets('displays all ingredients grouped by category',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestWidget(
           ShoppingListRefinementBottomSheet(
@@ -80,8 +93,8 @@ void main() {
       expect(find.text('Rice'), findsOneWidget);
     });
 
-
-    testWidgets('all items are checked by default', (WidgetTester tester) async {
+    testWidgets('all items are checked by default',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestWidget(
           ShoppingListRefinementBottomSheet(
@@ -101,7 +114,6 @@ void main() {
         expect(checkbox.value, isTrue);
       }
     });
-
 
     testWidgets('can uncheck individual items', (WidgetTester tester) async {
       await tester.pumpWidget(
@@ -128,8 +140,8 @@ void main() {
       expect(find.textContaining('3 de 4 itens selecionados'), findsOneWidget);
     });
 
-
-    testWidgets('can check previously unchecked items', (WidgetTester tester) async {
+    testWidgets('can check previously unchecked items',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestWidget(
           ShoppingListRefinementBottomSheet(
@@ -154,8 +166,8 @@ void main() {
       expect(find.textContaining('4 de 4 itens selecionados'), findsOneWidget);
     });
 
-
-    testWidgets('Select All button checks all items', (WidgetTester tester) async {
+    testWidgets('Select All button checks all items',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestWidget(
           ShoppingListRefinementBottomSheet(
@@ -185,7 +197,8 @@ void main() {
       expect(find.textContaining('4 de 4 itens selecionados'), findsOneWidget);
     });
 
-    testWidgets('Deselect All button unchecks all items', (WidgetTester tester) async {
+    testWidgets('Deselect All button unchecks all items',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestWidget(
           ShoppingListRefinementBottomSheet(
@@ -222,27 +235,29 @@ void main() {
       await tester.pumpAndSettle();
 
       // Try to generate list
-      await tester.tap(find.text('Gerar Lista de Compras'));
+      await tester.tap(find.text('Lista de Compras'));
       await tester.pumpAndSettle();
 
       // Should show error message
       expect(
-        find.text('Por favor, selecione pelo menos um item para gerar sua lista de compras'),
+        find.text(
+            'Por favor, selecione pelo menos um item para gerar sua lista de compras'),
         findsOneWidget,
       );
     });
 
-
     testWidgets('returns selected ingredients when generate is tapped',
         (WidgetTester tester) async {
-      Map<String, List<Map<String, dynamic>>>? result; // ignore: unused_local_variable
+      Map<String, List<Map<String, dynamic>>>?
+          result; // ignore: unused_local_variable
 
       await tester.pumpWidget(
         createTestWidget(
           Builder(
             builder: (context) => ElevatedButton(
               onPressed: () async {
-                result = await showModalBottomSheet<Map<String, List<Map<String, dynamic>>>>(
+                result = await showModalBottomSheet<
+                    Map<String, List<Map<String, dynamic>>>>(
                   context: context,
                   builder: (context) => ShoppingListRefinementBottomSheet(
                     groupedIngredients: testIngredients,
@@ -271,7 +286,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap generate
-      await tester.tap(find.text('Gerar Lista de Compras'));
+      await tester.tap(find.text('Lista de Compras'));
       await tester.pumpAndSettle();
 
       // TODO: Fix modal bottom sheet test - checkboxes not accessible in modal context
@@ -282,7 +297,9 @@ void main() {
       // expect(result!['vegetable']![0]['name'], equals('Onion'));
       // expect(result!['grain']!.length, equals(1)); // Only Rice
       // expect(result!['grain']![0]['name'], equals('Rice'));
-    }, skip: true); // Skip - modal bottom sheet interaction needs different approach
+    },
+        skip:
+            true); // Skip - modal bottom sheet interaction needs different approach
 
     // TODO: Test 10 also skipped - same modal sheet issue
 
@@ -298,7 +315,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Should show empty state message
-      expect(find.text('Nenhuma refeição planejada - nada para refinar'), findsOneWidget);
+      expect(find.text('Nenhuma refeição planejada - nada para refinar'),
+          findsOneWidget);
       expect(find.byIcon(Icons.inbox_outlined), findsOneWidget);
     });
 
@@ -326,7 +344,8 @@ void main() {
 
       // Initially, no strikethrough
       Text tomatoText = tester.widget(tomatoTextFinder);
-      expect(tomatoText.style?.decoration, isNot(equals(TextDecoration.lineThrough)));
+      expect(tomatoText.style?.decoration,
+          isNot(equals(TextDecoration.lineThrough)));
 
       // Uncheck Tomato
       await tester.tap(find.ancestor(

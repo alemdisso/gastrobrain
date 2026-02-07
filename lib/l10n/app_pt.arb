@@ -388,7 +388,7 @@
       }
     }
   },
-  "weeklyMealPlan": "Planejamento Semanal de Refeições",
+  "weeklyMealPlan": "Refeições da Semana",
   "@weeklyMealPlan": {
     "description": "Título da tela de planejamento semanal de refeições"
   },
@@ -2078,7 +2078,7 @@
   "@toTaste": {
     "description": "Label for ingredients that are to taste"
   },
-  "generateShoppingList": "Gerar Lista de Compras",
+  "generateShoppingList": "Lista de Compras",
   "@generateShoppingList": {
     "description": "Button to generate shopping list from meal plan"
   },
@@ -2150,7 +2150,7 @@
   "@previewModeComingSoon": {
     "description": "Placeholder message for preview mode feature"
   },
-  "shoppingListPreviewTitle": "Ingredientes Projetados",
+  "shoppingListPreviewTitle": "Ingredientes Precisos",
   "shoppingListPreviewEmpty": "Nenhuma refeição planejada - nada para visualizar",
   "shoppingListPreviewError": "Erro ao carregar ingredientes",
   "shoppingListPreviewLoading": "Calculando ingredientes...",
