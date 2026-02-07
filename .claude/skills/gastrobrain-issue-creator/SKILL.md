@@ -295,29 +295,28 @@ If "revise": Which section? (1-5 to go back to checkpoint)
 If "y": [Proceed to GitHub CLI commands]
 ```
 
-**If approved, provide GitHub CLI commands:**
+**If approved, execute the issue creation workflow:**
 
-```bash
-# Create the issue
-gh issue create \
-  --title "[type]: [description]" \
-  --body "$(cat <<'EOF'
-[Complete issue markdown]
-EOF
-)"
+Use the Bash tool to execute the following commands in sequence. The tool will automatically prompt the user for permission before each execution, allowing them to:
+- Execute the command
+- Execute and allow similar commands
+- Deny the command
 
-# This will return an issue number, e.g., #267
+**Step 1:** Create the issue using `gh issue create`
+- This will return an issue number (e.g., #267)
+- Store this number for subsequent commands
 
-# Add labels
-gh issue edit 267 --add-label "label1,label2,label3"
+**Step 2:** Add labels using `gh issue edit [number] --add-label`
+- Use the issue number from Step 1
+- Combine all labels in a single comma-separated list
 
-# Optional: Add to project (can be done during sprint planning)
-gh project item-add 3 --owner alemdisso \
-  --url https://github.com/alemdisso/gastrobrain/issues/267
+**Step 3 (Optional):** Add to project if requested
+- Use `gh project item-add` with the issue URL
 
-# Optional: Set milestone (if known)
-gh issue edit 267 --milestone "0.2.0 - Beta-Ready Phase"
-```
+**Step 4 (Optional):** Set milestone if known
+- Use `gh issue edit [number] --milestone`
+
+**Important:** Execute commands one at a time, waiting for each to complete before proceeding. If the user denies a command, explain what was skipped and continue with remaining steps (if applicable).
 
 ---
 
@@ -792,6 +791,8 @@ Which would you like to create first? (A/B/both separately)
 ---
 
 ## GitHub CLI Commands Reference
+
+**Note:** This section provides command syntax examples for your understanding. When creating issues through this skill, these commands will be executed using the Bash tool with user permission prompts - they should NOT be output as text for copy/paste.
 
 ### Basic Issue Creation
 
