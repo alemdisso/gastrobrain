@@ -1,13 +1,13 @@
 ---
 name: "Gastrobrain Sprint Planner"
-description: "Data-driven sprint planning for Gastrobrain using GitHub Project #3 issues, historical velocity patterns, and sprint estimation diary insights. Generates realistic sprint plans with capacity analysis, sequencing strategy, and risk assessment for solo Flutter development with comprehensive testing requirements."
-version: "1.0.0"
+description: "Data-driven sprint planning and retrospective analysis for Gastrobrain using GitHub Project #3 issues, historical velocity patterns, and sprint estimation diary insights. Generates realistic sprint plans with capacity analysis, sequencing strategy, and risk assessment. Conducts structured sprint retrospectives with developer interviews, estimation accuracy analysis, and diary entry generation."
+version: "2.0.0"
 author: "Gastrobrain Development Team"
 ---
 
 # Gastrobrain Sprint Planner
 
-A specialized skill for planning development sprints for the Gastrobrain Flutter application using historical velocity data, GitHub Projects issue tracking, and lessons learned from the Sprint Estimation Diary.
+A specialized skill for planning development sprints and conducting sprint retrospectives for the Gastrobrain Flutter application using historical velocity data, GitHub Projects issue tracking, and lessons learned from the Sprint Estimation Diary.
 
 ## When to Use This Skill
 
@@ -19,10 +19,12 @@ Use this skill when:
 - Calibrating estimates based on historical performance
 - Creating a day-by-day sprint breakdown
 - Aligning sprint goals with milestone themes
+- Conducting a sprint retrospective or review
+- Generating a sprint diary entry after completing a milestone
+- Analyzing estimation accuracy for a completed sprint
 
 **Do NOT use this skill for:**
 - Individual issue estimation (use your judgment based on patterns)
-- Post-sprint retrospectives (use sprint diary analysis instead)
 - Long-term roadmap planning (use milestone planning instead)
 
 ## Project Context
@@ -72,7 +74,7 @@ For each issue, extract:
 - Prerequisites (is prerequisite work complete?)
 
 ### 2. Analyze Sprint History Context
-Review recent sprints from `docs/workflows/Sprint-Estimation-Diary.md`:
+Review recent sprints from `docs/archive/Sprint-Estimation-Diary.md`:
 
 **Sprint 0.1.2** (12.2 points → ~11 days, 0.90x ratio):
 - Mixed work (architecture, testing, UI)
@@ -136,9 +138,181 @@ Use the template at `templates/sprint_plan_template.md` to create:
 - Testing strategy
 - Success criteria
 
+## Sprint Retrospective Process
+
+Conduct structured sprint retrospectives using 5 checkpoints with developer confirmation between each. The retrospective generates a complete diary entry for `docs/archive/Sprint-Estimation-Diary.md` and updates cumulative metrics.
+
+**When to trigger:** After completing a sprint/milestone, before planning the next one.
+
+### Checkpoint 1: Data Gathering (~5 min)
+
+**Goal:** Collect raw sprint data from multiple sources before interpretation.
+
+**Tasks:**
+- [ ] Run `scripts/analyze_sprint_commits.py` with sprint date range
+- [ ] Fetch milestone description for original estimates (from GitHub API or Project fields)
+- [ ] Fetch issue list with story points from milestone
+- [ ] Identify sprint boundaries from commits
+- [ ] Note any untagged commits for later attribution
+
+**Data to present:**
+```bash
+# Generate commit analysis
+python3 scripts/analyze_sprint_commits.py --since YYYY-MM-DD --until YYYY-MM-DD --branch develop
+
+# Fetch milestone issues
+gh issue list --milestone "0.1.X" --state all --json number,title,labels,state
+
+# Fetch milestone details
+gh api repos/{owner}/{repo}/milestones/{number}
+```
+
+**Present to developer:** Raw commit data, issue list, working days summary, daily activity timeline.
+
+**Ready to proceed to Checkpoint 2? (y/n)**
+
+[WAIT for developer confirmation]
+
+---
+
+### Checkpoint 2: Developer Interview (~10 min) — THE CRITICAL STEP
+
+**Goal:** Gather context that commits don't capture. This prevents the analyst from guessing at intent and attributing fast execution solely to overestimation when genuine efficiency may be a factor.
+
+**Questions to ask:**
+
+**Sprint Boundaries & Structure:**
+- Confirm actual sprint start/end dates (commits are a proxy, not the truth)
+- Were there any rest days vs no-commit work days?
+- How did this milestone relate to adjacent ones? Overlap? Deliberate handoff?
+
+**Hidden Work:**
+- Any device testing, planning, or design thinking that left no commit trace?
+- Time spent on debugging or tooling issues (adb, Android Studio, etc.)?
+- Research or exploration that informed decisions but produced no code?
+
+**Unplanned & Emergent Work:**
+- What unplanned work emerged during the sprint?
+- Was it healthy UX feedback? Bug discovery? Scope evolution?
+- Distinguish: intentional scope expansion vs genuine scope creep
+
+**What Went Well:**
+- What efficiency drivers were at play? (pattern reuse, batching, new skills, better tooling)
+- Did previous sprint investments pay off? (test infrastructure, refactoring, design tokens)
+- Any new capabilities or approaches that accelerated work?
+
+**Blockers & Friction:**
+- Anything that slowed down but doesn't show in data?
+- Tooling issues, environment problems, unclear requirements?
+- Anything you'd do differently next time?
+
+**Present to developer:** Summary of interview notes for confirmation before analysis.
+
+**Ready to proceed to Checkpoint 3? (y/n)**
+
+[WAIT for developer confirmation]
+
+---
+
+### Checkpoint 3: Estimation vs Actual Analysis (~5 min)
+
+**Goal:** Calculate accurate metrics comparing estimates to actuals.
+
+**Tasks:**
+- [ ] Calculate weighted actual days per issue (using commit analysis + developer context)
+- [ ] Map original story point estimates from milestone/project
+- [ ] Calculate ratio per issue (weighted actual / estimated)
+- [ ] Classify each issue: ✅ On target (0.7-1.3x) / ⚡ Faster (<0.7x) / 🔴 Over (>1.3x) / 📋 Unplanned
+- [ ] Calculate accuracy by type (bug, feature, testing, architecture, UI, etc.)
+- [ ] Account for hidden overhead identified in developer interview
+
+**Generate table:**
+
+| Issue | Title | Type | Est Points | Weighted Actual | Lines | Ratio | Assessment |
+|-------|-------|------|------------|-----------------|-------|-------|------------|
+| #XXX | ... | ... | X | X.XX | XXXX | X.XXx | ⚡/✅/🔴/📋 |
+
+**Present to developer:** Estimation vs actual table and accuracy by type summary for validation.
+
+**Ready to proceed to Checkpoint 4? (y/n)**
+
+[WAIT for developer confirmation]
+
+---
+
+### Checkpoint 4: Pattern Recognition & Balanced Assessment (~10 min)
+
+**Goal:** Identify patterns with balanced framing — credit genuine efficiency, don't attribute all fast execution to "bad estimates."
+
+**Tasks:**
+- [ ] Identify efficiency gains (pattern reuse, batching, skill improvement, better tooling)
+- [ ] Identify genuine overestimation (new work type without calibration data, linked tasks estimated separately)
+- [ ] Identify underestimation causes (hidden overhead, discovery work, tooling issues)
+- [ ] Analyze working patterns (commit timeline visualization)
+- [ ] Assess unplanned work percentage and context (healthy UX feedback vs scope creep)
+- [ ] Compare with previous sprint patterns for trend analysis
+
+**Balanced framing guidance:**
+- **Fast execution can be BOTH efficiency AND overestimation** — acknowledge both
+- **Emergent work is often healthy** — UX feedback loops, bug discovery during testing, scope refinement based on using the product
+- **First-time work types** will naturally have conservative estimates — this is expected, not a failure
+- **Compound returns** from previous investments (test infrastructure, design tokens, refactoring) should be credited
+
+**Present to developer:** Balanced assessment with:
+- Working pattern visualization (commit timeline)
+- Efficiency vs overestimation breakdown
+- Unplanned work analysis with context
+- Comparison to historical sprint patterns
+
+**Ready to proceed to Checkpoint 5? (y/n)**
+
+[WAIT for developer confirmation]
+
+---
+
+### Checkpoint 5: Lessons, Calibration & Documentation (~10 min)
+
+**Goal:** Generate complete diary entry, propose calibration updates, and document recommendations.
+
+**Tasks:**
+- [ ] Draft lessons learned with balanced framing (typically 5-8 lessons)
+- [ ] Propose updates to calibration factors if warranted (with justification)
+- [ ] Generate recommendations table for future sprints
+- [ ] Compose complete diary entry following established format
+- [ ] Draft update to cumulative metrics section
+- [ ] Developer reviews complete entry before writing to diary
+
+**Diary entry structure** (use `templates/sprint_review_template.md`):
+1. Sprint header (duration, days, utilization, planned/completed issues)
+2. Estimation vs Actual table
+3. Accuracy by Type table
+4. Variance Analysis (major overruns, underruns, on-target, unplanned)
+5. Working Pattern Observations (commit timeline visualization)
+6. Lessons Learned (numbered, with bold headers and sub-bullets)
+7. Recommendations table (Finding → Adjustment)
+8. Notes (additional context, deferred work, key achievements)
+
+**Calibration updates** (only if data supports change):
+- Update Type-Based Calibration Factors if new work types measured
+- Update velocity reference data in Cumulative Metrics
+- Add new insights to Critical Insights section
+- Revise multipliers only with clear justification
+
+**After developer approval:**
+- [ ] Write diary entry to `docs/archive/Sprint-Estimation-Diary.md`
+- [ ] Update cumulative metrics section
+- [ ] Update document history entry
+- [ ] Confirm entry follows established format (compare with 0.1.6 or 0.1.7b)
+
+**Ready to finalize? (y/n)**
+
+[WAIT for developer confirmation before writing to file]
+
+---
+
 ## Sprint History Insights
 
-Key lessons from `docs/workflows/Sprint-Estimation-Diary.md`:
+Key lessons from `docs/archive/Sprint-Estimation-Diary.md`:
 
 ### Pattern Reuse Acceleration
 **Effect**: 2.5-5x faster than original estimate when reusing patterns
@@ -935,16 +1109,18 @@ Provide sprint plan with:
 ## Continuous Improvement
 
 After each sprint:
-1. **Update Sprint Estimation Diary** with actual vs estimated
-2. **Calculate effort ratio** for sprint
-3. **Identify new patterns** in velocity data
-4. **Refine multipliers** based on learnings
-5. **Update this skill** with new insights
+1. **Run the Sprint Retrospective Process** (5 checkpoints above) to generate a diary entry
+2. **Update Sprint Estimation Diary** with the generated entry (CP5 output)
+3. **Calculate effort ratio** for sprint and update cumulative metrics
+4. **Identify new patterns** in velocity data through developer interview (CP2)
+5. **Refine multipliers** based on balanced assessment (CP4)
+6. **Update this skill** with new insights and calibration factors
 
-**The skill should evolve** as more sprint data becomes available. Treat it as a living document.
+**The skill should evolve** as more sprint data becomes available. The retrospective process ensures each sprint's learnings are captured systematically and feed directly into the next sprint's planning.
 
 ---
 
 ## Version History
 
+- **2.0.0** (2026-02-08): Added Sprint Retrospective Process with 5 checkpoints (Data Gathering, Developer Interview, Estimation Analysis, Pattern Recognition, Lessons & Documentation). Added sprint review template. Updated velocity data with 0.1.6 and 0.1.7a/b insights. Fixed diary path references.
 - **1.0.0** (2026-01-11): Initial skill creation with Sprint 0.1.2-0.1.5 data

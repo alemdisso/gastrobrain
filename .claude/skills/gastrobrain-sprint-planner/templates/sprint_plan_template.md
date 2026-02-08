@@ -407,7 +407,7 @@ flutter build apk  # Cannot run in WSL
 - [Future work 2]
 
 ### References
-- Sprint Estimation Diary: `docs/workflows/Sprint-Estimation-Diary.md`
+- Sprint Estimation Diary: `docs/archive/Sprint-Estimation-Diary.md`
 - Issue Workflow: `docs/workflows/ISSUE_WORKFLOW.md`
 - Edge Case Testing Guide: `docs/testing/EDGE_CASE_TESTING_GUIDE.md`
 - Localization Protocol: `docs/workflows/L10N_PROTOCOL.md`
