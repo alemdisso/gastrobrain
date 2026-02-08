@@ -202,9 +202,7 @@ Historical planning documents and completed project tracking:
 | Document | Purpose | Status |
 |----------|---------|--------|
 | [Gastrobrain-Roadmap-Status.md](archive/Gastrobrain-Roadmap-Status.md) | Overall project roadmap and milestone tracking | 📅 Historical (2025-12-19) |
-| [Sprint-Planning-0.1.2-0.1.3.md](archive/Sprint-Planning-0.1.2-0.1.3.md) | Sprint planning for milestones 0.1.2-0.1.3 | 📅 Historical (2025-12-19) |
 | [Sprint-Estimation-Diary.md](archive/Sprint-Estimation-Diary.md) | Sprint estimation tracking and learnings | 📅 Historical (2025-12-19) |
-| [meal-editing-refactoring-plan.md](archive/meal-editing-refactoring-plan.md) | Plan for consolidating meal editing screens (Issue #237) | 📅 Future work (2025-12-19) |
 
 ---
 

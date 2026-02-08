@@ -375,7 +375,7 @@ git push origin v0.1.3
 - [Git Flow](https://nvie.com/posts/a-successful-git-branching-model/)
 - [Keep a Changelog](https://keepachangelog.com/)
 - [Issue Workflow](./ISSUE_WORKFLOW.md) - Development workflow
-- [Sprint Planning](../archive/Sprint-Planning-0.1.2-0.1.3.md) - Milestone planning
+- [Sprint Planning](../planning/sprints/sprint-planning-0.1.2-0.1.3.md) - Milestone planning
 
 ---
 
