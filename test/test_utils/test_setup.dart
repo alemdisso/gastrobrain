@@ -58,10 +58,6 @@ class TestSetup {
   /// Future enhancement: Could add common test data patterns here.
   static MockDatabaseHelper setupMockDatabaseWithTestData() {
     final mockDbHelper = setupMockDatabase();
-    
-    // TODO: Add common test data setup patterns here if needed
-    // For now, tests should populate their own specific data
-    
     return mockDbHelper;
   }
 }
