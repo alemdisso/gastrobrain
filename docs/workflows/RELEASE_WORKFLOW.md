@@ -318,11 +318,14 @@ git branch -d hotfix/0.1.3.1
 
 | Version | Date | Milestone | Branch | Notes |
 |---------|------|-----------|--------|-------|
-| 0.1.0 | TBD | Initial Release | - | First version |
-| 0.1.1 | TBD | Stability & Polish | - | Testing infrastructure |
-| 0.1.2 | 2025-12-17 | Polish & Data Safety | - | Backup, UX improvements |
-| 0.1.3 | 2025-12-30 | User Features & Critical Foundation | release/0.1.3 | Testing foundation complete |
-| 0.1.4 | TBD | Model Changes & Architecture Polish | - | Planned |
+| 0.1.0 | 2025-11-11 | Initial Release | - | First version |
+| 0.1.1 | 2025-11-28 | Stability & Polish | - | Testing infrastructure, E2E framework |
+| 0.1.2 | 2025-12-17 | Polish & Data Safety | - | Backup/restore, UX improvements |
+| 0.1.3 | 2025-12-30 | User Features & Critical Foundation | release/0.1.3 | Testing foundation, 614 tests |
+| 0.1.4 | 2026-01-03 | Testing Infrastructure | release/0.1.4 | MealEditService, error simulation |
+| 0.1.5 | 2026-01-09 | Meal Recording Consolidation | release/0.1.5 | Meal types, Codecov, dialog coverage |
+| 0.1.6 | 2026-01-29 | Recipe Management Polish | release/0.1.6 | Shopping list, meal plan summary, recipe navigation |
+| 0.1.7 | 2026-02-06 | UI Polish & Design System | release/0.1.7 | Design tokens, Material 3 theme, component standardization |
 
 ---
 
