@@ -287,7 +287,8 @@ void main() {
       await tester.tap(find.text('Lista de Compras'));
       await tester.pumpAndSettle();
 
-      // TODO(#282): Fix modal bottom sheet test - checkboxes not accessible in modal context
+      // TODO(#288): ux: improve shopping list bottom sheet tabs testability and UX
+      // Currently checkboxes are not accessible in modal context
       // Should return only selected ingredients (Onion and Rice)
       // expect(result, isNotNull);
       // expect(result!.length, equals(2)); // Only vegetable and grain categories
