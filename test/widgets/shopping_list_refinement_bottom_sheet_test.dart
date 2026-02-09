@@ -68,8 +68,6 @@ void main() {
       expect(find.textContaining('4 de 4 itens selecionados'), findsOneWidget);
     });
 
-    // TODO(#282): Fix modal bottom sheet testing - uncomment tests after infrastructure is fixed
-
     testWidgets('displays all ingredients grouped by category',
         (WidgetTester tester) async {
       await tester.pumpWidget(
@@ -301,8 +299,6 @@ void main() {
         skip:
             true); // Skip - modal bottom sheet interaction needs different approach
 
-    // TODO(#282): Test 10 also skipped - same modal sheet issue
-
     testWidgets('shows empty state when no ingredients provided',
         (WidgetTester tester) async {
       await tester.pumpWidget(
@@ -377,12 +373,7 @@ void main() {
           },
         ],
         'spice': [
-          {
-            'name': 'Salt',
-            'quantity': 1.0,
-            'unit': 'tsp',
-            'category': 'spice'
-          },
+          {'name': 'Salt', 'quantity': 1.0, 'unit': 'tsp', 'category': 'spice'},
         ],
       };
 
