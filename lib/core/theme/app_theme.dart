@@ -436,7 +436,7 @@ class AppTheme {
   /// Currently returns a basic dark theme based on design tokens.
   /// To be fully implemented when dark mode is prioritized.
   static ThemeData get darkTheme {
-    // TODO: Implement comprehensive dark theme
+    // TODO(#281): Implement comprehensive dark theme
     // For now, return a basic dark theme structure
     return ThemeData(
       useMaterial3: true,

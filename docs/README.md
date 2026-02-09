@@ -1,6 +1,6 @@
 # Gastrobrain Documentation
 
-**Last Updated**: 2026-02-03
+**Last Updated**: 2026-02-08
 
 This directory contains comprehensive documentation for the Gastrobrain project, organized by category.
 
@@ -54,7 +54,7 @@ Analysis documents capture understanding of existing code before implementation.
 
 | Document | Issue | Status |
 |----------|-------|--------|
-| [issue-258-analysis.md](issues/analysis/issue-258-analysis.md) | #258 - Polish Weekly Planning Screen | ✅ Complete |
+| [issue-262-navigation-analysis.md](issues/analysis/issue-262-navigation-analysis.md) | #262 - Standardize Navigation Styles | ✅ Complete |
 
 **Naming convention**: `issue-{number}-analysis.md`
 
@@ -64,8 +64,7 @@ Roadmaps provide phase-based implementation plans with checkbox lists for tracki
 
 | Document | Issue | Status |
 |----------|-------|--------|
-| [issue-258-phase2-roadmap.md](issues/roadmaps/issue-258-phase2-roadmap.md) | #258 - Polish Weekly Planning Screen (Phase 2) | ✅ Complete |
-| [issue-259-roadmap.md](issues/roadmaps/issue-259-roadmap.md) | #259 - Polish Recipe List Screen | ✅ Complete |
+| [issue-262-standardize-navigation-styles.md](issues/roadmaps/issue-262-standardize-navigation-styles.md) | #262 - Standardize Navigation Styles | ✅ Complete |
 
 **Naming convention**: `issue-{number}-roadmap.md` or `issue-{number}-phase{X}-roadmap.md` for phased work
 
@@ -132,7 +131,6 @@ UX designs and user flow documentation for specific features.
 
 | Document | Issue | Status |
 |----------|-------|--------|
-| [issue-258-ux-redesign.md](design/ux/issue-258-ux-redesign.md) | #258 - Weekly Planning Screen UX | ✅ Complete |
 | [meal-plan-summary-design.md](design/ux/meal-plan-summary-design.md) | Meal Plan Summary Feature | ✅ Complete |
 
 **Naming convention**: `issue-{number}-ux-design.md` or `{feature-name}-design.md`
@@ -148,9 +146,9 @@ UX designs and user flow documentation for specific features.
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| [Gastrobrain-Codebase-Overview.md](architecture/Gastrobrain-Codebase-Overview.md) | Comprehensive architecture overview, data models, services, and patterns | ✅ Current (2025-12-30) |
+| [Gastrobrain-Codebase-Overview.md](architecture/Gastrobrain-Codebase-Overview.md) | Comprehensive architecture overview, data models, services, and patterns | ✅ Current (2026-02-08) |
 | [RECOMMENDATION_ENGINE.md](architecture/RECOMMENDATION_ENGINE.md) | Recommendation service architecture and scoring factors | ✅ Current |
-| [Dependency-Injection-Strategy.md](architecture/Dependency-Injection-Strategy.md) | ServiceProvider pattern and DI approach | ⚠️ May need update |
+| [Dependency-Injection-Strategy.md](architecture/Dependency-Injection-Strategy.md) | ServiceProvider pattern and DI approach | ✅ Current |
 
 ---
 
@@ -193,6 +191,7 @@ For testing-related work, follow this hierarchy:
 |----------|---------|--------|
 | [ISSUE_WORKFLOW.md](workflows/ISSUE_WORKFLOW.md) | GitHub issue management, Git Flow, branching strategy | ✅ Current |
 | [L10N_PROTOCOL.md](workflows/L10N_PROTOCOL.md) | Localization workflow for English/Portuguese | ✅ Current |
+| [RELEASE_WORKFLOW.md](workflows/RELEASE_WORKFLOW.md) | Release process, versioning, and automated pipeline | ✅ Current |
 
 ---
 
@@ -203,9 +202,7 @@ Historical planning documents and completed project tracking:
 | Document | Purpose | Status |
 |----------|---------|--------|
 | [Gastrobrain-Roadmap-Status.md](archive/Gastrobrain-Roadmap-Status.md) | Overall project roadmap and milestone tracking | 📅 Historical (2025-12-19) |
-| [Sprint-Planning-0.1.2-0.1.3.md](archive/Sprint-Planning-0.1.2-0.1.3.md) | Sprint planning for milestones 0.1.2-0.1.3 | 📅 Historical (2025-12-19) |
 | [Sprint-Estimation-Diary.md](archive/Sprint-Estimation-Diary.md) | Sprint estimation tracking and learnings | 📅 Historical (2025-12-19) |
-| [meal-editing-refactoring-plan.md](archive/meal-editing-refactoring-plan.md) | Plan for consolidating meal editing screens (Issue #237) | 📅 Future work (2025-12-19) |
 
 ---
 

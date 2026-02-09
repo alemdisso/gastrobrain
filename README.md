@@ -12,34 +12,43 @@ Gastrobrain is a Flutter-based mobile application designed to assist home cooks 
 
 ### Recipe Management
 
-- **Comprehensive Recipe Library** - Store recipes with difficulty ratings, cook times, and serving sizes
-- **Recipe Search & Filtering** - Quickly find recipes by name with real-time search
+- **Comprehensive Recipe Library** - Store recipes with difficulty ratings, cook times, serving sizes, and categories
+- **Recipe Search & Filtering** - Find recipes by name, difficulty, rating, frequency, and category with visual filter indicators
+- **Unified Recipe Details** - Tabbed view showing overview, ingredients, instructions, and meal history
 - **Multi-Ingredient Support** - Track recipes with multiple protein sources and complex ingredient lists
 - **Protein Type Tracking** - Monitor and rotate protein usage for dietary variety
 - **Rating System** - Rate recipes from 1-5 stars to improve recommendations
+- **Bulk Recipe Update** - Development tool for efficient ingredient parsing and recipe enrichment
 
 ### Intelligent Recommendations
 
-- **Smart Recommendation Engine** - Multi-factor scoring system based on:
+- **Smart Recommendation Engine** - Multi-factor scoring system (7 factors) based on:
   - Recipe frequency and due dates
   - Protein rotation (encourages dietary variety)
   - User ratings and preferences
   - Variety encouragement (promotes exploration)
   - Temporal context (weekday/weekend adaptations)
+  - User feedback learning (historical success tracking)
+  - Controlled randomization for variety
 - **Context-Aware Suggestions** - Recommendations adapt to meal type, date, and cooking patterns
 - **Protein Rotation System** - Graduated penalties discourage protein repetition
 
 ### Meal Planning & History
 
 - **Weekly Meal Planning** - Plan meals with multi-recipe support (main dishes + sides)
-- **Cooking Session Tracking** - Log when recipes are cooked with notes
+- **Meal Type Selection** - Categorize meals as breakfast, brunch, lunch, dinner, or snack
+- **Cooking Session Tracking** - Log when recipes are cooked with actual times, servings, and notes
+- **Meal Plan Summary** - Weekly analytics with protein distribution, cooking time allocation, and variety metrics
 - **Meal History Analytics** - Track cooking patterns, success rates, and frequency with improved UI layout
 - **Retroactive Planning** - Plan meals after cooking for accurate history
-- **Optimized Display** - Clean, information-dense interface optimized for mobile screens
 
 ### Ingredients & Shopping
 
 - **Ingredient Database** - Comprehensive categorization with protein type tracking
+- **Shopping List Generation** - Generate shopping lists from weekly meal plans with automatic ingredient aggregation
+- **Ingredient Refinement** - Curate ingredients before creating shopping list (select/deselect items)
+- **Category Grouping** - Shopping items organized by category (Produce, Proteins, Dairy, etc.)
+- **Shopping Progress** - Checkbox tracking with "to buy" filters and "hide to taste" option
 - **Localized Units** - Support for metric and customary measurements with fraction display
 - **Smart Quantity Display** - Automatic fraction formatting (e.g., 1/2, 1/4, 3/4) for common values
 - **Enhanced Parser** - Supports Portuguese measurement units including 'maço' (bunch)
@@ -147,68 +156,52 @@ sudo apt-get install lcov
 ```text
 lib/
 ├── core/                  # Core functionality
-│   ├── di/               # Dependency injection
+│   ├── di/               # Dependency injection (ServiceProvider)
+│   ├── errors/           # Custom exception hierarchy
+│   ├── migration/        # Database migration system
+│   ├── providers/        # State management (Provider pattern)
+│   ├── repositories/     # Cached data access layer
 │   ├── services/         # Business logic services
-│   └── exceptions/       # Custom exceptions
-├── database/             # Database layer
-│   └── migrations/       # Schema migrations
-├── models/               # Data models
-├── screens/              # UI screens
-├── widgets/              # Reusable widgets
-├── l10n/                 # Localization files (ARB)
+│   ├── theme/            # Design tokens, app theme, button styles
+│   └── validators/       # Entity validation
+├── database/             # Database layer (DatabaseHelper)
+├── models/               # Data models (21 models)
+├── screens/              # UI screens (15 screens)
+├── services/             # Additional services (shopping list)
+├── widgets/              # Reusable widgets & dialogs (15 widgets)
+├── l10n/                 # Localization files (EN/PT, 478+ keys)
 └── utils/                # Utility functions
 
 docs/                     # Documentation
-├── RECOMMENDATION_ENGINE.md  # Recommendation system docs
-├── ISSUE_WORKFLOW.md        # Development workflow
-├── L10N_PROTOCOL.md         # Localization guidelines
-├── E2E_TESTING.md           # End-to-end testing guide
-└── Gastrobrain-Codebase-Overview.md  # Architecture overview
+├── architecture/         # System architecture & design
+├── design/               # Visual identity, design tokens, UX
+├── testing/              # Testing guides & resources
+├── workflows/            # Development processes
+├── planning/             # Milestones, sprints, feature specs
+├── issues/               # Issue-level analysis & roadmaps
+└── archive/              # Historical documents
 ```
 
 ## Development Status
 
-**Current Version: v0.1.2** - Polish & Data Safety
+**Current Version: v0.1.7** - UI Polish & Design System
 
 ### Major Achievements
 
-- ✅ Modern architecture with dependency injection
-- ✅ Comprehensive testing infrastructure (65+ unit/widget tests, 12+ E2E tests)
-- ✅ Full bilingual support (English/Portuguese) with proper date localization
-- ✅ Advanced recommendation engine with 6 scoring factors
-- ✅ Database migration system with backup/restore functionality
-- ✅ Complete JSON-based backup and restore system for data safety
-- ✅ CI/CD pipeline with GitHub Actions
-- ✅ Multi-ingredient and multi-recipe meal support
-- ✅ End-to-end testing framework with best practices guide
-- ✅ Form field keys for improved testability and accessibility
-- ✅ Recipe search and filtering with visual indicators
-- ✅ Polished UI with improved information density and fraction display
-- ✅ Enhanced ingredient parser with Portuguese measurement units
-
-### What's Next (v0.1.3 - Testing & Deferred Features)
-
-**User-Facing Features:**
-
-- Shopping list generation from meal plans (#5)
-- Meal type selection when recording cooked meals (#199)
-- Improved "to taste" ingredient handling with zero quantity support (#196)
-- Context menu with edit and delete options for meal cards (#238)
-
-**Testing Foundation:**
-
-- Widget tests for MealHistoryScreen (#77)
-- Dialog and state management testing (#38)
-- Edge case test suite development (#39)
-- Test refactoring and coverage enhancement (#40)
-- Test coverage reporting integration (#230)
-- Organize integration tests into e2e/ and services/ directories (#221)
-
-**Architecture & Technical Debt:**
-
-- Consolidate meal editing logic into shared service (#237)
-- Refactor WeeklyPlanScreen to use DatabaseHelper abstraction (#234, #235, #236)
-- Extract RecipesScreen from HomePage for better separation of concerns (#231)
+- ✅ Modern architecture with dependency injection (ServiceProvider pattern)
+- ✅ Comprehensive testing infrastructure (1670+ tests, Codecov integration)
+- ✅ Full bilingual support (English/Portuguese) with 478+ localized strings
+- ✅ Advanced recommendation engine with 7 scoring factors and temporal intelligence
+- ✅ Database migration system (5 migrations) with backup/restore functionality
+- ✅ Shopping list generation from meal plans with ingredient refinement
+- ✅ Meal plan summary analytics with protein distribution tracking
+- ✅ CI/CD pipeline with GitHub Actions (automated release builds)
+- ✅ Multi-ingredient and multi-recipe meal support (main + side dishes)
+- ✅ Design token system with Material 3 theme and visual identity
+- ✅ Recipe search, filtering (difficulty, rating, frequency, category), and sorting
+- ✅ Unified recipe details screen with tabbed view (overview, ingredients, instructions, history)
+- ✅ Bulk recipe update tool with ingredient parsing and fuzzy matching
+- ✅ Enhanced ingredient parser with Portuguese measurement units and fraction display
 
 ### Future Milestones
 
@@ -232,8 +225,10 @@ docs/                     # Documentation
 - [**Documentation Index**](docs/README.md) - Complete documentation index and quick links
 - [**Codebase Overview**](docs/architecture/Gastrobrain-Codebase-Overview.md) - Architecture and patterns
 - [**Recommendation Engine**](docs/architecture/RECOMMENDATION_ENGINE.md) - Complete guide to the recommendation system
+- [**Design System**](docs/design/) - Visual identity, design tokens, theme usage, component patterns
 - [**Testing Guides**](docs/testing/) - Dialog testing, edge case testing, and test patterns
 - [**Issue Workflow**](docs/workflows/ISSUE_WORKFLOW.md) - Development workflow and Git Flow practices
+- [**Release Workflow**](docs/workflows/RELEASE_WORKFLOW.md) - Release process and versioning
 - [**L10N Protocol**](docs/workflows/L10N_PROTOCOL.md) - Localization guidelines
 - [**Changelog**](CHANGELOG.md) - Release notes and version history
 

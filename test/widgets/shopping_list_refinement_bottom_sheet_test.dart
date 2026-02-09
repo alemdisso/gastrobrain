@@ -68,7 +68,7 @@ void main() {
       expect(find.textContaining('4 de 4 itens selecionados'), findsOneWidget);
     });
 
-    // TODO: Uncomment ONE test at a time after previous test passes
+    // TODO(#282): Fix modal bottom sheet testing - uncomment tests after infrastructure is fixed
 
     testWidgets('displays all ingredients grouped by category',
         (WidgetTester tester) async {
@@ -289,7 +289,7 @@ void main() {
       await tester.tap(find.text('Lista de Compras'));
       await tester.pumpAndSettle();
 
-      // TODO: Fix modal bottom sheet test - checkboxes not accessible in modal context
+      // TODO(#282): Fix modal bottom sheet test - checkboxes not accessible in modal context
       // Should return only selected ingredients (Onion and Rice)
       // expect(result, isNotNull);
       // expect(result!.length, equals(2)); // Only vegetable and grain categories
@@ -301,7 +301,7 @@ void main() {
         skip:
             true); // Skip - modal bottom sheet interaction needs different approach
 
-    // TODO: Test 10 also skipped - same modal sheet issue
+    // TODO(#282): Test 10 also skipped - same modal sheet issue
 
     testWidgets('shows empty state when no ingredients provided',
         (WidgetTester tester) async {
