@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/ingredient_category.dart';
+import '../models/measurement_unit.dart';
 import '../core/theme/design_tokens.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/quantity_formatter.dart';
@@ -147,7 +148,7 @@ class ShoppingListPreviewBottomSheet extends StatelessWidget {
                   const SizedBox(width: DesignTokens.spacingMd),
                   // Quantity (fixed width on the right)
                   Text(
-                    _formatQuantity(item),
+                    _formatQuantity(item, context),
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[700],
@@ -162,14 +163,18 @@ class ShoppingListPreviewBottomSheet extends StatelessWidget {
     );
   }
 
-  String _formatQuantity(Map<String, dynamic> item) {
+  String _formatQuantity(Map<String, dynamic> item, BuildContext context) {
     final quantity = item['quantity'] as double;
-    final unit = item['unit'] as String;
+    final unitString = item['unit'] as String;
+
+    // Convert to MeasurementUnit enum and get localized name
+    final measurementUnit = MeasurementUnit.fromString(unitString);
+    final localizedUnit = measurementUnit?.getLocalizedDisplayName(context) ?? unitString;
 
     // Format quantity (handles fractions, whole numbers, decimals)
     final formattedQuantity = QuantityFormatter.format(quantity);
 
-    // Combine with unit
-    return '$formattedQuantity $unit';
+    // Combine with localized unit
+    return '$formattedQuantity $localizedUnit';
   }
 }
