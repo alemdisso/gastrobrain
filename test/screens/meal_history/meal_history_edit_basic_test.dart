@@ -268,7 +268,7 @@ void main() {
       expect(menuButtons, findsWidgets,
           reason: 'PopupMenuButton should be present');
 
-      // TODO: When edit functionality is implemented, test the actual editing
+      // TODO(#286): Add comprehensive tests for actual editing workflow
       // This test currently just verifies the multi-recipe meal displays correctly
     });
 

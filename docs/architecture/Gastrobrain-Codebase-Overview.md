@@ -62,6 +62,11 @@ Gastrobrain is a comprehensive meal planning and recipe management application b
 - **RecipeExportService**: Exports recipes with full ingredient data to JSON
 - **IngredientTranslationService**: Translates ingredients from English to Portuguese using reviewed translation data
 
+### Shopping List & Summary Services
+- **ShoppingListService**: Shopping list generation from meal plans with ingredient aggregation, category grouping, and toggle tracking
+- **MealPlanSummaryService**: Weekly meal plan analytics (protein distribution, cooking time allocation, variety metrics)
+- **MealActionService**: Meal interaction handlers for common meal operations
+
 ### Meal Management Services
 - **MealEditService**: Centralized meal editing and recording operations
   - Consolidates meal editing logic from multiple screens into single source of truth
@@ -77,6 +82,14 @@ Gastrobrain is a comprehensive meal planning and recipe management application b
 - **MealPlanProvider**: State management for meal planning
 - **Repository Pattern**: Base repositories for consistent data access
 
+### Theme & Design System
+- **AppTheme**: Comprehensive Material 3 theme configuration (light theme; dark theme foundation)
+- **DesignTokens**: Centralized design tokens (colors, typography, spacing, border radii, elevations, shadows)
+- **ButtonStyles**: Reusable button styles (primary, secondary, destructive)
+- Visual identity: Warm, Confident, Cultured & Flavorful, Clear, Rooted
+- Color palette: Amber/paprika primary, emerald/herb green accent
+- 8px-based spacing system with 7 levels (XXS to XXL)
+
 ### Utility Services
 - **ServiceProvider**: Central dependency injection hub with provider access
 - **SnackbarService**: Handles user notifications and feedback
@@ -87,35 +100,40 @@ Gastrobrain is a comprehensive meal planning and recipe management application b
 ## User Interface
 
 ### Main Navigation
-- **HomePage**: Navigation hub with tabs for Recipes and Weekly Plan
-- **RecipeCard**: Expandable recipe cards with quick actions and statistics
+- **HomePage**: Navigation hub with 4 tabs (Recipes, Meal Plan, Ingredients, Tools)
+- **RecipeCard**: Recipe list items with stats (meal count, last cooked, rating) and tap navigation to details
 
 ### Recipe Management
+- **RecipeDetailsScreen**: Unified tabbed view (4 tabs: overview, ingredients, instructions, meal history) with delete functionality
 - **AddRecipeScreen**: Recipe creation with ingredient management and localization
 - **EditRecipeScreen**: Recipe modification with validation
 - **RecipeIngredientsScreen**: Detailed ingredient view with editing capabilities
+- **RecipeInstructionsViewScreen**: Dedicated instructions view
 - **MealHistoryScreen**: Tracks cooking history for each recipe with edit capabilities
-  - Improved layout with recipe name prominently displayed in app bar
-  - Streamlined meal cards without redundant information
-  - Compact time display for better space efficiency on mobile devices
-- **IngredientsScreen**: Comprehensive ingredient management interface
+- **IngredientsScreen**: Comprehensive ingredient management with search, add, edit, delete
 
-### Meal Planning
-- **WeeklyPlanScreen**: Week view (Friday-Thursday) with meal slot management and multi-recipe support
+### Meal Planning & Shopping
+- **WeeklyPlanScreen**: Week view (Friday-Thursday) with meal slot management, multi-recipe support, recommendation integration, shopping list generation, and weekly summary
 - **WeeklyCalendarWidget**: Responsive calendar with multiple layouts (phone/tablet/landscape)
-- **CookMealScreen**: Dedicated cooking interface with meal completion tracking
+- **CookMealScreen**: Dedicated cooking interface with meal type selection and completion tracking
+- **ShoppingListScreen**: Shopping list with category grouping, checkbox tracking, "to buy" filter, and "hide to taste" option
 
 ### Development & Utility Screens
-- **ToolsScreen**: Development utilities for data export and ingredient translation
+- **ToolsScreen**: Development utilities for database backup/restore, recipe import/export, ingredient export, and bulk recipe update
+- **BulkRecipeUpdateScreen**: Efficient tool for ingredient parsing, instructions editing, and recipe enrichment with session tracking
 - **MigrationScreen**: Database migration interface for schema updates
 
 ### Dialogs & Components
+- **RecipeSelectionDialog**: Recipe selection with two tabs ("Try This" recommendations + "All Recipes" with search/filter)
+- **MealTypeDialog**: Meal type selection (breakfast, brunch, lunch, dinner, snack)
 - **AddIngredientDialog**: Ingredient addition with custom/database options
 - **AddNewIngredientDialog**: New ingredient creation with category selection
 - **AddSideDishDialog**: Side dish addition for multi-recipe meals
 - **MealRecordingDialog**: Comprehensive meal tracking with multiple recipe support
 - **EditMealRecordingDialog**: Edit completed meal records
 - **MealCookedDialog**: Quick meal completion interface
+- **ShoppingListPreviewBottomSheet**: Preview ingredients before creating shopping list
+- **ShoppingListRefinementBottomSheet**: Curate ingredients (select/deselect) for shopping list
 
 ## Key Features
 
@@ -131,9 +149,19 @@ Gastrobrain is a comprehensive meal planning and recipe management application b
 - Weekly view starting on Friday with responsive layout
 - Lunch and dinner slots for each day
 - Recipe recommendations based on intelligent algorithms with temporal context
+- Meal type selection (breakfast, brunch, lunch, dinner, snack)
 - Mark meals as cooked with detailed tracking and multi-recipe support
 - Supports multiple recipes per meal (main dish + sides)
 - Dedicated cooking interface with progress tracking
+- Weekly summary analytics (protein distribution, cooking times, variety metrics)
+
+### Shopping Lists
+- Generate shopping lists from weekly meal plans
+- Ingredient refinement before list creation (select/deselect items)
+- Category-based grouping (Produce, Proteins, Dairy, etc.)
+- Checkbox tracking with "to buy" vs completed states
+- Filter by "to buy only" and "hide to taste" options
+- Localized categories and units
 
 ### Recommendation System
 - Context-aware recipe suggestions with dual-context analysis (planned + cooked)
@@ -159,15 +187,17 @@ Gastrobrain is a comprehensive meal planning and recipe management application b
 - Comprehensive entity validation with localized error handling
 
 ### Development Tools
-- Integrated development utilities screen
-- Database migration interface
-- Data export tools for recipes and ingredients
-- Ingredient translation utilities for English-to-Portuguese conversion
+- Integrated development utilities screen (Tools tab)
+- Database backup and restore (JSON-based)
+- Recipe import/export (JSON format)
+- Ingredient export (JSON format)
+- Bulk recipe update tool with ingredient parsing and fuzzy matching
+- Database migration interface with version tracking
 
 ## Testing Infrastructure
 
 ### Test Coverage Overview
-The application maintains comprehensive test coverage with **600+ unit/widget tests** (including 458+ edge case tests from Issue #39, 122 dialog tests) and **8+ end-to-end/integration tests**, ensuring reliability and maintainability across all application layers. The testing infrastructure includes robust dialog testing utilities, comprehensive edge case testing framework, E2E testing framework with helper methods, regression test suite, and comprehensive coverage of critical user workflows.
+The application maintains comprehensive test coverage with **1670+ unit/widget tests** (including 458+ edge case tests from Issue #39, 122 dialog tests) and **8+ end-to-end/integration tests**, ensuring reliability and maintainability across all application layers. The testing infrastructure includes robust dialog testing utilities, comprehensive edge case testing framework, E2E testing framework with helper methods, regression test suite, and comprehensive coverage of critical user workflows.
 
 **Test Breakdown:**
 - **Edge Case Tests** (Issue #39): 458+ tests across empty states, boundary conditions, error scenarios, interaction patterns, and data integrity
