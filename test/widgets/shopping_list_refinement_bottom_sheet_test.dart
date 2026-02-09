@@ -358,5 +358,156 @@ void main() {
       tomatoText = tester.widget(tomatoTextFinder);
       expect(tomatoText.style?.decoration, equals(TextDecoration.lineThrough));
     });
+
+    testWidgets('displays localized measurement units in Portuguese',
+        (WidgetTester tester) async {
+      final testIngredientsWithUnits = {
+        'vegetable': [
+          {
+            'name': 'Tomato',
+            'quantity': 2.0,
+            'unit': 'cup',
+            'category': 'vegetable'
+          },
+          {
+            'name': 'Onion',
+            'quantity': 1.0,
+            'unit': 'tbsp',
+            'category': 'vegetable'
+          },
+        ],
+        'spice': [
+          {
+            'name': 'Salt',
+            'quantity': 1.0,
+            'unit': 'tsp',
+            'category': 'spice'
+          },
+        ],
+      };
+
+      await tester.pumpWidget(
+        createTestWidget(
+          ShoppingListRefinementBottomSheet(
+            groupedIngredients: testIngredientsWithUnits,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify Portuguese localization
+      expect(find.textContaining('Xícara'), findsOneWidget); // cup
+      expect(find.textContaining('Colher de sopa'), findsOneWidget); // tbsp
+      expect(find.textContaining('Colher de chá'), findsOneWidget); // tsp
+    });
+
+    testWidgets('displays localized units in English',
+        (WidgetTester tester) async {
+      final testIngredientsWithUnits = {
+        'vegetable': [
+          {
+            'name': 'Tomato',
+            'quantity': 2.0,
+            'unit': 'cup',
+            'category': 'vegetable'
+          },
+          {
+            'name': 'Onion',
+            'quantity': 1.0,
+            'unit': 'tbsp',
+            'category': 'vegetable'
+          },
+        ],
+      };
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('en', ''),
+            Locale('pt', ''),
+          ],
+          locale: const Locale('en', ''), // Use English
+          home: Scaffold(
+            body: ShoppingListRefinementBottomSheet(
+              groupedIngredients: testIngredientsWithUnits,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify English localization
+      expect(find.textContaining('Cup'), findsOneWidget);
+      expect(find.textContaining('Tbsp'), findsOneWidget);
+    });
+
+    testWidgets('falls back to raw string for unknown units',
+        (WidgetTester tester) async {
+      final testIngredientsWithCustomUnit = {
+        'other': [
+          {
+            'name': 'Custom Item',
+            'quantity': 5.0,
+            'unit': 'custom_unit',
+            'category': 'other'
+          },
+        ],
+      };
+
+      await tester.pumpWidget(
+        createTestWidget(
+          ShoppingListRefinementBottomSheet(
+            groupedIngredients: testIngredientsWithCustomUnit,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Should display raw unit string for unknown units
+      expect(find.textContaining('custom_unit'), findsOneWidget);
+    });
+
+    testWidgets('localized units remain visible when item is unchecked',
+        (WidgetTester tester) async {
+      final testIngredientsWithUnits = {
+        'vegetable': [
+          {
+            'name': 'Tomato',
+            'quantity': 2.0,
+            'unit': 'cup',
+            'category': 'vegetable'
+          },
+        ],
+      };
+
+      await tester.pumpWidget(
+        createTestWidget(
+          ShoppingListRefinementBottomSheet(
+            groupedIngredients: testIngredientsWithUnits,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify unit is localized initially
+      expect(find.textContaining('Xícara'), findsOneWidget);
+
+      // Uncheck the item
+      final tomatoCheckbox = find.ancestor(
+        of: find.text('Tomato'),
+        matching: find.byType(CheckboxListTile),
+      );
+      await tester.tap(tomatoCheckbox);
+      await tester.pumpAndSettle();
+
+      // Localized unit should still be visible (with strikethrough)
+      expect(find.textContaining('Xícara'), findsOneWidget);
+    });
   });
 }
