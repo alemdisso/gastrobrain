@@ -612,7 +612,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                 effectiveUnitString;
 
         return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           child: ListTile(
             leading: Icon(
               proteinType != null ? Icons.egg_alt : Icons.food_bank,
