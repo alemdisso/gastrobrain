@@ -16,9 +16,9 @@
   "@ingredients": {
     "description": "Rótulo da aba para seção de ingredientes"
   },
-  "bulkRecipeUpdate": "Atualização em Massa de Receitas",
-  "@bulkRecipeUpdate": {
-    "description": "Título da tela de atualização em massa de receitas"
+  "recipeEditor": "Editor de Receitas",
+  "@recipeEditor": {
+    "description": "Título da tela do editor de receitas"
   },
   "deleteRecipe": "Excluir Receita",
   "@deleteRecipe": {
@@ -1940,13 +1940,17 @@
   "@toolsScreenSubtitle": {
     "description": "Subtitle for tools screen"
   },
-  "bulkRecipeUpdate": "Atualização em Lote de Receitas",
-  "@bulkRecipeUpdate": {
-    "description": "Title for bulk recipe update tool"
+  "recipeEditor": "Editor de Receitas",
+  "@recipeEditor": {
+    "description": "Título da ferramenta de editor de receitas"
   },
-  "bulkRecipeUpdateDescription": "Atualize várias receitas de uma vez com dados de ingredientes e instruções.",
-  "@bulkRecipeUpdateDescription": {
-    "description": "Description for bulk recipe update tool"
+  "recipeEditorDescription": "Edite ingredientes e instruções de suas receitas com ferramentas de análise de texto.",
+  "@recipeEditorDescription": {
+    "description": "Descrição da ferramenta de editor de receitas"
+  },
+  "openRecipeEditor": "Abrir Editor",
+  "@openRecipeEditor": {
+    "description": "Texto do botão para abrir o editor de receitas"
   },
   "exportRecipes": "Exportar Receitas",
   "@exportRecipes": {

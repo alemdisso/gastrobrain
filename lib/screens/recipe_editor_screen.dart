@@ -19,19 +19,19 @@ const int kEnrichedRecipesMilestoneTarget = 50;
 /// Warning threshold for enriched recipes (halfway to milestone)
 const int kEnrichedRecipesWarningThreshold = 25;
 
-/// Bulk recipe update screen for efficiently adding ingredients and instructions
+/// Recipe editor screen for efficiently adding ingredients and instructions
 /// to existing recipes that have basic metadata but are missing detailed content.
 ///
 /// This is a temporary development tool for issue #161 (Recipe Selection & Loading).
 /// Subsequent issues will add ingredient parsing (#162) and instructions/workflow (#163).
-class BulkRecipeUpdateScreen extends StatefulWidget {
-  const BulkRecipeUpdateScreen({super.key});
+class RecipeEditorScreen extends StatefulWidget {
+  const RecipeEditorScreen({super.key});
 
   @override
-  State<BulkRecipeUpdateScreen> createState() => _BulkRecipeUpdateScreenState();
+  State<RecipeEditorScreen> createState() => _RecipeEditorScreenState();
 }
 
-class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
+class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
   // State management
   List<Recipe> _recipesNeedingIngredients = [];
   Recipe? _selectedRecipe;
@@ -859,7 +859,7 @@ class _BulkRecipeUpdateScreenState extends State<BulkRecipeUpdateScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!.bulkRecipeUpdate),
+          title: Text(AppLocalizations.of(context)!.recipeEditor),
           actions: [
             // Progress indicator in app bar
             if (_recipesNeedingIngredients.isNotEmpty)

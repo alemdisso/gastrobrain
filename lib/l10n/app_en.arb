@@ -16,9 +16,9 @@
   "@ingredients": {
     "description": "Tab label for ingredients section"
   },
-  "bulkRecipeUpdate": "Bulk Recipe Update",
-  "@bulkRecipeUpdate": {
-    "description": "Title for bulk recipe update tool screen"
+  "recipeEditor": "Recipe Editor",
+  "@recipeEditor": {
+    "description": "Title for recipe editor tool screen"
   },
   "deleteRecipe": "Delete Recipe",
   "@deleteRecipe": {
@@ -1940,13 +1940,17 @@
   "@toolsScreenSubtitle": {
     "description": "Subtitle for tools screen"
   },
-  "bulkRecipeUpdate": "Bulk Recipe Update",
-  "@bulkRecipeUpdate": {
-    "description": "Title for bulk recipe update tool"
+  "recipeEditor": "Recipe Editor",
+  "@recipeEditor": {
+    "description": "Title for recipe editor tool"
   },
-  "bulkRecipeUpdateDescription": "Update multiple recipes at once with ingredient data and cooking instructions.",
-  "@bulkRecipeUpdateDescription": {
-    "description": "Description for bulk recipe update tool"
+  "recipeEditorDescription": "Edit recipe ingredients and instructions with text parsing tools.",
+  "@recipeEditorDescription": {
+    "description": "Description for recipe editor tool"
+  },
+  "openRecipeEditor": "Open Editor",
+  "@openRecipeEditor": {
+    "description": "Button text to open recipe editor"
   },
   "exportRecipes": "Export Recipes",
   "@exportRecipes": {
