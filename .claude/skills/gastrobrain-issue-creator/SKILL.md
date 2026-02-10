@@ -159,7 +159,7 @@ Is this implementation direction helpful? (y/n/adjust)
 ```
 
 **Technical context guidelines:**
-- Reference specific files when known (lib/screens/, lib/services/, etc.)
+- Reference specific files when known (lib/screens/, lib/core/services/, etc.)
 - Link to similar patterns in codebase
 - Note if database migration needed
 - Mention localization requirements (app_en.arb, app_pt.arb)

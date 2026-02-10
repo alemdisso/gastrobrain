@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gastrobrain/services/shopping_list_service.dart';
+import 'package:gastrobrain/core/services/shopping_list_service.dart';
 import 'package:gastrobrain/models/shopping_list.dart';
 import 'package:gastrobrain/models/shopping_list_item.dart';
 import '../mocks/mock_database_helper.dart';
@@ -66,8 +66,18 @@ void main() {
   group('Exclusion Rule (Salt Rule)', () {
     test('excludes salt with quantity zero', () {
       final ingredients = [
-        {'name': 'Salt', 'quantity': 0.0, 'unit': 'g', 'category': 'Seasonings'},
-        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g', 'category': 'Vegetables'},
+        {
+          'name': 'Salt',
+          'quantity': 0.0,
+          'unit': 'g',
+          'category': 'Seasonings'
+        },
+        {
+          'name': 'Tomato',
+          'quantity': 500.0,
+          'unit': 'g',
+          'category': 'Vegetables'
+        },
       ];
 
       final filtered = service.applyExclusionRule(ingredients);
@@ -78,8 +88,18 @@ void main() {
 
     test('includes salt with quantity greater than zero', () {
       final ingredients = [
-        {'name': 'Salt', 'quantity': 5.0, 'unit': 'g', 'category': 'Seasonings'},
-        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g', 'category': 'Vegetables'},
+        {
+          'name': 'Salt',
+          'quantity': 5.0,
+          'unit': 'g',
+          'category': 'Seasonings'
+        },
+        {
+          'name': 'Tomato',
+          'quantity': 500.0,
+          'unit': 'g',
+          'category': 'Vegetables'
+        },
       ];
 
       final filtered = service.applyExclusionRule(ingredients);
@@ -92,7 +112,12 @@ void main() {
     test('includes non-excluded ingredients with quantity zero', () {
       final ingredients = [
         {'name': 'Oregano', 'quantity': 0.0, 'unit': 'g', 'category': 'Spices'},
-        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g', 'category': 'Vegetables'},
+        {
+          'name': 'Tomato',
+          'quantity': 500.0,
+          'unit': 'g',
+          'category': 'Vegetables'
+        },
       ];
 
       final filtered = service.applyExclusionRule(ingredients);
@@ -104,12 +129,32 @@ void main() {
 
     test('excludes all items in exclusion list when quantity is zero', () {
       final ingredients = [
-        {'name': 'Salt', 'quantity': 0.0, 'unit': 'g', 'category': 'Seasonings'},
+        {
+          'name': 'Salt',
+          'quantity': 0.0,
+          'unit': 'g',
+          'category': 'Seasonings'
+        },
         {'name': 'Water', 'quantity': 0.0, 'unit': 'ml', 'category': 'Liquids'},
         {'name': 'Oil', 'quantity': 0.0, 'unit': 'ml', 'category': 'Fats'},
-        {'name': 'Black Pepper', 'quantity': 0.0, 'unit': 'g', 'category': 'Seasonings'},
-        {'name': 'Sugar', 'quantity': 0.0, 'unit': 'g', 'category': 'Seasonings'},
-        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g', 'category': 'Vegetables'},
+        {
+          'name': 'Black Pepper',
+          'quantity': 0.0,
+          'unit': 'g',
+          'category': 'Seasonings'
+        },
+        {
+          'name': 'Sugar',
+          'quantity': 0.0,
+          'unit': 'g',
+          'category': 'Seasonings'
+        },
+        {
+          'name': 'Tomato',
+          'quantity': 500.0,
+          'unit': 'g',
+          'category': 'Vegetables'
+        },
       ];
 
       final filtered = service.applyExclusionRule(ingredients);
@@ -122,8 +167,18 @@ void main() {
   group('Ingredient Aggregation', () {
     test('aggregates same ingredient with same unit', () {
       final ingredients = [
-        {'name': 'Tomato', 'quantity': 200.0, 'unit': 'g', 'category': 'Vegetables'},
-        {'name': 'Tomato', 'quantity': 300.0, 'unit': 'g', 'category': 'Vegetables'},
+        {
+          'name': 'Tomato',
+          'quantity': 200.0,
+          'unit': 'g',
+          'category': 'Vegetables'
+        },
+        {
+          'name': 'Tomato',
+          'quantity': 300.0,
+          'unit': 'g',
+          'category': 'Vegetables'
+        },
       ];
 
       final aggregated = service.aggregateIngredients(ingredients);
@@ -152,9 +207,24 @@ void main() {
 
     test('aggregates with case-insensitive name matching', () {
       final ingredients = [
-        {'name': 'Tomato', 'quantity': 200.0, 'unit': 'g', 'category': 'Vegetables'},
-        {'name': 'tomato', 'quantity': 300.0, 'unit': 'g', 'category': 'Vegetables'},
-        {'name': 'TOMATO', 'quantity': 100.0, 'unit': 'g', 'category': 'Vegetables'},
+        {
+          'name': 'Tomato',
+          'quantity': 200.0,
+          'unit': 'g',
+          'category': 'Vegetables'
+        },
+        {
+          'name': 'tomato',
+          'quantity': 300.0,
+          'unit': 'g',
+          'category': 'Vegetables'
+        },
+        {
+          'name': 'TOMATO',
+          'quantity': 100.0,
+          'unit': 'g',
+          'category': 'Vegetables'
+        },
       ];
 
       final aggregated = service.aggregateIngredients(ingredients);
@@ -167,7 +237,12 @@ void main() {
     test('keeps incompatible units as separate items', () {
       final ingredients = [
         {'name': 'Flour', 'quantity': 500.0, 'unit': 'g', 'category': 'Grains'},
-        {'name': 'Flour', 'quantity': 2.0, 'unit': 'cups', 'category': 'Grains'},
+        {
+          'name': 'Flour',
+          'quantity': 2.0,
+          'unit': 'cups',
+          'category': 'Grains'
+        },
       ];
 
       final aggregated = service.aggregateIngredients(ingredients);
@@ -194,9 +269,24 @@ void main() {
   group('Category Grouping', () {
     test('groups ingredients by category', () {
       final ingredients = [
-        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g', 'category': 'Vegetables'},
-        {'name': 'Chicken', 'quantity': 600.0, 'unit': 'g', 'category': 'Proteins'},
-        {'name': 'Onion', 'quantity': 200.0, 'unit': 'g', 'category': 'Vegetables'},
+        {
+          'name': 'Tomato',
+          'quantity': 500.0,
+          'unit': 'g',
+          'category': 'Vegetables'
+        },
+        {
+          'name': 'Chicken',
+          'quantity': 600.0,
+          'unit': 'g',
+          'category': 'Proteins'
+        },
+        {
+          'name': 'Onion',
+          'quantity': 200.0,
+          'unit': 'g',
+          'category': 'Vegetables'
+        },
       ];
 
       final grouped = service.groupByCategory(ingredients);
@@ -208,8 +298,18 @@ void main() {
 
     test('handles missing category by defaulting to Other', () {
       final ingredients = [
-        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g', 'category': 'Vegetables'},
-        {'name': 'Mystery Item', 'quantity': 100.0, 'unit': 'g', 'category': null},
+        {
+          'name': 'Tomato',
+          'quantity': 500.0,
+          'unit': 'g',
+          'category': 'Vegetables'
+        },
+        {
+          'name': 'Mystery Item',
+          'quantity': 100.0,
+          'unit': 'g',
+          'category': null
+        },
       ];
 
       final grouped = service.groupByCategory(ingredients);
@@ -221,7 +321,12 @@ void main() {
 
     test('preserves to taste items in grouping', () {
       final ingredients = [
-        {'name': 'Tomato', 'quantity': 500.0, 'unit': 'g', 'category': 'Vegetables'},
+        {
+          'name': 'Tomato',
+          'quantity': 500.0,
+          'unit': 'g',
+          'category': 'Vegetables'
+        },
         {'name': 'Oregano', 'quantity': 0.0, 'unit': 'g', 'category': 'Spices'},
       ];
 

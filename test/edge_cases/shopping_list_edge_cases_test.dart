@@ -1,7 +1,7 @@
 // test/edge_cases/shopping_list_edge_cases_test.dart
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gastrobrain/services/shopping_list_service.dart';
+import 'package:gastrobrain/core/services/shopping_list_service.dart';
 import 'package:gastrobrain/models/shopping_list.dart';
 import 'package:gastrobrain/models/shopping_list_item.dart';
 
@@ -41,11 +41,13 @@ void main() {
         final items = await mockDbHelper.getShoppingListItems(listId);
 
         // Assert: No items returned
-        expect(items, isEmpty, reason: 'Empty shopping list should have no items');
+        expect(items, isEmpty,
+            reason: 'Empty shopping list should have no items');
 
         // Verify list still exists
         final retrievedList = await mockDbHelper.getShoppingList(listId);
-        expect(retrievedList, isNotNull, reason: 'Empty list should still exist');
+        expect(retrievedList, isNotNull,
+            reason: 'Empty list should still exist');
       });
     });
 
@@ -162,7 +164,8 @@ void main() {
         await shoppingListService.toggleItemToBuy(99999);
 
         // Assert: No exception thrown (test completes successfully)
-        expect(true, isTrue, reason: 'Toggle on non-existent item should not crash');
+        expect(true, isTrue,
+            reason: 'Toggle on non-existent item should not crash');
       });
     });
   });

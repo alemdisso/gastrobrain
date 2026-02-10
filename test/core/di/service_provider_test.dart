@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gastrobrain/core/di/service_provider.dart';
-import 'package:gastrobrain/services/shopping_list_service.dart';
+import 'package:gastrobrain/core/services/shopping_list_service.dart';
 
 void main() {
   group('ServiceProvider', () {
