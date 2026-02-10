@@ -1,6 +1,6 @@
-import '../database/database_helper.dart';
-import '../models/shopping_list.dart';
-import '../models/shopping_list_item.dart';
+import '../../database/database_helper.dart';
+import '../../models/shopping_list.dart';
+import '../../models/shopping_list_item.dart';
 import 'package:intl/intl.dart';
 
 class ShoppingListService {
@@ -60,7 +60,8 @@ class ShoppingListService {
   /// - OR have null/invalid required fields
   ///
   /// Returns filtered list of ingredients.
-  List<Map<String, dynamic>> applyExclusionRule(List<Map<String, dynamic>> ingredients) {
+  List<Map<String, dynamic>> applyExclusionRule(
+      List<Map<String, dynamic>> ingredients) {
     return ingredients.where((ingredient) {
       // Skip ingredients with null required fields
       if (ingredient['name'] == null ||
@@ -89,7 +90,8 @@ class ShoppingListService {
   /// Converts to larger unit if quantity >= 1000 (g→kg, ml→L).
   ///
   /// Returns list of aggregated ingredients.
-  List<Map<String, dynamic>> aggregateIngredients(List<Map<String, dynamic>> ingredients) {
+  List<Map<String, dynamic>> aggregateIngredients(
+      List<Map<String, dynamic>> ingredients) {
     // Group by ingredient name (case-insensitive)
     final Map<String, List<Map<String, dynamic>>> nameGroups = {};
 
@@ -136,7 +138,8 @@ class ShoppingListService {
           final itemQuantity = item['quantity'] as double;
 
           // Convert and add
-          final converted = convertToCommonUnit(itemQuantity, unit, existingUnit.toLowerCase());
+          final converted = convertToCommonUnit(
+              itemQuantity, unit, existingUnit.toLowerCase());
           existing['quantity'] = existingQuantity + converted;
         } else {
           // Create new unit group
@@ -169,7 +172,8 @@ class ShoppingListService {
   ///
   /// Takes aggregated ingredients and groups them by category.
   /// Returns a map where keys are category names and values are lists of ingredients.
-  Map<String, List<Map<String, dynamic>>> groupByCategory(List<Map<String, dynamic>> ingredients) {
+  Map<String, List<Map<String, dynamic>>> groupByCategory(
+      List<Map<String, dynamic>> ingredients) {
     final Map<String, List<Map<String, dynamic>>> grouped = {};
 
     for (final ingredient in ingredients) {
@@ -193,7 +197,8 @@ class ShoppingListService {
   /// Each ingredient is a Map with keys: name, quantity, unit, category.
   ///
   /// Does NOT write to database - ephemeral calculation only.
-  Future<Map<String, List<Map<String, dynamic>>>> calculateProjectedIngredients({
+  Future<Map<String, List<Map<String, dynamic>>>>
+      calculateProjectedIngredients({
     required DateTime startDate,
     required DateTime endDate,
   }) async {
@@ -343,7 +348,8 @@ class ShoppingListService {
     final endDateStr = endDate.toIso8601String().split('T')[0];
 
     // 1. Get all meal plans that overlap with the date range
-    final mealPlans = await dbHelper.getMealPlansByDateRange(startDate, endDate);
+    final mealPlans =
+        await dbHelper.getMealPlansByDateRange(startDate, endDate);
 
     // 2. For each meal plan, process its items
     for (final mealPlan in mealPlans) {
@@ -358,13 +364,15 @@ class ShoppingListService {
         }
 
         // 3. Get the recipes for this meal plan item
-        if (item.mealPlanItemRecipes == null || item.mealPlanItemRecipes!.isEmpty) {
+        if (item.mealPlanItemRecipes == null ||
+            item.mealPlanItemRecipes!.isEmpty) {
           continue;
         }
 
         // 4. For each recipe, get its ingredients
         for (final mealPlanItemRecipe in item.mealPlanItemRecipes!) {
-          final ingredients = await dbHelper.getRecipeIngredients(mealPlanItemRecipe.recipeId);
+          final ingredients =
+              await dbHelper.getRecipeIngredients(mealPlanItemRecipe.recipeId);
 
           // 5. Add each ingredient to our list
           allIngredients.addAll(ingredients);

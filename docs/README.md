@@ -105,10 +105,6 @@ Sprint-level planning documents with velocity tracking and issue sequencing.
 
 High-level feature specifications that may span multiple issues.
 
-| Document | Feature | Status |
-|----------|---------|--------|
-| [feature-spec-shopping-list.md](planning/features/feature-spec-shopping-list.md) | Shopping List System | ✅ Complete |
-
 **Naming convention**: `feature-spec-{name}.md`
 
 ---
