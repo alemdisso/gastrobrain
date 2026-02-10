@@ -1,4 +1,4 @@
-// test/integration/shopping_list_integration_test.dart
+// test/services/shopping_list_integration_test.dart
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gastrobrain/core/services/shopping_list_service.dart';

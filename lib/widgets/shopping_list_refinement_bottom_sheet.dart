@@ -82,6 +82,33 @@ class _ShoppingListRefinementBottomSheetState
     });
   }
 
+  /// Check if all items are selected
+  bool _areAllSelected() {
+    if (_checkedState.isEmpty) return false;
+    return _checkedState.values.every((checked) => checked);
+  }
+
+  /// Get checkbox state for tri-state checkbox
+  /// Returns true if all selected, false if none selected, null if some selected
+  bool? _getCheckboxState() {
+    if (_checkedState.isEmpty) return false;
+
+    final selectedCount = _checkedState.values.where((checked) => checked).length;
+
+    if (selectedCount == _checkedState.length) return true;
+    if (selectedCount == 0) return false;
+    return null; // indeterminate
+  }
+
+  /// Toggle between select all and deselect all based on current state
+  void _toggleAll() {
+    if (_areAllSelected()) {
+      _deselectAll();
+    } else {
+      _selectAll();
+    }
+  }
+
   /// Get selected ingredients (only those checked)
   Map<String, List<Map<String, dynamic>>> _getSelectedIngredients() {
     final selected = <String, List<Map<String, dynamic>>>{};
@@ -184,24 +211,14 @@ class _ShoppingListRefinementBottomSheetState
           ),
           const SizedBox(height: DesignTokens.spacingMd),
 
-          // Select All / Deselect All buttons
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: DesignTokens.spacingLg),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                TextButton.icon(
-                  onPressed: _selectAll,
-                  icon: const Icon(Icons.check_box),
-                  label: Text(AppLocalizations.of(context)!.selectAll),
-                ),
-                TextButton.icon(
-                  onPressed: _deselectAll,
-                  icon: const Icon(Icons.check_box_outline_blank),
-                  label: Text(AppLocalizations.of(context)!.deselectAll),
-                ),
-              ],
-            ),
+          // Select/Deselect All toggle
+          CheckboxListTile(
+            tristate: true,
+            value: _getCheckboxState(),
+            onChanged: (_) => _toggleAll(),
+            title: Text(AppLocalizations.of(context)!.selectAll),
+            controlAffinity: ListTileControlAffinity.leading,
+            contentPadding: const EdgeInsets.symmetric(horizontal: DesignTokens.spacingLg),
           ),
           const Divider(height: 1),
 

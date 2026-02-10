@@ -195,7 +195,7 @@ void main() {
       expect(find.textContaining('4 de 4 itens selecionados'), findsOneWidget);
     });
 
-    testWidgets('Deselect All button unchecks all items',
+    testWidgets('Toggle checkbox deselects all items when all are selected',
         (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestWidget(
@@ -209,8 +209,8 @@ void main() {
       // Initially all 4 selected
       expect(find.textContaining('4 de 4 itens selecionados'), findsOneWidget);
 
-      // Tap Deselect All button
-      await tester.tap(find.text('Desmarcar Tudo'));
+      // Tap the tri-state checkbox toggle (when all selected, it deselects all)
+      await tester.tap(find.text('Selecionar Tudo'));
       await tester.pumpAndSettle();
 
       // None should be selected
@@ -228,8 +228,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Deselect all items
-      await tester.tap(find.text('Desmarcar Tudo'));
+      // Deselect all items using tri-state checkbox toggle
+      await tester.tap(find.text('Selecionar Tudo'));
       await tester.pumpAndSettle();
 
       // Try to generate list
