@@ -806,15 +806,15 @@
   "@thisWeekRelative": {
     "description": "Distância temporal relativa para semana atual"
   },
-  "nextWeekRelative": "+1 semana",
+  "nextWeekRelative": "Próxima semana",
   "@nextWeekRelative": {
     "description": "Distância temporal relativa para próxima semana"
   },
-  "previousWeekRelative": "-1 semana",
+  "previousWeekRelative": "Semana passada",
   "@previousWeekRelative": {
     "description": "Distância temporal relativa para semana anterior"
   },
-  "futureWeeksRelative": "+{count} semanas",
+  "futureWeeksRelative": "Daqui a {count} semanas",
   "@futureWeeksRelative": {
     "description": "Distância temporal relativa para semanas futuras",
     "placeholders": {
@@ -824,7 +824,7 @@
       }
     }
   },
-  "pastWeeksRelative": "{count} semanas",
+  "pastWeeksRelative": "Há {count} semanas",
   "@pastWeeksRelative": {
     "description": "Distância temporal relativa para semanas passadas",
     "placeholders": {
