@@ -303,4 +303,137 @@ void main() {
       expect(popupMenuButton.constraints?.minHeight, 36);
     });
   });
+
+  group('Editing Workflow', () {
+    testWidgets('edits servings and saves changes', (WidgetTester tester) async {
+      // Create a meal with specific servings
+      final meal = Meal(
+        id: 'edit-servings-meal',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 3, // Original servings
+        notes: 'Test meal',
+        wasSuccessful: true,
+        actualPrepTime: 15.0,
+        actualCookTime: 25.0,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Tap the menu button - there are 2 meals, we want the second one (our test meal)
+      final menuButtons = find.byIcon(Icons.more_vert);
+      expect(menuButtons, findsWidgets);
+      await tester.tap(menuButtons.last); // Use 'last' to get our test meal, not the setUp meal
+      await tester.pumpAndSettle();
+
+      // Tap Edit
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
+
+      // Find servings field and clear it, then enter new value
+      final servingsField = find.ancestor(
+        of: find.text('Number of Servings'),
+        matching: find.byType(TextFormField),
+      );
+      expect(servingsField, findsOneWidget);
+
+      await tester.tap(servingsField);
+      await tester.pumpAndSettle();
+
+      // Clear existing value and enter new one
+      await tester.enterText(servingsField, '5');
+      await tester.pumpAndSettle();
+
+      // Tap Save Changes button (EditMealRecordingDialog)
+      await tester.tap(find.text('Save Changes'));
+      await tester.pumpAndSettle();
+
+      // Wait for async database operations to complete and screen to rebuild
+      await tester.pumpAndSettle();
+
+      // Verify the meal was updated in the database
+      final updatedMeal = mockDbHelper.meals[meal.id];
+      expect(updatedMeal, isNotNull);
+      expect(updatedMeal!.servings, equals(5),
+          reason: 'Servings should be updated to 5');
+    });
+
+    testWidgets('edits notes and saves changes', (WidgetTester tester) async {
+      // Create a meal with specific notes
+      final meal = Meal(
+        id: 'edit-notes-meal',
+        recipeId: null,
+        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
+        servings: 3,
+        notes: 'Original notes',
+        wasSuccessful: true,
+        actualPrepTime: 15.0,
+        actualCookTime: 25.0,
+      );
+
+      await mockDbHelper.insertMeal(meal);
+      await mockDbHelper.insertMealRecipe(MealRecipe(
+        mealId: meal.id,
+        recipeId: testRecipe.id,
+        isPrimaryDish: true,
+      ));
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          MealHistoryScreen(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Tap the menu button - there are 3 meals now, we want the last one
+      final menuButtons = find.byIcon(Icons.more_vert);
+      expect(menuButtons, findsWidgets);
+      await tester.tap(menuButtons.last);
+      await tester.pumpAndSettle();
+
+      // Tap Edit
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
+
+      // Find notes field and enter new value
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Original notes'),
+        'Updated notes text',
+      );
+      await tester.pumpAndSettle();
+
+      // Tap Save Changes button
+      await tester.tap(find.text('Save Changes'));
+      await tester.pumpAndSettle();
+
+      // Wait for async database operations to complete
+      await tester.pumpAndSettle();
+
+      // Verify the meal was updated in the database
+      final updatedMeal = mockDbHelper.meals[meal.id];
+      expect(updatedMeal, isNotNull);
+      expect(updatedMeal!.notes, equals('Updated notes text'),
+          reason: 'Notes should be updated to new text');
+    });
+  });
 }
