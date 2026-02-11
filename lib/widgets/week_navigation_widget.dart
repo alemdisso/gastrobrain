@@ -52,7 +52,7 @@ class WeekNavigationWidget extends StatelessWidget {
     } else if (distance > 0) {
       return AppLocalizations.of(context)!.futureWeeksRelative(distance);
     } else {
-      return AppLocalizations.of(context)!.pastWeeksRelative(distance);
+      return AppLocalizations.of(context)!.pastWeeksRelative(distance.abs());
     }
   }
 
