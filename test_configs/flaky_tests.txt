@@ -1,0 +1,9 @@
+# List of integration tests to stress test
+# Lines starting with # are comments
+# Paths are relative to integration_test/
+
+# Issue #289 - Intermittent meal editing special characters test
+e2e/e2e_meal_editing_fields_test.dart
+
+# Issue #290 - Intermittent recipe name editing workflow test
+e2e/e2e_recipe_editing_workflow_test.dart

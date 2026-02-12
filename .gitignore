@@ -107,3 +107,6 @@ coverage/
 *.lcov
 devtools_options.yaml
 .claude/settings.local.json
+
+# Test logs from flaky test detection
+test_logs/
