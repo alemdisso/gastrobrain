@@ -9,6 +9,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.8] - 2026-02-12
+
+### Added
+
+#### Testing Infrastructure (#284)
+- Comprehensive flaky test detection framework with automated GitHub Actions workflow
+- Test logging system (`scripts/analyze_test_logs.dart`) for pattern analysis
+- Stress testing capabilities for integration tests (`scripts/stress_test_integration.ps1`)
+- Test execution tracking and failure pattern detection
+- Flaky test configuration in `test_configs/flaky_tests.txt`
+- Test logging documentation in `scripts/README_TEST_LOGGING.md`
+
+#### Meal History Editing (#286)
+- Comprehensive meal history edit tests with full coverage
+- Servings editing functionality tests
+- Notes editing functionality tests
+- Robust validation and error handling tests
+- Edge case coverage for meal history modifications
+
+#### Shopping List Enhancements
+- Improved shopping list service with better projections
+- Enhanced preview bottom sheet with comprehensive tests
+- Enhanced refinement bottom sheet with comprehensive tests
+- Shopping list edge case testing
+
+#### New Skills
+- `gastrobrain-documentation-master`: Comprehensive documentation management skill
+- `gastrobrain-qa-manager`: Systematic test execution and debugging skill
+- Enhanced `gastrobrain-sprint-planner` with retrospective analysis capabilities
+
+### Changed
+
+#### Code Organization
+- Moved `shopping_list_service.dart` to `lib/core/services/` for better organization
+- Renamed `bulk_recipe_update_screen.dart` to `recipe_editor_screen.dart`
+- Reorganized test directory structure (`widget/` → `widgets/`)
+- Updated skill structure with comprehensive templates and examples
+
+#### Week Navigation (#270)
+- Fixed past weeks count calculation using absolute values
+- Improved navigation widget reliability and consistency
+
+### Fixed
+- Week navigation past weeks count bug (#270)
+- Test organization and naming consistency
+
+### Testing
+- All 1,675+ tests passing (100% pass rate)
+- Enhanced test coverage for dialogs and edge cases
+- Improved mock database error simulation
+- Better test organization and helper utilities
+- Added 278 lines of shopping list preview bottom sheet tests
+- Enhanced shopping list refinement tests
+
+### Documentation
+- New test logging documentation (`scripts/README_TEST_LOGGING.md`)
+- Flaky test detection workflow documentation
+- Enhanced architecture documentation
+- Updated workflow documentation
+- Comprehensive skill documentation for QA Manager and Documentation Master
+
+### Technical Details
+- Version: 0.1.8+9
+- Flutter SDK: >=3.4.0 <4.0.0
+- Analysis: All checks passing
+- Test Suite: 100% passing
+
+---
+
 ## [0.1.7] - 2026-02-06
 
 ### Added
