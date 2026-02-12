@@ -1,15 +1,16 @@
 #!/usr/bin/env dart
+
 /// Analyzes integration test logs to identify patterns in intermittent failures
 ///
 /// Usage: dart scripts/analyze_test_logs.dart <log_directory>
 
 import 'dart:io';
-import 'dart:convert';
 
 void main(List<String> args) {
   if (args.isEmpty) {
     print('Usage: dart analyze_test_logs.dart <log_directory>');
-    print('Example: dart analyze_test_logs.dart test_logs/integration_20260211_143022');
+    print(
+        'Example: dart analyze_test_logs.dart test_logs/integration_20260211_143022');
     exit(1);
   }
 
@@ -63,9 +64,7 @@ class TestLogAnalyzer {
 
     totalRuns = logFiles.length;
 
-    for (final logFile in logFiles) {
-      _analyzeLogFile(logFile);
-    }
+    logFiles.forEach(_analyzeLogFile);
   }
 
   void _analyzeLogFile(File logFile) {
@@ -142,7 +141,8 @@ class TestLogAnalyzer {
     for (int i = index; i < lines.length && i < index + 20; i++) {
       final line = lines[i];
       if (line.contains('integration_test/')) {
-        final match = RegExp(r'integration_test/[^\s:]+\.dart').firstMatch(line);
+        final match =
+            RegExp(r'integration_test/[^\s:]+\.dart').firstMatch(line);
         if (match != null) return match.group(0)!;
       }
     }
@@ -216,8 +216,10 @@ class TestLogAnalyzer {
 
       print('🔴 Test: $testName');
       print('   File: ${testFailures.first.fileName}');
-      print('   Failures: ${testFailures.length}/$totalRuns runs ($failureRate%)');
-      print('   Failed on runs: ${testFailures.map((f) => f.runNumber).join(', ')}');
+      print(
+          '   Failures: ${testFailures.length}/$totalRuns runs ($failureRate%)');
+      print(
+          '   Failed on runs: ${testFailures.map((f) => f.runNumber).join(', ')}');
       print('');
       print('   Error:');
       for (final line in testFailures.first.errorMessage.split('\n')) {
@@ -260,7 +262,9 @@ class TestLogAnalyzer {
     print('\n🔍 Checking for tests that fail together...');
     final runFailures = <int, Set<String>>{};
     for (final failure in failures) {
-      runFailures.putIfAbsent(failure.runNumber, () => {}).add(failure.testName);
+      runFailures
+          .putIfAbsent(failure.runNumber, () => {})
+          .add(failure.testName);
     }
 
     final coFailures = <String, int>{};
@@ -283,8 +287,10 @@ class TestLogAnalyzer {
     // Pattern 3: Time-based patterns
     print('\n🔍 Failure distribution...');
     if (failures.length > 1) {
-      final firstFailRun = failures.map((f) => f.runNumber).reduce((a, b) => a < b ? a : b);
-      final lastFailRun = failures.map((f) => f.runNumber).reduce((a, b) => a > b ? a : b);
+      final firstFailRun =
+          failures.map((f) => f.runNumber).reduce((a, b) => a < b ? a : b);
+      final lastFailRun =
+          failures.map((f) => f.runNumber).reduce((a, b) => a > b ? a : b);
       print('   First failure: Run $firstFailRun');
       print('   Last failure: Run $lastFailRun');
       print('   Spread: ${lastFailRun - firstFailRun} runs');
