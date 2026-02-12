@@ -317,27 +317,28 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
   List<Widget> _buildAppBarActions() {
     final actions = <Widget>[];
 
-    // Edit button only on Overview tab (index 2)
-    if (_tabController.index == 2) {
-      actions.add(
-        IconButton(
-          icon: const Icon(Icons.edit),
-          tooltip: AppLocalizations.of(context)!.editRecipe,
-          onPressed: _editRecipe,
-        ),
-      );
-    }
-
-    // Delete button always available via popup menu
+    // Edit and Delete actions available via popup menu on all tabs
     actions.add(
       PopupMenuButton<String>(
         icon: const Icon(Icons.more_vert),
         onSelected: (value) {
-          if (value == 'delete') {
+          if (value == 'edit') {
+            _editRecipe();
+          } else if (value == 'delete') {
             _deleteRecipe();
           }
         },
         itemBuilder: (context) => [
+          PopupMenuItem(
+            value: 'edit',
+            child: Row(
+              children: [
+                const Icon(Icons.edit),
+                const SizedBox(width: 8),
+                Text(AppLocalizations.of(context)!.editRecipe),
+              ],
+            ),
+          ),
           PopupMenuItem(
             value: 'delete',
             child: Row(
@@ -473,7 +474,6 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
             icon: Icons.category,
             label: AppLocalizations.of(context)!.category,
             value: _currentRecipe.category.getLocalizedDisplayName(context),
-            color: Colors.blue,
           ),
           const SizedBox(height: 12),
 
@@ -483,7 +483,6 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
               icon: Icons.star,
               label: AppLocalizations.of(context)!.rating,
               value: '${_currentRecipe.rating}/5',
-              color: Colors.amber,
             ),
           if (_currentRecipe.rating > 0) const SizedBox(height: 12),
 
@@ -492,7 +491,6 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
             icon: Icons.signal_cellular_alt,
             label: AppLocalizations.of(context)!.difficulty,
             value: '${_currentRecipe.difficulty}/5',
-            color: Colors.orange,
           ),
           const SizedBox(height: 12),
 
@@ -502,7 +500,6 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
               icon: Icons.kitchen,
               label: AppLocalizations.of(context)!.prepTimeLabel,
               value: '${_currentRecipe.prepTimeMinutes} ${AppLocalizations.of(context)!.minuteAbbreviation}',
-              color: Colors.green,
             ),
           if (_currentRecipe.prepTimeMinutes > 0) const SizedBox(height: 12),
 
@@ -512,7 +509,6 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
               icon: Icons.whatshot,
               label: AppLocalizations.of(context)!.cookTimeLabel,
               value: '${_currentRecipe.cookTimeMinutes} ${AppLocalizations.of(context)!.minuteAbbreviation}',
-              color: Colors.red,
             ),
           if (_currentRecipe.cookTimeMinutes > 0) const SizedBox(height: 12),
 
@@ -521,7 +517,6 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
             icon: Icons.calendar_today,
             label: AppLocalizations.of(context)!.desiredFrequency,
             value: _currentRecipe.desiredFrequency.getLocalizedDisplayName(context),
-            color: Colors.purple,
           ),
           const SizedBox(height: 20),
 
@@ -552,11 +547,10 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
     required IconData icon,
     required String label,
     required String value,
-    required Color color,
   }) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: color),
+        Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
         const SizedBox(width: 8),
         Text(
           '$label: ',
@@ -567,10 +561,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
         ),
         Text(
           value,
-          style: TextStyle(
-            fontSize: 16,
-            color: color.withValues(alpha: 0.8),
-          ),
+          style: const TextStyle(fontSize: 16),
         ),
       ],
     );
@@ -611,7 +602,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                 effectiveUnitString;
 
         return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           child: ListTile(
             leading: Icon(
               proteinType != null ? Icons.egg_alt : Icons.food_bank,

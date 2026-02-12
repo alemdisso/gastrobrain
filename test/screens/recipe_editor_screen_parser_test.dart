@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-/// Tests for ingredient parsing logic in BulkRecipeUpdateScreen
+/// Tests for ingredient parsing logic in RecipeEditorScreen
 ///
 /// Note: These tests document the expected behavior of the parser.
 /// The actual parser methods are currently private to the widget state.

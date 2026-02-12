@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/ingredient_category.dart';
+import '../models/measurement_unit.dart';
 import '../core/theme/design_tokens.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/quantity_formatter.dart';
@@ -79,6 +80,33 @@ class _ShoppingListRefinementBottomSheetState
         _checkedState[key] = false;
       }
     });
+  }
+
+  /// Check if all items are selected
+  bool _areAllSelected() {
+    if (_checkedState.isEmpty) return false;
+    return _checkedState.values.every((checked) => checked);
+  }
+
+  /// Get checkbox state for tri-state checkbox
+  /// Returns true if all selected, false if none selected, null if some selected
+  bool? _getCheckboxState() {
+    if (_checkedState.isEmpty) return false;
+
+    final selectedCount = _checkedState.values.where((checked) => checked).length;
+
+    if (selectedCount == _checkedState.length) return true;
+    if (selectedCount == 0) return false;
+    return null; // indeterminate
+  }
+
+  /// Toggle between select all and deselect all based on current state
+  void _toggleAll() {
+    if (_areAllSelected()) {
+      _deselectAll();
+    } else {
+      _selectAll();
+    }
   }
 
   /// Get selected ingredients (only those checked)
@@ -183,24 +211,14 @@ class _ShoppingListRefinementBottomSheetState
           ),
           const SizedBox(height: DesignTokens.spacingMd),
 
-          // Select All / Deselect All buttons
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: DesignTokens.spacingLg),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                TextButton.icon(
-                  onPressed: _selectAll,
-                  icon: const Icon(Icons.check_box),
-                  label: Text(AppLocalizations.of(context)!.selectAll),
-                ),
-                TextButton.icon(
-                  onPressed: _deselectAll,
-                  icon: const Icon(Icons.check_box_outline_blank),
-                  label: Text(AppLocalizations.of(context)!.deselectAll),
-                ),
-              ],
-            ),
+          // Select/Deselect All toggle
+          CheckboxListTile(
+            tristate: true,
+            value: _getCheckboxState(),
+            onChanged: (_) => _toggleAll(),
+            title: Text(AppLocalizations.of(context)!.selectAll),
+            controlAffinity: ListTileControlAffinity.leading,
+            contentPadding: const EdgeInsets.symmetric(horizontal: DesignTokens.spacingLg),
           ),
           const Divider(height: 1),
 
@@ -348,7 +366,7 @@ class _ShoppingListRefinementBottomSheetState
                   const SizedBox(width: DesignTokens.spacingMd),
                   // Quantity (fixed width on the right)
                   Text(
-                    _formatQuantity(item),
+                    _formatQuantity(item, context),
                     style: TextStyle(
                       fontSize: 14,
                       color: isChecked
@@ -371,14 +389,18 @@ class _ShoppingListRefinementBottomSheetState
     );
   }
 
-  String _formatQuantity(Map<String, dynamic> item) {
+  String _formatQuantity(Map<String, dynamic> item, BuildContext context) {
     final quantity = item['quantity'] as double;
-    final unit = item['unit'] as String;
+    final unitString = item['unit'] as String;
+
+    // Convert to MeasurementUnit enum and get localized name
+    final measurementUnit = MeasurementUnit.fromString(unitString);
+    final localizedUnit = measurementUnit?.getLocalizedDisplayName(context) ?? unitString;
 
     // Format quantity (handles fractions, whole numbers, decimals)
     final formattedQuantity = QuantityFormatter.format(quantity);
 
-    // Combine with unit
-    return '$formattedQuantity $unit';
+    // Combine with localized unit
+    return '$formattedQuantity $localizedUnit';
   }
 }

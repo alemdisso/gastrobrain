@@ -1,7 +1,7 @@
-// test/integration/shopping_list_integration_test.dart
+// test/services/shopping_list_integration_test.dart
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gastrobrain/services/shopping_list_service.dart';
+import 'package:gastrobrain/core/services/shopping_list_service.dart';
 import 'package:gastrobrain/models/shopping_list.dart';
 import 'package:gastrobrain/models/shopping_list_item.dart';
 
@@ -27,8 +27,8 @@ void main() {
 
     test('generates empty shopping list when no meal plan exists', () async {
       // Arrange: No meal plan data in database
-      final startDate = DateTime(2024, 1, 1);  // Monday
-      final endDate = DateTime(2024, 1, 7);    // Sunday
+      final startDate = DateTime(2024, 1, 1); // Monday
+      final endDate = DateTime(2024, 1, 7); // Sunday
 
       // Act: Generate shopping list
       final shoppingList = await shoppingListService.generateFromDateRange(
@@ -37,14 +37,17 @@ void main() {
       );
 
       // Assert: Shopping list should be created but empty
-      expect(shoppingList.id, isNotNull, reason: 'Shopping list should have an ID');
-      expect(shoppingList.name, contains('Jan'), reason: 'Name should contain month');
+      expect(shoppingList.id, isNotNull,
+          reason: 'Shopping list should have an ID');
+      expect(shoppingList.name, contains('Jan'),
+          reason: 'Name should contain month');
       expect(shoppingList.startDate, equals(startDate));
       expect(shoppingList.endDate, equals(endDate));
 
       // Verify no items were created
       final items = await mockDbHelper.getShoppingListItems(shoppingList.id!);
-      expect(items, isEmpty, reason: 'No items should exist for empty meal plan');
+      expect(items, isEmpty,
+          reason: 'No items should exist for empty meal plan');
     });
 
     test('toggles item purchased status correctly', () async {
@@ -79,7 +82,7 @@ void main() {
       final updatedItem = await mockDbHelper.getShoppingListItem(itemId);
       expect(updatedItem, isNotNull);
       expect(updatedItem!.toBuy, isFalse,
-        reason: 'Item should be marked as not needed');
+          reason: 'Item should be marked as not needed');
 
       // Act: Toggle again
       await shoppingListService.toggleItemToBuy(itemId);
@@ -87,7 +90,7 @@ void main() {
       // Assert: Item should now be "to buy" again
       final reToggledItem = await mockDbHelper.getShoppingListItem(itemId);
       expect(reToggledItem!.toBuy, isTrue,
-        reason: 'Item should be marked as "to buy" after second toggle');
+          reason: 'Item should be marked as "to buy" after second toggle');
     });
 
     test('retrieves shopping list by date range correctly', () async {
@@ -172,20 +175,19 @@ void main() {
       // Verify items exist
       final itemsBeforeDelete = await mockDbHelper.getShoppingListItems(listId);
       expect(itemsBeforeDelete.length, equals(2),
-        reason: 'Should have 2 items before deletion');
+          reason: 'Should have 2 items before deletion');
 
       // Act: Delete the shopping list
       await mockDbHelper.deleteShoppingList(listId);
 
       // Assert: Shopping list is deleted
       final deletedList = await mockDbHelper.getShoppingList(listId);
-      expect(deletedList, isNull,
-        reason: 'Shopping list should be deleted');
+      expect(deletedList, isNull, reason: 'Shopping list should be deleted');
 
       // Assert: Items are also deleted (cascade delete)
       final itemsAfterDelete = await mockDbHelper.getShoppingListItems(listId);
       expect(itemsAfterDelete, isEmpty,
-        reason: 'Items should be deleted with shopping list');
+          reason: 'Items should be deleted with shopping list');
     });
   });
 }

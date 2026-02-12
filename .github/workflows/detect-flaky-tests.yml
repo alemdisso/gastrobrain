@@ -1,0 +1,179 @@
+name: Detect Flaky Integration Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      iterations:
+        description: 'Number of times to run tests'
+        required: true
+        default: '20'
+        type: number
+      specific_test:
+        description: 'Specific test file (optional, e.g., e2e_meal_editing_fields_test.dart)'
+        required: false
+        type: string
+
+jobs:
+  stress-test:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Create log directory
+        run: |
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          echo "LOG_DIR=test_logs/integration_ci_${TIMESTAMP}" >> $GITHUB_ENV
+          mkdir -p $LOG_DIR
+
+      - name: Run integration tests repeatedly
+        run: |
+          ITERATIONS=${{ inputs.iterations }}
+          TEST_PATH="integration_test/"
+
+          if [ -n "${{ inputs.specific_test }}" ]; then
+            TEST_PATH="integration_test/${{ inputs.specific_test }}"
+            echo "Running specific test: $TEST_PATH"
+          else
+            echo "Running all integration tests"
+          fi
+
+          PASSED=0
+          FAILED=0
+
+          for i in $(seq 1 $ITERATIONS); do
+            echo "==================================="
+            echo "Run $i/$ITERATIONS at $(date +%H:%M:%S)"
+            echo "==================================="
+
+            LOG_FILE="${LOG_DIR}/run_${i}_$(date +%H%M%S).log"
+
+            # Run tests and capture output
+            flutter test $TEST_PATH --reporter=expanded 2>&1 | tee "$LOG_FILE"
+            EXIT_CODE=${PIPESTATUS[0]}
+
+            # Add metadata
+            echo "" >> "$LOG_FILE"
+            echo "=== RUN METADATA ===" >> "$LOG_FILE"
+            echo "Run: $i" >> "$LOG_FILE"
+            echo "Exit Code: $EXIT_CODE" >> "$LOG_FILE"
+            echo "Timestamp: $(date --iso-8601=seconds)" >> "$LOG_FILE"
+            echo "CI: true" >> "$LOG_FILE"
+            echo "Runner: ${{ runner.os }}" >> "$LOG_FILE"
+
+            if [ $EXIT_CODE -ne 0 ]; then
+              echo "❌ Run $i FAILED"
+              echo "FAILED" >> "${LOG_DIR}/summary.txt"
+              FAILED=$((FAILED + 1))
+            else
+              echo "✅ Run $i PASSED"
+              echo "PASSED" >> "${LOG_DIR}/summary.txt"
+              PASSED=$((PASSED + 1))
+            fi
+
+            sleep 2
+          done
+
+          echo ""
+          echo "=== STRESS TEST COMPLETE ==="
+          echo "Total: $ITERATIONS | Passed: $PASSED | Failed: $FAILED"
+
+          # Save summary for later steps
+          echo "TOTAL_RUNS=$ITERATIONS" >> $GITHUB_ENV
+          echo "PASSED_RUNS=$PASSED" >> $GITHUB_ENV
+          echo "FAILED_RUNS=$FAILED" >> $GITHUB_ENV
+
+      - name: Analyze logs
+        if: always()
+        run: |
+          echo "Analyzing test logs..."
+          dart scripts/analyze_test_logs.dart $LOG_DIR | tee ${LOG_DIR}/analysis_report.txt
+
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-logs
+          path: ${{ env.LOG_DIR }}
+          retention-days: 30
+
+      - name: Create summary
+        if: always()
+        run: |
+          echo "## 🧪 Flaky Test Detection Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Configuration:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Iterations: ${{ inputs.iterations }}" >> $GITHUB_STEP_SUMMARY
+
+          if [ -n "${{ inputs.specific_test }}" ]; then
+            echo "- Test: \`${{ inputs.specific_test }}\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- Test: All integration tests" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Results:**" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Passed: ${{ env.PASSED_RUNS }}/${{ env.TOTAL_RUNS }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ❌ Failed: ${{ env.FAILED_RUNS }}/${{ env.TOTAL_RUNS }}" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ env.FAILED_RUNS }}" -gt 0 ]; then
+            RATE=$(awk "BEGIN {printf \"%.1f\", (${{ env.FAILED_RUNS }} / ${{ env.TOTAL_RUNS }}) * 100}")
+            echo "- 📊 Failure Rate: ${RATE}%" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ **Flakiness detected!** Check the uploaded artifacts for detailed analysis." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **No failures detected** - Tests appear stable!" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📥 Download the \`integration-test-logs\` artifact for detailed logs and analysis report." >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment on related issues
+        if: env.FAILED_RUNS > 0 && github.event.inputs.specific_test != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const failureRate = (${{ env.FAILED_RUNS }} / ${{ env.TOTAL_RUNS }} * 100).toFixed(1);
+            const testFile = '${{ inputs.specific_test }}';
+
+            // Find issues mentioning this test file
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'testing,bug'
+            });
+
+            const comment = `## 🔬 Flaky Test Detection Results
+
+**Test:** \`${testFile}\`
+**Iterations:** ${{ inputs.iterations }}
+**Results:** ${{ env.FAILED_RUNS }} failures / ${{ env.TOTAL_RUNS }} runs (**${failureRate}%** failure rate)
+
+📊 Detailed analysis available in [workflow run artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+*Automated comment from flaky test detection workflow*`;
+
+            for (const issue of issues.data) {
+              if (issue.body && issue.body.includes(testFile)) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: comment
+                });
+                console.log(`Posted results to issue #${issue.number}`);
+              }
+            }

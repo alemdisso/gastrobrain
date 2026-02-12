@@ -274,10 +274,10 @@
 ### Files Modified
 - `lib/screens/[screen_name].dart` - [Change summary: XXX → XXX lines]
 - `lib/widgets/[widget_name].dart` - [Change summary: XXX → XXX lines]
-- `lib/services/[service_name].dart` - [Change summary: XXX → XXX lines]
+- `lib/core/services/[service_name].dart` - [Change summary: XXX → XXX lines]
 
 ### Files Created
-- `lib/services/[new_service_name].dart` - [Purpose, XXX lines]
+- `lib/core/services/[new_service_name].dart` - [Purpose, XXX lines]
 - `lib/models/[new_model_name].dart` - [Purpose, XXX lines]
 - `test/services/[new_service_name]_test.dart` - [Test coverage, XXX lines]
 

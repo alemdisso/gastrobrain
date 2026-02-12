@@ -168,7 +168,8 @@ class _ToolsScreenState extends State<ToolsScreen> {
           controller: filePathController,
           decoration: InputDecoration(
             labelText: l10n.backupFilePath,
-            hintText: '/sdcard/Download/gastrobrain_backup_2024-12-04_120000.json',
+            hintText:
+                '/sdcard/Download/gastrobrain_backup_2024-12-04_120000.json',
           ),
           autofocus: true,
         ),
@@ -356,7 +357,8 @@ class _ToolsScreenState extends State<ToolsScreen> {
 
     // Get JSON file path from user
     final filePathController = TextEditingController(
-        text: 'assets/recipe_export_1762460315862.json'); // Pre-fill with bundled asset
+        text:
+            'assets/recipe_export_1762460315862.json'); // Pre-fill with bundled asset
     final jsonFilePath = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
@@ -476,13 +478,15 @@ class _ToolsScreenState extends State<ToolsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(hasErrors ? 'Import Completed with Errors' : 'Import Successful'),
+        title: Text(
+            hasErrors ? 'Import Completed with Errors' : 'Import Successful'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!hasErrors)
-              const Text('All recipes and ingredients have been imported successfully!'),
+              const Text(
+                  'All recipes and ingredients have been imported successfully!'),
             if (hasErrors)
               const Text('Import completed but some errors occurred.'),
             const SizedBox(height: 16),
@@ -502,7 +506,8 @@ class _ToolsScreenState extends State<ToolsScreen> {
                 child: SingleChildScrollView(
                   child: Text(
                     result.errors.join('\n'),
-                    style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                    style:
+                        const TextStyle(fontSize: 12, fontFamily: 'monospace'),
                   ),
                 ),
               ),
@@ -530,8 +535,8 @@ class _ToolsScreenState extends State<ToolsScreen> {
           Text(
             title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
         ],
       ),
@@ -551,285 +556,315 @@ class _ToolsScreenState extends State<ToolsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-            Text(
-              l10n.toolsScreenTitle,
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.toolsScreenSubtitle,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+              Text(
+                l10n.toolsScreenTitle,
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                l10n.toolsScreenSubtitle,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+
+              // Recipe Management Section
+              _buildSectionHeader(l10n.recipeManagement, Icons.restaurant_menu),
+
+              // Recipe Editor
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.edit_note,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              l10n.recipeEditor,
+                              style: Theme.of(context).textTheme.titleMedium,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(l10n.recipeEditorDescription),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).pushNamed('/recipe-editor');
+                          },
+                          icon: const Icon(Icons.edit_outlined),
+                          label: Text(l10n.openRecipeEditor),
+                        ),
+                      ),
+                    ],
                   ),
-            ),
-
-            // Recipe Management Section
-            _buildSectionHeader(l10n.recipeManagement, Icons.restaurant_menu),
-
-            // Bulk Recipe Update
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.edit_note,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          l10n.bulkRecipeUpdate,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(l10n.bulkRecipeUpdateDescription),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.of(context).pushNamed('/bulk-recipe-update');
-                        },
-                        icon: const Icon(Icons.edit_outlined),
-                        label: const Text('Open Bulk Update'),
-                      ),
-                    ),
-                  ],
                 ),
               ),
-            ),
 
-            // Data Management Section
-            _buildSectionHeader(l10n.dataManagement, Icons.storage),
+              // Data Management Section
+              _buildSectionHeader(l10n.dataManagement, Icons.storage),
 
-            // Database Backup
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.backup,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          l10n.databaseBackup,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(l10n.backupDescription),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _isBackingUp ? null : _backupDatabase,
-                        icon: _isBackingUp
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.backup),
-                        label: Text(_isBackingUp ? l10n.backingUp : l10n.backupAllData),
+              // Database Backup
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.backup,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.databaseBackup,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(l10n.restoreDescription),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _isRestoring ? null : _restoreDatabase,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.errorContainer,
-                          foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
+                      const SizedBox(height: 8),
+                      Text(l10n.backupDescription),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _isBackingUp ? null : _backupDatabase,
+                          icon: _isBackingUp
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.backup),
+                          label: Text(_isBackingUp
+                              ? l10n.backingUp
+                              : l10n.backupAllData),
                         ),
-                        icon: _isRestoring
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.restore),
-                        label: Text(_isRestoring ? l10n.restoring : l10n.restoreFromBackup),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Divider(),
-                    const SizedBox(height: 16),
-                    Text(l10n.importRecipesDescription),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _isImportingRecipes ? null : _importRecipes,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                          foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                      const SizedBox(height: 12),
+                      Text(l10n.restoreDescription),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _isRestoring ? null : _restoreDatabase,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                Theme.of(context).colorScheme.errorContainer,
+                            foregroundColor:
+                                Theme.of(context).colorScheme.onErrorContainer,
+                          ),
+                          icon: _isRestoring
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.restore),
+                          label: Text(_isRestoring
+                              ? l10n.restoring
+                              : l10n.restoreFromBackup),
                         ),
-                        icon: _isImportingRecipes
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.file_upload),
-                        label: Text(_isImportingRecipes ? 'Importing...' : l10n.importRecipes),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      const Divider(),
+                      const SizedBox(height: 16),
+                      Text(l10n.importRecipesDescription),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed:
+                              _isImportingRecipes ? null : _importRecipes,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context)
+                                .colorScheme
+                                .secondaryContainer,
+                            foregroundColor: Theme.of(context)
+                                .colorScheme
+                                .onSecondaryContainer,
+                          ),
+                          icon: _isImportingRecipes
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.file_upload),
+                          label: Text(_isImportingRecipes
+                              ? 'Importing...'
+                              : l10n.importRecipes),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // Recipe Export
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.file_download,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          l10n.exportRecipes,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(l10n.exportRecipesDescription),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _isExportingRecipes ? null : _exportRecipes,
-                        icon: _isExportingRecipes
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.download),
-                        label: Text(_isExportingRecipes ? 'Exporting...' : l10n.exportRecipes),
+              // Recipe Export
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.file_download,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.exportRecipes,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Ingredient Export
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.local_grocery_store,
-                          color: Theme.of(context).colorScheme.primary,
+                      const SizedBox(height: 8),
+                      Text(l10n.exportRecipesDescription),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed:
+                              _isExportingRecipes ? null : _exportRecipes,
+                          icon: _isExportingRecipes
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.download),
+                          label: Text(_isExportingRecipes
+                              ? 'Exporting...'
+                              : l10n.exportRecipes),
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          l10n.exportIngredients,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(l10n.exportIngredientsDescription),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _isExportingIngredients ? null : _exportIngredients,
-                        icon: _isExportingIngredients
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.download),
-                        label: Text(_isExportingIngredients ? 'Exporting...' : l10n.exportIngredients),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // Info Section
-            Card(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.info_outline,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+              // Ingredient Export
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.local_grocery_store,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.exportIngredients,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(l10n.exportIngredientsDescription),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _isExportingIngredients
+                              ? null
+                              : _exportIngredients,
+                          icon: _isExportingIngredients
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.download),
+                          label: Text(_isExportingIngredients
+                              ? 'Exporting...'
+                              : l10n.exportIngredients),
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Export Information',
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Recipe Export:\n'
-                      '• Complete ingredient data (quantities, units, categories)\n'
-                      '• Current ingredients show existing recipe compositions\n'
-                      '• Enhanced ingredients array ready for external editing\n\n'
-                      'Ingredient Export:\n'
-                      '• All ingredients with categories, units, protein types\n'
-                      '• Master ingredient list for external management\n'
-                      '• Useful for ingredient database maintenance\n\n'
-                      'Backup & Restore:\n'
-                      '• Complete database backup to Downloads folder\n'
-                      '• Restore from previous backups\n'
-                      '• Import recipes and ingredients from JSON\n\n'
-                      'General:\n'
-                      '• Files saved to Downloads folder with timestamp\n'
-                      '• Use exported data with import utilities',
-                      style: TextStyle(fontSize: 12),
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+
+              const SizedBox(height: 16),
+
+              // Info Section
+              Card(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Export Information',
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Recipe Export:\n'
+                        '• Complete ingredient data (quantities, units, categories)\n'
+                        '• Current ingredients show existing recipe compositions\n'
+                        '• Enhanced ingredients array ready for external editing\n\n'
+                        'Ingredient Export:\n'
+                        '• All ingredients with categories, units, protein types\n'
+                        '• Master ingredient list for external management\n'
+                        '• Useful for ingredient database maintenance\n\n'
+                        'Backup & Restore:\n'
+                        '• Complete database backup to Downloads folder\n'
+                        '• Restore from previous backups\n'
+                        '• Import recipes and ingredients from JSON\n\n'
+                        'General:\n'
+                        '• Files saved to Downloads folder with timestamp\n'
+                        '• Use exported data with import utilities',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }

@@ -66,18 +66,21 @@ Time: ~15-20 min
 
 ---
 
+#### [Sprint Planner](gastrobrain-sprint-planner/)
+**Data-driven sprint planning and retrospective analysis**
+
+```
+Triggers: "Help me plan sprint 0.1.X", "plan next sprint", "Sprint review for 0.1.X", "retrospective for last sprint", "generate diary entry for 0.1.X"
+Planning: Analyze issues → velocity-based capacity → sequencing → risk assessment
+Retrospective: Data Gathering → Developer Interview → Estimation Analysis → Pattern Recognition → Lessons & Documentation (5 checkpoints)
+Time: Planning ~30-60 min, Retrospective ~40 min
+```
+
+**Why it works:** Closes the sprint lifecycle loop — plan, execute, review, plan next. Developer interview prevents misattributing fast execution to bad estimates. Balanced framing credits genuine efficiency.
+
+---
+
 ### 📋 Skills with Creation Prompts (Ready to Implement)
-
-#### Sprint Planning Skill
-**Not yet implemented - creation prompt available**
-
-```
-Purpose: Sprint capacity planning with velocity insights
-Triggers: "Help me plan sprint 0.1.X", "plan next sprint"
-Approach: Analyze issues → velocity-based capacity → sequencing → risk assessment
-```
-
-**Status:** Creation prompt exists, skill implementation pending
 
 #### Issue Roadmap Skill
 **Not yet implemented - creation prompt available**
@@ -228,8 +231,8 @@ For comprehensive overview including:
 - **Success metrics and guidelines**
 
 ### Skills Status
-- ✅ **Implemented** (4): UX Design, Testing, Database Migration, Code Review
-- 📋 **Creation prompts ready** (2): Sprint Planning, Issue Roadmap
+- ✅ **Implemented** (5): UX Design, Testing, Database Migration, Code Review, Sprint Planner
+- 📋 **Creation prompts ready** (1): Issue Roadmap
 - 🔮 **Planned** (4): Localization, UI Component, Service/Repository, Refactoring, Issue Closing
 
 See: [**Skills Master Index**](../../docs/architecture/gastrobrain-skills-master-index.md)
@@ -296,4 +299,4 @@ Each skill directory contains:
 
 **Version:** 1.1.0
 **Last Updated:** January 2026
-**Skills Implemented:** 4/10 (UX Design, Testing, Database, Code Review)
+**Skills Implemented:** 5/10 (UX Design, Testing, Database, Code Review, Sprint Planner)

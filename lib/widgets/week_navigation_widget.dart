@@ -52,7 +52,7 @@ class WeekNavigationWidget extends StatelessWidget {
     } else if (distance > 0) {
       return AppLocalizations.of(context)!.futureWeeksRelative(distance);
     } else {
-      return AppLocalizations.of(context)!.pastWeeksRelative(distance);
+      return AppLocalizations.of(context)!.pastWeeksRelative(distance.abs());
     }
   }
 
@@ -104,93 +104,75 @@ class WeekNavigationWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final formattedDate =
-        '${weekStartDate.day}/${weekStartDate.month}/${weekStartDate.year}';
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Column(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Row 1: Navigation arrows + Week date + Context badge
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.chevron_left),
-                onPressed: onPreviousWeek,
-                tooltip: AppLocalizations.of(context)!.previousWeek,
-              ),
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      AppLocalizations.of(context)!.weekOf(formattedDate),
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                    const SizedBox(width: 8),
-                    // Simplified context badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: _getContextColor(context).withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(DesignTokens.spacingXs),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            _getContextIcon(),
-                            size: 14,
-                            color: _getContextTextColor(context),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            timeContext.getLocalizedDisplayName(context),
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(
-                                  color: _getContextTextColor(context),
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.chevron_right),
-                onPressed: onNextWeek,
-                tooltip: AppLocalizations.of(context)!.nextWeek,
-              ),
-            ],
+          IconButton(
+            icon: const Icon(Icons.chevron_left),
+            onPressed: onPreviousWeek,
+            tooltip: AppLocalizations.of(context)!.previousWeek,
           ),
-
-          // Row 2: Relative time + Jump button (conditional)
-          if (timeContext != TimeContext.current)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const SizedBox(width: 48), // Align with left arrow
-                  Text(
-                    _getRelativeTimeDistance(context),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Context badge with combined message
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: _getContextColor(context).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(DesignTokens.spacingXs),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.home, size: 20),
-                    onPressed: onJumpToCurrentWeek,
-                    tooltip: AppLocalizations.of(context)!.tapToJumpToCurrentWeek,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _getContextIcon(),
+                        size: 16,
+                        color: _getContextTextColor(context),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        _getRelativeTimeDistance(context),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(
+                              color: _getContextTextColor(context),
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 8),
+                // Today button - always visible, disabled when on current week
+                IconButton(
+                  icon: Icon(
+                    Icons.today,
+                    size: 20,
+                    color: timeContext == TimeContext.current
+                        ? Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.3)
+                        : null,
+                  ),
+                  onPressed: timeContext == TimeContext.current ? null : onJumpToCurrentWeek,
+                  tooltip: timeContext == TimeContext.current
+                      ? null
+                      : AppLocalizations.of(context)!.tapToJumpToCurrentWeek,
+                  padding: const EdgeInsets.all(4),
+                  constraints: const BoxConstraints(),
+                ),
+              ],
             ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.chevron_right),
+            onPressed: onNextWeek,
+            tooltip: AppLocalizations.of(context)!.nextWeek,
+          ),
         ],
       ),
     );

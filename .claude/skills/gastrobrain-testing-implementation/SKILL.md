@@ -160,16 +160,16 @@ Lines: [approximate line numbers or "new file"]
 
 ✓ Test code added
 
-Run: flutter test [specific test command]
+[Execute test using Bash tool - user will approve via permission prompt]
+[Use: flutter test [specific test command]]
+[Tool will show output - if test passes, continue; if fails, debug]
 
-Does the test pass? (y/n)
-
-[STOP - WAIT for user response - DO NOT PROCEED]
+[WAIT for test execution result]
 ```
 
 ### Phase 4: Response Handling
 
-**If user responds "y" (test passes):**
+**If test passes (Bash tool shows success):**
 
 ```
 ✓ TEST X/Y complete
@@ -183,37 +183,30 @@ Ready for TEST (X+1)/Y? (y/n)
 🎉 All Y tests complete!
 
 Final verification:
-Run: flutter test [full test file path]
-
-Do all tests pass together? (y/n)
+[Execute full test file using Bash tool]
 ```
 
-**If user responds "n" (test fails):**
+**If test fails (Bash tool shows error):**
 
 ```
-❌ TEST X/Y failed - Let's debug before continuing
+❌ TEST X/Y failed - Let's debug
+
+[Analyze error output from Bash tool]
 
 Common issues for [test type]:
 1. [Common issue 1]
 2. [Common issue 2]
 3. [Common issue 3]
 
-What error message do you see?
-[WAIT for user input]
-
-[After receiving error:]
-The issue is: [diagnosis]
+Diagnosis: [Based on actual error message]
 
 Fix:
 [Provide corrected test code OR specific fix instructions]
 
-Try the fixed version:
-Run: flutter test [specific test command]
+[Execute fixed test using Bash tool to verify]
 
-Does it pass now? (y/n)
-
-[If still no, continue debugging]
-[If yes, proceed to next test]
+[If still fails, continue debugging]
+[If passes, proceed to next test]
 ```
 
 ## Learning Between Tests

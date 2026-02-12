@@ -141,10 +141,10 @@
 ### Existing Files to Refactor
 - `lib/screens/[screen_name].dart` - [Change description]
 - `lib/widgets/[widget_name].dart` - [Change description]
-- `lib/services/[service_name].dart` - [Change description]
+- `lib/core/services/[service_name].dart` - [Change description]
 
 ### New Files to Create
-- `lib/services/[new_service_name].dart` - [Purpose]
+- `lib/core/services/[new_service_name].dart` - [Purpose]
 - `lib/models/[new_model_name].dart` - [Purpose]
 - `test/services/[new_service_name]_test.dart` - [Test coverage]
 

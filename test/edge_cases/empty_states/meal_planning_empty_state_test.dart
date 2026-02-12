@@ -86,8 +86,7 @@ void main() {
           reason: 'Empty meal slots should show "Add meal" text');
     });
 
-    testWidgets('shows correct app bar title',
-        (WidgetTester tester) async {
+    testWidgets('shows correct app bar title', (WidgetTester tester) async {
       // Build the WeeklyPlanScreen
       await tester.pumpWidget(buildWeeklyPlanScreen());
       await tester.pumpAndSettle();
@@ -97,8 +96,7 @@ void main() {
           reason: 'App bar should show correct title');
     });
 
-    testWidgets('shows refresh button in app bar',
-        (WidgetTester tester) async {
+    testWidgets('shows refresh button in app bar', (WidgetTester tester) async {
       // Build the WeeklyPlanScreen
       await tester.pumpWidget(buildWeeklyPlanScreen());
       await tester.pumpAndSettle();
@@ -134,8 +132,7 @@ void main() {
           reason: 'Empty slots should show add meal text');
     });
 
-    testWidgets('shows week navigation controls',
-        (WidgetTester tester) async {
+    testWidgets('shows week navigation controls', (WidgetTester tester) async {
       // Build the WeeklyPlanScreen
       await tester.pumpWidget(buildWeeklyPlanScreen());
       await tester.pumpAndSettle();
@@ -166,7 +163,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify Portuguese app bar title
-      expect(find.text('Planejamento Semanal de Refeições'), findsOneWidget,
+      expect(find.text('Refeições da Semana'), findsOneWidget,
           reason: 'App bar title should be in Portuguese');
 
       // Verify Portuguese "Add meal" text
@@ -303,8 +300,7 @@ void main() {
           reason: 'Empty state should remain after rapid navigation');
     });
 
-    testWidgets('empty meal slots are tappable',
-        (WidgetTester tester) async {
+    testWidgets('empty meal slots are tappable', (WidgetTester tester) async {
       // Build the WeeklyPlanScreen
       await tester.pumpWidget(buildWeeklyPlanScreen());
       await tester.pumpAndSettle();

@@ -34,20 +34,36 @@ The script outputs:
 - **Working Days Summary** - Utilization and date range
 - **Daily Activity** - Visual timeline of work
 
-### 3. Attribute Untagged Commits
+### 3. Interview the Developer (CRITICAL)
+
+Before interpreting data, **ask the developer** about aspects commits don't capture:
+- **Sprint boundaries:** Confirm actual start/end dates (commits are a proxy, not the truth)
+- **Hidden work:** Device testing, design thinking, planning, debugging that left no commit trace
+- **Rest days vs no-commit work days:** A day without commits may have been research, testing, or rest
+- **Milestone transitions:** How did sprints overlap? Was there a deliberate handoff or continuous flow?
+- **Unplanned work context:** Why did emergent issues appear? UX feedback loop? Bug discovery? Scope evolution?
+- **Efficiency drivers:** What went well? New skills applied? Pattern reuse? Better tooling?
+- **Blockers or friction:** Anything that slowed down but doesn't show in data?
+
+This step prevents the analyst from guessing at context and attributing fast execution solely to overestimation when genuine efficiency may be a factor.
+
+### 4. Attribute Untagged Commits
 
 Review untagged commits and mentally assign them to issues based on commit message content. Common patterns:
 - Test commits without `#number` often belong to nearby tagged test issues
 - Merge commits can be ignored
 - Doc/style commits may be general maintenance
 
-### 4. Compare with Estimates
+### 5. Compare with Estimates
 
-Cross-reference actual days with estimates from sprint planning doc to calculate ratios.
+Cross-reference actual days with estimates from sprint planning doc or GitHub Project fields (Size/Estimate columns) to calculate ratios.
 
-### 5. Document in This File
+### 6. Document in This File
 
-Add a new section under "Sprint Reviews" following the 0.1.2 template.
+Add a new section under "Sprint Reviews" following the 0.1.2 template. When writing the analysis:
+- **Balance overestimation vs efficiency** — fast execution can be both; acknowledge genuine skill gains
+- **Distinguish work types** — design system, features, testing, and polish have different velocity profiles
+- **Frame emergent work contextually** — UX feedback is a healthy product cycle, not just "unplanned work"
 
 ---
 
@@ -782,6 +798,253 @@ Jan 9:  █████████ #199 (508), #251 (6), plus cleanup (2187 lin
 - Jan 9 had exceptionally high line count due to roadmap deletions (not implementation)
 - **Revised analysis:** Initial estimate was 1.69x (1 day overhead), corrected to 1.98x (2 days overhead: 70% on #199 testing, 30% on #251 UI)
 
+### 0.1.7a - Visual Foundation
+
+**Sprint Duration:** January 30, 2026
+**Calendar Days:** 1
+**Active Working Days:** 1 (shared with start of 0.1.7b work)
+**Planned Issues:** 3
+**Completed Issues:** 3
+
+#### Estimation vs Actual
+
+| Issue | Title | Type | Est Points | Weighted Actual | Lines | Ratio | Assessment |
+|-------|-------|------|------------|-----------------|-------|-------|------------|
+| #255 | Define visual identity & design principles | Design | 5 | 0.07* | 565 | 0.01x | ⚡ Very fast |
+| #256 | Create design tokens system | Design | 8 | 0.07* | 565 | 0.01x | ⚡ Very fast |
+| #257 | Implement ThemeData configuration | Implementation | 8 | 0.17* | 1379 | 0.02x | ⚡ Very fast |
+| **TOTAL** | | | **21** | **0.31** | **2509** | **0.01x** | |
+
+*\* Heavily weighted down because Jan 30 was shared with #258 (0.1.7b) which dominated line count (69% of day)*
+
+**Note on methodology:** The weighted-days method significantly underrepresents 0.1.7a effort because #258 prep work (refactoring extractions, skill creation, analysis docs — 5489 lines) started on the same day. Realistically, the 3 foundation issues took approximately half a day of focused effort, with #255 and #256 completed in a single commit.
+
+#### Accuracy by Type (Weighted)
+
+| Type | Issues | Est Total | Weighted Actual | Avg Ratio | Verdict |
+|------|--------|-----------|-----------------|-----------|---------|
+| Design/Docs | #255, #256 | 13 | 0.14 | 0.01x | ⚡ Extremely fast (single commit) |
+| Implementation | #257 | 8 | 0.17 | 0.02x | ⚡ Very fast (well-prepared) |
+
+**Overall:** Foundation milestone completed in a single day. The low ratio reflects both conservative estimates for a new work type AND genuine efficiency — the visual identity was well-conceptualized, enabling a clean design → tokens → ThemeData flow with no iteration or rework.
+
+#### Variance Analysis
+
+**All Issues Extremely Fast:**
+
+**#255 + #256 (Visual identity + design tokens)** — Estimated: 13 points → Actual: same commit
+- Root cause: These were conceptually a single task — defining the visual identity naturally produces the design tokens
+- Single commit `5a8f0c2` covered both issues
+- Lesson: Conceptually linked design tasks should be estimated as a unit, not separately
+
+**#257 (ThemeData configuration)** — Estimated: 8 points → Actual: ~0.17 weighted days
+- Straightforward implementation once tokens were defined
+- Flutter's ThemeData API maps directly to design tokens
+- Lesson: ThemeData implementation is mechanical once design tokens exist — estimate as 1-2 points, not 8
+
+#### Working Pattern Observations
+
+```
+Jan 30:  ████ #255+#256 (565), #257 (1379) → then immediately started #258 prep
+```
+
+**Patterns:**
+- All 3 foundation issues completed before noon
+- #258 (0.1.7b) prep work started same day — no gap between milestones
+- Design → tokens → ThemeData was a natural sequential flow
+- Single-day milestone enabled immediate transition to screen polish
+
+#### Lessons Learned
+
+1. **Design foundation estimates need calibration for this project**
+   - 21 points across 3 issues for what was ~0.5 days of focused work
+   - Part overestimation (new work type, no prior data), part genuine efficiency (clear vision, no iteration)
+   - The visual identity was well-conceptualized before sitting down to implement
+   - Lesson: Estimate design foundation as a single 3-5 point unit; recognize that clear creative vision enables fast execution
+
+2. **Linked design tasks should be estimated together**
+   - #255 and #256 were literally one commit
+   - Separate 5pt + 8pt estimates for what was a single deliverable
+   - Lesson: When issues share the same deliverable, estimate as one
+
+3. **Clean design → implementation pipeline is highly efficient**
+   - Once design tokens were defined, ThemeData was direct translation
+   - No back-and-forth between design and code — the pipeline flowed naturally
+   - Lesson: Distinguish "creative design" from "mechanical translation"; invest in clear design upfront
+
+4. **Zero gap between milestones is efficient**
+   - Transitioning immediately from 0.1.7a to 0.1.7b avoided context loss
+   - Foundation work + immediate application is highly productive
+   - Lesson: Sequential milestones with natural flow don't need buffer days
+
+#### Recommendations for Future Sprints
+
+| Finding | Adjustment |
+|---------|------------|
+| Design foundation massively overestimated (0.01x) | Estimate linked design tasks as single 3-5 point unit |
+| Linked issues = single commit | Don't separate tightly-coupled design tasks |
+| ThemeData is mechanical translation | Estimate at 1-2 points when tokens already defined |
+| Zero-gap milestone transition works well | Plan sequential milestones with natural flow |
+
+#### Notes
+
+- Milestone effectively completed in half a day
+- All 3 issues were tightly coupled and could have been a single issue
+- #258 (0.1.7b) prep work began immediately on same day
+- Design tokens and ThemeData became the foundation for all subsequent 0.1.7b work
+- No unplanned work — scope was perfectly contained
+
+### 0.1.7b - Screen & Component Polish
+
+**Sprint Duration:** January 30 - February 6, 2026
+**Calendar Days:** 8
+**Active Working Days:** 7 (Jan 30, 31, Feb 1, 2, 3, 5, 6; 88% utilization)
+**Planned Issues:** 5 (31 points)
+**Completed Issues:** 8 (5 planned + 3 unplanned)
+
+#### Estimation vs Actual
+
+| Issue | Title | Type | Est Points | Weighted Actual | Lines | Ratio | Assessment |
+|-------|-------|------|------------|-----------------|-------|-------|------------|
+| #258 | Polish weekly meal planning screen | UI/UX | 8 | 3.27* | 18717 | 0.41x | ⚡ Faster |
+| #259 | Polish recipe list screen | UI/UX | 5 | 0.42* | 510 | 0.08x | ⚡ Very fast |
+| #260 | Standardize button styles | UI | 5 | 0.29* | 632 | 0.06x | ⚡ Very fast |
+| #261 | Standardize form input styles | UI | 8 | 0.31* | 677 | 0.04x | ⚡ Very fast |
+| #262 | Standardize navigation styles | UI | 5 | 1.0 | 1579 | 0.20x | ⚡ Faster |
+| #266 | Shopping list preview (Stage 1) | Feature | 5 | 0.93* | 1704 | 0.19x | 📋 Unplanned |
+| #267 | Shopping list refinement (Stage 2) | Feature | 5 | 0.40* | 856 | 0.08x | 📋 Unplanned |
+| #269 | Shopping list overflow fix | Bug | 2 | 0.07* | 134 | 0.04x | 📋 Unplanned |
+| **TOTAL** | | | **43** | **6.69** | **24809** | **0.16x** | |
+
+*\* Weighted by lines changed when sharing day with other issues*
+
+**Note:** #258 work started on Jan 30 (shared with 0.1.7a). Its 3.27 weighted days span Jan 30-Feb 2 (2.69 days Jan 30-Feb 1 + 0.58 days Feb 2). Issues #266, #267, #269 were unplanned additions that emerged during implementation.
+
+#### Accuracy by Type (Weighted)
+
+| Type | Issues | Est Total | Weighted Actual | Avg Ratio | Verdict |
+|------|--------|-----------|-----------------|-----------|---------|
+| Screen Polish | #258, #259 | 13 | 3.69 | 0.28x | ⚡ Faster (but #258 was massive effort) |
+| Component Standardization | #260, #261, #262 | 18 | 1.60 | 0.09x | ⚡ Extremely fast |
+| Unplanned Features | #266, #267 | 10 | 1.33 | 0.13x | ⚡ Very fast (built on existing patterns) |
+| Unplanned Bug Fix | #269 | 2 | 0.07 | 0.04x | ⚡ Trivial fix |
+
+**Overall:** Actual effort was 16% of estimated (0.16x ratio). This reflects both conservative estimates for a new work type (design system application) AND genuine workflow efficiency — the design tokens foundation from 0.1.7a enabled fast, mechanical application across screens and components, and batching similar work minimized context switching.
+
+#### Variance Analysis
+
+**Major Issue: #258 (Polish weekly planning screen)** — Estimated: 8 points → Actual: 3.27 weighted days (0.41x)
+- Largest issue in the sprint with 17 commits and 18717 lines changed
+- Included major refactoring: extracted MealPlanService, MealActionService, MealPlanSummaryService, RecommendationCacheService, WeekNavigationWidget, RecipeSelectionDialog
+- UX redesign with bottom sheet tools pattern (Phase 2A)
+- Visual polish with design tokens (Phase 2B)
+- Created issue analysis skill and senior dev implementation skill during this work
+- While 0.41x ratio looks fast, the absolute effort (3.27 days) was substantial
+- Lesson: Complex screen polish with refactoring is accurately estimated at ~3 days, even if points suggest more
+
+**Very Fast: Component Standardization (#260, #261, #262)** — Estimated: 18 points → Actual: 1.60 days (0.09x)
+- All three followed the same pattern: audit current styles → apply theme tokens → verify
+- #260 (buttons) and #261 (forms) done on same day alongside #267
+- #262 (navigation) got a full day but included comprehensive tests (1078 lines of tests)
+- Lesson: Component standardization is mechanical once design tokens exist — estimate at 1-2 points each, not 5-8
+
+**Very Fast: #259 (Recipe list polish)** — Estimated: 5 points → Actual: 0.42 days (0.08x)
+- Pattern already established by #258
+- Applying design tokens to a second screen is much faster than the first
+- Lesson: Second-screen polish is ~80% faster than first screen
+
+**Unplanned: #266, #267 (Shopping list enhancements)** — Unplanned (12 points total) → Actual: 1.33 days
+- Emerged during sprint when shopping list improvements were identified
+- #266 (preview mode) was more substantial (0.93 days, including comprehensive tests)
+- #267 (refinement mode) built directly on #266 patterns (0.40 days)
+- Lesson: Unplanned work added 28% to sprint (consistent with historical ~20-25% pattern)
+
+**Trivial: #269 (Overflow fix)** — Estimated: 2 points → Actual: 0.07 days (0.04x)
+- Simple padding/layout fix
+- Lesson: Known-pattern bug fixes continue to be near-instant
+
+#### Working Pattern Observations
+
+```
+Jan 30:  ████████████████████ #258 prep (refactoring extractions, skills, analysis)
+Jan 31:  ████████████████ #258 (services, UX redesign analysis, more skills)
+Feb 1:   ████████████████ #258 (Phase 2A UX redesign, Phase 2B visual polish)
+Feb 2:   ████████████ #258 (finalize), #259 (recipe list polish)
+Feb 3:   ██████████████████ #266 (shopping preview), #269 (overflow fix)
+Feb 5:   ████████████████████ #267 (shopping refinement), #261 (forms), #260 (buttons)
+Feb 6:   ███████████████ #262 (navigation + tests), release prep
+```
+
+**Patterns:**
+- #258 dominated the first 4 days (Jan 30-Feb 2) — justified by its scope (refactoring + redesign + polish)
+- Once #258 pattern established, subsequent screens/components were very fast
+- Feb 3 and Feb 5 were highly productive batching days (3 issues each)
+- Feb 4 was a rest day (no commits)
+- Unplanned work (#266, #267, #269) interleaved naturally without disrupting planned work
+- Release prep on final day (Feb 6)
+
+#### Lessons Learned
+
+1. **First-screen polish creates patterns; subsequent screens harvest them**
+   - #258 (first screen): 3.27 days, 18717 lines, 17 commits — included refactoring 6 services/widgets + creating polish patterns
+   - #259 (second screen): 0.42 days, 510 lines, 1 commit — applied established patterns
+   - The 8x difference is not just estimation error — it reflects genuine compound returns from investing in the first screen properly
+   - **Lesson: Budget 3-5x more for first-screen polish vs follow-up screens; the investment compounds**
+
+2. **Component standardization benefits from design token foundation**
+   - Three standardization issues (18 points estimated) done in 1.60 days
+   - This speed was earned: 0.1.7a's token system made application mechanical
+   - Batching #260 + #261 + #267 on a single day avoided context switching
+   - Lesson: Estimate component standardization at 1-2 points per component type when tokens already exist
+
+3. **Refactoring during polish pays compound dividends**
+   - #258 extracted 6 services/widgets during polish work
+   - This refactoring simplified the screen AND made subsequent work (#259, component standardization) easier
+   - Lesson: Refactoring during polish is valuable — don't separate as distinct task
+
+4. **UX feedback loop drives healthy emergent work**
+   - #266 and #267 (shopping list preview/refinement) emerged as needed UX adjustments during the sprint
+   - #269 (overflow fix) was discovered during #266 implementation
+   - This isn't scope creep — it's a healthy product feedback cycle where using the app reveals needed improvements
+   - Sprint absorbed 12 extra points without overrunning, showing capacity flexibility
+   - Lesson: Budget 20-30% for emergent work; distinguish healthy UX feedback from scope creep
+
+5. **Design system application is a distinct work type with its own velocity**
+   - Combined 0.1.7a+0.1.7b: 64 points estimated, 7.0 weighted days actual (0.11x ratio)
+   - The ratio reflects both conservative estimates (new work type, no prior data) AND genuine efficiency:
+     - Clear design vision eliminated iteration
+     - Design tokens made application mechanical
+     - Batching similar work minimized context switching
+     - Zero-gap milestone transition preserved momentum
+   - **Lesson: Design system sprints need their own estimation calibration — use 0.2-0.3x multiplier**
+
+6. **Workflow skill creation during sprints is compound investment**
+   - Issue analysis and senior dev implementation skills created during #258
+   - Not captured as separate issues but improved workflow for all subsequent work
+   - Lesson: Tool/skill creation is investment, not waste — track but don't over-estimate
+
+#### Recommendations for Future Sprints
+
+| Finding | Adjustment |
+|---------|------------|
+| First screen creates patterns, subsequent harvest | Budget 3-5 points for first screen, 1-2 for subsequent |
+| Component standardization fast with tokens | Estimate 1-2 points per component type when tokens exist |
+| Design system application has own velocity | Use 0.2-0.3x multiplier for design token application work |
+| UX feedback loop adds ~25-30% | Budget 20-30% for healthy emergent improvements |
+| Refactoring during polish compounds | Don't separate refactoring from polish — estimate together |
+| Combined milestone velocity 9.1 pts/day | Outlier — reflects both overestimation AND genuine efficiency from compound patterns |
+
+#### Notes
+
+- Combined 0.1.7a+0.1.7b delivered 64 points in 7 active days (9.14 points/day)
+- This velocity is an outlier for general planning but reflects genuine efficiency: clear design vision, compound pattern reuse, effective batching, and zero-gap milestone transition
+- #258 was the sprint's anchor issue — 3.27 days, 17 commits, massive refactoring + polish
+- 3 unplanned shopping list issues (#266, #267, #269) added mid-sprint
+- Major infrastructure created: 2 new skills, 6 extracted services/widgets
+- Sprint ended with clean release (v0.1.7) on Feb 6
+- All component standardization benefits from design tokens established in 0.1.7a
+- No hidden tooling overhead reported (contrast with 0.1.5's 29% overhead)
+
 ---
 
 ## Cumulative Metrics
@@ -795,14 +1058,21 @@ Jan 9:  █████████ #199 (508), #251 (6), plus cleanup (2187 lin
 | 0.1.4 | 12 | 2.0 | 0.17x | 6.00 | **OUTLIER** - Extremely well-prepared work |
 | 0.1.5 | 14 | 6.88 | 1.98x | 2.03 | OVERRAN - Discovery work + MASSIVE hidden overhead |
 | 0.1.6 | 18 | 6.0 | 0.33x | 3.00 | VERY conservative (well-specified features) |
+| 0.1.7a | 21 | 0.31 | 0.01x | 67.7* | **OUTLIER** - Foundation work, single day, overlapped with 0.1.7b |
+| 0.1.7b | 43 | 6.69 | 0.16x | 6.43* | **OUTLIER** - Design system application + efficient batching |
+
+*\* 0.1.7a/b velocity reflects both conservative estimates (new work type) and genuine efficiency (clear vision, compound patterns, effective batching). Not representative of general-purpose velocity.*
 
 **Critical Insights:**
 - **Sprint ratio depends heavily on work type** - Can't use one sprint to predict another
-- **0.1.4 was an outlier** (6.00 points/day) - Don't use for future estimates
-- **Normal velocity: 1.1-3.0 points/day** (0.1.2, 0.1.3, 0.1.5, 0.1.6)
+- **0.1.4, 0.1.7a, 0.1.7b are outliers** for velocity but for different reasons — 0.1.7 shows design system work has its own velocity profile
+- **Design system work needs its own estimation calibration** - 0.1.7a+0.1.7b combined: 64 pts estimated, 7 days actual (0.11x) — driven by both overestimation AND genuine efficiency
+- **Normal velocity: 1.1-3.0 points/day** (0.1.2, 0.1.3, 0.1.5, 0.1.6) — for general-purpose feature/bug/testing work
 - **Median velocity: ~2.5 points/day** - Use this for milestone sizing
 - **Hidden overhead is CRITICAL** - Tooling/environment issues added 29% to 0.1.5 (2 full days)
 - **Well-specified features are fast** - 0.1.6 showed 0.33x ratio with detailed specs
+- **First-screen polish vs follow-up is 8x difference** - The first screen investment creates patterns that compound
+- **Healthy UX feedback loops add ~25-30% emergent work** — budget for this, it's a feature not a bug
 
 ### Type-Based Calibration Factors
 
@@ -811,22 +1081,27 @@ Use these multipliers when estimating future work:
 | Type | Sample Size | Avg Ratio | Recommended Multiplier | Notes |
 |------|-------------|-----------|------------------------|-------|
 | Bug fixes (new patterns) | 2 issues | 0.62x | 0.5-1.0x | Conservative (0.1.2) |
-| Bug fixes (known patterns) | 2 issues | 0.04x | 0.1-0.2x | **NEW**: Trivial when pattern established (0.1.4) |
-| Bug fixes (related/batched) | - | 0.00x | 0.0x | **NEW**: Near-zero marginal cost for similar fixes (0.1.4: #252) |
+| Bug fixes (known patterns) | 3 issues | 0.04x | 0.1-0.2x | Trivial when pattern established (0.1.4, 0.1.7b) |
+| Bug fixes (related/batched) | - | 0.00x | 0.0x | Near-zero marginal cost for similar fixes (0.1.4: #252) |
 | UI/Features | 5 issues | 0.56x | 0.6-0.7x | Very conservative (0.1.2: 0.84x, 0.1.3: 0.40x) |
 | Parser/Algorithm | 2 issues | 0.21x | 0.5x | Very efficient (0.1.2) |
 | Architecture (unprepared) | 5 issues | 0.40x | 0.5x | Very efficient when batched (0.1.3) |
-| Architecture (well-prepared) | 1 issue | 0.25x | 0.2-0.3x | **NEW**: Extremely fast with prerequisites (0.1.4: #237) |
+| Architecture (well-prepared) | 1 issue | 0.25x | 0.2-0.3x | Extremely fast with prerequisites (0.1.4: #237) |
 | Testing (existing patterns) | 3 issues | 0.62x | 1.0x | Conservative (0.1.2) |
-| Testing (extend patterns) | 1 issue | 0.19x | 0.2x | **NEW**: Very fast copy-paste work (0.1.4: #244) |
+| Testing (extend patterns) | 1 issue | 0.19x | 0.2x | Very fast copy-paste work (0.1.4: #244) |
 | Testing (new infra) | 5 issues | 1.27x | 1.0-1.5x | **REVISED**: 0.1.2 was outlier (4.00x), 0.1.3 averaged 0.51x |
 | Testing (related tasks) | 2 issues | 0.31x | 0.3-0.5x | Extremely efficient when done together (0.1.3: #38+#39) |
+| Design foundation | 3 issues | 0.01x | 0.1-0.2x | **NEW**: Linked design tasks complete as single unit (0.1.7a) |
+| Screen polish (first) | 1 issue | 0.41x | 0.4-0.5x | **NEW**: Includes refactoring + pattern creation (0.1.7b: #258) |
+| Screen polish (subsequent) | 1 issue | 0.08x | 0.1-0.2x | **NEW**: Applying established patterns is 5-8x faster (0.1.7b: #259) |
+| Component standardization | 3 issues | 0.09x | 0.1-0.2x | **NEW**: Mechanical once design tokens exist (0.1.7b: #260-#262) |
 
-**Key Insights from 0.1.4:**
-- **Well-prepared work is 5-6x faster** than estimated (0.17x average)
-- **Prerequisites eliminate uncertainty** - #237 was 0.25x after #234, #235, #236
-- **Pattern reuse is nearly free** - #252 was 0.00x after #250 established pattern
-- **Extending vs creating patterns** - Distinguish when estimating (0.19x vs 1.27x)
+**Key Insights from 0.1.7a/b:**
+- **Design system work has its own velocity profile** — 64 points in 7 days (0.11x) reflects both new-type overestimation AND genuine efficiency from clear vision, compound patterns, and effective batching
+- **First-screen polish creates compound returns** — #258 (0.41x) invested in patterns that #259 (0.08x) harvested; the 8x difference is earned velocity
+- **Component standardization is fast when tokens exist** — 18 points in 1.60 days; the speed was earned by 0.1.7a's foundation
+- **Linked design tasks should be estimated as one** — #255+#256 were literally one commit
+- **UX feedback loop is healthy and predictable** — 3 emergent issues (#266, #267, #269) added 12 points (~28%); budget 20-30% for this
 
 ---
 
@@ -876,10 +1151,15 @@ Use historical velocity data to size future milestones and prevent overcommitmen
 | 0.1.3 | 26 | 10 | 2.60 | Well-prepared (pattern reuse) |
 | 0.1.4 | 12 | 2 | 6.00 | **OUTLIER** (extremely well-prepared) |
 | 0.1.5 | 14 | 6.88 | 2.03 | Discovery + iteration + MASSIVE overhead (29%) |
+| 0.1.6 | 18 | 6 | 3.00 | Well-specified features |
+| 0.1.7a | 21 | 0.31* | 67.7* | **OUTLIER** (design foundation, shared day) |
+| 0.1.7b | 43 | 6.69 | 6.43* | **OUTLIER** (design system application) |
 
-**Normal Velocity Range:** 1.1 - 2.8 points/day
+*\* 0.1.7a/b are outliers — reflects both new-type overestimation and genuine efficiency from design system compound patterns*
+
+**Normal Velocity Range:** 1.1 - 3.0 points/day (0.1.2, 0.1.3, 0.1.5, 0.1.6) — for general-purpose work
 **Median Velocity:** ~2.5 points/day
-**Outlier (ignore):** 6.0 points/day (0.1.4)
+**Outliers:** 0.1.4 (6.0), 0.1.7a (67.7), 0.1.7b (6.43) — design system work has its own velocity profile; don't use for general estimates
 
 ### Milestone Sizing Recommendations
 
@@ -976,3 +1256,14 @@ Use historical velocity data to size future milestones and prevent overcommitmen
   - Lesson: Well-specified features with clear MVP boundaries execute 3-4x faster than estimated
   - Updated normal velocity range to 1.1-3.0 points/day (adding 0.1.6 data)
   - Estimation philosophy: Keep 1-point minimum for task overhead; scale UP larger estimates rather than introducing sub-point complexity
+- **2026-02-08**: Added 0.1.7a and 0.1.7b retrospective analyses
+  - 0.1.7a completed: 3 issues in 1 day (21 points estimated, 0.31 weighted days actual, 0.01x ratio)
+  - Foundation issues were massively overestimated — #255+#256 completed in single commit
+  - 0.1.7b completed: 5 planned + 3 unplanned issues (43 points) in 7 active days (6.69 weighted days, 0.16x ratio)
+  - #258 was the anchor issue (3.27 days, 17 commits, major refactoring + polish)
+  - 3 unplanned shopping list issues (#266, #267, #269) added 12 points (~28% unplanned work)
+  - **KEY: Design system work has its own velocity profile** — combined 64 pts in 7 days (0.11x), driven by both overestimation AND genuine efficiency
+  - New calibration factors: design foundation (0.01x), first-screen polish (0.41x), subsequent-screen polish (0.08x), component standardization (0.09x)
+  - First-screen polish is 8x more expensive than follow-up screens
+  - Both sprints classified as outliers for velocity purposes — don't use for future estimates
+  - Updated velocity reference data and type-based calibration factors

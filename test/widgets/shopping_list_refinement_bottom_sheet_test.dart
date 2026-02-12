@@ -9,8 +9,18 @@ void main() {
     // Test data: grouped ingredients (using correct category enum values)
     final testIngredients = {
       'vegetable': [
-        {'name': 'Tomato', 'quantity': 2.0, 'unit': 'units', 'category': 'vegetable'},
-        {'name': 'Onion', 'quantity': 1.0, 'unit': 'units', 'category': 'vegetable'},
+        {
+          'name': 'Tomato',
+          'quantity': 2.0,
+          'unit': 'units',
+          'category': 'vegetable'
+        },
+        {
+          'name': 'Onion',
+          'quantity': 1.0,
+          'unit': 'units',
+          'category': 'vegetable'
+        },
       ],
       'dairy': [
         {'name': 'Milk', 'quantity': 1.0, 'unit': 'L', 'category': 'dairy'},
@@ -32,14 +42,16 @@ void main() {
           Locale('en', ''),
           Locale('pt', ''),
         ],
-        locale: const Locale('pt', ''), // Use Portuguese for consistent test strings
+        locale: const Locale(
+            'pt', ''), // Use Portuguese for consistent test strings
         home: Scaffold(
           body: child,
         ),
       );
     }
 
-    testWidgets('displays title and subtitle correctly', (WidgetTester tester) async {
+    testWidgets('displays title and subtitle correctly',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestWidget(
           ShoppingListRefinementBottomSheet(
@@ -56,9 +68,8 @@ void main() {
       expect(find.textContaining('4 de 4 itens selecionados'), findsOneWidget);
     });
 
-    // TODO: Uncomment ONE test at a time after previous test passes
-
-    testWidgets('displays all ingredients grouped by category', (WidgetTester tester) async {
+    testWidgets('displays all ingredients grouped by category',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestWidget(
           ShoppingListRefinementBottomSheet(
@@ -80,8 +91,8 @@ void main() {
       expect(find.text('Rice'), findsOneWidget);
     });
 
-
-    testWidgets('all items are checked by default', (WidgetTester tester) async {
+    testWidgets('all items are checked by default',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestWidget(
           ShoppingListRefinementBottomSheet(
@@ -101,7 +112,6 @@ void main() {
         expect(checkbox.value, isTrue);
       }
     });
-
 
     testWidgets('can uncheck individual items', (WidgetTester tester) async {
       await tester.pumpWidget(
@@ -128,8 +138,8 @@ void main() {
       expect(find.textContaining('3 de 4 itens selecionados'), findsOneWidget);
     });
 
-
-    testWidgets('can check previously unchecked items', (WidgetTester tester) async {
+    testWidgets('can check previously unchecked items',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestWidget(
           ShoppingListRefinementBottomSheet(
@@ -154,8 +164,8 @@ void main() {
       expect(find.textContaining('4 de 4 itens selecionados'), findsOneWidget);
     });
 
-
-    testWidgets('Select All button checks all items', (WidgetTester tester) async {
+    testWidgets('Select All button checks all items',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestWidget(
           ShoppingListRefinementBottomSheet(
@@ -185,7 +195,8 @@ void main() {
       expect(find.textContaining('4 de 4 itens selecionados'), findsOneWidget);
     });
 
-    testWidgets('Deselect All button unchecks all items', (WidgetTester tester) async {
+    testWidgets('Toggle checkbox deselects all items when all are selected',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestWidget(
           ShoppingListRefinementBottomSheet(
@@ -198,8 +209,8 @@ void main() {
       // Initially all 4 selected
       expect(find.textContaining('4 de 4 itens selecionados'), findsOneWidget);
 
-      // Tap Deselect All button
-      await tester.tap(find.text('Desmarcar Tudo'));
+      // Tap the tri-state checkbox toggle (when all selected, it deselects all)
+      await tester.tap(find.text('Selecionar Tudo'));
       await tester.pumpAndSettle();
 
       // None should be selected
@@ -217,32 +228,34 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Deselect all items
-      await tester.tap(find.text('Desmarcar Tudo'));
+      // Deselect all items using tri-state checkbox toggle
+      await tester.tap(find.text('Selecionar Tudo'));
       await tester.pumpAndSettle();
 
       // Try to generate list
-      await tester.tap(find.text('Gerar Lista de Compras'));
+      await tester.tap(find.text('Lista de Compras'));
       await tester.pumpAndSettle();
 
       // Should show error message
       expect(
-        find.text('Por favor, selecione pelo menos um item para gerar sua lista de compras'),
+        find.text(
+            'Por favor, selecione pelo menos um item para gerar sua lista de compras'),
         findsOneWidget,
       );
     });
 
-
     testWidgets('returns selected ingredients when generate is tapped',
         (WidgetTester tester) async {
-      Map<String, List<Map<String, dynamic>>>? result; // ignore: unused_local_variable
+      Map<String, List<Map<String, dynamic>>>?
+          result; // ignore: unused_local_variable
 
       await tester.pumpWidget(
         createTestWidget(
           Builder(
             builder: (context) => ElevatedButton(
               onPressed: () async {
-                result = await showModalBottomSheet<Map<String, List<Map<String, dynamic>>>>(
+                result = await showModalBottomSheet<
+                    Map<String, List<Map<String, dynamic>>>>(
                   context: context,
                   builder: (context) => ShoppingListRefinementBottomSheet(
                     groupedIngredients: testIngredients,
@@ -271,10 +284,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap generate
-      await tester.tap(find.text('Gerar Lista de Compras'));
+      await tester.tap(find.text('Lista de Compras'));
       await tester.pumpAndSettle();
 
-      // TODO: Fix modal bottom sheet test - checkboxes not accessible in modal context
+      // TODO(#288): ux: improve shopping list bottom sheet tabs testability and UX
+      // Currently checkboxes are not accessible in modal context
       // Should return only selected ingredients (Onion and Rice)
       // expect(result, isNotNull);
       // expect(result!.length, equals(2)); // Only vegetable and grain categories
@@ -282,9 +296,9 @@ void main() {
       // expect(result!['vegetable']![0]['name'], equals('Onion'));
       // expect(result!['grain']!.length, equals(1)); // Only Rice
       // expect(result!['grain']![0]['name'], equals('Rice'));
-    }, skip: true); // Skip - modal bottom sheet interaction needs different approach
-
-    // TODO: Test 10 also skipped - same modal sheet issue
+    },
+        skip:
+            true); // Skip - modal bottom sheet interaction needs different approach
 
     testWidgets('shows empty state when no ingredients provided',
         (WidgetTester tester) async {
@@ -298,7 +312,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Should show empty state message
-      expect(find.text('Nenhuma refeição planejada - nada para refinar'), findsOneWidget);
+      expect(find.text('Nenhuma refeição planejada - nada para refinar'),
+          findsOneWidget);
       expect(find.byIcon(Icons.inbox_outlined), findsOneWidget);
     });
 
@@ -326,7 +341,8 @@ void main() {
 
       // Initially, no strikethrough
       Text tomatoText = tester.widget(tomatoTextFinder);
-      expect(tomatoText.style?.decoration, isNot(equals(TextDecoration.lineThrough)));
+      expect(tomatoText.style?.decoration,
+          isNot(equals(TextDecoration.lineThrough)));
 
       // Uncheck Tomato
       await tester.tap(find.ancestor(
@@ -338,6 +354,152 @@ void main() {
       // Now should have strikethrough
       tomatoText = tester.widget(tomatoTextFinder);
       expect(tomatoText.style?.decoration, equals(TextDecoration.lineThrough));
+    });
+
+    testWidgets('displays localized measurement units in Portuguese',
+        (WidgetTester tester) async {
+      final testIngredientsWithUnits = {
+        'vegetable': [
+          {
+            'name': 'Tomato',
+            'quantity': 2.0,
+            'unit': 'cup',
+            'category': 'vegetable'
+          },
+          {
+            'name': 'Onion',
+            'quantity': 1.0,
+            'unit': 'tbsp',
+            'category': 'vegetable'
+          },
+        ],
+        'spice': [
+          {'name': 'Salt', 'quantity': 1.0, 'unit': 'tsp', 'category': 'spice'},
+        ],
+      };
+
+      await tester.pumpWidget(
+        createTestWidget(
+          ShoppingListRefinementBottomSheet(
+            groupedIngredients: testIngredientsWithUnits,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify Portuguese localization
+      expect(find.textContaining('Xícara'), findsOneWidget); // cup
+      expect(find.textContaining('Colher de sopa'), findsOneWidget); // tbsp
+      expect(find.textContaining('Colher de chá'), findsOneWidget); // tsp
+    });
+
+    testWidgets('displays localized units in English',
+        (WidgetTester tester) async {
+      final testIngredientsWithUnits = {
+        'vegetable': [
+          {
+            'name': 'Tomato',
+            'quantity': 2.0,
+            'unit': 'cup',
+            'category': 'vegetable'
+          },
+          {
+            'name': 'Onion',
+            'quantity': 1.0,
+            'unit': 'tbsp',
+            'category': 'vegetable'
+          },
+        ],
+      };
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('en', ''),
+            Locale('pt', ''),
+          ],
+          locale: const Locale('en', ''), // Use English
+          home: Scaffold(
+            body: ShoppingListRefinementBottomSheet(
+              groupedIngredients: testIngredientsWithUnits,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify English localization
+      expect(find.textContaining('Cup'), findsOneWidget);
+      expect(find.textContaining('Tbsp'), findsOneWidget);
+    });
+
+    testWidgets('falls back to raw string for unknown units',
+        (WidgetTester tester) async {
+      final testIngredientsWithCustomUnit = {
+        'other': [
+          {
+            'name': 'Custom Item',
+            'quantity': 5.0,
+            'unit': 'custom_unit',
+            'category': 'other'
+          },
+        ],
+      };
+
+      await tester.pumpWidget(
+        createTestWidget(
+          ShoppingListRefinementBottomSheet(
+            groupedIngredients: testIngredientsWithCustomUnit,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Should display raw unit string for unknown units
+      expect(find.textContaining('custom_unit'), findsOneWidget);
+    });
+
+    testWidgets('localized units remain visible when item is unchecked',
+        (WidgetTester tester) async {
+      final testIngredientsWithUnits = {
+        'vegetable': [
+          {
+            'name': 'Tomato',
+            'quantity': 2.0,
+            'unit': 'cup',
+            'category': 'vegetable'
+          },
+        ],
+      };
+
+      await tester.pumpWidget(
+        createTestWidget(
+          ShoppingListRefinementBottomSheet(
+            groupedIngredients: testIngredientsWithUnits,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify unit is localized initially
+      expect(find.textContaining('Xícara'), findsOneWidget);
+
+      // Uncheck the item
+      final tomatoCheckbox = find.ancestor(
+        of: find.text('Tomato'),
+        matching: find.byType(CheckboxListTile),
+      );
+      await tester.tap(tomatoCheckbox);
+      await tester.pumpAndSettle();
+
+      // Localized unit should still be visible (with strikethrough)
+      expect(find.textContaining('Xícara'), findsOneWidget);
     });
   });
 }

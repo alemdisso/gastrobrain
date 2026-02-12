@@ -588,7 +588,7 @@ Result: [✓ None found / ⚠ X found]
 
 If found:
 TODOs in production code:
-1. lib/services/recipe_service.dart:120
+1. lib/core/services/recipe_service.dart:120
    - "TODO: Add caching"
    - Severity: ⚠ Minor (performance optimization)
 

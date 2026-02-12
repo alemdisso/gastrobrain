@@ -17,7 +17,7 @@ import '../core/services/meal_plan_service.dart';
 import '../core/services/meal_action_service.dart';
 import '../core/services/meal_edit_service.dart';
 import '../core/services/recommendation_cache_service.dart';
-import '../services/shopping_list_service.dart';
+import '../core/services/shopping_list_service.dart';
 import '../core/theme/design_tokens.dart';
 import '../core/providers/recipe_provider.dart';
 import '../core/providers/meal_provider.dart';
@@ -876,14 +876,16 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       final shoppingListService = ShoppingListService(_dbHelper);
 
       // Calculate projected ingredients (no database writes)
-      final groupedIngredients = await shoppingListService.calculateProjectedIngredients(
+      final groupedIngredients =
+          await shoppingListService.calculateProjectedIngredients(
         startDate: _currentWeekStart,
         endDate: endDate,
       );
 
       // Show refinement sheet and wait for user selection
       if (!mounted) return;
-      final selectedIngredients = await showModalBottomSheet<Map<String, List<Map<String, dynamic>>>>(
+      final selectedIngredients =
+          await showModalBottomSheet<Map<String, List<Map<String, dynamic>>>>(
         context: context,
         backgroundColor: Colors.transparent,
         isScrollControlled: true,
@@ -891,7 +893,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           initialChildSize: 0.7,
           minChildSize: 0.5,
           maxChildSize: 0.95,
-          builder: (context, scrollController) => ShoppingListRefinementBottomSheet(
+          builder: (context, scrollController) =>
+              ShoppingListRefinementBottomSheet(
             groupedIngredients: groupedIngredients,
           ),
         ),
@@ -1066,7 +1069,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       final shoppingListService = ShoppingListService(_dbHelper);
 
       // Calculate projected ingredients (no database writes)
-      final groupedIngredients = await shoppingListService.calculateProjectedIngredients(
+      final groupedIngredients =
+          await shoppingListService.calculateProjectedIngredients(
         startDate: startDate,
         endDate: endDate,
       );
@@ -1081,7 +1085,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
             initialChildSize: 0.7,
             minChildSize: 0.5,
             maxChildSize: 0.95,
-            builder: (context, scrollController) => ShoppingListPreviewBottomSheet(
+            builder: (context, scrollController) =>
+                ShoppingListPreviewBottomSheet(
               groupedIngredients: groupedIngredients,
             ),
           ),
@@ -1156,7 +1161,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                 // Handle bar
                 Center(
                   child: Container(
-                    margin: const EdgeInsets.only(bottom: DesignTokens.spacingMd),
+                    margin:
+                        const EdgeInsets.only(bottom: DesignTokens.spacingMd),
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
@@ -1179,9 +1185,10 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                 Card(
                   child: ListTile(
                     leading: const Icon(Icons.preview),
-                    title: Text(AppLocalizations.of(context)!.previewIngredients),
-                    subtitle: Text(
-                        AppLocalizations.of(context)!.previewIngredientsSubtitle),
+                    title:
+                        Text(AppLocalizations.of(context)!.previewIngredients),
+                    subtitle: Text(AppLocalizations.of(context)!
+                        .previewIngredientsSubtitle),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       Navigator.pop(context);
@@ -1195,10 +1202,10 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                 Card(
                   child: ListTile(
                     leading: const Icon(Icons.add_shopping_cart),
-                    title:
-                        Text(AppLocalizations.of(context)!.generateShoppingList),
-                    subtitle:
-                        Text(AppLocalizations.of(context)!.createListForShopping),
+                    title: Text(
+                        AppLocalizations.of(context)!.generateShoppingList),
+                    subtitle: Text(
+                        AppLocalizations.of(context)!.createListForShopping),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       Navigator.pop(context);
@@ -1213,9 +1220,10 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                   Card(
                     child: ListTile(
                       leading: const Icon(Icons.list),
-                      title: Text(AppLocalizations.of(context)!.viewExistingList),
-                      subtitle: Text(
-                          AppLocalizations.of(context)!.viewExistingListSubtitle),
+                      title:
+                          Text(AppLocalizations.of(context)!.viewExistingList),
+                      subtitle: Text(AppLocalizations.of(context)!
+                          .viewExistingListSubtitle),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () {
                         Navigator.pop(context);
