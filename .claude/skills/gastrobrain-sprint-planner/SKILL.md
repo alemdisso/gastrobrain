@@ -1,7 +1,7 @@
 ---
 name: "Gastrobrain Sprint Planner"
 description: "Data-driven sprint planning and retrospective analysis for Gastrobrain using GitHub Project #3 issues, historical velocity patterns, and sprint estimation diary insights. Generates realistic sprint plans with capacity analysis, sequencing strategy, and risk assessment. Conducts structured sprint retrospectives with developer interviews, estimation accuracy analysis, and diary entry generation."
-version: "2.0.0"
+version: "2.1.0"
 author: "Gastrobrain Development Team"
 ---
 
@@ -59,18 +59,26 @@ Fibonacci-like scale: **1, 2, 3, 5, 8, 13**
 Follow this systematic approach:
 
 ### 1. Gather Issue Data
+
+**Primary source: GitHub Project #3** (owner: `alemdisso`). Always use Project fields for story points — never parse estimates from issue bodies.
+
 ```bash
-# Use gh CLI to fetch issues from Project #3
-gh issue list --project 3 --state open --json number,title,labels,milestone
+# Fetch all project items with estimates, size, priority, status, and milestone
+gh project item-list 3 --owner alemdisso --format json --limit 100
+
+# For issue details (body, acceptance criteria, dependencies), use:
+gh issue view <number> --json number,title,labels,body,milestone
 ```
 
-For each issue, extract:
+For each issue, extract from Project fields:
 - Issue number and title
-- Story point estimate (from labels or title)
-- Size label (XS/S/M/L/XL)
-- Type (feature, bug, refactor, testing, UI/UX)
-- Milestone assignment
-- Dependencies (mentioned in issue body)
+- Story point estimate (`estimate` field from Project #3)
+- Size label (`size` field: XS/S/M/L/XL)
+- Priority (`priority` field: P1/P2/P3)
+- Status (`status` field: Ready/In Progress/Done)
+- Milestone (`milestone` field)
+- Type (from labels: feature, bug, refactor, testing, UI/UX)
+- Dependencies (from issue body if needed)
 - Prerequisites (is prerequisite work complete?)
 
 ### 2. Analyze Sprint History Context
@@ -150,8 +158,8 @@ Conduct structured sprint retrospectives using 5 checkpoints with developer conf
 
 **Tasks:**
 - [ ] Run `scripts/analyze_sprint_commits.py` with sprint date range
-- [ ] Fetch milestone description for original estimates (from GitHub API or Project fields)
-- [ ] Fetch issue list with story points from milestone
+- [ ] Fetch story point estimates from GitHub Project #3 (`estimate` field is the source of truth)
+- [ ] Fetch issue list with labels and state from milestone
 - [ ] Identify sprint boundaries from commits
 - [ ] Note any untagged commits for later attribution
 
@@ -160,12 +168,17 @@ Conduct structured sprint retrospectives using 5 checkpoints with developer conf
 # Generate commit analysis
 python3 scripts/analyze_sprint_commits.py --since YYYY-MM-DD --until YYYY-MM-DD --branch develop
 
-# Fetch milestone issues
+# Fetch story points and project fields (PRIMARY source for estimates)
+gh project item-list 3 --owner alemdisso --format json --limit 100
+
+# Fetch milestone issues (for state and labels)
 gh issue list --milestone "0.1.X" --state all --json number,title,labels,state
 
 # Fetch milestone details
 gh api repos/{owner}/{repo}/milestones/{number}
 ```
+
+**IMPORTANT:** Always use the `estimate` field from Project #3 for story points. Do NOT parse story points from issue bodies — they may be outdated or missing. The Project board is the single source of truth for estimates.
 
 **Present to developer:** Raw commit data, issue list, working days summary, daily activity timeline.
 
@@ -220,7 +233,7 @@ gh api repos/{owner}/{repo}/milestones/{number}
 
 **Tasks:**
 - [ ] Calculate weighted actual days per issue (using commit analysis + developer context)
-- [ ] Map original story point estimates from milestone/project
+- [ ] Map original story point estimates from Project #3 `estimate` field (source of truth)
 - [ ] Calculate ratio per issue (weighted actual / estimated)
 - [ ] Classify each issue: ✅ On target (0.7-1.3x) / ⚡ Faster (<0.7x) / 🔴 Over (>1.3x) / 📋 Unplanned
 - [ ] Calculate accuracy by type (bug, feature, testing, architecture, UI, etc.)
@@ -1122,5 +1135,6 @@ After each sprint:
 
 ## Version History
 
+- **2.1.0** (2026-02-13): Story points now sourced from GitHub Project #3 `estimate` field (not issue bodies). Added `gh project item-list` as primary data source for planning and retros. Updated owner to `alemdisso`. Added 0.1.8 retrospective insights and cruising velocity (20 pts/week).
 - **2.0.0** (2026-02-08): Added Sprint Retrospective Process with 5 checkpoints (Data Gathering, Developer Interview, Estimation Analysis, Pattern Recognition, Lessons & Documentation). Added sprint review template. Updated velocity data with 0.1.6 and 0.1.7a/b insights. Fixed diary path references.
 - **1.0.0** (2026-01-11): Initial skill creation with Sprint 0.1.2-0.1.5 data

@@ -63,10 +63,11 @@ When triggered:
 1. Detect current branch: feature/XXX-description
 2. Extract issue number: XXX
 3. Fetch issue from GitHub: gh issue view XXX
-4. Locate roadmap: docs/planning/0.1.X/ISSUE-XXX-ROADMAP.md
-5. Parse Phase 1 checklist items
-6. Determine issue type from labels/content
-7. Load pattern library for reference
+4. Fetch story points from Project #3: gh project item-list 3 --owner alemdisso --format json --limit 100 (use `estimate` field as source of truth)
+5. Locate roadmap: docs/planning/0.1.X/ISSUE-XXX-ROADMAP.md
+6. Parse Phase 1 checklist items
+7. Determine issue type from labels/content
+8. Load pattern library for reference
 ```
 
 ### Initial Context Output
