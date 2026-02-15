@@ -135,7 +135,7 @@ flutter test
 # Run static analysis
 flutter analyze
 
-# Optional: Build APK to verify (if not in WSL)
+# Optional: Build APK to verify
 flutter build apk --release
 ```
 

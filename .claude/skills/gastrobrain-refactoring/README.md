@@ -162,7 +162,7 @@ Track these before/after metrics:
 
 - All 600+ tests must pass throughout refactoring
 - Use `flutter analyze` for validation
-- `flutter run` not available in WSL (testing happens via CI/CD)
+- Local builds and device testing available via VS Code on Windows
 - Maintain MockDatabaseHelper and DialogTestHelpers patterns
 
 ### Historical Examples

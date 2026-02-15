@@ -257,15 +257,16 @@ Adjusted = Base × (1 - Overhead%) × Type Multiplier
 
 ### Test Execution
 
-**Local validation (WSL)**:
+**Local validation (Windows)**:
 ```bash
 flutter analyze
 flutter test
+flutter build apk
 ```
 
 **CI/CD validation (GitHub Actions)**:
 ```bash
-flutter build apk  # Cannot run in WSL
+flutter build apk  # Also available locally
 ```
 
 **Success criteria**:
@@ -398,7 +399,7 @@ flutter build apk  # Cannot run in WSL
 - [Assumption 2]
 
 ### Known Limitations
-- [Limitation 1 - WSL cannot run flutter build/run]
+- [Limitation 1 - e.g., iOS builds require macOS]
 - [Limitation 2]
 
 ### Follow-Up Work

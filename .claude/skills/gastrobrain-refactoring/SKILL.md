@@ -30,7 +30,7 @@ This skill is tailored for the Gastrobrain Flutter/Dart project with specific co
 - All 600+ tests must remain passing throughout refactoring
 - Use `flutter analyze` for static analysis validation
 - Maintain or improve test coverage
-- Note: `flutter run` and device builds not supported in WSL environment (use CI/CD)
+- Local builds and device testing available via VS Code on Windows; CI/CD also available via GitHub Actions
 
 **Historical Context:**
 Reference past successful refactorings as examples:

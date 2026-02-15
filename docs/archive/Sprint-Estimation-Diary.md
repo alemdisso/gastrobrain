@@ -24,7 +24,7 @@ python3 scripts/analyze_sprint_commits.py --since 2025-12-02 --until 2025-12-17 
 python3 scripts/analyze_sprint_commits.py --since 2025-12-02 --issues "223,228,124"
 ```
 
-**Note:** Use `python3` command (not `python`) in WSL/Linux environments.
+**Note:** Use `python3` command (not `python`) in Linux environments. On Windows, use `python`.
 
 ### 2. Review Output
 

@@ -797,26 +797,14 @@ For each issue, ask:
 **Common issues:**
 - ADB connection problems (device not detected)
 - Android Studio build failures (Gradle sync issues)
-- Emulator startup time (slow on WSL)
 - Hot reload inconsistencies (requires full rebuild)
 - Flutter doctor issues (SDK path problems)
 
 **Mitigation:**
 - Add 30% buffer for UI-heavy sprints
 - Plan for tooling troubleshooting time
-- Use `flutter analyze` and `flutter test` in WSL (reliable)
-- Reserve device testing for validation phases
-
-#### WSL Limitations
-**Cannot run in local WSL environment:**
-- `flutter build apk`
-- `flutter build ios`
-- `flutter run`
-
-**Workaround:**
-- Use GitHub Actions CI/CD for builds (works reliably)
-- Local validation: `flutter analyze` && `flutter test`
-- Physical device testing: Done outside WSL
+- All Flutter commands work locally on Windows (`flutter analyze`, `flutter test`, `flutter build apk`, `flutter run`)
+- GitHub Actions CI/CD available as additional validation
 
 ### Testing Organization
 
@@ -1003,7 +991,7 @@ Day 5: Issue #214 (localization) + UI polish iteration
 - 30% tooling overhead buffer already applied
 - Defer #211 and #212 (scope flexibility)
 - Plan for multiple iteration cycles
-- Use GitHub Actions for reliable builds (WSL limitations)
+- Use GitHub Actions for CI/CD builds (additional validation)
 
 **Success Criteria**:
 - [ ] Calendar UI matches design mockups

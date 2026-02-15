@@ -22,7 +22,7 @@ This skill covers the full sprint lifecycle: **plan -> execute -> review -> plan
 - **Optimal Sequencing**: Day-by-day breakdown following proven patterns (quick wins first, risky work mid-sprint)
 - **Risk Assessment**: Identifies and mitigates high/medium/low risks with specific strategies
 - **Testing Strategy**: Ensures comprehensive test coverage (unit, widget, integration, E2E, edge cases)
-- **Flutter-Specific**: Accounts for Flutter development patterns, WSL limitations, and bilingual requirements
+- **Flutter-Specific**: Accounts for Flutter development patterns, Windows tooling, and bilingual requirements
 
 ### Sprint Retrospective
 - **5-Checkpoint Process**: Data Gathering -> Developer Interview -> Estimation Analysis -> Pattern Recognition -> Lessons & Documentation

@@ -37,8 +37,7 @@ environment:
 # versions available, run `flutter pub outdated`.
 #
 # NOTE: Version ranges are intentionally flexible to support cross-platform
-# development between Windows and WSL environments. This ensures both 
-# environments can resolve to compatible versions without conflicts.
+# development across Windows and CI/CD (Linux) environments.
 dependencies:
   flutter:
     sdk: flutter
