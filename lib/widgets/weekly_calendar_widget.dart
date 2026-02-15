@@ -236,18 +236,6 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
     }
   }
 
-  /// Gets the context border color for containers
-  Color _getContextBorderColor(BuildContext context) {
-    switch (widget.timeContext) {
-      case TimeContext.past:
-        return Theme.of(context).colorScheme.outline.withValues(alpha: 0.3);
-      case TimeContext.current:
-        return Theme.of(context).colorScheme.outline.withAlpha(76);
-      case TimeContext.future:
-        return Theme.of(context).colorScheme.primary.withAlpha(76);
-    }
-  }
-
   /// Apply context styling ONLY to card backgrounds, not text or icons
   Widget _buildContextualCard({
     required Widget child,
@@ -536,23 +524,18 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
     final bool hasPlannedMeal = plannedMeal != null && recipe != null;
     final bool hasBeenCooked = plannedMeal?.hasBeenCooked ?? false;
 
-    // Simplified color scheme - no context opacity applied to meal sections
+    // Status-based color scheme: colors reflect meal state, not meal type
     final Color backgroundColor = !hasPlannedMeal
-        ? Theme.of(context).colorScheme.surface
+        ? DesignTokens.mealEmpty
         : hasBeenCooked
-            ? Colors.green.withAlpha(64)
-            : mealType == MealPlanItem.lunch
-                ? Theme.of(context).colorScheme.primaryContainer.withAlpha(128)
-                : Theme.of(context)
-                    .colorScheme
-                    .secondaryContainer
-                    .withAlpha(128);
+            ? DesignTokens.mealCooked
+            : DesignTokens.mealPlanned;
 
-    final Color borderColor = hasPlannedMeal
-        ? mealType == MealPlanItem.lunch
-            ? Theme.of(context).colorScheme.primary
-            : Theme.of(context).colorScheme.secondary
-        : _getContextBorderColor(context);
+    final Color borderColor = !hasPlannedMeal
+        ? DesignTokens.mealEmptyBorder
+        : hasBeenCooked
+            ? DesignTokens.mealCookedBorder
+            : DesignTokens.mealPlannedBorder;
 
     final screenWidth = MediaQuery.of(context).size.width;
     final EdgeInsets contentPadding = screenWidth < 360
@@ -578,9 +561,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                   horizontal: DesignTokens.spacingMd,
                   vertical: DesignTokens.spacingSm),
               decoration: BoxDecoration(
-                color: mealType == MealPlanItem.lunch
-                    ? Theme.of(context).colorScheme.primary.withAlpha(40)
-                    : Theme.of(context).colorScheme.secondary.withAlpha(40),
+                color: DesignTokens.mealBadge,
                 borderRadius: BorderRadius.circular(DesignTokens.spacingXs),
                 boxShadow: [
                   BoxShadow(
@@ -598,9 +579,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                         ? Icons.wb_sunny_outlined
                         : Icons.nightlight_outlined,
                     size: 16,
-                    color: mealType == MealPlanItem.lunch
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.secondary,
+                    color: DesignTokens.mealBadgeContent,
                   ),
                   const SizedBox(width: DesignTokens.spacingXs),
                   Text(
@@ -609,9 +588,7 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                         : AppLocalizations.of(context)!.dinner,
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
                           fontWeight: DesignTokens.weightBold,
-                          color: mealType == MealPlanItem.lunch
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.secondary,
+                          color: DesignTokens.mealBadgeContent,
                         ),
                   ),
                 ],
@@ -671,11 +648,11 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                               const SizedBox(width: DesignTokens.spacingSm),
                             ],
                             if (hasBeenCooked)
-                              const Tooltip(
-                                message: 'Cooked',
-                                child: Icon(
+                              Tooltip(
+                                message: AppLocalizations.of(context)!.cooked,
+                                child: const Icon(
                                   Icons.check_circle,
-                                  color: Colors.green,
+                                  color: DesignTokens.mealCookedIcon,
                                   size: 20,
                                 ),
                               ),
@@ -693,8 +670,8 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                                     : Icons.star_border,
                                 size: 12,
                                 color: index < recipe.difficulty
-                                    ? Colors.amber
-                                    : DesignTokens.textSecondary,
+                                    ? DesignTokens.difficultyActive
+                                    : DesignTokens.difficultyInactive,
                               ),
                             ),
                             const SizedBox(width: DesignTokens.spacingXs),
