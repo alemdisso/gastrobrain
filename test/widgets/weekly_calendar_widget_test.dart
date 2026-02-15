@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gastrobrain/core/theme/design_tokens.dart';
 import 'package:gastrobrain/models/meal_plan.dart';
 import 'package:gastrobrain/models/meal_plan_item.dart';
 import 'package:gastrobrain/models/meal_plan_item_recipe.dart';
@@ -340,5 +341,197 @@ void main() {
     // For a more robust test, we'd need to add test keys or more specific selectors
 
     // For now, this is a placeholder for when the widget has better test hooks
+  });
+
+  group('Semantic color system', () {
+    testWidgets('empty slots use mealEmpty colors', (tester) async {
+      tester.view.physicalSize = const Size(1080, 1920);
+      tester.view.devicePixelRatio = 3.0;
+
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: WeeklyCalendarWidget(
+            weekStartDate: testWeekStart,
+            mealPlan: null,
+            timeContext: TimeContext.current,
+            databaseHelper: mockDbHelper,
+          ),
+        )),
+      );
+      await tester.pumpAndSettle();
+
+      // Find meal slot containers by key
+      final slotKey = find.byKey(const Key('meal_plan_friday_lunch_slot'));
+      expect(slotKey, findsOneWidget);
+
+      // Container is a descendant of the keyed InkWell
+      final container = tester.widget<Container>(
+        find.descendant(
+          of: slotKey,
+          matching: find.byType(Container),
+        ).first,
+      );
+
+      final decoration = container.decoration as BoxDecoration;
+      expect(decoration.color, equals(DesignTokens.mealEmpty));
+      expect(
+        (decoration.border as Border).top.color,
+        equals(DesignTokens.mealEmptyBorder),
+      );
+
+      addTearDown(tester.view.reset);
+    });
+
+    testWidgets('planned meals use mealPlanned colors regardless of meal type',
+        (tester) async {
+      tester.view.physicalSize = const Size(1080, 1920);
+      tester.view.devicePixelRatio = 3.0;
+
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: WeeklyCalendarWidget(
+            weekStartDate: testWeekStart,
+            mealPlan: testMealPlan,
+            timeContext: TimeContext.current,
+            databaseHelper: mockDbHelper,
+          ),
+        )),
+      );
+      await tester.pumpAndSettle();
+
+      // Check lunch slot (Friday lunch has recipe-1)
+      final lunchSlot = find.byKey(const Key('meal_plan_friday_lunch_slot'));
+      expect(lunchSlot, findsOneWidget);
+
+      final lunchContainer = tester.widget<Container>(
+        find.descendant(
+          of: lunchSlot,
+          matching: find.byType(Container),
+        ).first,
+      );
+      final lunchDecoration = lunchContainer.decoration as BoxDecoration;
+      expect(lunchDecoration.color, equals(DesignTokens.mealPlanned));
+      expect(
+        (lunchDecoration.border as Border).top.color,
+        equals(DesignTokens.mealPlannedBorder),
+      );
+
+      // Check dinner slot (Friday dinner has recipe-2) - should be SAME color
+      final dinnerSlot = find.byKey(const Key('meal_plan_friday_dinner_slot'));
+      expect(dinnerSlot, findsOneWidget);
+
+      final dinnerContainer = tester.widget<Container>(
+        find.descendant(
+          of: dinnerSlot,
+          matching: find.byType(Container),
+        ).first,
+      );
+      final dinnerDecoration = dinnerContainer.decoration as BoxDecoration;
+      expect(dinnerDecoration.color, equals(DesignTokens.mealPlanned));
+      expect(
+        (dinnerDecoration.border as Border).top.color,
+        equals(DesignTokens.mealPlannedBorder),
+      );
+
+      addTearDown(tester.view.reset);
+    });
+
+    testWidgets('cooked meals use mealCooked colors', (tester) async {
+      tester.view.physicalSize = const Size(1080, 1920);
+      tester.view.devicePixelRatio = 3.0;
+
+      // Create a cooked meal item
+      final cookedItem = MealPlanItem(
+        id: 'cooked-item',
+        mealPlanId: 'test-plan',
+        plannedDate: '2024-03-01',
+        mealType: MealPlanItem.lunch,
+        hasBeenCooked: true,
+      );
+      cookedItem.mealPlanItemRecipes = [
+        MealPlanItemRecipe(
+          mealPlanItemId: 'cooked-item',
+          recipeId: 'recipe-1',
+          isPrimaryDish: true,
+        )
+      ];
+
+      final cookedPlan = MealPlan(
+        id: 'test-plan',
+        weekStartDate: testWeekStart,
+        createdAt: DateTime.now(),
+        modifiedAt: DateTime.now(),
+        items: [cookedItem],
+      );
+
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: WeeklyCalendarWidget(
+            weekStartDate: testWeekStart,
+            mealPlan: cookedPlan,
+            timeContext: TimeContext.current,
+            databaseHelper: mockDbHelper,
+          ),
+        )),
+      );
+      await tester.pumpAndSettle();
+
+      final slotKey = find.byKey(const Key('meal_plan_friday_lunch_slot'));
+      expect(slotKey, findsOneWidget);
+
+      final container = tester.widget<Container>(
+        find.descendant(
+          of: slotKey,
+          matching: find.byType(Container),
+        ).first,
+      );
+      final decoration = container.decoration as BoxDecoration;
+      expect(decoration.color, equals(DesignTokens.mealCooked));
+      expect(
+        (decoration.border as Border).top.color,
+        equals(DesignTokens.mealCookedBorder),
+      );
+
+      // Verify cooked checkmark icon uses design token color
+      final checkIcon = tester.widget<Icon>(find.byIcon(Icons.check_circle));
+      expect(checkIcon.color, equals(DesignTokens.mealCookedIcon));
+
+      addTearDown(tester.view.reset);
+    });
+
+    testWidgets('meal type badges use neutral colors', (tester) async {
+      tester.view.physicalSize = const Size(1080, 1920);
+      tester.view.devicePixelRatio = 3.0;
+
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: WeeklyCalendarWidget(
+            weekStartDate: testWeekStart,
+            mealPlan: testMealPlan,
+            timeContext: TimeContext.current,
+            databaseHelper: mockDbHelper,
+          ),
+        )),
+      );
+      await tester.pumpAndSettle();
+
+      // Find sun icons (lunch badges) and moon icons (dinner badges)
+      final sunIcons = tester.widgetList<Icon>(
+        find.byIcon(Icons.wb_sunny_outlined),
+      );
+      final moonIcons = tester.widgetList<Icon>(
+        find.byIcon(Icons.nightlight_outlined),
+      );
+
+      // Both should use the same neutral badge color
+      for (final icon in sunIcons) {
+        expect(icon.color, equals(DesignTokens.mealBadgeContent));
+      }
+      for (final icon in moonIcons) {
+        expect(icon.color, equals(DesignTokens.mealBadgeContent));
+      }
+
+      addTearDown(tester.view.reset);
+    });
   });
 }

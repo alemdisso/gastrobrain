@@ -424,6 +424,10 @@
   "@manageRecipes": {
     "description": "Button text to manage recipes"
   },
+  "cooked": "Cooked",
+  "@cooked": {
+    "description": "Tooltip for cooked meal indicator icon"
+  },
   "markAsCooked": "Mark as Cooked",
   "@markAsCooked": {
     "description": "Button text to mark meal as cooked"

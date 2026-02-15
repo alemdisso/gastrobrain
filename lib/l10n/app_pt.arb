@@ -424,6 +424,10 @@
   "@manageRecipes": {
     "description": "Texto do botão para gerenciar receitas"
   },
+  "cooked": "Cozinhada",
+  "@cooked": {
+    "description": "Dica para ícone indicador de refeição cozinhada"
+  },
   "markAsCooked": "Marcar como Cozinhada",
   "@markAsCooked": {
     "description": "Texto do botão para marcar refeição como cozinhada"
