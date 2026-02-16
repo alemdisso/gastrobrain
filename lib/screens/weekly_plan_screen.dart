@@ -17,7 +17,6 @@ import '../core/services/meal_plan_service.dart';
 import '../core/services/meal_action_service.dart';
 import '../core/services/meal_edit_service.dart';
 import '../core/services/recommendation_cache_service.dart';
-import '../core/services/shopping_list_service.dart';
 import '../core/theme/design_tokens.dart';
 import '../core/providers/recipe_provider.dart';
 import '../core/providers/meal_provider.dart';
@@ -29,8 +28,7 @@ import '../widgets/edit_meal_recording_dialog.dart';
 import '../widgets/recipe_selection_dialog.dart';
 import '../widgets/week_navigation_widget.dart';
 import '../widgets/weekly_summary_widget.dart';
-import '../widgets/shopping_list_preview_bottom_sheet.dart';
-import '../widgets/shopping_list_refinement_bottom_sheet.dart';
+import '../screens/shopping_list_preview_screen.dart';
 import '../utils/id_generator.dart';
 import '../l10n/app_localizations.dart';
 import '../screens/recipe_details_screen.dart';
@@ -64,7 +62,6 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   MealPlanSummary? _summaryData;
   // Bottom sheet state
   bool _isSummarySheetOpen = false;
-  bool _isShoppingSheetOpen = false;
 
   @override
   void initState() {
@@ -810,156 +807,6 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     });
   }
 
-  Future<void> _handleGenerateShoppingList() async {
-    try {
-      // Calculate end date (6 days after start, since Friday-Thursday is 7 days)
-      final endDate = _currentWeekStart.add(const Duration(days: 6));
-
-      // Check if a shopping list already exists for this date range
-      final existingList = await _dbHelper.getShoppingListForDateRange(
-        _currentWeekStart,
-        endDate,
-      );
-
-      if (existingList != null) {
-        // Show dialog asking if user wants to view existing or regenerate
-        if (!mounted) return;
-        final action = await showDialog<String>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text(AppLocalizations.of(context)!.shoppingListExists),
-            content:
-                Text(AppLocalizations.of(context)!.shoppingListExistsMessage),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, 'cancel'),
-                child: Text(AppLocalizations.of(context)!.cancel),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, 'view'),
-                child: Text(AppLocalizations.of(context)!.viewExistingList),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, 'regenerate'),
-                child: Text(AppLocalizations.of(context)!.regenerateList),
-              ),
-            ],
-          ),
-        );
-
-        if (action == null || action == 'cancel') {
-          return; // User cancelled
-        }
-
-        if (action == 'view') {
-          // Navigate to existing list
-          if (mounted) {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ShoppingListScreen(
-                  shoppingListId: existingList.id!,
-                ),
-              ),
-            );
-          }
-          return;
-        }
-
-        // If action == 'regenerate', delete the existing list and continue
-        if (action == 'regenerate') {
-          await _dbHelper.deleteShoppingList(existingList.id!);
-        }
-      }
-
-      // Stage 2: Show refinement sheet for user to curate ingredients
-      final shoppingListService = ShoppingListService(_dbHelper);
-
-      // Calculate projected ingredients (no database writes)
-      final groupedIngredients =
-          await shoppingListService.calculateProjectedIngredients(
-        startDate: _currentWeekStart,
-        endDate: endDate,
-      );
-
-      // Show refinement sheet and wait for user selection
-      if (!mounted) return;
-      final selectedIngredients =
-          await showModalBottomSheet<Map<String, List<Map<String, dynamic>>>>(
-        context: context,
-        backgroundColor: Colors.transparent,
-        isScrollControlled: true,
-        builder: (context) => DraggableScrollableSheet(
-          initialChildSize: 0.7,
-          minChildSize: 0.5,
-          maxChildSize: 0.95,
-          builder: (context, scrollController) =>
-              ShoppingListRefinementBottomSheet(
-            groupedIngredients: groupedIngredients,
-          ),
-        ),
-      );
-
-      // If user cancelled refinement, exit early
-      if (selectedIngredients == null || !mounted) {
-        return;
-      }
-
-      // Show loading indicator
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-              const SizedBox(width: DesignTokens.spacingMd),
-              Text(AppLocalizations.of(context)!.generatingShoppingList),
-            ],
-          ),
-          duration: const Duration(seconds: 30),
-        ),
-      );
-
-      // Generate the shopping list from curated ingredients
-      final shoppingList =
-          await ServiceProvider.shoppingList.generateFromCuratedIngredients(
-        startDate: _currentWeekStart,
-        endDate: endDate,
-        curatedIngredients: selectedIngredients,
-      );
-
-      // Hide loading indicator
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
-      // Navigate to the shopping list screen
-      if (mounted) {
-        await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ShoppingListScreen(
-              shoppingListId: shoppingList.id!,
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                '${AppLocalizations.of(context)!.errorGeneratingShoppingList} $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
   Future<void> _calculateSummaryData() async {
     final summary = await _mealPlanSummary.calculateSummary(_currentMealPlan);
     if (mounted) {
@@ -1039,85 +886,10 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     });
   }
 
-  void _openShoppingSheet() {
-    setState(() => _isShoppingSheetOpen = true);
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(DesignTokens.borderRadiusLarge),
-          ),
-        ),
-        child: _buildShoppingListOptions(context),
-      ),
-    ).whenComplete(() {
-      setState(() => _isShoppingSheetOpen = false);
-    });
-  }
-
-  Future<void> _showShoppingPreview() async {
-    try {
-      // Calculate date range for current week
-      final startDate = _currentWeekStart;
-      final endDate = _currentWeekStart.add(const Duration(days: 6));
-
-      // Get shopping list service
-      final shoppingListService = ShoppingListService(_dbHelper);
-
-      // Calculate projected ingredients (no database writes)
-      final groupedIngredients =
-          await shoppingListService.calculateProjectedIngredients(
-        startDate: startDate,
-        endDate: endDate,
-      );
-
-      // Show preview bottom sheet
-      if (mounted) {
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: Colors.transparent,
-          isScrollControlled: true,
-          builder: (context) => DraggableScrollableSheet(
-            initialChildSize: 0.7,
-            minChildSize: 0.5,
-            maxChildSize: 0.95,
-            builder: (context, scrollController) =>
-                ShoppingListPreviewBottomSheet(
-              groupedIngredients: groupedIngredients,
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      // Handle errors gracefully
-      if (mounted) {
-        SnackbarService.showError(
-          context,
-          AppLocalizations.of(context)!.shoppingListPreviewError,
-        );
-      }
-    }
-  }
-
-  Future<bool> _hasExistingShoppingList() async {
-    // Check if there's an active shopping list for current week
-    try {
-      final endDate = _currentWeekStart.add(const Duration(days: 6));
-      final existingList = await _dbHelper.getShoppingListForDateRange(
-        _currentWeekStart,
-        endDate,
-      );
-      return existingList != null;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  Future<void> _navigateToShoppingList() async {
+  /// Opens the unified shopping list flow.
+  /// If a saved list exists for the current week, navigates directly to it.
+  /// Otherwise, opens the preview screen.
+  Future<void> _openShoppingListFlow() async {
     try {
       final endDate = _currentWeekStart.add(const Duration(days: 6));
       final existingList = await _dbHelper.getShoppingListForDateRange(
@@ -1125,12 +897,29 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         endDate,
       );
 
-      if (existingList != null && mounted) {
+      if (!mounted) return;
+
+      if (existingList != null) {
+        // Has saved list → go directly to saved screen
         await Navigator.push(
           context,
           MaterialPageRoute(
+            fullscreenDialog: true,
             builder: (context) => ShoppingListScreen(
               shoppingListId: existingList.id!,
+            ),
+          ),
+        );
+      } else {
+        // No saved list → go to preview screen
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            fullscreenDialog: true,
+            builder: (context) => ShoppingListPreviewScreen(
+              weekStartDate: _currentWeekStart,
+              weekEndDate: endDate,
+              databaseHelper: _dbHelper,
             ),
           ),
         );
@@ -1145,145 +934,6 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     }
   }
 
-  Widget _buildShoppingListOptions(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: _hasExistingShoppingList(),
-      builder: (context, snapshot) {
-        final hasExisting = snapshot.data ?? false;
-
-        return Container(
-          padding: const EdgeInsets.all(DesignTokens.spacingMd),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Handle bar
-                Center(
-                  child: Container(
-                    margin:
-                        const EdgeInsets.only(bottom: DesignTokens.spacingMd),
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      borderRadius:
-                          BorderRadius.circular(DesignTokens.spacingXXs),
-                    ),
-                  ),
-                ),
-
-                // Title
-                Text(
-                  AppLocalizations.of(context)!.generateShoppingList,
-                  style: Theme.of(context).textTheme.titleLarge,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: DesignTokens.spacingLg),
-
-                // Preview option
-                Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.preview),
-                    title:
-                        Text(AppLocalizations.of(context)!.previewIngredients),
-                    subtitle: Text(AppLocalizations.of(context)!
-                        .previewIngredientsSubtitle),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      Navigator.pop(context);
-                      _showShoppingPreview();
-                    },
-                  ),
-                ),
-                const SizedBox(height: DesignTokens.spacingMd),
-
-                // Generate option
-                Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.add_shopping_cart),
-                    title: Text(
-                        AppLocalizations.of(context)!.generateShoppingList),
-                    subtitle: Text(
-                        AppLocalizations.of(context)!.createListForShopping),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      Navigator.pop(context);
-                      _handleGenerateShoppingList();
-                    },
-                  ),
-                ),
-                const SizedBox(height: DesignTokens.spacingMd),
-
-                // View existing option (conditional)
-                if (hasExisting)
-                  Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.list),
-                      title:
-                          Text(AppLocalizations.of(context)!.viewExistingList),
-                      subtitle: Text(AppLocalizations.of(context)!
-                          .viewExistingListSubtitle),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () {
-                        Navigator.pop(context);
-                        _navigateToShoppingList();
-                      },
-                    ),
-                  ),
-
-                const SizedBox(height: DesignTokens.spacingMd),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(AppLocalizations.of(context)!.cancel),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildBottomBar(BuildContext context) {
-    return Container(
-      height: 56,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        boxShadow: DesignTokens.shadowLevel2,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextButton.icon(
-              onPressed: _openSummarySheet,
-              icon: const Icon(Icons.analytics_outlined),
-              label: Text(AppLocalizations.of(context)!.summaryTabLabel),
-              style: TextButton.styleFrom(
-                foregroundColor: _isSummarySheetOpen
-                    ? Theme.of(context).colorScheme.primary
-                    : null,
-              ),
-            ),
-          ),
-          const VerticalDivider(width: 1, thickness: 1),
-          Expanded(
-            child: TextButton.icon(
-              onPressed: _openShoppingSheet,
-              icon: const Icon(Icons.shopping_cart_outlined),
-              label: Text(AppLocalizations.of(context)!.generateShoppingList),
-              style: TextButton.styleFrom(
-                foregroundColor: _isShoppingSheetOpen
-                    ? Theme.of(context).colorScheme.primary
-                    : null,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1291,11 +941,26 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         title: Text(AppLocalizations.of(context)!.weeklyMealPlan),
         actions: [
           IconButton(
+            icon: Icon(
+              Icons.analytics_outlined,
+              color: _isSummarySheetOpen
+                  ? Theme.of(context).colorScheme.primary
+                  : null,
+            ),
+            onPressed: _openSummarySheet,
+            tooltip: AppLocalizations.of(context)!.summaryTabLabel,
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loadData,
             tooltip: AppLocalizations.of(context)!.refresh,
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _openShoppingListFlow,
+        tooltip: AppLocalizations.of(context)!.generateShoppingList,
+        child: const Icon(Icons.shopping_cart_outlined),
       ),
       body: Column(
         children: [
@@ -1327,7 +992,6 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomBar(context),
     );
   }
 

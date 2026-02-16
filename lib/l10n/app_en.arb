@@ -424,6 +424,10 @@
   "@manageRecipes": {
     "description": "Button text to manage recipes"
   },
+  "cooked": "Cooked",
+  "@cooked": {
+    "description": "Tooltip for cooked meal indicator icon"
+  },
   "markAsCooked": "Mark as Cooked",
   "@markAsCooked": {
     "description": "Button text to mark meal as cooked"
@@ -2208,9 +2212,60 @@
   "@failedToLoadShoppingList": {
     "description": "Error message when shopping list cannot be loaded"
   },
+  "shoppingListRefineAction": "Refine",
+  "@shoppingListRefineAction": {
+    "description": "Button to navigate from preview to refinement mode"
+  },
+  "shoppingListGenerateAll": "Generate List",
+  "@shoppingListGenerateAll": {
+    "description": "Button to generate shopping list with all ingredients"
+  },
+  "shoppingListGenerateCount": "Generate List ({count})",
+  "@shoppingListGenerateCount": {
+    "description": "Button to generate shopping list showing selected count",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "18"
+      }
+    }
+  },
+  "shoppingListEmptyTitle": "No meals planned",
+  "@shoppingListEmptyTitle": {
+    "description": "Title shown when no meals are planned for the week"
+  },
+  "shoppingListEmptySubtitle": "Add meals to your plan to see ingredients.",
+  "@shoppingListEmptySubtitle": {
+    "description": "Subtitle guiding user when no meals are planned"
+  },
+  "shoppingListStaleWarning": "Your meal plan has changed since this list was created.",
+  "@shoppingListStaleWarning": {
+    "description": "Banner warning when shopping list is out of date with meal plan"
+  },
+  "shoppingListStaleAction": "Update",
+  "@shoppingListStaleAction": {
+    "description": "Action button to regenerate stale shopping list"
+  },
+  "shoppingListCategoryCount": "{count} items",
+  "@shoppingListCategoryCount": {
+    "description": "Item count shown in category header",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "plannedMeals": "Planned Meals",
   "@plannedMeals": {
     "description": "Header for the planned meals section in weekly summary"
+  },
+  "shoppingListEditIngredients": "Edit Ingredients",
+  "@shoppingListEditIngredients": {
+    "description": "Action to go back to ingredient preview and adjust the list"
+  },
+  "shoppingListEditIngredientsConfirm": "This will discard the current list and return to ingredient selection. Continue?",
+  "@shoppingListEditIngredientsConfirm": {
+    "description": "Confirmation message before discarding saved list to edit ingredients"
   }
 
 }

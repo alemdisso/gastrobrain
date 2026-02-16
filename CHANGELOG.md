@@ -9,6 +9,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.9] - 2026-02-15
+
+### Added
+
+#### Shopping List UX Redesign (#280, #277, #288)
+- Full-screen shopping list screens replacing bottom sheets for better space usage
+- FAB entry point for shopping list generation
+- Improved shopping list bottom sheet tabs testability and UX
+- Resolved 4 UX bugs in shopping list flow
+
+#### Meal Slot Redesign (#271)
+- Redesigned meal slot component for better hierarchy and space efficiency
+
+#### Semantic Color System (#279)
+- Replaced meal-type colors with status-based semantic color system for meal planning screen
+
+### Changed
+
+#### Environment & Tooling
+- Removed WSL references and updated environment docs for native Windows development
+- Disabled detect-flaky-tests workflow to prevent false failures
+- Added 0.1.8 retrospective and updated skills with GitHub Project data access
+
+### Performance
+- 1676 tests passing
+- Zero analyze issues
+
+---
+
 ## [0.1.8] - 2026-02-12
 
 ### Added

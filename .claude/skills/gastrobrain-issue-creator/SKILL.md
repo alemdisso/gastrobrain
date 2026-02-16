@@ -310,8 +310,9 @@ Use the Bash tool to execute the following commands in sequence. The tool will a
 - Use the issue number from Step 1
 - Combine all labels in a single comma-separated list
 
-**Step 3 (Optional):** Add to project if requested
-- Use `gh project item-add` with the issue URL
+**Step 3:** Add to GitHub Project #3
+- Use `gh project item-add 3 --owner alemdisso --url <issue-url>`
+- **Note:** Story point estimates are set in Project #3 fields (not in issue body). After adding to the project, remind the user to set the `Estimate` field in the Project board.
 
 **Step 4 (Optional):** Set milestone if known
 - Use `gh issue edit [number] --milestone`

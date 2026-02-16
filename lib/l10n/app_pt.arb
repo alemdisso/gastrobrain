@@ -424,6 +424,10 @@
   "@manageRecipes": {
     "description": "Texto do botão para gerenciar receitas"
   },
+  "cooked": "Cozinhada",
+  "@cooked": {
+    "description": "Dica para ícone indicador de refeição cozinhada"
+  },
   "markAsCooked": "Marcar como Cozinhada",
   "@markAsCooked": {
     "description": "Texto do botão para marcar refeição como cozinhada"
@@ -2168,8 +2172,59 @@
   "@failedToLoadShoppingList": {
     "description": "Error message when shopping list cannot be loaded"
   },
+  "shoppingListRefineAction": "Refinar",
+  "@shoppingListRefineAction": {
+    "description": "Button to navigate from preview to refinement mode"
+  },
+  "shoppingListGenerateAll": "Gerar Lista",
+  "@shoppingListGenerateAll": {
+    "description": "Button to generate shopping list with all ingredients"
+  },
+  "shoppingListGenerateCount": "Gerar Lista ({count})",
+  "@shoppingListGenerateCount": {
+    "description": "Button to generate shopping list showing selected count",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "18"
+      }
+    }
+  },
+  "shoppingListEmptyTitle": "Nenhuma refeição planejada",
+  "@shoppingListEmptyTitle": {
+    "description": "Title shown when no meals are planned for the week"
+  },
+  "shoppingListEmptySubtitle": "Adicione refeições ao plano para ver ingredientes.",
+  "@shoppingListEmptySubtitle": {
+    "description": "Subtitle guiding user when no meals are planned"
+  },
+  "shoppingListStaleWarning": "Seu plano de refeições mudou desde que esta lista foi criada.",
+  "@shoppingListStaleWarning": {
+    "description": "Banner warning when shopping list is out of date with meal plan"
+  },
+  "shoppingListStaleAction": "Atualizar",
+  "@shoppingListStaleAction": {
+    "description": "Action button to regenerate stale shopping list"
+  },
+  "shoppingListCategoryCount": "{count} itens",
+  "@shoppingListCategoryCount": {
+    "description": "Item count shown in category header",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "plannedMeals": "Refeições Planejadas",
   "@plannedMeals": {
     "description": "Header for the planned meals section in weekly summary"
+  },
+  "shoppingListEditIngredients": "Editar Ingredientes",
+  "@shoppingListEditIngredients": {
+    "description": "Action to go back to ingredient preview and adjust the list"
+  },
+  "shoppingListEditIngredientsConfirm": "Isso descartará a lista atual e voltará à seleção de ingredientes. Continuar?",
+  "@shoppingListEditIngredientsConfirm": {
+    "description": "Confirmation message before discarding saved list to edit ingredients"
   }
 }

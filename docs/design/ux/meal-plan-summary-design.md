@@ -853,7 +853,7 @@ static const mediumGray = Color(0xFF757575); // Labels, percentages
 12. **Run analysis**: `flutter analyze` (must pass)
 13. **Run tests**: `flutter test` (must pass)
 14. **Commit**: Following project conventions
-15. **Push**: For testing outside WSL
+15. **Push**: For CI/CD validation
 16. **Close issue**: #32
 
 ---

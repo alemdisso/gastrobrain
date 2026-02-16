@@ -51,7 +51,7 @@ Gastrobrain uses two types of integration tests that serve different purposes:
 - Use `MockDatabaseHelper` from test mocks
 - No UI interaction or rendering
 - Fast execution (~100-500ms per test)
-- Can run in CI/CD pipelines (Linux/WSL compatible)
+- Can run locally on Windows and in CI/CD pipelines
 - Focus on data operations, state management, and business rules
 
 **Example:**

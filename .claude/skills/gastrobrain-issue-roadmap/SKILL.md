@@ -25,10 +25,11 @@ Use this skill when the user says:
 
 When triggered:
 1. **Immediately fetch issue details** from GitHub using `gh issue view XXX`
-2. **Analyze issue type** (feature, bug, refactor, testing)
-3. **Apply project conventions** (testing, localization, database)
-4. **Generate complete roadmap** using the template
-5. **Ask clarifying questions** only if genuinely needed
+2. **Fetch story points** from GitHub Project #3: `gh project item-list 3 --owner alemdisso --format json --limit 100` — use the `estimate` field (source of truth for story points, not issue body)
+3. **Analyze issue type** (feature, bug, refactor, testing)
+4. **Apply project conventions** (testing, localization, database)
+5. **Generate complete roadmap** using the template
+6. **Ask clarifying questions** only if genuinely needed
 
 ### Do NOT Use This Skill
 
@@ -782,7 +783,8 @@ See `examples/` directory for complete roadmap examples:
 ### Step 1: Recognize Trigger
 
 When user says "deal with #XXX" or similar trigger:
-- Immediately use `gh issue view XXX --json number,title,body,labels` to fetch issue
+- Immediately use `gh issue view XXX --json number,title,body,labels` to fetch issue details
+- Fetch story points from Project #3: `gh project item-list 3 --owner alemdisso --format json --limit 100` — use the `estimate` field (source of truth, not issue body)
 - Parse issue details (type, description, acceptance criteria)
 
 ### Step 2: Analyze Issue Type

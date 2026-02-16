@@ -143,7 +143,7 @@ xdg-open coverage/html/index.html  # Linux
 
 **Installing lcov:**
 ```bash
-# Ubuntu/Debian/WSL
+# Ubuntu/Debian
 sudo apt-get install lcov
 ```
 

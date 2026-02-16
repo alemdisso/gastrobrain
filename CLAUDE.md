@@ -43,7 +43,7 @@ For detailed workflows on issue management, GitHub Projects integration, and Git
 
 ## Environment Notes
 
-**Local Development (Windows)**: This project runs directly in Windows for local development. For local code validation, use `flutter analyze` and `flutter test`. Note that `flutter build apk`, `flutter build ios`, and `flutter run` may have limitations in the local development environment. Physical device testing and full builds are typically done via GitHub Actions CI/CD, which successfully builds APKs.
+**Local Development (Windows + VS Code)**: This project runs natively on Windows using VS Code with Claude Code. All Flutter commands work locally: `flutter analyze`, `flutter test`, `flutter build apk`, and `flutter run`. Builds and device testing can also be done via GitHub Actions CI/CD.
 
 ## Architecture & Codebase
 

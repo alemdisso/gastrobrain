@@ -236,18 +236,6 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
     }
   }
 
-  /// Gets the context border color for containers
-  Color _getContextBorderColor(BuildContext context) {
-    switch (widget.timeContext) {
-      case TimeContext.past:
-        return Theme.of(context).colorScheme.outline.withValues(alpha: 0.3);
-      case TimeContext.current:
-        return Theme.of(context).colorScheme.outline.withAlpha(76);
-      case TimeContext.future:
-        return Theme.of(context).colorScheme.primary.withAlpha(76);
-    }
-  }
-
   /// Apply context styling ONLY to card backgrounds, not text or icons
   Widget _buildContextualCard({
     required Widget child,
@@ -536,28 +524,46 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
     final bool hasPlannedMeal = plannedMeal != null && recipe != null;
     final bool hasBeenCooked = plannedMeal?.hasBeenCooked ?? false;
 
-    // Simplified color scheme - no context opacity applied to meal sections
+    // Status-based color scheme: colors reflect meal state, not meal type
     final Color backgroundColor = !hasPlannedMeal
-        ? Theme.of(context).colorScheme.surface
+        ? DesignTokens.mealEmpty
         : hasBeenCooked
-            ? Colors.green.withAlpha(64)
-            : mealType == MealPlanItem.lunch
-                ? Theme.of(context).colorScheme.primaryContainer.withAlpha(128)
-                : Theme.of(context)
-                    .colorScheme
-                    .secondaryContainer
-                    .withAlpha(128);
+            ? DesignTokens.mealCooked
+            : DesignTokens.mealPlanned;
 
-    final Color borderColor = hasPlannedMeal
-        ? mealType == MealPlanItem.lunch
-            ? Theme.of(context).colorScheme.primary
-            : Theme.of(context).colorScheme.secondary
-        : _getContextBorderColor(context);
+    final Color borderColor = !hasPlannedMeal
+        ? DesignTokens.mealEmptyBorder
+        : hasBeenCooked
+            ? DesignTokens.mealCookedBorder
+            : DesignTokens.mealPlannedBorder;
 
     final screenWidth = MediaQuery.of(context).size.width;
     final EdgeInsets contentPadding = screenWidth < 360
         ? const EdgeInsets.all(DesignTokens.spacingSm)
         : const EdgeInsets.all(DesignTokens.spacingMd);
+
+    // Meal type label (subtle, consistent across both states)
+    final Widget mealTypeLabel = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          mealType == MealPlanItem.lunch
+              ? Icons.wb_sunny_outlined
+              : Icons.nightlight_outlined,
+          size: 14,
+          color: DesignTokens.mealBadgeContent,
+        ),
+        const SizedBox(width: DesignTokens.spacingXXs),
+        Text(
+          mealType == MealPlanItem.lunch
+              ? AppLocalizations.of(context)!.lunch
+              : AppLocalizations.of(context)!.dinner,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: DesignTokens.mealBadgeContent,
+              ),
+        ),
+      ],
+    );
 
     return InkWell(
       key: _generateSlotKey(dayIndex, mealType),
@@ -570,172 +576,68 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
           border: Border.all(color: borderColor),
           borderRadius: BorderRadius.circular(DesignTokens.borderRadiusSmall),
         ),
-        child: Row(
-          children: [
-            // Meal type indicator
-            Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: DesignTokens.spacingMd,
-                  vertical: DesignTokens.spacingSm),
-              decoration: BoxDecoration(
-                color: mealType == MealPlanItem.lunch
-                    ? Theme.of(context).colorScheme.primary.withAlpha(40)
-                    : Theme.of(context).colorScheme.secondary.withAlpha(40),
-                borderRadius: BorderRadius.circular(DesignTokens.spacingXs),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(13),
-                    blurRadius: 2,
-                    offset: const Offset(0, 1),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+        child: hasPlannedMeal
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    mealType == MealPlanItem.lunch
-                        ? Icons.wb_sunny_outlined
-                        : Icons.nightlight_outlined,
-                    size: 16,
-                    color: mealType == MealPlanItem.lunch
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.secondary,
-                  ),
-                  const SizedBox(width: DesignTokens.spacingXs),
-                  Text(
-                    mealType == MealPlanItem.lunch
-                        ? AppLocalizations.of(context)!.lunch
-                        : AppLocalizations.of(context)!.dinner,
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          fontWeight: DesignTokens.weightBold,
-                          color: mealType == MealPlanItem.lunch
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.secondary,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(width: DesignTokens.spacingMd),
-
-            // Recipe info or placeholder (no opacity changes)
-            Expanded(
-              child: hasPlannedMeal
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                recipe.name,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(
-                                      fontWeight: DesignTokens.weightBold,
-                                    ),
-                              ),
-                            ),
-                            if (plannedMeal.mealPlanItemRecipes != null &&
-                                plannedMeal.mealPlanItemRecipes!.length >
-                                    1) ...[
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: DesignTokens.spacingSm,
-                                    vertical: DesignTokens.spacingXXs),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primaryContainer,
-                                  borderRadius: BorderRadius.circular(
-                                      DesignTokens.borderRadiusSmall),
-                                ),
-                                child: Text(
-                                  AppLocalizations.of(context)!
-                                      .additionalRecipesCount(plannedMeal
-                                              .mealPlanItemRecipes!.length -
-                                          1),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelSmall
-                                      ?.copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onPrimaryContainer,
-                                      ),
-                                ),
-                              ),
-                              const SizedBox(width: DesignTokens.spacingSm),
-                            ],
-                            if (hasBeenCooked)
-                              const Tooltip(
-                                message: 'Cooked',
-                                child: Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
-                                  size: 20,
-                                ),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: DesignTokens.spacingXs),
-                        Row(
-                          children: [
-                            // Difficulty stars (reduced to 3 stars to save space)
-                            ...List.generate(
-                              3,
-                              (index) => Icon(
-                                index < recipe.difficulty
-                                    ? Icons.star
-                                    : Icons.star_border,
-                                size: 12,
-                                color: index < recipe.difficulty
-                                    ? Colors.amber
-                                    : DesignTokens.textSecondary,
-                              ),
-                            ),
-                            const SizedBox(width: DesignTokens.spacingXs),
-                            // Time
-                            const Icon(Icons.timer,
-                                size: 12, color: DesignTokens.textSecondary),
-                            const SizedBox(width: DesignTokens.spacingXXs),
-                            Expanded(
-                              child: Text(
-                                '${recipe.prepTimeMinutes + recipe.cookTimeMinutes}min',
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.labelSmall,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    )
-                  : Row(
-                      children: [
-                        const Icon(Icons.add,
-                            color: DesignTokens.textSecondary),
-                        const SizedBox(width: DesignTokens.spacingSm),
-                        Expanded(
-                          child: Text(
-                            AppLocalizations.of(context)!.addMeal,
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelMedium
-                                ?.copyWith(
-                                  color: DesignTokens.textSecondary,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                            overflow: TextOverflow.ellipsis,
+                  // Meal type label + cooked checkmark
+                  Row(
+                    children: [
+                      mealTypeLabel,
+                      const Spacer(),
+                      if (hasBeenCooked)
+                        Tooltip(
+                          message: AppLocalizations.of(context)!.cooked,
+                          child: const Icon(
+                            Icons.check_circle,
+                            color: DesignTokens.mealCookedIcon,
+                            size: 20,
                           ),
                         ),
-                      ],
+                    ],
+                  ),
+                  const SizedBox(height: DesignTokens.spacingXs),
+                  // Recipe name (full width, max 2 lines)
+                  Text(
+                    recipe.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: DesignTokens.weightBold,
+                        ),
+                  ),
+                  // Recipe count (below name, only for multi-recipe meals)
+                  if (plannedMeal.mealPlanItemRecipes != null &&
+                      plannedMeal.mealPlanItemRecipes!.length > 1) ...[
+                    const SizedBox(height: DesignTokens.spacingXs),
+                    Text(
+                      AppLocalizations.of(context)!.additionalRecipesCount(
+                          plannedMeal.mealPlanItemRecipes!.length - 1),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: DesignTokens.mealBadgeContent,
+                          ),
                     ),
-            ),
-          ],
-        ),
+                  ],
+                ],
+              )
+            : Row(
+                children: [
+                  mealTypeLabel,
+                  const SizedBox(width: DesignTokens.spacingMd),
+                  const Icon(Icons.add,
+                      size: 18, color: DesignTokens.mealBadgeContent),
+                  const SizedBox(width: DesignTokens.spacingXs),
+                  Expanded(
+                    child: Text(
+                      AppLocalizations.of(context)!.addMeal,
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            color: DesignTokens.mealBadgeContent,
+                          ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }

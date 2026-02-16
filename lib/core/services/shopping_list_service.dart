@@ -295,12 +295,17 @@ class ShoppingListService {
     // 1. Generate list name
     final listName = _generateListName(startDate, endDate);
 
-    // 2. Create shopping list
+    // 2. Get meal plan's modifiedAt for stale detection
+    final mealPlan = await dbHelper.getMealPlanForWeek(startDate);
+    final mealPlanModifiedAt = mealPlan?.modifiedAt;
+
+    // 3. Create shopping list
     final shoppingList = ShoppingList(
       name: listName,
       dateCreated: DateTime.now(),
       startDate: startDate,
       endDate: endDate,
+      mealPlanModifiedAt: mealPlanModifiedAt,
     );
 
     // 3. Save shopping list to database

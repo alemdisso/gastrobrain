@@ -123,11 +123,11 @@ void main() {
       // Wait for loading
       await tester.pumpAndSettle();
 
-      // Should display localized categories (in English since test uses English locale)
+      // Should display localized categories with item counts
       expect(find.text('Protein'), findsOneWidget);
       expect(find.text('Vegetable'), findsOneWidget);
 
-      // Should display items
+      // Categories are expanded by default — items should be visible
       expect(find.text('Chicken Breast'), findsOneWidget);
       expect(find.text('Tomatoes'), findsOneWidget);
 
@@ -171,6 +171,7 @@ void main() {
       // Wait for loading
       await tester.pumpAndSettle();
 
+      // Categories are expanded by default — items should be visible
       // Should display "to taste" with warning indicator
       expect(find.textContaining('to taste'), findsOneWidget);
       expect(find.textContaining('⚠️'), findsOneWidget);
@@ -247,7 +248,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Both items should be visible initially
+      // Both items should be visible initially (categories expanded by default)
       expect(find.text('Chicken Breast'), findsOneWidget);
       expect(find.text('Salt'), findsOneWidget);
 
@@ -307,7 +308,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Both items should be visible initially
+      // Both items should be visible initially (categories expanded by default)
       expect(find.text('Tomato'), findsOneWidget);
       expect(find.text('Salt'), findsOneWidget);
 
@@ -370,6 +371,9 @@ void main() {
 
       await tester.pumpAndSettle();
 
+      // Categories are expanded by default — items should be visible
+      // 'baking' maps to IngredientCategory.other → "Other"
+      // 'dairy' maps to IngredientCategory.dairy → "Dairy"
       // Should display formatted quantities:
       // 2.5 → "2½ Cup"
       // 0.5 → "½ Cup"
@@ -429,7 +433,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // All items visible initially
+      // All items visible initially (categories expanded by default)
       expect(find.text('Chicken'), findsOneWidget);
       expect(find.text('Salt'), findsOneWidget);
       expect(find.text('Pepper'), findsOneWidget);

@@ -1,7 +1,7 @@
 ---
 name: "Gastrobrain Product Strategy & Health"
 description: "Strategic partner for roadmap planning, priority setting, and project health management. Provides 'wide picture' perspective balancing feature development with code quality, technical debt, and long-term sustainability. Use for: 'Review the roadmap', 'Help me prioritize', 'Is my milestone balanced?', 'Should I focus on features or quality?', 'Strategic review of 0.X.Y'."
-version: "1.0.0"
+version: "1.1.0"
 author: "Gastrobrain Development Team"
 ---
 
@@ -52,14 +52,34 @@ Invoke this skill when you say:
 - "Evaluate project health"
 - "Help me plan the next phase"
 
+### Data Sources
+
+**GitHub Project #3** (owner: `alemdisso`) is the single source of truth for issue estimates and project status.
+
+```bash
+# Fetch ALL project items with estimates, size, priority, status, milestone
+gh project item-list 3 --owner alemdisso --format json --limit 100
+
+# Fetch open milestones for roadmap overview
+gh api repos/alemdisso/gastrobrain/milestones?state=open --jq '.[] | {number: .number, title: .title, open: .open_issues, closed: .closed_issues, description: (.description[:200])}'
+
+# Fetch issues for a specific milestone
+gh issue list --milestone "0.1.X" --state all --json number,title,labels,state
+```
+
+**Key Project fields:** `estimate` (story points), `size` (XS/S/M/L/XL), `priority` (P1/P2/P3), `status` (Ready/In Progress/Done), `milestone`
+
+**Sprint velocity reference:** `docs/archive/Sprint-Estimation-Diary.md` — cruising velocity is **20 points/week**
+
 ### Automatic Actions
 
 When triggered, this skill will:
-1. Analyze current project health metrics
-2. Assess milestone balance (features vs. quality ratio)
-3. Evaluate strategic priorities
-4. Recommend roadmap adjustments if needed
-5. Provide data-driven guidance on next steps
+1. **Fetch project data** from GitHub Project #3 for accurate metrics
+2. Analyze current project health metrics
+3. Assess milestone balance (features vs. quality ratio)
+4. Evaluate strategic priorities
+5. Recommend roadmap adjustments if needed
+6. Provide data-driven guidance on next steps
 
 ### Do NOT Use This Skill
 

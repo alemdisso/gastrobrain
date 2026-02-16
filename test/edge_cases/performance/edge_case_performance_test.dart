@@ -22,7 +22,7 @@
 /// - **Search Operations**: < 200ms for fuzzy search across 1000+ items
 ///
 /// **Environment Note:**
-/// These tests run in WSL and measure computational/database performance.
+/// These tests run locally on Windows and measure computational/database performance.
 /// UI rendering performance (scrolling, animations) should be tested on
 /// physical devices using Flutter DevTools profiler.
 ///

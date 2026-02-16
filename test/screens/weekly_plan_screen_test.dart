@@ -19,6 +19,7 @@ import 'package:gastrobrain/screens/weekly_plan_screen.dart';
 import 'package:gastrobrain/utils/id_generator.dart';
 import 'package:gastrobrain/l10n/app_localizations.dart';
 import 'package:gastrobrain/widgets/weekly_calendar_widget.dart';
+import 'package:gastrobrain/widgets/weekly_summary_widget.dart';
 import '../mocks/mock_database_helper.dart';
 
 void main() {
@@ -1181,7 +1182,7 @@ void main() {
   // Summary Tab Tests (Issue #32)
   // TEMPORARILY SKIPPED: Tab architecture removed in Checkpoint 1.
   // These tests will be updated in Checkpoint 3 when Summary bottom sheet is implemented.
-  group('WeeklyPlanScreen Summary Tab', () {
+  group('WeeklyPlanScreen Summary Bottom Sheet', () {
     // Helper to get the Friday of the current week (matches screen logic)
     DateTime getCurrentWeekFriday() {
       final now = DateTime.now();
@@ -1190,7 +1191,7 @@ void main() {
       return now.subtract(Duration(days: daysToSubtract));
     }
 
-    testWidgets('Summary tab displays correctly with meal plan data',
+    testWidgets('Summary sheet displays correctly with meal plan data',
         (WidgetTester tester) async {
       // Set up mock data - use current week so it matches what screen loads
       final weekStart = getCurrentWeekFriday();
@@ -1258,13 +1259,12 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Verify Planning tab is displayed by default
-      expect(find.text('Planning'), findsOneWidget);
-      expect(find.text('Summary'), findsOneWidget);
-
-      // Switch to Summary tab
-      await tester.tap(find.text('Summary'));
+      // Open summary via app bar icon
+      await tester.tap(find.byIcon(Icons.analytics_outlined));
       await tester.pumpAndSettle();
+
+      // Verify summary widget appears
+      expect(find.byType(WeeklySummaryWidget), findsOneWidget);
 
       // Verify summary data is displayed
       expect(find.textContaining('4 of 14 meals planned'), findsOneWidget);
@@ -1279,7 +1279,7 @@ void main() {
       expect(find.text('Recipe Variety'), findsOneWidget);
     });
 
-    testWidgets('Summary tab shows empty state with no meals',
+    testWidgets('Summary sheet shows empty state with no meals',
         (WidgetTester tester) async {
       // No meal plan data - empty state
 
@@ -1289,8 +1289,8 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Switch to Summary tab
-      await tester.tap(find.text('Summary'));
+      // Open summary via app bar icon
+      await tester.tap(find.byIcon(Icons.analytics_outlined));
       await tester.pumpAndSettle();
 
       // Verify empty state
@@ -1298,7 +1298,7 @@ void main() {
       expect(find.text('No proteins planned yet'), findsOneWidget);
     });
 
-    testWidgets('Summary tab switches back to Planning tab',
+    testWidgets('Summary sheet closes and returns to calendar',
         (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestableWidget(WeeklyPlanScreen(databaseHelper: mockDbHelper)),
@@ -1306,19 +1306,25 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Switch to Summary tab
-      await tester.tap(find.text('Summary'));
+      // Open summary via app bar icon
+      await tester.tap(find.byIcon(Icons.analytics_outlined));
       await tester.pumpAndSettle();
 
-      // Verify we're on Summary tab
-      expect(find.text('Protein Distribution'), findsOneWidget);
+      // Verify summary is open
+      expect(find.byType(WeeklySummaryWidget), findsOneWidget);
 
-      // Switch back to Planning tab
-      await tester.tap(find.text('Planning'));
+      // Close via the close button
+      final closeButton = find.byWidgetPredicate(
+        (widget) => widget is IconButton &&
+                     widget.icon is Icon &&
+                     (widget.icon as Icon).icon == Icons.close
+      );
+      await tester.tap(closeButton);
       await tester.pumpAndSettle();
 
-      // Verify we're back on Planning tab (calendar should be visible)
-      expect(find.byType(WeeklyPlanScreen), findsOneWidget);
+      // Verify calendar is visible and summary is gone
+      expect(find.byType(WeeklyCalendarWidget), findsOneWidget);
+      expect(find.byType(WeeklySummaryWidget), findsNothing);
     });
 
     testWidgets('Summary updates when week changes',
@@ -1369,15 +1375,28 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Switch to Summary tab
-      await tester.tap(find.text('Summary'));
+      // Open summary via app bar icon
+      await tester.tap(find.byIcon(Icons.analytics_outlined));
       await tester.pumpAndSettle();
 
       // Verify current week has 1 meal
       expect(find.textContaining('1 of 14 meals planned'), findsOneWidget);
 
+      // Close the summary sheet
+      final closeButton = find.byWidgetPredicate(
+        (widget) => widget is IconButton &&
+                     widget.icon is Icon &&
+                     (widget.icon as Icon).icon == Icons.close
+      );
+      await tester.tap(closeButton);
+      await tester.pumpAndSettle();
+
       // Change to next week (which should be empty)
-      await tester.tap(find.byIcon(Icons.navigate_next));
+      await tester.tap(find.byIcon(Icons.chevron_right));
+      await tester.pumpAndSettle();
+
+      // Open summary again
+      await tester.tap(find.byIcon(Icons.analytics_outlined));
       await tester.pumpAndSettle();
 
       // Summary should now show 0 meals
@@ -1434,8 +1453,8 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Switch to Summary tab
-      await tester.tap(find.text('Summary'));
+      // Open summary via app bar icon
+      await tester.tap(find.byIcon(Icons.analytics_outlined));
       await tester.pumpAndSettle();
 
       // Verify 50% progress in compact overview
@@ -1520,8 +1539,8 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Switch to Summary tab
-      await tester.tap(find.text('Summary'));
+      // Open summary via app bar icon
+      await tester.tap(find.byIcon(Icons.analytics_outlined));
       await tester.pumpAndSettle();
 
       // Verify recipe variety metrics
@@ -1537,9 +1556,9 @@ void main() {
       expect(find.textContaining('Grilled Chicken (2×)'), findsOneWidget);
     });
 
-  }, skip: 'Tab architecture removed - tests will be updated for bottom sheet in Checkpoint 3');
+  });
 
-  group('Bottom Sheet UI Pattern (#258 Phase 2A)', () {
+  group('FAB + App Bar Actions (#280 Shopping List Redesign)', () {
     testWidgets('shows planning calendar without tabs', (WidgetTester tester) async {
       // Build the screen
       await tester.pumpWidget(createTestableWidget(
@@ -1554,49 +1573,36 @@ void main() {
       expect(find.byType(WeeklyCalendarWidget), findsOneWidget);
     });
 
-    testWidgets('shows persistent bottom bar with two buttons', (WidgetTester tester) async {
+    testWidgets('shows FAB and summary icon button instead of bottom bar', (WidgetTester tester) async {
       await tester.pumpWidget(createTestableWidget(
         WeeklyPlanScreen(databaseHelper: mockDbHelper),
       ));
       await tester.pumpAndSettle();
 
-      // Verify bottom bar buttons are present
-      expect(find.text('Summary'), findsOneWidget);
-      expect(find.text('Generate Shopping List'), findsOneWidget);
+      // Verify FAB with shopping cart icon is present
+      expect(find.byType(FloatingActionButton), findsOneWidget);
+      expect(find.byIcon(Icons.shopping_cart_outlined), findsOneWidget);
+
+      // Verify summary icon button in app bar
+      expect(find.byIcon(Icons.analytics_outlined), findsOneWidget);
+
+      // Verify old bottom bar elements are gone
+      expect(find.text('Summary'), findsNothing);
+      expect(find.text('Generate Shopping List'), findsNothing);
     });
 
-    testWidgets('opens summary bottom sheet on tap', (WidgetTester tester) async {
-      // Add some test data for summary
-      final weekStart = DateTime(2023, 6, 2); // A Friday
-      final testRecipe = Recipe(
-        id: 'test-recipe-1',
-        name: 'Test Recipe',
-        desiredFrequency: FrequencyType.weekly,
-        createdAt: DateTime.now(),
-      );
-      await mockDbHelper.insertRecipe(testRecipe);
-
-      final mealPlanId = IdGenerator.generateId();
-      final mealPlan = MealPlan(
-        id: mealPlanId,
-        weekStartDate: weekStart,
-        notes: 'Test Plan',
-        createdAt: DateTime.now(),
-        modifiedAt: DateTime.now(),
-      );
-      mockDbHelper.mealPlans[mealPlanId] = mealPlan;
-
+    testWidgets('opens summary bottom sheet via app bar icon', (WidgetTester tester) async {
       await tester.pumpWidget(createTestableWidget(
         WeeklyPlanScreen(databaseHelper: mockDbHelper),
       ));
       await tester.pumpAndSettle();
 
-      // Tap Summary button
-      await tester.tap(find.text('Summary'));
+      // Tap summary icon button in app bar
+      await tester.tap(find.byIcon(Icons.analytics_outlined));
       await tester.pumpAndSettle();
 
-      // Verify summary content appears (should show protein rotation section)
-      expect(find.textContaining('Protein'), findsAtLeastNWidgets(1));
+      // Verify summary widget appears
+      expect(find.byType(WeeklySummaryWidget), findsOneWidget);
     });
 
     testWidgets('dismisses summary bottom sheet on close button tap', (WidgetTester tester) async {
@@ -1605,9 +1611,12 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // Open summary sheet
-      await tester.tap(find.text('Summary'));
+      // Open summary sheet via app bar icon
+      await tester.tap(find.byIcon(Icons.analytics_outlined));
       await tester.pumpAndSettle();
+
+      // Verify summary is open
+      expect(find.byType(WeeklySummaryWidget), findsOneWidget);
 
       // Find and tap close button (IconButton with Icons.close)
       final closeButton = find.byWidgetPredicate(
@@ -1620,26 +1629,30 @@ void main() {
       await tester.tap(closeButton);
       await tester.pumpAndSettle();
 
-      // Summary content should be gone
-      expect(find.textContaining('Protein'), findsNothing);
+      // Summary should be gone
+      expect(find.byType(WeeklySummaryWidget), findsNothing);
     });
 
-    testWidgets('shopping list button opens options sheet', (WidgetTester tester) async {
+    testWidgets('FAB navigates to shopping list flow', (WidgetTester tester) async {
       await tester.pumpWidget(createTestableWidget(
         WeeklyPlanScreen(databaseHelper: mockDbHelper),
       ));
       await tester.pumpAndSettle();
 
-      // Tap Shopping List button (find first one which is the bottom bar button)
-      await tester.tap(find.text('Generate Shopping List').first);
+      // Verify FAB is present and tappable
+      final fab = find.byType(FloatingActionButton);
+      expect(fab, findsOneWidget);
+
+      // Tap FAB — it will try to navigate to preview/saved screen
+      // Since no shopping list exists, it navigates to preview
+      await tester.tap(fab);
       await tester.pumpAndSettle();
 
-      // Verify options appear
-      expect(find.text('Preview Ingredients'), findsOneWidget);
-      expect(find.text('See what you\'d need to buy'), findsOneWidget);
+      // Verify navigation occurred (preview screen should appear)
+      expect(find.byType(WeeklyPlanScreen), findsNothing);
     });
 
-    testWidgets('planning calendar remains visible when sheet opens', (WidgetTester tester) async {
+    testWidgets('planning calendar remains visible when summary sheet opens', (WidgetTester tester) async {
       await tester.pumpWidget(createTestableWidget(
         WeeklyPlanScreen(databaseHelper: mockDbHelper),
       ));
@@ -1648,36 +1661,29 @@ void main() {
       // Verify calendar is visible before opening sheet
       expect(find.byType(WeeklyCalendarWidget), findsOneWidget);
 
-      // Open summary sheet
-      await tester.tap(find.text('Summary'));
+      // Open summary sheet via app bar icon
+      await tester.tap(find.byIcon(Icons.analytics_outlined));
       await tester.pumpAndSettle();
 
-      // Calendar should still be visible (behind scrim)
+      // Calendar should still be visible (behind the bottom sheet)
       expect(find.byType(WeeklyCalendarWidget), findsOneWidget);
     });
 
-    testWidgets('bottom bar buttons are accessible', (WidgetTester tester) async {
+    testWidgets('FAB and summary icon have tooltips for accessibility', (WidgetTester tester) async {
       await tester.pumpWidget(createTestableWidget(
         WeeklyPlanScreen(databaseHelper: mockDbHelper),
       ));
       await tester.pumpAndSettle();
 
-      // Verify both bottom bar buttons are present and tappable
-      expect(find.text('Summary'), findsOneWidget);
-      expect(find.text('Generate Shopping List'), findsAtLeastNWidgets(1));
+      // Verify FAB has a tooltip
+      final fab = tester.widget<FloatingActionButton>(find.byType(FloatingActionButton));
+      expect(fab.tooltip, isNotNull);
+      expect(fab.tooltip, isNotEmpty);
 
-      // Verify buttons are tappable (test tap without error)
-      await tester.tap(find.text('Summary'));
-      await tester.pumpAndSettle();
-
-      // Close the sheet
-      final closeButton = find.byWidgetPredicate(
-        (widget) => widget is IconButton &&
-                     widget.icon is Icon &&
-                     (widget.icon as Icon).icon == Icons.close
-      );
-      await tester.tap(closeButton);
-      await tester.pumpAndSettle();
+      // Verify summary icon button has a tooltip
+      final summaryButton = tester.widget<IconButton>(find.widgetWithIcon(IconButton, Icons.analytics_outlined));
+      expect(summaryButton.tooltip, isNotNull);
+      expect(summaryButton.tooltip, isNotEmpty);
     });
   });
 }

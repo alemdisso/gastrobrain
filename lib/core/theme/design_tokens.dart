@@ -62,6 +62,42 @@ class DesignTokens {
   static const Color info = Color(0xFF0284C7); // Sky Blue
 
   // ============================================================================
+  // MEAL PLANNING COLORS
+  // ============================================================================
+
+  /// Meal Status Colors
+  ///
+  /// Status-based colors for meal planning slots. Colors communicate
+  /// meal state (planned, cooked, empty) rather than meal type (lunch, dinner).
+  /// Meal type is conveyed through icons (sun/moon), not color.
+
+  /// Planned meal background - warm amber tint, inviting "ready to cook" feel
+  static const Color mealPlanned = Color(0xFFFEF3C7); // Amber-50
+  /// Planned meal border - stronger amber for definition
+  static const Color mealPlannedBorder = Color(0xFFF59E0B); // Amber-400
+
+  /// Cooked meal background - satisfying green tint, "done" feel
+  static const Color mealCooked = Color(0xFFD1FAE5); // Emerald-100
+  /// Cooked meal border - stronger green for definition
+  static const Color mealCookedBorder = Color(0xFF059669); // Emerald-600
+  /// Cooked meal checkmark icon
+  static const Color mealCookedIcon = Color(0xFF059669); // Emerald-600
+
+  /// Empty meal slot - neutral, inviting to add
+  static const Color mealEmpty = Color(0xFFF5F5F4); // Stone-100 (surfaceVariant)
+  /// Empty meal slot border
+  static const Color mealEmptyBorder = Color(0xFFD6D3D1); // Stone-300
+
+  /// Meal type badge background (subtle, type-agnostic)
+  static const Color mealBadge = Color(0xFFF5F5F4); // Stone-100
+  /// Meal type badge text/icon color
+  static const Color mealBadgeContent = Color(0xFF57534E); // Stone-600
+
+  /// Difficulty stars
+  static const Color difficultyActive = Color(0xFFF59E0B); // Amber-400
+  static const Color difficultyInactive = Color(0xFFA8A29E); // Stone-400
+
+  // ============================================================================
   // TYPOGRAPHY SYSTEM
   // ============================================================================
 
