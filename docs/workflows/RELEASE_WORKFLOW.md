@@ -326,6 +326,8 @@ git branch -d hotfix/0.1.3.1
 | 0.1.5 | 2026-01-09 | Meal Recording Consolidation | release/0.1.5 | Meal types, Codecov, dialog coverage |
 | 0.1.6 | 2026-01-29 | Recipe Management Polish | release/0.1.6 | Shopping list, meal plan summary, recipe navigation |
 | 0.1.7 | 2026-02-06 | UI Polish & Design System | release/0.1.7 | Design tokens, Material 3 theme, component standardization |
+| 0.1.8 | 2026-02-12 | Testing & Shopping List | release/0.1.8 | Flaky test detection, meal history editing, shopping list enhancements |
+| 0.1.9 | 2026-02-15 | Meal Planning UX Redesign | release/0.1.9 | Shopping list full-screen, meal slot redesign, semantic colors |
 
 ---
 
