@@ -6,6 +6,7 @@ class ShoppingList {
   final DateTime dateCreated;
   final DateTime startDate;
   final DateTime endDate;
+  final DateTime? mealPlanModifiedAt;
 
   ShoppingList({
     this.id,
@@ -13,6 +14,7 @@ class ShoppingList {
     required this.dateCreated,
     required this.startDate,
     required this.endDate,
+    this.mealPlanModifiedAt,
   });
 
   /// Convert a ShoppingList to a Map for database storage
@@ -23,6 +25,7 @@ class ShoppingList {
       'date_created': dateCreated.millisecondsSinceEpoch,
       'start_date': startDate.millisecondsSinceEpoch,
       'end_date': endDate.millisecondsSinceEpoch,
+      'meal_plan_modified_at': mealPlanModifiedAt?.millisecondsSinceEpoch,
     };
   }
 
@@ -34,6 +37,9 @@ class ShoppingList {
       dateCreated: DateTime.fromMillisecondsSinceEpoch(map['date_created'] as int),
       startDate: DateTime.fromMillisecondsSinceEpoch(map['start_date'] as int),
       endDate: DateTime.fromMillisecondsSinceEpoch(map['end_date'] as int),
+      mealPlanModifiedAt: map['meal_plan_modified_at'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(map['meal_plan_modified_at'] as int)
+          : null,
     );
   }
 
@@ -44,6 +50,7 @@ class ShoppingList {
     DateTime? dateCreated,
     DateTime? startDate,
     DateTime? endDate,
+    DateTime? mealPlanModifiedAt,
   }) {
     return ShoppingList(
       id: id ?? this.id,
@@ -51,6 +58,7 @@ class ShoppingList {
       dateCreated: dateCreated ?? this.dateCreated,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
+      mealPlanModifiedAt: mealPlanModifiedAt ?? this.mealPlanModifiedAt,
     );
   }
 
@@ -66,6 +74,6 @@ class ShoppingList {
 
   @override
   String toString() {
-    return 'ShoppingList(id: $id, name: $name, dateCreated: $dateCreated, startDate: $startDate, endDate: $endDate)';
+    return 'ShoppingList(id: $id, name: $name, dateCreated: $dateCreated, startDate: $startDate, endDate: $endDate, mealPlanModifiedAt: $mealPlanModifiedAt)';
   }
 }

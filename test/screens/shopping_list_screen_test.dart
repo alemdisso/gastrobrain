@@ -123,9 +123,15 @@ void main() {
       // Wait for loading
       await tester.pumpAndSettle();
 
-      // Should display localized categories (in English since test uses English locale)
+      // Should display localized categories with item counts
       expect(find.text('Protein'), findsOneWidget);
       expect(find.text('Vegetable'), findsOneWidget);
+
+      // Categories are collapsed by default — expand them to see items
+      await tester.tap(find.text('Protein'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Vegetable'));
+      await tester.pumpAndSettle();
 
       // Should display items
       expect(find.text('Chicken Breast'), findsOneWidget);
@@ -169,6 +175,10 @@ void main() {
       );
 
       // Wait for loading
+      await tester.pumpAndSettle();
+
+      // Expand the category to see items
+      await tester.tap(find.text('Seasoning'));
       await tester.pumpAndSettle();
 
       // Should display "to taste" with warning indicator
@@ -247,6 +257,12 @@ void main() {
 
       await tester.pumpAndSettle();
 
+      // Expand all categories to see items
+      await tester.tap(find.text('Protein'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Seasoning'));
+      await tester.pumpAndSettle();
+
       // Both items should be visible initially
       expect(find.text('Chicken Breast'), findsOneWidget);
       expect(find.text('Salt'), findsOneWidget);
@@ -305,6 +321,12 @@ void main() {
         ),
       );
 
+      await tester.pumpAndSettle();
+
+      // Expand all categories to see items
+      await tester.tap(find.text('Vegetable'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Seasoning'));
       await tester.pumpAndSettle();
 
       // Both items should be visible initially
@@ -370,6 +392,14 @@ void main() {
 
       await tester.pumpAndSettle();
 
+      // Expand all categories to see items
+      // 'baking' maps to IngredientCategory.other → "Other"
+      // 'dairy' maps to IngredientCategory.dairy → "Dairy"
+      await tester.tap(find.text('Other'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Dairy'));
+      await tester.pumpAndSettle();
+
       // Should display formatted quantities:
       // 2.5 → "2½ Cup"
       // 0.5 → "½ Cup"
@@ -427,6 +457,12 @@ void main() {
         ),
       );
 
+      await tester.pumpAndSettle();
+
+      // Expand all categories to see items
+      await tester.tap(find.text('Protein'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Seasoning'));
       await tester.pumpAndSettle();
 
       // All items visible initially
