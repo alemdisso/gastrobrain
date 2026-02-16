@@ -19,7 +19,7 @@ if [ -z "$ISSUE_NUMBER" ]; then
 fi
 
 # Fetch all project items and find the matching issue
-ITEM=$(gh project item-list "$PROJECT_NUMBER" --owner "$OWNER" --format json --limit 200 \
+ITEM=$(gh project item-list "$PROJECT_NUMBER" --owner "$OWNER" --format json --limit 500 \
   | jq --arg num "$ISSUE_NUMBER" '.items[] | select(.content.number == ($num | tonumber))')
 
 if [ -z "$ITEM" ]; then

@@ -1200,6 +1200,125 @@ Feb 12:   ██████░░░░  #289, #290, flaky test tooling, releas
 - **Cruising velocity established: 20 points/week** — based on analysis of sprints 0.1.3 through 0.1.8
 - Android Studio config remains unresolved — VS Code is effective workaround
 
+### 0.1.9 - Meal Planning UX Redesign
+
+**Sprint Duration:** February 14-15, 2026
+**Calendar Days:** 2
+**Active Working Days:** 2 (longer-than-average hours + ~1hr emulator testing)
+**Planned Issues:** 3 (18 points)
+**Completed Issues:** 3 planned + 2 closed as byproducts (#277 absorbed, #288 won't do)
+
+#### Estimation vs Actual
+
+| Issue | Title | Type | Est Points | Weighted Actual | Lines | Ratio | Assessment |
+|-------|-------|------|------------|-----------------|-------|-------|------------|
+| #279 | Color system for meal planning | UX redesign | 5 | 0.42 | 298 | 0.37x | ⚡ Faster |
+| #271 | Meal slot component redesign | UX redesign | 5 | 0.10 | 227 | 0.09x | ⚡ Very fast |
+| #280 | Shopping list flow redesign | UX redesign | 8 | 0.89 | 3,371 | 0.49x | ⚡ Faster |
+| #277 | Full-screen dialogs | UX | (5) | 0 | — | — | Absorbed by #280 |
+| #288 | Tabs testability/UX | UX/testing | (3) | 0 | — | — | Closed (won't do) |
+| **TOTAL** | | | **18** | **1.41** | **3,896** | **0.34x** | ⚡ |
+
+*#277 was absorbed into #280's scope (full-screen conversion was trivial in context of the redesign). #288 was closed as the tabs approach was scrapped entirely by #280.*
+
+#### Accuracy by Type (Weighted)
+
+| Type | Issues | Est Total | Weighted Actual | Avg Ratio | Verdict |
+|------|--------|-----------|-----------------|-----------|---------|
+| UX redesign (simplification) | #279, #271, #280 | 18 | 1.41 | 0.34x | ⚡ Fast — well-defined problems, net code deletion |
+
+#### Variance Analysis
+
+**Fastest: #271 (Meal slot redesign, 0.09x)** — Estimated: 5 points → Actual: 0.10 days
+- Single file changed: 76 insertions, 151 deletions (net -75 lines)
+- This was simplification, not creation — removing visual clutter, tightening hierarchy
+- Color system (#279) established the visual language beforehand, reducing decisions
+- Lesson: Simplification tasks that reduce code are faster than additive tasks at the same point estimate
+
+**On profile: #279 (Color system, 0.37x)** — Estimated: 5 points → Actual: 0.42 days
+- Design + implementation same day — clear vision, no iteration needed
+- 5 files, 256 insertions, 42 deletions — clean replacement of old color approach
+- Shared Feb 14 with 0.1.8 retro and WSL doc cleanup
+- Lesson: When UX vision is clear pre-implementation, design+code same-day is viable
+
+**Largest but still fast: #280 (Shopping list flow, 0.49x)** — Estimated: 8 points → Actual: 0.89 days
+- Massive redesign: 17 files, +1104/-2055 (net -951 lines)
+- Absorbed #277's full-screen conversion with minimal extra effort
+- 4 UX bugs discovered during emulator testing and fixed same day
+- Lesson: Redesigns that simplify architecture are faster than expected because deletion is faster than creation
+
+**Byproducts: #277 and #288** — Zero separate effort
+- #277 (5 pts separate) was trivial in context of #280's full redesign
+- #288 (3 pts) became irrelevant — the entire tabs approach was eliminated
+- Lesson: Linked issues estimated separately will overstate total effort; the redesign made both free
+
+#### Working Pattern Observations
+
+```
+Feb 14: ████░░░░  #279 color system (0.42 days) + 0.1.8 retro + WSL cleanup
+Feb 15: █░░░░░░░  #271 meal slot (0.10 days — quick simplification)
+        ████████  #280 shopping list redesign + 4 bug fixes (0.89 days)
+        ██░░░░░░  roadmap docs, version bump, release
+```
+
+**Patterns:**
+- Foundational work first (#279 color system) → dependent work next day (#271, #280)
+- #271 was so fast it was essentially a warm-up before the main #280 work
+- Implementation → emulator testing → bug fixes in a single session for #280
+- Longer-than-average hours on both days compressed calendar time
+
+#### Lessons Learned
+
+1. **Simplification sprints have their own velocity profile**
+   - All 3 issues were redesigns that *removed* complexity (net -1,026 lines across the sprint)
+   - Deletion is faster than creation: you're removing decisions, not making new ones
+   - 0.34x ratio is consistent with design-system work (0.1.7b: 0.16x) but for different reasons
+   - **Lesson: Estimate UX simplification/redesign at 0.3-0.5x of standard UX creation work**
+
+2. **Well-defined UX vision eliminates discovery overhead**
+   - Design and implementation happened same-day for all issues
+   - No iteration cycles, no stakeholder feedback loops, no design exploration
+   - The developer knew exactly what they wanted before writing code
+   - **Lesson: Clear pre-implementation vision is the strongest velocity accelerator**
+
+3. **Thematic coherence avoids context switching**
+   - All 3 issues touched the meal planning screen ecosystem
+   - Shared mental model, shared color system, shared design language
+   - Sequencing was natural: color system (#279) → components (#271) → flow (#280)
+   - **Lesson: Mono-theme sprints with natural sequencing execute faster than mixed sprints**
+
+4. **Linked issues estimated separately overstate total work**
+   - #277 (5 pts) + #280 (8 pts) were estimated as 13 points of separate work
+   - In practice, #277 was absorbed into #280 at near-zero marginal cost
+   - #288 (3 pts) became irrelevant when the approach was redesigned away
+   - **Lesson: When issues overlap significantly, estimate the umbrella issue only; close sub-issues as absorbed**
+
+5. **Net code deletion is a signal for simplification velocity**
+   - Sprint deleted 1,026 more lines than it added
+   - This is a leading indicator that work will be faster than estimated
+   - Contrast with feature sprints where line counts grow
+   - **Lesson: If a redesign is expected to reduce code, apply 0.3-0.5x multiplier to estimate**
+
+#### Recommendations for Future Sprints
+
+| Finding | Adjustment |
+|---------|------------|
+| UX simplification executes at 0.3-0.5x | New calibration factor: "UX redesign (simplification)" |
+| Clear UX vision eliminates discovery | Pre-design UX changes before sprint starts when possible |
+| Mono-theme sprints are faster | Group related UX issues in same sprint for natural sequencing |
+| Linked issues overstate total work | Estimate umbrella issue; don't sum overlapping sub-issues |
+| Net code deletion signals fast execution | Use as planning heuristic: deletion-heavy = apply 0.3-0.5x |
+| Velocity step-change confirmed | Cruising velocity revised upward to 30 pts/week (from 20) |
+
+#### Notes
+
+- Sprint delivered 18 points in 2 active days (~9 pts/day, ~36 pts/week effective velocity)
+- Consistent with 0.1.7b (32 pts/week) and 0.1.8 (36 pts/week) — confirms velocity step-change, not outlier pattern
+- Three consecutive sprints at 32-36 pts/week indicates sustained acceleration from codebase maturity, Claude Code, and accumulated infrastructure
+- #277 and #288 were closed as byproducts, adding 0 overhead but cleaning up the backlog
+- Emulator testing (~1 hr) caught 4 UX bugs fixed same-day — healthy implementation-test-fix cycle
+- Feb 13 was spent on CI/flaky test infrastructure (not 0.1.9 work)
+
 ---
 
 ## Cumulative Metrics
@@ -1210,25 +1329,26 @@ Feb 12:   ██████░░░░  #289, #290, flaky test tooling, releas
 |--------|----------------|-----------------|-------|------------|-------|
 | 0.1.2 | 12.2 | ~11 | 0.90x | 1.11 | Baseline (slightly conservative, mixed work) |
 | 0.1.3 | 26 | 10.0 | 0.38x | 2.60 | VERY conservative (pattern reuse) |
-| 0.1.4 | 12 | 2.0 | 0.17x | 6.00 | **OUTLIER** - Extremely well-prepared work |
+| 0.1.4 | 12 | 2.0 | 0.17x | 6.00 | Well-prepared work, early sign of acceleration |
 | 0.1.5 | 14 | 6.88 | 1.98x | 2.03 | OVERRAN - Discovery work + MASSIVE hidden overhead |
-| 0.1.6 | 18 | 6.0 | 0.33x | 3.00 | VERY conservative (well-specified features) |
-| 0.1.7a | 21 | 0.31 | 0.01x | 67.7* | **OUTLIER** - Foundation work, single day, overlapped with 0.1.7b |
-| 0.1.7b | 43 | 6.69 | 0.16x | 6.43* | **OUTLIER** - Design system application + efficient batching |
-| 0.1.8 | 25 | 3.35 | 0.13x | 7.14* | **UX-fix-heavy** - Small issues inflate velocity |
+| 0.1.6 | 18 | 6.0 | 0.33x | 3.00 | Well-specified features |
+| 0.1.7a | 21 | ~0.5* | ~0.02x | ~42* | **UNRELIABLE** - Shared day with 0.1.7b, methodology breaks down |
+| 0.1.7b | 43 | 6.69 | 0.16x | 6.43 | Design system application + efficient batching |
+| 0.1.8 | 25 | 3.35 | 0.13x | 7.14 | Small UX fixes + pattern-extension testing |
+| 0.1.9 | 18 | 1.41 | 0.34x | 9.0 | UX simplification, mono-theme, extended hours |
 
-*\* 0.1.7a/b and 0.1.8 velocity reflects sprint profiles that inflate points/day (design system, small UX fixes). Not representative of general-purpose velocity.*
+*\* 0.1.7a weighted-days methodology underrepresents actual effort due to shared day with 0.1.7b. Developer estimates ~0.5 days actual effort. Excluded from velocity calculations.*
 
 **Critical Insights:**
-- **Cruising velocity: 20 points/week** — established from analysis of sprints 0.1.3 through 0.1.8, accounting for both discovery and execution modes
+- **Cruising velocity: 30 points/week** — revised upward from 20 based on sustained acceleration across 0.1.7b-0.1.9 (3 consecutive sprints at 32-36 pts/week)
+- **Velocity step-change confirmed** — early sprints (0.1.2-0.1.6) averaged 1.1-3.0 pts/day; recent sprints (0.1.7b-0.1.9) sustain 6.4-9.0 pts/day. This reflects genuine acceleration from codebase maturity, Claude Code acceleration, accumulated infrastructure (test helpers, design tokens), and developer proficiency — not just sprint profile inflation
 - **Sprint ratio depends heavily on work type** - Can't use one sprint to predict another
-- **Bimodal velocity pattern**: "Discovery mode" (~14 pts/week) vs "Execution mode" (~32 pts/week); cruising velocity (20 pts/week) is the sustainable midpoint
-- **0.1.4, 0.1.7a, 0.1.7b, 0.1.8 are velocity outliers** — each for different reasons (well-prepared, design system, small UX fixes)
+- **Velocity modes**: "Discovery mode" (~20 pts/week) vs "Cruising mode" (~30 pts/week) vs "Execution mode" (~36 pts/week)
 - **Hidden overhead is CRITICAL** - Tooling/environment issues added 29% to 0.1.5 (2 full days)
 - **Well-specified features are fast** - 0.1.6 showed 0.33x ratio with detailed specs
 - **First-screen polish vs follow-up is 8x difference** - The first screen investment creates patterns that compound
 - **Healthy UX feedback loops add ~25-30% emergent work** — budget for this, it's a feature not a bug
-- **Small UX fixes inflate velocity** — 0.1.8's 0.13x ratio driven by 1-point floor problem; don't recalibrate based on these sprints
+- **Small UX fixes inflate velocity partially** — 0.1.8's 0.13x ratio partly driven by 1-point floor, but also reflects genuine speed gains
 
 ### Type-Based Calibration Factors
 
@@ -1253,6 +1373,7 @@ Use these multipliers when estimating future work:
 | Component standardization | 3 issues | 0.09x | 0.1-0.2x | **NEW**: Mechanical once design tokens exist (0.1.7b: #260-#262) |
 | Small UX fixes (batched) | 6 issues | 0.07x | 0.05-0.1x | **NEW**: 1-point floor inflates; batch for efficiency (0.1.8: #272-#278) |
 | Flaky test investigation | 2 issues | 0.25x | 0.2-0.3x | **NEW**: Time-box at 2 hours; root cause often external (0.1.8: #289-#290) |
+| UX redesign (simplification) | 3 issues | 0.34x | 0.3-0.5x | **NEW**: Net code deletion, clear vision, no discovery (0.1.9: #279, #271, #280) |
 
 **Key Insights from 0.1.7a/b:**
 - **Design system work has its own velocity profile** — 64 points in 7 days (0.11x) reflects both new-type overestimation AND genuine efficiency from clear vision, compound patterns, and effective batching
@@ -1267,6 +1388,13 @@ Use these multipliers when estimating future work:
 - **Testing pattern reuse keeps compounding** — #282 (0.12x) and #286 (0.07x) consistent with historical 0.07-0.19x range
 - **TODO audits are healthy sprint planning input** — surfaced 3 quality issues (#282, #284, #286)
 - **Time-box diagnostic tooling** — flaky test runner consumed 0.5 days without signal; adb instability was root cause
+
+**Key Insights from 0.1.9:**
+- **UX simplification/redesign has distinct velocity** — 0.34x ratio when pre-designed, thematically coherent, and deletion-heavy
+- **Net code deletion signals fast execution** — sprint deleted 1,026 more lines than it added; simplification is faster than creation
+- **Mono-theme sprints with natural sequencing are faster** — all 3 issues shared the meal planning area; color system → components → flow
+- **Linked issues estimated separately overstate work** — #277 (5 pts) absorbed by #280 at zero marginal cost; #288 (3 pts) made irrelevant
+- **Velocity step-change is real** — 3 consecutive sprints (0.1.7b-0.1.9) at 32-36 pts/week; driven by codebase maturity, Claude Code, and accumulated infrastructure
 
 ---
 
@@ -1314,40 +1442,41 @@ Use historical velocity data to size future milestones and prevent overcommitmen
 |--------|--------|------|------------|----------|-----------|
 | 0.1.2 | 12.2 | 11 | 1.11 | 5.5 | Mixed (features, bugs, testing) |
 | 0.1.3 | 26 | 10 | 2.60 | 13.0 | Well-prepared (pattern reuse) |
-| 0.1.4 | 12 | 2 | 6.00 | 30.0* | **OUTLIER** (extremely well-prepared) |
+| 0.1.4 | 12 | 2 | 6.00 | 30.0 | Well-prepared work, early sign of acceleration |
 | 0.1.5 | 14 | 6.88 | 2.03 | 10.2 | Discovery + iteration + MASSIVE overhead (29%) |
 | 0.1.6 | 18 | 6 | 3.00 | 15.0 | Well-specified features |
-| 0.1.7a | 21 | 0.31 | 67.7* | —* | **OUTLIER** (design foundation, shared day) |
-| 0.1.7b | 43 | 6.69 | 6.43* | 32.1* | **OUTLIER** (design system application) |
-| 0.1.8 | 25 | 3.5 | 7.14* | 35.7* | **UX-fix-heavy** (small issues inflate velocity) |
+| 0.1.7a | 21 | ~0.5* | ~42* | —* | **UNRELIABLE** (shared day, methodology breaks down) |
+| 0.1.7b | 43 | 6.69 | 6.43 | 32.1 | Design system application + efficient batching |
+| 0.1.8 | 25 | 3.5 | 7.14 | 35.7 | Small UX fixes + pattern-extension testing |
+| 0.1.9 | 18 | 2 | 9.00 | 36.0 | UX simplification, mono-theme, extended hours |
 
-*\* Outlier sprints — velocity inflated by sprint profile (well-prepared, design system, small UX fixes). Not representative of general-purpose velocity.*
+*\* 0.1.7a excluded from velocity calculations — shared day with 0.1.7b makes weighted-days unreliable.*
 
-**Cruising Velocity: 20 points/week** — established from analysis of sprints 0.1.3 through 0.1.8, validated by developer as sustainable midpoint between discovery and execution modes.
+**Cruising Velocity: 30 points/week** — revised upward from 20 based on sustained acceleration across 0.1.7b-0.1.9 (3 consecutive sprints at 32-36 pts/week). To be validated with next sprint.
 
 **Velocity Modes:**
-- **Discovery mode:** ~14 pts/week (new patterns, complex features, tooling overhead)
-- **Cruising mode:** ~20 pts/week (mixed work, sustainable pace)
-- **Execution mode:** ~32 pts/week (small fixes, pattern reuse, deep focus)
+- **Discovery mode:** ~20 pts/week (new patterns, complex features, tooling overhead)
+- **Cruising mode:** ~30 pts/week (mixed work, sustainable pace)
+- **Execution mode:** ~36 pts/week (small fixes, pattern reuse, deep focus)
 
 ### Milestone Sizing Recommendations
 
-**Primary metric: 20 points/week cruising velocity**
+**Primary metric: 30 points/week cruising velocity**
 
 | Sprint Length | Conservative | Cruising | Aggressive |
 |---------------|:-----------:|:--------:|:----------:|
-| 1 week (5 days) | 15 pts | 20 pts | 30 pts |
-| 2 weeks (10 days) | 30 pts | 40 pts | 55 pts |
+| 1 week (5 days) | 20 pts | 30 pts | 36 pts |
+| 2 weeks (10 days) | 40 pts | 60 pts | 72 pts |
 
 ### Adjustment Factors
 
-**Use Aggressive (~30 pts/week) if:**
+**Use Aggressive (~36 pts/week) if:**
 - All work is well-prepared with prerequisites completed
 - Issues are similar and can be batched
 - Extending existing patterns (not creating new ones)
 - Sprint dominated by small fixes or mechanical work
 
-**Use Conservative (~15 pts/week) if:**
+**Use Conservative (~20 pts/week) if:**
 - Work involves discovery or research
 - New infrastructure or patterns needed
 - UI polish requiring iteration and feedback
@@ -1355,31 +1484,34 @@ Use historical velocity data to size future milestones and prevent overcommitmen
 - Mobile/UI work with potential tooling issues
 
 **Critical Rules:**
-1. **Use 20 pts/week as default** for milestone sizing
-2. **Adjust by sprint profile** — discovery (15), cruising (20), execution (30)
+1. **Use 30 pts/week as default** for milestone sizing
+2. **Adjust by sprint profile** — discovery (20), cruising (30), execution (36)
 3. **Add 25-35% overhead buffer** for mobile/UI sprints with testing phases
 4. **Budget 20-30% for emergent work** — healthy UX feedback and TODO cleanup
-5. **Review velocity after each sprint** - don't assume it's constant
-6. **Don't recalibrate based on UX-fix-heavy sprints** — 1-point floor inflates velocity
+5. **Review velocity after each sprint** — validate the 30 pts/week target
+6. **0.1.5 remains the only overrun** — discovery + hidden overhead; budget extra for discovery-heavy sprints
 
 ### Examples
 
-**Standard Milestone (1 week, 20 points):**
+**Standard Milestone (1 week, 30 points):**
 - 2x M-sized features (5 points each) = 10 points
 - 2x S-sized features (3 points each) = 6 points
+- 2x L-sized features (5 points each) = 10 points
 - 2x bug fixes (2 points each) = 4 points
-- At cruising velocity: 20 pts / 1 week ✅
+- At cruising velocity: 30 pts / 1 week ✅
 
-**Discovery-Heavy Milestone (1 week, 15 points):**
+**Discovery-Heavy Milestone (1 week, 20 points):**
 - 1x L-sized feature with discovery (8 points)
 - 1x M-sized testing infra (5 points)
+- 1x M-sized feature (5 points)
 - 1x S-sized bug fix (2 points)
-- At conservative velocity: 15 pts / 1 week ✅
+- At conservative velocity: 20 pts / 1 week ✅
 
-**Execution Sprint (1 week, 30 points):**
+**Execution Sprint (1 week, 36 points):**
 - 10x small UX fixes (1-2 points each) = 15 points
 - 3x testing extensions (5 points each) = 15 points
-- At aggressive velocity: 30 pts / 1 week ✅ (only if pure execution)
+- 1x refactor (3 points) + 1x bug fix (3 points) = 6 points
+- At aggressive velocity: 36 pts / 1 week ✅ (only if pure execution)
 
 ---
 
@@ -1447,3 +1579,15 @@ Use historical velocity data to size future milestones and prevent overcommitmen
   - Lessons: 1-point floor inflates velocity for UX-fix sprints; batch similar issues for focus days; TODO audits are valuable planning input; time-box diagnostic tooling at 2 hours
   - Revised Milestone Sizing Guidelines to use 20 pts/week as primary planning metric
   - Updated velocity reference data with pts/week column
+- **2026-02-16**: Added 0.1.9 retrospective analysis
+  - Sprint completed: 3 planned issues (18 points) in 2 active days (1.41 weighted days, 0.34x ratio)
+  - #277 absorbed by #280, #288 closed as won't do — zero separate effort for both
+  - All UX simplification work — net deletion of 1,026 lines
+  - New calibration factor: UX redesign/simplification (0.34x, recommend 0.3-0.5x)
+  - **KEY: Velocity step-change confirmed** — 3 consecutive sprints (0.1.7b-0.1.9) at 32-36 pts/week; not outliers but sustained acceleration
+  - **Cruising velocity revised upward to 30 pts/week** (from 20), with discovery at 20 and execution at 36
+  - Drivers: codebase maturity, Claude Code acceleration, accumulated infrastructure, developer proficiency
+  - Removed "outlier" labels from 0.1.4, 0.1.7b, 0.1.8 — reframed as part of acceleration trend
+  - 0.1.7a remains flagged as unreliable data (shared day methodology issue)
+  - Updated all milestone sizing guidelines and velocity reference data
+  - Fixed `scripts/gh-project-issue.sh` limit from 200 to 500 (project now has 266+ items)
