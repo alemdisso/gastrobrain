@@ -2218,5 +2218,13 @@
   "plannedMeals": "Refeições Planejadas",
   "@plannedMeals": {
     "description": "Header for the planned meals section in weekly summary"
+  },
+  "shoppingListEditIngredients": "Editar Ingredientes",
+  "@shoppingListEditIngredients": {
+    "description": "Action to go back to ingredient preview and adjust the list"
+  },
+  "shoppingListEditIngredientsConfirm": "Isso descartará a lista atual e voltará à seleção de ingredientes. Continuar?",
+  "@shoppingListEditIngredientsConfirm": {
+    "description": "Confirmation message before discarding saved list to edit ingredients"
   }
 }

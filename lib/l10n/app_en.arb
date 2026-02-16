@@ -2258,6 +2258,14 @@
   "plannedMeals": "Planned Meals",
   "@plannedMeals": {
     "description": "Header for the planned meals section in weekly summary"
+  },
+  "shoppingListEditIngredients": "Edit Ingredients",
+  "@shoppingListEditIngredients": {
+    "description": "Action to go back to ingredient preview and adjust the list"
+  },
+  "shoppingListEditIngredientsConfirm": "This will discard the current list and return to ingredient selection. Continue?",
+  "@shoppingListEditIngredientsConfirm": {
+    "description": "Confirmation message before discarding saved list to edit ingredients"
   }
 
 }

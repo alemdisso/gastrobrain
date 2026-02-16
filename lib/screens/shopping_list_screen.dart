@@ -12,11 +12,13 @@ import 'shopping_list_preview_screen.dart';
 class ShoppingListScreen extends StatefulWidget {
   final int shoppingListId;
   final DatabaseHelper? databaseHelper;
+  final bool hideToTaste;
 
   const ShoppingListScreen({
     super.key,
     required this.shoppingListId,
     this.databaseHelper,
+    this.hideToTaste = false,
   });
 
   @override
@@ -38,6 +40,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   void initState() {
     super.initState();
     _dbHelper = widget.databaseHelper ?? ServiceProvider.database.helper;
+    _hideToTaste = widget.hideToTaste;
     _loadShoppingList();
   }
 
@@ -67,7 +70,8 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       if (shoppingList.mealPlanModifiedAt != null) {
         final mealPlan = await _dbHelper.getMealPlanForWeek(shoppingList.startDate);
         if (mealPlan != null &&
-            mealPlan.modifiedAt.isAfter(shoppingList.mealPlanModifiedAt!)) {
+            mealPlan.modifiedAt.millisecondsSinceEpoch >
+                shoppingList.mealPlanModifiedAt!.millisecondsSinceEpoch) {
           isStale = true;
         }
       }
@@ -97,6 +101,13 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_shoppingList?.name ?? l10n.shoppingListTitle),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit_outlined),
+            tooltip: l10n.shoppingListEditIngredients,
+            onPressed: _handleEditIngredients,
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Padding(
@@ -256,7 +267,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           tilePadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
           childrenPadding: EdgeInsets.zero,
           dense: true,
-          initiallyExpanded: false,
+          initiallyExpanded: true,
           children: entry.value.map((item) {
             return InkWell(
               onTap: () => _toggleToBuy(item),
@@ -334,6 +345,50 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           weekStartDate: _shoppingList!.startDate,
           weekEndDate: _shoppingList!.endDate,
           databaseHelper: _dbHelper,
+          hideToTaste: _hideToTaste,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleEditIngredients() async {
+    if (_shoppingList == null) return;
+
+    final l10n = AppLocalizations.of(context)!;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.shoppingListEditIngredients),
+        content: Text(l10n.shoppingListEditIngredientsConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.buttonContinue),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    // Delete the current list
+    await _dbHelper.deleteShoppingList(_shoppingList!.id!);
+
+    // Navigate to preview screen
+    if (!mounted) return;
+    await Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ShoppingListPreviewScreen(
+          weekStartDate: _shoppingList!.startDate,
+          weekEndDate: _shoppingList!.endDate,
+          databaseHelper: _dbHelper,
+          hideToTaste: _hideToTaste,
         ),
       ),
     );

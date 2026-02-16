@@ -18,6 +18,7 @@ class ShoppingListRefinementScreen extends StatefulWidget {
   final DateTime weekStartDate;
   final DateTime weekEndDate;
   final DatabaseHelper? databaseHelper;
+  final bool hideToTaste;
 
   const ShoppingListRefinementScreen({
     super.key,
@@ -25,6 +26,7 @@ class ShoppingListRefinementScreen extends StatefulWidget {
     required this.weekStartDate,
     required this.weekEndDate,
     this.databaseHelper,
+    this.hideToTaste = false,
   });
 
   @override
@@ -36,6 +38,7 @@ class _ShoppingListRefinementScreenState
     extends State<ShoppingListRefinementScreen> {
   final Map<String, bool> _checkedState = {};
   bool _isGenerating = false;
+  bool _hideToTaste = false;
 
   late final DatabaseHelper _dbHelper;
 
@@ -43,6 +46,7 @@ class _ShoppingListRefinementScreenState
   void initState() {
     super.initState();
     _dbHelper = widget.databaseHelper ?? ServiceProvider.database.helper;
+    _hideToTaste = widget.hideToTaste;
     _initializeCheckedState();
   }
 
@@ -141,6 +145,7 @@ class _ShoppingListRefinementScreenState
         MaterialPageRoute(
           builder: (context) => ShoppingListScreen(
             shoppingListId: shoppingList.id!,
+            hideToTaste: _hideToTaste,
           ),
         ),
         (route) => route.isFirst, // Keep only the weekly plan screen
@@ -165,6 +170,28 @@ class _ShoppingListRefinementScreenState
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.shoppingListRefinementTitle),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: DesignTokens.spacingLg,
+              vertical: DesignTokens.spacingSm,
+            ),
+            child: Row(
+              children: [
+                FilterChip(
+                  label: Text(l10n.hideToTaste),
+                  selected: _hideToTaste,
+                  onSelected: (selected) {
+                    setState(() {
+                      _hideToTaste = selected;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
       body: Column(
         children: [
@@ -223,7 +250,18 @@ class _ShoppingListRefinementScreenState
   }
 
   Widget _buildIngredientList(BuildContext context) {
-    final sortedEntries = widget.groupedIngredients.entries.toList()
+    // Apply "hide to taste" filter
+    final filtered = <String, List<Map<String, dynamic>>>{};
+    for (final entry in widget.groupedIngredients.entries) {
+      final items = _hideToTaste
+          ? entry.value.where((item) => (item['quantity'] as double) != 0).toList()
+          : entry.value;
+      if (items.isNotEmpty) {
+        filtered[entry.key] = items;
+      }
+    }
+
+    final sortedEntries = filtered.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
 
     return ListView.builder(
@@ -349,8 +387,12 @@ class _ShoppingListRefinementScreenState
 
   String _formatQuantity(Map<String, dynamic> item, BuildContext context) {
     final quantity = item['quantity'] as double;
-    final unitString = item['unit'] as String;
 
+    if (quantity == 0) {
+      return '${AppLocalizations.of(context)!.toTaste} ⚠️';
+    }
+
+    final unitString = item['unit'] as String;
     final measurementUnit = MeasurementUnit.fromString(unitString);
     final localizedUnit =
         measurementUnit?.getLocalizedDisplayName(context) ?? unitString;

@@ -20,12 +20,14 @@ class ShoppingListPreviewScreen extends StatefulWidget {
   final DateTime weekStartDate;
   final DateTime weekEndDate;
   final DatabaseHelper? databaseHelper;
+  final bool hideToTaste;
 
   const ShoppingListPreviewScreen({
     super.key,
     required this.weekStartDate,
     required this.weekEndDate,
     this.databaseHelper,
+    this.hideToTaste = false,
   });
 
   @override
@@ -37,6 +39,7 @@ class _ShoppingListPreviewScreenState extends State<ShoppingListPreviewScreen> {
   Map<String, List<Map<String, dynamic>>>? _groupedIngredients;
   bool _isLoading = true;
   bool _isGenerating = false;
+  bool _hideToTaste = false;
 
   late final DatabaseHelper _dbHelper;
   late final ShoppingListService _shoppingListService;
@@ -46,6 +49,7 @@ class _ShoppingListPreviewScreenState extends State<ShoppingListPreviewScreen> {
     super.initState();
     _dbHelper = widget.databaseHelper ?? ServiceProvider.database.helper;
     _shoppingListService = ShoppingListService(_dbHelper);
+    _hideToTaste = widget.hideToTaste;
     _loadIngredients();
   }
 
@@ -85,6 +89,7 @@ class _ShoppingListPreviewScreenState extends State<ShoppingListPreviewScreen> {
           weekStartDate: widget.weekStartDate,
           weekEndDate: widget.weekEndDate,
           databaseHelper: _dbHelper,
+          hideToTaste: _hideToTaste,
         ),
       ),
     );
@@ -124,6 +129,7 @@ class _ShoppingListPreviewScreenState extends State<ShoppingListPreviewScreen> {
         MaterialPageRoute(
           builder: (context) => ShoppingListScreen(
             shoppingListId: shoppingList.id!,
+            hideToTaste: _hideToTaste,
           ),
         ),
       );
@@ -145,6 +151,28 @@ class _ShoppingListPreviewScreenState extends State<ShoppingListPreviewScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.shoppingListPreviewTitle),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: DesignTokens.spacingLg,
+              vertical: DesignTokens.spacingSm,
+            ),
+            child: Row(
+              children: [
+                FilterChip(
+                  label: Text(l10n.hideToTaste),
+                  selected: _hideToTaste,
+                  onSelected: (selected) {
+                    setState(() {
+                      _hideToTaste = selected;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -197,7 +225,18 @@ class _ShoppingListPreviewScreenState extends State<ShoppingListPreviewScreen> {
   }
 
   Widget _buildIngredientList(BuildContext context) {
-    final sortedEntries = _groupedIngredients!.entries.toList()
+    // Apply "hide to taste" filter
+    final filtered = <String, List<Map<String, dynamic>>>{};
+    for (final entry in _groupedIngredients!.entries) {
+      final items = _hideToTaste
+          ? entry.value.where((item) => (item['quantity'] as double) != 0).toList()
+          : entry.value;
+      if (items.isNotEmpty) {
+        filtered[entry.key] = items;
+      }
+    }
+
+    final sortedEntries = filtered.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
 
     return ListView.builder(
@@ -317,8 +356,12 @@ class _ShoppingListPreviewScreenState extends State<ShoppingListPreviewScreen> {
 
   String _formatQuantity(Map<String, dynamic> item, BuildContext context) {
     final quantity = item['quantity'] as double;
-    final unitString = item['unit'] as String;
 
+    if (quantity == 0) {
+      return '${AppLocalizations.of(context)!.toTaste} ⚠️';
+    }
+
+    final unitString = item['unit'] as String;
     final measurementUnit = MeasurementUnit.fromString(unitString);
     final localizedUnit =
         measurementUnit?.getLocalizedDisplayName(context) ?? unitString;
