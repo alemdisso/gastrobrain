@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gastrobrain/screens/home_screen.dart';
+import 'package:gastrobrain/screens/recipes_screen.dart';
 import 'package:gastrobrain/core/di/providers/database_provider.dart';
 import 'package:gastrobrain/core/providers/recipe_provider.dart';
 import 'package:provider/provider.dart';
@@ -30,8 +30,8 @@ void main() {
       mockDbHelper.resetAllData();
     });
 
-    /// Helper to build HomePage with proper providers and localization
-    Widget buildHomePage() {
+    /// Helper to build RecipesScreen with proper providers and localization
+    Widget buildRecipesScreen() {
       return ChangeNotifierProvider<RecipeProvider>.value(
         value: recipeProvider,
         child: const MaterialApp(
@@ -45,7 +45,7 @@ void main() {
             Locale('en', ''),
             Locale('pt', ''),
           ],
-          home: HomePage(),
+          home: RecipesScreen(),
         ),
       );
     }
@@ -56,8 +56,8 @@ void main() {
       expect(mockDbHelper.recipes.isEmpty, isTrue,
           reason: 'Test precondition: database should be empty');
 
-      // Build the HomePage
-      await tester.pumpWidget(buildHomePage());
+      // Build the RecipesScreen
+      await tester.pumpWidget(buildRecipesScreen());
       await tester.pumpAndSettle();
 
       // Verify search field is present
@@ -74,8 +74,8 @@ void main() {
       // Setup: Empty database
       expect(mockDbHelper.recipes.isEmpty, isTrue);
 
-      // Build the HomePage
-      await tester.pumpWidget(buildHomePage());
+      // Build the RecipesScreen
+      await tester.pumpWidget(buildRecipesScreen());
       await tester.pumpAndSettle();
 
       // Verify empty state message
@@ -90,7 +90,7 @@ void main() {
     testWidgets('search field handles text input in empty state',
         (WidgetTester tester) async {
       // Setup: Empty database
-      await tester.pumpWidget(buildHomePage());
+      await tester.pumpWidget(buildRecipesScreen());
       await tester.pumpAndSettle();
 
       // Enter text in search field
@@ -109,7 +109,7 @@ void main() {
     testWidgets('search field can be cleared in empty state',
         (WidgetTester tester) async {
       // Setup: Empty database
-      await tester.pumpWidget(buildHomePage());
+      await tester.pumpWidget(buildRecipesScreen());
       await tester.pumpAndSettle();
 
       // Enter text in search field
@@ -131,7 +131,7 @@ void main() {
     testWidgets('search field handles special characters in empty state',
         (WidgetTester tester) async {
       // Setup: Empty database
-      await tester.pumpWidget(buildHomePage());
+      await tester.pumpWidget(buildRecipesScreen());
       await tester.pumpAndSettle();
 
       // Enter special characters
@@ -149,7 +149,7 @@ void main() {
     testWidgets('search field handles very long input in empty state',
         (WidgetTester tester) async {
       // Setup: Empty database
-      await tester.pumpWidget(buildHomePage());
+      await tester.pumpWidget(buildRecipesScreen());
       await tester.pumpAndSettle();
 
       // Enter very long text
@@ -168,7 +168,7 @@ void main() {
     testWidgets('search UI layout renders correctly in empty state',
         (WidgetTester tester) async {
       // Setup: Empty database
-      await tester.pumpWidget(buildHomePage());
+      await tester.pumpWidget(buildRecipesScreen());
       await tester.pumpAndSettle();
 
       // Verify search field is visible
@@ -186,7 +186,7 @@ void main() {
     testWidgets('search field is accessible after rapid text changes',
         (WidgetTester tester) async {
       // Setup: Empty database
-      await tester.pumpWidget(buildHomePage());
+      await tester.pumpWidget(buildRecipesScreen());
       await tester.pumpAndSettle();
 
       // Rapidly change search text
@@ -207,7 +207,7 @@ void main() {
     testWidgets('empty state persists across search operations',
         (WidgetTester tester) async {
       // Setup: Empty database
-      await tester.pumpWidget(buildHomePage());
+      await tester.pumpWidget(buildRecipesScreen());
       await tester.pumpAndSettle();
 
       // Perform multiple search operations
@@ -228,7 +228,7 @@ void main() {
     testWidgets('search field maintains state during screen lifecycle',
         (WidgetTester tester) async {
       // Setup: Empty database
-      await tester.pumpWidget(buildHomePage());
+      await tester.pumpWidget(buildRecipesScreen());
       await tester.pumpAndSettle();
 
       // Enter search text

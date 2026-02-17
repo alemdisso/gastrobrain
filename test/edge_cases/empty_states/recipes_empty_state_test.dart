@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gastrobrain/screens/home_screen.dart';
+import 'package:gastrobrain/screens/recipes_screen.dart';
 import 'package:gastrobrain/core/di/providers/database_provider.dart';
 import 'package:gastrobrain/core/providers/recipe_provider.dart';
 import 'package:provider/provider.dart';
@@ -32,22 +32,23 @@ void main() {
       mockDbHelper.resetAllData();
     });
 
-    /// Helper to build HomePage with proper providers and localization
-    Widget buildHomePage() {
+    /// Helper to build RecipesScreen with proper providers and localization
+    Widget buildRecipesScreen({Locale locale = const Locale('en', '')}) {
       return ChangeNotifierProvider<RecipeProvider>.value(
         value: recipeProvider,
-        child: const MaterialApp(
-          localizationsDelegates: [
+        child: MaterialApp(
+          localizationsDelegates: const [
             AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          supportedLocales: [
+          supportedLocales: const [
             Locale('en', ''),
             Locale('pt', ''),
           ],
-          home: HomePage(),
+          locale: locale,
+          home: const RecipesScreen(),
         ),
       );
     }
@@ -58,8 +59,8 @@ void main() {
       expect(mockDbHelper.recipes.isEmpty, isTrue,
           reason: 'Test precondition: database should be empty');
 
-      // Build the HomePage
-      await tester.pumpWidget(buildHomePage());
+      // Build the RecipesScreen
+      await tester.pumpWidget(buildRecipesScreen());
 
       // Wait for provider to load (it loads in initState)
       await tester.pumpAndSettle();
@@ -74,7 +75,7 @@ void main() {
       expect(find.text('Add your first recipe to get started'), findsOneWidget,
           reason: 'Should show helpful message for first-time users');
 
-      // Verify empty state icon is displayed (there may be multiple icons in tabs, so check for at least one)
+      // Verify empty state icon is displayed
       expect(find.byIcon(Icons.restaurant_menu), findsWidgets,
           reason: 'Should show visual indicator in empty state');
     });
@@ -84,15 +85,14 @@ void main() {
       // Setup: Empty database
       expect(mockDbHelper.recipes.isEmpty, isTrue);
 
-      // Build the HomePage
-      await tester.pumpWidget(buildHomePage());
+      // Build the RecipesScreen
+      await tester.pumpWidget(buildRecipesScreen());
       await tester.pumpAndSettle();
 
       // Verify empty state
       expect(find.text('No recipes found'), findsOneWidget);
 
       // Verify add button is available (FAB or other add action)
-      // The HomePage should have a way to add recipes even when empty
       expect(find.byType(FloatingActionButton), findsOneWidget,
           reason: 'Should provide action button to add first recipe');
     });
@@ -100,7 +100,7 @@ void main() {
     testWidgets('empty state UI renders correctly without overflow',
         (WidgetTester tester) async {
       // Setup: Empty database
-      await tester.pumpWidget(buildHomePage());
+      await tester.pumpWidget(buildRecipesScreen());
       await tester.pumpAndSettle();
 
       // Verify empty state renders
@@ -110,7 +110,7 @@ void main() {
       expect(tester.takeException(), isNull,
           reason: 'Empty state should render without exceptions');
 
-      // Verify layout is centered and well-structured (may have multiple Columns in the tree)
+      // Verify layout is centered and well-structured
       final centerWidget = find.ancestor(
         of: find.text('No recipes found'),
         matching: find.byType(Center),
@@ -121,8 +121,8 @@ void main() {
 
     testWidgets('empty state persists during loading',
         (WidgetTester tester) async {
-      // Build the HomePage
-      await tester.pumpWidget(buildHomePage());
+      // Build the RecipesScreen
+      await tester.pumpWidget(buildRecipesScreen());
 
       // Pump once to trigger loading
       await tester.pump();
@@ -137,25 +137,7 @@ void main() {
     testWidgets('empty state message is localized',
         (WidgetTester tester) async {
       // Test with Portuguese locale
-      final ptHomePage = ChangeNotifierProvider<RecipeProvider>.value(
-        value: recipeProvider,
-        child: const MaterialApp(
-          localizationsDelegates: [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: [
-            Locale('en', ''),
-            Locale('pt', ''),
-          ],
-          locale: Locale('pt', ''), // Force Portuguese
-          home: HomePage(),
-        ),
-      );
-
-      await tester.pumpWidget(ptHomePage);
+      await tester.pumpWidget(buildRecipesScreen(locale: const Locale('pt', '')));
       await tester.pumpAndSettle();
 
       // Verify Portuguese empty state message
