@@ -912,6 +912,10 @@
   "@today": {
     "description": "Rótulo para indicador de hoje"
   },
+  "tomorrow": "Amanhã",
+  "@tomorrow": {
+    "description": "Rótulo para indicador de amanhã no dashboard"
+  },
   "addMeal": "Adicionar refeição",
   "@addMeal": {
     "description": "Rótulo para botão adicionar refeição"
@@ -2226,5 +2230,98 @@
   "shoppingListEditIngredientsConfirm": "Isso descartará a lista atual e voltará à seleção de ingredientes. Continuar?",
   "@shoppingListEditIngredientsConfirm": {
     "description": "Confirmation message before discarding saved list to edit ingredients"
+  },
+
+  "dashboard": "Painel",
+  "@dashboard": {
+    "description": "Tab label for the dashboard/landing page"
+  },
+  "dashboardTagline": "Seu Assistente Inteligente de Refeições",
+  "@dashboardTagline": {
+    "description": "Hero tagline on dashboard screen"
+  },
+  "dashboardSubtitle": "Recomendações inteligentes para ajudar você a planejar refeições variadas.",
+  "@dashboardSubtitle": {
+    "description": "Hero subtitle describing the recommendation engine"
+  },
+  "planThisWeek": "Planejar Semana",
+  "@planThisWeek": {
+    "description": "CTA button to navigate to weekly meal plan"
+  },
+  "quickActions": "Ações Rápidas",
+  "@quickActions": {
+    "description": "Section header for dashboard quick action buttons"
+  },
+  "planTodaysMeal": "Planejar Hoje",
+  "@planTodaysMeal": {
+    "description": "Quick action to plan today's meal"
+  },
+  "viewThisWeek": "Esta Semana",
+  "@viewThisWeek": {
+    "description": "Quick action to view current week plan"
+  },
+  "browseRecipes": "Explorar",
+  "@browseRecipes": {
+    "description": "Quick action to browse recipe collection"
+  },
+  "yourCollection": "Sua Coleção",
+  "@yourCollection": {
+    "description": "Section header for recipe collection summary"
+  },
+  "recipesInCollection": "{count} receitas",
+  "@recipesInCollection": {
+    "description": "Recipe count display on dashboard",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "thisWeeksPlan": "Plano da Semana",
+  "@thisWeeksPlan": {
+    "description": "Section header for weekly plan summary on dashboard"
+  },
+  "mealsPlanned": "{count} de 14 refeições planejadas",
+  "@mealsPlanned": {
+    "description": "Meal plan completion status",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noPlanYet": "Nenhum plano para esta semana ainda",
+  "@noPlanYet": {
+    "description": "Empty state when no meal plan exists for current week"
+  },
+  "createPlan": "Criar um Plano",
+  "@createPlan": {
+    "description": "CTA to create a new meal plan"
+  },
+  "recentMeals": "Refeições Recentes",
+  "@recentMeals": {
+    "description": "Section header for recently cooked meals"
+  },
+  "noMealsYet": "Nenhuma refeição preparada ainda",
+  "@noMealsYet": {
+    "description": "Empty state when no meals have been recorded"
+  },
+  "content": "Conteúdo",
+  "@content": {
+    "description": "Tab label for content section (recipes + ingredients)"
+  },
+  "tools": "Ferramentas",
+  "@tools": {
+    "description": "Label for tools/admin menu item"
+  },
+  "cookedOnDate": "Preparada em {date}",
+  "@cookedOnDate": {
+    "description": "Date label for a cooked meal entry on dashboard",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   }
+
 }

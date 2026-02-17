@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
-import 'recipes_screen.dart';
+import 'dashboard_screen.dart';
 import 'weekly_plan_screen.dart';
-import 'ingredients_screen.dart';
+import 'content_screen.dart';
 import 'tools_screen.dart';
 
 class HomePage extends StatefulWidget {
@@ -15,47 +15,75 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
+  /// Key for the DashboardScreen to allow triggering refresh from outside.
+  final GlobalKey<DashboardScreenState> _dashboardKey = GlobalKey();
+
+  void _navigateToTab(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     final List<Widget> screens = [
-      const RecipesScreen(),
+      DashboardScreen(
+        key: _dashboardKey,
+        onNavigateToTab: _navigateToTab,
+      ),
       const WeeklyPlanScreen(),
-      const IngredientsScreen(),
-      const ToolsScreen(),
+      const ContentScreen(),
     ];
 
+    // Dashboard and Content have their own headers; Meal Plan uses AppBar
+    final bool showAppBar = _selectedIndex == 1;
+
     return Scaffold(
-      appBar: _selectedIndex == 0
-          ? null // RecipesScreen has its own AppBar
-          : AppBar(
-              title: Text(AppLocalizations.of(context)!.appTitle),
-            ),
+      appBar: showAppBar
+          ? AppBar(
+              title: Text(l10n.appTitle),
+              actions: [
+                IconButton(
+                  key: const Key('tools_button'),
+                  icon: const Icon(Icons.settings),
+                  tooltip: l10n.tools,
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ToolsScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            )
+          : null,
       body: screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
+          // If re-selecting Dashboard, trigger a refresh
+          if (index == 0 && _selectedIndex != 0) {
+            _dashboardKey.currentState?.refreshData();
+          }
+          _navigateToTab(index);
         },
         items: [
           BottomNavigationBarItem(
-            icon: const Icon(Icons.menu_book, key: Key('recipes_tab_icon')),
-            label: AppLocalizations.of(context)!.recipes,
+            icon: const Icon(Icons.home, key: Key('dashboard_tab_icon')),
+            label: l10n.dashboard,
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.calendar_today,
                 key: Key('meal_plan_tab_icon')),
-            label: AppLocalizations.of(context)!.mealPlan,
+            label: l10n.mealPlan,
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.restaurant_menu,
-                key: Key('ingredients_tab_icon')),
-            label: AppLocalizations.of(context)!.ingredients,
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.build, key: Key('tools_tab_icon')),
-            label: 'Tools',
+            icon: const Icon(Icons.menu_book, key: Key('content_tab_icon')),
+            label: l10n.content,
           ),
         ],
       ),

@@ -930,6 +930,10 @@
   "@today": {
     "description": "Label for today indicator"
   },
+  "tomorrow": "Tomorrow",
+  "@tomorrow": {
+    "description": "Label for tomorrow indicator on dashboard"
+  },
   "addMeal": "Add meal",
   "@addMeal": {
     "description": "Label for add meal button"
@@ -2266,6 +2270,98 @@
   "shoppingListEditIngredientsConfirm": "This will discard the current list and return to ingredient selection. Continue?",
   "@shoppingListEditIngredientsConfirm": {
     "description": "Confirmation message before discarding saved list to edit ingredients"
+  },
+
+  "dashboard": "Dashboard",
+  "@dashboard": {
+    "description": "Tab label for the dashboard/landing page"
+  },
+  "dashboardTagline": "Your AI Meal Planning Assistant",
+  "@dashboardTagline": {
+    "description": "Hero tagline on dashboard screen"
+  },
+  "dashboardSubtitle": "Smart recommendations to help you plan varied meals.",
+  "@dashboardSubtitle": {
+    "description": "Hero subtitle describing the recommendation engine"
+  },
+  "planThisWeek": "Plan This Week",
+  "@planThisWeek": {
+    "description": "CTA button to navigate to weekly meal plan"
+  },
+  "quickActions": "Quick Actions",
+  "@quickActions": {
+    "description": "Section header for dashboard quick action buttons"
+  },
+  "planTodaysMeal": "Plan Today",
+  "@planTodaysMeal": {
+    "description": "Quick action to plan today's meal"
+  },
+  "viewThisWeek": "This Week",
+  "@viewThisWeek": {
+    "description": "Quick action to view current week plan"
+  },
+  "browseRecipes": "Browse",
+  "@browseRecipes": {
+    "description": "Quick action to browse recipe collection"
+  },
+  "yourCollection": "Your Collection",
+  "@yourCollection": {
+    "description": "Section header for recipe collection summary"
+  },
+  "recipesInCollection": "{count} recipes",
+  "@recipesInCollection": {
+    "description": "Recipe count display on dashboard",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "thisWeeksPlan": "This Week's Plan",
+  "@thisWeeksPlan": {
+    "description": "Section header for weekly plan summary on dashboard"
+  },
+  "mealsPlanned": "{count} of 14 meals planned",
+  "@mealsPlanned": {
+    "description": "Meal plan completion status",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noPlanYet": "No plan yet for this week",
+  "@noPlanYet": {
+    "description": "Empty state when no meal plan exists for current week"
+  },
+  "createPlan": "Create a Plan",
+  "@createPlan": {
+    "description": "CTA to create a new meal plan"
+  },
+  "recentMeals": "Recent Meals",
+  "@recentMeals": {
+    "description": "Section header for recently cooked meals"
+  },
+  "noMealsYet": "No meals cooked yet",
+  "@noMealsYet": {
+    "description": "Empty state when no meals have been recorded"
+  },
+  "content": "Content",
+  "@content": {
+    "description": "Tab label for content section (recipes + ingredients)"
+  },
+  "tools": "Tools",
+  "@tools": {
+    "description": "Label for tools/admin menu item"
+  },
+  "cookedOnDate": "Cooked on {date}",
+  "@cookedOnDate": {
+    "description": "Date label for a cooked meal entry on dashboard",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   }
 
 }
