@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.10] - 2026-02-18
+
+### Added
+
+#### Dashboard Landing Page (#134)
+- Three-tab dashboard with "This Week", "Cook", and "Discover" sections
+- Quick-action entry points for meal planning, shopping list, and recipe browsing
+- Contextual summaries of weekly plan status
+
+#### Unit Pluralization (#149)
+- Proper singular/plural forms for measurement units based on quantity (e.g., "1 Cup" vs "2 Cups")
+- ICU plural rules for both English and Portuguese across 16 unit types
+- New `getLocalizedQuantityName()` method on `MeasurementUnit`
+
+#### Shopping List Enhancements (#293, #294)
+- Category-level select/deselect checkboxes with tristate in shopping list refinement
+- Expanded unit conversions: tsp↔tbsp (3:1), tbsp↔cup (16:1), clove↔head (10:1)
+- Auto-upgrade to larger units when aggregation thresholds are reached
+
+---
+
 ## [0.1.9] - 2026-02-15
 
 ### Added
