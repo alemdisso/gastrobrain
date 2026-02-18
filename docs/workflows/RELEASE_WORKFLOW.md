@@ -328,6 +328,7 @@ git branch -d hotfix/0.1.3.1
 | 0.1.7 | 2026-02-06 | UI Polish & Design System | release/0.1.7 | Design tokens, Material 3 theme, component standardization |
 | 0.1.8 | 2026-02-12 | Testing & Shopping List | release/0.1.8 | Flaky test detection, meal history editing, shopping list enhancements |
 | 0.1.9 | 2026-02-15 | Meal Planning UX Redesign | release/0.1.9 | Shopping list full-screen, meal slot redesign, semantic colors |
+| 0.1.10 | 2026-02-18 | Landing Page & Polish | release/0.1.10 | Dashboard landing page, unit pluralization, shopping list enhancements |
 
 ---
 
