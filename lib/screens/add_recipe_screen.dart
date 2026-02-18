@@ -139,7 +139,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                       final unitString =
                           ingredient.unitOverride ?? snapshot.data?.unit?.value ?? '';
                       final measurementUnit = MeasurementUnit.fromString(unitString);
-                      final localizedUnit = measurementUnit?.getLocalizedDisplayName(context) ?? unitString;
+                      final localizedUnit = measurementUnit?.getLocalizedQuantityName(context, ingredient.quantity) ?? unitString;
                       return Text(
                           '$ingredientName: ${QuantityFormatter.format(ingredient.quantity)} $localizedUnit');
                     }
@@ -153,7 +153,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   }
                   final customUnitString = ingredient.customUnit ?? '';
                   final measurementUnit = MeasurementUnit.fromString(customUnitString);
-                  final localizedUnit = measurementUnit?.getLocalizedDisplayName(context) ?? customUnitString;
+                  final localizedUnit = measurementUnit?.getLocalizedQuantityName(context, ingredient.quantity) ?? customUnitString;
                   return '${ingredient.customName}: ${QuantityFormatter.format(ingredient.quantity)} $localizedUnit';
                 }()),
           subtitle: ingredient.notes != null ? Text(ingredient.notes!) : null,

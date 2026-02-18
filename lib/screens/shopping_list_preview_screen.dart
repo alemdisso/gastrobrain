@@ -364,7 +364,7 @@ class _ShoppingListPreviewScreenState extends State<ShoppingListPreviewScreen> {
     final unitString = item['unit'] as String;
     final measurementUnit = MeasurementUnit.fromString(unitString);
     final localizedUnit =
-        measurementUnit?.getLocalizedDisplayName(context) ?? unitString;
+        measurementUnit?.getLocalizedQuantityName(context, quantity) ?? unitString;
 
     final formattedQuantity = QuantityFormatter.format(quantity);
 

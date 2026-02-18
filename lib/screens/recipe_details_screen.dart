@@ -23,11 +23,13 @@ import '../screens/edit_recipe_screen.dart';
 class RecipeDetailsScreen extends StatefulWidget {
   final Recipe recipe;
   final DatabaseHelper? databaseHelper;
+  final int initialTabIndex;
 
   const RecipeDetailsScreen({
     super.key,
     required this.recipe,
     this.databaseHelper,
+    this.initialTabIndex = 0,
   });
 
   @override
@@ -53,7 +55,11 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
   void initState() {
     super.initState();
     _dbHelper = widget.databaseHelper ?? DatabaseHelper();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(
+      length: 4,
+      vsync: this,
+      initialIndex: widget.initialTabIndex,
+    );
     _currentRecipe = widget.recipe;
     _instructions = widget.recipe.instructions;
     _loadIngredients();
@@ -597,8 +603,9 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
         // Convert to MeasurementUnit enum and get localized name
         final measurementUnit =
             MeasurementUnit.fromString(effectiveUnitString);
+        final quantity = ingredient['quantity'] as double;
         final localizedUnit =
-            measurementUnit?.getLocalizedDisplayName(context) ??
+            measurementUnit?.getLocalizedQuantityName(context, quantity) ??
                 effectiveUnitString;
 
         return Card(
@@ -613,11 +620,11 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Hide quantity/unit for zero quantities ("to taste" ingredients)
-                if (ingredient['quantity'] != 0)
+                if (quantity != 0)
                   Row(
                     children: [
                       Text(
-                        '${QuantityFormatter.format(ingredient['quantity'])} $localizedUnit',
+                        '${QuantityFormatter.format(quantity)} $localizedUnit',
                       ),
                       if (ingredient['unit_override'] != null)
                         Padding(

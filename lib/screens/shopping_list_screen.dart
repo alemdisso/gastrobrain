@@ -400,9 +400,9 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       return '${l10n.toTaste} ⚠️';
     }
 
-    // Localize unit using MeasurementUnit enum
+    // Localize unit using MeasurementUnit enum (pluralized)
     final unit = MeasurementUnit.fromString(item.unit);
-    final localizedUnit = unit?.getLocalizedDisplayName(context) ?? item.unit;
+    final localizedUnit = unit?.getLocalizedQuantityName(context, item.quantity) ?? item.unit;
 
     // Format quantity using QuantityFormatter (shows fractions, removes trailing zeros)
     final formattedQuantity = QuantityFormatter.format(item.quantity);

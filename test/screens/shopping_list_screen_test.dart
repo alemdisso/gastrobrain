@@ -133,7 +133,7 @@ void main() {
 
       // Should display quantities with localized units (formatted without trailing zeros)
       expect(find.text('500 g'), findsOneWidget);
-      expect(find.text('3 Piece'), findsOneWidget);
+      expect(find.text('3 Pieces'), findsOneWidget);
     });
 
     testWidgets('displays "to taste" items with warning indicator', (tester) async {
@@ -375,11 +375,11 @@ void main() {
       // 'baking' maps to IngredientCategory.other → "Other"
       // 'dairy' maps to IngredientCategory.dairy → "Dairy"
       // Should display formatted quantities:
-      // 2.5 → "2½ Cup"
-      // 0.5 → "½ Cup"
+      // 2.5 → "2½ Cups"
+      // 0.5 → "½ Cups" (plural for non-1 quantities)
       // 100.0 → "100 g"
-      expect(find.text('2½ Cup'), findsOneWidget);
-      expect(find.text('½ Cup'), findsOneWidget);
+      expect(find.text('2½ Cups'), findsOneWidget);
+      expect(find.text('½ Cups'), findsOneWidget);
       expect(find.text('100 g'), findsOneWidget);
     });
 

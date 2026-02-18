@@ -61,6 +61,42 @@ void main() {
       expect(service.convertToCommonUnit(1, 'KG', 'g'), 1000);
       expect(service.convertToCommonUnit(1000, 'ML', 'l'), 1);
     });
+
+    test('converts teaspoons to tablespoons', () {
+      // 3 tsp = 1 tbsp
+      expect(service.convertToCommonUnit(3, 'tsp', 'tbsp'), 1.0);
+      expect(service.convertToCommonUnit(6, 'tsp', 'tbsp'), 2.0);
+    });
+
+    test('converts tablespoons to teaspoons', () {
+      expect(service.convertToCommonUnit(1, 'tbsp', 'tsp'), 3.0);
+      expect(service.convertToCommonUnit(2, 'tbsp', 'tsp'), 6.0);
+    });
+
+    test('converts tablespoons to cups', () {
+      // 16 tbsp = 1 cup
+      expect(service.convertToCommonUnit(16, 'tbsp', 'cup'), 1.0);
+      expect(service.convertToCommonUnit(8, 'tbsp', 'cup'), 0.5);
+    });
+
+    test('converts cups to tablespoons', () {
+      expect(service.convertToCommonUnit(1, 'cup', 'tbsp'), 16.0);
+    });
+
+    test('converts teaspoons to cups', () {
+      // 48 tsp = 1 cup
+      expect(service.convertToCommonUnit(48, 'tsp', 'cup'), 1.0);
+    });
+
+    test('converts cloves to heads', () {
+      // 10 cloves = 1 head
+      expect(service.convertToCommonUnit(10, 'clove', 'head'), 1.0);
+      expect(service.convertToCommonUnit(5, 'clove', 'head'), 0.5);
+    });
+
+    test('converts heads to cloves', () {
+      expect(service.convertToCommonUnit(1, 'head', 'clove'), 10.0);
+    });
   });
 
   group('Exclusion Rule (Salt Rule)', () {
@@ -263,6 +299,101 @@ void main() {
       expect(aggregated[0]['name'], 'Rice');
       expect(aggregated[0]['quantity'], 1.0); // 1000g = 1kg
       expect(aggregated[0]['unit'], 'kg');
+    });
+
+    test('aggregates tsp and converts to tbsp at threshold', () {
+      final ingredients = [
+        {'name': 'Cumin', 'quantity': 2.0, 'unit': 'tsp', 'category': 'Spices'},
+        {'name': 'Cumin', 'quantity': 1.0, 'unit': 'tsp', 'category': 'Spices'},
+      ];
+
+      final aggregated = service.aggregateIngredients(ingredients);
+
+      expect(aggregated.length, 1);
+      expect(aggregated[0]['name'], 'Cumin');
+      expect(aggregated[0]['quantity'], 1.0); // 3 tsp = 1 tbsp
+      expect(aggregated[0]['unit'], 'tbsp');
+    });
+
+    test('keeps tsp as-is when below threshold', () {
+      final ingredients = [
+        {'name': 'Cumin', 'quantity': 1.0, 'unit': 'tsp', 'category': 'Spices'},
+        {'name': 'Cumin', 'quantity': 1.0, 'unit': 'tsp', 'category': 'Spices'},
+      ];
+
+      final aggregated = service.aggregateIngredients(ingredients);
+
+      expect(aggregated.length, 1);
+      expect(aggregated[0]['quantity'], 2.0); // 2 tsp stays as tsp
+      expect(aggregated[0]['unit'], 'tsp');
+    });
+
+    test('aggregates tbsp and converts to cup at threshold', () {
+      final ingredients = [
+        {'name': 'Olive Oil', 'quantity': 8.0, 'unit': 'tbsp', 'category': 'Fats'},
+        {'name': 'Olive Oil', 'quantity': 8.0, 'unit': 'tbsp', 'category': 'Fats'},
+      ];
+
+      final aggregated = service.aggregateIngredients(ingredients);
+
+      expect(aggregated.length, 1);
+      expect(aggregated[0]['quantity'], 1.0); // 16 tbsp = 1 cup
+      expect(aggregated[0]['unit'], 'cup');
+    });
+
+    test('aggregates tsp and tbsp together via conversion', () {
+      final ingredients = [
+        {'name': 'Soy Sauce', 'quantity': 1.0, 'unit': 'tbsp', 'category': 'Condiments'},
+        {'name': 'Soy Sauce', 'quantity': 3.0, 'unit': 'tsp', 'category': 'Condiments'},
+      ];
+
+      final aggregated = service.aggregateIngredients(ingredients);
+
+      // 1 tbsp + 3 tsp = 1 tbsp + 1 tbsp = 2 tbsp (tsp converted to tbsp)
+      expect(aggregated.length, 1);
+      expect(aggregated[0]['quantity'], 2.0);
+      expect(aggregated[0]['unit'], 'tbsp');
+    });
+
+    test('aggregates cloves and converts to head at threshold', () {
+      final ingredients = [
+        {'name': 'Garlic', 'quantity': 4.0, 'unit': 'clove', 'category': 'Vegetables'},
+        {'name': 'Garlic', 'quantity': 6.0, 'unit': 'clove', 'category': 'Vegetables'},
+      ];
+
+      final aggregated = service.aggregateIngredients(ingredients);
+
+      expect(aggregated.length, 1);
+      expect(aggregated[0]['name'], 'Garlic');
+      expect(aggregated[0]['quantity'], 1.0); // 10 cloves = 1 head
+      expect(aggregated[0]['unit'], 'head');
+    });
+
+    test('keeps cloves as-is when below threshold', () {
+      final ingredients = [
+        {'name': 'Garlic', 'quantity': 3.0, 'unit': 'clove', 'category': 'Vegetables'},
+        {'name': 'Garlic', 'quantity': 4.0, 'unit': 'clove', 'category': 'Vegetables'},
+      ];
+
+      final aggregated = service.aggregateIngredients(ingredients);
+
+      expect(aggregated.length, 1);
+      expect(aggregated[0]['quantity'], 7.0); // 7 cloves stays as cloves
+      expect(aggregated[0]['unit'], 'clove');
+    });
+
+    test('aggregates cloves and heads together via conversion', () {
+      final ingredients = [
+        {'name': 'Garlic', 'quantity': 1.0, 'unit': 'head', 'category': 'Vegetables'},
+        {'name': 'Garlic', 'quantity': 5.0, 'unit': 'clove', 'category': 'Vegetables'},
+      ];
+
+      final aggregated = service.aggregateIngredients(ingredients);
+
+      // 1 head + 5 cloves = 10 cloves + 5 cloves = 15 cloves → 1.5 heads
+      expect(aggregated.length, 1);
+      expect(aggregated[0]['quantity'], 1.5);
+      expect(aggregated[0]['unit'], 'head');
     });
   });
 

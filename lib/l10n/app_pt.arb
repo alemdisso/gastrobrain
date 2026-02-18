@@ -912,6 +912,10 @@
   "@today": {
     "description": "Rótulo para indicador de hoje"
   },
+  "tomorrow": "Amanhã",
+  "@tomorrow": {
+    "description": "Rótulo para indicador de amanhã no dashboard"
+  },
   "addMeal": "Adicionar refeição",
   "@addMeal": {
     "description": "Rótulo para botão adicionar refeição"
@@ -1035,6 +1039,86 @@
   "measurementUnitCm": "cm",
   "@measurementUnitCm": {
     "description": "Nomes das unidades de medida"
+  },
+  "measurementUnitCupQuantity": "{count, plural, =1{Xícara} other{Xícaras}}",
+  "@measurementUnitCupQuantity": {
+    "description": "Unidade de medida pluralizada para xícara",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitTablespoonQuantity": "{count, plural, =1{Colher de sopa} other{Colheres de sopa}}",
+  "@measurementUnitTablespoonQuantity": {
+    "description": "Unidade de medida pluralizada para colher de sopa",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitTeaspoonQuantity": "{count, plural, =1{Colher de chá} other{Colheres de chá}}",
+  "@measurementUnitTeaspoonQuantity": {
+    "description": "Unidade de medida pluralizada para colher de chá",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitPieceQuantity": "{count, plural, =1{Unidade} other{Unidades}}",
+  "@measurementUnitPieceQuantity": {
+    "description": "Unidade de medida pluralizada para unidade",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitSliceQuantity": "{count, plural, =1{Fatia} other{Fatias}}",
+  "@measurementUnitSliceQuantity": {
+    "description": "Unidade de medida pluralizada para fatia",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitBunchQuantity": "{count, plural, =1{Maço} other{Maços}}",
+  "@measurementUnitBunchQuantity": {
+    "description": "Unidade de medida pluralizada para maço",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitLeavesQuantity": "{count, plural, =1{Folha} other{Folhas}}",
+  "@measurementUnitLeavesQuantity": {
+    "description": "Unidade de medida pluralizada para folha",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitPinchQuantity": "{count, plural, =1{Pitada} other{Pitadas}}",
+  "@measurementUnitPinchQuantity": {
+    "description": "Unidade de medida pluralizada para pitada",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitCloveQuantity": "{count, plural, =1{Dente} other{Dentes}}",
+  "@measurementUnitCloveQuantity": {
+    "description": "Unidade de medida pluralizada para dente",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitHeadQuantity": "{count, plural, =1{Cabeça} other{Cabeças}}",
+  "@measurementUnitHeadQuantity": {
+    "description": "Unidade de medida pluralizada para cabeça",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitCanQuantity": "{count, plural, =1{Lata} other{Latas}}",
+  "@measurementUnitCanQuantity": {
+    "description": "Unidade de medida pluralizada para lata",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitBoxQuantity": "{count, plural, =1{Caixa} other{Caixas}}",
+  "@measurementUnitBoxQuantity": {
+    "description": "Unidade de medida pluralizada para caixa",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitStemQuantity": "{count, plural, =1{Talo} other{Talos}}",
+  "@measurementUnitStemQuantity": {
+    "description": "Unidade de medida pluralizada para talo",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitSprigQuantity": "{count, plural, =1{Ramo} other{Ramos}}",
+  "@measurementUnitSprigQuantity": {
+    "description": "Unidade de medida pluralizada para ramo",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitSeedQuantity": "{count, plural, =1{Semente} other{Sementes}}",
+  "@measurementUnitSeedQuantity": {
+    "description": "Unidade de medida pluralizada para semente",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitGrainQuantity": "{count, plural, =1{Grão} other{Grãos}}",
+  "@measurementUnitGrainQuantity": {
+    "description": "Unidade de medida pluralizada para grão",
+    "placeholders": { "count": { "type": "num" } }
   },
   "unitOptional": "Unidade (Opcional)",
   "@unitOptional": {
@@ -2226,5 +2310,98 @@
   "shoppingListEditIngredientsConfirm": "Isso descartará a lista atual e voltará à seleção de ingredientes. Continuar?",
   "@shoppingListEditIngredientsConfirm": {
     "description": "Confirmation message before discarding saved list to edit ingredients"
+  },
+
+  "dashboard": "Painel",
+  "@dashboard": {
+    "description": "Tab label for the dashboard/landing page"
+  },
+  "dashboardTagline": "Seu Assistente Inteligente de Refeições",
+  "@dashboardTagline": {
+    "description": "Hero tagline on dashboard screen"
+  },
+  "dashboardSubtitle": "Recomendações inteligentes para ajudar você a planejar refeições variadas.",
+  "@dashboardSubtitle": {
+    "description": "Hero subtitle describing the recommendation engine"
+  },
+  "planThisWeek": "Planejar Semana",
+  "@planThisWeek": {
+    "description": "CTA button to navigate to weekly meal plan"
+  },
+  "quickActions": "Ações Rápidas",
+  "@quickActions": {
+    "description": "Section header for dashboard quick action buttons"
+  },
+  "planTodaysMeal": "Planejar Hoje",
+  "@planTodaysMeal": {
+    "description": "Quick action to plan today's meal"
+  },
+  "viewThisWeek": "Esta Semana",
+  "@viewThisWeek": {
+    "description": "Quick action to view current week plan"
+  },
+  "browseRecipes": "Explorar",
+  "@browseRecipes": {
+    "description": "Quick action to browse recipe collection"
+  },
+  "yourCollection": "Sua Coleção",
+  "@yourCollection": {
+    "description": "Section header for recipe collection summary"
+  },
+  "recipesInCollection": "{count} receitas",
+  "@recipesInCollection": {
+    "description": "Recipe count display on dashboard",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "thisWeeksPlan": "Plano da Semana",
+  "@thisWeeksPlan": {
+    "description": "Section header for weekly plan summary on dashboard"
+  },
+  "mealsPlanned": "{count} de 14 refeições planejadas",
+  "@mealsPlanned": {
+    "description": "Meal plan completion status",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noPlanYet": "Nenhum plano para esta semana ainda",
+  "@noPlanYet": {
+    "description": "Empty state when no meal plan exists for current week"
+  },
+  "createPlan": "Criar um Plano",
+  "@createPlan": {
+    "description": "CTA to create a new meal plan"
+  },
+  "recentMeals": "Refeições Recentes",
+  "@recentMeals": {
+    "description": "Section header for recently cooked meals"
+  },
+  "noMealsYet": "Nenhuma refeição preparada ainda",
+  "@noMealsYet": {
+    "description": "Empty state when no meals have been recorded"
+  },
+  "content": "Conteúdo",
+  "@content": {
+    "description": "Tab label for content section (recipes + ingredients)"
+  },
+  "tools": "Ferramentas",
+  "@tools": {
+    "description": "Label for tools/admin menu item"
+  },
+  "cookedOnDate": "Preparada em {date}",
+  "@cookedOnDate": {
+    "description": "Date label for a cooked meal entry on dashboard",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   }
+
 }

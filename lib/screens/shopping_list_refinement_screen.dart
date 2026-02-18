@@ -85,6 +85,32 @@ class _ShoppingListRefinementScreenState
     return null;
   }
 
+  bool? _getCategoryCheckboxState(String category) {
+    final items = widget.groupedIngredients[category];
+    if (items == null || items.isEmpty) return false;
+
+    final keys = items.map((item) => '$category:${item['name']}').toList();
+    final selectedCount =
+        keys.where((key) => _checkedState[key] ?? true).length;
+    if (selectedCount == keys.length) return true;
+    if (selectedCount == 0) return false;
+    return null;
+  }
+
+  void _toggleCategory(String category) {
+    setState(() {
+      final items = widget.groupedIngredients[category];
+      if (items == null) return;
+
+      final keys = items.map((item) => '$category:${item['name']}').toList();
+      final allSelected =
+          keys.every((key) => _checkedState[key] ?? true);
+      for (final key in keys) {
+        _checkedState[key] = !allSelected;
+      }
+    });
+  }
+
   int _countSelected() {
     return _checkedState.values.where((v) => v).length;
   }
@@ -280,6 +306,11 @@ class _ShoppingListRefinementScreenState
             .compareTo((b['name'] as String).toLowerCase()));
 
         return ExpansionTile(
+          leading: Checkbox(
+            tristate: true,
+            value: _getCategoryCheckboxState(categoryKey),
+            onChanged: (_) => _toggleCategory(categoryKey),
+          ),
           title: Text(
             categoryName,
             style: const TextStyle(
@@ -395,7 +426,7 @@ class _ShoppingListRefinementScreenState
     final unitString = item['unit'] as String;
     final measurementUnit = MeasurementUnit.fromString(unitString);
     final localizedUnit =
-        measurementUnit?.getLocalizedDisplayName(context) ?? unitString;
+        measurementUnit?.getLocalizedQuantityName(context, quantity) ?? unitString;
 
     final formattedQuantity = QuantityFormatter.format(quantity);
 

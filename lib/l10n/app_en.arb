@@ -930,6 +930,10 @@
   "@today": {
     "description": "Label for today indicator"
   },
+  "tomorrow": "Tomorrow",
+  "@tomorrow": {
+    "description": "Label for tomorrow indicator on dashboard"
+  },
   "addMeal": "Add meal",
   "@addMeal": {
     "description": "Label for add meal button"
@@ -1053,6 +1057,86 @@
   "measurementUnitCm": "cm",
   "@measurementUnitCm": {
     "description": "Measurement unit names"
+  },
+  "measurementUnitCupQuantity": "{count, plural, =1{Cup} other{Cups}}",
+  "@measurementUnitCupQuantity": {
+    "description": "Pluralized measurement unit for cup",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitTablespoonQuantity": "{count, plural, =1{Tbsp} other{Tbsp}}",
+  "@measurementUnitTablespoonQuantity": {
+    "description": "Pluralized measurement unit for tablespoon",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitTeaspoonQuantity": "{count, plural, =1{Tsp} other{Tsp}}",
+  "@measurementUnitTeaspoonQuantity": {
+    "description": "Pluralized measurement unit for teaspoon",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitPieceQuantity": "{count, plural, =1{Piece} other{Pieces}}",
+  "@measurementUnitPieceQuantity": {
+    "description": "Pluralized measurement unit for piece",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitSliceQuantity": "{count, plural, =1{Slice} other{Slices}}",
+  "@measurementUnitSliceQuantity": {
+    "description": "Pluralized measurement unit for slice",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitBunchQuantity": "{count, plural, =1{Bunch} other{Bunches}}",
+  "@measurementUnitBunchQuantity": {
+    "description": "Pluralized measurement unit for bunch",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitLeavesQuantity": "{count, plural, =1{Leaf} other{Leaves}}",
+  "@measurementUnitLeavesQuantity": {
+    "description": "Pluralized measurement unit for leaves",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitPinchQuantity": "{count, plural, =1{Pinch} other{Pinches}}",
+  "@measurementUnitPinchQuantity": {
+    "description": "Pluralized measurement unit for pinch",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitCloveQuantity": "{count, plural, =1{Clove} other{Cloves}}",
+  "@measurementUnitCloveQuantity": {
+    "description": "Pluralized measurement unit for clove",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitHeadQuantity": "{count, plural, =1{Head} other{Heads}}",
+  "@measurementUnitHeadQuantity": {
+    "description": "Pluralized measurement unit for head",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitCanQuantity": "{count, plural, =1{Can} other{Cans}}",
+  "@measurementUnitCanQuantity": {
+    "description": "Pluralized measurement unit for can",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitBoxQuantity": "{count, plural, =1{Box} other{Boxes}}",
+  "@measurementUnitBoxQuantity": {
+    "description": "Pluralized measurement unit for box",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitStemQuantity": "{count, plural, =1{Stem} other{Stems}}",
+  "@measurementUnitStemQuantity": {
+    "description": "Pluralized measurement unit for stem",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitSprigQuantity": "{count, plural, =1{Sprig} other{Sprigs}}",
+  "@measurementUnitSprigQuantity": {
+    "description": "Pluralized measurement unit for sprig",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitSeedQuantity": "{count, plural, =1{Seed} other{Seeds}}",
+  "@measurementUnitSeedQuantity": {
+    "description": "Pluralized measurement unit for seed",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitGrainQuantity": "{count, plural, =1{Grain} other{Grains}}",
+  "@measurementUnitGrainQuantity": {
+    "description": "Pluralized measurement unit for grain",
+    "placeholders": { "count": { "type": "num" } }
   },
   "unitOptional": "Unit (Optional)",
   "@unitOptional": {
@@ -2266,6 +2350,98 @@
   "shoppingListEditIngredientsConfirm": "This will discard the current list and return to ingredient selection. Continue?",
   "@shoppingListEditIngredientsConfirm": {
     "description": "Confirmation message before discarding saved list to edit ingredients"
+  },
+
+  "dashboard": "Dashboard",
+  "@dashboard": {
+    "description": "Tab label for the dashboard/landing page"
+  },
+  "dashboardTagline": "Your AI Meal Planning Assistant",
+  "@dashboardTagline": {
+    "description": "Hero tagline on dashboard screen"
+  },
+  "dashboardSubtitle": "Smart recommendations to help you plan varied meals.",
+  "@dashboardSubtitle": {
+    "description": "Hero subtitle describing the recommendation engine"
+  },
+  "planThisWeek": "Plan This Week",
+  "@planThisWeek": {
+    "description": "CTA button to navigate to weekly meal plan"
+  },
+  "quickActions": "Quick Actions",
+  "@quickActions": {
+    "description": "Section header for dashboard quick action buttons"
+  },
+  "planTodaysMeal": "Plan Today",
+  "@planTodaysMeal": {
+    "description": "Quick action to plan today's meal"
+  },
+  "viewThisWeek": "This Week",
+  "@viewThisWeek": {
+    "description": "Quick action to view current week plan"
+  },
+  "browseRecipes": "Browse",
+  "@browseRecipes": {
+    "description": "Quick action to browse recipe collection"
+  },
+  "yourCollection": "Your Collection",
+  "@yourCollection": {
+    "description": "Section header for recipe collection summary"
+  },
+  "recipesInCollection": "{count} recipes",
+  "@recipesInCollection": {
+    "description": "Recipe count display on dashboard",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "thisWeeksPlan": "This Week's Plan",
+  "@thisWeeksPlan": {
+    "description": "Section header for weekly plan summary on dashboard"
+  },
+  "mealsPlanned": "{count} of 14 meals planned",
+  "@mealsPlanned": {
+    "description": "Meal plan completion status",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noPlanYet": "No plan yet for this week",
+  "@noPlanYet": {
+    "description": "Empty state when no meal plan exists for current week"
+  },
+  "createPlan": "Create a Plan",
+  "@createPlan": {
+    "description": "CTA to create a new meal plan"
+  },
+  "recentMeals": "Recent Meals",
+  "@recentMeals": {
+    "description": "Section header for recently cooked meals"
+  },
+  "noMealsYet": "No meals cooked yet",
+  "@noMealsYet": {
+    "description": "Empty state when no meals have been recorded"
+  },
+  "content": "Content",
+  "@content": {
+    "description": "Tab label for content section (recipes + ingredients)"
+  },
+  "tools": "Tools",
+  "@tools": {
+    "description": "Label for tools/admin menu item"
+  },
+  "cookedOnDate": "Cooked on {date}",
+  "@cookedOnDate": {
+    "description": "Date label for a cooked meal entry on dashboard",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   }
 
 }
