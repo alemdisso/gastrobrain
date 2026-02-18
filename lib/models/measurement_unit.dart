@@ -85,6 +85,62 @@ enum MeasurementUnit {
     }
   }
 
+  /// Returns the localized unit name pluralized based on [quantity].
+  /// Use this when displaying a quantity alongside the unit.
+  String getLocalizedQuantityName(context, double quantity) {
+    final localizations = context != null ? AppLocalizations.of(context)! : null;
+
+    if (localizations == null) {
+      return displayName; // Fallback to English singular
+    }
+
+    // Abbreviations don't pluralize
+    switch (this) {
+      case MeasurementUnit.gram:
+        return 'g';
+      case MeasurementUnit.kilogram:
+        return 'kg';
+      case MeasurementUnit.milliliter:
+        return 'ml';
+      case MeasurementUnit.liter:
+        return 'l';
+      case MeasurementUnit.centimeter:
+        return localizations.measurementUnitCm;
+      case MeasurementUnit.cup:
+        return localizations.measurementUnitCupQuantity(quantity);
+      case MeasurementUnit.tablespoon:
+        return localizations.measurementUnitTablespoonQuantity(quantity);
+      case MeasurementUnit.teaspoon:
+        return localizations.measurementUnitTeaspoonQuantity(quantity);
+      case MeasurementUnit.piece:
+        return localizations.measurementUnitPieceQuantity(quantity);
+      case MeasurementUnit.slice:
+        return localizations.measurementUnitSliceQuantity(quantity);
+      case MeasurementUnit.bunch:
+        return localizations.measurementUnitBunchQuantity(quantity);
+      case MeasurementUnit.leaves:
+        return localizations.measurementUnitLeavesQuantity(quantity);
+      case MeasurementUnit.pinch:
+        return localizations.measurementUnitPinchQuantity(quantity);
+      case MeasurementUnit.clove:
+        return localizations.measurementUnitCloveQuantity(quantity);
+      case MeasurementUnit.head:
+        return localizations.measurementUnitHeadQuantity(quantity);
+      case MeasurementUnit.can:
+        return localizations.measurementUnitCanQuantity(quantity);
+      case MeasurementUnit.box:
+        return localizations.measurementUnitBoxQuantity(quantity);
+      case MeasurementUnit.stem:
+        return localizations.measurementUnitStemQuantity(quantity);
+      case MeasurementUnit.sprig:
+        return localizations.measurementUnitSprigQuantity(quantity);
+      case MeasurementUnit.seed:
+        return localizations.measurementUnitSeedQuantity(quantity);
+      case MeasurementUnit.grain:
+        return localizations.measurementUnitGrainQuantity(quantity);
+    }
+  }
+
   String getLocalizedDisplayName(context) {
     final localizations = context != null ? AppLocalizations.of(context)! : null;
 

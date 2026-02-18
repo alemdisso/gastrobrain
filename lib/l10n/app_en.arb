@@ -1058,6 +1058,86 @@
   "@measurementUnitCm": {
     "description": "Measurement unit names"
   },
+  "measurementUnitCupQuantity": "{count, plural, =1{Cup} other{Cups}}",
+  "@measurementUnitCupQuantity": {
+    "description": "Pluralized measurement unit for cup",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitTablespoonQuantity": "{count, plural, =1{Tbsp} other{Tbsp}}",
+  "@measurementUnitTablespoonQuantity": {
+    "description": "Pluralized measurement unit for tablespoon",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitTeaspoonQuantity": "{count, plural, =1{Tsp} other{Tsp}}",
+  "@measurementUnitTeaspoonQuantity": {
+    "description": "Pluralized measurement unit for teaspoon",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitPieceQuantity": "{count, plural, =1{Piece} other{Pieces}}",
+  "@measurementUnitPieceQuantity": {
+    "description": "Pluralized measurement unit for piece",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitSliceQuantity": "{count, plural, =1{Slice} other{Slices}}",
+  "@measurementUnitSliceQuantity": {
+    "description": "Pluralized measurement unit for slice",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitBunchQuantity": "{count, plural, =1{Bunch} other{Bunches}}",
+  "@measurementUnitBunchQuantity": {
+    "description": "Pluralized measurement unit for bunch",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitLeavesQuantity": "{count, plural, =1{Leaf} other{Leaves}}",
+  "@measurementUnitLeavesQuantity": {
+    "description": "Pluralized measurement unit for leaves",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitPinchQuantity": "{count, plural, =1{Pinch} other{Pinches}}",
+  "@measurementUnitPinchQuantity": {
+    "description": "Pluralized measurement unit for pinch",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitCloveQuantity": "{count, plural, =1{Clove} other{Cloves}}",
+  "@measurementUnitCloveQuantity": {
+    "description": "Pluralized measurement unit for clove",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitHeadQuantity": "{count, plural, =1{Head} other{Heads}}",
+  "@measurementUnitHeadQuantity": {
+    "description": "Pluralized measurement unit for head",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitCanQuantity": "{count, plural, =1{Can} other{Cans}}",
+  "@measurementUnitCanQuantity": {
+    "description": "Pluralized measurement unit for can",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitBoxQuantity": "{count, plural, =1{Box} other{Boxes}}",
+  "@measurementUnitBoxQuantity": {
+    "description": "Pluralized measurement unit for box",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitStemQuantity": "{count, plural, =1{Stem} other{Stems}}",
+  "@measurementUnitStemQuantity": {
+    "description": "Pluralized measurement unit for stem",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitSprigQuantity": "{count, plural, =1{Sprig} other{Sprigs}}",
+  "@measurementUnitSprigQuantity": {
+    "description": "Pluralized measurement unit for sprig",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitSeedQuantity": "{count, plural, =1{Seed} other{Seeds}}",
+  "@measurementUnitSeedQuantity": {
+    "description": "Pluralized measurement unit for seed",
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "measurementUnitGrainQuantity": "{count, plural, =1{Grain} other{Grains}}",
+  "@measurementUnitGrainQuantity": {
+    "description": "Pluralized measurement unit for grain",
+    "placeholders": { "count": { "type": "num" } }
+  },
   "unitOptional": "Unit (Optional)",
   "@unitOptional": {
     "description": "Label for unit field in ingredient forms"

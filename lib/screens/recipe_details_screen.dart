@@ -603,8 +603,9 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
         // Convert to MeasurementUnit enum and get localized name
         final measurementUnit =
             MeasurementUnit.fromString(effectiveUnitString);
+        final quantity = ingredient['quantity'] as double;
         final localizedUnit =
-            measurementUnit?.getLocalizedDisplayName(context) ??
+            measurementUnit?.getLocalizedQuantityName(context, quantity) ??
                 effectiveUnitString;
 
         return Card(
@@ -619,11 +620,11 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Hide quantity/unit for zero quantities ("to taste" ingredients)
-                if (ingredient['quantity'] != 0)
+                if (quantity != 0)
                   Row(
                     children: [
                       Text(
-                        '${QuantityFormatter.format(ingredient['quantity'])} $localizedUnit',
+                        '${QuantityFormatter.format(quantity)} $localizedUnit',
                       ),
                       if (ingredient['unit_override'] != null)
                         Padding(

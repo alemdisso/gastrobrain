@@ -224,8 +224,9 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
                         // Convert to MeasurementUnit enum and get localized name
                         final measurementUnit =
                             MeasurementUnit.fromString(effectiveUnitString);
+                        final quantity = ingredient['quantity'] as double;
                         final localizedUnit =
-                            measurementUnit?.getLocalizedDisplayName(context) ??
+                            measurementUnit?.getLocalizedQuantityName(context, quantity) ??
                                 effectiveUnitString;
 
                         return Card(
