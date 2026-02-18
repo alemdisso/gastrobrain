@@ -19,9 +19,10 @@ class ShoppingListService {
 
   /// Convert quantity from one unit to another
   ///
-  /// Supports basic metric conversions:
+  /// Supports conversions:
   /// - Weight: g ↔ kg
-  /// - Volume: ml ↔ L
+  /// - Volume: ml ↔ L, tsp ↔ tbsp (3:1), tbsp ↔ cup (16:1), tsp ↔ cup (48:1)
+  /// - Count: clove ↔ head (10:1)
   ///
   /// Returns the converted quantity, or throws an exception if units are incompatible.
   double convertToCommonUnit(double quantity, String fromUnit, String toUnit) {
@@ -33,20 +34,26 @@ class ShoppingListService {
     if (from == to) return quantity;
 
     // Weight conversions
-    if (from == 'g' && to == 'kg') {
-      return quantity / 1000;
-    }
-    if (from == 'kg' && to == 'g') {
-      return quantity * 1000;
-    }
+    if (from == 'g' && to == 'kg') return quantity / 1000;
+    if (from == 'kg' && to == 'g') return quantity * 1000;
 
-    // Volume conversions
-    if (from == 'ml' && to == 'l') {
-      return quantity / 1000;
-    }
-    if (from == 'l' && to == 'ml') {
-      return quantity * 1000;
-    }
+    // Volume conversions: metric
+    if (from == 'ml' && to == 'l') return quantity / 1000;
+    if (from == 'l' && to == 'ml') return quantity * 1000;
+
+    // Volume conversions: cooking units
+    // 3 tsp = 1 tbsp, 16 tbsp = 1 cup, 48 tsp = 1 cup
+    if (from == 'tsp' && to == 'tbsp') return quantity / 3;
+    if (from == 'tbsp' && to == 'tsp') return quantity * 3;
+    if (from == 'tbsp' && to == 'cup') return quantity / 16;
+    if (from == 'cup' && to == 'tbsp') return quantity * 16;
+    if (from == 'tsp' && to == 'cup') return quantity / 48;
+    if (from == 'cup' && to == 'tsp') return quantity * 48;
+
+    // Count conversions: garlic
+    // 1 head ≈ 10 cloves
+    if (from == 'clove' && to == 'head') return quantity / 10;
+    if (from == 'head' && to == 'clove') return quantity * 10;
 
     // Units are incompatible
     throw UnitConversionException('Cannot convert $fromUnit to $toUnit');
@@ -152,13 +159,22 @@ class ShoppingListService {
         final quantity = item['quantity'] as double;
         final unit = (item['unit'] as String).toLowerCase();
 
-        // Convert to larger unit if >= 1000
+        // Convert to larger unit when threshold is reached
         if (unit == 'g' && quantity >= 1000) {
           item['quantity'] = quantity / 1000;
           item['unit'] = 'kg';
         } else if (unit == 'ml' && quantity >= 1000) {
           item['quantity'] = quantity / 1000;
           item['unit'] = 'L';
+        } else if (unit == 'tsp' && quantity >= 3) {
+          item['quantity'] = quantity / 3;
+          item['unit'] = 'tbsp';
+        } else if (unit == 'tbsp' && quantity >= 16) {
+          item['quantity'] = quantity / 16;
+          item['unit'] = 'cup';
+        } else if (unit == 'clove' && quantity >= 10) {
+          item['quantity'] = quantity / 10;
+          item['unit'] = 'head';
         }
 
         result.add(item);
