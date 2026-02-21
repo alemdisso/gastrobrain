@@ -968,6 +968,10 @@
   "@ingredientCategoryOil": {
     "description": "Nomes das categorias de ingredientes"
   },
+  "ingredientCategoryHerb": "Erva",
+  "@ingredientCategoryHerb": {
+    "description": "Nomes das categorias de ingredientes"
+  },
   "ingredientCategoryOther": "Outro",
   "@ingredientCategoryOther": {
     "description": "Nomes das categorias de ingredientes"
