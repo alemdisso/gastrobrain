@@ -760,6 +760,10 @@
   "@categorySnacks": {
     "description": "Nome para categoria de petiscos"
   },
+  "categoryPicklesFermented": "Conservas/fermentados",
+  "@categoryPicklesFermented": {
+    "description": "Nome para a categoria de conservas e fermentados"
+  },
   "categoryUncategorized": "Sem categoria",
   "@categoryUncategorized": {
     "description": "Nome para categoria sem classificação"

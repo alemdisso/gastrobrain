@@ -12,6 +12,7 @@ enum RecipeCategory {
   sauces('sauces'),
   dips('dips'),
   snacks('snacks'),
+  picklesFermented('pickles_fermented'),
   uncategorized('uncategorized');
 
   final String value;
@@ -48,18 +49,21 @@ enum RecipeCategory {
         return 'Dips';
       case RecipeCategory.snacks:
         return 'Snacks';
+      case RecipeCategory.picklesFermented:
+        return 'Pickles/Fermented';
       case RecipeCategory.uncategorized:
         return 'Uncategorized';
     }
   }
 
   String getLocalizedDisplayName(context) {
-    final localizations = context != null ? AppLocalizations.of(context)! : null;
-    
+    final localizations =
+        context != null ? AppLocalizations.of(context)! : null;
+
     if (localizations == null) {
       return displayName; // Fallback to English
     }
-    
+
     switch (this) {
       case RecipeCategory.mainDishes:
         return localizations.categoryMainDishes;
@@ -83,6 +87,8 @@ enum RecipeCategory {
         return localizations.categoryDips;
       case RecipeCategory.snacks:
         return localizations.categorySnacks;
+      case RecipeCategory.picklesFermented:
+        return localizations.categoryPicklesFermented;
       case RecipeCategory.uncategorized:
         return localizations.categoryUncategorized;
     }
