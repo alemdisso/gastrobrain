@@ -154,7 +154,12 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       body: Column(
         children: [
           if (_stalenessType != _StalenessType.none) _buildStaleBanner(context),
-          Expanded(child: _buildBody(context)),
+          Expanded(
+            child: SafeArea(
+              top: false,
+              child: _buildBody(context),
+            ),
+          ),
         ],
       ),
     );
