@@ -957,11 +957,13 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _openShoppingListFlow,
-        tooltip: AppLocalizations.of(context)!.generateShoppingList,
-        child: const Icon(Icons.shopping_cart_outlined),
-      ),
+      floatingActionButton: _currentWeekContext == TimeContext.past
+          ? null
+          : FloatingActionButton(
+              onPressed: _openShoppingListFlow,
+              tooltip: AppLocalizations.of(context)!.generateShoppingList,
+              child: const Icon(Icons.shopping_cart_outlined),
+            ),
       body: Column(
         children: [
           // Week navigation controls
