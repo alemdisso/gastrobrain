@@ -122,6 +122,11 @@ class MealPlanRepository extends BaseRepository<List<MealPlan>> {
       );
       await _dbHelper.updateMealPlanItem(updatedItem);
 
+      // Update the parent meal plan's lastCookedAt so shopping list
+      // stale detection can signal a cooked-meal staleness event.
+      await _dbHelper.updateMealPlanCookedAt(
+          mealPlanItem.mealPlanId, DateTime.now());
+
       // Invalidate relevant caches
       _invalidateRelatedCaches(mealPlanItem.plannedDate);
 

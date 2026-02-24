@@ -8,6 +8,7 @@ class MealPlan {
   String notes;
   DateTime createdAt;
   DateTime modifiedAt;
+  DateTime? lastCookedAt;
   List<MealPlanItem> items;
 
   MealPlan({
@@ -16,6 +17,7 @@ class MealPlan {
     this.notes = '',
     required this.createdAt,
     required this.modifiedAt,
+    this.lastCookedAt,
     List<MealPlanItem> items = const [],
   }) : items = List<MealPlanItem>.from(
             items); // Create a mutable copy of the items list
@@ -28,6 +30,7 @@ class MealPlan {
       'notes': notes,
       'created_at': createdAt.toIso8601String(),
       'modified_at': modifiedAt.toIso8601String(),
+      'last_cooked_at': lastCookedAt?.toIso8601String(),
     };
   }
 
@@ -39,6 +42,9 @@ class MealPlan {
       notes: map['notes'] ?? '',
       createdAt: DateTime.parse(map['created_at']),
       modifiedAt: DateTime.parse(map['modified_at']),
+      lastCookedAt: map['last_cooked_at'] != null
+          ? DateTime.parse(map['last_cooked_at'] as String)
+          : null,
       items: items,
     );
   }

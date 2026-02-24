@@ -2338,6 +2338,10 @@
   "@shoppingListStaleAction": {
     "description": "Action button to regenerate stale shopping list"
   },
+  "shoppingListCookedMealWarning": "A meal has been cooked since this list was created. Some ingredients may no longer need to be purchased.",
+  "@shoppingListCookedMealWarning": {
+    "description": "Banner warning when a meal has been marked as cooked after the shopping list was generated"
+  },
   "shoppingListCategoryCount": "{count} items",
   "@shoppingListCategoryCount": {
     "description": "Item count shown in category header",

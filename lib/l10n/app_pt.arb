@@ -2298,6 +2298,10 @@
   "@shoppingListStaleAction": {
     "description": "Action button to regenerate stale shopping list"
   },
+  "shoppingListCookedMealWarning": "Uma refeição foi preparada desde que esta lista foi criada. Alguns ingredientes podem não precisar mais ser comprados.",
+  "@shoppingListCookedMealWarning": {
+    "description": "Banner warning when a meal has been marked as cooked after the shopping list was generated"
+  },
   "shoppingListCategoryCount": "{count} itens",
   "@shoppingListCategoryCount": {
     "description": "Item count shown in category header",

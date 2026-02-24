@@ -33,6 +33,7 @@ import '../core/migration/migrations/003_add_meal_type.dart';
 import '../core/migration/migrations/004_add_shopping_list_tables.dart';
 import '../core/migration/migrations/005_rename_is_purchased_to_to_buy.dart';
 import '../core/migration/migrations/006_add_meal_plan_modified_at.dart';
+import '../core/migration/migrations/007_add_cooked_at_columns.dart';
 import '../core/repositories/base_repository.dart';
 
 class DatabaseHelper {
@@ -52,6 +53,7 @@ class DatabaseHelper {
     AddShoppingListTablesMigration(),
     RenameIsPurchasedToToBuyMigration(),
     AddMealPlanModifiedAtMigration(),
+    AddCookedAtColumnsMigration(),
     // Future migrations will be added here
   ];
 
@@ -69,7 +71,7 @@ class DatabaseHelper {
     
     final db = await openDatabase(
       path,
-      version: 17, // Bumped for instructions field addition
+      version: 18, // Bumped for lastCookedAt on meal_plans and mealPlanCookedAt on shopping_lists
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: (db) async {
@@ -230,7 +232,8 @@ class DatabaseHelper {
         week_start_date TEXT NOT NULL,
         notes TEXT,
         created_at TEXT NOT NULL,
-        modified_at TEXT NOT NULL
+        modified_at TEXT NOT NULL,
+        last_cooked_at TEXT
       )
     ''');
 
@@ -292,7 +295,9 @@ class DatabaseHelper {
         name TEXT NOT NULL,
         date_created INTEGER NOT NULL,
         start_date INTEGER NOT NULL,
-        end_date INTEGER NOT NULL
+        end_date INTEGER NOT NULL,
+        meal_plan_modified_at INTEGER,
+        meal_plan_cooked_at INTEGER
       )
     ''');
 
@@ -389,6 +394,13 @@ class DatabaseHelper {
       // Add instructions column to recipes table
       await db.execute(
           'ALTER TABLE recipes ADD COLUMN instructions TEXT DEFAULT \'\'');
+    }
+    if (oldVersion < 18) {
+      // Add cooked-meal staleness tracking columns (mirrors migration 007)
+      await db.execute(
+          'ALTER TABLE meal_plans ADD COLUMN last_cooked_at TEXT');
+      await db.execute(
+          'ALTER TABLE shopping_lists ADD COLUMN meal_plan_cooked_at INTEGER');
     }
   }
   // Meal Plan operations
@@ -557,6 +569,21 @@ class DatabaseHelper {
     }
 
     return MealPlan.fromMap(maps.first, items);
+  }
+
+  /// Update only the last_cooked_at timestamp on a meal plan.
+  ///
+  /// Lighter than [updateMealPlan], which replaces all items. Used when a meal
+  /// is marked as cooked so the shopping list staleness system can detect it.
+  Future<void> updateMealPlanCookedAt(
+      String mealPlanId, DateTime cookedAt) async {
+    final Database db = await database;
+    await db.update(
+      'meal_plans',
+      {'last_cooked_at': cookedAt.toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [mealPlanId],
+    );
   }
 
   Future<int> updateMealPlan(MealPlan mealPlan) async {

@@ -9,6 +9,8 @@ import '../l10n/app_localizations.dart';
 import '../utils/quantity_formatter.dart';
 import 'shopping_list_preview_screen.dart';
 
+enum _StalenessType { none, planChanged, mealCooked }
+
 class ShoppingListScreen extends StatefulWidget {
   final int shoppingListId;
   final DatabaseHelper? databaseHelper;
@@ -32,7 +34,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   String? _errorMessage;
   bool _showToBuyOnly = false;
   bool _hideToTaste = false;
-  bool _isStale = false;
+  _StalenessType _stalenessType = _StalenessType.none;
 
   late final DatabaseHelper _dbHelper;
 
@@ -65,14 +67,25 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
 
       final items = await _dbHelper.getShoppingListItems(widget.shoppingListId);
 
-      // Check if the shopping list is stale
-      bool isStale = false;
-      if (shoppingList.mealPlanModifiedAt != null) {
-        final mealPlan = await _dbHelper.getMealPlanForWeek(shoppingList.startDate);
-        if (mealPlan != null &&
+      // Check if the shopping list is stale.
+      // Cooked-meal staleness takes precedence over plan-changed staleness.
+      var stalenessType = _StalenessType.none;
+      final mealPlan =
+          await _dbHelper.getMealPlanForWeek(shoppingList.startDate);
+
+      if (mealPlan != null) {
+        // Cooked-meal staleness: a meal was cooked after the list was generated.
+        if (mealPlan.lastCookedAt != null &&
+            (shoppingList.mealPlanCookedAt == null ||
+                mealPlan.lastCookedAt!.millisecondsSinceEpoch >
+                    shoppingList.mealPlanCookedAt!.millisecondsSinceEpoch)) {
+          stalenessType = _StalenessType.mealCooked;
+        }
+        // Plan-changed staleness: meals were added/removed/modified.
+        else if (shoppingList.mealPlanModifiedAt != null &&
             mealPlan.modifiedAt.millisecondsSinceEpoch >
                 shoppingList.mealPlanModifiedAt!.millisecondsSinceEpoch) {
-          isStale = true;
+          stalenessType = _StalenessType.planChanged;
         }
       }
 
@@ -80,7 +93,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
         setState(() {
           _shoppingList = shoppingList;
           _items = items;
-          _isStale = isStale;
+          _stalenessType = stalenessType;
           _isLoading = false;
         });
       }
@@ -140,7 +153,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       ),
       body: Column(
         children: [
-          if (_isStale) _buildStaleBanner(context),
+          if (_stalenessType != _StalenessType.none) _buildStaleBanner(context),
           Expanded(child: _buildBody(context)),
         ],
       ),
@@ -320,8 +333,12 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   Widget _buildStaleBanner(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
+    final message = _stalenessType == _StalenessType.mealCooked
+        ? l10n.shoppingListCookedMealWarning
+        : l10n.shoppingListStaleWarning;
+
     return MaterialBanner(
-      content: Text(l10n.shoppingListStaleWarning),
+      content: Text(message),
       leading: Icon(
         Icons.warning_amber_rounded,
         color: Theme.of(context).colorScheme.error,

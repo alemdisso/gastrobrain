@@ -260,18 +260,25 @@ class ShoppingListService {
     // 5. Group by category
     final grouped = groupByCategory(aggregated);
 
-    // 6. Create shopping list
+    // 6. Capture meal plan timestamps for stale detection
+    final mealPlan = await dbHelper.getMealPlanForWeek(startDate);
+    final mealPlanModifiedAt = mealPlan?.modifiedAt;
+    final mealPlanCookedAt = mealPlan?.lastCookedAt;
+
+    // 7. Create shopping list
     final shoppingList = ShoppingList(
       name: listName,
       dateCreated: DateTime.now(),
       startDate: startDate,
       endDate: endDate,
+      mealPlanModifiedAt: mealPlanModifiedAt,
+      mealPlanCookedAt: mealPlanCookedAt,
     );
 
-    // 7. Save shopping list to database
+    // 8. Save shopping list to database
     final listId = await dbHelper.insertShoppingList(shoppingList);
 
-    // 8. Create and save shopping list items
+    // 9. Create and save shopping list items
     for (final entry in grouped.entries) {
       final category = entry.key;
       final items = entry.value;
@@ -311,9 +318,10 @@ class ShoppingListService {
     // 1. Generate list name
     final listName = _generateListName(startDate, endDate);
 
-    // 2. Get meal plan's modifiedAt for stale detection
+    // 2. Get meal plan timestamps for stale detection
     final mealPlan = await dbHelper.getMealPlanForWeek(startDate);
     final mealPlanModifiedAt = mealPlan?.modifiedAt;
+    final mealPlanCookedAt = mealPlan?.lastCookedAt;
 
     // 3. Create shopping list
     final shoppingList = ShoppingList(
@@ -322,6 +330,7 @@ class ShoppingListService {
       startDate: startDate,
       endDate: endDate,
       mealPlanModifiedAt: mealPlanModifiedAt,
+      mealPlanCookedAt: mealPlanCookedAt,
     );
 
     // 3. Save shopping list to database
