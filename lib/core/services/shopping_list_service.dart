@@ -384,6 +384,10 @@ class ShoppingListService {
           continue;
         }
 
+        // Skip meals that have already been cooked — their ingredients
+        // no longer need to be purchased.
+        if (item.hasBeenCooked) continue;
+
         // 3. Get the recipes for this meal plan item
         if (item.mealPlanItemRecipes == null ||
             item.mealPlanItemRecipes!.isEmpty) {
