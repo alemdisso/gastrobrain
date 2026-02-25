@@ -1685,6 +1685,47 @@ void main() {
       expect(summaryButton.tooltip, isNotNull);
       expect(summaryButton.tooltip, isNotEmpty);
     });
+
+    testWidgets('FAB is hidden when viewing a past week (#299)', (WidgetTester tester) async {
+      await tester.pumpWidget(createTestableWidget(
+        WeeklyPlanScreen(databaseHelper: mockDbHelper),
+      ));
+      await tester.pumpAndSettle();
+
+      // Navigate back two weeks to reach a past week
+      await tester.tap(find.byIcon(Icons.chevron_left));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.chevron_left));
+      await tester.pumpAndSettle();
+
+      // FAB must be hidden for past weeks
+      expect(find.byType(FloatingActionButton), findsNothing);
+      expect(find.byIcon(Icons.shopping_cart_outlined), findsNothing);
+    });
+
+    testWidgets('FAB reappears when navigating from past back to current week (#299)', (WidgetTester tester) async {
+      await tester.pumpWidget(createTestableWidget(
+        WeeklyPlanScreen(databaseHelper: mockDbHelper),
+      ));
+      await tester.pumpAndSettle();
+
+      // Go to a past week
+      await tester.tap(find.byIcon(Icons.chevron_left));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.chevron_left));
+      await tester.pumpAndSettle();
+      expect(find.byType(FloatingActionButton), findsNothing);
+
+      // Navigate forward back to current week
+      await tester.tap(find.byIcon(Icons.chevron_right));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.chevron_right));
+      await tester.pumpAndSettle();
+
+      // FAB must be visible again
+      expect(find.byType(FloatingActionButton), findsOneWidget);
+      expect(find.byIcon(Icons.shopping_cart_outlined), findsOneWidget);
+    });
   });
 }
 

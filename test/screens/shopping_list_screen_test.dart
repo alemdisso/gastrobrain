@@ -136,7 +136,7 @@ void main() {
       expect(find.text('3 Pieces'), findsOneWidget);
     });
 
-    testWidgets('displays "to taste" items with warning indicator', (tester) async {
+    testWidgets('displays "to taste" items without warning icon', (tester) async {
       // Create shopping list
       final shoppingList = ShoppingList(
         name: 'Weekly List',
@@ -172,9 +172,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // Categories are expanded by default — items should be visible
-      // Should display "to taste" with warning indicator
+      // Should display "to taste" without a warning icon (#297)
       expect(find.textContaining('to taste'), findsOneWidget);
-      expect(find.textContaining('⚠️'), findsOneWidget);
+      expect(find.textContaining('⚠️'), findsNothing);
     });
 
     testWidgets('displays empty shopping list message when no items', (tester) async {
@@ -204,7 +204,7 @@ void main() {
       expect(find.textContaining('No items'), findsOneWidget);
     });
 
-    testWidgets('filters items when "To Buy Only" is selected', (tester) async {
+    testWidgets('filters items when "To Buy Only" chip is selected', (tester) async {
       // Create shopping list
       final shoppingList = ShoppingList(
         name: 'Test List',
@@ -252,72 +252,12 @@ void main() {
       expect(find.text('Chicken Breast'), findsOneWidget);
       expect(find.text('Salt'), findsOneWidget);
 
-      // Tap the "Show All" filter chip (it toggles to "To Buy Only")
-      await tester.tap(find.text('Show All'));
+      // Tap the "To Buy Only" filter chip (static label)
+      await tester.tap(find.text('To Buy Only'));
       await tester.pumpAndSettle();
-
-      // Now it should show "To Buy Only" text
-      expect(find.text('To Buy Only'), findsOneWidget);
 
       // Only "to buy" item should be visible
       expect(find.text('Chicken Breast'), findsOneWidget);
-      expect(find.text('Salt'), findsNothing);
-    });
-
-    testWidgets('filters out "to taste" items when "Hide To Taste" is selected', (tester) async {
-      // Create shopping list
-      final shoppingList = ShoppingList(
-        name: 'Test List',
-        dateCreated: DateTime.now(),
-        startDate: DateTime.now(),
-        endDate: DateTime.now().add(const Duration(days: 7)),
-      );
-
-      final listId = await mockDbHelper.insertShoppingList(shoppingList);
-
-      // Add items: one normal, one "to taste"
-      final item1 = ShoppingListItem(
-        shoppingListId: listId,
-        ingredientName: 'Tomato',
-        quantity: 500,
-        unit: 'g',
-        category: 'vegetable',
-        toBuy: true,
-      );
-
-      final item2 = ShoppingListItem(
-        shoppingListId: listId,
-        ingredientName: 'Salt',
-        quantity: 0,
-        unit: 'g',
-        category: 'seasoning',
-        toBuy: true,
-      );
-
-      await mockDbHelper.insertShoppingListItem(item1);
-      await mockDbHelper.insertShoppingListItem(item2);
-
-      await tester.pumpWidget(
-        createTestableWidget(
-          ShoppingListScreen(
-            shoppingListId: listId,
-            databaseHelper: mockDbHelper,
-          ),
-        ),
-      );
-
-      await tester.pumpAndSettle();
-
-      // Both items should be visible initially (categories expanded by default)
-      expect(find.text('Tomato'), findsOneWidget);
-      expect(find.text('Salt'), findsOneWidget);
-
-      // Tap the "Hide To Taste" filter chip
-      await tester.tap(find.text('Hide \'To Taste\''));
-      await tester.pumpAndSettle();
-
-      // Only normal item should be visible
-      expect(find.text('Tomato'), findsOneWidget);
       expect(find.text('Salt'), findsNothing);
     });
 
@@ -383,78 +323,6 @@ void main() {
       expect(find.text('100 g'), findsOneWidget);
     });
 
-    testWidgets('applies both filters together', (tester) async {
-      // Create shopping list
-      final shoppingList = ShoppingList(
-        name: 'Test List',
-        dateCreated: DateTime.now(),
-        startDate: DateTime.now(),
-        endDate: DateTime.now().add(const Duration(days: 7)),
-      );
-
-      final listId = await mockDbHelper.insertShoppingList(shoppingList);
-
-      // Add items with different combinations
-      await mockDbHelper.insertShoppingListItem(ShoppingListItem(
-        shoppingListId: listId,
-        ingredientName: 'Chicken',
-        quantity: 500,
-        unit: 'g',
-        category: 'protein',
-        toBuy: true,
-      ));
-
-      await mockDbHelper.insertShoppingListItem(ShoppingListItem(
-        shoppingListId: listId,
-        ingredientName: 'Salt',
-        quantity: 0,
-        unit: 'g',
-        category: 'seasoning',
-        toBuy: true,
-      ));
-
-      await mockDbHelper.insertShoppingListItem(ShoppingListItem(
-        shoppingListId: listId,
-        ingredientName: 'Pepper',
-        quantity: 10,
-        unit: 'g',
-        category: 'seasoning',
-        toBuy: false,
-      ));
-
-      await tester.pumpWidget(
-        createTestableWidget(
-          ShoppingListScreen(
-            shoppingListId: listId,
-            databaseHelper: mockDbHelper,
-          ),
-        ),
-      );
-
-      await tester.pumpAndSettle();
-
-      // All items visible initially (categories expanded by default)
-      expect(find.text('Chicken'), findsOneWidget);
-      expect(find.text('Salt'), findsOneWidget);
-      expect(find.text('Pepper'), findsOneWidget);
-
-      // Apply "To Buy Only" filter (tap "Show All" to toggle it)
-      await tester.tap(find.text('Show All'));
-      await tester.pumpAndSettle();
-
-      // Only "to buy" items visible (Chicken and Salt)
-      expect(find.text('Chicken'), findsOneWidget);
-      expect(find.text('Salt'), findsOneWidget);
-      expect(find.text('Pepper'), findsNothing);
-
-      // Also apply "Hide To Taste" filter
-      await tester.tap(find.text('Hide \'To Taste\''));
-      await tester.pumpAndSettle();
-
-      // Only Chicken should be visible (to buy = true, quantity > 0)
-      expect(find.text('Chicken'), findsOneWidget);
-      expect(find.text('Salt'), findsNothing);
-      expect(find.text('Pepper'), findsNothing);
-    });
   });
+
 }

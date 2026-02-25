@@ -20,10 +20,16 @@ class AddMealPlanModifiedAtMigration extends Migration {
 
   @override
   Future<void> up(DatabaseExecutor db) async {
-    await db.execute('''
-      ALTER TABLE shopping_lists
-      ADD COLUMN meal_plan_modified_at INTEGER
-    ''');
+    // Guard against column already existing (idempotent migration).
+    final tableInfo = await db.rawQuery('PRAGMA table_info(shopping_lists)');
+    final hasColumn =
+        tableInfo.any((col) => col['name'] == 'meal_plan_modified_at');
+    if (!hasColumn) {
+      await db.execute('''
+        ALTER TABLE shopping_lists
+        ADD COLUMN meal_plan_modified_at INTEGER
+      ''');
+    }
   }
 
   @override

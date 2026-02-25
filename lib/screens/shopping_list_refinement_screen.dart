@@ -171,7 +171,6 @@ class _ShoppingListRefinementScreenState
         MaterialPageRoute(
           builder: (context) => ShoppingListScreen(
             shoppingListId: shoppingList.id!,
-            hideToTaste: _hideToTaste,
           ),
         ),
         (route) => route.isFirst, // Keep only the weekly plan screen
@@ -420,7 +419,7 @@ class _ShoppingListRefinementScreenState
     final quantity = item['quantity'] as double;
 
     if (quantity == 0) {
-      return '${AppLocalizations.of(context)!.toTaste} ⚠️';
+      return AppLocalizations.of(context)!.toTaste;
     }
 
     final unitString = item['unit'] as String;

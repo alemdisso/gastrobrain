@@ -760,6 +760,10 @@
   "@categorySnacks": {
     "description": "Nome para categoria de petiscos"
   },
+  "categoryPicklesFermented": "Conservas/fermentados",
+  "@categoryPicklesFermented": {
+    "description": "Nome para a categoria de conservas e fermentados"
+  },
   "categoryUncategorized": "Sem categoria",
   "@categoryUncategorized": {
     "description": "Nome para categoria sem classificação"
@@ -966,6 +970,10 @@
   },
   "ingredientCategoryOil": "Óleo",
   "@ingredientCategoryOil": {
+    "description": "Nomes das categorias de ingredientes"
+  },
+  "ingredientCategoryHerb": "Erva",
+  "@ingredientCategoryHerb": {
     "description": "Nomes das categorias de ingredientes"
   },
   "ingredientCategoryOther": "Outro",
@@ -2206,13 +2214,9 @@
   "@otherCategory": {
     "description": "Default category for ingredients without a specific category"
   },
-  "showAll": "Mostrar Tudo",
-  "@showAll": {
-    "description": "Filter option to show all shopping list items"
-  },
-  "showToBuyOnly": "Apenas a Comprar",
-  "@showToBuyOnly": {
-    "description": "Filter option to show only items marked as 'to buy'"
+  "toBuyOnly": "Apenas a Comprar",
+  "@toBuyOnly": {
+    "description": "Filter chip label on the definitive shopping list — shows only items marked as to buy when selected"
   },
   "hideToTaste": "Ocultar 'A Gosto'",
   "@hideToTaste": {
@@ -2289,6 +2293,10 @@
   "shoppingListStaleAction": "Atualizar",
   "@shoppingListStaleAction": {
     "description": "Action button to regenerate stale shopping list"
+  },
+  "shoppingListCookedMealWarning": "Uma refeição foi preparada desde que esta lista foi criada. Alguns ingredientes podem não precisar mais ser comprados.",
+  "@shoppingListCookedMealWarning": {
+    "description": "Banner warning when a meal has been marked as cooked after the shopping list was generated"
   },
   "shoppingListCategoryCount": "{count} itens",
   "@shoppingListCategoryCount": {

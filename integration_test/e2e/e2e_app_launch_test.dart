@@ -37,12 +37,13 @@ void main() {
       expect(find.byType(BottomNavigationBar), findsOneWidget,
           reason: 'Expected to find BottomNavigationBar on home screen');
 
-      // VERIFY: The "Tools" tab is visible (hardcoded text, no localization)
-      expect(find.text('Tools'), findsOneWidget);
-
-      // VERIFY: We can see navigation icons
-      expect(find.byIcon(Icons.menu_book), findsOneWidget); // Recipes tab
-      expect(find.byIcon(Icons.build), findsOneWidget); // Tools tab
+      // VERIFY: All three bottom nav tab icons are visible.
+      // Using icons (locale-independent) rather than label text.
+      // findsWidgets (≥1) because BottomNavigationBar renders the active tab's
+      // icon twice (regular + tinted), so the count varies by selected tab.
+      expect(find.byIcon(Icons.home), findsWidgets);           // Dashboard tab
+      expect(find.byIcon(Icons.calendar_today), findsWidgets); // Meal Plan tab
+      expect(find.byIcon(Icons.menu_book), findsWidgets);      // Content tab
     });
   });
 }

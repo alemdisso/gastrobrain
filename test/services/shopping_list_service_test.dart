@@ -1,5 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gastrobrain/core/services/shopping_list_service.dart';
+import 'package:gastrobrain/models/ingredient.dart';
+import 'package:gastrobrain/models/ingredient_category.dart';
+import 'package:gastrobrain/models/meal_plan.dart';
+import 'package:gastrobrain/models/meal_plan_item.dart';
+import 'package:gastrobrain/models/meal_plan_item_recipe.dart';
+import 'package:gastrobrain/models/measurement_unit.dart';
+import 'package:gastrobrain/models/recipe.dart';
+import 'package:gastrobrain/models/recipe_ingredient.dart';
 import 'package:gastrobrain/models/shopping_list.dart';
 import 'package:gastrobrain/models/shopping_list_item.dart';
 import '../mocks/mock_database_helper.dart';
@@ -551,6 +559,188 @@ void main() {
       // Should not throw an error
       await service.toggleItemToBuy(9999);
       // Test passes if no exception is thrown
+    });
+  });
+
+  group('Cooked Meal Filtering (#300)', () {
+    // Helper: set up a week with a meal plan and return the date range.
+    final weekStart = DateTime(2026, 3, 10);
+    final weekEnd = DateTime(2026, 3, 16);
+    final weekStartStr = '2026-03-10';
+    final weekEndStr = '2026-03-16';
+
+    // Helper: create a recipe + ingredient in the mock.
+    void _addRecipeWithIngredient(
+      MockDatabaseHelper db, {
+      required String recipeId,
+      required String ingredientId,
+      required String ingredientName,
+      required double quantity,
+      required String riId,
+    }) {
+      db.ingredients[ingredientId] = Ingredient(
+        id: ingredientId,
+        name: ingredientName,
+        category: IngredientCategory.vegetable,
+        unit: MeasurementUnit.gram,
+      );
+      db.recipes[recipeId] = Recipe(
+        id: recipeId,
+        name: 'Recipe $recipeId',
+        createdAt: weekStart,
+      );
+      db.recipeIngredients[riId] = RecipeIngredient(
+        id: riId,
+        recipeId: recipeId,
+        ingredientId: ingredientId,
+        quantity: quantity,
+      );
+    }
+
+    // Helper: create a MealPlanItem linked to a recipe.
+    MealPlanItem _makeMealPlanItem({
+      required String id,
+      required String mealPlanId,
+      required String recipeId,
+      required bool hasBeenCooked,
+      String? plannedDate,
+    }) {
+      final mpir = MealPlanItemRecipe(
+        id: 'mpir-$id',
+        mealPlanItemId: id,
+        recipeId: recipeId,
+      );
+      return MealPlanItem(
+        id: id,
+        mealPlanId: mealPlanId,
+        plannedDate: plannedDate ?? weekStartStr,
+        mealType: MealPlanItem.dinner,
+        hasBeenCooked: hasBeenCooked,
+        mealPlanItemRecipes: [mpir],
+      );
+    }
+
+    test('no cooked meals — all ingredients included (regression)', () async {
+      _addRecipeWithIngredient(dbHelper,
+          recipeId: 'r1', ingredientId: 'i1', ingredientName: 'Tomato',
+          quantity: 200, riId: 'ri1');
+      _addRecipeWithIngredient(dbHelper,
+          recipeId: 'r2', ingredientId: 'i2', ingredientName: 'Chicken',
+          quantity: 300, riId: 'ri2');
+
+      final item1 = _makeMealPlanItem(id: 'mpi1', mealPlanId: 'plan1',
+          recipeId: 'r1', hasBeenCooked: false, plannedDate: weekStartStr);
+      final item2 = _makeMealPlanItem(id: 'mpi2', mealPlanId: 'plan1',
+          recipeId: 'r2', hasBeenCooked: false, plannedDate: weekEndStr);
+
+      dbHelper.mealPlans['plan1'] = MealPlan(
+        id: 'plan1',
+        weekStartDate: weekStart,
+        createdAt: weekStart,
+        modifiedAt: weekStart,
+        items: [item1, item2],
+      );
+
+      final list = await service.generateFromDateRange(
+          startDate: weekStart, endDate: weekEnd);
+
+      final items = await dbHelper.getShoppingListItems(list.id!);
+      final names = items.map((i) => i.ingredientName).toSet();
+      expect(names, containsAll(['Tomato', 'Chicken']));
+    });
+
+    test('some meals cooked — only uncooked meals\' ingredients included',
+        () async {
+      _addRecipeWithIngredient(dbHelper,
+          recipeId: 'r1', ingredientId: 'i1', ingredientName: 'Tomato',
+          quantity: 200, riId: 'ri1');
+      _addRecipeWithIngredient(dbHelper,
+          recipeId: 'r2', ingredientId: 'i2', ingredientName: 'Chicken',
+          quantity: 300, riId: 'ri2');
+
+      final cookedItem = _makeMealPlanItem(id: 'mpi1', mealPlanId: 'plan1',
+          recipeId: 'r1', hasBeenCooked: true, plannedDate: weekStartStr);
+      final uncookedItem = _makeMealPlanItem(id: 'mpi2', mealPlanId: 'plan1',
+          recipeId: 'r2', hasBeenCooked: false, plannedDate: weekEndStr);
+
+      dbHelper.mealPlans['plan1'] = MealPlan(
+        id: 'plan1',
+        weekStartDate: weekStart,
+        createdAt: weekStart,
+        modifiedAt: weekStart,
+        items: [cookedItem, uncookedItem],
+      );
+
+      final list = await service.generateFromDateRange(
+          startDate: weekStart, endDate: weekEnd);
+
+      final items = await dbHelper.getShoppingListItems(list.id!);
+      final names = items.map((i) => i.ingredientName).toSet();
+      expect(names, contains('Chicken'),
+          reason: 'Uncooked meal ingredient must be present');
+      expect(names, isNot(contains('Tomato')),
+          reason: 'Cooked meal ingredient must be excluded');
+    });
+
+    test('all meals cooked — shopping list is empty', () async {
+      _addRecipeWithIngredient(dbHelper,
+          recipeId: 'r1', ingredientId: 'i1', ingredientName: 'Tomato',
+          quantity: 200, riId: 'ri1');
+      _addRecipeWithIngredient(dbHelper,
+          recipeId: 'r2', ingredientId: 'i2', ingredientName: 'Chicken',
+          quantity: 300, riId: 'ri2');
+
+      final item1 = _makeMealPlanItem(id: 'mpi1', mealPlanId: 'plan1',
+          recipeId: 'r1', hasBeenCooked: true, plannedDate: weekStartStr);
+      final item2 = _makeMealPlanItem(id: 'mpi2', mealPlanId: 'plan1',
+          recipeId: 'r2', hasBeenCooked: true, plannedDate: weekEndStr);
+
+      dbHelper.mealPlans['plan1'] = MealPlan(
+        id: 'plan1',
+        weekStartDate: weekStart,
+        createdAt: weekStart,
+        modifiedAt: weekStart,
+        items: [item1, item2],
+      );
+
+      final list = await service.generateFromDateRange(
+          startDate: weekStart, endDate: weekEnd);
+
+      final items = await dbHelper.getShoppingListItems(list.id!);
+      expect(items, isEmpty,
+          reason: 'All meals cooked → no ingredients to buy');
+    });
+
+    test('cooked filter applies to calculateProjectedIngredients', () async {
+      _addRecipeWithIngredient(dbHelper,
+          recipeId: 'r1', ingredientId: 'i1', ingredientName: 'Tomato',
+          quantity: 200, riId: 'ri1');
+      _addRecipeWithIngredient(dbHelper,
+          recipeId: 'r2', ingredientId: 'i2', ingredientName: 'Chicken',
+          quantity: 300, riId: 'ri2');
+
+      final cookedItem = _makeMealPlanItem(id: 'mpi1', mealPlanId: 'plan1',
+          recipeId: 'r1', hasBeenCooked: true, plannedDate: weekStartStr);
+      final uncookedItem = _makeMealPlanItem(id: 'mpi2', mealPlanId: 'plan1',
+          recipeId: 'r2', hasBeenCooked: false, plannedDate: weekEndStr);
+
+      dbHelper.mealPlans['plan1'] = MealPlan(
+        id: 'plan1',
+        weekStartDate: weekStart,
+        createdAt: weekStart,
+        modifiedAt: weekStart,
+        items: [cookedItem, uncookedItem],
+      );
+
+      final projected = await service.calculateProjectedIngredients(
+          startDate: weekStart, endDate: weekEnd);
+
+      final allNames = projected.values
+          .expand((list) => list.map((i) => i['name'] as String))
+          .toSet();
+      expect(allNames, contains('Chicken'));
+      expect(allNames, isNot(contains('Tomato')),
+          reason: 'Cooked meal must be excluded from projections too');
     });
   });
 }

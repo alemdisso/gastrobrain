@@ -102,7 +102,7 @@ void main() {
         print('\n=== NAVIGATING TO MEAL HISTORY SCREEN ===');
         await E2ETestHelpers.tapBottomNavTab(
           tester,
-          const Key('recipes_tab_icon'),
+          const Key('content_tab_icon'),
         );
         await tester.pumpAndSettle();
         await E2ETestHelpers.navigateToMealHistory(tester, testRecipeName);
@@ -207,7 +207,7 @@ void main() {
 
         // Navigate and edit
         await E2ETestHelpers.refreshRecipeProvider(tester);
-        await E2ETestHelpers.tapBottomNavTab(tester, const Key('recipes_tab_icon'));
+        await E2ETestHelpers.tapBottomNavTab(tester, const Key('content_tab_icon'));
         await tester.pumpAndSettle();
         await E2ETestHelpers.navigateToMealHistory(tester, testRecipeName);
         await E2ETestHelpers.openMealEditDialog(tester);
@@ -283,7 +283,7 @@ void main() {
 
         // Navigate and edit
         await E2ETestHelpers.refreshRecipeProvider(tester);
-        await E2ETestHelpers.tapBottomNavTab(tester, const Key('recipes_tab_icon'));
+        await E2ETestHelpers.tapBottomNavTab(tester, const Key('content_tab_icon'));
         await tester.pumpAndSettle();
         await E2ETestHelpers.navigateToMealHistory(tester, testRecipeName);
         await E2ETestHelpers.openMealEditDialog(tester);
@@ -357,7 +357,7 @@ void main() {
 
         // Navigate and edit
         await E2ETestHelpers.refreshRecipeProvider(tester);
-        await E2ETestHelpers.tapBottomNavTab(tester, const Key('recipes_tab_icon'));
+        await E2ETestHelpers.tapBottomNavTab(tester, const Key('content_tab_icon'));
         await tester.pumpAndSettle();
         await E2ETestHelpers.navigateToMealHistory(tester, testRecipeName);
         await E2ETestHelpers.openMealEditDialog(tester);
@@ -432,7 +432,7 @@ void main() {
 
         // Navigate and edit
         await E2ETestHelpers.refreshRecipeProvider(tester);
-        await E2ETestHelpers.tapBottomNavTab(tester, const Key('recipes_tab_icon'));
+        await E2ETestHelpers.tapBottomNavTab(tester, const Key('content_tab_icon'));
         await tester.pumpAndSettle();
         await E2ETestHelpers.navigateToMealHistory(tester, testRecipeName);
         await E2ETestHelpers.openMealEditDialog(tester);
@@ -522,7 +522,7 @@ void main() {
         // Navigate to meal history
         await E2ETestHelpers.refreshRecipeProvider(tester);
         await E2ETestHelpers.tapBottomNavTab(
-            tester, const Key('recipes_tab_icon'));
+            tester, const Key('content_tab_icon'));
         await tester.pumpAndSettle();
         print('✓ Navigated to recipes tab');
 
@@ -635,7 +635,7 @@ void main() {
         // Navigate to meal history
         await E2ETestHelpers.refreshRecipeProvider(tester);
         await E2ETestHelpers.tapBottomNavTab(
-            tester, const Key('recipes_tab_icon'));
+            tester, const Key('content_tab_icon'));
         await tester.pumpAndSettle();
         print('✓ Navigated to recipes tab');
 
@@ -751,7 +751,7 @@ void main() {
         // Navigate to meal history
         await E2ETestHelpers.refreshRecipeProvider(tester);
         await E2ETestHelpers.tapBottomNavTab(
-            tester, const Key('recipes_tab_icon'));
+            tester, const Key('content_tab_icon'));
         await tester.pumpAndSettle();
         print('✓ Navigated to recipes tab');
 
@@ -886,7 +886,7 @@ void main() {
         // Navigate to meal history
         await E2ETestHelpers.refreshRecipeProvider(tester);
         await E2ETestHelpers.tapBottomNavTab(
-            tester, const Key('recipes_tab_icon'));
+            tester, const Key('content_tab_icon'));
         await tester.pumpAndSettle();
         print('✓ Navigated to recipes tab');
 

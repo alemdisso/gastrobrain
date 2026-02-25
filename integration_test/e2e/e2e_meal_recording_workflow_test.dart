@@ -88,7 +88,7 @@ void main() {
         // Navigate to Recipes tab (app starts on Recipes tab)
         await E2ETestHelpers.tapBottomNavTab(
           tester,
-          const Key('recipes_tab_icon'),
+          const Key('content_tab_icon'),
         );
         await tester.pumpAndSettle();
         print('✓ On Recipes tab');
@@ -321,7 +321,7 @@ void main() {
         print('\n=== NAVIGATING TO MEAL HISTORY SCREEN ===');
         await E2ETestHelpers.tapBottomNavTab(
           tester,
-          const Key('recipes_tab_icon'),
+          const Key('content_tab_icon'),
         );
         await tester.pumpAndSettle();
         print('✓ On Recipes tab');

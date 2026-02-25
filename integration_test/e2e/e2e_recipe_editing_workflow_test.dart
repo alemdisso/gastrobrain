@@ -164,12 +164,30 @@ void main() {
 
         print('\n=== SAVING CHANGES ===');
 
-        // Find and tap save button using helper (handles ensureVisible)
-        await E2ETestHelpers.tapSaveButton(tester);
-        print('✓ Save button tapped');
+        // DIAGNOSTIC: log button position BEFORE scroll
+        final saveButtonFinder = find.byType(ElevatedButton);
+        final centerBefore = tester.getCenter(saveButtonFinder.last);
+        final viewportSize = tester.view.physicalSize / tester.view.devicePixelRatio;
+        print('  [diag] Button center before scroll: $centerBefore');
+        print('  [diag] Viewport size: $viewportSize');
+        print('  [diag] Button in viewport: ${centerBefore.dy < viewportSize.height}');
 
-        // Wait for async operations
+        // Find and tap save button using helper
+        await E2ETestHelpers.tapSaveButton(tester);
+        // Note: after a successful save the EditRecipeScreen is popped, so
+        // the ElevatedButton no longer exists — do NOT call getCenter here.
+        print('✓ Save button tapped (screen navigated away = save fired)');
+
+        // Wait for async operations, then pump remaining frames to ensure
+        // the SQLite write has been fully committed before reading back.
         await E2ETestHelpers.waitForAsyncOperations();
+        await tester.pumpAndSettle();
+
+        // DIAGNOSTIC: check DB state immediately after wait
+        final recipeAfterWait = await dbHelper.getRecipe(testRecipeId);
+        print('  [diag] Recipe name in DB after wait: ${recipeAfterWait?.name}');
+        print('  [diag] Expected name: $updatedRecipeName');
+        print('  [diag] Names match: ${recipeAfterWait?.name == updatedRecipeName}');
 
         // ==================================================================
         // VERIFY: Changes in Database

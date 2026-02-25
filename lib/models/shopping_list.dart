@@ -7,6 +7,7 @@ class ShoppingList {
   final DateTime startDate;
   final DateTime endDate;
   final DateTime? mealPlanModifiedAt;
+  final DateTime? mealPlanCookedAt;
 
   ShoppingList({
     this.id,
@@ -15,6 +16,7 @@ class ShoppingList {
     required this.startDate,
     required this.endDate,
     this.mealPlanModifiedAt,
+    this.mealPlanCookedAt,
   });
 
   /// Convert a ShoppingList to a Map for database storage
@@ -26,6 +28,7 @@ class ShoppingList {
       'start_date': startDate.millisecondsSinceEpoch,
       'end_date': endDate.millisecondsSinceEpoch,
       'meal_plan_modified_at': mealPlanModifiedAt?.millisecondsSinceEpoch,
+      'meal_plan_cooked_at': mealPlanCookedAt?.millisecondsSinceEpoch,
     };
   }
 
@@ -40,6 +43,9 @@ class ShoppingList {
       mealPlanModifiedAt: map['meal_plan_modified_at'] != null
           ? DateTime.fromMillisecondsSinceEpoch(map['meal_plan_modified_at'] as int)
           : null,
+      mealPlanCookedAt: map['meal_plan_cooked_at'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(map['meal_plan_cooked_at'] as int)
+          : null,
     );
   }
 
@@ -51,6 +57,7 @@ class ShoppingList {
     DateTime? startDate,
     DateTime? endDate,
     DateTime? mealPlanModifiedAt,
+    DateTime? mealPlanCookedAt,
   }) {
     return ShoppingList(
       id: id ?? this.id,
@@ -59,6 +66,7 @@ class ShoppingList {
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       mealPlanModifiedAt: mealPlanModifiedAt ?? this.mealPlanModifiedAt,
+      mealPlanCookedAt: mealPlanCookedAt ?? this.mealPlanCookedAt,
     );
   }
 
@@ -74,6 +82,6 @@ class ShoppingList {
 
   @override
   String toString() {
-    return 'ShoppingList(id: $id, name: $name, dateCreated: $dateCreated, startDate: $startDate, endDate: $endDate, mealPlanModifiedAt: $mealPlanModifiedAt)';
+    return 'ShoppingList(id: $id, name: $name, dateCreated: $dateCreated, startDate: $startDate, endDate: $endDate, mealPlanModifiedAt: $mealPlanModifiedAt, mealPlanCookedAt: $mealPlanCookedAt)';
   }
 }

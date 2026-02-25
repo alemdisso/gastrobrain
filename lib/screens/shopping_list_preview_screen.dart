@@ -129,7 +129,6 @@ class _ShoppingListPreviewScreenState extends State<ShoppingListPreviewScreen> {
         MaterialPageRoute(
           builder: (context) => ShoppingListScreen(
             shoppingListId: shoppingList.id!,
-            hideToTaste: _hideToTaste,
           ),
         ),
       );
@@ -358,7 +357,7 @@ class _ShoppingListPreviewScreenState extends State<ShoppingListPreviewScreen> {
     final quantity = item['quantity'] as double;
 
     if (quantity == 0) {
-      return '${AppLocalizations.of(context)!.toTaste} ⚠️';
+      return AppLocalizations.of(context)!.toTaste;
     }
 
     final unitString = item['unit'] as String;

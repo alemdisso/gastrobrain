@@ -11,6 +11,7 @@ enum IngredientCategory {
   seasoning('seasoning'),
   sugarProducts('sugar_products'),
   oil('oil'),
+  herb('herb'),
   other('other');
 
   final String value;
@@ -45,18 +46,21 @@ enum IngredientCategory {
         return 'Sugar Products';
       case IngredientCategory.oil:
         return 'Oil';
+      case IngredientCategory.herb:
+        return 'Herb';
       case IngredientCategory.other:
         return 'Other';
     }
   }
 
   String getLocalizedDisplayName(context) {
-    final localizations = context != null ? AppLocalizations.of(context)! : null;
-    
+    final localizations =
+        context != null ? AppLocalizations.of(context)! : null;
+
     if (localizations == null) {
       return displayName; // Fallback to English
     }
-    
+
     switch (this) {
       case IngredientCategory.vegetable:
         return localizations.ingredientCategoryVegetable;
@@ -78,6 +82,8 @@ enum IngredientCategory {
         return localizations.ingredientCategorySugarProducts;
       case IngredientCategory.oil:
         return localizations.ingredientCategoryOil;
+      case IngredientCategory.herb:
+        return localizations.ingredientCategoryHerb;
       case IngredientCategory.other:
         return localizations.ingredientCategoryOther;
     }

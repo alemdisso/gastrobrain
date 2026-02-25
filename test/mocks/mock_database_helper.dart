@@ -141,6 +141,23 @@ class MockDatabaseHelper implements DatabaseHelper {
   }
 
   @override
+  Future<void> updateMealPlanCookedAt(
+      String mealPlanId, DateTime cookedAt) async {
+    final plan = _mealPlans[mealPlanId];
+    if (plan != null) {
+      _mealPlans[mealPlanId] = MealPlan(
+        id: plan.id,
+        weekStartDate: plan.weekStartDate,
+        notes: plan.notes,
+        createdAt: plan.createdAt,
+        modifiedAt: plan.modifiedAt,
+        lastCookedAt: cookedAt,
+        items: plan.items,
+      );
+    }
+  }
+
+  @override
   Future<int> updateMealPlanItem(MealPlanItem item) async {
     throw UnimplementedError('Method not implemented for tests');
   }

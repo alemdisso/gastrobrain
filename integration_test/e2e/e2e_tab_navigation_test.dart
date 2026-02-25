@@ -56,54 +56,42 @@ void main() {
           reason: 'Meal Plan tab should still be visible after tap');
     });
 
-    testWidgets('Tap Ingredients tab and verify screen changes',
+    testWidgets('Tap Content tab and verify screen changes',
         (WidgetTester tester) async {
       // SETUP: Launch the app
       WidgetsFlutterBinding.ensureInitialized();
       await tester.pumpWidget(const GastrobrainApp());
       await tester.pumpAndSettle(const Duration(seconds: 10));
 
-      // Find the Ingredients tab by its icon
-      final bottomNavBar = find.byType(BottomNavigationBar);
-      final ingredientsTab = find.descendant(
-        of: bottomNavBar,
-        matching: find.byIcon(Icons.restaurant_menu),
-      );
+      // Find the Content tab by its key (added in #134 nav restructuring)
+      final contentTab = find.byKey(const Key('content_tab_icon'));
 
-      // ACT: Tap the Ingredients tab
-      await tester.tap(ingredientsTab);
+      // ACT: Tap the Content tab
+      await tester.tap(contentTab);
       await tester.pumpAndSettle();
 
       // VERIFY: Tab tap completed successfully
-      expect(ingredientsTab, findsOneWidget,
-          reason: 'Ingredients tab should still be visible after tap');
+      expect(contentTab, findsOneWidget,
+          reason: 'Content tab should still be visible after tap');
     });
 
-    testWidgets('Tap Tools tab and verify screen changes',
+    testWidgets('Tap Dashboard tab and verify screen changes',
         (WidgetTester tester) async {
       // SETUP: Launch the app
       WidgetsFlutterBinding.ensureInitialized();
       await tester.pumpWidget(const GastrobrainApp());
       await tester.pumpAndSettle(const Duration(seconds: 10));
 
-      // Find the Tools tab by its icon
-      final bottomNavBar = find.byType(BottomNavigationBar);
-      final toolsTab = find.descendant(
-        of: bottomNavBar,
-        matching: find.byIcon(Icons.build),
-      );
+      // Find the Dashboard tab by its key (added in #134 nav restructuring)
+      final dashboardTab = find.byKey(const Key('dashboard_tab_icon'));
 
-      // ACT: Tap the Tools tab
-      await tester.tap(toolsTab);
+      // ACT: Tap the Dashboard tab
+      await tester.tap(dashboardTab);
       await tester.pumpAndSettle();
 
       // VERIFY: Tab tap completed successfully
-      expect(toolsTab, findsOneWidget,
-          reason: 'Tools tab should still be visible after tap');
-
-      // BONUS: Verify the "Tools" text is still visible
-      expect(find.text('Tools'), findsOneWidget,
-          reason: 'Tools tab label should be visible');
+      expect(dashboardTab, findsOneWidget,
+          reason: 'Dashboard tab should still be visible after tap');
     });
   });
 }

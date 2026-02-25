@@ -266,14 +266,22 @@ class MigrationRunner {
     }
   }
 
-  /// Record a migration as applied
+  /// Record a migration as applied.
+  ///
+  /// Uses INSERT OR IGNORE so that if multiple database instances initialise
+  /// concurrently and one has already recorded this version, the others
+  /// silently skip the duplicate rather than crashing the whole migration.
   Future<void> _recordMigration(Transaction txn, Migration migration) async {
-    await txn.insert('schema_migrations', {
-      'version': migration.version,
-      'applied_at': DateTime.now().toIso8601String(),
-      'description': migration.description,
-      'duration_ms': migration.estimatedDuration.inMilliseconds,
-    });
+    await txn.rawInsert(
+      'INSERT OR IGNORE INTO schema_migrations '
+      '(version, applied_at, description, duration_ms) VALUES (?, ?, ?, ?)',
+      [
+        migration.version,
+        DateTime.now().toIso8601String(),
+        migration.description,
+        migration.estimatedDuration.inMilliseconds,
+      ],
+    );
   }
 
   /// Remove a migration record (for rollbacks)

@@ -9,16 +9,16 @@ import '../l10n/app_localizations.dart';
 import '../utils/quantity_formatter.dart';
 import 'shopping_list_preview_screen.dart';
 
+enum _StalenessType { none, planChanged, mealCooked }
+
 class ShoppingListScreen extends StatefulWidget {
   final int shoppingListId;
   final DatabaseHelper? databaseHelper;
-  final bool hideToTaste;
 
   const ShoppingListScreen({
     super.key,
     required this.shoppingListId,
     this.databaseHelper,
-    this.hideToTaste = false,
   });
 
   @override
@@ -31,8 +31,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   bool _showToBuyOnly = false;
-  bool _hideToTaste = false;
-  bool _isStale = false;
+  _StalenessType _stalenessType = _StalenessType.none;
 
   late final DatabaseHelper _dbHelper;
 
@@ -40,7 +39,6 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   void initState() {
     super.initState();
     _dbHelper = widget.databaseHelper ?? ServiceProvider.database.helper;
-    _hideToTaste = widget.hideToTaste;
     _loadShoppingList();
   }
 
@@ -65,14 +63,25 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
 
       final items = await _dbHelper.getShoppingListItems(widget.shoppingListId);
 
-      // Check if the shopping list is stale
-      bool isStale = false;
-      if (shoppingList.mealPlanModifiedAt != null) {
-        final mealPlan = await _dbHelper.getMealPlanForWeek(shoppingList.startDate);
-        if (mealPlan != null &&
+      // Check if the shopping list is stale.
+      // Cooked-meal staleness takes precedence over plan-changed staleness.
+      var stalenessType = _StalenessType.none;
+      final mealPlan =
+          await _dbHelper.getMealPlanForWeek(shoppingList.startDate);
+
+      if (mealPlan != null) {
+        // Cooked-meal staleness: a meal was cooked after the list was generated.
+        if (mealPlan.lastCookedAt != null &&
+            (shoppingList.mealPlanCookedAt == null ||
+                mealPlan.lastCookedAt!.millisecondsSinceEpoch >
+                    shoppingList.mealPlanCookedAt!.millisecondsSinceEpoch)) {
+          stalenessType = _StalenessType.mealCooked;
+        }
+        // Plan-changed staleness: meals were added/removed/modified.
+        else if (shoppingList.mealPlanModifiedAt != null &&
             mealPlan.modifiedAt.millisecondsSinceEpoch >
                 shoppingList.mealPlanModifiedAt!.millisecondsSinceEpoch) {
-          isStale = true;
+          stalenessType = _StalenessType.planChanged;
         }
       }
 
@@ -80,7 +89,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
         setState(() {
           _shoppingList = shoppingList;
           _items = items;
-          _isStale = isStale;
+          _stalenessType = stalenessType;
           _isLoading = false;
         });
       }
@@ -115,21 +124,11 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
             child: Row(
               children: [
                 FilterChip(
-                  label: Text(_showToBuyOnly ? l10n.showToBuyOnly : l10n.showAll),
+                  label: Text(l10n.toBuyOnly),
                   selected: _showToBuyOnly,
                   onSelected: (selected) {
                     setState(() {
                       _showToBuyOnly = selected;
-                    });
-                  },
-                ),
-                const SizedBox(width: 8),
-                FilterChip(
-                  label: Text(l10n.hideToTaste),
-                  selected: _hideToTaste,
-                  onSelected: (selected) {
-                    setState(() {
-                      _hideToTaste = selected;
                     });
                   },
                 ),
@@ -140,8 +139,13 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       ),
       body: Column(
         children: [
-          if (_isStale) _buildStaleBanner(context),
-          Expanded(child: _buildBody(context)),
+          if (_stalenessType != _StalenessType.none) _buildStaleBanner(context),
+          Expanded(
+            child: SafeArea(
+              top: false,
+              child: _buildBody(context),
+            ),
+          ),
         ],
       ),
     );
@@ -207,16 +211,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
 
     // Apply filters
     var filteredItems = _items.where((item) {
-      // Filter by "to buy" status
-      if (_showToBuyOnly && !item.toBuy) {
-        return false;
-      }
-
-      // Filter out "to taste" items
-      if (_hideToTaste && item.quantity == 0) {
-        return false;
-      }
-
+      if (_showToBuyOnly && !item.toBuy) return false;
       return true;
     }).toList();
 
@@ -320,8 +315,12 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   Widget _buildStaleBanner(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
+    final message = _stalenessType == _StalenessType.mealCooked
+        ? l10n.shoppingListCookedMealWarning
+        : l10n.shoppingListStaleWarning;
+
     return MaterialBanner(
-      content: Text(l10n.shoppingListStaleWarning),
+      content: Text(message),
       leading: Icon(
         Icons.warning_amber_rounded,
         color: Theme.of(context).colorScheme.error,
@@ -345,7 +344,6 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           weekStartDate: _shoppingList!.startDate,
           weekEndDate: _shoppingList!.endDate,
           databaseHelper: _dbHelper,
-          hideToTaste: _hideToTaste,
         ),
       ),
     );
@@ -388,7 +386,6 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           weekStartDate: _shoppingList!.startDate,
           weekEndDate: _shoppingList!.endDate,
           databaseHelper: _dbHelper,
-          hideToTaste: _hideToTaste,
         ),
       ),
     );
@@ -397,7 +394,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   String _formatQuantity(ShoppingListItem item) {
     if (item.quantity == 0) {
       final l10n = AppLocalizations.of(context)!;
-      return '${l10n.toTaste} ⚠️';
+      return l10n.toTaste;
     }
 
     // Localize unit using MeasurementUnit enum (pluralized)
