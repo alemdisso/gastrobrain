@@ -140,13 +140,14 @@ class DatabaseHelper {
       if (existingTables.isNotEmpty && currentVersion == 0) {
         print('Detected legacy database, marking initial schema as applied...');
         
-        // Mark the initial schema migration as already applied
-        await db.insert('schema_migrations', {
-          'version': 1,
-          'applied_at': DateTime.now().toIso8601String(),
-          'description': 'Legacy database - initial schema marked as applied',
-          'duration_ms': 0,
-        });
+        // Mark the initial schema migration as already applied.
+        // INSERT OR IGNORE handles the case where multiple database instances
+        // initialise concurrently and one has already inserted this record.
+        await db.rawInsert(
+          'INSERT OR IGNORE INTO schema_migrations '
+          '(version, applied_at, description, duration_ms) VALUES (?, ?, ?, ?)',
+          [1, DateTime.now().toIso8601String(), 'Legacy database - initial schema marked as applied', 0],
+        );
         
         print('Legacy database successfully transitioned to migration system');
       }

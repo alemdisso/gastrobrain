@@ -22,6 +22,16 @@ class RenameIsPurchasedToToBuyMigration extends Migration {
   Future<void> up(DatabaseExecutor db) async {
     print('Renaming is_purchased column to to_buy...');
 
+    // Guard: if is_purchased no longer exists the rename already ran — skip.
+    final tableInfo =
+        await db.rawQuery('PRAGMA table_info(shopping_list_items)');
+    final hasIsPurchased =
+        tableInfo.any((col) => col['name'] == 'is_purchased');
+    if (!hasIsPurchased) {
+      print('Column renamed and values inverted successfully');
+      return;
+    }
+
     // SQLite doesn't support direct column rename with value transformation,
     // so we need to:
     // 1. Add new column with default value

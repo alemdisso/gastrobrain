@@ -22,11 +22,16 @@ class AddMealTypeMigration extends Migration {
   Future<void> up(DatabaseExecutor db) async {
     print('Adding meal_type column to meals table...');
 
-    // Add nullable meal_type column to meals table
-    // Valid values: 'lunch', 'dinner', 'prep', or NULL
-    await db.execute('''
-      ALTER TABLE meals ADD COLUMN meal_type TEXT
-    ''');
+    // Guard against column already existing (idempotent migration).
+    final tableInfo = await db.rawQuery('PRAGMA table_info(meals)');
+    final hasColumn = tableInfo.any((col) => col['name'] == 'meal_type');
+    if (!hasColumn) {
+      // Add nullable meal_type column to meals table
+      // Valid values: 'lunch', 'dinner', 'prep', or NULL
+      await db.execute('''
+        ALTER TABLE meals ADD COLUMN meal_type TEXT
+      ''');
+    }
 
     // Note: existing meals will have NULL meal_type - this is intentional
     // Only new meals will have the opportunity to set meal type

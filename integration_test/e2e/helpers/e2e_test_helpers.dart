@@ -49,7 +49,7 @@ class E2ETestHelpers {
   /// ```dart
   /// await E2ETestHelpers.tapBottomNavTab(
   ///   tester,
-  ///   const Key('recipes_tab_icon')
+  ///   const Key('content_tab_icon')
   /// );
   /// ```
   static Future<void> tapBottomNavTab(
@@ -67,7 +67,11 @@ class E2ETestHelpers {
     await tester.pumpAndSettle();
   }
 
-  /// Open the Add Recipe form by tapping the FAB
+  /// Open the Add Recipe form by navigating to the Content tab and tapping the FAB.
+  ///
+  /// Since issue #134 restructured navigation (Recipes is now a sub-tab inside
+  /// Content, not a top-level tab), this helper always navigates to the Content
+  /// tab first so the Recipes FAB is guaranteed to be on screen.
   ///
   /// Returns the number of text fields found in the form (useful for verification)
   ///
@@ -76,8 +80,11 @@ class E2ETestHelpers {
   /// final fieldCount = await E2ETestHelpers.openAddRecipeForm(tester);
   /// ```
   static Future<int> openAddRecipeForm(WidgetTester tester) async {
+    // Navigate to Content tab — Recipes sub-tab is selected by default there.
+    await tapBottomNavTab(tester, const Key('content_tab_icon'));
+
     final fab = find.byType(FloatingActionButton);
-    expect(fab, findsOneWidget, reason: 'FAB should be visible');
+    expect(fab, findsOneWidget, reason: 'FAB should be visible on Recipes screen');
     await tester.tap(fab);
     await tester.pumpAndSettle();
 
@@ -215,19 +222,23 @@ class E2ETestHelpers {
   // VERIFICATION HELPERS
   // ============================================================================
 
-  /// Verify we're on the main screen (has FAB and bottom nav)
+  /// Verify we're on the main screen (has bottom nav with all three tabs)
   ///
   /// Usage:
   /// ```dart
   /// E2ETestHelpers.verifyOnMainScreen();
   /// ```
   static void verifyOnMainScreen() {
-    final bottomNavBar = find.byType(BottomNavigationBar);
-    final fab = find.byType(FloatingActionButton);
-
-    expect(bottomNavBar, findsOneWidget,
+    expect(find.byType(BottomNavigationBar), findsOneWidget,
         reason: 'Bottom navigation should be visible on main screen');
-    expect(fab, findsOneWidget, reason: 'FAB should be visible on main screen');
+    // Verify all three tab icons are rendered (BottomNavigationBar may render
+    // the active tab's icon twice, so use findsWidgets for each).
+    expect(find.byIcon(Icons.home), findsWidgets,
+        reason: 'Dashboard tab icon should be visible');
+    expect(find.byIcon(Icons.calendar_today), findsWidgets,
+        reason: 'Meal Plan tab icon should be visible');
+    expect(find.byIcon(Icons.menu_book), findsWidgets,
+        reason: 'Content tab icon should be visible');
   }
 
   /// Verify we're on a form screen (has text fields)
@@ -695,12 +706,14 @@ class E2ETestHelpers {
   /// Navigate to meal history screen for a recipe
   ///
   /// This helper:
-  /// 1. Finds the recipe by name in the UI
-  /// 2. Taps the recipe card to navigate to RecipeDetailsScreen
-  /// 3. Taps the History tab to view meal history
+  /// 1. Navigates to the Content tab (Recipes sub-tab is selected by default)
+  /// 2. Finds the recipe by name in the UI
+  /// 3. Taps the recipe card to navigate to RecipeDetailsScreen
+  /// 4. Taps the History tab to view meal history
   ///
-  /// Requires the recipe to be visible in the current view. May need to
-  /// scroll to the recipe first if it's off-screen.
+  /// Always navigates to Content first so the recipe list is visible regardless
+  /// of which tab is currently active. Since #134 restructured navigation,
+  /// Recipes lives inside the Content tab — not as a top-level tab.
   ///
   /// Usage:
   /// ```dart
@@ -710,6 +723,11 @@ class E2ETestHelpers {
     WidgetTester tester,
     String recipeName,
   ) async {
+    // Ensure we're on the Content tab so the recipe list is visible.
+    // Tapping the already-active tab is a no-op, so this is safe to call
+    // even if the caller already navigated here.
+    await tapBottomNavTab(tester, const Key('content_tab_icon'));
+
     // Find the recipe card by name
     final recipeNameFinder = find.text(recipeName);
     expect(recipeNameFinder, findsOneWidget,

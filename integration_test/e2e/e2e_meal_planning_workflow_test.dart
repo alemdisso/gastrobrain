@@ -152,7 +152,7 @@ void main() {
 
         print('\n=== REFRESHING UI ===');
         // Navigate away and back to trigger reload
-        await E2ETestHelpers.tapBottomNavTab(tester, const Key('recipes_tab_icon'));
+        await E2ETestHelpers.tapBottomNavTab(tester, const Key('content_tab_icon'));
         await tester.pumpAndSettle();
         await E2ETestHelpers.tapBottomNavTab(tester, const Key('meal_plan_tab_icon'));
         await E2ETestHelpers.waitForAsyncOperations();

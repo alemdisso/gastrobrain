@@ -81,7 +81,7 @@ void main() {
         print('\n=== REFRESHING AND NAVIGATING ===');
         await E2ETestHelpers.refreshRecipeProvider(tester);
         await E2ETestHelpers.tapBottomNavTab(
-            tester, const Key('recipes_tab_icon'));
+            tester, const Key('content_tab_icon'));
         await tester.pumpAndSettle();
         await E2ETestHelpers.navigateToMealHistory(tester, testRecipeName);
         print('✓ Navigated to meal history screen');
@@ -250,7 +250,7 @@ void main() {
         print('\n=== REFRESHING AND NAVIGATING ===');
         await E2ETestHelpers.refreshRecipeProvider(tester);
         await E2ETestHelpers.tapBottomNavTab(
-            tester, const Key('recipes_tab_icon'));
+            tester, const Key('content_tab_icon'));
         await tester.pumpAndSettle();
         await E2ETestHelpers.navigateToMealHistory(tester, testRecipeName);
         print('✓ Navigated to meal history screen');

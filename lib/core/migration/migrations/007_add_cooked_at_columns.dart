@@ -22,15 +22,29 @@ class AddCookedAtColumnsMigration extends Migration {
 
   @override
   Future<void> up(DatabaseExecutor db) async {
-    await db.execute('''
-      ALTER TABLE meal_plans
-      ADD COLUMN last_cooked_at TEXT
-    ''');
+    // Guard against columns that already exist (idempotent migration).
+    // This can happen when the column was added via a code path that predated
+    // the migration system (e.g. direct schema edits during development).
+    final mealPlanInfo = await db.rawQuery('PRAGMA table_info(meal_plans)');
+    final hasLastCookedAt =
+        mealPlanInfo.any((col) => col['name'] == 'last_cooked_at');
+    if (!hasLastCookedAt) {
+      await db.execute('''
+        ALTER TABLE meal_plans
+        ADD COLUMN last_cooked_at TEXT
+      ''');
+    }
 
-    await db.execute('''
-      ALTER TABLE shopping_lists
-      ADD COLUMN meal_plan_cooked_at INTEGER
-    ''');
+    final shoppingListInfo =
+        await db.rawQuery('PRAGMA table_info(shopping_lists)');
+    final hasMealPlanCookedAt =
+        shoppingListInfo.any((col) => col['name'] == 'meal_plan_cooked_at');
+    if (!hasMealPlanCookedAt) {
+      await db.execute('''
+        ALTER TABLE shopping_lists
+        ADD COLUMN meal_plan_cooked_at INTEGER
+      ''');
+    }
   }
 
   @override
