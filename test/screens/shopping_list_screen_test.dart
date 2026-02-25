@@ -136,7 +136,7 @@ void main() {
       expect(find.text('3 Pieces'), findsOneWidget);
     });
 
-    testWidgets('displays "to taste" items with warning indicator', (tester) async {
+    testWidgets('displays "to taste" items without warning icon', (tester) async {
       // Create shopping list
       final shoppingList = ShoppingList(
         name: 'Weekly List',
@@ -172,9 +172,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // Categories are expanded by default — items should be visible
-      // Should display "to taste" with warning indicator
+      // Should display "to taste" without a warning icon (#297)
       expect(find.textContaining('to taste'), findsOneWidget);
-      expect(find.textContaining('⚠️'), findsOneWidget);
+      expect(find.textContaining('⚠️'), findsNothing);
     });
 
     testWidgets('displays empty shopping list message when no items', (tester) async {

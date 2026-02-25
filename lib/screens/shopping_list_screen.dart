@@ -394,7 +394,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   String _formatQuantity(ShoppingListItem item) {
     if (item.quantity == 0) {
       final l10n = AppLocalizations.of(context)!;
-      return '${l10n.toTaste} ⚠️';
+      return l10n.toTaste;
     }
 
     // Localize unit using MeasurementUnit enum (pluralized)
