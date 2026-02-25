@@ -171,7 +171,6 @@ class _ShoppingListRefinementScreenState
         MaterialPageRoute(
           builder: (context) => ShoppingListScreen(
             shoppingListId: shoppingList.id!,
-            hideToTaste: _hideToTaste,
           ),
         ),
         (route) => route.isFirst, // Keep only the weekly plan screen

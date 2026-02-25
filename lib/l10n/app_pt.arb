@@ -2214,13 +2214,9 @@
   "@otherCategory": {
     "description": "Default category for ingredients without a specific category"
   },
-  "showAll": "Mostrar Tudo",
-  "@showAll": {
-    "description": "Filter option to show all shopping list items"
-  },
-  "showToBuyOnly": "Apenas a Comprar",
-  "@showToBuyOnly": {
-    "description": "Filter option to show only items marked as 'to buy'"
+  "toBuyOnly": "Apenas a Comprar",
+  "@toBuyOnly": {
+    "description": "Filter chip label on the definitive shopping list — shows only items marked as to buy when selected"
   },
   "hideToTaste": "Ocultar 'A Gosto'",
   "@hideToTaste": {

@@ -129,7 +129,6 @@ class _ShoppingListPreviewScreenState extends State<ShoppingListPreviewScreen> {
         MaterialPageRoute(
           builder: (context) => ShoppingListScreen(
             shoppingListId: shoppingList.id!,
-            hideToTaste: _hideToTaste,
           ),
         ),
       );

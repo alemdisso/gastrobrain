@@ -14,13 +14,11 @@ enum _StalenessType { none, planChanged, mealCooked }
 class ShoppingListScreen extends StatefulWidget {
   final int shoppingListId;
   final DatabaseHelper? databaseHelper;
-  final bool hideToTaste;
 
   const ShoppingListScreen({
     super.key,
     required this.shoppingListId,
     this.databaseHelper,
-    this.hideToTaste = false,
   });
 
   @override
@@ -33,7 +31,6 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   bool _showToBuyOnly = false;
-  bool _hideToTaste = false;
   _StalenessType _stalenessType = _StalenessType.none;
 
   late final DatabaseHelper _dbHelper;
@@ -42,7 +39,6 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   void initState() {
     super.initState();
     _dbHelper = widget.databaseHelper ?? ServiceProvider.database.helper;
-    _hideToTaste = widget.hideToTaste;
     _loadShoppingList();
   }
 
@@ -128,21 +124,11 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
             child: Row(
               children: [
                 FilterChip(
-                  label: Text(_showToBuyOnly ? l10n.showToBuyOnly : l10n.showAll),
+                  label: Text(l10n.toBuyOnly),
                   selected: _showToBuyOnly,
                   onSelected: (selected) {
                     setState(() {
                       _showToBuyOnly = selected;
-                    });
-                  },
-                ),
-                const SizedBox(width: 8),
-                FilterChip(
-                  label: Text(l10n.hideToTaste),
-                  selected: _hideToTaste,
-                  onSelected: (selected) {
-                    setState(() {
-                      _hideToTaste = selected;
                     });
                   },
                 ),
@@ -225,16 +211,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
 
     // Apply filters
     var filteredItems = _items.where((item) {
-      // Filter by "to buy" status
-      if (_showToBuyOnly && !item.toBuy) {
-        return false;
-      }
-
-      // Filter out "to taste" items
-      if (_hideToTaste && item.quantity == 0) {
-        return false;
-      }
-
+      if (_showToBuyOnly && !item.toBuy) return false;
       return true;
     }).toList();
 
@@ -367,7 +344,6 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           weekStartDate: _shoppingList!.startDate,
           weekEndDate: _shoppingList!.endDate,
           databaseHelper: _dbHelper,
-          hideToTaste: _hideToTaste,
         ),
       ),
     );
@@ -410,7 +386,6 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           weekStartDate: _shoppingList!.startDate,
           weekEndDate: _shoppingList!.endDate,
           databaseHelper: _dbHelper,
-          hideToTaste: _hideToTaste,
         ),
       ),
     );

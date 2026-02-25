@@ -2214,13 +2214,9 @@
   "@otherCategory": {
     "description": "Default category for ingredients without a specific category"
   },
-  "showAll": "Show All",
-  "@showAll": {
-    "description": "Filter option to show all shopping list items"
-  },
-  "showToBuyOnly": "To Buy Only",
-  "@showToBuyOnly": {
-    "description": "Filter option to show only items marked as 'to buy'"
+  "toBuyOnly": "To Buy Only",
+  "@toBuyOnly": {
+    "description": "Filter chip label on the definitive shopping list — shows only items marked as to buy when selected"
   },
   "hideToTaste": "Hide 'To Taste'",
   "@hideToTaste": {
