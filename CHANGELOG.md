@@ -9,6 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.11] - 2026-02-25
+
+### Added
+
+- 'Herb' ingredient category for ingredient classifications (EN/PT)
+- 'Pickles/Fermented' recipe category for recipe classifications (EN/PT)
+
+### UX
+
+- Simplified filter chips in shopping list screen (#302)
+- Removed alert icon from toTaste ingredients in shopping list (#297)
+- Shopping list FAB hidden for past weeks in weekly planner (#299)
+
+### Fixed
+
+- Shopping list bottom content overlapped by Android navigation bar (#298)
+- Cooked meals excluded from shopping list generation (#300)
+- Stale banner when a meal is marked as cooked (#301)
+- Status bar overlap in content screen layout
+- All database migrations made idempotent for reliability
+- Stabilized e2e test suite: tapSaveButton scroll reliability and tab
+  navigation tests updated for #134 nav restructuring
+
+---
+
 ## [0.1.10] - 2026-02-18
 
 ### Added
