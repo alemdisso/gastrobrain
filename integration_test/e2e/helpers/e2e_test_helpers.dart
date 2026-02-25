@@ -203,18 +203,18 @@ class E2ETestHelpers {
 
     final saveButton = saveButtons.last;
 
-    // Use dragUntilVisible to aggressively scroll the button into view
-    final scrollable = find.byType(Scrollable).first;
-    await tester.dragUntilVisible(
-      saveButton,
-      scrollable,
-      const Offset(0, -50), // Scroll down in small increments
-    );
-    await tester.pumpAndSettle();
+    // Scroll to the bottom of the form so the save button is fully on-screen.
+    // tester.drag() simulates real pointer events and reliably moves the scroll
+    // position in integration tests (programmatic ensureVisible does not work
+    // in this environment). A large offset is safe — scroll physics clamp it
+    // to the maximum scroll extent.
+    final scrollViews = find.byType(SingleChildScrollView);
+    if (scrollViews.evaluate().isNotEmpty) {
+      await tester.drag(scrollViews.first, const Offset(0, -1000));
+      await tester.pumpAndSettle();
+    }
 
-    // Tap with warnIfMissed: false to handle edge cases where the button
-    // might be slightly obscured but is functionally tappable
-    await tester.tap(saveButton, warnIfMissed: false);
+    await tester.tap(saveButton);
     await tester.pumpAndSettle(standardSettleDuration);
   }
 
