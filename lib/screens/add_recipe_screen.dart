@@ -34,6 +34,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   final _notesController = TextEditingController();
   final _prepTimeController = TextEditingController();
   final _cookTimeController = TextEditingController();
+  final _servingsController = TextEditingController(text: '4');
   FrequencyType _selectedFrequency = FrequencyType.monthly;
   RecipeCategory _selectedCategory = RecipeCategory.uncategorized;
   int _difficulty = 1;
@@ -209,6 +210,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       cookTimeMinutes: int.tryParse(_cookTimeController.text) ?? 0,
       rating: _rating,
       category: _selectedCategory,
+      servings: int.tryParse(_servingsController.text) ?? 4,
     );
 
     // The AddIngredientDialog will now properly return a RecipeIngredient object
@@ -242,11 +244,14 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
 
     try {
       // Validate recipe data
+      final servings = int.tryParse(_servingsController.text) ?? 4;
+
       EntityValidator.validateRecipe(
         id: _tempRecipeId,
         name: _nameController.text,
         ingredients: _pendingIngredients.map((i) => i.toMap()).toList(),
         instructions: [],
+        servings: servings,
       );
 
       final prepTime = int.tryParse(_prepTimeController.text);
@@ -265,6 +270,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         prepTimeMinutes: prepTime ?? 0,
         cookTimeMinutes: cookTime ?? 0,
         rating: _rating,
+        servings: servings,
       );
 
       await _dbHelper.insertRecipe(recipe);
@@ -310,6 +316,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     _notesController.dispose();
     _prepTimeController.dispose();
     _cookTimeController.dispose();
+    _servingsController.dispose();
     super.dispose();
   }
 
@@ -403,6 +410,22 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                     AppLocalizations.of(context)!.cookingTime,
                     _cookTimeController,
                     key: const Key('add_recipe_cook_time_field')),
+                const SizedBox(height: 16),
+                TextFormField(
+                  key: const Key('add_recipe_servings_field'),
+                  controller: _servingsController,
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!.servings,
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    final n = int.tryParse(value ?? '');
+                    if (n == null || n < 1) {
+                      return AppLocalizations.of(context)!.servingsMustBePositive;
+                    }
+                    return null;
+                  },
+                ),
                 const SizedBox(height: 16),
                 _buildRatingField(AppLocalizations.of(context)!.rating, _rating,
                     (value) {

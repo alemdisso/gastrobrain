@@ -23,6 +23,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   late TextEditingController _instructionsController;
   late TextEditingController _prepTimeController;
   late TextEditingController _cookTimeController;
+  late TextEditingController _servingsController;
   late FrequencyType _selectedFrequency;
   late RecipeCategory _selectedCategory;
   late int _difficulty;
@@ -41,6 +42,8 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         TextEditingController(text: widget.recipe.prepTimeMinutes.toString());
     _cookTimeController =
         TextEditingController(text: widget.recipe.cookTimeMinutes.toString());
+    _servingsController =
+        TextEditingController(text: widget.recipe.servings.toString());
     _selectedFrequency = widget.recipe.desiredFrequency;
     _selectedCategory = widget.recipe.category;
     _difficulty = widget.recipe.difficulty;
@@ -133,11 +136,14 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
 
     try {
       // Validate recipe data
+      final servings = int.tryParse(_servingsController.text) ?? 4;
+
       EntityValidator.validateRecipe(
         id: widget.recipe.id,
         name: _nameController.text,
         ingredients: [],
         instructions: [],
+        servings: servings,
       );
 
       final prepTime = int.tryParse(_prepTimeController.text);
@@ -158,6 +164,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         cookTimeMinutes: cookTime ?? 0,
         rating: _rating,
         category: _selectedCategory,
+        servings: servings,
       );
 
       final dbHelper = DatabaseHelper();
@@ -193,6 +200,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     _instructionsController.dispose();
     _prepTimeController.dispose();
     _cookTimeController.dispose();
+    _servingsController.dispose();
     super.dispose();
   }
 
@@ -283,6 +291,22 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                 _buildTimeField(AppLocalizations.of(context)!.cookingTime,
                     _cookTimeController,
                     key: const Key('edit_recipe_cook_time_field')),
+                const SizedBox(height: 16),
+                TextFormField(
+                  key: const Key('edit_recipe_servings_field'),
+                  controller: _servingsController,
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!.servings,
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    final n = int.tryParse(value ?? '');
+                    if (n == null || n < 1) {
+                      return AppLocalizations.of(context)!.servingsMustBePositive;
+                    }
+                    return null;
+                  },
+                ),
                 const SizedBox(height: 16),
                 _buildRatingField(AppLocalizations.of(context)!.rating, _rating,
                     (value) {
