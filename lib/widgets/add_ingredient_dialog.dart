@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/sorting_utils.dart';
 import '../models/recipe.dart';
 import '../models/ingredient.dart';
 import '../models/recipe_ingredient.dart';
@@ -317,7 +318,16 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                           labelText:
                               AppLocalizations.of(context)!.categoryLabel,
                         ),
-                        items: _categories.map((category) {
+                        items: (_categories.toList()
+                              ..sort((a, b) {
+                                if (a == IngredientCategory.other) return 1;
+                                if (b == IngredientCategory.other) return -1;
+                                return SortingUtils.normalizeForSorting(
+                                        a.getLocalizedDisplayName(context))
+                                    .compareTo(SortingUtils.normalizeForSorting(
+                                        b.getLocalizedDisplayName(context)));
+                              }))
+                            .map((category) {
                           return DropdownMenuItem(
                             value: category,
                             child: Text(
