@@ -223,7 +223,7 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
                 ),
                 onChanged: (value) {
                   setState(() {
-                    _searchQuery = value;
+                    _searchQuery = value.trim();
                   });
                 },
               ),

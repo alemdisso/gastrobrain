@@ -248,7 +248,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
                     ),
                     onChanged: (value) {
                       setState(() {
-                        _searchQuery = value;
+                        _searchQuery = value.trim();
                       });
                     },
                   )

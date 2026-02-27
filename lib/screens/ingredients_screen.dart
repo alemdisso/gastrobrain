@@ -246,7 +246,7 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
               ),
               onChanged: (value) {
                 setState(() {
-                  _searchQuery = value;
+                  _searchQuery = value.trim();
                 });
               },
             ),
