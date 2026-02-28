@@ -90,8 +90,8 @@ class EntityValidator {
     if (recipeId.isEmpty) {
       throw ValidationException('Recipe ID cannot be empty');
     }
-    if (quantity <= 0) {
-      throw ValidationException('Quantity must be greater than zero');
+    if (quantity < 0) {
+      throw ValidationException('Quantity cannot be negative');
     }
   }
 

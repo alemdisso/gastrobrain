@@ -963,6 +963,302 @@ void main() {
       });
     });
 
+    group('"To taste" Toggle', () {
+      testWidgets('action chip is visible and quantity fields shown by default',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // ActionChip shortcut is visible
+        expect(
+          find.byKey(const Key('add_ingredient_to_taste_toggle')),
+          findsOneWidget,
+        );
+        // Quantity and unit fields are visible
+        expect(
+          find.byKey(const Key('add_ingredient_quantity_field')),
+          findsOneWidget,
+        );
+        // Active chip not shown
+        expect(
+          find.byKey(const Key('add_ingredient_to_taste_chip')),
+          findsNothing,
+        );
+      });
+
+      testWidgets('tapping action chip hides quantity/unit and shows active chip',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Tap the "to taste" shortcut chip
+        await tester.tap(
+            find.byKey(const Key('add_ingredient_to_taste_toggle')));
+        await tester.pumpAndSettle();
+
+        // Quantity and unit fields are hidden
+        expect(
+          find.byKey(const Key('add_ingredient_quantity_field')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const Key('add_ingredient_unit_field')),
+          findsNothing,
+        );
+        // Active InputChip is shown
+        expect(
+          find.byKey(const Key('add_ingredient_to_taste_chip')),
+          findsOneWidget,
+        );
+        // Shortcut chip is gone
+        expect(
+          find.byKey(const Key('add_ingredient_to_taste_toggle')),
+          findsNothing,
+        );
+      });
+
+      testWidgets('deleting active chip restores quantity/unit fields',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Activate to-taste
+        await tester.tap(
+            find.byKey(const Key('add_ingredient_to_taste_toggle')));
+        await tester.pumpAndSettle();
+
+        // Delete the active chip via its keyed delete icon
+        await tester.tap(find.byKey(const Key('add_ingredient_to_taste_delete')));
+        await tester.pumpAndSettle();
+
+        // Quantity field restored
+        expect(
+          find.byKey(const Key('add_ingredient_quantity_field')),
+          findsOneWidget,
+        );
+        // Active chip gone
+        expect(
+          find.byKey(const Key('add_ingredient_to_taste_chip')),
+          findsNothing,
+        );
+      });
+
+      testWidgets(
+          'saves with quantity=0 and no unit when toggle is on (database ingredient)',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        RecipeIngredient? savedIngredient;
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+            onSave: (ingredient) {
+              savedIngredient = ingredient;
+            },
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Select ingredient
+        final searchField =
+            find.byKey(const Key('add_ingredient_search_field'));
+        await tester.enterText(searchField, 'Chicken Breast');
+        await tester.pumpAndSettle();
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.pump(const Duration(milliseconds: 100));
+
+        // Toggle on
+        await tester.tap(
+            find.byKey(const Key('add_ingredient_to_taste_toggle')));
+        await tester.pumpAndSettle();
+
+        // Save
+        await tester.tap(find.text('Adicionar'));
+        await tester.pumpAndSettle();
+
+        expect(savedIngredient, isNotNull);
+        expect(savedIngredient!.quantity, equals(0.0));
+        expect(savedIngredient!.unitOverride, isNull);
+      });
+
+      testWidgets(
+          'saves with quantity=0 and no unit when toggle is on (custom ingredient)',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        RecipeIngredient? savedIngredient;
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+            onSave: (ingredient) {
+              savedIngredient = ingredient;
+            },
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Switch to custom mode
+        await tester.tap(find.text('Usar ingrediente personalizado'));
+        await tester.pumpAndSettle();
+
+        // Fill custom name
+        final customNameField =
+            find.byKey(const Key('add_ingredient_custom_name_field'));
+        await tester.enterText(customNameField, 'Sea Salt');
+        await tester.pumpAndSettle();
+
+        // Select category
+        final categoryField =
+            find.byKey(const Key('add_ingredient_custom_category_field'));
+        await tester.tap(categoryField);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Tempero').last);
+        await tester.pumpAndSettle();
+
+        // Toggle on
+        await tester.tap(
+            find.byKey(const Key('add_ingredient_to_taste_toggle')));
+        await tester.pumpAndSettle();
+
+        // Save
+        await tester.tap(find.text('Adicionar'));
+        await tester.pumpAndSettle();
+
+        expect(savedIngredient, isNotNull);
+        expect(savedIngredient!.quantity, equals(0.0));
+        expect(savedIngredient!.customUnit, isNull);
+        expect(savedIngredient!.customName, equals('Sea Salt'));
+      });
+
+      testWidgets('pre-fills active chip when editing a to-taste ingredient',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+        final existingToTasteIngredient = {
+          'ingredient_id': testIngredient.id,
+          'quantity': 0.0,
+          'preparation_notes': '',
+        };
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+            existingIngredient: existingToTasteIngredient,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Active InputChip shown (not the shortcut ActionChip)
+        expect(
+          find.byKey(const Key('add_ingredient_to_taste_chip')),
+          findsOneWidget,
+        );
+        // Quantity field hidden
+        expect(
+          find.byKey(const Key('add_ingredient_quantity_field')),
+          findsNothing,
+        );
+      });
+
+      testWidgets(
+          'quantity validation still rejects empty when toggle is off',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Select ingredient
+        final searchField =
+            find.byKey(const Key('add_ingredient_search_field'));
+        await tester.enterText(searchField, 'Chicken Breast');
+        await tester.pumpAndSettle();
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.pump(const Duration(milliseconds: 100));
+
+        // Toggle is off — leave quantity empty and try to save
+        await tester.tap(find.text('Adicionar'));
+        await tester.pumpAndSettle();
+
+        // Should show quantity validation error
+        expect(
+          find.text('Por favor, informe uma quantidade'),
+          findsOneWidget,
+        );
+      });
+
+      testWidgets('cancel with toggle on returns null with no side effects',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        final result =
+            await DialogTestHelpers.openDialogAndCapture<RecipeIngredient>(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Toggle on
+        await tester.tap(
+            find.byKey(const Key('add_ingredient_to_taste_toggle')));
+        await tester.pumpAndSettle();
+
+        // Cancel
+        await tester.tap(find.text('Cancelar'));
+        await tester.pumpAndSettle();
+
+        DialogTestHelpers.verifyDialogCancelled(result);
+      });
+    });
+
     group('Error Handling', () {
       testWidgets('handles database error when loading ingredients',
           (WidgetTester tester) async {
