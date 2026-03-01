@@ -437,6 +437,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
             additionalRecipes: recipes.additional,
             plannedDate: date,
             notes: mealPlanItem.notes,
+            plannedServings: mealPlanItem.plannedServings,
           ),
         );
       }

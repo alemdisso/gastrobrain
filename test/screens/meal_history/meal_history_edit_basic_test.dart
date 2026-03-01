@@ -343,18 +343,10 @@ void main() {
       await tester.tap(find.text('Edit'));
       await tester.pumpAndSettle();
 
-      // Find servings field and clear it, then enter new value
-      final servingsField = find.ancestor(
-        of: find.text('Number of Servings'),
-        matching: find.byType(TextFormField),
-      );
-      expect(servingsField, findsOneWidget);
-
-      await tester.tap(servingsField);
-      await tester.pumpAndSettle();
-
-      // Clear existing value and enter new one
-      await tester.enterText(servingsField, '5');
+      // Tap + button 2 times to go from 3 → 5 (pump between taps to apply setState)
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
       await tester.pumpAndSettle();
 
       // Tap Save Changes button (EditMealRecordingDialog)
@@ -655,12 +647,9 @@ void main() {
       await tester.tap(find.text('Edit'));
       await tester.pumpAndSettle();
 
-      // Make changes to servings
-      await tester.enterText(
-        find.widgetWithText(TextFormField, '3'),
-        '999',
-      );
-      await tester.pumpAndSettle();
+      // Make a change via the stepper (3 → 4)
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pump();
 
       // Tap Cancel button
       await tester.tap(find.text('Cancel'));
@@ -718,11 +707,8 @@ void main() {
       await tester.tap(find.text('Edit'));
       await tester.pumpAndSettle();
 
-      // Make changes to servings
-      await tester.enterText(
-        find.widgetWithText(TextFormField, '3'),
-        '888',
-      );
+      // Make a change via the stepper (3 → 4)
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
       await tester.pumpAndSettle();
 
       // Press back button to dismiss dialog
@@ -740,135 +726,7 @@ void main() {
           reason: 'Servings should remain unchanged after back button');
     });
 
-    testWidgets('shows validation error for invalid servings', (WidgetTester tester) async {
-      // Create a meal with valid values
-      final meal = Meal(
-        id: 'validation-test-meal',
-        recipeId: null,
-        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
-        servings: 3,
-        notes: 'Test notes',
-        wasSuccessful: true,
-        actualPrepTime: 15.0,
-        actualCookTime: 25.0,
-      );
 
-      await mockDbHelper.insertMeal(meal);
-      await mockDbHelper.insertMealRecipe(MealRecipe(
-        mealId: meal.id,
-        recipeId: testRecipe.id,
-        isPrimaryDish: true,
-      ));
-
-      await tester.pumpWidget(
-        createTestableWidget(
-          MealHistoryScreen(
-            recipe: testRecipe,
-            databaseHelper: mockDbHelper,
-          ),
-        ),
-      );
-
-      await tester.pumpAndSettle();
-
-      // Tap the menu button - use last to get our test meal
-      final menuButtons = find.byIcon(Icons.more_vert);
-      await tester.tap(menuButtons.last);
-      await tester.pumpAndSettle();
-
-      // Tap Edit
-      await tester.tap(find.text('Edit'));
-      await tester.pumpAndSettle();
-
-      // Enter invalid servings (0)
-      await tester.enterText(
-        find.widgetWithText(TextFormField, '3'),
-        '0',
-      );
-      await tester.pumpAndSettle();
-
-      // Try to save - should trigger validation
-      await tester.tap(find.text('Save Changes'));
-      await tester.pumpAndSettle();
-
-      // Verify validation error is shown
-      expect(find.text('Please enter a valid number'), findsOneWidget,
-          reason: 'Should show validation error for servings = 0');
-
-      // Verify dialog is still open (not closed)
-      expect(find.text('Save Changes'), findsOneWidget,
-          reason: 'Dialog should remain open with validation error');
-
-      // Verify the meal was NOT updated in the database
-      final unchangedMeal = mockDbHelper.meals[meal.id];
-      expect(unchangedMeal!.servings, equals(3),
-          reason: 'Servings should remain unchanged due to validation error');
-    });
-
-    testWidgets('shows validation error for empty servings', (WidgetTester tester) async {
-      // Create a meal with valid values
-      final meal = Meal(
-        id: 'empty-validation-meal',
-        recipeId: null,
-        cookedAt: DateTime.now().subtract(const Duration(days: 1)),
-        servings: 3,
-        notes: 'Test notes',
-        wasSuccessful: true,
-        actualPrepTime: 15.0,
-        actualCookTime: 25.0,
-      );
-
-      await mockDbHelper.insertMeal(meal);
-      await mockDbHelper.insertMealRecipe(MealRecipe(
-        mealId: meal.id,
-        recipeId: testRecipe.id,
-        isPrimaryDish: true,
-      ));
-
-      await tester.pumpWidget(
-        createTestableWidget(
-          MealHistoryScreen(
-            recipe: testRecipe,
-            databaseHelper: mockDbHelper,
-          ),
-        ),
-      );
-
-      await tester.pumpAndSettle();
-
-      // Tap the menu button - use last to get our test meal
-      final menuButtons = find.byIcon(Icons.more_vert);
-      await tester.tap(menuButtons.last);
-      await tester.pumpAndSettle();
-
-      // Tap Edit
-      await tester.tap(find.text('Edit'));
-      await tester.pumpAndSettle();
-
-      // Clear servings field (make it empty)
-      await tester.enterText(
-        find.widgetWithText(TextFormField, '3'),
-        '',
-      );
-      await tester.pumpAndSettle();
-
-      // Try to save - should trigger validation
-      await tester.tap(find.text('Save Changes'));
-      await tester.pumpAndSettle();
-
-      // Verify validation error is shown
-      expect(find.text('Please enter number of servings'), findsOneWidget,
-          reason: 'Should show validation error for empty servings');
-
-      // Verify dialog is still open
-      expect(find.text('Save Changes'), findsOneWidget,
-          reason: 'Dialog should remain open with validation error');
-
-      // Verify the meal was NOT updated in the database
-      final unchangedMeal = mockDbHelper.meals[meal.id];
-      expect(unchangedMeal!.servings, equals(3),
-          reason: 'Servings should remain unchanged due to validation error');
-    });
 
     testWidgets('handles large servings value correctly', (WidgetTester tester) async {
       // Create a meal with normal servings
@@ -910,11 +768,11 @@ void main() {
       await tester.tap(find.text('Edit'));
       await tester.pumpAndSettle();
 
-      // Enter large servings value
-      await tester.enterText(
-        find.widgetWithText(TextFormField, '3'),
-        '999',
-      );
+      // Tap + 7 times to go from 3 → 10 (pump after each tap to apply setState)
+      for (var i = 0; i < 7; i++) {
+        await tester.tap(find.byKey(const Key('servings_increment_button')));
+        await tester.pump();
+      }
       await tester.pumpAndSettle();
 
       // Save changes
@@ -924,11 +782,11 @@ void main() {
       // Wait for async operations
       await tester.pumpAndSettle();
 
-      // Verify the large value was saved correctly
+      // Verify the value was saved correctly
       final updatedMeal = mockDbHelper.meals[meal.id];
       expect(updatedMeal, isNotNull);
-      expect(updatedMeal!.servings, equals(999),
-          reason: 'Should handle large servings value (999)');
+      expect(updatedMeal!.servings, equals(10),
+          reason: 'Should handle high servings value via stepper (3 + 7 taps = 10)');
     });
 
     testWidgets('edits very old meal correctly', (WidgetTester tester) async {
@@ -1113,11 +971,10 @@ void main() {
       await tester.tap(find.text('Edit'));
       await tester.pumpAndSettle();
 
-      // Update servings for multi-recipe meal
-      await tester.enterText(
-        find.widgetWithText(TextFormField, '4'),
-        '6',
-      );
+      // Update servings for multi-recipe meal (4 → 6 via stepper)
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
       await tester.pumpAndSettle();
 
       // Save changes

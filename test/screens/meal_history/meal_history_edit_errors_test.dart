@@ -146,13 +146,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
-      // 5. Make a valid change
-      await tester.enterText(
-        find.byKey(const Key('edit_meal_recording_servings_field')),
-        '5',
-      );
-
-      // 6. Try to save (database will fail)
+      // 5. Try to save (database will fail)
       await tester.tap(find.text('Save Changes'));
       await tester.pump();
       await tester.pump();
@@ -162,16 +156,16 @@ void main() {
       await tester.pump();
       await tester.pumpAndSettle();
 
-      // 7. Verify error snackbar appears
+      // 6. Verify error snackbar appears
       expect(find.byType(SnackBar), findsOneWidget,
           reason: 'Error snackbar should appear when database update fails');
 
-      // 8. Extract the error message text from the snackbar
+      // 7. Extract the error message text from the snackbar
       final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
       final snackBarContent = snackBar.content as Text;
       final errorMessage = snackBarContent.data ?? '';
 
-      // 9. Verify message does NOT contain technical implementation details
+      // 8. Verify message does NOT contain technical implementation details
       // These are patterns that should NOT appear in user-facing error messages:
       final technicalPatterns = [
         'Exception:', // Exception class name
@@ -251,13 +245,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
-      // 5. Make a valid change
-      await tester.enterText(
-        find.byKey(const Key('edit_meal_recording_servings_field')),
-        '3',
-      );
-
-      // 6. Try to save (database will fail)
+      // 5. Try to save (database will fail)
       await tester.tap(find.text('Save Changes'));
       await tester.pump();
       await tester.pump();
@@ -267,11 +255,11 @@ void main() {
       await tester.pump();
       await tester.pumpAndSettle();
 
-      // 7. Verify error snackbar appears
+      // 6. Verify error snackbar appears
       expect(find.byType(SnackBar), findsOneWidget,
           reason: 'Error snackbar should appear when database update fails');
 
-      // 8. Extract the error message text from the snackbar
+      // 7. Extract the error message text from the snackbar
       final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
       final snackBarContent = snackBar.content as Text;
       final errorMessage = snackBarContent.data ?? '';
@@ -342,13 +330,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
-      // 5. Make a valid change
-      await tester.enterText(
-        find.byKey(const Key('edit_meal_recording_servings_field')),
-        '3',
-      );
-
-      // 6. Try to save (database will fail)
+      // 5. Try to save (database will fail)
       await tester
           .tap(find.text('Salvar Alterações')); // Portuguese "Save Changes"
       await tester.pump();
@@ -423,13 +405,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
-      // 5. Make a valid change
-      await tester.enterText(
-        find.byKey(const Key('edit_meal_recording_servings_field')),
-        '5',
-      );
-
-      // 6. Try to save (database will fail)
+      // 5. Try to save (database will fail)
       await tester.tap(find.text('Save Changes'));
       await tester.pump(); // Start closing dialog
       await tester.pump(); // Complete dialog close animation
@@ -510,13 +486,7 @@ void main() {
       // 4. While dialog is open, delete the meal from database
       await mockDbHelper.deleteMeal(meal.id);
 
-      // 5. Make a change in the dialog
-      await tester.enterText(
-        find.byKey(const Key('edit_meal_recording_servings_field')),
-        '6',
-      );
-
-      // 6. Try to save (meal no longer exists)
+      // 5. Try to save (meal no longer exists)
       await tester.tap(find.text('Save Changes'));
       await tester.pump(); // Start closing dialog
       await tester.pump(); // Complete dialog close animation

@@ -85,8 +85,11 @@ void main() {
       // Verify dialog title shows recipe name (Portuguese)
       expect(find.text('Editar ${testRecipe.name}'), findsOneWidget);
 
-      // Verify pre-populated data appears
-      expect(find.text('3'), findsOneWidget); // Servings field
+      // Verify servings stepper shows pre-populated value
+      expect(
+        tester.widget<Text>(find.byKey(const Key('servings_value_display'))).data,
+        equals('3'),
+      );
       expect(find.text('Original test notes'), findsOneWidget); // Notes field
       expect(find.text('20.0'), findsOneWidget); // Prep time
       expect(find.text('30.0'), findsOneWidget); // Cook time
@@ -172,43 +175,6 @@ void main() {
       // Dialog should be gone
       expect(find.text('Editar ${testRecipe.name}'), findsNothing);
       expect(find.text('Show Dialog'), findsOneWidget); // Back to main screen
-    });
-
-    testWidgets('validates servings field correctly',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(
-        wrapWithLocalizations(Scaffold(
-          body: Builder(
-            builder: (context) => ElevatedButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => EditMealRecordingDialog(
-                    meal: testMeal,
-                    primaryRecipe: testRecipe,
-                    databaseHelper: mockDbHelper,
-                  ),
-                );
-              },
-              child: const Text('Show Dialog'),
-            ),
-          ),
-        )),
-      );
-
-      // Show dialog
-      await tester.tap(find.text('Show Dialog'));
-      await tester.pumpAndSettle();
-
-      // Clear servings field and enter invalid value
-      await tester.enterText(find.byType(TextFormField).first, '0');
-
-      // Try to save
-      await tester.tap(find.text('Salvar Alterações'));
-      await tester.pumpAndSettle();
-
-      // Should show validation error (Portuguese)
-      expect(find.text('Por favor, informe um número válido'), findsOneWidget);
     });
 
     testWidgets('shows success switch in correct state',
@@ -347,15 +313,16 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Try scrolling down to make the Switch more visible
-      await tester.drag(
-          find.byType(SingleChildScrollView), const Offset(0, -200));
-      await tester.pumpAndSettle();
+      // Verify stepper shows meal.servings = 2
+      expect(
+        tester.widget<Text>(find.byKey(const Key('servings_value_display'))).data,
+        equals('2'),
+      );
 
-      // Test field modifications first (these are working)
-      final servingsField = find.widgetWithText(TextFormField, '2');
-      expect(servingsField, findsOneWidget);
-      await tester.enterText(servingsField, '4');
+      // Increment servings via stepper (2 → 4)
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
       await tester.pump();
 
       // Find the Switch and check its initial state
@@ -428,11 +395,10 @@ void main() {
         ),
       );
 
-      // Modify servings
-      await tester.enterText(
-        find.widgetWithText(TextFormField, testMeal.servings.toString()),
-        '5',
-      );
+      // Increment servings from 3 to 5 via stepper (tap + twice)
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
       await tester.pumpAndSettle();
 
       // Modify notes
@@ -458,6 +424,44 @@ void main() {
       expect(result.value!['additionalRecipes'], isA<List>());
       expect(result.value!['cookedAt'], isA<DateTime>());
       expect(result.value!['modifiedAt'], isA<DateTime>());
+    });
+
+    testWidgets('stepper initialized to meal.servings and returns adjusted value',
+        (WidgetTester tester) async {
+      final mealWith6Servings = Meal(
+        id: 'meal-6-servings',
+        cookedAt: DateTime.now(),
+        servings: 6,
+        wasSuccessful: true,
+      );
+
+      final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+        tester,
+        dialogBuilder: (context) => EditMealRecordingDialog(
+          meal: mealWith6Servings,
+          primaryRecipe: testRecipe,
+          databaseHelper: mockDbHelper,
+        ),
+      );
+
+      // Verify stepper starts at 6
+      expect(
+        tester.widget<Text>(find.byKey(const Key('servings_value_display'))).data,
+        equals('6'),
+      );
+
+      // Decrement to 4 (tap − twice)
+      await tester.tap(find.byKey(const Key('servings_decrement_button')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('servings_decrement_button')));
+      await tester.pumpAndSettle();
+
+      // Save
+      await tester.tap(find.text('Salvar Alterações'));
+      await tester.pumpAndSettle();
+
+      expect(result.hasValue, isTrue);
+      expect(result.value!['servings'], equals(4));
     });
 
     testWidgets('returns additional recipes in updated meal data',
@@ -494,12 +498,11 @@ void main() {
         ),
       );
 
-      // Change only servings field
-      await tester.enterText(
-        find.widgetWithText(TextFormField, testMeal.servings.toString()),
-        '10',
-      );
-      await tester.pumpAndSettle();
+      // Increment servings from 3 to 10 via stepper (tap + seven times)
+      for (int i = 0; i < 7; i++) {
+        await tester.tap(find.byKey(const Key('servings_increment_button')));
+        await tester.pumpAndSettle();
+      }
 
       // Save
       await tester.tap(find.text('Salvar Alterações'));
