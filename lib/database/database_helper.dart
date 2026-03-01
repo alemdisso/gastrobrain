@@ -35,6 +35,7 @@ import '../core/migration/migrations/005_rename_is_purchased_to_to_buy.dart';
 import '../core/migration/migrations/006_add_meal_plan_modified_at.dart';
 import '../core/migration/migrations/007_add_cooked_at_columns.dart';
 import '../core/migration/migrations/008_add_recipe_servings.dart';
+import '../core/migration/migrations/009_add_planned_servings.dart';
 import '../core/repositories/base_repository.dart';
 
 class DatabaseHelper {
@@ -56,6 +57,7 @@ class DatabaseHelper {
     AddMealPlanModifiedAtMigration(),
     AddCookedAtColumnsMigration(),
     AddRecipeServingsMigration(),
+    AddPlannedServingsMigration(),
   ];
 
   /// Get the migration runner instance

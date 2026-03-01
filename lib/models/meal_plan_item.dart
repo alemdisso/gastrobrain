@@ -7,6 +7,7 @@ class MealPlanItem {
   String mealType; // 'lunch' or 'dinner'
   String notes;
   bool hasBeenCooked; // True if this meal has been cooked
+  int plannedServings; // How many servings the user intends to prepare
   List<MealPlanItemRecipe>?
       mealPlanItemRecipes; // List of recipes in this planned meal
 
@@ -21,6 +22,7 @@ class MealPlanItem {
     this.notes = '',
     this.mealPlanItemRecipes,
     this.hasBeenCooked = false,
+    this.plannedServings = 4,
   }) {
     // Validate meal type
     if (mealType != lunch && mealType != dinner) {
@@ -37,6 +39,7 @@ class MealPlanItem {
       'meal_type': mealType,
       'notes': notes,
       'has_been_cooked': hasBeenCooked ? 1 : 0,
+      'planned_servings': plannedServings,
       // Note: mealPlanItemRecipes must be saved separately
     };
   }
@@ -50,6 +53,7 @@ class MealPlanItem {
       mealType: map['meal_type'],
       notes: map['notes'] ?? '',
       hasBeenCooked: map['has_been_cooked'] == 1,
+      plannedServings: map['planned_servings'] as int? ?? 4,
       // Note: mealPlanItemRecipes must be loaded separately
     );
   }
@@ -62,6 +66,7 @@ class MealPlanItem {
     String? plannedDate,
     String? mealType,
     String? notes,
+    int? plannedServings,
     List<MealPlanItemRecipe>? mealPlanItemRecipes,
   }) {
     return MealPlanItem(
@@ -70,6 +75,7 @@ class MealPlanItem {
       plannedDate: plannedDate ?? this.plannedDate,
       mealType: mealType ?? this.mealType,
       notes: notes ?? this.notes,
+      plannedServings: plannedServings ?? this.plannedServings,
       mealPlanItemRecipes: mealPlanItemRecipes ?? this.mealPlanItemRecipes,
     );
   }

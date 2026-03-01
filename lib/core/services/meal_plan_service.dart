@@ -47,6 +47,7 @@ class MealPlanService {
     required String mealType,
     required Recipe primaryRecipe,
     List<Recipe> additionalRecipes = const [],
+    int plannedServings = 4,
   }) async {
     // Check if there's already a meal in this slot
     final existingItems =
@@ -67,6 +68,7 @@ class MealPlanService {
       mealPlanId: mealPlan.id,
       plannedDate: MealPlanItem.formatPlannedDate(date),
       mealType: mealType,
+      plannedServings: plannedServings,
     );
 
     // Create junction records for all recipes

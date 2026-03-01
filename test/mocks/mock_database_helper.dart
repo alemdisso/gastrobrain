@@ -126,8 +126,12 @@ class MockDatabaseHelper implements DatabaseHelper {
     // Find the meal plan this item belongs to
     final plan = _mealPlans[item.mealPlanId];
     if (plan != null) {
-      // Add the item to the plan
-      plan.items.add(item);
+      // Guard against double-add: the service mutates the in-memory plan via
+      // mealPlan.addItem() before calling insertMealPlanItem(), and because the
+      // mock stores plans by reference the item may already be present.
+      if (!plan.items.any((i) => i.id == item.id)) {
+        plan.items.add(item);
+      }
     }
     return item.id;
   }
@@ -1123,9 +1127,13 @@ class MockDatabaseHelper implements DatabaseHelper {
     for (final plan in _mealPlans.values) {
       for (final item in plan.items) {
         if (item.id == mealPlanItemRecipe.mealPlanItemId) {
-          // Found the item, add the recipe to it
-          item.mealPlanItemRecipes ??= [];
-          item.mealPlanItemRecipes!.add(mealPlanItemRecipe);
+          // Found the item, add the recipe to it.
+          // Use a new list to avoid concurrent modification if the caller is
+          // still iterating the original mealPlanItemRecipes reference.
+          item.mealPlanItemRecipes = [
+            ...(item.mealPlanItemRecipes ?? []),
+            mealPlanItemRecipe,
+          ];
           return mealPlanItemRecipe.id;
         }
       }
