@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models/recipe.dart';
 import '../models/recipe_recommendation.dart';
 import '../core/di/service_provider.dart';
@@ -20,6 +21,7 @@ class RecipeSelectionDialog extends StatefulWidget {
       Function()? onRefreshDetailedRecommendations;
   final Recipe? initialPrimaryRecipe;
   final List<Recipe>? initialAdditionalRecipes;
+  final int? initialPlannedServings;
 
   const RecipeSelectionDialog({
     super.key,
@@ -29,6 +31,7 @@ class RecipeSelectionDialog extends StatefulWidget {
     this.onRefreshDetailedRecommendations,
     this.initialPrimaryRecipe,
     this.initialAdditionalRecipes,
+    this.initialPlannedServings,
   });
 
   @override
@@ -45,6 +48,8 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
   Recipe? _selectedRecipe;
   bool _showingMenu = false;
   List<Recipe> _additionalRecipes = [];
+  int _plannedServings = 4;
+  late TextEditingController _servingsController;
 
   @override
   void initState() {
@@ -58,6 +63,8 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
       _selectedRecipe = widget.initialPrimaryRecipe;
       _additionalRecipes = List.from(widget.initialAdditionalRecipes ?? []);
       _showingMenu = true;
+      _plannedServings =
+          widget.initialPlannedServings ?? widget.initialPrimaryRecipe!.servings;
     } else {
       // Start on the Recommended tab if we have recommendations
       if (widget.detailedRecommendations.isNotEmpty) {
@@ -67,6 +74,9 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
             1; // Default to All Recipes if no recommendations
       }
     }
+
+    _servingsController =
+        TextEditingController(text: _plannedServings.toString());
 
     // Initialize recommendations from widget prop
     _recommendations = List.from(widget.detailedRecommendations);
@@ -156,6 +166,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
   @override
   void dispose() {
     _tabController.dispose();
+    _servingsController.dispose();
     super.dispose();
   }
 
@@ -347,6 +358,42 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
             const SizedBox(height: 16),
           ],
 
+          // Planned servings input
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Row(
+              children: [
+                const Icon(Icons.people_outline, size: 20),
+                const SizedBox(width: 8),
+                Text(AppLocalizations.of(context)!.servings),
+                const SizedBox(width: 12),
+                SizedBox(
+                  width: 64,
+                  child: TextField(
+                    key: const Key('recipe_selection_planned_servings_field'),
+                    controller: _servingsController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    textAlign: TextAlign.center,
+                    decoration: const InputDecoration(
+                      isDense: true,
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (value) {
+                      final parsed = int.tryParse(value);
+                      if (parsed != null && parsed > 0) {
+                        _plannedServings = parsed;
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+
           // Menu options
           ListTile(
             leading: const Icon(Icons.save),
@@ -356,6 +403,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
             onTap: () => Navigator.pop(context, {
               'primaryRecipe': _selectedRecipe!,
               'additionalRecipes': _additionalRecipes,
+              'plannedServings': _plannedServings,
             }),
           ),
           ListTile(
@@ -421,8 +469,12 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
     );
 
     if (result != null && mounted) {
-      // The enhanced dialog returns the complete meal composition
-      Navigator.pop(context, result);
+      // The enhanced dialog returns the complete meal composition.
+      // Merge in plannedServings so the caller always receives it.
+      Navigator.pop(context, {
+        ...result,
+        'plannedServings': _plannedServings,
+      });
     }
   }
 
@@ -430,6 +482,8 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
     setState(() {
       _selectedRecipe = recipe;
       _showingMenu = true;
+      _plannedServings = recipe.servings;
+      _servingsController.text = recipe.servings.toString();
     });
   }
 }
