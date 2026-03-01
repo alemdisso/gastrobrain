@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.12] - 2026-03-01
+
+### Added
+
+- Recipe servings field for tracking expected yield (#304)
+- "To taste" toggle in AddIngredientDialog for flexible quantity handling (#308)
+- Planned servings field in meal planning slot for portion control (#305)
+- ServingsStepper widget replacing servings text field in meal recording dialogs (#307)
+
+### Changed
+
+- Ingredient quantities in shopping list now scale by planned servings (#306)
+- Search fields now trim whitespace across all search inputs for consistency (#309)
+- Ingredient category dropdown sorted alphabetically (#310)
+
+---
+
 ## [0.1.11] - 2026-02-25
 
 ### Added
