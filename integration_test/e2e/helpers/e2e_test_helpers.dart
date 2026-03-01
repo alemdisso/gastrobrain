@@ -427,11 +427,10 @@ class E2ETestHelpers {
     bool? toggleSuccess,
   }) async {
     if (servings != null) {
-      final servingsField =
-          find.byKey(const Key('meal_recording_servings_field'));
-      expect(servingsField, findsOneWidget);
-      await tester.enterText(servingsField, servings);
-      await tester.pumpAndSettle();
+      final stepperFinder =
+          find.byKey(const Key('meal_recording_servings_stepper'));
+      expect(stepperFinder, findsOneWidget);
+      await _adjustServingsViaStepper(tester, int.parse(servings));
     }
 
     if (prepTime != null) {
@@ -949,12 +948,11 @@ class E2ETestHelpers {
     bool? toggleSuccess,
   }) async {
     if (servings != null) {
-      final servingsField =
-          find.byKey(const Key('edit_meal_recording_servings_field'));
-      expect(servingsField, findsOneWidget,
-          reason: 'Servings field should exist in edit dialog');
-      await tester.enterText(servingsField, servings);
-      await tester.pumpAndSettle();
+      final stepperFinder =
+          find.byKey(const Key('edit_meal_recording_servings_stepper'));
+      expect(stepperFinder, findsOneWidget,
+          reason: 'Servings stepper should exist in edit dialog');
+      await _adjustServingsViaStepper(tester, int.parse(servings));
     }
 
     if (prepTime != null) {
@@ -992,6 +990,30 @@ class E2ETestHelpers {
       await tester.tap(successSwitch);
       await tester.pumpAndSettle();
     }
+  }
+
+  /// Adjusts the ServingsStepper to reach a target value by tapping
+  /// increment/decrement buttons.
+  static Future<void> _adjustServingsViaStepper(
+    WidgetTester tester,
+    int target,
+  ) async {
+    final displayFinder = find.byKey(const Key('servings_value_display'));
+    expect(displayFinder, findsOneWidget,
+        reason: 'Servings stepper display should be visible');
+    int current =
+        int.parse((tester.widget(displayFinder) as Text).data!);
+    while (current < target) {
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pump();
+      current++;
+    }
+    while (current > target) {
+      await tester.tap(find.byKey(const Key('servings_decrement_button')));
+      await tester.pump();
+      current--;
+    }
+    await tester.pumpAndSettle();
   }
 
   /// Save the meal edit dialog

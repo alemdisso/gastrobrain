@@ -157,7 +157,7 @@ void main() {
 
         // Verify dialog is open by checking for form fields
         expect(
-            find.byKey(const Key('edit_meal_recording_servings_field')),
+            find.byKey(const Key('edit_meal_recording_servings_stepper')),
             findsOneWidget,
             reason: 'Servings field should be visible in edit dialog');
         print('✓ Edit dialog confirmed open');
@@ -458,7 +458,7 @@ void main() {
 
         // Verify dialog is open
         expect(
-            find.byKey(const Key('edit_meal_recording_servings_field')),
+            find.byKey(const Key('edit_meal_recording_servings_stepper')),
             findsOneWidget,
             reason: 'Servings field should be visible in edit dialog');
         print('✓ Edit dialog confirmed open');
@@ -752,7 +752,7 @@ void main() {
 
         // Verify dialog is open
         expect(
-            find.byKey(const Key('edit_meal_recording_servings_field')),
+            find.byKey(const Key('edit_meal_recording_servings_stepper')),
             findsOneWidget,
             reason: 'Servings field should be visible in edit dialog');
         print('✓ Edit dialog confirmed open');
@@ -1062,7 +1062,7 @@ void main() {
 
         // Verify dialog is open
         expect(
-            find.byKey(const Key('edit_meal_recording_servings_field')),
+            find.byKey(const Key('edit_meal_recording_servings_stepper')),
             findsOneWidget,
             reason: 'Servings field should be visible in edit dialog');
         print('✓ Edit dialog confirmed open');
@@ -1092,7 +1092,7 @@ void main() {
         // (the meal history screen in the background may still show the side dish)
 
         // First, verify the dialog is still open by checking for the servings field
-        final servingsField = find.byKey(const Key('edit_meal_recording_servings_field'));
+        final servingsField = find.byKey(const Key('edit_meal_recording_servings_stepper'));
         expect(servingsField, findsOneWidget,
             reason: 'Dialog should still be open');
 
