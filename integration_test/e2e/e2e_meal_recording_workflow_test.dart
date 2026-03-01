@@ -127,7 +127,7 @@ void main() {
         print('✓ Meal recording dialog opened');
 
         // Verify dialog is displayed
-        expect(find.byKey(const Key('meal_recording_servings_field')),
+        expect(find.byKey(const Key('meal_recording_servings_stepper')),
             findsOneWidget,
             reason: 'Meal recording dialog should be visible');
 

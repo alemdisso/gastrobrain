@@ -437,11 +437,11 @@ void main() {
       expect(find.byType(Dialog), findsOneWidget,
           reason: 'Edit Meal Recording Dialog should be open');
 
-      // 6. Make a change (modify servings)
-      await tester.enterText(
-        find.byKey(const Key('edit_meal_recording_servings_field')),
-        '5',
-      );
+      // 6. Make a change (tap + 2 times to go from 3 → 5; pump after each tap)
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pumpAndSettle();
 
       // 7. Save changes
       await tester.tap(find.text('Save Changes'));
@@ -575,10 +575,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // Update multiple fields
-      await tester.enterText(
-        find.byKey(const Key('edit_meal_recording_servings_field')),
-        '4',
-      );
+      // Tap + 2 times to go from 2 → 4 (pump after each tap to apply setState)
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pumpAndSettle();
       await tester.enterText(
         find.byKey(const Key('edit_meal_recording_notes_field')),
         'Updated notes with changes',

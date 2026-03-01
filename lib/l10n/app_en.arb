@@ -164,6 +164,14 @@
   "@cookingTime": {
     "description": "Label for cooking time field"
   },
+  "servings": "Servings",
+  "@servings": {
+    "description": "Label for the recipe servings field (how many people it serves)"
+  },
+  "servingsMustBePositive": "Servings must be at least 1",
+  "@servingsMustBePositive": {
+    "description": "Validation error shown when servings is zero or negative"
+  },
   "notes": "Notes",
   "@notes": {
     "description": "Label for notes field"

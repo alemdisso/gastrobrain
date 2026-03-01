@@ -250,6 +250,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     if (mealData != null) {
       final primaryRecipe = mealData['primaryRecipe'] as Recipe;
       final additionalRecipes = mealData['additionalRecipes'] as List<Recipe>;
+      final plannedServings = mealData['plannedServings'] as int? ?? primaryRecipe.servings;
 
       // Get or create meal plan for this week
       final mealPlan = _currentMealPlan ??
@@ -262,6 +263,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         mealType: mealType,
         primaryRecipe: primaryRecipe,
         additionalRecipes: additionalRecipes,
+        plannedServings: plannedServings,
       );
 
       setState(() {
@@ -435,6 +437,7 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
             additionalRecipes: recipes.additional,
             plannedDate: date,
             notes: mealPlanItem.notes,
+            plannedServings: mealPlanItem.plannedServings,
           ),
         );
       }
@@ -761,10 +764,19 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
                 detailedRecommendations: const [], // No recommendations needed for editing
                 initialPrimaryRecipe: primaryRecipe,
                 initialAdditionalRecipes: additionalRecipes,
+                initialPlannedServings: existingItem.plannedServings,
               ),
             );
 
       if (mealData == null) return; // User cancelled
+
+      // Persist updated plannedServings if it changed
+      final updatedServings = mealData['plannedServings'] as int?;
+      if (updatedServings != null &&
+          updatedServings != existingItem.plannedServings) {
+        existingItem.plannedServings = updatedServings;
+        await _dbHelper.updateMealPlanItem(existingItem);
+      }
 
       // Update the meal plan item with new recipes
       await _updateMealPlanItemRecipes(existingItem, mealData);

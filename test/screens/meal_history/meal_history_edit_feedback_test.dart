@@ -139,10 +139,12 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
-      await tester.enterText(
-        find.byKey(const Key('edit_meal_recording_servings_field')),
-        '5',
-      );
+      // Tap + 2 times to go from 3 → 5 (setUp testMeal appears first; pump after each tap)
+      for (var i = 0; i < 2; i++) {
+        await tester.tap(find.byKey(const Key('servings_increment_button')));
+        await tester.pump();
+      }
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('Save Changes'));
       await tester.pumpAndSettle();
@@ -211,10 +213,11 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
-      await tester.enterText(
-        find.byKey(const Key('edit_meal_recording_servings_field')),
-        '4',
-      );
+      // Tap + 2 times to go from 2 → 4 (pump after each tap to apply setState)
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('Save Changes'));
       await tester.pumpAndSettle();
@@ -280,10 +283,12 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
-      await tester.enterText(
-        find.byKey(const Key('edit_meal_recording_servings_field')),
-        '6',
-      );
+      // Tap + 4 times to go from 2 → 6 (pump after each tap to apply setState)
+      for (var i = 0; i < 4; i++) {
+        await tester.tap(find.byKey(const Key('servings_increment_button')));
+        await tester.pump();
+      }
+      await tester.pumpAndSettle();
 
       await tester
           .tap(find.text('Salvar Alterações')); // Portuguese "Save Changes"
@@ -346,11 +351,12 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
-      // 5. Change servings to 5
-      await tester.enterText(
-        find.byKey(const Key('edit_meal_recording_servings_field')),
-        '5',
-      );
+      // 5. Tap + 3 times to go from 2 → 5 (pump after each tap to apply setState)
+      for (var i = 0; i < 3; i++) {
+        await tester.tap(find.byKey(const Key('servings_increment_button')));
+        await tester.pump();
+      }
+      await tester.pumpAndSettle();
 
       // 6. Save changes
       await tester.tap(find.text('Save Changes'));
@@ -460,11 +466,12 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
-      // 5. Modify servings
-      await tester.enterText(
-        find.byKey(const Key('edit_meal_recording_servings_field')),
-        '6',
-      );
+      // 5. Tap + 2 times to go from 4 → 6 (pump after each tap to apply setState)
+      for (var i = 0; i < 2; i++) {
+        await tester.tap(find.byKey(const Key('servings_increment_button')));
+        await tester.pump();
+      }
+      await tester.pumpAndSettle();
 
       // 6. Save changes
       await tester.tap(find.text('Save Changes'));

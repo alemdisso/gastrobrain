@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/sorting_utils.dart';
 import '../models/recipe.dart';
 import '../models/ingredient.dart';
 import '../models/recipe_ingredient.dart';
@@ -53,6 +54,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
   final _customNameController = TextEditingController();
 
   bool _isCustomIngredient = false;
+  bool _isToTaste = false;
   IngredientCategory _selectedCategory = IngredientCategory.vegetable;
 
   @override
@@ -61,8 +63,13 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
     _dbHelper = widget.databaseHelper ?? ServiceProvider.database.dbHelper;
     if (widget.existingIngredient != null) {
       // Pre-fill the form with existing values
-      _quantityController.text =
-          widget.existingIngredient!['quantity'].toString();
+      final existingQuantity =
+          (widget.existingIngredient!['quantity'] as num).toDouble();
+      final isExistingToTaste = existingQuantity == 0;
+      _isToTaste = isExistingToTaste;
+      if (!isExistingToTaste) {
+        _quantityController.text = existingQuantity.toString();
+      }
       _notesController.text =
           widget.existingIngredient!['preparation_notes'] ?? '';
 
@@ -129,11 +136,11 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
           id: widget.recipeIngredientId ?? IdGenerator.generateId(),
           recipeId: widget.recipe.id,
           ingredientId: null, // No reference to ingredients table
-          quantity: double.parse(_quantityController.text),
+          quantity: _isToTaste ? 0.0 : double.parse(_quantityController.text),
           notes: _notesController.text.isEmpty ? null : _notesController.text,
           customName: _customNameController.text,
           customCategory: _selectedCategory.value,
-          customUnit: _selectedUnitOverride,
+          customUnit: _isToTaste ? null : _selectedUnitOverride,
         );
       } else {
         // Create regular ingredient with optional unit override
@@ -141,17 +148,21 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
           throw ValidationException('Please select an ingredient');
         }
 
+        final quantity =
+            _isToTaste ? 0.0 : double.parse(_quantityController.text);
+
         EntityValidator.validateRecipeIngredient(
           ingredientId: _selectedIngredient!.id,
           recipeId: widget.recipe.id,
-          quantity: double.parse(_quantityController.text),
+          quantity: quantity,
         );
 
         // Detect if unit was changed from ingredient's default
         final defaultUnit = _selectedIngredient!.unit?.value;
         final selectedUnit = _selectedUnitOverride;
-        final unitOverride =
-            (selectedUnit != null && selectedUnit != defaultUnit)
+        final unitOverride = _isToTaste
+            ? null
+            : (selectedUnit != null && selectedUnit != defaultUnit)
                 ? selectedUnit
                 : null;
 
@@ -159,7 +170,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
           id: widget.recipeIngredientId ?? IdGenerator.generateId(),
           recipeId: widget.recipe.id,
           ingredientId: _selectedIngredient!.id,
-          quantity: double.parse(_quantityController.text),
+          quantity: quantity,
           notes: _notesController.text.isEmpty ? null : _notesController.text,
           unitOverride: unitOverride,
         );
@@ -317,7 +328,16 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                           labelText:
                               AppLocalizations.of(context)!.categoryLabel,
                         ),
-                        items: _categories.map((category) {
+                        items: (_categories.toList()
+                              ..sort((a, b) {
+                                if (a == IngredientCategory.other) return 1;
+                                if (b == IngredientCategory.other) return -1;
+                                return SortingUtils.normalizeForSorting(
+                                        a.getLocalizedDisplayName(context))
+                                    .compareTo(SortingUtils.normalizeForSorting(
+                                        b.getLocalizedDisplayName(context)));
+                              }))
+                            .map((category) {
                           return DropdownMenuItem(
                             value: category,
                             child: Text(
@@ -460,56 +480,110 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                     ],
                     const SizedBox(height: 16),
 
-                    // Quantity and Unit Section
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Quantity Field
-                        Expanded(
-                          child: TextFormField(
-                            key: const Key('add_ingredient_quantity_field'),
-                            controller: _quantityController,
-                            decoration: InputDecoration(
-                              labelText: AppLocalizations.of(context)!.quantity,
-                                ),
-                            keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return AppLocalizations.of(context)!
-                                    .pleaseEnterQuantity;
-                              }
-                              if (double.tryParse(value) == null) {
-                                return AppLocalizations.of(context)!
-                                    .pleaseEnterValidNumber;
-                              }
-                              return null;
-                            },
+                    // Quantity / Unit row OR "to taste" chip
+                    if (_isToTaste) ...[
+                      // Active "to taste" chip — tap × to restore fields
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: InputChip(
+                          key: const Key('add_ingredient_to_taste_chip'),
+                          label:
+                              Text(AppLocalizations.of(context)!.toTaste),
+                          avatar: const Icon(Icons.check, size: 16),
+                          deleteIcon: const Icon(
+                            Icons.cancel,
+                            key: Key('add_ingredient_to_taste_delete'),
+                            size: 18,
                           ),
+                          onDeleted: () {
+                            setState(() {
+                              _isToTaste = false;
+                            });
+                          },
+                          deleteIconColor:
+                              Theme.of(context).colorScheme.onSurface,
                         ),
-                        const SizedBox(width: 16),
-                        // Unit Section
-                        Expanded(
-                          child: _isCustomIngredient
-                              // Custom ingredient: optional unit selection
-                              ? DropdownButtonFormField<String>(
-                                  key: const Key(
-                                      'add_ingredient_custom_unit_field'),
-                                  initialValue: _selectedUnitOverride,
-                                  decoration: InputDecoration(
-                                    labelText: AppLocalizations.of(context)!
-                                        .unitOptional,
-                                            ),
-                                  isExpanded: true,
-                                  items: [
-                                    DropdownMenuItem(
-                                      value: null,
-                                      child: Text(
-                                        AppLocalizations.of(context)!.noUnit,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
+                      ),
+                    ] else ...[
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Quantity Field
+                          Expanded(
+                            child: TextFormField(
+                              key: const Key('add_ingredient_quantity_field'),
+                              controller: _quantityController,
+                              decoration: InputDecoration(
+                                labelText:
+                                    AppLocalizations.of(context)!.quantity,
+                              ),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                      decimal: true),
+                              validator: (value) {
+                                if (_isToTaste) return null;
+                                if (value == null || value.isEmpty) {
+                                  return AppLocalizations.of(context)!
+                                      .pleaseEnterQuantity;
+                                }
+                                if (double.tryParse(value) == null) {
+                                  return AppLocalizations.of(context)!
+                                      .pleaseEnterValidNumber;
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          // Unit Section
+                          Expanded(
+                            child: _isCustomIngredient
+                                // Custom ingredient: optional unit selection
+                                ? DropdownButtonFormField<String>(
+                                    key: const Key(
+                                        'add_ingredient_custom_unit_field'),
+                                    initialValue: _selectedUnitOverride,
+                                    decoration: InputDecoration(
+                                      labelText: AppLocalizations.of(context)!
+                                          .unitOptional,
                                     ),
-                                    ..._units.map((unit) {
+                                    isExpanded: true,
+                                    items: [
+                                      DropdownMenuItem(
+                                        value: null,
+                                        child: Text(
+                                          AppLocalizations.of(context)!.noUnit,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      ..._units.map((unit) {
+                                        return DropdownMenuItem(
+                                          value: unit.value,
+                                          child: Text(
+                                            unit.getLocalizedDisplayName(
+                                                context),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        );
+                                      }),
+                                    ],
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _selectedUnitOverride = value;
+                                      });
+                                    },
+                                  )
+                                // Database ingredient: always show dropdown, pre-filled with default
+                                : DropdownButtonFormField<String>(
+                                    key: const Key('add_ingredient_unit_field'),
+                                    initialValue: _selectedUnitOverride ??
+                                        _selectedIngredient?.unit?.value,
+                                    decoration: InputDecoration(
+                                      labelText:
+                                          AppLocalizations.of(context)!.unit,
+                                    ),
+                                    isExpanded: true,
+                                    items: _units.map((unit) {
                                       return DropdownMenuItem(
                                         value: unit.value,
                                         child: Text(
@@ -517,42 +591,33 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       );
-                                    }),
-                                  ],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _selectedUnitOverride = value;
-                                    });
-                                  },
-                                )
-                              // Database ingredient: always show dropdown, pre-filled with default
-                              : DropdownButtonFormField<String>(
-                                  key: const Key('add_ingredient_unit_field'),
-                                  initialValue: _selectedUnitOverride ??
-                                      _selectedIngredient?.unit?.value,
-                                  decoration: InputDecoration(
-                                    labelText:
-                                        AppLocalizations.of(context)!.unit,
-                                            ),
-                                  isExpanded: true,
-                                  items: _units.map((unit) {
-                                    return DropdownMenuItem(
-                                      value: unit.value,
-                                      child: Text(
-                                        unit.getLocalizedDisplayName(context),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    );
-                                  }).toList(),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _selectedUnitOverride = value;
-                                    });
-                                  },
-                                ),
+                                    }).toList(),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _selectedUnitOverride = value;
+                                      });
+                                    },
+                                  ),
+                          ),
+                        ],
+                      ),
+                      // "To taste" shortcut chip below the quantity/unit row
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: ActionChip(
+                          key: const Key('add_ingredient_to_taste_toggle'),
+                          label:
+                              Text(AppLocalizations.of(context)!.toTaste),
+                          avatar: const Icon(Icons.auto_awesome, size: 14),
+                          onPressed: () {
+                            setState(() {
+                              _isToTaste = true;
+                            });
+                          },
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
 
                     const SizedBox(height: 16),
                     // Notes Field

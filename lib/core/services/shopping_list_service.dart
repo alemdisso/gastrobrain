@@ -403,13 +403,31 @@ class ShoppingListService {
           continue;
         }
 
-        // 4. For each recipe, get its ingredients
+        // 4. For each recipe, get its ingredients and scale by servings
         for (final mealPlanItemRecipe in item.mealPlanItemRecipes!) {
           final ingredients =
               await dbHelper.getRecipeIngredients(mealPlanItemRecipe.recipeId);
 
-          // 5. Add each ingredient to our list
-          allIngredients.addAll(ingredients);
+          // 5. Compute scaling factor: plannedServings / recipe.servings.
+          //    Guard against recipe.servings = 0 to avoid Infinity quantities.
+          final recipe =
+              await dbHelper.getRecipe(mealPlanItemRecipe.recipeId);
+          final recipeServings = recipe?.servings ?? 0;
+          final scalingFactor = recipeServings > 0
+              ? item.plannedServings / recipeServings
+              : 1.0;
+
+          // 6. Apply scaling factor before aggregation so quantities
+          //    combine correctly across meals.
+          //    toTaste items (quantity = 0) are unaffected: 0 × factor = 0.
+          final scaledIngredients = ingredients.map((ingredient) {
+            return {
+              ...ingredient,
+              'quantity': (ingredient['quantity'] as double) * scalingFactor,
+            };
+          }).toList();
+
+          allIngredients.addAll(scaledIngredients);
         }
       }
     }

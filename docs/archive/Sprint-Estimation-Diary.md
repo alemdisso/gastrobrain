@@ -1321,6 +1321,216 @@ Feb 15: █░░░░░░░  #271 meal slot (0.10 days — quick simplifica
 
 ---
 
+### 0.1.10 - Landing Page & Polish
+
+**Sprint Duration:** February 16–18, 2026
+**Calendar Days:** 3
+**Active Working Days:** 2 (Feb 17–18; Feb 16 was planning + 0.1.9 retro)
+**Planned Issues:** 4 (13 points; 19 additional points scoped but deferred)
+**Completed Issues:** 4 planned
+
+#### Estimation vs Actual
+
+| Issue | Title | Type | Est Points | Weighted Actual | Ratio | Assessment |
+|-------|-------|------|------------|-----------------|-------|------------|
+| #134 | Landing page MVP | New feature | 5 | 1.00 | 0.20x | ⚡ Faster |
+| #149 | Unit pluralization | UI enhancement | 3 | 0.40 | 0.13x | ⚡ Faster |
+| #293 | Shopping list unit conversions | Enhancement | 3 | 0.40 | 0.13x | ⚡ Faster |
+| #294 | Category select/deselect | UX | 2 | 0.20 | 0.10x | ⚡ Faster |
+| **TOTAL** | | | **13** | **2.00** | **0.15x** | ⚡ |
+
+#### Accuracy by Type (Weighted)
+
+| Type | Issues | Est Total | Weighted Actual | Avg Ratio | Verdict |
+|------|--------|-----------|-----------------|-----------|---------|
+| New feature | #134 | 5 | 1.00 | 0.20x | ⚡ Fast — clear MVP scope, well-defined requirements |
+| UI/enhancement (batched) | #149, #293, #294 | 8 | 1.00 | 0.13x | ⚡ Fast — same-domain batch, established patterns |
+
+#### Variance Analysis
+
+**Fastest: #294 (Category select, 0.10x)** — Estimated: 2 points → Actual: ~0.20 days
+- Small UX addition in the shopping list refinement screen
+- Context already warm from adjacent #149 and #293 work
+- Lesson: Last issue in a same-domain batch benefits from fully warmed context
+
+**Consistent: #134 (Landing page, 0.20x)** — Estimated: 5 points → Actual: ~1.00 day
+- Largest issue, given its own uninterrupted day (Feb 17)
+- Well-defined MVP scope: dashboard with quick actions and recent activity
+- No discovery overhead — clear acceptance criteria established on planning day
+- Lesson: A single focused day for the anchor feature avoids context fragmentation
+
+**Batch day: #149 + #293 + #294 (8 pts, 0.13x avg)** — all three completed Feb 18
+- All touch the ingredient/shopping list display layer — shared mental model
+- Sequential execution with no context switching
+- Combined scope was clear from the planning day
+- Lesson: Same-domain batching on one day multiplies efficiency
+
+#### Working Pattern Observations
+
+```
+Feb 16: ░░░░░░░░  Planning day — 0.1.9 retro + 0.1.10 scope decisions (no commits)
+Feb 17: ████████  #134 landing page (1.0 day)
+Feb 18: ████████  #149 unit pluralization + #293 unit conversions + #294 category select (1.0 day)
+```
+
+**Patterns:**
+- Planning day (Feb 16) structured the sprint so execution days were unambiguous
+- Two clean execution days with no context switching or scope exploration
+- 19 additional points (#292, #263, #268, #285) deliberately deferred — scope discipline enabled clean execution
+
+#### Lessons Learned
+
+1. **Pre-sprint scope decisions eliminate execution overhead**
+   - Feb 16 was a dedicated planning day: zero commits, maximum value
+   - All four issues had clear acceptance criteria and sequencing before day 1
+   - No mid-sprint scope questions — full flow from the first commit
+   - **Lesson: A planning day before execution pays for itself within the first hour of day 1**
+
+2. **Scope discipline is a velocity multiplier**
+   - Original milestone had 32 points; 13 were selected, 19 deliberately deferred
+   - Delivering 13 well-chosen points in 2 days beats delivering 32 points in 10+ days
+   - Deferred issues were technical/docs (#292, #263, #268, #285) — not user-facing
+   - **Lesson: Scope discipline isn't underdelivering; it's optimizing for execution clarity**
+
+3. **Anchor issue alone on Day 1 prevents fragmentation**
+   - #134 (5 pts) occupied all of Feb 17 — no parallel issues, no context switches
+   - Full-day focus enabled design → implementation → test in one session
+   - **Lesson: Give the sprint's anchor feature its own uninterrupted day**
+
+4. **Same-domain batch day compounds efficiency**
+   - Three issues (#149, #293, #294) share the shopping list/ingredient display layer
+   - Mental model stays fully warm; each issue builds directly on the previous
+   - Combined 8 pts in ~1 day (0.13x average)
+   - **Lesson: Group same-domain issues on the same day — 0.10-0.13x is achievable**
+
+#### Recommendations for Future Sprints
+
+| Finding | Adjustment |
+|---------|------------|
+| Planning day investment pays off in execution clarity | Reserve first day of sprint cycle for scope decisions, not code |
+| Scope discipline (select 13 of 32 pts) enables 0.15x ratio | Prefer smaller well-chosen scope over comprehensive scope |
+| Anchor issue benefits from solo day | Schedule sprint's largest issue on its own uninterrupted day |
+| Same-domain batch day executes at 0.10-0.13x | Group thematically related issues for maximum batch efficiency |
+
+#### Notes
+
+- Sprint delivered 13 points in 2 active days (~6.5 pts/day, ~32 pts/week)
+- Consistent with recent cruising velocity of ~30 pts/week
+- 19 deferred points (#292, #263, #268, #285) moved to backlog — correctly scoped out as non-essential for user-facing sprint goal
+- Feb 16 planning investment produced zero commits but was critical for Feb 17–18 execution clarity
+
+---
+
+### 0.1.11 - Shopping List Corrections
+
+**Sprint Duration:** February 19–25, 2026
+**Calendar Days:** 7
+**Active Working Days:** 3 (Feb 21, 24, 25; Feb 19–20 were app usage + issue discovery days)
+**Planned Issues:** 6 (14 points)
+**Completed Issues:** 6 planned + ~4 unplanned (new categories, status bar fix, idempotent migrations, e2e stability)
+
+#### Estimation vs Actual
+
+| Issue | Title | Type | Est Points | Weighted Actual | Ratio | Assessment |
+|-------|-------|------|------------|-----------------|-------|------------|
+| #302 | Simplify filter chips | UX fix | 2 | 0.40 | 0.20x | ⚡ Faster |
+| #297 | Remove toTaste alert icon | UX fix | 1 | 0.30 | 0.30x | ⚡ Faster |
+| #299 | Hide past-week shopping FAB | UX fix | 1 | 0.30 | 0.30x | ⚡ Faster |
+| #298 | Fix Android nav bar overlap | Bug fix | 2 | 0.20 | 0.10x | ⚡ Faster |
+| #300 | Cooked meals in shopping list | Bug fix | 3 | 0.30 | 0.10x | ⚡ Faster |
+| #301 | Stale banner on meal cook | Bug fix | 5 | 0.50 | 0.10x | ⚡ Faster |
+| *Unplanned* | Categories, migrations, e2e, status bar | Various | — | ~0.50 | — | 📋 Unplanned |
+| **TOTAL (planned)** | | | **14** | **2.50** | **0.18x** | ⚡ |
+
+#### Accuracy by Type (Weighted)
+
+| Type | Issues | Est Total | Weighted Actual | Avg Ratio | Verdict |
+|------|--------|-----------|-----------------|-----------|---------|
+| UX fixes (small) | #302, #297, #299 | 4 | 1.00 | 0.25x | ⚡ Fast — small UI changes, established patterns |
+| Bug fixes (post-usage) | #298, #300, #301 | 10 | 1.00 | 0.10x | ⚡ Very fast — root causes clear from usage testing |
+| Unplanned | categories, migrations, e2e | ~6 | ~0.50 | — | 📋 Real-life QA overflow |
+
+#### Variance Analysis
+
+**Fastest class: #298, #300, #301 (logic/observer bugs, 0.10x each)** — combined 10 pts in ~1 day
+- All three bugs discovered during Feb 19–20 intensive app usage
+- Root cause was already known before opening the editor — no debugging phase
+- Fix paths were direct: logic gate for cooked meals, observer notification for stale banner, edge padding for nav bar
+- Lesson: Bugs caught by real usage have the clearest root causes — no reproduction guesswork
+
+**Unplanned work absorbed cleanly** — ~0.5 days for ~6 pts of untracked work
+- New categories (Herb, Pickles/Fermented): trivial enum + l10n additions
+- Status bar overlap: single-line layout fix
+- Idempotent migrations: correctness fix surfaced by e2e tests (#134 nav restructuring spillover)
+- e2e stability: `tapSaveButton` scroll reliability + tab navigation tests updated for #134 nav
+- All surfaced naturally from testing/usage — not scope creep
+
+#### Working Pattern Observations
+
+```
+Feb 19–20: ░░░░░░░░  App usage + issue triage (no commits — discovery investment)
+Feb 21:    ████████  #302 filter chips + #297 alert icon + #299 past-week FAB (1.0 day)
+Feb 22–23: ░░░░░░░░  Weekend
+Feb 24:    ████████  #298 nav bar + #300 cooked meals + #301 stale banner (1.0 day)
+Feb 25:    ████░░░░  Idempotent migrations + e2e test stability + release (0.5 day)
+```
+
+**Patterns:**
+- Discovery phase (Feb 19–20) front-loaded all issue identification — execution days had zero scope uncertainty
+- Two clean batch days: UX fixes (Feb 21) and logic bugs (Feb 24), both at ~1 day each
+- Feb 25 was a testing/stability cleanup day — unplanned but necessary before release
+- The "use app → discover → batch fix" cycle executed efficiently and cleanly
+
+#### Lessons Learned
+
+1. **The "Real-life QA sprint" is a distinct and valuable sprint type**
+   - Pattern: intensive personal app usage (2 days) → issue discovery → batch fix execution
+   - Discovery phase looks like "wasted days" in commit data but produces the clearest issue specifications
+   - When you discover a bug by hitting it yourself, root cause is already understood
+   - **Lesson: Budget app usage days as productive sprint investment, not idle time**
+
+2. **Real usage surfaces correctness bugs invisible to code review**
+   - #300 (cooked meals in shopping list) and #301 (stale banner) required a complete meal planning → cooking → shopping workflow to discover
+   - Both had immediate fix clarity because the usage context explained the exact failure mode
+   - **Lesson: Scheduled "use the app" sessions are a form of integration testing — add to sprint planning**
+
+3. **Post-usage bug fixes execute at 0.10x regardless of point estimate**
+   - #300 (3 pts) + #301 (5 pts) + #298 (2 pts) = 10 pts in ~1 day
+   - No exploratory debugging phase — straight to fix
+   - The Fibonacci estimate reflects *potential* complexity, not *actual* complexity when root cause is known
+   - **Lesson: Post-usage bugs → use 0.10x multiplier; batch them on a single day**
+
+4. **Unplanned correctness work is a healthy post-release pattern**
+   - ~6 pts of unplanned work absorbed with ~0.5 days overhead
+   - Surfaced naturally from testing — not scope creep
+   - Consistent with historical 20-30% unplanned budget
+   - **Lesson: Always reserve 25-30% sprint capacity for post-release correctness overflow**
+
+5. **Idempotent migrations belong in the definition of done**
+   - e2e tests failing revealed non-idempotent migrations — a correctness issue, not a feature
+   - Should have been caught before merging any migration
+   - **Lesson: Migration idempotency is a baseline requirement; add to PR checklist**
+
+#### Recommendations for Future Sprints
+
+| Finding | Adjustment |
+|---------|------------|
+| Real-life QA sprint yields 0.15-0.25x ratio | Classify as "execution mode" sprint following a major UX/feature release |
+| App usage days precede issue discovery | Schedule at least 1-2 usage days after each release before next sprint start |
+| Post-usage bugs execute at 0.10x | Apply 0.10x multiplier to all bug sprint issues with known root cause |
+| Unplanned correctness work ~30% | Maintain 25-30% buffer for post-release QA overflow |
+| Idempotent migrations baseline | Add to migration definition of done; verify in e2e tests |
+
+#### Notes
+
+- Sprint delivered 14 planned + ~6 unplanned points in 3 active days (~6.3 pts/day, ~28 pts/week for planned work)
+- Slightly below cruising velocity (30 pts/week) because Feb 25 was mixed: release + e2e debugging, not pure execution
+- Feb 19–20 usage investment: zero commits but maximum issue clarity — essential setup for the fast execution days
+- "Real-life QA sprint" pattern confirmed as a repeatable sprint type distinct from feature or refactor sprints
+- Idempotent migrations spillover from #134 nav restructuring fully resolved; e2e suite now stable
+
+---
+
 ## Cumulative Metrics
 
 ### Estimation Accuracy Trend
@@ -1336,19 +1546,24 @@ Feb 15: █░░░░░░░  #271 meal slot (0.10 days — quick simplifica
 | 0.1.7b | 43 | 6.69 | 0.16x | 6.43 | Design system application + efficient batching |
 | 0.1.8 | 25 | 3.35 | 0.13x | 7.14 | Small UX fixes + pattern-extension testing |
 | 0.1.9 | 18 | 1.41 | 0.34x | 9.0 | UX simplification, mono-theme, extended hours |
+| 0.1.10 | 13 | 2.00 | 0.15x | 6.5 | Pre-sprint scope clarity, anchor feature day, same-domain batch |
+| 0.1.11 | 14 | 2.50 | 0.18x | 5.6 | Real-life QA sprint: usage discovery → batch fix |
 
 *\* 0.1.7a weighted-days methodology underrepresents actual effort due to shared day with 0.1.7b. Developer estimates ~0.5 days actual effort. Excluded from velocity calculations.*
 
 **Critical Insights:**
-- **Cruising velocity: 30 points/week** — revised upward from 20 based on sustained acceleration across 0.1.7b-0.1.9 (3 consecutive sprints at 32-36 pts/week)
-- **Velocity step-change confirmed** — early sprints (0.1.2-0.1.6) averaged 1.1-3.0 pts/day; recent sprints (0.1.7b-0.1.9) sustain 6.4-9.0 pts/day. This reflects genuine acceleration from codebase maturity, Claude Code acceleration, accumulated infrastructure (test helpers, design tokens), and developer proficiency — not just sprint profile inflation
-- **Sprint ratio depends heavily on work type** - Can't use one sprint to predict another
+- **Cruising velocity: 30 points/week** — validated across 0.1.7b–0.1.11 (5 consecutive sprints at 28-36 pts/week)
+- **Velocity step-change confirmed** — early sprints (0.1.2-0.1.6) averaged 1.1-3.0 pts/day; recent sprints (0.1.7b-0.1.11) sustain 5.6-9.0 pts/day. Genuine acceleration from codebase maturity, Claude Code, accumulated infrastructure, and developer proficiency
+- **Sprint ratio depends heavily on work type** — Can't use one sprint to predict another
 - **Velocity modes**: "Discovery mode" (~20 pts/week) vs "Cruising mode" (~30 pts/week) vs "Execution mode" (~36 pts/week)
-- **Hidden overhead is CRITICAL** - Tooling/environment issues added 29% to 0.1.5 (2 full days)
-- **Well-specified features are fast** - 0.1.6 showed 0.33x ratio with detailed specs
-- **First-screen polish vs follow-up is 8x difference** - The first screen investment creates patterns that compound
+- **Hidden overhead is CRITICAL** — Tooling/environment issues added 29% to 0.1.5 (2 full days)
+- **Well-specified features are fast** — 0.1.6 showed 0.33x ratio with detailed specs
+- **First-screen polish vs follow-up is 8x difference** — The first screen investment creates patterns that compound
 - **Healthy UX feedback loops add ~25-30% emergent work** — budget for this, it's a feature not a bug
 - **Small UX fixes inflate velocity partially** — 0.1.8's 0.13x ratio partly driven by 1-point floor, but also reflects genuine speed gains
+- **Scope discipline (0.1.10) is as powerful as execution skill** — selecting 13 of 32 available points enabled 0.15x execution; the deferred 19 points would have diluted focus without user-facing benefit
+- **"Real-life QA sprint" is a distinct sprint type (0.1.11)** — intensive app usage → issue discovery → batch fix; expect 0.15-0.25x ratio, ~28 pts/week; app usage days are not wasted, they're the specification phase
+- **Post-usage bugs execute at 0.10x** — root cause is known before the editor opens; no debugging phase needed
 
 ### Type-Based Calibration Factors
 
@@ -1374,6 +1589,7 @@ Use these multipliers when estimating future work:
 | Small UX fixes (batched) | 6 issues | 0.07x | 0.05-0.1x | **NEW**: 1-point floor inflates; batch for efficiency (0.1.8: #272-#278) |
 | Flaky test investigation | 2 issues | 0.25x | 0.2-0.3x | **NEW**: Time-box at 2 hours; root cause often external (0.1.8: #289-#290) |
 | UX redesign (simplification) | 3 issues | 0.34x | 0.3-0.5x | **NEW**: Net code deletion, clear vision, no discovery (0.1.9: #279, #271, #280) |
+| Bug fixes (post-usage, known root cause) | 3 issues | 0.10x | 0.1x | **NEW**: Root cause known from usage; no debugging phase; batch on one day (0.1.11: #298, #300, #301) |
 
 **Key Insights from 0.1.7a/b:**
 - **Design system work has its own velocity profile** — 64 points in 7 days (0.11x) reflects both new-type overestimation AND genuine efficiency from clear vision, compound patterns, and effective batching
@@ -1395,6 +1611,18 @@ Use these multipliers when estimating future work:
 - **Mono-theme sprints with natural sequencing are faster** — all 3 issues shared the meal planning area; color system → components → flow
 - **Linked issues estimated separately overstate work** — #277 (5 pts) absorbed by #280 at zero marginal cost; #288 (3 pts) made irrelevant
 - **Velocity step-change is real** — 3 consecutive sprints (0.1.7b-0.1.9) at 32-36 pts/week; driven by codebase maturity, Claude Code, and accumulated infrastructure
+
+**Key Insights from 0.1.10:**
+- **Pre-sprint scope discipline is as powerful as execution skill** — selecting 13 of 32 available points enabled clean 2-day execution; the deferred 19 points (#292, #263, #268, #285) would have diluted focus without user-facing benefit
+- **Planning day investment (no commits) pays for itself in execution clarity** — Feb 16 produced no code but eliminated all scope questions for Feb 17–18
+- **Anchor feature needs its own uninterrupted day** — #134 solo on Feb 17 completed design → implementation → test in one flow session
+- **Same-domain batch day reliably executes at 0.10-0.13x** — three issues sharing the ingredient/shopping layer completed together at 0.13x average
+
+**Key Insights from 0.1.11:**
+- **"Real-life QA sprint" is a repeatable sprint type** — intensive personal app usage (2 days) → clear issue discovery → batch fix execution; expect 0.15-0.25x, ~28 pts/week
+- **Post-usage bugs execute at 0.10x regardless of point estimate** — root cause is known before the editor opens; #300 (3 pts) + #301 (5 pts) + #298 (2 pts) all at 0.10x
+- **App usage days are a specification phase, not idle time** — Feb 19–20 with zero commits produced the clearest possible issue specs for Feb 21 and 24 execution
+- **Idempotent migrations are a non-negotiable baseline** — add to migration definition of done; e2e tests are the safety net that catches violations
 
 ---
 
@@ -1449,10 +1677,12 @@ Use historical velocity data to size future milestones and prevent overcommitmen
 | 0.1.7b | 43 | 6.69 | 6.43 | 32.1 | Design system application + efficient batching |
 | 0.1.8 | 25 | 3.5 | 7.14 | 35.7 | Small UX fixes + pattern-extension testing |
 | 0.1.9 | 18 | 2 | 9.00 | 36.0 | UX simplification, mono-theme, extended hours |
+| 0.1.10 | 13 | 2 | 6.50 | 32.5 | Pre-sprint scope clarity, anchor feature day, same-domain batch |
+| 0.1.11 | 14 | 2.5 | 5.60 | 28.0 | Real-life QA sprint: usage discovery + batch fix |
 
 *\* 0.1.7a excluded from velocity calculations — shared day with 0.1.7b makes weighted-days unreliable.*
 
-**Cruising Velocity: 30 points/week** — revised upward from 20 based on sustained acceleration across 0.1.7b-0.1.9 (3 consecutive sprints at 32-36 pts/week). To be validated with next sprint.
+**Cruising Velocity: 30 points/week** — validated across 0.1.7b–0.1.11 (5 consecutive sprints at 28-36 pts/week).
 
 **Velocity Modes:**
 - **Discovery mode:** ~20 pts/week (new patterns, complex features, tooling overhead)
@@ -1591,3 +1821,14 @@ Use historical velocity data to size future milestones and prevent overcommitmen
   - 0.1.7a remains flagged as unreliable data (shared day methodology issue)
   - Updated all milestone sizing guidelines and velocity reference data
   - Fixed `scripts/gh-project-issue.sh` limit from 200 to 500 (project now has 266+ items)
+- **2026-02-25**: Added 0.1.10 and 0.1.11 retrospective analyses (combined — 0.1.10 review was missed at release time)
+  - 0.1.10 completed: 4 issues (13 points) in 2 active days (2.00 weighted days, 0.15x ratio)
+  - Scope discipline: selected 13 of 32 available points; deferred #292, #263, #268, #285 intentionally
+  - Planning day (Feb 16, no commits) structured clean 2-day execution
+  - New pattern: anchor feature solo day + same-domain batch day = most efficient feature sprint structure
+  - 0.1.11 completed: 6 planned issues (14 points) + ~4 unplanned in 3 active days (2.50 weighted days, 0.18x ratio)
+  - **NEW SPRINT TYPE: "Real-life QA sprint"** — intensive app usage (Feb 19-20) → issue discovery → batch fix execution
+  - Post-usage bugs executed at 0.10x across all three bug issues (#298, #300, #301)
+  - New calibration factor: post-usage bug fixes (0.10x, flat rate regardless of estimate)
+  - Idempotent migrations identified as non-negotiable baseline; added to definition of done recommendation
+  - Cruising velocity (30 pts/week) validated across 5 consecutive sprints (0.1.7b–0.1.11)

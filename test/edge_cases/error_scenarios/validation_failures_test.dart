@@ -495,20 +495,14 @@ void main() {
         );
       });
 
-      test('validateRecipeIngredient throws when quantity is zero', () {
+      test('validateRecipeIngredient accepts zero quantity (to taste)', () {
         expect(
           () => EntityValidator.validateRecipeIngredient(
             ingredientId: IdGenerator.generateId(),
             recipeId: IdGenerator.generateId(),
             quantity: 0.0,
           ),
-          throwsA(
-            isA<ValidationException>().having(
-              (e) => e.message,
-              'message',
-              'Quantity must be greater than zero',
-            ),
-          ),
+          returnsNormally,
         );
       });
 
@@ -519,7 +513,13 @@ void main() {
             recipeId: IdGenerator.generateId(),
             quantity: -1.0,
           ),
-          throwsA(isA<ValidationException>()),
+          throwsA(
+            isA<ValidationException>().having(
+              (e) => e.message,
+              'message',
+              'Quantity cannot be negative',
+            ),
+          ),
         );
       });
 

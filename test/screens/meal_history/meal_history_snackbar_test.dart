@@ -144,11 +144,11 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
-      // 4. Make a simple change
-      await tester.enterText(
-        find.byKey(const Key('edit_meal_recording_servings_field')),
-        '5',
-      );
+      // 4. Make a simple change (tap + 2 times to go from 3 → 5)
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pumpAndSettle();
 
       // 5. Save changes
       await tester.tap(find.text('Save Changes'));
@@ -220,11 +220,11 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
-      // 4. Make a simple change
-      await tester.enterText(
-        find.byKey(const Key('edit_meal_recording_servings_field')),
-        '5',
-      );
+      // 4. Make a simple change (tap + 2 times to go from 3 → 5)
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pumpAndSettle();
 
       // 5. Save changes
       await tester.tap(find.text('Save Changes'));
@@ -307,10 +307,11 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
-      await tester.enterText(
-        find.byKey(const Key('edit_meal_recording_servings_field')),
-        '10',
-      );
+      // Tap + 2 times to go from 2 → 4 (meal1; pump after each tap)
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('Save Changes'));
       await tester.pump(const Duration(milliseconds: 500));
@@ -322,10 +323,11 @@ void main() {
       await tester.tap(find.text('Edit'));
       await tester.pumpAndSettle();
 
-      await tester.enterText(
-        find.byKey(const Key('edit_meal_recording_servings_field')),
-        '8',
-      );
+      // Tap + 2 times to go from 3 → 5 (meal2; pump after each tap)
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('Save Changes'));
       await tester.pump(const Duration(seconds: 1));
@@ -342,9 +344,9 @@ void main() {
       final updatedMeal1 = await mockDbHelper.getMeal(meal1.id);
       final updatedMeal2 = await mockDbHelper.getMeal(meal2.id);
 
-      expect(updatedMeal1!.servings, 10,
+      expect(updatedMeal1!.servings, 4,
           reason: 'First meal should be updated despite rapid edits');
-      expect(updatedMeal2!.servings, 8,
+      expect(updatedMeal2!.servings, 5,
           reason: 'Second meal should be updated despite rapid edits');
     });
   });
@@ -393,10 +395,11 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
-      await tester.enterText(
-        find.byKey(const Key('edit_meal_recording_servings_field')),
-        '5',
-      );
+      // Tap + 2 times to go from 3 → 5 (pump after each tap to apply setState)
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('Save Changes'));
 

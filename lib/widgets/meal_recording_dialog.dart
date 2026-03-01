@@ -7,6 +7,7 @@ import '../core/validators/entity_validator.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/sorting_utils.dart';
 import 'package:intl/intl.dart';
+import 'servings_stepper.dart';
 
 class MealRecordingDialog extends StatefulWidget {
   final Recipe primaryRecipe;
@@ -15,6 +16,7 @@ class MealRecordingDialog extends StatefulWidget {
   final String? notes;
   final bool allowRecipeChange;
   final DatabaseHelper? databaseHelper;
+  final int? plannedServings;
 
   const MealRecordingDialog({
     super.key,
@@ -24,6 +26,7 @@ class MealRecordingDialog extends StatefulWidget {
     this.notes,
     this.allowRecipeChange = true,
     this.databaseHelper,
+    this.plannedServings,
   });
 
   @override
@@ -33,9 +36,9 @@ class MealRecordingDialog extends StatefulWidget {
 class _MealRecordingDialogState extends State<MealRecordingDialog> {
   final _formKey = GlobalKey<FormState>();
   final _notesController = TextEditingController();
-  final _servingsController = TextEditingController(text: '1');
   final _prepTimeController = TextEditingController();
   final _cookTimeController = TextEditingController();
+  int _servings = 4;
   bool _wasSuccessful = true;
   DateTime _cookedAt = DateTime.now();
 
@@ -51,6 +54,10 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
 
     // Initialize database helper using dependency injection
     _dbHelper = widget.databaseHelper ?? DatabaseHelper();
+
+    // Set initial servings: plannedServings → recipe.servings → 4
+    final initial = widget.plannedServings ?? widget.primaryRecipe.servings;
+    _servings = initial > 0 ? initial : 4;
 
     // Pre-fill with recipe's expected times
     _prepTimeController.text = widget.primaryRecipe.prepTimeMinutes.toString();
@@ -217,9 +224,6 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
         recipeIds: allRecipeIds,
       );
 
-      final servings = int.parse(_servingsController.text);
-      EntityValidator.validateServings(servings);
-
       final prepTime = double.tryParse(_prepTimeController.text);
       final cookTime = double.tryParse(_cookTimeController.text);
 
@@ -229,7 +233,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
       // Return the meal data to the caller
       Navigator.of(context).pop({
         'cookedAt': _cookedAt,
-        'servings': servings,
+        'servings': _servings,
         'notes': _notesController.text,
         'wasSuccessful': _wasSuccessful,
         'actualPrepTime': prepTime ?? 0.0,
@@ -248,7 +252,6 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
   @override
   void dispose() {
     _notesController.dispose();
-    _servingsController.dispose();
     _prepTimeController.dispose();
     _cookTimeController.dispose();
     super.dispose();
@@ -287,24 +290,10 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
               const SizedBox(height: 12),
 
               // Servings
-              TextFormField(
-                key: const Key('meal_recording_servings_field'),
-                controller: _servingsController,
-                decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context)!.numberOfServings,
-                        prefixIcon: const Icon(Icons.people),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return AppLocalizations.of(context)!
-                        .pleaseEnterNumberOfServings;
-                  }
-                  if (int.tryParse(value) == null || int.parse(value) < 1) {
-                    return AppLocalizations.of(context)!.pleaseEnterValidNumber;
-                  }
-                  return null;
-                },
+              ServingsStepper(
+                key: const Key('meal_recording_servings_stepper'),
+                value: _servings,
+                onChanged: (v) => setState(() => _servings = v),
               ),
               const SizedBox(height: 12),
 

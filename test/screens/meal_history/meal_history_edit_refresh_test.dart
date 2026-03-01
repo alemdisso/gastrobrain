@@ -151,12 +151,11 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
-      // 5. Change servings
-      await tester.enterText(
-        find.byKey(const Key('edit_meal_recording_servings_field')),
-        '4',
-      );
-      await tester.pump(); // Allow text to be processed
+      // 5. Tap + 2 times to go from 2 → 4 (pump after each tap to apply setState)
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pumpAndSettle();
 
       // 6. Save changes
       await tester.tap(find.text('Save Changes'));
@@ -220,10 +219,12 @@ void main() {
       await tester.pumpAndSettle();
 
       // 4. Edit multiple fields
-      await tester.enterText(
-        find.byKey(const Key('edit_meal_recording_servings_field')),
-        '5',
-      );
+      // Tap + 3 times to go from 2 → 5 (pump after each tap to apply setState)
+      for (var i = 0; i < 3; i++) {
+        await tester.tap(find.byKey(const Key('servings_increment_button')));
+        await tester.pump();
+      }
+      await tester.pumpAndSettle();
 
       await tester.enterText(
         find.byKey(const Key('edit_meal_recording_notes_field')),
@@ -307,10 +308,12 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
-      await tester.enterText(
-        find.byKey(const Key('edit_meal_recording_servings_field')),
-        '6',
-      );
+      // Tap + 3 times to go from 3 → 6 (pump after each tap to apply setState)
+      for (var i = 0; i < 3; i++) {
+        await tester.tap(find.byKey(const Key('servings_increment_button')));
+        await tester.pump();
+      }
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('Save Changes'));
       await tester.pumpAndSettle();
@@ -376,16 +379,18 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
-      await tester.enterText(
-        find.byKey(const Key('edit_meal_recording_servings_field')),
-        '8',
-      );
+      // Tap + 4 times to go from 3 → 7 (setUp testMeal appears first; pump after each tap)
+      for (var i = 0; i < 4; i++) {
+        await tester.tap(find.byKey(const Key('servings_increment_button')));
+        await tester.pump();
+      }
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('Save Changes'));
       await tester.pumpAndSettle();
 
       // 5. Verify UI refreshed correctly with side dishes still shown
-      expect(find.text('8'), findsWidgets,
+      expect(find.text('7'), findsWidgets,
           reason: 'Multi-recipe meal should show updated servings');
       expect(find.text('1 side dish'), findsOneWidget,
           reason: 'Side dish indicator should still be present after edit');

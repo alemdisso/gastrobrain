@@ -743,4 +743,270 @@ void main() {
           reason: 'Cooked meal must be excluded from projections too');
     });
   });
+
+  group('Servings Scaling (#306)', () {
+    final weekStart = DateTime(2026, 3, 10);
+    final weekEnd = DateTime(2026, 3, 16);
+    final weekStartStr = '2026-03-10';
+
+    // Helper: create a recipe with a specific servings value + one ingredient.
+    void setupRecipe(
+      MockDatabaseHelper db, {
+      required String recipeId,
+      required int recipeServings,
+      required String ingredientId,
+      required String ingredientName,
+      required double quantity,
+      required String riId,
+    }) {
+      db.ingredients[ingredientId] = Ingredient(
+        id: ingredientId,
+        name: ingredientName,
+        category: IngredientCategory.vegetable,
+        unit: MeasurementUnit.gram,
+      );
+      db.recipes[recipeId] = Recipe(
+        id: recipeId,
+        name: 'Recipe $recipeId',
+        createdAt: weekStart,
+        servings: recipeServings,
+      );
+      db.recipeIngredients[riId] = RecipeIngredient(
+        id: riId,
+        recipeId: recipeId,
+        ingredientId: ingredientId,
+        quantity: quantity,
+      );
+    }
+
+    // Helper: create a MealPlanItem with a specific plannedServings value.
+    MealPlanItem makeMealPlanItem({
+      required String id,
+      required String mealPlanId,
+      required String recipeId,
+      required int plannedServings,
+    }) {
+      final mpir = MealPlanItemRecipe(
+        id: 'mpir-$id',
+        mealPlanItemId: id,
+        recipeId: recipeId,
+      );
+      return MealPlanItem(
+        id: id,
+        mealPlanId: mealPlanId,
+        plannedDate: weekStartStr,
+        mealType: MealPlanItem.dinner,
+        hasBeenCooked: false,
+        plannedServings: plannedServings,
+        mealPlanItemRecipes: [mpir],
+      );
+    }
+
+    test('factor 1.0 — quantities unchanged when plannedServings == recipe.servings',
+        () async {
+      // Arrange: recipe.servings = 4, plannedServings = 4 → factor = 1.0
+      setupRecipe(dbHelper,
+          recipeId: 'r1', recipeServings: 4,
+          ingredientId: 'i1', ingredientName: 'Tomato',
+          quantity: 200, riId: 'ri1');
+
+      final item = makeMealPlanItem(
+          id: 'mpi1', mealPlanId: 'plan1',
+          recipeId: 'r1', plannedServings: 4);
+
+      dbHelper.mealPlans['plan1'] = MealPlan(
+        id: 'plan1',
+        weekStartDate: weekStart,
+        createdAt: weekStart,
+        modifiedAt: weekStart,
+        items: [item],
+      );
+
+      // Act
+      final list = await service.generateFromDateRange(
+          startDate: weekStart, endDate: weekEnd);
+
+      // Assert: quantity unchanged
+      final items = await dbHelper.getShoppingListItems(list.id!);
+      expect(items.length, 1);
+      expect(items[0].ingredientName, 'Tomato');
+      expect(items[0].quantity, 200.0);
+    });
+
+    test('scale up — quantities doubled when plannedServings = 2× recipe.servings',
+        () async {
+      // Arrange: recipe.servings = 4, plannedServings = 8 → factor = 2.0
+      setupRecipe(dbHelper,
+          recipeId: 'r1', recipeServings: 4,
+          ingredientId: 'i1', ingredientName: 'Flour',
+          quantity: 200, riId: 'ri1');
+
+      final item = makeMealPlanItem(
+          id: 'mpi1', mealPlanId: 'plan1',
+          recipeId: 'r1', plannedServings: 8);
+
+      dbHelper.mealPlans['plan1'] = MealPlan(
+        id: 'plan1',
+        weekStartDate: weekStart,
+        createdAt: weekStart,
+        modifiedAt: weekStart,
+        items: [item],
+      );
+
+      // Act
+      final list = await service.generateFromDateRange(
+          startDate: weekStart, endDate: weekEnd);
+
+      // Assert: quantity doubled
+      final items = await dbHelper.getShoppingListItems(list.id!);
+      expect(items.length, 1);
+      expect(items[0].ingredientName, 'Flour');
+      expect(items[0].quantity, 400.0);
+    });
+
+    test('scale down — quantities halved when plannedServings = ½ recipe.servings',
+        () async {
+      // Arrange: recipe.servings = 4, plannedServings = 2 → factor = 0.5
+      setupRecipe(dbHelper,
+          recipeId: 'r1', recipeServings: 4,
+          ingredientId: 'i1', ingredientName: 'Chicken',
+          quantity: 200, riId: 'ri1');
+
+      final item = makeMealPlanItem(
+          id: 'mpi1', mealPlanId: 'plan1',
+          recipeId: 'r1', plannedServings: 2);
+
+      dbHelper.mealPlans['plan1'] = MealPlan(
+        id: 'plan1',
+        weekStartDate: weekStart,
+        createdAt: weekStart,
+        modifiedAt: weekStart,
+        items: [item],
+      );
+
+      // Act
+      final list = await service.generateFromDateRange(
+          startDate: weekStart, endDate: weekEnd);
+
+      // Assert: quantity halved
+      final items = await dbHelper.getShoppingListItems(list.id!);
+      expect(items.length, 1);
+      expect(items[0].ingredientName, 'Chicken');
+      expect(items[0].quantity, 100.0);
+    });
+
+    test('toTaste ingredient (quantity=0) remains 0 regardless of scaling factor',
+        () async {
+      // Arrange: factor=2.0, but quantity=0 → 0 × 2.0 = 0
+      // Use 'Oregano' (not a staple) so the exclusion rule keeps it in the list.
+      setupRecipe(dbHelper,
+          recipeId: 'r1', recipeServings: 4,
+          ingredientId: 'i1', ingredientName: 'Oregano',
+          quantity: 0, riId: 'ri1');
+
+      final item = makeMealPlanItem(
+          id: 'mpi1', mealPlanId: 'plan1',
+          recipeId: 'r1', plannedServings: 8);
+
+      dbHelper.mealPlans['plan1'] = MealPlan(
+        id: 'plan1',
+        weekStartDate: weekStart,
+        createdAt: weekStart,
+        modifiedAt: weekStart,
+        items: [item],
+      );
+
+      // Act
+      final list = await service.generateFromDateRange(
+          startDate: weekStart, endDate: weekEnd);
+
+      // Assert: quantity stays 0 — toTaste unaffected by scaling
+      final items = await dbHelper.getShoppingListItems(list.id!);
+      expect(items.length, 1);
+      expect(items[0].ingredientName, 'Oregano');
+      expect(items[0].quantity, 0.0);
+    });
+
+    test('recipe.servings=0 — no crash, factor falls back to 1.0',
+        () async {
+      // Arrange: recipe.servings=0 would cause division by zero.
+      //          Guard must kick in and use factor=1.0 instead.
+      setupRecipe(dbHelper,
+          recipeId: 'r1', recipeServings: 0,
+          ingredientId: 'i1', ingredientName: 'Rice',
+          quantity: 200, riId: 'ri1');
+
+      final item = makeMealPlanItem(
+          id: 'mpi1', mealPlanId: 'plan1',
+          recipeId: 'r1', plannedServings: 4);
+
+      dbHelper.mealPlans['plan1'] = MealPlan(
+        id: 'plan1',
+        weekStartDate: weekStart,
+        createdAt: weekStart,
+        modifiedAt: weekStart,
+        items: [item],
+      );
+
+      // Act + Assert: must not throw, quantity unchanged (factor=1.0)
+      final list = await service.generateFromDateRange(
+          startDate: weekStart, endDate: weekEnd);
+
+      final items = await dbHelper.getShoppingListItems(list.id!);
+      expect(items.length, 1);
+      expect(items[0].ingredientName, 'Rice');
+      expect(items[0].quantity, 200.0);
+    });
+
+    test('multi-recipe meal — each recipe scaled independently by its own servings',
+        () async {
+      // Arrange:
+      //   recipeA.servings=4, plannedServings=8 → factor=2.0 → 100g becomes 200g
+      //   recipeB.servings=2, plannedServings=8 → factor=4.0 → 100g becomes 400g
+      setupRecipe(dbHelper,
+          recipeId: 'rA', recipeServings: 4,
+          ingredientId: 'iA', ingredientName: 'Tomato',
+          quantity: 100, riId: 'riA');
+      setupRecipe(dbHelper,
+          recipeId: 'rB', recipeServings: 2,
+          ingredientId: 'iB', ingredientName: 'Chicken',
+          quantity: 100, riId: 'riB');
+
+      // One MealPlanItem with two recipes (main + side)
+      final item = MealPlanItem(
+        id: 'mpi1',
+        mealPlanId: 'plan1',
+        plannedDate: weekStartStr,
+        mealType: MealPlanItem.dinner,
+        hasBeenCooked: false,
+        plannedServings: 8,
+        mealPlanItemRecipes: [
+          MealPlanItemRecipe(id: 'mpir-A', mealPlanItemId: 'mpi1', recipeId: 'rA'),
+          MealPlanItemRecipe(id: 'mpir-B', mealPlanItemId: 'mpi1', recipeId: 'rB'),
+        ],
+      );
+
+      dbHelper.mealPlans['plan1'] = MealPlan(
+        id: 'plan1',
+        weekStartDate: weekStart,
+        createdAt: weekStart,
+        modifiedAt: weekStart,
+        items: [item],
+      );
+
+      // Act
+      final list = await service.generateFromDateRange(
+          startDate: weekStart, endDate: weekEnd);
+
+      // Assert: each recipe scaled independently
+      final items = await dbHelper.getShoppingListItems(list.id!);
+      expect(items.length, 2);
+
+      final tomato = items.firstWhere((i) => i.ingredientName == 'Tomato');
+      final chicken = items.firstWhere((i) => i.ingredientName == 'Chicken');
+
+      expect(tomato.quantity, 200.0); // 100 × (8/4) = 200
+      expect(chicken.quantity, 400.0); // 100 × (8/2) = 400
+    });
+  });
 }

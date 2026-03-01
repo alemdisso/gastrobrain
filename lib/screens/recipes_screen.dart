@@ -419,7 +419,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
               ),
               onChanged: (value) {
                 setState(() {
-                  _searchQuery = value;
+                  _searchQuery = value.trim();
                 });
               },
             ),

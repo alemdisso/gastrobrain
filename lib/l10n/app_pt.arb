@@ -164,6 +164,14 @@
   "@cookingTime": {
     "description": "Rótulo do campo tempo de cozimento"
   },
+  "servings": "Porções",
+  "@servings": {
+    "description": "Rótulo do campo porções da receita (quantas pessoas serve)"
+  },
+  "servingsMustBePositive": "O número de porções deve ser pelo menos 1",
+  "@servingsMustBePositive": {
+    "description": "Erro de validação exibido quando o número de porções é zero ou negativo"
+  },
   "notes": "Observações",
   "@notes": {
     "description": "Rótulo do campo observações"

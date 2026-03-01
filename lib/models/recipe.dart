@@ -13,6 +13,7 @@ class Recipe {
   int cookTimeMinutes; // Cooking time in minutes
   int rating; // 1-5 scale
   RecipeCategory category; // Category of the recipe
+  int servings; // Baseline yield (how many people this recipe serves)
 
   Recipe({
     required this.id,
@@ -26,6 +27,7 @@ class Recipe {
     this.cookTimeMinutes = 0,
     this.rating = 0,
     RecipeCategory? category,
+    this.servings = 4,
   })  : desiredFrequency = desiredFrequency ?? FrequencyType.monthly,
         category = category ?? RecipeCategory.uncategorized;
 
@@ -42,6 +44,7 @@ class Recipe {
       'cook_time_minutes': cookTimeMinutes,
       'rating': rating,
       'category': category.value,
+      'servings': servings,
     };
   }
 
@@ -59,6 +62,37 @@ class Recipe {
       cookTimeMinutes: map['cook_time_minutes'] ?? 0,
       rating: map['rating'] ?? 0,
       category: RecipeCategory.fromString(map['category'] ?? 'uncategorized'),
+      servings: map['servings'] ?? 4,
+    );
+  }
+
+  Recipe copyWith({
+    String? id,
+    String? name,
+    FrequencyType? desiredFrequency,
+    String? notes,
+    String? instructions,
+    DateTime? createdAt,
+    int? difficulty,
+    int? prepTimeMinutes,
+    int? cookTimeMinutes,
+    int? rating,
+    RecipeCategory? category,
+    int? servings,
+  }) {
+    return Recipe(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      desiredFrequency: desiredFrequency ?? this.desiredFrequency,
+      notes: notes ?? this.notes,
+      instructions: instructions ?? this.instructions,
+      createdAt: createdAt ?? this.createdAt,
+      difficulty: difficulty ?? this.difficulty,
+      prepTimeMinutes: prepTimeMinutes ?? this.prepTimeMinutes,
+      cookTimeMinutes: cookTimeMinutes ?? this.cookTimeMinutes,
+      rating: rating ?? this.rating,
+      category: category ?? this.category,
+      servings: servings ?? this.servings,
     );
   }
 }

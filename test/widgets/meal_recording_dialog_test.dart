@@ -72,12 +72,16 @@ void main() {
       expect(find.text(primaryRecipe.name), findsAtLeastNWidgets(1));
       expect(find.text('Prato principal'), findsOneWidget);
 
-      // Verify servings field has default value of 1
-      final servingsField =
-          find.byKey(const Key('meal_recording_servings_field'));
-      expect(servingsField, findsOneWidget);
-      expect(tester.widget<TextFormField>(servingsField).controller!.text,
-          equals('1'));
+      // Verify servings stepper is shown with default value (recipe.servings = 4)
+      expect(
+        find.byKey(const Key('meal_recording_servings_stepper')),
+        findsOneWidget,
+      );
+      expect(
+        tester.widget<Text>(find.byKey(const Key('servings_value_display'))).data,
+        equals('4'),
+      );
+      expect(find.byKey(const Key('meal_recording_servings_field')), findsNothing);
 
       // Verify prep time is pre-filled from recipe
       final prepTimeField =
@@ -108,6 +112,71 @@ void main() {
           findsOneWidget);
       expect(
           find.byKey(const Key('meal_recording_save_button')), findsOneWidget);
+    });
+
+    testWidgets('stepper falls back to recipe.servings when no plannedServings',
+        (WidgetTester tester) async {
+      final recipeWith2Servings = DialogFixtures.createTestRecipe(
+        id: 'recipe-2-servings',
+        name: 'Pasta',
+        difficulty: 2,
+      ).copyWith(servings: 2);
+
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => MealRecordingDialog(
+                    primaryRecipe: recipeWith2Servings,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            ),
+          ),
+        )),
+      );
+
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.widget<Text>(find.byKey(const Key('servings_value_display'))).data,
+        equals('2'),
+      );
+    });
+
+    testWidgets('stepper initializes to plannedServings when provided',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => MealRecordingDialog(
+                    primaryRecipe: primaryRecipe,
+                    plannedServings: 6,
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            ),
+          ),
+        )),
+      );
+
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.widget<Text>(find.byKey(const Key('servings_value_display'))).data,
+        equals('6'),
+      );
     });
 
     testWidgets('pre-fills notes when provided', (WidgetTester tester) async {
@@ -253,13 +322,6 @@ void main() {
         ),
       );
 
-      // Fill in servings
-      await tester.enterText(
-        find.byKey(const Key('meal_recording_servings_field')),
-        '4',
-      );
-      await tester.pumpAndSettle();
-
       // Fill in notes
       await tester.enterText(
         find.byKey(const Key('meal_recording_notes_field')),
@@ -267,7 +329,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Save
+      // Save (stepper defaults to recipe.servings = 4)
       await tester.tap(find.byKey(const Key('meal_recording_save_button')));
       await tester.pumpAndSettle();
 
@@ -284,6 +346,31 @@ void main() {
           equals(primaryRecipe.cookTimeMinutes.toDouble()));
       expect(result.value!['additionalRecipes'], isA<List>());
       expect(result.value!['cookedAt'], isA<DateTime>());
+    });
+
+    testWidgets('returns incremented servings after tapping + button',
+        (WidgetTester tester) async {
+      final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+        tester,
+        dialogBuilder: (context) => MealRecordingDialog(
+          primaryRecipe: primaryRecipe,
+          plannedServings: 2,
+        ),
+      );
+
+      // Tap + three times (2 → 5)
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('meal_recording_save_button')));
+      await tester.pumpAndSettle();
+
+      expect(result.hasValue, isTrue);
+      expect(result.value!['servings'], equals(5));
     });
 
     testWidgets('returns additional recipes in meal data',
@@ -427,91 +514,6 @@ void main() {
   });
 
   group('MealRecordingDialog - Validation', () {
-    testWidgets('validates servings field is required',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(
-        wrapWithLocalizations(Scaffold(
-          body: Builder(
-            builder: (context) => ElevatedButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => MealRecordingDialog(
-                    primaryRecipe: primaryRecipe,
-                  ),
-                );
-              },
-              child: const Text('Show Dialog'),
-            ),
-          ),
-        )),
-      );
-
-      // Open dialog
-      await tester.tap(find.text('Show Dialog'));
-      await tester.pumpAndSettle();
-
-      // Clear servings field
-      await tester.enterText(
-        find.byKey(const Key('meal_recording_servings_field')),
-        '',
-      );
-      await tester.pumpAndSettle();
-
-      // Try to save
-      await tester.tap(find.byKey(const Key('meal_recording_save_button')));
-      await tester.pumpAndSettle();
-
-      // Verify validation error is shown
-      expect(
-          find.text('Por favor, informe o número de porções'), findsOneWidget);
-
-      // Verify dialog is still open
-      expect(
-        DialogTestHelpers.findDialogByType<MealRecordingDialog>(),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('validates servings must be a valid number',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(
-        wrapWithLocalizations(Scaffold(
-          body: Builder(
-            builder: (context) => ElevatedButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => MealRecordingDialog(
-                    primaryRecipe: primaryRecipe,
-                  ),
-                );
-              },
-              child: const Text('Show Dialog'),
-            ),
-          ),
-        )),
-      );
-
-      // Open dialog
-      await tester.tap(find.text('Show Dialog'));
-      await tester.pumpAndSettle();
-
-      // Enter invalid servings
-      await tester.enterText(
-        find.byKey(const Key('meal_recording_servings_field')),
-        '0',
-      );
-      await tester.pumpAndSettle();
-
-      // Try to save
-      await tester.tap(find.byKey(const Key('meal_recording_save_button')));
-      await tester.pumpAndSettle();
-
-      // Verify validation error is shown
-      expect(find.text('Por favor, informe um número válido'), findsOneWidget);
-    });
-
     testWidgets('validates prep time must be valid if provided',
         (WidgetTester tester) async {
       await tester.pumpWidget(
@@ -772,13 +774,6 @@ void main() {
           ),
         );
 
-        // Fill in some data
-        await tester.enterText(
-          find.byKey(const Key('meal_recording_servings_field')),
-          '3',
-        );
-        await tester.pumpAndSettle();
-
         // Tap outside dialog to dismiss
         await DialogTestHelpers.tapOutsideDialog(tester);
         await tester.pumpAndSettle();
@@ -798,13 +793,6 @@ void main() {
             primaryRecipe: primaryRecipe,
           ),
         );
-
-        // Fill in some data
-        await tester.enterText(
-          find.byKey(const Key('meal_recording_servings_field')),
-          '2',
-        );
-        await tester.pumpAndSettle();
 
         // Press back button to dismiss
         await DialogTestHelpers.pressBackButton(tester);

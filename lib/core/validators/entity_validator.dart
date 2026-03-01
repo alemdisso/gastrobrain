@@ -13,6 +13,7 @@ class EntityValidator {
     required String name,
     required List<Map<String, dynamic>> ingredients,
     required List<String> instructions,
+    int servings = 4,
   }) {
     if (id.isEmpty) {
       throw ValidationException('Recipe ID cannot be empty');
@@ -20,6 +21,7 @@ class EntityValidator {
     if (name.isEmpty) {
       throw ValidationException('Recipe name cannot be empty');
     }
+    validateServings(servings);
     // Note: temporarily disabling these checks until we implement ingredients and instructions
     // if (ingredients.isEmpty) {
     //   throw ValidationException('Recipe must include at least one ingredient');
@@ -88,8 +90,8 @@ class EntityValidator {
     if (recipeId.isEmpty) {
       throw ValidationException('Recipe ID cannot be empty');
     }
-    if (quantity <= 0) {
-      throw ValidationException('Quantity must be greater than zero');
+    if (quantity < 0) {
+      throw ValidationException('Quantity cannot be negative');
     }
   }
 

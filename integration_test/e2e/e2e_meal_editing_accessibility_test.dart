@@ -124,11 +124,11 @@ void main() {
         // Verify: Form fields have semantic labels
         print('\n=== VERIFYING FORM FIELD LABELS ===');
 
-        // Check servings field - verify field is present and has label text visible
-        final servingsField =
-            find.byKey(const Key('edit_meal_recording_servings_field'));
-        expect(servingsField, findsOneWidget,
-            reason: 'Servings field should be present');
+        // Check servings stepper - verify it is present and has label text visible
+        final servingsStepper =
+            find.byKey(const Key('edit_meal_recording_servings_stepper'));
+        expect(servingsStepper, findsOneWidget,
+            reason: 'Servings stepper should be present');
 
         // Verify label text is present in the widget tree near the field
         expect(find.text('Número de Porções'), findsWidgets,
@@ -177,8 +177,9 @@ void main() {
         // Verify: Validation error messages are announced
         print('\n=== VERIFYING VALIDATION ERROR ACCESSIBILITY ===');
 
-        // Clear servings field to trigger validation error
-        await tester.enterText(servingsField, '');
+        // Enter invalid prep time to trigger validation error
+        // (Servings is now a stepper with min=1 so invalid values are prevented at UI level)
+        await tester.enterText(prepTimeField, 'abc');
         await tester.pumpAndSettle();
 
         // Try to save (should fail validation)
@@ -186,11 +187,15 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verify error message is displayed
-        final errorText = find.textContaining('Por favor');
+        final errorText = find.textContaining('Informe um tempo');
         expect(errorText, findsOneWidget,
             reason: 'Validation error should be displayed');
         print(
             '✓ Validation error is displayed and accessible to screen readers');
+
+        // Fix the invalid value before closing
+        await tester.enterText(prepTimeField, '15');
+        await tester.pumpAndSettle();
 
         // Verify: Cancel button is accessible
         print('\n=== VERIFYING CANCEL BUTTON ACCESSIBILITY ===');
@@ -308,11 +313,8 @@ void main() {
         final openDuration = dialogOpenTime.difference(startTime);
         print('⏱️  Dialog opened in: ${openDuration.inMilliseconds}ms');
 
-        // Edit servings field
-        final servingsField =
-            find.byKey(const Key('edit_meal_recording_servings_field'));
-        await tester.enterText(servingsField, '4');
-        await tester.pumpAndSettle();
+        // Edit servings via stepper
+        await E2ETestHelpers.fillMealEditDialog(tester, servings: '4');
         final editTime = DateTime.now();
         final editDuration = editTime.difference(dialogOpenTime);
         print('⏱️  Field edited in: ${editDuration.inMilliseconds}ms');

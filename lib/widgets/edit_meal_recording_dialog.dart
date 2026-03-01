@@ -1,5 +1,7 @@
 // lib/widgets/edit_meal_recording_dialog.dart
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../models/meal.dart';
@@ -8,6 +10,7 @@ import '../core/validators/entity_validator.dart';
 import '../core/di/service_provider.dart';
 import '../utils/sorting_utils.dart';
 import '../l10n/app_localizations.dart';
+import 'servings_stepper.dart';
 
 class EditMealRecordingDialog extends StatefulWidget {
   final Meal meal;
@@ -31,9 +34,9 @@ class EditMealRecordingDialog extends StatefulWidget {
 class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
   final _formKey = GlobalKey<FormState>();
   final _notesController = TextEditingController();
-  final _servingsController = TextEditingController();
   final _prepTimeController = TextEditingController();
   final _cookTimeController = TextEditingController();
+  late int _servings;
   late bool _wasSuccessful;
   late DateTime _cookedAt;
 
@@ -51,7 +54,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
 
     // Pre-populate fields with existing meal data
     _notesController.text = widget.meal.notes;
-    _servingsController.text = widget.meal.servings.toString();
+    _servings = max(1, widget.meal.servings);
     _prepTimeController.text = widget.meal.actualPrepTime.toString();
     _cookTimeController.text = widget.meal.actualCookTime.toString();
     _wasSuccessful = widget.meal.wasSuccessful;
@@ -185,9 +188,6 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
     }
 
     try {
-      final servings = int.parse(_servingsController.text);
-      EntityValidator.validateServings(servings);
-
       final prepTime = double.tryParse(_prepTimeController.text);
       final cookTime = double.tryParse(_cookTimeController.text);
 
@@ -200,7 +200,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
       Navigator.of(context).pop({
         'mealId': widget.meal.id,
         'cookedAt': _cookedAt,
-        'servings': servings,
+        'servings': _servings,
         'notes': _notesController.text,
         'wasSuccessful': _wasSuccessful,
         'actualPrepTime': prepTime ?? 0.0,
@@ -220,7 +220,6 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
   @override
   void dispose() {
     _notesController.dispose();
-    _servingsController.dispose();
     _prepTimeController.dispose();
     _cookTimeController.dispose();
     super.dispose();
@@ -251,24 +250,10 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
               const SizedBox(height: 12),
 
               // Servings
-              TextFormField(
-                key: const Key('edit_meal_recording_servings_field'),
-                controller: _servingsController,
-                decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context)!.numberOfServings,
-                        prefixIcon: const Icon(Icons.people),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return AppLocalizations.of(context)!
-                        .pleaseEnterNumberOfServings;
-                  }
-                  if (int.tryParse(value) == null || int.parse(value) < 1) {
-                    return AppLocalizations.of(context)!.pleaseEnterValidNumber;
-                  }
-                  return null;
-                },
+              ServingsStepper(
+                key: const Key('edit_meal_recording_servings_stepper'),
+                value: _servings,
+                onChanged: (v) => setState(() => _servings = v),
               ),
               const SizedBox(height: 12),
 

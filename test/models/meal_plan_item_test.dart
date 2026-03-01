@@ -136,6 +136,99 @@ void main() {
       expect(copy2.mealPlanItemRecipes![0].recipeId, 'recipe_id_2');
     });
 
+    test('plannedServings defaults to 4', () {
+      final item = MealPlanItem(
+        id: 'test_id',
+        mealPlanId: 'plan_id',
+        plannedDate: '2023-06-05',
+        mealType: MealPlanItem.lunch,
+      );
+
+      expect(item.plannedServings, 4);
+    });
+
+    test('plannedServings accepts custom value', () {
+      final item = MealPlanItem(
+        id: 'test_id',
+        mealPlanId: 'plan_id',
+        plannedDate: '2023-06-05',
+        mealType: MealPlanItem.lunch,
+        plannedServings: 6,
+      );
+
+      expect(item.plannedServings, 6);
+    });
+
+    test('toMap includes planned_servings', () {
+      final item = MealPlanItem(
+        id: 'test_id',
+        mealPlanId: 'plan_id',
+        plannedDate: '2023-06-05',
+        mealType: MealPlanItem.dinner,
+        plannedServings: 3,
+      );
+
+      final map = item.toMap();
+      expect(map['planned_servings'], 3);
+    });
+
+    test('fromMap reads planned_servings correctly', () {
+      final map = {
+        'id': 'test_id',
+        'meal_plan_id': 'plan_id',
+        'planned_date': '2023-06-05',
+        'meal_type': MealPlanItem.dinner,
+        'notes': '',
+        'has_been_cooked': 0,
+        'planned_servings': 8,
+      };
+
+      final item = MealPlanItem.fromMap(map);
+      expect(item.plannedServings, 8);
+    });
+
+    test('fromMap defaults plannedServings to 4 when key is absent (legacy rows)', () {
+      final map = {
+        'id': 'test_id',
+        'meal_plan_id': 'plan_id',
+        'planned_date': '2023-06-05',
+        'meal_type': MealPlanItem.lunch,
+        'notes': '',
+        'has_been_cooked': 0,
+        // planned_servings intentionally absent
+      };
+
+      final item = MealPlanItem.fromMap(map);
+      expect(item.plannedServings, 4);
+    });
+
+    test('copyWith updates plannedServings', () {
+      final original = MealPlanItem(
+        id: 'test_id',
+        mealPlanId: 'plan_id',
+        plannedDate: '2023-06-05',
+        mealType: MealPlanItem.lunch,
+        plannedServings: 4,
+      );
+
+      final copy = original.copyWith(plannedServings: 10);
+      expect(copy.plannedServings, 10);
+      expect(original.plannedServings, 4); // original unchanged
+    });
+
+    test('copyWith preserves plannedServings when not specified', () {
+      final original = MealPlanItem(
+        id: 'test_id',
+        mealPlanId: 'plan_id',
+        plannedDate: '2023-06-05',
+        mealType: MealPlanItem.lunch,
+        plannedServings: 6,
+      );
+
+      final copy = original.copyWith(notes: 'new notes');
+      expect(copy.plannedServings, 6);
+    });
+
     test('formatPlannedDate correctly formats date object to string', () {
       final date = DateTime(2023, 6, 5);
       final formatted = MealPlanItem.formatPlannedDate(date);

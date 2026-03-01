@@ -92,9 +92,15 @@ void main() {
         await E2ETestHelpers.openMealEditDialog(tester);
         print('✓ Edit dialog opened');
 
-        // Test Case 1: Enter invalid servings (0)
-        print('\n=== TEST CASE 1: Zero servings ===');
-        await E2ETestHelpers.fillMealEditDialog(tester, servings: '0');
+        // Note: Servings field is now a stepper (min=1), so invalid values
+        // (0, negative, empty) are prevented at the UI level. We test
+        // validation errors via the prep time text field instead.
+
+        // Test Case 1: Enter invalid prep time (non-numeric)
+        print('\n=== TEST CASE 1: Invalid prep time format ===');
+        final prepTimeField =
+            find.byKey(const Key('edit_meal_recording_prep_time_field'));
+        await tester.enterText(prepTimeField, 'abc');
         await tester.pumpAndSettle();
 
         // Try to save
@@ -105,15 +111,15 @@ void main() {
 
         // Verify: Validation error appears
         expect(
-          find.textContaining('Por favor, informe um'),
+          find.textContaining('Informe um tempo'),
           findsOneWidget,
-          reason: 'Validation error should appear for servings = 0',
+          reason: 'Validation error should appear for invalid prep time',
         );
-        print('✓ Validation error displayed for zero servings');
+        print('✓ Validation error displayed for invalid prep time');
 
         // Verify: Dialog remains open
         expect(
-          find.byKey(const Key('edit_meal_recording_servings_field')),
+          find.byKey(const Key('edit_meal_recording_servings_stepper')),
           findsOneWidget,
           reason: 'Dialog should remain open after validation error',
         );
@@ -125,24 +131,9 @@ void main() {
             reason: 'Database should be unchanged after validation error');
         print('✓ Database unchanged after invalid save attempt');
 
-        // Test Case 2: Enter negative servings
-        print('\n=== TEST CASE 2: Negative servings ===');
-        await E2ETestHelpers.fillMealEditDialog(tester, servings: '-5');
-        await tester.pumpAndSettle();
-
-        await tester.tap(saveButton);
-        await tester.pumpAndSettle();
-
-        // Verify: Validation error appears
-        expect(
-          find.textContaining('Por favor, informe um'),
-          findsOneWidget,
-          reason: 'Validation error should appear for negative servings',
-        );
-        print('✓ Validation error displayed for negative servings');
-
-        // Test Case 3: Fix error and save successfully
-        print('\n=== TEST CASE 3: Fix error and save ===');
+        // Test Case 2: Fix error and save successfully with updated servings
+        print('\n=== TEST CASE 2: Fix error and save ===');
+        await tester.enterText(prepTimeField, '20');
         await E2ETestHelpers.fillMealEditDialog(tester, servings: '6');
         await tester.pumpAndSettle();
 
@@ -161,6 +152,8 @@ void main() {
         final mealAfterValidSave = await dbHelper.getMeal(testMealId);
         expect(mealAfterValidSave?.servings, equals(6),
             reason: 'Database should be updated after valid save');
+        expect(mealAfterValidSave?.actualPrepTime, equals(20),
+            reason: 'Database prep time should be updated after valid save');
         print('✓ Database updated with valid data');
 
         print('\n=== TEST PASSED ===\n');
@@ -248,13 +241,15 @@ void main() {
         await E2ETestHelpers.openMealEditDialog(tester);
         print('✓ Edit dialog opened');
 
-        // Test: Clear servings field (required field)
-        print('\n=== CLEARING REQUIRED FIELD ===');
-        final servingsField =
-            find.byKey(const Key('edit_meal_recording_servings_field'));
-        await tester.enterText(servingsField, '');
+        // Note: Servings is now a stepper (min=1) and cannot be cleared.
+        // We test required-field-style validation via the prep time text field,
+        // which rejects non-numeric input.
+        print('\n=== ENTERING INVALID FIELD VALUE ===');
+        final prepTimeField =
+            find.byKey(const Key('edit_meal_recording_prep_time_field'));
+        await tester.enterText(prepTimeField, 'invalid');
         await tester.pumpAndSettle();
-        print('✓ Servings field cleared');
+        print('✓ Invalid prep time value entered');
 
         // Try to save
         print('\n=== ATTEMPTING TO SAVE ===');
@@ -264,15 +259,15 @@ void main() {
 
         // Verify: Validation error appears
         expect(
-          find.textContaining('Por favor'),
+          find.textContaining('Informe um tempo'),
           findsOneWidget,
-          reason: 'Validation error should appear for empty required field',
+          reason: 'Validation error should appear for invalid field value',
         );
-        print('✓ Validation error displayed for empty field');
+        print('✓ Validation error displayed for invalid field');
 
         // Verify: Dialog remains open
         expect(
-          servingsField,
+          find.byKey(const Key('edit_meal_recording_servings_stepper')),
           findsOneWidget,
           reason: 'Dialog should remain open after validation error',
         );
