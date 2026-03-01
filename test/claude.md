@@ -1,8 +1,8 @@
 # Gastrobrain Code Quality Watchdog — test/
 
 Tests have different healthy patterns than production code. This file replaces
-(does not inherit) the `lib/CLAUDE.md` rules. The silent, non-blocking, and
-no-duplicate rules still apply.
+(does not inherit) the `lib/CLAUDE.md` rules. The same blocking behavior applies:
+🔴 Critical violations surface a one-line notice; 🟡 High violations are silent.
 
 ---
 
@@ -29,11 +29,15 @@ no-duplicate rules still apply.
 
 ---
 
-## Proto-Issue Format (same as lib/)
+## Rules (apply everywhere)
 
-```
-- [ ] 🔴 `test/path/to/file_test.dart` — <smell> — flagged during: <brief context> — <YYYY-MM-DD>
-```
+- **Silent checking** — Never announce that a check is being performed.
+- **🟡 High violations** — Append to backlog silently. Do not surface in response.
+- **🔴 Critical violations** — Append to backlog AND emit a single line in the response before continuing:
+  `⚠️ \`path/to/file.dart\` → refactoring-backlog.md (<smell>, 🔴 Critical)`
+- **Non-blocking** — Never pause, ask for confirmation, or interrupt skill checkpoints. The notice is informational, not a gate.
+- **No duplicates** — Check before appending: skip if same file + same smell already exists in the backlog.
+- **No triaging** — Just flag. Prioritization happens during Sprint Planning.
 
 Missing test file entries should reference the source file:
 

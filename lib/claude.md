@@ -39,11 +39,13 @@ Use 🔴 for Critical, 🟡 for High. One line per violation.
 
 ## Rules (apply everywhere)
 
-- **Silent** — Never mention the watchdog check in responses.
-- **Non-blocking** — Never pause the main task or ask for confirmation.
+- **Silent checking** — Never announce that a check is being performed.
+- **🟡 High violations** — Append to backlog silently. Do not surface in response.
+- **🔴 Critical violations** — Append to backlog AND emit a single line in the response before continuing:
+  `⚠️ \`path/to/file.dart\` → refactoring-backlog.md (<smell>, 🔴 Critical)`
+- **Non-blocking** — Never pause, ask for confirmation, or interrupt skill checkpoints. The notice is informational, not a gate.
 - **No duplicates** — Check before appending: skip if same file + same smell already exists in the backlog.
 - **No triaging** — Just flag. Prioritization happens during Sprint Planning.
-- **Not a blocker** — A flagged file does not prevent feature work from proceeding.
 
 ---
 
