@@ -330,6 +330,7 @@ git branch -d hotfix/0.1.3.1
 | 0.1.9 | 2026-02-15 | Meal Planning UX Redesign | release/0.1.9 | Shopping list full-screen, meal slot redesign, semantic colors |
 | 0.1.10 | 2026-02-18 | Landing Page & Polish | release/0.1.10 | Dashboard landing page, unit pluralization, shopping list enhancements |
 | 0.1.11 | 2026-02-25 | UX Polish & Stability | release/0.1.11 | New categories, shopping list fixes, idempotent migrations, e2e stability |
+| 0.1.12 | 2026-03-01 | Servings & Quantity Tracking | release/0.1.12 | Recipe servings, planned servings, ServingsStepper, shopping list quantity scaling |
 
 ---
 
