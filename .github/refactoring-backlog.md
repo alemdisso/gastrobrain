@@ -9,3 +9,4 @@ Auto-flagged by the Code Quality Watchdog. Review during Sprint Planning as part
 - [ ] 🔴 `lib/screens/add_recipe_screen.dart` — file length 509 lines (threshold: 400) — flagged during: issue creation for servings stepper consistency — 2026-03-02
 - [ ] 🔴 `lib/widgets/recipe_selection_dialog.dart` — file length 489 lines (threshold: 250) — flagged during: issue creation for servings stepper consistency — 2026-03-02
 - [ ] 🟡 `lib/screens/edit_recipe_screen.dart` — file length 357 lines (threshold: 250) — flagged during: issue creation for servings stepper consistency — 2026-03-02
+- [ ] 🔴 `lib/screens/recipe_details_screen.dart` — file length 828 lines (threshold: 400) — flagged during: issue creation for servings in recipe details — 2026-03-02
