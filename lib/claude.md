@@ -5,14 +5,34 @@ inherit these rules and only declare what differs for their context.
 
 ---
 
-## Passive Watchdog Behavior
+## Watchdog Triggers
+
+### Trigger 1 — Modification (always active)
 
 After **any file modification or creation**, silently check the touched file
 against the active thresholds (root thresholds below, overridden by subfolder
-files where present). Do not announce the check or interrupt the main task.
+files where present). If a threshold is tripped, append a proto-issue to
+`.github/refactoring-backlog.md` (create if it doesn't exist), then continue.
 
-If a threshold is tripped, append a proto-issue to `.github/refactoring-backlog.md`
-(create the file if it doesn't exist), then continue normally.
+### Trigger 2 — Analysis mode (planning/review skills only)
+
+When a skill explicitly reads files for planning purposes — issue creation,
+roadmap analysis, code review, or refactoring audit — check each file read
+against the active thresholds and flag violations directly to the backlog
+**without** requiring a file modification to have occurred.
+
+Analysis mode applies when operating inside these skills:
+- Issue Creation Skill
+- Issue Roadmap Skill
+- Code Review Skill
+- Refactoring Skill (Checkpoint 1 — Code Analysis)
+- Sprint Planning Skill
+
+Analysis mode does **not** apply during implementation (Senior Developer Skill,
+UI Component Skill, etc.) — those are covered by Trigger 1.
+
+In both triggers, the same blocking rules apply: 🔴 Critical surfaces a
+one-line notice, 🟡 High is silent.
 
 ---
 
