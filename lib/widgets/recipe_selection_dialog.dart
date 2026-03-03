@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../models/recipe.dart';
 import '../models/recipe_recommendation.dart';
 import '../core/di/service_provider.dart';
@@ -7,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../widgets/recipe_selection_card.dart';
 import '../widgets/add_side_dish_dialog.dart';
 import '../utils/sorting_utils.dart';
+import 'servings_stepper.dart';
 
 /// Dialog for selecting recipes for meal planning slots.
 ///
@@ -49,99 +49,60 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
   bool _showingMenu = false;
   List<Recipe> _additionalRecipes = [];
   int _plannedServings = 4;
-  late TextEditingController _servingsController;
 
   @override
   void initState() {
     super.initState();
-    // Initialize tab controller for the two tabs
     _tabController = TabController(length: 2, vsync: this);
 
-    // Check if we're editing an existing meal
     if (widget.initialPrimaryRecipe != null) {
-      // Pre-populate with existing meal data
       _selectedRecipe = widget.initialPrimaryRecipe;
       _additionalRecipes = List.from(widget.initialAdditionalRecipes ?? []);
       _showingMenu = true;
-      _plannedServings =
-          widget.initialPlannedServings ?? widget.initialPrimaryRecipe!.servings;
+      _plannedServings = widget.initialPlannedServings ?? widget.initialPrimaryRecipe!.servings;
     } else {
-      // Start on the Recommended tab if we have recommendations
-      if (widget.detailedRecommendations.isNotEmpty) {
-        _tabController.index = 0;
-      } else {
-        _tabController.index =
-            1; // Default to All Recipes if no recommendations
-      }
+      _tabController.index = widget.detailedRecommendations.isNotEmpty ? 0 : 1;
     }
 
-    _servingsController =
-        TextEditingController(text: _plannedServings.toString());
-
-    // Initialize recommendations from widget prop
     _recommendations = List.from(widget.detailedRecommendations);
+  }
+
+  void _showFeedbackError() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(AppLocalizations.of(context)!.feedbackSaveError),
+        backgroundColor: Colors.red));
   }
 
   Future<void> _handleFeedback(
       String recipeId, UserResponse userResponse) async {
-    // Handle feedback that indicates user doesn't want this recipe now
-    // Remove from current session immediately for better UX
     if (userResponse == UserResponse.notToday ||
         userResponse == UserResponse.lessOften ||
         userResponse == UserResponse.moreOften ||
         userResponse == UserResponse.neverAgain) {
-      setState(() {
-        _recommendations.removeWhere((rec) => rec.recipe.id == recipeId);
-      });
+      setState(() => _recommendations.removeWhere((rec) => rec.recipe.id == recipeId));
     }
 
-    // Only process database feedback if we have a recommendation history ID
     if (_recommendationHistoryId == null) return;
 
     try {
-      // Update the recommendation response in the database
       final dbHelper = ServiceProvider.database.dbHelper;
       final success = await dbHelper.updateRecommendationResponse(
         _recommendationHistoryId!,
         recipeId,
         userResponse,
       );
-
-      if (!success) {
-        // Show error message if feedback couldn't be saved
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context)!.feedbackSaveError),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
+      if (!success) _showFeedbackError();
     } catch (e) {
-      // Handle any errors silently for now, or show a message
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.feedbackSaveError),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      _showFeedbackError();
     }
   }
 
   Future<void> _handleRefresh() async {
     if (widget.onRefreshDetailedRecommendations == null) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
+    setState(() => _isLoading = true);
     try {
-      // Get fresh detailed recommendations
       final result = await widget.onRefreshDetailedRecommendations!();
-
       if (mounted) {
         setState(() {
           _recommendations = result.recommendations;
@@ -151,14 +112,10 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  '${AppLocalizations.of(context)!.errorRefreshingRecommendations} $e')),
-        );
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+                '${AppLocalizations.of(context)!.errorRefreshingRecommendations} $e')));
       }
     }
   }
@@ -166,16 +123,13 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
   @override
   void dispose() {
     _tabController.dispose();
-    _servingsController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      // Make dialog use more screen space on small devices
-      insetPadding:
-          const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -314,7 +268,6 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Show selected recipe
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -336,7 +289,6 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
           ),
           const SizedBox(height: 16),
 
-          // Show existing side dishes if any
           if (_additionalRecipes.isNotEmpty) ...[
             Text(
               AppLocalizations.of(context)!.sideDishesLabel,
@@ -358,43 +310,13 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
             const SizedBox(height: 16),
           ],
 
-          // Planned servings input
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Row(
-              children: [
-                const Icon(Icons.people_outline, size: 20),
-                const SizedBox(width: 8),
-                Text(AppLocalizations.of(context)!.servings),
-                const SizedBox(width: 12),
-                SizedBox(
-                  width: 64,
-                  child: TextField(
-                    key: const Key('recipe_selection_planned_servings_field'),
-                    controller: _servingsController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    textAlign: TextAlign.center,
-                    decoration: const InputDecoration(
-                      isDense: true,
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                      border: OutlineInputBorder(),
-                    ),
-                    onChanged: (value) {
-                      final parsed = int.tryParse(value);
-                      if (parsed != null && parsed > 0) {
-                        _plannedServings = parsed;
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
+          ServingsStepper(
+            key: const Key('recipe_selection_planned_servings_stepper'),
+            value: _plannedServings,
+            onChanged: (v) => setState(() => _plannedServings = v),
           ),
           const SizedBox(height: 8),
 
-          // Menu options
           ListTile(
             leading: const Icon(Icons.save),
             title: Text(AppLocalizations.of(context)!.save),
@@ -483,7 +405,6 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
       _selectedRecipe = recipe;
       _showingMenu = true;
       _plannedServings = recipe.servings;
-      _servingsController.text = recipe.servings.toString();
     });
   }
 }
