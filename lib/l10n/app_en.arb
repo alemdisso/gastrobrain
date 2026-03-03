@@ -172,6 +172,15 @@
   "@servingsMustBePositive": {
     "description": "Validation error shown when servings is zero or negative"
   },
+  "ingredientsForServings": "Ingredients for {count} servings",
+  "@ingredientsForServings": {
+    "description": "Header above ingredient list indicating the recipe yield the quantities correspond to",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notes": "Notes",
   "@notes": {
     "description": "Label for notes field"

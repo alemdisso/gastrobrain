@@ -172,6 +172,15 @@
   "@servingsMustBePositive": {
     "description": "Erro de validação exibido quando o número de porções é zero ou negativo"
   },
+  "ingredientsForServings": "Ingredientes para {count} porções",
+  "@ingredientsForServings": {
+    "description": "Cabeçalho acima da lista de ingredientes indicando o rendimento da receita ao qual as quantidades correspondem",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notes": "Observações",
   "@notes": {
     "description": "Rótulo do campo observações"
