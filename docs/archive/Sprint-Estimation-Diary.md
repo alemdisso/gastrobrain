@@ -1531,6 +1531,127 @@ Feb 25:    ████░░░░  Idempotent migrations + e2e test stability 
 
 ---
 
+### 0.1.12 - Servings & Quantity Tracking
+
+**Sprint Duration:** February 27 – March 1, 2026
+**Calendar Days:** 3 active + 1 hidden planning day (Feb 26)
+**Effective Working Days:** 3.5d (2.65d implementation + 0.65d overhead)
+**Planned Issues:** 7 (17 points)
+**Completed Issues:** 7 planned (100%) + 1 unplanned commit (watchdog rules, trivial)
+
+#### Estimation vs Actual
+
+| Issue | Title | Type | Est Points | Lines | Weighted Actual | Ratio | Assessment |
+|-------|-------|------|------------|-------|-----------------|-------|------------|
+| #310 | Sort ingredient category dropdown | ui-micro | 1 | 24 | 0.05d | 0.05x | ⚡ Faster |
+| #309 | Trim whitespace from search queries | ui-micro | 2 | 8 | 0.10d | 0.05x | ⚡ Faster |
+| #304 | Add servings field to Recipe model | feat/model | 3 | 181 | 0.65d | 0.22x | ⚡ Faster |
+| #308 | "To taste" toggle in AddIngredientDialog | feat | 2 | 551 | 0.40d | 0.20x | ⚡ Faster |
+| #305 | Add planned servings to meal planning slot | feat | 3 | 390 | 0.60d | 0.20x | ⚡ ⚠️ |
+| #306 | Scale ingredient quantities by planned servings | feat | 3 | 297 | 0.35d | 0.12x | ⚡ ⚠️ |
+| #307 | Replace servings text field with stepper | ux | 3 | 1,386 | 0.50d | 0.17x | ⚡ Faster |
+| *Overhead* | *Release, docs, watchdog rules* | — | — | — | 0.15d | — | 📋 |
+| *Hidden* | *Feb 26 planning + device testing* | — | — | — | 0.50d | — | 📋 |
+| **TOTAL (planned)** | | | **17** | | **2.65d** | **0.17x** | ⚡ |
+
+⚠️ = Fast execution but device/UX validation deferred → follow-up issues #313, #314, #315
+
+#### Accuracy by Type
+
+| Type | Issues | Est Total | Weighted Actual | Avg Ratio | Verdict |
+|------|--------|-----------|-----------------|-----------|---------|
+| feat/model — dependency chain | #304, #305, #306 | 9 | 1.60d | 0.18x | ⚡ Fast — but validation debt (see notes) |
+| ux/feat — widget work | #307, #308 | 5 | 0.90d | 0.18x | ⚡ Fast — clean execution, no rework |
+| ui-micro — one-liners | #309, #310 | 3 | 0.15d | 0.05x | ⚡ Very fast — one-liner territory regardless of estimate |
+
+#### Variance Analysis
+
+**The "fast but incomplete" problem (#304, #305, #306)**
+- All three chain issues came in at 0.12-0.22x — but 3 follow-up issues (#313, #314, #315) emerged from deferred device testing and design thinking
+- The ratio is partially artificial: some work was postponed, not eliminated
+- Issues were well-specified for *code correctness* but under-specified for *real-world validation*
+- Acceptance criteria covered implementation tasks, not device testing gates
+
+**Clean execution (#307, #308)**
+- #307 was the largest commit by lines (1,386) but a net simplification: 433 insertions, 797 deletions (−348 net)
+- Replacing a TextFormField + controller with a reusable ServingsStepper widget reduced complexity
+- e2e test break (`a1e110b`) was expected from the widget swap but wasn't pre-listed in the issue spec
+
+**UI micro-issues at the 0.05x floor (#309, #310)**
+- #309 (2pts): 8 lines total — `.trim()` calls across 4 files
+- #310 (1pt): 24 lines — single sort call at build time
+- Both took 15-30 minutes regardless of their Fibonacci estimates
+- The 1pt floor is still too high; these should be bundled as a quick-wins block
+
+#### Working Pattern Observations
+
+```
+Feb 26 │░░░░░░░░░░  Planning + device testing (0.5d hidden — no commits)
+Feb 27 │▓▓▓▓▓▓▓░░░  #310 → #309 → #304  (afternoon burst, ~0.8d)
+Feb 28 │▓▓▓▓▓▓▓▓░░  #308 → #305          (afternoon + evening, ~1.0d)
+Mar 01 │▓▓▓▓▓▓▓▓▓▓  #306 → #307 → release (full day, ~1.0d)
+```
+
+Third sprint in a row following the "anchor + domain batch" structure:
+- Day 0 (hidden): app testing + sprint planning — no commits but essential
+- Day 1: trivial quick wins + foundation anchor (#310, #309, #304)
+- Day 2: dependent UX features in domain order (#308, #305)
+- Day 3: chain completion + release wrap-up (#306, #307, release)
+
+#### Lessons Learned
+
+1. **"100% completion" can mask validation debt**
+   - All 17 points closed; 3 follow-up issues emerged from deferred device testing on the servings chain
+   - Sprint completion rate ≠ feature completeness
+   - Fast execution through a dependency chain is only a win if device validation is included
+
+2. **Acceptance criteria need explicit device validation gates**
+   - Issues with data-facing UX impact (quantity scaling, servings propagation) should require device testing as a non-optional AC item
+   - If not listed in AC, device testing will be skipped under time pressure
+   - **Add "✓ Tested on device" as required AC for any feature that changes data-facing behaviour**
+
+3. **Predictable integration test breaks should be pre-listed in issue specs**
+   - #307's widget swap was always going to break e2e tests referencing the old widget key (`meal_recording_servings_field`)
+   - The `a1e110b` fix was expected but felt like unplanned work because it wasn't in the issue task list
+   - **Pattern: for any UI widget replacement, add "update tests referencing `[old_key]`" as an explicit task**
+
+4. **Diminishing complexity across dependency chains isn't modelled in estimates**
+   - #304 at 3pts was correct: new model + DB migration + cascade to services and tests
+   - #305 and #306 followed #304's established migration/model pattern; each was closer to 2pts in practice
+   - **Future: when issues in a same-pattern chain, discount 2nd+ issues by 30–50% at estimation time**
+
+5. **UI micro-issues cluster at ~0.05x regardless of estimate floor**
+   - #309 (2pts, 8 lines) and #310 (1pt, 24 lines) both at 0.05x
+   - Fibonacci scale can't express sub-30-minute work; individual estimation adds no precision
+   - **Recommendation: bundle micro-issues as a "quick wins block" with a flat 0.5pt budget per set**
+
+6. **Anchor + domain batch daily structure is a confirmed repeating pattern**
+   - Day 0 (hidden) + Day 1 (anchor) + Day 2–3 (domain batch) has appeared in 0.1.10, 0.1.11, and 0.1.12
+   - This is now the natural shape of a well-sequenced sprint — not accidental
+
+7. **Pre-sprint planning/testing day is standard overhead**
+   - Feb 26 (this sprint) and Feb 16 (0.1.10) were both zero-commit days used for app testing + planning
+   - Should be budgeted as a standard 0.5d overhead, not treated as lost time or idle capacity
+
+#### Recommendations for Future Sprints
+
+| Finding | Adjustment |
+|---------|------------|
+| Validation debt from servings chain | Add "✓ Tested on device" as required AC for data-facing features |
+| Predictable test breaks from widget swaps | Pre-list old widget key test updates in issue task list |
+| Diminishing complexity in dependency chains | Discount 2nd+ same-pattern chain issues by 30–50% at estimation time |
+| UI micro-issues at 0.05x | Bundle as quick wins block, flat 0.5pt budget per set |
+| Pre-sprint planning/testing day | Budget +0.5d standard overhead for planning + device validation |
+
+#### Notes
+
+- Sprint ran Feb 27 – Mar 1 (3 active commit days); Feb 26 was a zero-commit planning/testing day
+- The servings chain (#304→#305→#306) is functionally complete but has known follow-up gaps: #313, #314, #315 capture the deferred device/UX validation work
+- #307 (servings stepper) was the largest commit by lines (1,386) but a net simplification (−348 lines): replaced TextFormField + controller with a clean reusable `ServingsStepper` widget
+- Cruising velocity (30 pts/week) confirmed for the 6th consecutive sprint (0.1.7b–0.1.12)
+
+---
+
 ## Cumulative Metrics
 
 ### Estimation Accuracy Trend
@@ -1548,6 +1669,7 @@ Feb 25:    ████░░░░  Idempotent migrations + e2e test stability 
 | 0.1.9 | 18 | 1.41 | 0.34x | 9.0 | UX simplification, mono-theme, extended hours |
 | 0.1.10 | 13 | 2.00 | 0.15x | 6.5 | Pre-sprint scope clarity, anchor feature day, same-domain batch |
 | 0.1.11 | 14 | 2.50 | 0.18x | 5.6 | Real-life QA sprint: usage discovery → batch fix |
+| 0.1.12 | 17 | 3.30 | 0.17x | 5.7 | Servings chain + UX polish; validation debt deferred to #313-#315 |
 
 *\* 0.1.7a weighted-days methodology underrepresents actual effort due to shared day with 0.1.7b. Developer estimates ~0.5 days actual effort. Excluded from velocity calculations.*
 
@@ -1564,6 +1686,10 @@ Feb 25:    ████░░░░  Idempotent migrations + e2e test stability 
 - **Scope discipline (0.1.10) is as powerful as execution skill** — selecting 13 of 32 available points enabled 0.15x execution; the deferred 19 points would have diluted focus without user-facing benefit
 - **"Real-life QA sprint" is a distinct sprint type (0.1.11)** — intensive app usage → issue discovery → batch fix; expect 0.15-0.25x ratio, ~28 pts/week; app usage days are not wasted, they're the specification phase
 - **Post-usage bugs execute at 0.10x** — root cause is known before the editor opens; no debugging phase needed
+- **"100% completion" can mask validation debt (0.1.12)** — all 17 pts closed but 3 follow-up issues (#313-#315) emerged from skipped device testing on the servings chain; completion rate ≠ feature completeness
+- **Dependency chains have diminishing complexity (0.1.12)** — #304 (anchor, 3pts, 0.22x) established the pattern; #305 and #306 followed it at ~0.16x; discount 2nd+ chain issues by 30-50%
+- **UI micro-issues are uncalibrateable at 1pt floor (0.1.12)** — bundle as "quick wins block" with 0.5pt flat budget; individual Fibonacci estimation adds no precision for <30-line changes
+- **Pre-sprint planning/testing day is standard overhead** — confirmed in 0.1.10 (Feb 16) and 0.1.12 (Feb 26); budget +0.5d per sprint as standard investment
 
 ### Type-Based Calibration Factors
 
@@ -1590,6 +1716,9 @@ Use these multipliers when estimating future work:
 | Flaky test investigation | 2 issues | 0.25x | 0.2-0.3x | **NEW**: Time-box at 2 hours; root cause often external (0.1.8: #289-#290) |
 | UX redesign (simplification) | 3 issues | 0.34x | 0.3-0.5x | **NEW**: Net code deletion, clear vision, no discovery (0.1.9: #279, #271, #280) |
 | Bug fixes (post-usage, known root cause) | 3 issues | 0.10x | 0.1x | **NEW**: Root cause known from usage; no debugging phase; batch on one day (0.1.11: #298, #300, #301) |
+| Dependency chain — anchor issue | 1 issue | 0.22x | 0.2-0.3x | **NEW**: First issue in chain sets the pattern; includes migration + cascade (0.1.12: #304) |
+| Dependency chain — follow-on issues | 2 issues | 0.16x | 0.1-0.2x | **NEW**: Follow issues reuse anchor pattern; discount 30-50% vs anchor estimate (0.1.12: #305, #306) |
+| UI micro-issues (< 30 lines, one-liner) | 2 issues | 0.05x | bundle | **NEW**: Bundle as "quick wins block", flat 0.5pt budget per set; Fibonacci scale too coarse (0.1.12: #309, #310) |
 
 **Key Insights from 0.1.7a/b:**
 - **Design system work has its own velocity profile** — 64 points in 7 days (0.11x) reflects both new-type overestimation AND genuine efficiency from clear vision, compound patterns, and effective batching
@@ -1623,6 +1752,13 @@ Use these multipliers when estimating future work:
 - **Post-usage bugs execute at 0.10x regardless of point estimate** — root cause is known before the editor opens; #300 (3 pts) + #301 (5 pts) + #298 (2 pts) all at 0.10x
 - **App usage days are a specification phase, not idle time** — Feb 19–20 with zero commits produced the clearest possible issue specs for Feb 21 and 24 execution
 - **Idempotent migrations are a non-negotiable baseline** — add to migration definition of done; e2e tests are the safety net that catches violations
+
+**Key Insights from 0.1.12:**
+- **Validation debt is a distinct failure mode from scope creep** — sprint closed 100% of points but generated 3 follow-up issues (#313-#315); fast execution through a chain without device testing creates deferred work, not completed work
+- **Device validation gates belong in acceptance criteria** — if "tested on device" isn't an explicit AC item, it will be skipped under time pressure; add it as a non-optional gate for any data-facing feature
+- **Dependency chains have diminishing complexity** — anchor issue (#304, 0.22x) sets the pattern; follow-on issues (#305, #306) execute at ~0.16x by reusing it; discount 2nd+ chain issues 30-50% at estimation time
+- **UI micro-issues are uncalibrateable at 1pt floor** — #309 and #310 both at 0.05x regardless of 2pt/1pt estimates; bundle one-liner tasks as a flat "quick wins block" (0.5pt per set)
+- **Pre-sprint planning/testing day is standard overhead** — confirmed in 0.1.10 (Feb 16) and 0.1.12 (Feb 26); budget +0.5d as a planned investment, not lost time
 
 ---
 
@@ -1679,6 +1815,7 @@ Use historical velocity data to size future milestones and prevent overcommitmen
 | 0.1.9 | 18 | 2 | 9.00 | 36.0 | UX simplification, mono-theme, extended hours |
 | 0.1.10 | 13 | 2 | 6.50 | 32.5 | Pre-sprint scope clarity, anchor feature day, same-domain batch |
 | 0.1.11 | 14 | 2.5 | 5.60 | 28.0 | Real-life QA sprint: usage discovery + batch fix |
+| 0.1.12 | 17 | 3.3 | 5.15 | 28.3 | Servings chain + UX polish; validation debt to #313-#315 |
 
 *\* 0.1.7a excluded from velocity calculations — shared day with 0.1.7b makes weighted-days unreliable.*
 
@@ -1831,4 +1968,13 @@ Use historical velocity data to size future milestones and prevent overcommitmen
   - Post-usage bugs executed at 0.10x across all three bug issues (#298, #300, #301)
   - New calibration factor: post-usage bug fixes (0.10x, flat rate regardless of estimate)
   - Idempotent migrations identified as non-negotiable baseline; added to definition of done recommendation
+- **2026-03-03**: Added 0.1.12 retrospective analysis
+  - Sprint completed: 7 planned issues (17 points) + 1 unplanned commit in 3.5 effective days
+  - Actual ratio: 0.17x (execution-mode sprint, consistent with 0.1.11)
+  - Cruising velocity (30 pts/week) confirmed for 6th consecutive sprint (0.1.7b–0.1.12)
+  - **NEW PATTERN: "Validation debt"** — fast execution through dependency chain (#304→#305→#306) deferred device testing, generating follow-up issues #313, #314, #315; completion rate ≠ feature completeness
+  - **NEW RULE: Device validation gates in AC** — "✓ Tested on device" must be explicit AC for data-facing features
+  - New calibration: dependency chain diminishing complexity (anchor at 0.22x, follow-on at 0.16x; discount 2nd+ issues 30-50%)
+  - New calibration: UI micro-issues < 30 lines → bundle as flat 0.5pt quick wins block; expect 0.05x
+  - Pre-sprint planning/testing day confirmed as standard 0.5d overhead (0.1.10 + 0.1.12)
   - Cruising velocity (30 pts/week) validated across 5 consecutive sprints (0.1.7b–0.1.11)
