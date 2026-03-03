@@ -97,13 +97,32 @@ Use this skill when the user says:
 
 4. Review test coverage for affected code
 
-**Output:** 
+**Output:**
 - List of specific code smells identified
 - Files/classes/methods flagged for refactoring
 - SOLID principle violations noted
 - Prioritized list of issues (highest impact first)
+- **Complexity classification**: Is the length caused by *structural problems* (mixed concerns, god class, business logic in UI layer) or *inherent complexity* (multi-mode dialog, form with many fields, service with many related operations)?
+- **Extraction viability**: Are there units that, once extracted, would have a genuinely independent name and responsibility?
 
 **User Confirmation Required:** Does this analysis identify the key problems? Any additional concerns or areas to focus on?
+
+---
+
+### VIABILITY GATE (between Checkpoints 1 and 2)
+
+Before designing a strategy, answer honestly: **If I extracted a piece of this code, would it have a genuinely independent name and responsibility — or would it just be "part of this file, now elsewhere"?**
+
+**If meaningful structural opportunities exist → proceed to Checkpoint 2.**
+
+**If no meaningful extraction is available**, surface this finding and stop:
+
+> "Analysis complete. This file is [N] lines but the length reflects inherent complexity, not structural problems — its concerns are genuinely related and well-organized within the current structure. No structural refactoring is warranted. Cosmetic changes (collapsing multi-line expressions, removing comments, compacting whitespace) would reduce the line count but degrade readability — that is not refactoring. Recommendation: accept the current length."
+
+Typical cases where this applies:
+- A multi-mode dialog (e.g., selection view + menu view) where both modes are tightly coupled to shared state
+- A form screen where every section already has its own focused builder method
+- A service where all methods belong to a single cohesive concern and the length is driven by the domain's natural breadth
 
 ---
 
@@ -353,6 +372,8 @@ Issue Roadmap → Refactoring (if needed) → UX Design → Implementation → T
 5. **User checkpoints** - Verify at each phase before proceeding
 6. **Documentation** - Capture decisions and patterns for future reference
 7. **No premature optimization** - Focus on readability and maintainability, not performance
+8. **Readability is the goal** - Line count is a proxy metric for structural problems, not a target. A shorter file that is harder to follow is worse code. Structural improvement that happens to reduce lines is a success; line reduction that degrades clarity is a failure.
+9. **Know when to stop** - If analysis reveals no genuine extraction opportunities, report that finding explicitly and stop. Do not substitute cosmetic changes (compacting syntax, removing whitespace, collapsing readable multi-line expressions) for structural refactoring. "No refactoring needed" is a valid and good outcome.
 
 ## Common Refactoring Patterns
 
@@ -470,6 +491,8 @@ class OrderProcessor {
 - Not committing incrementally
 - Mixing refactoring with feature work
 - Refactoring for perfection (diminishing returns)
+- **Line hunting** - Making syntactic changes (collapsing multi-line expressions into one-liners, removing meaningful whitespace, condensing readable chains) purely to reduce line count. This degrades readability without improving structure. It looks like progress but it's the opposite.
+- **Purposeless extraction** - Pulling out private helper methods that have no meaningful independent responsibility, just to shrink the parent file. If the extracted method would only ever be called from one place and has no name that adds clarity, it shouldn't be extracted.
 
 ## Metrics to Track
 
@@ -489,3 +512,5 @@ class OrderProcessor {
 - Under tight deadline (schedule it for later)
 - Without adequate test coverage (write tests first)
 - Just for the sake of it (refactor with purpose)
+- File length is caused by inherent complexity (multi-mode dialog, complex form, service with broad but cohesive responsibility) and the code is already well-organized within each section
+- The only available reductions are cosmetic: compacting syntax, collapsing readable multi-line expressions to one-liners, removing meaningful whitespace or comments
