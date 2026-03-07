@@ -403,7 +403,21 @@ class ShoppingListService {
           continue;
         }
 
-        // 4. For each recipe, get its ingredients and scale by servings
+        // 4. Add DB-linked simple sides using stored quantity/unit
+        final sides = item.mealPlanItemIngredients ?? [];
+        for (final side in sides) {
+          if (side.ingredientId == null) continue; // free-text: skip
+          final ingredient = await dbHelper.getIngredient(side.ingredientId!);
+          if (ingredient == null) continue;
+          allIngredients.add({
+            'name': ingredient.name,
+            'quantity': side.quantity,
+            'unit': side.unit ?? ingredient.unit?.value ?? '',
+            'category': ingredient.category.value,
+          });
+        }
+
+        // 5. For each recipe, get its ingredients and scale by servings
         for (final mealPlanItemRecipe in item.mealPlanItemRecipes!) {
           final ingredients =
               await dbHelper.getRecipeIngredients(mealPlanItemRecipe.recipeId);
