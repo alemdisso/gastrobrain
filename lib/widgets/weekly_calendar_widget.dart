@@ -20,6 +20,8 @@ class WeeklyCalendarWidget extends StatefulWidget {
   final Function(DateTime selectedDate, int selectedDayIndex)? onDaySelected;
   final ScrollController? scrollController;
   final DatabaseHelper? databaseHelper;
+  /// Map of ingredient id → name for resolving DB-linked simple sides.
+  final Map<String, String> ingredientNames;
 
   const WeeklyCalendarWidget({
     super.key,
@@ -31,6 +33,7 @@ class WeeklyCalendarWidget extends StatefulWidget {
     this.onDaySelected,
     this.scrollController,
     this.databaseHelper,
+    this.ingredientNames = const {},
   });
 
   @override
@@ -615,6 +618,27 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                           plannedMeal.mealPlanItemRecipes!.length - 1),
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                             color: DesignTokens.mealBadgeContent,
+                          ),
+                    ),
+                  ],
+                  // Simple sides names
+                  if (plannedMeal.mealPlanItemIngredients != null &&
+                      plannedMeal.mealPlanItemIngredients!.isNotEmpty) ...[
+                    const SizedBox(height: DesignTokens.spacingXs),
+                    Text(
+                      plannedMeal.mealPlanItemIngredients!.map((s) {
+                        if (s.ingredientId != null) {
+                          return widget.ingredientNames[s.ingredientId] ??
+                              s.customName ??
+                              '?';
+                        }
+                        return s.customName ?? '?';
+                      }).join(', '),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: DesignTokens.mealBadgeContent,
+                            fontStyle: FontStyle.italic,
                           ),
                     ),
                   ],

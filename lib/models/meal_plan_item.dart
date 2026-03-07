@@ -1,4 +1,5 @@
 import 'meal_plan_item_recipe.dart';
+import 'meal_plan_item_ingredient.dart';
 
 class MealPlanItem {
   String id;
@@ -10,6 +11,8 @@ class MealPlanItem {
   int plannedServings; // How many servings the user intends to prepare
   List<MealPlanItemRecipe>?
       mealPlanItemRecipes; // List of recipes in this planned meal
+  List<MealPlanItemIngredient>?
+      mealPlanItemIngredients; // List of simple sides in this planned meal
 
   static const String lunch = 'lunch';
   static const String dinner = 'dinner';
@@ -21,6 +24,7 @@ class MealPlanItem {
     required this.mealType,
     this.notes = '',
     this.mealPlanItemRecipes,
+    this.mealPlanItemIngredients,
     this.hasBeenCooked = false,
     this.plannedServings = 4,
   }) {
@@ -62,12 +66,12 @@ class MealPlanItem {
   MealPlanItem copyWith({
     String? id,
     String? mealPlanId,
-    String? recipeId,
     String? plannedDate,
     String? mealType,
     String? notes,
     int? plannedServings,
     List<MealPlanItemRecipe>? mealPlanItemRecipes,
+    List<MealPlanItemIngredient>? mealPlanItemIngredients,
   }) {
     return MealPlanItem(
       id: id ?? this.id,
@@ -77,6 +81,7 @@ class MealPlanItem {
       notes: notes ?? this.notes,
       plannedServings: plannedServings ?? this.plannedServings,
       mealPlanItemRecipes: mealPlanItemRecipes ?? this.mealPlanItemRecipes,
+      mealPlanItemIngredients: mealPlanItemIngredients ?? this.mealPlanItemIngredients,
     );
   }
 

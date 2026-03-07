@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import '../models/ingredient.dart';
 import '../models/recipe.dart';
 import '../models/recipe_recommendation.dart';
 import '../core/di/service_provider.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/recipe_selection_card.dart';
 import '../widgets/add_side_dish_dialog.dart';
+import '../widgets/add_simple_side_dialog.dart';
 import '../utils/sorting_utils.dart';
 import 'servings_stepper.dart';
 
@@ -22,6 +24,8 @@ class RecipeSelectionDialog extends StatefulWidget {
   final Recipe? initialPrimaryRecipe;
   final List<Recipe>? initialAdditionalRecipes;
   final int? initialPlannedServings;
+  final List<Ingredient> availableIngredients;
+  final List<Map<String, dynamic>> initialSimpleSides;
 
   const RecipeSelectionDialog({
     super.key,
@@ -32,6 +36,8 @@ class RecipeSelectionDialog extends StatefulWidget {
     this.initialPrimaryRecipe,
     this.initialAdditionalRecipes,
     this.initialPlannedServings,
+    this.availableIngredients = const [],
+    this.initialSimpleSides = const [],
   });
 
   @override
@@ -49,6 +55,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
   bool _showingMenu = false;
   List<Recipe> _additionalRecipes = [];
   int _plannedServings = 4;
+  List<Map<String, dynamic>> _simpleSides = [];
 
   @override
   void initState() {
@@ -64,6 +71,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
       _tabController.index = widget.detailedRecommendations.isNotEmpty ? 0 : 1;
     }
 
+    _simpleSides = List.from(widget.initialSimpleSides);
     _recommendations = List.from(widget.detailedRecommendations);
   }
 
@@ -310,6 +318,25 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
             const SizedBox(height: 16),
           ],
 
+          if (_simpleSides.isNotEmpty) ...[
+            Text(
+              AppLocalizations.of(context)!.simpleSidesLabel,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            ..._simpleSides.map((side) => ListTile(
+                  leading: const Icon(Icons.eco_outlined, color: Colors.grey),
+                  title: Text(_resolveSideName(side)),
+                  subtitle: _buildSideSubtitle(side),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.remove_circle_outline),
+                    onPressed: () => setState(() => _simpleSides.remove(side)),
+                  ),
+                  contentPadding: EdgeInsets.zero,
+                )),
+            const SizedBox(height: 16),
+          ],
+
           ServingsStepper(
             key: const Key('recipe_selection_planned_servings_stepper'),
             value: _plannedServings,
@@ -326,6 +353,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
               'primaryRecipe': _selectedRecipe!,
               'additionalRecipes': _additionalRecipes,
               'plannedServings': _plannedServings,
+              'simpleSides': _simpleSides,
             }),
           ),
           ListTile(
@@ -336,6 +364,13 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
             subtitle:
                 Text(AppLocalizations.of(context)!.addMoreRecipesToThisMeal),
             onTap: () => _showEnhancedSideDishDialog(),
+          ),
+          ListTile(
+            leading: const Icon(Icons.add_shopping_cart),
+            title: Text(_simpleSides.isNotEmpty
+                ? AppLocalizations.of(context)!.manageSimpleSides
+                : AppLocalizations.of(context)!.addSimpleSide),
+            onTap: _showAddSimpleSideDialog,
           ),
           ListTile(
             leading: const Icon(Icons.arrow_back),
@@ -375,6 +410,42 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
       recommendation: recommendation,
       onTap: () => _handleRecipeSelection(recipe),
     );
+  }
+
+  Future<void> _showAddSimpleSideDialog() async {
+    if (!mounted) return;
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => AddSimpleSideDialog(
+        availableIngredients: widget.availableIngredients,
+      ),
+    );
+    if (result != null && mounted) {
+      setState(() => _simpleSides.add(result));
+    }
+  }
+
+  String _resolveSideName(Map<String, dynamic> side) {
+    final ingredientId = side['ingredientId'] as String?;
+    if (ingredientId != null) {
+      final ingredient = widget.availableIngredients
+          .where((i) => i.id == ingredientId)
+          .firstOrNull;
+      return ingredient?.name ?? side['customName'] as String? ?? '?';
+    }
+    return side['customName'] as String? ?? '?';
+  }
+
+  Widget? _buildSideSubtitle(Map<String, dynamic> side) {
+    final quantity = (side['quantity'] as num?)?.toDouble() ?? 1.0;
+    final unit = side['unit'] as String?;
+    if (unit != null && unit.isNotEmpty) {
+      final qty = quantity == quantity.truncateToDouble()
+          ? quantity.toInt().toString()
+          : quantity.toString();
+      return Text('$qty $unit');
+    }
+    return null;
   }
 
   Future<void> _showEnhancedSideDishDialog() async {

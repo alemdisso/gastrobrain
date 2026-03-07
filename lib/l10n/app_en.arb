@@ -2467,6 +2467,67 @@
         "type": "String"
       }
     }
+  },
+  "addSimpleSideTitle": "Add Simple Side",
+  "@addSimpleSideTitle": {
+    "description": "Title for the dialog to add an ingredient as a simple side"
+  },
+  "simpleSideSearchHint": "Search ingredients or type a name",
+  "@simpleSideSearchHint": {
+    "description": "Hint text in the search field of the add simple side dialog"
+  },
+  "simpleSideNotesHint": "Notes (optional)",
+  "@simpleSideNotesHint": {
+    "description": "Hint text for the notes field in the add simple side dialog"
+  },
+  "simpleSideQuantityLabel": "Qty",
+  "@simpleSideQuantityLabel": {
+    "description": "Label for the quantity field in the add simple side dialog"
+  },
+  "simpleSideUnitLabel": "Unit",
+  "@simpleSideUnitLabel": {
+    "description": "Label for the unit field in the add simple side dialog"
+  },
+  "simpleSideUnitHint": "e.g. kg, g, cup",
+  "@simpleSideUnitHint": {
+    "description": "Hint text for the unit field in the add simple side dialog"
+  },
+  "simpleSideFreeTextHint": "Add \"{name}\" as a custom side",
+  "@simpleSideFreeTextHint": {
+    "description": "Label shown when typed text does not match any ingredient",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "simpleSidesLabel": "Simple sides",
+  "@simpleSidesLabel": {
+    "description": "Label for the simple sides section in meal planning"
+  },
+  "addSimpleSide": "Add simple side",
+  "@addSimpleSide": {
+    "description": "Button label to open the add simple side dialog"
+  },
+  "removeSimpleSide": "Remove",
+  "@removeSimpleSide": {
+    "description": "Button label to remove a simple side from a meal"
+  },
+  "manageSimpleSides": "Manage simple sides",
+  "@manageSimpleSides": {
+    "description": "Meal options menu item to open the simple sides management dialog"
+  },
+  "manageSimpleSidesTitle": "Simple Sides",
+  "@manageSimpleSidesTitle": {
+    "description": "Title of the manage simple sides dialog"
+  },
+  "noSimpleSidesYet": "No simple sides added yet.",
+  "@noSimpleSidesYet": {
+    "description": "Empty state text in the manage simple sides dialog"
+  },
+  "done": "Done",
+  "@done": {
+    "description": "Generic done/close button label"
   }
 
 }

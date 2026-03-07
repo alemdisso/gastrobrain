@@ -19,6 +19,8 @@ import '../models/recipe_ingredient.dart';
 import '../models/meal_plan.dart';
 import '../models/meal_plan_item.dart';
 import '../models/meal_plan_item_recipe.dart';
+import '../models/meal_plan_item_ingredient.dart';
+import '../models/meal_ingredient.dart';
 import '../models/recipe_recommendation.dart';
 import '../models/recommendation_results.dart';
 import '../models/shopping_list.dart';
@@ -36,6 +38,8 @@ import '../core/migration/migrations/006_add_meal_plan_modified_at.dart';
 import '../core/migration/migrations/007_add_cooked_at_columns.dart';
 import '../core/migration/migrations/008_add_recipe_servings.dart';
 import '../core/migration/migrations/009_add_planned_servings.dart';
+import '../core/migration/migrations/010_add_simple_sides_tables.dart';
+import '../core/migration/migrations/011_add_simple_sides_quantity.dart';
 import '../core/repositories/base_repository.dart';
 
 class DatabaseHelper {
@@ -58,6 +62,8 @@ class DatabaseHelper {
     AddCookedAtColumnsMigration(),
     AddRecipeServingsMigration(),
     AddPlannedServingsMigration(),
+    AddSimpleSidesMigration(),
+    AddSimpleSidesQuantityMigration(),
   ];
 
   /// Get the migration runner instance
@@ -467,6 +473,18 @@ class DatabaseHelper {
               (i) => MealPlanItemRecipe.fromMap(recipeMaps[i]));
         }
 
+        // Fetch associated simple sides from the junction table
+        final List<Map<String, dynamic>> sideMaps = await db.query(
+          'meal_plan_item_ingredients',
+          where: 'meal_plan_item_id = ?',
+          whereArgs: [item.id],
+        );
+
+        if (sideMaps.isNotEmpty) {
+          item.mealPlanItemIngredients = List.generate(sideMaps.length,
+              (i) => MealPlanItemIngredient.fromMap(sideMaps[i]));
+        }
+
         items.add(item);
       }
 
@@ -567,6 +585,18 @@ class DatabaseHelper {
       if (recipeMaps.isNotEmpty) {
         item.mealPlanItemRecipes = List.generate(recipeMaps.length,
             (i) => MealPlanItemRecipe.fromMap(recipeMaps[i]));
+      }
+
+      // Fetch associated simple sides from the junction table
+      final List<Map<String, dynamic>> sideMaps2 = await db.query(
+        'meal_plan_item_ingredients',
+        where: 'meal_plan_item_id = ?',
+        whereArgs: [item.id],
+      );
+
+      if (sideMaps2.isNotEmpty) {
+        item.mealPlanItemIngredients = List.generate(sideMaps2.length,
+            (i) => MealPlanItemIngredient.fromMap(sideMaps2[i]));
       }
 
       items.add(item);
@@ -791,6 +821,18 @@ class DatabaseHelper {
             (i) => MealPlanItemRecipe.fromMap(recipeMaps[i]));
       }
 
+      // Fetch associated simple sides from the junction table
+      final List<Map<String, dynamic>> sideMaps3 = await db.query(
+        'meal_plan_item_ingredients',
+        where: 'meal_plan_item_id = ?',
+        whereArgs: [item.id],
+      );
+
+      if (sideMaps3.isNotEmpty) {
+        item.mealPlanItemIngredients = List.generate(sideMaps3.length,
+            (i) => MealPlanItemIngredient.fromMap(sideMaps3[i]));
+      }
+
       items.add(item);
     }
 
@@ -843,6 +885,126 @@ class DatabaseHelper {
     }
   }
 
+  // MealPlanItemIngredient (simple sides) operations
+
+  Future<String> insertMealPlanItemIngredient(
+      MealPlanItemIngredient side) async {
+    final Database db = await database;
+    try {
+      await db.insert('meal_plan_item_ingredients', side.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.replace);
+      return side.id;
+    } catch (e) {
+      throw GastrobrainException(
+          'Failed to insert meal plan item ingredient: ${e.toString()}');
+    }
+  }
+
+  Future<List<MealPlanItemIngredient>> getMealPlanItemIngredientsForItem(
+      String mealPlanItemId) async {
+    final Database db = await database;
+    try {
+      final List<Map<String, dynamic>> maps = await db.query(
+        'meal_plan_item_ingredients',
+        where: 'meal_plan_item_id = ?',
+        whereArgs: [mealPlanItemId],
+      );
+      return List.generate(
+          maps.length, (i) => MealPlanItemIngredient.fromMap(maps[i]));
+    } catch (e) {
+      throw GastrobrainException(
+          'Failed to get meal plan item ingredients: ${e.toString()}');
+    }
+  }
+
+  Future<int> deleteMealPlanItemIngredient(String id) async {
+    final Database db = await database;
+    try {
+      return await db.delete(
+        'meal_plan_item_ingredients',
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    } catch (e) {
+      throw GastrobrainException(
+          'Failed to delete meal plan item ingredient: ${e.toString()}');
+    }
+  }
+
+  Future<int> deleteMealPlanItemIngredientsByItemId(
+      String mealPlanItemId) async {
+    final Database db = await database;
+    try {
+      return await db.delete(
+        'meal_plan_item_ingredients',
+        where: 'meal_plan_item_id = ?',
+        whereArgs: [mealPlanItemId],
+      );
+    } catch (e) {
+      throw GastrobrainException(
+          'Failed to delete meal plan item ingredients: ${e.toString()}');
+    }
+  }
+
+  // MealIngredient (simple sides on recorded meals) operations
+
+  Future<String> insertMealIngredient(MealIngredient side) async {
+    final Database db = await database;
+    try {
+      await db.insert('meal_ingredients', side.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.replace);
+      return side.id;
+    } catch (e) {
+      throw GastrobrainException(
+          'Failed to insert meal ingredient: ${e.toString()}');
+    }
+  }
+
+  Future<List<MealIngredient>> getMealIngredientsForMeal(
+      String mealId) async {
+    final Database db = await database;
+    try {
+      final List<Map<String, dynamic>> maps = await db.query(
+        'meal_ingredients',
+        where: 'meal_id = ?',
+        whereArgs: [mealId],
+      );
+      return List.generate(
+          maps.length, (i) => MealIngredient.fromMap(maps[i]));
+    } catch (e) {
+      throw GastrobrainException(
+          'Failed to get meal ingredients: ${e.toString()}');
+    }
+  }
+
+  Future<int> deleteMealIngredient(String id) async {
+    final Database db = await database;
+    try {
+      return await db.delete(
+        'meal_ingredients',
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    } catch (e) {
+      throw GastrobrainException(
+          'Failed to delete meal ingredient: ${e.toString()}');
+    }
+  }
+
+  Future<int> deleteMealIngredientsByMealId(String mealId) async {
+    final Database db = await database;
+    try {
+      return await db.delete(
+        'meal_ingredients',
+        where: 'meal_id = ?',
+        whereArgs: [mealId],
+      );
+    } catch (e) {
+      throw GastrobrainException(
+          'Failed to delete meal ingredients: ${e.toString()}');
+    }
+  }
+
   // Ingredient operations
   Future<String> insertIngredient(Ingredient ingredient) async {
     final Database db = await database;
@@ -854,6 +1016,17 @@ class DatabaseHelper {
     final Database db = await database;
     final List<Map<String, dynamic>> maps = await db.query('ingredients');
     return List.generate(maps.length, (i) => Ingredient.fromMap(maps[i]));
+  }
+
+  Future<Ingredient?> getIngredient(String id) async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'ingredients',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    if (maps.isEmpty) return null;
+    return Ingredient.fromMap(maps.first);
   }
 
   Future<List<Ingredient>> getProteinIngredients({String? proteinType}) async {
@@ -1168,10 +1341,12 @@ class DatabaseHelper {
 
     final meals = List.generate(maps.length, (i) => Meal.fromMap(maps[i]));
 
-    // Load meal recipes for each meal
+    // Load meal recipes and simple sides for each meal
     for (final meal in meals) {
       final recipes = await getMealRecipesForMeal(meal.id);
       meal.mealRecipes = recipes;
+      final sides = await getMealIngredientsForMeal(meal.id);
+      if (sides.isNotEmpty) meal.mealIngredients = sides;
     }
 
     return meals;
@@ -1191,9 +1366,11 @@ class DatabaseHelper {
 
     final meal = Meal.fromMap(maps.first);
 
-    // Load associated recipes
+    // Load associated recipes and simple sides
     final recipes = await getMealRecipesForMeal(id);
     meal.mealRecipes = recipes;
+    final sides = await getMealIngredientsForMeal(id);
+    if (sides.isNotEmpty) meal.mealIngredients = sides;
 
     return meal;
   }
@@ -1243,6 +1420,18 @@ class DatabaseHelper {
 
       final meal = Meal.fromMap(mealMap);
       meal.mealRecipes = mealRecipes;
+
+      // Load simple sides for this meal
+      final List<Map<String, dynamic>> sideMaps = await db.query(
+        'meal_ingredients',
+        where: 'meal_id = ?',
+        whereArgs: [mealId],
+      );
+      if (sideMaps.isNotEmpty) {
+        meal.mealIngredients = List.generate(
+            sideMaps.length, (i) => MealIngredient.fromMap(sideMaps[i]));
+      }
+
       meals.add(meal);
     }
 

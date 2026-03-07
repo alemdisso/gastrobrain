@@ -11,6 +11,8 @@ import 'package:gastrobrain/models/meal_recipe.dart';
 import 'package:gastrobrain/models/meal_plan.dart';
 import 'package:gastrobrain/models/meal_plan_item.dart';
 import 'package:gastrobrain/models/meal_plan_item_recipe.dart';
+import 'package:gastrobrain/models/meal_plan_item_ingredient.dart';
+import 'package:gastrobrain/models/meal_ingredient.dart';
 import 'package:gastrobrain/models/ingredient.dart';
 import 'package:gastrobrain/models/recipe_ingredient.dart';
 import 'package:gastrobrain/models/shopping_list.dart';
@@ -1494,5 +1496,79 @@ class MockDatabaseHelper implements DatabaseHelper {
   @override
   Future<void> deleteShoppingListItem(int id) async {
     _shoppingListItems.remove(id);
+  }
+
+  // ── Simple sides (MealPlanItemIngredient) ──────────────────────────────────
+
+  final Map<String, MealPlanItemIngredient> _mealPlanItemIngredients = {};
+
+  @override
+  Future<String> insertMealPlanItemIngredient(
+      MealPlanItemIngredient side) async {
+    _mealPlanItemIngredients[side.id] = side;
+    return side.id;
+  }
+
+  @override
+  Future<List<MealPlanItemIngredient>> getMealPlanItemIngredientsForItem(
+      String mealPlanItemId) async {
+    return _mealPlanItemIngredients.values
+        .where((s) => s.mealPlanItemId == mealPlanItemId)
+        .toList();
+  }
+
+  @override
+  Future<int> deleteMealPlanItemIngredient(String id) async {
+    return _mealPlanItemIngredients.remove(id) != null ? 1 : 0;
+  }
+
+  @override
+  Future<int> deleteMealPlanItemIngredientsByItemId(
+      String mealPlanItemId) async {
+    final keys = _mealPlanItemIngredients.keys
+        .where((k) =>
+            _mealPlanItemIngredients[k]!.mealPlanItemId == mealPlanItemId)
+        .toList();
+    keys.forEach(_mealPlanItemIngredients.remove);
+    return keys.length;
+  }
+
+  // ── Simple sides (MealIngredient) ─────────────────────────────────────────
+
+  final Map<String, MealIngredient> _mealIngredients = {};
+
+  @override
+  Future<String> insertMealIngredient(MealIngredient side) async {
+    _mealIngredients[side.id] = side;
+    return side.id;
+  }
+
+  @override
+  Future<List<MealIngredient>> getMealIngredientsForMeal(
+      String mealId) async {
+    return _mealIngredients.values
+        .where((s) => s.mealId == mealId)
+        .toList();
+  }
+
+  @override
+  Future<int> deleteMealIngredient(String id) async {
+    return _mealIngredients.remove(id) != null ? 1 : 0;
+  }
+
+  @override
+  Future<int> deleteMealIngredientsByMealId(String mealId) async {
+    final keys = _mealIngredients.keys
+        .where((k) => _mealIngredients[k]!.mealId == mealId)
+        .toList();
+    keys.forEach(_mealIngredients.remove);
+    return keys.length;
+  }
+
+  // ── Single ingredient fetch ────────────────────────────────────────────────
+
+  @override
+  Future<Ingredient?> getIngredient(String id) async {
+    return _ingredients[id];
   }
 }
