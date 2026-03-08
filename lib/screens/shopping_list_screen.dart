@@ -16,6 +16,7 @@ class _ManualShoppingItem {
   final double quantity;
   final String? unit;
   final String? notes;
+  final String category;
   bool toBuy = true;
 
   _ManualShoppingItem({
@@ -23,6 +24,7 @@ class _ManualShoppingItem {
     required this.quantity,
     this.unit,
     this.notes,
+    this.category = 'other',
   });
 }
 
@@ -44,7 +46,7 @@ class _DisplayItem {
 
   bool get isManual => manualItem != null;
   String get name => dbItem?.ingredientName ?? manualItem!.name;
-  String get category => isManual ? 'manual' : dbItem!.category;
+  String get category => isManual ? manualItem!.category : dbItem!.category;
   bool get toBuy => dbItem?.toBuy ?? manualItem!.toBuy;
   double get quantity => dbItem?.quantity ?? manualItem!.quantity;
   String get unit => dbItem?.unit ?? manualItem!.unit ?? '';
@@ -285,9 +287,8 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       children: grouped.entries.map((entry) {
-        final categoryName = entry.key == 'manual'
-            ? l10nInner.manualShoppingItemsCategory
-            : IngredientCategory.fromString(entry.key).getLocalizedDisplayName(context);
+        final categoryName =
+            IngredientCategory.fromString(entry.key).getLocalizedDisplayName(context);
 
         return ExpansionTile(
           title: Row(
@@ -505,12 +506,17 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
 
     if (name.trim().isEmpty) return;
 
+    final ingredient = result['ingredientId'] != null
+        ? ingredients.where((i) => i.id == result['ingredientId']).firstOrNull
+        : null;
+
     setState(() {
       _manualItems.add(_ManualShoppingItem(
         name: name.trim(),
         quantity: (result['quantity'] as double?) ?? 1.0,
         unit: result['unit'] as String?,
         notes: result['notes'] as String?,
+        category: ingredient?.category.value ?? 'other',
       ));
     });
   }
