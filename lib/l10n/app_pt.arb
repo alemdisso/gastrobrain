@@ -2488,6 +2488,27 @@
   "done": "Concluído",
   "@done": {
     "description": "Generic done/close button label"
+  },
+  "addShoppingItemTitle": "Adicionar Item",
+  "@addShoppingItemTitle": {
+    "description": "Title of the add manual shopping item dialog"
+  },
+  "addShoppingItemButton": "Adicionar item",
+  "@addShoppingItemButton": {
+    "description": "FAB label to open the add manual shopping item dialog"
+  },
+  "manualShoppingItemsCategory": "Os meus itens",
+  "@manualShoppingItemsCategory": {
+    "description": "Group header for manually added shopping list items"
+  },
+  "shoppingItemFreeTextHint": "Adicionar \"{name}\" à lista",
+  "@shoppingItemFreeTextHint": {
+    "description": "Hint shown in add-shopping-item dialog when no DB match is found",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 
 }
