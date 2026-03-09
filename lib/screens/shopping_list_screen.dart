@@ -7,7 +7,50 @@ import '../database/database_helper.dart';
 import '../core/di/service_provider.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/quantity_formatter.dart';
+import '../widgets/add_shopping_item_dialog.dart';
 import 'shopping_list_preview_screen.dart';
+
+/// An item added manually by the user (in-memory only, not persisted to DB).
+class _ManualShoppingItem {
+  final String name;
+  final double quantity;
+  final String? unit;
+  final String? notes;
+  final String category;
+  bool toBuy = true;
+
+  _ManualShoppingItem({
+    required this.name,
+    required this.quantity,
+    this.unit,
+    this.notes,
+    this.category = 'other',
+  });
+}
+
+/// Unified wrapper used only for display/grouping logic.
+class _DisplayItem {
+  final ShoppingListItem? dbItem;
+  final _ManualShoppingItem? manualItem;
+  final int? manualIndex;
+
+  const _DisplayItem.db(ShoppingListItem item)
+      : dbItem = item,
+        manualItem = null,
+        manualIndex = null;
+
+  const _DisplayItem.manual(_ManualShoppingItem item, int index)
+      : dbItem = null,
+        manualItem = item,
+        manualIndex = index;
+
+  bool get isManual => manualItem != null;
+  String get name => dbItem?.ingredientName ?? manualItem!.name;
+  String get category => isManual ? manualItem!.category : dbItem!.category;
+  bool get toBuy => dbItem?.toBuy ?? manualItem!.toBuy;
+  double get quantity => dbItem?.quantity ?? manualItem!.quantity;
+  String get unit => dbItem?.unit ?? manualItem!.unit ?? '';
+}
 
 enum _StalenessType { none, planChanged, mealCooked }
 
@@ -28,6 +71,7 @@ class ShoppingListScreen extends StatefulWidget {
 class _ShoppingListScreenState extends State<ShoppingListScreen> {
   ShoppingList? _shoppingList;
   List<ShoppingListItem> _items = [];
+  final List<_ManualShoppingItem> _manualItems = [];
   bool _isLoading = true;
   String? _errorMessage;
   bool _showToBuyOnly = false;
@@ -137,6 +181,11 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           ),
         ),
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _isLoading ? null : _handleAddItem,
+        icon: const Icon(Icons.add),
+        label: Text(l10n.addShoppingItemButton),
+      ),
       body: Column(
         children: [
           if (_stalenessType != _StalenessType.none) _buildStaleBanner(context),
@@ -182,7 +231,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       );
     }
 
-    if (_items.isEmpty) {
+    if (_items.isEmpty && _manualItems.isEmpty) {
       final l10n = AppLocalizations.of(context)!;
       return Center(
         child: Padding(
@@ -209,34 +258,37 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       );
     }
 
-    // Apply filters
-    var filteredItems = _items.where((item) {
+    // Build unified display items from DB items and manual items
+    final allDisplayItems = <_DisplayItem>[
+      ..._items.map((item) => _DisplayItem.db(item)),
+      for (var i = 0; i < _manualItems.length; i++)
+        _DisplayItem.manual(_manualItems[i], i),
+    ];
+
+    // Apply to-buy filter
+    final filtered = allDisplayItems.where((item) {
       if (_showToBuyOnly && !item.toBuy) return false;
       return true;
     }).toList();
 
-    // Group items by category
-    final grouped = <String, List<ShoppingListItem>>{};
-    for (final item in filteredItems) {
-      if (!grouped.containsKey(item.category)) {
-        grouped[item.category] = [];
-      }
-      grouped[item.category]!.add(item);
+    // Group by category
+    final grouped = <String, List<_DisplayItem>>{};
+    for (final item in filtered) {
+      grouped.putIfAbsent(item.category, () => []).add(item);
     }
 
     // Sort items alphabetically within each category
     for (final items in grouped.values) {
-      items.sort((a, b) => a.ingredientName.toLowerCase().compareTo(b.ingredientName.toLowerCase()));
+      items.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     }
+
+    final l10nInner = AppLocalizations.of(context)!;
 
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       children: grouped.entries.map((entry) {
-        // Translate category name using IngredientCategory enum
-        final category = IngredientCategory.fromString(entry.key);
-        final categoryName = category.getLocalizedDisplayName(context);
-
-        final l10nInner = AppLocalizations.of(context)!;
+        final categoryName =
+            IngredientCategory.fromString(entry.key).getLocalizedDisplayName(context);
 
         return ExpansionTile(
           title: Row(
@@ -265,41 +317,42 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
           initiallyExpanded: true,
           children: entry.value.map((item) {
             return InkWell(
-              onTap: () => _toggleToBuy(item),
+              onTap: () => _toggleDisplayItem(item),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
                 child: Row(
                   children: [
-                    // Checkbox
                     Checkbox(
                       value: item.toBuy,
-                      onChanged: (value) => _toggleToBuy(item),
+                      onChanged: (_) => _toggleDisplayItem(item),
                       activeColor: Theme.of(context).colorScheme.primary,
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       visualDensity: VisualDensity.compact,
                     ),
                     const SizedBox(width: 8),
-                    // Ingredient name (flexible to take available space)
+                    if (item.isManual) ...[
+                      Icon(
+                        Icons.edit_note,
+                        size: 16,
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
+                      ),
+                      const SizedBox(width: 4),
+                    ],
                     Expanded(
                       child: Text(
-                        item.ingredientName,
+                        item.name,
                         style: TextStyle(
                           fontSize: 16,
-                          color: !item.toBuy
-                              ? Colors.grey[600]
-                              : null,
+                          color: !item.toBuy ? Colors.grey[600] : null,
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    // Quantity (fixed width on the right)
                     Text(
-                      _formatQuantity(item),
+                      _formatDisplayQuantity(item),
                       style: TextStyle(
                         fontSize: 14,
-                        color: !item.toBuy
-                            ? Colors.grey[500]
-                            : Colors.grey[700],
+                        color: !item.toBuy ? Colors.grey[500] : Colors.grey[700],
                       ),
                     ),
                   ],
@@ -397,18 +450,74 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       return l10n.toTaste;
     }
 
-    // Localize unit using MeasurementUnit enum (pluralized)
     final unit = MeasurementUnit.fromString(item.unit);
     final localizedUnit = unit?.getLocalizedQuantityName(context, item.quantity) ?? item.unit;
-
-    // Format quantity using QuantityFormatter (shows fractions, removes trailing zeros)
     final formattedQuantity = QuantityFormatter.format(item.quantity);
 
     return '$formattedQuantity $localizedUnit';
   }
 
+  String _formatDisplayQuantity(_DisplayItem item) {
+    if (item.isManual) {
+      if (item.quantity == 0) return AppLocalizations.of(context)!.toTaste;
+      final unit = MeasurementUnit.fromString(item.unit);
+      final localizedUnit =
+          unit?.getLocalizedQuantityName(context, item.quantity) ?? item.unit;
+      final formattedQuantity = QuantityFormatter.format(item.quantity);
+      return '$formattedQuantity $localizedUnit';
+    }
+    return _formatQuantity(item.dbItem!);
+  }
+
   Future<void> _toggleToBuy(ShoppingListItem item) async {
     await ServiceProvider.shoppingList.toggleItemToBuy(item.id!);
     await _loadShoppingList();
+  }
+
+  Future<void> _toggleDisplayItem(_DisplayItem item) async {
+    if (item.isManual) {
+      setState(() {
+        item.manualItem!.toBuy = !item.manualItem!.toBuy;
+      });
+    } else {
+      await _toggleToBuy(item.dbItem!);
+    }
+  }
+
+  Future<void> _handleAddItem() async {
+    final ingredients = await _dbHelper.getAllIngredients();
+    if (!mounted) return;
+
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => AddShoppingItemDialog(
+        availableIngredients: ingredients,
+      ),
+    );
+
+    if (result == null || !mounted) return;
+
+    final name = (result['customName'] as String?) ??
+        ingredients
+            .where((i) => i.id == result['ingredientId'])
+            .map((i) => i.name)
+            .firstOrNull ??
+        '';
+
+    if (name.trim().isEmpty) return;
+
+    final ingredient = result['ingredientId'] != null
+        ? ingredients.where((i) => i.id == result['ingredientId']).firstOrNull
+        : null;
+
+    setState(() {
+      _manualItems.add(_ManualShoppingItem(
+        name: name.trim(),
+        quantity: (result['quantity'] as double?) ?? 1.0,
+        unit: result['unit'] as String?,
+        notes: result['notes'] as String?,
+        category: ingredient?.category.value ?? 'other',
+      ));
+    });
   }
 }

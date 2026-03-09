@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:gastrobrain/models/ingredient.dart';
+import 'package:gastrobrain/models/ingredient_category.dart';
 import 'package:gastrobrain/models/shopping_list.dart';
 import 'package:gastrobrain/models/shopping_list_item.dart';
 import 'package:gastrobrain/screens/shopping_list_screen.dart';
@@ -204,6 +206,28 @@ void main() {
       expect(find.textContaining('No items'), findsOneWidget);
     });
 
+    testWidgets('displays "Add item" FAB', (tester) async {
+      final shoppingList = ShoppingList(
+        name: 'Test List',
+        dateCreated: DateTime.now(),
+        startDate: DateTime.now(),
+        endDate: DateTime.now().add(const Duration(days: 7)),
+      );
+      final listId = await mockDbHelper.insertShoppingList(shoppingList);
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          ShoppingListScreen(
+            shoppingListId: listId,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Add item'), findsOneWidget);
+    });
+
     testWidgets('filters items when "To Buy Only" chip is selected', (tester) async {
       // Create shopping list
       final shoppingList = ShoppingList(
@@ -323,6 +347,154 @@ void main() {
       expect(find.text('100 g'), findsOneWidget);
     });
 
+  });
+
+  group('Manual shopping items (#312)', () {
+    late int listId;
+
+    setUp(() async {
+      mockDbHelper = MockDatabaseHelper();
+      final shoppingList = ShoppingList(
+        name: 'Test List',
+        dateCreated: DateTime.now(),
+        startDate: DateTime.now(),
+        endDate: DateTime.now().add(const Duration(days: 7)),
+      );
+      listId = await mockDbHelper.insertShoppingList(shoppingList);
+    });
+
+    Future<void> pumpScreen(WidgetTester tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(
+          ShoppingListScreen(
+            shoppingListId: listId,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('Add button in dialog is disabled when search field is empty',
+        (tester) async {
+      await pumpScreen(tester);
+
+      await tester.tap(find.text('Add item'));
+      await tester.pumpAndSettle();
+
+      // Dialog should be open
+      expect(find.text('Add Item'), findsOneWidget);
+
+      // Add button should be disabled (nothing typed yet)
+      final addButton = tester.widget<ElevatedButton>(
+          find.widgetWithText(ElevatedButton, 'Add'));
+      expect(addButton.onPressed, isNull);
+    });
+
+    testWidgets('adds free-text item — appears in list with edit_note icon',
+        (tester) async {
+      await pumpScreen(tester);
+
+      await tester.tap(find.text('Add item'));
+      await tester.pumpAndSettle();
+
+      // Type a name that won't match any DB ingredient
+      await tester.enterText(find.byType(TextField).first, 'Olive oil');
+      await tester.pumpAndSettle();
+
+      // Confirm
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Add'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Olive oil'), findsOneWidget);
+      expect(find.byIcon(Icons.edit_note), findsOneWidget);
+    });
+
+    testWidgets('adds DB-linked item — appears in its ingredient category',
+        (tester) async {
+      // Pre-load an ingredient into the mock DB
+      await mockDbHelper.insertIngredient(Ingredient(
+        id: 'ing-1',
+        name: 'Spinach',
+        category: IngredientCategory.vegetable,
+      ));
+
+      await pumpScreen(tester);
+
+      await tester.tap(find.text('Add item'));
+      await tester.pumpAndSettle();
+
+      // Type the ingredient name
+      await tester.enterText(find.byType(TextField).first, 'Spinach');
+      await tester.pumpAndSettle();
+
+      // Select from suggestion list
+      await tester.tap(find.text('Spinach').last);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Add'));
+      await tester.pumpAndSettle();
+
+      // Item appears under its real category
+      expect(find.text('Spinach'), findsOneWidget);
+      expect(find.byIcon(Icons.edit_note), findsOneWidget);
+      expect(find.text('Vegetable'), findsOneWidget);
+    });
+
+    testWidgets('manual items survive To Buy Only filter toggle',
+        (tester) async {
+      await pumpScreen(tester);
+
+      // Add a manual item
+      await tester.tap(find.text('Add item'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).first, 'Paper towels');
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Add'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Paper towels'), findsOneWidget);
+
+      // Toggle "To Buy Only" filter — item is still toBuy=true so should remain
+      await tester.tap(find.text('To Buy Only'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Paper towels'), findsOneWidget);
+
+      // Toggle filter off again
+      await tester.tap(find.text('To Buy Only'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Paper towels'), findsOneWidget);
+    });
+
+    testWidgets('manual items are cleared when screen is recreated',
+        (tester) async {
+      // First screen instance — add a manual item
+      await pumpScreen(tester);
+      await tester.tap(find.text('Add item'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).first, 'Foil wrap');
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Add'));
+      await tester.pumpAndSettle();
+      expect(find.text('Foil wrap'), findsOneWidget);
+
+      // Replace with a fresh screen instance using a different key to force
+      // state recreation — simulates pushReplacement after list regeneration
+      await tester.pumpWidget(
+        createTestableWidget(
+          ShoppingListScreen(
+            key: const ValueKey('recreated'),
+            shoppingListId: listId,
+            databaseHelper: mockDbHelper,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Foil wrap'), findsNothing);
+    });
   });
 
 }
