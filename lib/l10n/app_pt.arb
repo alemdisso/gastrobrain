@@ -172,6 +172,15 @@
   "@servingsMustBePositive": {
     "description": "Erro de validação exibido quando o número de porções é zero ou negativo"
   },
+  "ingredientsForServings": "Ingredientes para {count} porções",
+  "@ingredientsForServings": {
+    "description": "Cabeçalho acima da lista de ingredientes indicando o rendimento da receita ao qual as quantidades correspondem",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notes": "Observações",
   "@notes": {
     "description": "Rótulo do campo observações"
@@ -2415,6 +2424,84 @@
     "description": "Date label for a cooked meal entry on dashboard",
     "placeholders": {
       "date": {
+        "type": "String"
+      }
+    }
+  },
+  "addSimpleSideTitle": "Adicionar Acompanhamento Simples",
+  "@addSimpleSideTitle": {
+    "description": "Title for the dialog to add an ingredient as a simple side"
+  },
+  "simpleSideSearchHint": "Pesquisar ingredientes ou escrever um nome",
+  "@simpleSideSearchHint": {
+    "description": "Hint text in the search field of the add simple side dialog"
+  },
+  "simpleSideNotesHint": "Notas (opcional)",
+  "@simpleSideNotesHint": {
+    "description": "Hint text for the notes field in the add simple side dialog"
+  },
+  "simpleSideQuantityLabel": "Qtd",
+  "@simpleSideQuantityLabel": {
+    "description": "Label for the quantity field in the add simple side dialog"
+  },
+  "simpleSideUnitLabel": "Unidade",
+  "@simpleSideUnitLabel": {
+    "description": "Label for the unit field in the add simple side dialog"
+  },
+  "simpleSideUnitHint": "ex: kg, g, xícara",
+  "@simpleSideUnitHint": {
+    "description": "Hint text for the unit field in the add simple side dialog"
+  },
+  "simpleSideFreeTextHint": "Adicionar \"{name}\" como acompanhamento personalizado",
+  "@simpleSideFreeTextHint": {
+    "description": "Label shown when typed text does not match any ingredient",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "simpleSidesLabel": "Acompanhamentos simples",
+  "@simpleSidesLabel": {
+    "description": "Label for the simple sides section in meal planning"
+  },
+  "addSimpleSide": "Adicionar acompanhamento simples",
+  "@addSimpleSide": {
+    "description": "Button label to open the add simple side dialog"
+  },
+  "removeSimpleSide": "Remover",
+  "@removeSimpleSide": {
+    "description": "Button label to remove a simple side from a meal"
+  },
+  "manageSimpleSides": "Gerir acompanhamentos simples",
+  "@manageSimpleSides": {
+    "description": "Meal options menu item to open the simple sides management dialog"
+  },
+  "manageSimpleSidesTitle": "Acompanhamentos Simples",
+  "@manageSimpleSidesTitle": {
+    "description": "Title of the manage simple sides dialog"
+  },
+  "noSimpleSidesYet": "Ainda não foram adicionados acompanhamentos simples.",
+  "@noSimpleSidesYet": {
+    "description": "Empty state text in the manage simple sides dialog"
+  },
+  "done": "Concluído",
+  "@done": {
+    "description": "Generic done/close button label"
+  },
+  "addShoppingItemTitle": "Adicionar Item",
+  "@addShoppingItemTitle": {
+    "description": "Title of the add manual shopping item dialog"
+  },
+  "addShoppingItemButton": "Adicionar item",
+  "@addShoppingItemButton": {
+    "description": "FAB label to open the add manual shopping item dialog"
+  },
+  "shoppingItemFreeTextHint": "Adicionar \"{name}\" à lista",
+  "@shoppingItemFreeTextHint": {
+    "description": "Hint shown in add-shopping-item dialog when no DB match is found",
+    "placeholders": {
+      "name": {
         "type": "String"
       }
     }

@@ -1,271 +1,53 @@
 import '../../database/database_helper.dart';
 import '../../models/shopping_list.dart';
 import '../../models/shopping_list_item.dart';
+import 'ingredient_aggregator.dart';
 import 'package:intl/intl.dart';
+
+export 'unit_converter.dart' show UnitConversionException;
 
 class ShoppingListService {
   final DatabaseHelper dbHelper;
+  final IngredientAggregator _aggregator;
 
-  /// Ingredients to exclude when quantity is zero ("to taste")
-  static const List<String> _excludedStaples = [
-    'Salt',
-    'Water',
-    'Oil',
-    'Black Pepper',
-    'Sugar',
-  ];
+  ShoppingListService(this.dbHelper, {IngredientAggregator? aggregator})
+      : _aggregator = aggregator ?? IngredientAggregator();
 
-  ShoppingListService(this.dbHelper);
-
-  /// Convert quantity from one unit to another
+  /// Calculate projected ingredients for a date range without database writes.
   ///
-  /// Supports conversions:
-  /// - Weight: g ↔ kg
-  /// - Volume: ml ↔ L, tsp ↔ tbsp (3:1), tbsp ↔ cup (16:1), tsp ↔ cup (48:1)
-  /// - Count: clove ↔ head (10:1)
-  ///
-  /// Returns the converted quantity, or throws an exception if units are incompatible.
-  double convertToCommonUnit(double quantity, String fromUnit, String toUnit) {
-    // Normalize to lowercase
-    final from = fromUnit.toLowerCase();
-    final to = toUnit.toLowerCase();
-
-    // If units are the same, no conversion needed
-    if (from == to) return quantity;
-
-    // Weight conversions
-    if (from == 'g' && to == 'kg') return quantity / 1000;
-    if (from == 'kg' && to == 'g') return quantity * 1000;
-
-    // Volume conversions: metric
-    if (from == 'ml' && to == 'l') return quantity / 1000;
-    if (from == 'l' && to == 'ml') return quantity * 1000;
-
-    // Volume conversions: cooking units
-    // 3 tsp = 1 tbsp, 16 tbsp = 1 cup, 48 tsp = 1 cup
-    if (from == 'tsp' && to == 'tbsp') return quantity / 3;
-    if (from == 'tbsp' && to == 'tsp') return quantity * 3;
-    if (from == 'tbsp' && to == 'cup') return quantity / 16;
-    if (from == 'cup' && to == 'tbsp') return quantity * 16;
-    if (from == 'tsp' && to == 'cup') return quantity / 48;
-    if (from == 'cup' && to == 'tsp') return quantity * 48;
-
-    // Count conversions: garlic
-    // 1 head ≈ 10 cloves
-    if (from == 'clove' && to == 'head') return quantity / 10;
-    if (from == 'head' && to == 'clove') return quantity * 10;
-
-    // Units are incompatible
-    throw UnitConversionException('Cannot convert $fromUnit to $toUnit');
-  }
-
-  /// Apply exclusion rule (salt rule) to filter ingredients
-  ///
-  /// Excludes ingredients that are:
-  /// - "To taste" (quantity == 0)
-  /// - AND in the excluded staples list
-  /// - OR have null/invalid required fields
-  ///
-  /// Returns filtered list of ingredients.
-  List<Map<String, dynamic>> applyExclusionRule(
-      List<Map<String, dynamic>> ingredients) {
-    return ingredients.where((ingredient) {
-      // Skip ingredients with null required fields
-      if (ingredient['name'] == null ||
-          ingredient['quantity'] == null ||
-          ingredient['unit'] == null ||
-          ingredient['category'] == null) {
-        return false;
-      }
-
-      final quantity = ingredient['quantity'] as double;
-      final name = ingredient['name'] as String;
-
-      // Exclude if quantity is 0 AND name is in exclusion list
-      if (quantity == 0 && _excludedStaples.contains(name)) {
-        return false;
-      }
-
-      return true;
-    }).toList();
-  }
-
-  /// Aggregate ingredients with the same name
-  ///
-  /// Groups ingredients by name (case-insensitive) and combines quantities.
-  /// Attempts to convert units within each group.
-  /// Converts to larger unit if quantity >= 1000 (g→kg, ml→L).
-  ///
-  /// Returns list of aggregated ingredients.
-  List<Map<String, dynamic>> aggregateIngredients(
-      List<Map<String, dynamic>> ingredients) {
-    // Group by ingredient name (case-insensitive)
-    final Map<String, List<Map<String, dynamic>>> nameGroups = {};
-
-    for (final ingredient in ingredients) {
-      final name = ingredient['name'] as String;
-      final key = name.toLowerCase();
-
-      if (!nameGroups.containsKey(key)) {
-        nameGroups[key] = [];
-      }
-      nameGroups[key]!.add(ingredient);
-    }
-
-    // Aggregate each group
-    final List<Map<String, dynamic>> result = [];
-
-    for (final group in nameGroups.values) {
-      if (group.isEmpty) continue;
-
-      // Within each name group, further group by compatible units
-      final Map<String, Map<String, dynamic>> unitGroups = {};
-
-      for (final item in group) {
-        final unit = (item['unit'] as String).toLowerCase();
-
-        // Try to find a compatible unit group
-        String? compatibleKey;
-        for (final key in unitGroups.keys) {
-          try {
-            // Test if units are compatible
-            convertToCommonUnit(1.0, unit, key);
-            compatibleKey = key;
-            break;
-          } catch (e) {
-            // Not compatible, continue searching
-          }
-        }
-
-        if (compatibleKey != null) {
-          // Add to existing compatible group
-          final existing = unitGroups[compatibleKey]!;
-          final existingQuantity = existing['quantity'] as double;
-          final existingUnit = existing['unit'] as String;
-          final itemQuantity = item['quantity'] as double;
-
-          // Convert and add
-          final converted = convertToCommonUnit(
-              itemQuantity, unit, existingUnit.toLowerCase());
-          existing['quantity'] = existingQuantity + converted;
-        } else {
-          // Create new unit group
-          unitGroups[unit] = Map<String, dynamic>.from(item);
-        }
-      }
-
-      // Convert to larger units if needed and add to result
-      for (final item in unitGroups.values) {
-        final quantity = item['quantity'] as double;
-        final unit = (item['unit'] as String).toLowerCase();
-
-        // Convert to larger unit when threshold is reached
-        if (unit == 'g' && quantity >= 1000) {
-          item['quantity'] = quantity / 1000;
-          item['unit'] = 'kg';
-        } else if (unit == 'ml' && quantity >= 1000) {
-          item['quantity'] = quantity / 1000;
-          item['unit'] = 'L';
-        } else if (unit == 'tsp' && quantity >= 3) {
-          item['quantity'] = quantity / 3;
-          item['unit'] = 'tbsp';
-        } else if (unit == 'tbsp' && quantity >= 16) {
-          item['quantity'] = quantity / 16;
-          item['unit'] = 'cup';
-        } else if (unit == 'clove' && quantity >= 10) {
-          item['quantity'] = quantity / 10;
-          item['unit'] = 'head';
-        }
-
-        result.add(item);
-      }
-    }
-
-    return result;
-  }
-
-  /// Group ingredients by category
-  ///
-  /// Takes aggregated ingredients and groups them by category.
-  /// Returns a map where keys are category names and values are lists of ingredients.
-  Map<String, List<Map<String, dynamic>>> groupByCategory(
-      List<Map<String, dynamic>> ingredients) {
-    final Map<String, List<Map<String, dynamic>>> grouped = {};
-
-    for (final ingredient in ingredients) {
-      final category = ingredient['category'] as String? ?? 'Other';
-
-      if (!grouped.containsKey(category)) {
-        grouped[category] = [];
-      }
-      grouped[category]!.add(ingredient);
-    }
-
-    return grouped;
-  }
-
-  /// Calculate projected ingredients for a date range without database writes
-  ///
-  /// This is used for preview mode (Stage 1) where users want to see
-  /// what ingredients they would need without generating a shopping list.
-  ///
-  /// Returns a map of category names to lists of ingredient data.
-  /// Each ingredient is a Map with keys: name, quantity, unit, category.
-  ///
-  /// Does NOT write to database - ephemeral calculation only.
+  /// Used for preview mode (Stage 1). Returns a map of category names to
+  /// lists of ingredient data. Does NOT write to database.
   Future<Map<String, List<Map<String, dynamic>>>>
       calculateProjectedIngredients({
     required DateTime startDate,
     required DateTime endDate,
   }) async {
-    // 1. Extract ingredients from meal plan items in date range
     final ingredients = await _extractIngredientsInRange(startDate, endDate);
-
-    // 2. Apply exclusion rule (salt rule - filter "to taste" staples)
-    final filtered = applyExclusionRule(ingredients);
-
-    // 3. Aggregate ingredients (combine quantities for same ingredient)
-    final aggregated = aggregateIngredients(filtered);
-
-    // 4. Group by category
-    final grouped = groupByCategory(aggregated);
-
-    // No database writes - return grouped data directly
-    return grouped;
+    final filtered = _aggregator.applyExclusionRule(ingredients);
+    final aggregated = _aggregator.aggregateIngredients(filtered);
+    return _aggregator.groupByCategory(aggregated);
   }
 
-  /// Generate a shopping list from a date range
+  /// Generate a shopping list from a date range.
   ///
   /// Extracts ingredients from all meal plan items within the date range,
   /// applies exclusion rules, aggregates quantities, groups by category,
   /// and saves to the database.
-  ///
-  /// Returns the created ShoppingList.
   Future<ShoppingList> generateFromDateRange({
     required DateTime startDate,
     required DateTime endDate,
   }) async {
-    // 1. Generate list name
     final listName = _generateListName(startDate, endDate);
 
-    // 2. Extract ingredients from meal plan items in date range
     final ingredients = await _extractIngredientsInRange(startDate, endDate);
+    final filtered = _aggregator.applyExclusionRule(ingredients);
+    final aggregated = _aggregator.aggregateIngredients(filtered);
+    final grouped = _aggregator.groupByCategory(aggregated);
 
-    // 3. Apply exclusion rule (salt rule)
-    final filtered = applyExclusionRule(ingredients);
-
-    // 4. Aggregate ingredients
-    final aggregated = aggregateIngredients(filtered);
-
-    // 5. Group by category
-    final grouped = groupByCategory(aggregated);
-
-    // 6. Capture meal plan timestamps for stale detection
     final mealPlan = await dbHelper.getMealPlanForWeek(startDate);
     final mealPlanModifiedAt = mealPlan?.modifiedAt;
     final mealPlanCookedAt = mealPlan?.lastCookedAt;
 
-    // 7. Create shopping list
     final shoppingList = ShoppingList(
       name: listName,
       dateCreated: DateTime.now(),
@@ -275,15 +57,11 @@ class ShoppingListService {
       mealPlanCookedAt: mealPlanCookedAt,
     );
 
-    // 8. Save shopping list to database
     final listId = await dbHelper.insertShoppingList(shoppingList);
 
-    // 9. Create and save shopping list items
     for (final entry in grouped.entries) {
       final category = entry.key;
-      final items = entry.value;
-
-      for (final ingredientData in items) {
+      for (final ingredientData in entry.value) {
         final item = ShoppingListItem(
           shoppingListId: listId,
           ingredientName: ingredientData['name'] as String,
@@ -292,38 +70,28 @@ class ShoppingListService {
           category: category,
           toBuy: true,
         );
-
         await dbHelper.insertShoppingListItem(item);
       }
     }
 
-    // 9. Return the created shopping list with ID
     return shoppingList.copyWith(id: listId);
   }
 
-  /// Generate a shopping list from curated (user-selected) ingredients
+  /// Generate a shopping list from curated (user-selected) ingredients.
   ///
-  /// This is used in Stage 2 (Refinement Mode) where users have already
-  /// reviewed and selected which ingredients they want to include.
-  ///
-  /// The curatedIngredients parameter should already be filtered, aggregated,
-  /// and grouped - it comes directly from user selection in the refinement sheet.
-  ///
-  /// Returns the created ShoppingList.
+  /// Used in Stage 2 (Refinement Mode). The curatedIngredients are already
+  /// filtered, aggregated, and grouped — passed directly from user selection.
   Future<ShoppingList> generateFromCuratedIngredients({
     required DateTime startDate,
     required DateTime endDate,
     required Map<String, List<Map<String, dynamic>>> curatedIngredients,
   }) async {
-    // 1. Generate list name
     final listName = _generateListName(startDate, endDate);
 
-    // 2. Get meal plan timestamps for stale detection
     final mealPlan = await dbHelper.getMealPlanForWeek(startDate);
     final mealPlanModifiedAt = mealPlan?.modifiedAt;
     final mealPlanCookedAt = mealPlan?.lastCookedAt;
 
-    // 3. Create shopping list
     final shoppingList = ShoppingList(
       name: listName,
       dateCreated: DateTime.now(),
@@ -333,16 +101,11 @@ class ShoppingListService {
       mealPlanCookedAt: mealPlanCookedAt,
     );
 
-    // 3. Save shopping list to database
     final listId = await dbHelper.insertShoppingList(shoppingList);
 
-    // 4. Create and save shopping list items from curated ingredients
-    // The curated ingredients are already filtered, aggregated, and grouped
     for (final entry in curatedIngredients.entries) {
       final category = entry.key;
-      final items = entry.value;
-
-      for (final ingredientData in items) {
+      for (final ingredientData in entry.value) {
         final item = ShoppingListItem(
           shoppingListId: listId,
           ingredientName: ingredientData['name'] as String,
@@ -351,75 +114,85 @@ class ShoppingListService {
           category: category,
           toBuy: true,
         );
-
         await dbHelper.insertShoppingListItem(item);
       }
     }
 
-    // 5. Return the created shopping list with ID
     return shoppingList.copyWith(id: listId);
   }
 
-  /// Generate a display name for the shopping list
+  /// Toggle the "to buy" state of a shopping list item.
+  Future<void> toggleItemToBuy(int itemId) async {
+    final item = await dbHelper.getShoppingListItem(itemId);
+    if (item == null) return;
+
+    final updated = item.copyWith(toBuy: !item.toBuy);
+    await dbHelper.updateShoppingListItem(updated);
+  }
+
+  /// Generate a display name for the shopping list.
   String _generateListName(DateTime start, DateTime end) {
     final formatter = DateFormat('MMM d');
     return '${formatter.format(start)}-${end.day}';
   }
 
-  /// Extract ingredients from meal plan items in date range
+  /// Extract ingredients from meal plan items in date range.
   Future<List<Map<String, dynamic>>> _extractIngredientsInRange(
     DateTime startDate,
     DateTime endDate,
   ) async {
     final List<Map<String, dynamic>> allIngredients = [];
 
-    // Convert dates to ISO date strings for comparison
     final startDateStr = startDate.toIso8601String().split('T')[0];
     final endDateStr = endDate.toIso8601String().split('T')[0];
 
-    // 1. Get all meal plans that overlap with the date range
     final mealPlans =
         await dbHelper.getMealPlansByDateRange(startDate, endDate);
 
-    // 2. For each meal plan, process its items
     for (final mealPlan in mealPlans) {
-      // Load items with recipes for this meal plan
       final itemsWithRecipes = await dbHelper.getMealPlanItems(mealPlan.id);
 
       for (final item in itemsWithRecipes) {
-        // Check if this item falls within our date range (string comparison)
         if (item.plannedDate.compareTo(startDateStr) < 0 ||
             item.plannedDate.compareTo(endDateStr) > 0) {
           continue;
         }
 
-        // Skip meals that have already been cooked — their ingredients
-        // no longer need to be purchased.
+        // Skip meals that have already been cooked.
         if (item.hasBeenCooked) continue;
 
-        // 3. Get the recipes for this meal plan item
         if (item.mealPlanItemRecipes == null ||
             item.mealPlanItemRecipes!.isEmpty) {
           continue;
         }
 
-        // 4. For each recipe, get its ingredients and scale by servings
+        // Add DB-linked simple sides using stored quantity/unit.
+        final sides = item.mealPlanItemIngredients ?? [];
+        for (final side in sides) {
+          if (side.ingredientId == null) continue; // free-text: skip
+          final ingredient = await dbHelper.getIngredient(side.ingredientId!);
+          if (ingredient == null) continue;
+          allIngredients.add({
+            'name': ingredient.name,
+            'quantity': side.quantity,
+            'unit': side.unit ?? ingredient.unit?.value ?? '',
+            'category': ingredient.category.value,
+          });
+        }
+
+        // For each recipe, get its ingredients and scale by servings.
         for (final mealPlanItemRecipe in item.mealPlanItemRecipes!) {
           final ingredients =
               await dbHelper.getRecipeIngredients(mealPlanItemRecipe.recipeId);
 
-          // 5. Compute scaling factor: plannedServings / recipe.servings.
-          //    Guard against recipe.servings = 0 to avoid Infinity quantities.
           final recipe =
               await dbHelper.getRecipe(mealPlanItemRecipe.recipeId);
           final recipeServings = recipe?.servings ?? 0;
+          // Guard against recipe.servings = 0 to avoid Infinity quantities.
           final scalingFactor = recipeServings > 0
               ? item.plannedServings / recipeServings
               : 1.0;
 
-          // 6. Apply scaling factor before aggregation so quantities
-          //    combine correctly across meals.
-          //    toTaste items (quantity = 0) are unaffected: 0 × factor = 0.
           final scaledIngredients = ingredients.map((ingredient) {
             return {
               ...ingredient,
@@ -434,24 +207,4 @@ class ShoppingListService {
 
     return allIngredients;
   }
-
-  /// Toggle the "to buy" state of a shopping list item
-  ///
-  /// Retrieves the item, flips its toBuy state, and updates the database.
-  Future<void> toggleItemToBuy(int itemId) async {
-    final item = await dbHelper.getShoppingListItem(itemId);
-    if (item == null) return;
-
-    final updated = item.copyWith(toBuy: !item.toBuy);
-    await dbHelper.updateShoppingListItem(updated);
-  }
-}
-
-/// Exception thrown when units cannot be converted
-class UnitConversionException implements Exception {
-  final String message;
-  UnitConversionException(this.message);
-
-  @override
-  String toString() => 'UnitConversionException: $message';
 }

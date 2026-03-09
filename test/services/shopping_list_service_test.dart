@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gastrobrain/core/services/ingredient_aggregator.dart';
 import 'package:gastrobrain/core/services/shopping_list_service.dart';
+import 'package:gastrobrain/core/services/unit_converter.dart';
 import 'package:gastrobrain/models/ingredient.dart';
 import 'package:gastrobrain/models/ingredient_category.dart';
 import 'package:gastrobrain/models/meal_plan.dart';
@@ -26,88 +28,100 @@ void main() {
   });
 
   group('Unit Conversion', () {
+    late UnitConverter converter;
+
+    setUp(() {
+      converter = UnitConverter();
+    });
+
     test('converts grams to kilograms', () {
       // 1500g = 1.5kg
-      final result = service.convertToCommonUnit(1500, 'g', 'kg');
+      final result = converter.convertToCommonUnit(1500, 'g', 'kg');
       expect(result, 1.5);
     });
 
     test('converts kilograms to grams', () {
       // 2kg = 2000g
-      final result = service.convertToCommonUnit(2, 'kg', 'g');
+      final result = converter.convertToCommonUnit(2, 'kg', 'g');
       expect(result, 2000);
     });
 
     test('converts milliliters to liters', () {
       // 2500ml = 2.5L
-      final result = service.convertToCommonUnit(2500, 'ml', 'L');
+      final result = converter.convertToCommonUnit(2500, 'ml', 'L');
       expect(result, 2.5);
     });
 
     test('converts liters to milliliters', () {
       // 1.5L = 1500ml
-      final result = service.convertToCommonUnit(1.5, 'L', 'ml');
+      final result = converter.convertToCommonUnit(1.5, 'L', 'ml');
       expect(result, 1500);
     });
 
     test('returns same value when units are identical', () {
-      final result = service.convertToCommonUnit(500, 'g', 'g');
+      final result = converter.convertToCommonUnit(500, 'g', 'g');
       expect(result, 500);
     });
 
     test('throws exception for incompatible units', () {
       // Trying to convert g to ml (weight to volume)
       expect(
-        () => service.convertToCommonUnit(100, 'g', 'ml'),
+        () => converter.convertToCommonUnit(100, 'g', 'ml'),
         throwsA(isA<UnitConversionException>()),
       );
     });
 
     test('handles case-insensitive unit names', () {
       // Should work with uppercase, lowercase, mixed case
-      expect(service.convertToCommonUnit(1000, 'G', 'KG'), 1);
-      expect(service.convertToCommonUnit(1, 'KG', 'g'), 1000);
-      expect(service.convertToCommonUnit(1000, 'ML', 'l'), 1);
+      expect(converter.convertToCommonUnit(1000, 'G', 'KG'), 1);
+      expect(converter.convertToCommonUnit(1, 'KG', 'g'), 1000);
+      expect(converter.convertToCommonUnit(1000, 'ML', 'l'), 1);
     });
 
     test('converts teaspoons to tablespoons', () {
       // 3 tsp = 1 tbsp
-      expect(service.convertToCommonUnit(3, 'tsp', 'tbsp'), 1.0);
-      expect(service.convertToCommonUnit(6, 'tsp', 'tbsp'), 2.0);
+      expect(converter.convertToCommonUnit(3, 'tsp', 'tbsp'), 1.0);
+      expect(converter.convertToCommonUnit(6, 'tsp', 'tbsp'), 2.0);
     });
 
     test('converts tablespoons to teaspoons', () {
-      expect(service.convertToCommonUnit(1, 'tbsp', 'tsp'), 3.0);
-      expect(service.convertToCommonUnit(2, 'tbsp', 'tsp'), 6.0);
+      expect(converter.convertToCommonUnit(1, 'tbsp', 'tsp'), 3.0);
+      expect(converter.convertToCommonUnit(2, 'tbsp', 'tsp'), 6.0);
     });
 
     test('converts tablespoons to cups', () {
       // 16 tbsp = 1 cup
-      expect(service.convertToCommonUnit(16, 'tbsp', 'cup'), 1.0);
-      expect(service.convertToCommonUnit(8, 'tbsp', 'cup'), 0.5);
+      expect(converter.convertToCommonUnit(16, 'tbsp', 'cup'), 1.0);
+      expect(converter.convertToCommonUnit(8, 'tbsp', 'cup'), 0.5);
     });
 
     test('converts cups to tablespoons', () {
-      expect(service.convertToCommonUnit(1, 'cup', 'tbsp'), 16.0);
+      expect(converter.convertToCommonUnit(1, 'cup', 'tbsp'), 16.0);
     });
 
     test('converts teaspoons to cups', () {
       // 48 tsp = 1 cup
-      expect(service.convertToCommonUnit(48, 'tsp', 'cup'), 1.0);
+      expect(converter.convertToCommonUnit(48, 'tsp', 'cup'), 1.0);
     });
 
     test('converts cloves to heads', () {
       // 10 cloves = 1 head
-      expect(service.convertToCommonUnit(10, 'clove', 'head'), 1.0);
-      expect(service.convertToCommonUnit(5, 'clove', 'head'), 0.5);
+      expect(converter.convertToCommonUnit(10, 'clove', 'head'), 1.0);
+      expect(converter.convertToCommonUnit(5, 'clove', 'head'), 0.5);
     });
 
     test('converts heads to cloves', () {
-      expect(service.convertToCommonUnit(1, 'head', 'clove'), 10.0);
+      expect(converter.convertToCommonUnit(1, 'head', 'clove'), 10.0);
     });
   });
 
   group('Exclusion Rule (Salt Rule)', () {
+    late IngredientAggregator aggregator;
+
+    setUp(() {
+      aggregator = IngredientAggregator();
+    });
+
     test('excludes salt with quantity zero', () {
       final ingredients = [
         {
@@ -124,7 +138,7 @@ void main() {
         },
       ];
 
-      final filtered = service.applyExclusionRule(ingredients);
+      final filtered = aggregator.applyExclusionRule(ingredients);
 
       expect(filtered.length, 1);
       expect(filtered[0]['name'], 'Tomato');
@@ -146,7 +160,7 @@ void main() {
         },
       ];
 
-      final filtered = service.applyExclusionRule(ingredients);
+      final filtered = aggregator.applyExclusionRule(ingredients);
 
       expect(filtered.length, 2);
       expect(filtered[0]['name'], 'Salt');
@@ -164,7 +178,7 @@ void main() {
         },
       ];
 
-      final filtered = service.applyExclusionRule(ingredients);
+      final filtered = aggregator.applyExclusionRule(ingredients);
 
       expect(filtered.length, 2);
       expect(filtered[0]['name'], 'Oregano');
@@ -201,7 +215,7 @@ void main() {
         },
       ];
 
-      final filtered = service.applyExclusionRule(ingredients);
+      final filtered = aggregator.applyExclusionRule(ingredients);
 
       expect(filtered.length, 1);
       expect(filtered[0]['name'], 'Tomato');
@@ -209,6 +223,12 @@ void main() {
   });
 
   group('Ingredient Aggregation', () {
+    late IngredientAggregator aggregator;
+
+    setUp(() {
+      aggregator = IngredientAggregator();
+    });
+
     test('aggregates same ingredient with same unit', () {
       final ingredients = [
         {
@@ -225,7 +245,7 @@ void main() {
         },
       ];
 
-      final aggregated = service.aggregateIngredients(ingredients);
+      final aggregated = aggregator.aggregateIngredients(ingredients);
 
       expect(aggregated.length, 1);
       expect(aggregated[0]['name'], 'Tomato');
@@ -240,7 +260,7 @@ void main() {
         {'name': 'Flour', 'quantity': 1.0, 'unit': 'kg', 'category': 'Grains'},
       ];
 
-      final aggregated = service.aggregateIngredients(ingredients);
+      final aggregated = aggregator.aggregateIngredients(ingredients);
 
       expect(aggregated.length, 1);
       expect(aggregated[0]['name'], 'Flour');
@@ -271,7 +291,7 @@ void main() {
         },
       ];
 
-      final aggregated = service.aggregateIngredients(ingredients);
+      final aggregated = aggregator.aggregateIngredients(ingredients);
 
       expect(aggregated.length, 1);
       expect(aggregated[0]['name'], 'Tomato'); // Uses first occurrence's casing
@@ -289,7 +309,7 @@ void main() {
         },
       ];
 
-      final aggregated = service.aggregateIngredients(ingredients);
+      final aggregated = aggregator.aggregateIngredients(ingredients);
 
       // Should remain as 2 separate items since g and cups are incompatible
       expect(aggregated.length, 2);
@@ -301,7 +321,7 @@ void main() {
         {'name': 'Rice', 'quantity': 400.0, 'unit': 'g', 'category': 'Grains'},
       ];
 
-      final aggregated = service.aggregateIngredients(ingredients);
+      final aggregated = aggregator.aggregateIngredients(ingredients);
 
       expect(aggregated.length, 1);
       expect(aggregated[0]['name'], 'Rice');
@@ -315,7 +335,7 @@ void main() {
         {'name': 'Cumin', 'quantity': 1.0, 'unit': 'tsp', 'category': 'Spices'},
       ];
 
-      final aggregated = service.aggregateIngredients(ingredients);
+      final aggregated = aggregator.aggregateIngredients(ingredients);
 
       expect(aggregated.length, 1);
       expect(aggregated[0]['name'], 'Cumin');
@@ -329,7 +349,7 @@ void main() {
         {'name': 'Cumin', 'quantity': 1.0, 'unit': 'tsp', 'category': 'Spices'},
       ];
 
-      final aggregated = service.aggregateIngredients(ingredients);
+      final aggregated = aggregator.aggregateIngredients(ingredients);
 
       expect(aggregated.length, 1);
       expect(aggregated[0]['quantity'], 2.0); // 2 tsp stays as tsp
@@ -342,7 +362,7 @@ void main() {
         {'name': 'Olive Oil', 'quantity': 8.0, 'unit': 'tbsp', 'category': 'Fats'},
       ];
 
-      final aggregated = service.aggregateIngredients(ingredients);
+      final aggregated = aggregator.aggregateIngredients(ingredients);
 
       expect(aggregated.length, 1);
       expect(aggregated[0]['quantity'], 1.0); // 16 tbsp = 1 cup
@@ -355,7 +375,7 @@ void main() {
         {'name': 'Soy Sauce', 'quantity': 3.0, 'unit': 'tsp', 'category': 'Condiments'},
       ];
 
-      final aggregated = service.aggregateIngredients(ingredients);
+      final aggregated = aggregator.aggregateIngredients(ingredients);
 
       // 1 tbsp + 3 tsp = 1 tbsp + 1 tbsp = 2 tbsp (tsp converted to tbsp)
       expect(aggregated.length, 1);
@@ -369,7 +389,7 @@ void main() {
         {'name': 'Garlic', 'quantity': 6.0, 'unit': 'clove', 'category': 'Vegetables'},
       ];
 
-      final aggregated = service.aggregateIngredients(ingredients);
+      final aggregated = aggregator.aggregateIngredients(ingredients);
 
       expect(aggregated.length, 1);
       expect(aggregated[0]['name'], 'Garlic');
@@ -383,7 +403,7 @@ void main() {
         {'name': 'Garlic', 'quantity': 4.0, 'unit': 'clove', 'category': 'Vegetables'},
       ];
 
-      final aggregated = service.aggregateIngredients(ingredients);
+      final aggregated = aggregator.aggregateIngredients(ingredients);
 
       expect(aggregated.length, 1);
       expect(aggregated[0]['quantity'], 7.0); // 7 cloves stays as cloves
@@ -396,7 +416,7 @@ void main() {
         {'name': 'Garlic', 'quantity': 5.0, 'unit': 'clove', 'category': 'Vegetables'},
       ];
 
-      final aggregated = service.aggregateIngredients(ingredients);
+      final aggregated = aggregator.aggregateIngredients(ingredients);
 
       // 1 head + 5 cloves = 10 cloves + 5 cloves = 15 cloves → 1.5 heads
       expect(aggregated.length, 1);
@@ -406,6 +426,12 @@ void main() {
   });
 
   group('Category Grouping', () {
+    late IngredientAggregator aggregator;
+
+    setUp(() {
+      aggregator = IngredientAggregator();
+    });
+
     test('groups ingredients by category', () {
       final ingredients = [
         {
@@ -428,7 +454,7 @@ void main() {
         },
       ];
 
-      final grouped = service.groupByCategory(ingredients);
+      final grouped = aggregator.groupByCategory(ingredients);
 
       expect(grouped.keys.length, 2);
       expect(grouped['Vegetables']?.length, 2);
@@ -451,7 +477,7 @@ void main() {
         },
       ];
 
-      final grouped = service.groupByCategory(ingredients);
+      final grouped = aggregator.groupByCategory(ingredients);
 
       expect(grouped.keys.contains('Other'), isTrue);
       expect(grouped['Other']?.length, 1);
@@ -469,7 +495,7 @@ void main() {
         {'name': 'Oregano', 'quantity': 0.0, 'unit': 'g', 'category': 'Spices'},
       ];
 
-      final grouped = service.groupByCategory(ingredients);
+      final grouped = aggregator.groupByCategory(ingredients);
 
       expect(grouped['Spices']?.length, 1);
       expect(grouped['Spices']?[0]['name'], 'Oregano');

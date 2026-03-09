@@ -14,6 +14,7 @@ import '../utils/id_generator.dart';
 import '../core/services/snackbar_service.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/quantity_formatter.dart';
+import '../widgets/servings_stepper.dart';
 
 class AddRecipeScreen extends StatefulWidget {
   final DatabaseHelper? databaseHelper;
@@ -34,7 +35,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   final _notesController = TextEditingController();
   final _prepTimeController = TextEditingController();
   final _cookTimeController = TextEditingController();
-  final _servingsController = TextEditingController(text: '4');
+  int _servings = 4;
   FrequencyType _selectedFrequency = FrequencyType.monthly;
   RecipeCategory _selectedCategory = RecipeCategory.uncategorized;
   int _difficulty = 1;
@@ -42,15 +43,13 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   bool _isSaving = false;
   final String _tempRecipeId = IdGenerator.generateId();
   final List<RecipeIngredient> _pendingIngredients = [];
-  final Map<String, Ingredient> _ingredientDetails =
-      {}; // Cache for ingredient details
+  final Map<String, Ingredient> _ingredientDetails = {};
 
   final frequencies = FrequencyType.values;
 
   @override
   void initState() {
     super.initState();
-    // Use the injected database helper or get one from ServiceProvider
     _dbHelper = widget.databaseHelper ?? ServiceProvider.database.dbHelper;
   }
 
@@ -61,37 +60,28 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         Text(label, style: const TextStyle(fontSize: 16)),
         const SizedBox(height: 8),
         Row(
-          children: List.generate(5, (index) {
-            return IconButton(
-              icon: Icon(
-                index < value ? Icons.star : Icons.star_border,
-                color: index < value ? Colors.amber : Colors.grey,
-              ),
-              onPressed: () => onChanged(index + 1),
-            );
-          }),
+          children: List.generate(5, (i) => IconButton(
+            icon: Icon(i < value ? Icons.star : Icons.star_border,
+                color: i < value ? Colors.amber : Colors.grey),
+            onPressed: () => onChanged(i + 1),
+          )),
         ),
       ],
     );
   }
 
-  Widget _buildDifficultyField(
-      String label, int value, Function(int) onChanged) {
+  Widget _buildDifficultyField(String label, int value, Function(int) onChanged) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: const TextStyle(fontSize: 16)),
         const SizedBox(height: 8),
         Row(
-          children: List.generate(5, (index) {
-            return IconButton(
-              icon: Icon(
-                index < value ? Icons.battery_full : Icons.battery_0_bar,
-                color: index < value ? Colors.green : Colors.grey,
-              ),
-              onPressed: () => onChanged(index + 1),
-            );
-          }),
+          children: List.generate(5, (i) => IconButton(
+            icon: Icon(i < value ? Icons.battery_full : Icons.battery_0_bar,
+                color: i < value ? Colors.green : Colors.grey),
+            onPressed: () => onChanged(i + 1),
+          )),
         ),
       ],
     );
@@ -107,11 +97,10 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       ),
       keyboardType: TextInputType.number,
       validator: (value) {
-        if (value != null && value.isNotEmpty) {
-          final minutes = int.tryParse(value);
-          if (minutes == null || minutes < 0) {
-            return AppLocalizations.of(context)!.pleaseEnterValidTime;
-          }
+        if (value == null || value.isEmpty) return null;
+        final minutes = int.tryParse(value);
+        if (minutes == null || minutes < 0) {
+          return AppLocalizations.of(context)!.pleaseEnterValidTime;
         }
         return null;
       },
@@ -131,24 +120,17 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   future: _getIngredientDetails(ingredient.ingredientId!),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
-                      final ingredientName = snapshot.data?.name ??
-                          AppLocalizations.of(context)!.unknown;
-                      // Hide quantity/unit for zero quantities ("to taste" ingredients)
-                      if (ingredient.quantity == 0) {
-                        return Text(ingredientName);
-                      }
-                      final unitString =
-                          ingredient.unitOverride ?? snapshot.data?.unit?.value ?? '';
+                      final ingredientName = snapshot.data?.name ?? AppLocalizations.of(context)!.unknown;
+                      if (ingredient.quantity == 0) return Text(ingredientName);
+                      final unitString = ingredient.unitOverride ?? snapshot.data?.unit?.value ?? '';
                       final measurementUnit = MeasurementUnit.fromString(unitString);
                       final localizedUnit = measurementUnit?.getLocalizedQuantityName(context, ingredient.quantity) ?? unitString;
-                      return Text(
-                          '$ingredientName: ${QuantityFormatter.format(ingredient.quantity)} $localizedUnit');
+                      return Text('$ingredientName: ${QuantityFormatter.format(ingredient.quantity)} $localizedUnit');
                     }
                     return Text(AppLocalizations.of(context)!.loading);
                   },
                 )
               : Text(() {
-                  // Hide quantity/unit for zero quantities ("to taste" ingredients)
                   if (ingredient.quantity == 0) {
                     return ingredient.customName ?? '';
                   }
@@ -160,11 +142,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
           subtitle: ingredient.notes != null ? Text(ingredient.notes!) : null,
           trailing: IconButton(
             icon: const Icon(Icons.delete),
-            onPressed: () {
-              setState(() {
-                _pendingIngredients.removeAt(index);
-              });
-            },
+            onPressed: () => setState(() => _pendingIngredients.removeAt(index)),
           ),
         );
       },
@@ -172,35 +150,27 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   }
 
   Future<Ingredient?> _getIngredientDetails(String ingredientId) async {
-    // Check if we already have the ingredient details cached
     if (_ingredientDetails.containsKey(ingredientId)) {
       return _ingredientDetails[ingredientId];
     }
-
     try {
-      // Load all ingredients at once and cache them
       final ingredients = await _dbHelper.getAllIngredients();
       for (final ingredient in ingredients) {
         _ingredientDetails[ingredient.id] = ingredient;
       }
-
       final ingredient = _ingredientDetails[ingredientId];
-      if (ingredient == null) {
-        throw NotFoundException('Ingredient not found');
-      }
-
+      if (ingredient == null) throw NotFoundException('Ingredient not found');
       return ingredient;
     } on GastrobrainException {
-      rethrow; // Re-throw GastrobrainException types as they are
+      rethrow;
     } catch (e) {
       throw GastrobrainException('Error loading ingredient details: $e');
     }
   }
 
   Future<void> _addIngredient() async {
-    // Create a temporary recipe for the dialog
     final tempRecipe = Recipe(
-      id: _tempRecipeId, // Use consistent temporary ID
+      id: _tempRecipeId,
       name: _nameController.text,
       desiredFrequency: _selectedFrequency,
       notes: _notesController.text,
@@ -210,27 +180,19 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       cookTimeMinutes: int.tryParse(_cookTimeController.text) ?? 0,
       rating: _rating,
       category: _selectedCategory,
-      servings: int.tryParse(_servingsController.text) ?? 4,
+      servings: _servings,
     );
 
-    // The AddIngredientDialog will now properly return a RecipeIngredient object
     final result = await showDialog<RecipeIngredient>(
       context: context,
       builder: (context) => AddIngredientDialog(
         recipe: tempRecipe,
         databaseHelper: _dbHelper,
-        onSave: (ingredient) {
-          // We don't need to explicitly call Navigator.pop here anymore
-          // as the dialog will handle it and return the ingredient
-        },
+        onSave: (_) {},
       ),
     );
 
-    if (result != null) {
-      setState(() {
-        _pendingIngredients.add(result);
-      });
-    }
+    if (result != null) setState(() => _pendingIngredients.add(result));
   }
 
   Future<void> _saveRecipe() async {
@@ -238,14 +200,9 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       return;
     }
 
-    setState(() {
-      _isSaving = true;
-    });
-
+    setState(() => _isSaving = true);
     try {
-      // Validate recipe data
-      final servings = int.tryParse(_servingsController.text) ?? 4;
-
+      final servings = _servings;
       EntityValidator.validateRecipe(
         id: _tempRecipeId,
         name: _nameController.text,
@@ -261,7 +218,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       EntityValidator.validateTime(cookTime?.toDouble(), 'Cooking');
 
       final recipe = Recipe(
-        id: _tempRecipeId, // Use the same ID we've been using
+        id: _tempRecipeId,
         name: _nameController.text,
         desiredFrequency: _selectedFrequency,
         notes: _notesController.text,
@@ -274,39 +231,22 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       );
 
       await _dbHelper.insertRecipe(recipe);
-
-      // Then save all pending ingredients
       for (final ingredient in _pendingIngredients) {
         await _dbHelper.addIngredientToRecipe(ingredient);
       }
 
-      if (mounted) {
-        Navigator.pop(context, true);
-      }
+      if (mounted) Navigator.pop(context, true);
     } on ValidationException catch (e) {
-      if (mounted) {
-        SnackbarService.showError(context, e.message);
-      }
+      if (mounted) SnackbarService.showError(context, e.message);
     } on DuplicateException catch (e) {
-      if (mounted) {
-        SnackbarService.showError(context, e.message);
-      }
+      if (mounted) SnackbarService.showError(context, e.message);
     } on GastrobrainException catch (e) {
-      if (mounted) {
-        SnackbarService.showError(context,
-            '${AppLocalizations.of(context)!.errorSavingRecipe} ${e.message}');
-      }
+      if (mounted) SnackbarService.showError(context,
+          '${AppLocalizations.of(context)!.errorSavingRecipe} ${e.message}');
     } catch (e) {
-      if (mounted) {
-        SnackbarService.showError(
-            context, AppLocalizations.of(context)!.unexpectedError);
-      }
+      if (mounted) SnackbarService.showError(context, AppLocalizations.of(context)!.unexpectedError);
     } finally {
-      if (mounted) {
-        setState(() {
-          _isSaving = false;
-        });
-      }
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -316,8 +256,118 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     _notesController.dispose();
     _prepTimeController.dispose();
     _cookTimeController.dispose();
-    _servingsController.dispose();
     super.dispose();
+  }
+
+  Widget _buildIngredientsCard(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(l10n.ingredients,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                TextButton.icon(
+                  icon: const Icon(Icons.add),
+                  label: Text(l10n.add),
+                  onPressed: _addIngredient,
+                ),
+              ],
+            ),
+            if (_pendingIngredients.isEmpty)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(l10n.noIngredientsAdded,
+                      style: const TextStyle(
+                          color: Colors.grey, fontStyle: FontStyle.italic)),
+                ),
+              )
+            else
+              _buildIngredientList(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildFormFields(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      TextFormField(
+        key: const Key('add_recipe_name_field'),
+        controller: _nameController,
+        decoration: InputDecoration(labelText: l10n.recipeName),
+        validator: (value) =>
+            (value == null || value.isEmpty) ? l10n.pleaseEnterRecipeName : null,
+      ),
+      const SizedBox(height: 16),
+      DropdownButtonFormField<FrequencyType>(
+        key: const Key('add_recipe_frequency_field'),
+        initialValue: _selectedFrequency,
+        decoration: InputDecoration(labelText: l10n.desiredFrequency),
+        items: frequencies
+            .map((f) => DropdownMenuItem(
+                value: f, child: Text(f.getLocalizedDisplayName(context))))
+            .toList(),
+        onChanged: (v) { if (v != null) setState(() => _selectedFrequency = v); },
+      ),
+      const SizedBox(height: 16),
+      DropdownButtonFormField<RecipeCategory>(
+        key: const Key('add_recipe_category_field'),
+        initialValue: _selectedCategory,
+        decoration: InputDecoration(labelText: l10n.category),
+        items: RecipeCategory.values
+            .map((c) => DropdownMenuItem(
+                value: c, child: Text(c.getLocalizedDisplayName(context))))
+            .toList(),
+        onChanged: (v) { if (v != null) setState(() => _selectedCategory = v); },
+      ),
+      const SizedBox(height: 16),
+      _buildDifficultyField(l10n.difficultyLevel, _difficulty,
+          (v) => setState(() => _difficulty = v)),
+      const SizedBox(height: 16),
+      _buildTimeField(l10n.preparationTime, _prepTimeController,
+          key: const Key('add_recipe_prep_time_field')),
+      const SizedBox(height: 16),
+      _buildTimeField(l10n.cookingTime, _cookTimeController,
+          key: const Key('add_recipe_cook_time_field')),
+      const SizedBox(height: 16),
+      ServingsStepper(
+        key: const Key('add_recipe_servings_stepper'),
+        value: _servings,
+        onChanged: (v) => setState(() => _servings = v),
+      ),
+      const SizedBox(height: 16),
+      _buildRatingField(l10n.rating, _rating, (v) => setState(() => _rating = v)),
+      const SizedBox(height: 16),
+      TextFormField(
+        key: const Key('add_recipe_notes_field'),
+        controller: _notesController,
+        decoration: InputDecoration(labelText: l10n.notes),
+        maxLines: 3,
+      ),
+      const SizedBox(height: 16),
+      _buildIngredientsCard(context),
+      const SizedBox(height: 24),
+      SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: _isSaving ? null : _saveRecipe,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: _isSaving
+                ? const CircularProgressIndicator()
+                : Text(l10n.saveRecipe),
+          ),
+        ),
+      ),
+    ];
   }
 
   @override
@@ -327,182 +377,20 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         title: Text(AppLocalizations.of(context)!.addNewRecipe),
       ),
       body: SafeArea(
-        top: false, // AppBar handles top
+        top: false,
         bottom: true,
         child: SingleChildScrollView(
-          // Added ScrollView
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                TextFormField(
-                  key: const Key('add_recipe_name_field'),
-                  controller: _nameController,
-                  decoration: InputDecoration(
-                    labelText: AppLocalizations.of(context)!.recipeName,
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return AppLocalizations.of(context)!
-                          .pleaseEnterRecipeName;
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<FrequencyType>(
-                  key: const Key('add_recipe_frequency_field'),
-                  initialValue: _selectedFrequency,
-                  decoration: InputDecoration(
-                    labelText: AppLocalizations.of(context)!.desiredFrequency,
-                  ),
-                  items: frequencies.map((frequency) {
-                    return DropdownMenuItem<FrequencyType>(
-                      value: frequency,
-                      child: Text(frequency.getLocalizedDisplayName(context)),
-                    );
-                  }).toList(),
-                  onChanged: (FrequencyType? newValue) {
-                    if (newValue != null) {
-                      setState(() {
-                        _selectedFrequency = newValue;
-                      });
-                    }
-                  },
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<RecipeCategory>(
-                  key: const Key('add_recipe_category_field'),
-                  initialValue: _selectedCategory,
-                  decoration: InputDecoration(
-                    labelText: AppLocalizations.of(context)!.category,
-                  ),
-                  items: RecipeCategory.values.map((category) {
-                    return DropdownMenuItem<RecipeCategory>(
-                      value: category,
-                      child: Text(category.getLocalizedDisplayName(context)),
-                    );
-                  }).toList(),
-                  onChanged: (RecipeCategory? newValue) {
-                    if (newValue != null) {
-                      setState(() {
-                        _selectedCategory = newValue;
-                      });
-                    }
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildDifficultyField(
-                    AppLocalizations.of(context)!.difficultyLevel, _difficulty,
-                    (value) {
-                  setState(() => _difficulty = value);
-                }),
-                const SizedBox(height: 16),
-                _buildTimeField(
-                    AppLocalizations.of(context)!.preparationTime,
-                    _prepTimeController,
-                    key: const Key('add_recipe_prep_time_field')),
-                const SizedBox(height: 16),
-                _buildTimeField(
-                    AppLocalizations.of(context)!.cookingTime,
-                    _cookTimeController,
-                    key: const Key('add_recipe_cook_time_field')),
-                const SizedBox(height: 16),
-                TextFormField(
-                  key: const Key('add_recipe_servings_field'),
-                  controller: _servingsController,
-                  decoration: InputDecoration(
-                    labelText: AppLocalizations.of(context)!.servings,
-                  ),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    final n = int.tryParse(value ?? '');
-                    if (n == null || n < 1) {
-                      return AppLocalizations.of(context)!.servingsMustBePositive;
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildRatingField(AppLocalizations.of(context)!.rating, _rating,
-                    (value) {
-                  setState(() => _rating = value);
-                }),
-                const SizedBox(height: 16),
-                TextFormField(
-                  key: const Key('add_recipe_notes_field'),
-                  controller: _notesController,
-                  decoration: InputDecoration(
-                    labelText: AppLocalizations.of(context)!.notes,
-                  ),
-                  maxLines: 3,
-                ),
-                const SizedBox(height: 16),
-// Ingredients Section
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              AppLocalizations.of(context)!.ingredients,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            TextButton.icon(
-                              icon: const Icon(Icons.add),
-                              label: Text(AppLocalizations.of(context)!.add),
-                              onPressed: _addIngredient,
-                            ),
-                          ],
-                        ),
-                        if (_pendingIngredients.isEmpty)
-                          Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Text(
-                                AppLocalizations.of(context)!
-                                    .noIngredientsAdded,
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            ),
-                          )
-                        else
-                          _buildIngredientList(),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isSaving ? null : _saveRecipe,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: _isSaving
-                          ? const CircularProgressIndicator()
-                          : Text(AppLocalizations.of(context)!.saveRecipe),
-                    ),
-                  ),
-                ),
-              ],
+                children: _buildFormFields(context),
+              ),
             ),
           ),
         ),
-      ),
       ),
     );
   }

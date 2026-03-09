@@ -9,6 +9,7 @@ import '../models/ingredient.dart';
 import '../models/ingredient_category.dart';
 import '../models/ingredient_match.dart';
 import '../widgets/add_new_ingredient_dialog.dart';
+import '../widgets/servings_stepper.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/id_generator.dart';
 import '../utils/sorting_utils.dart';
@@ -39,6 +40,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   bool _isMetadataExpanded = false;
+  int _servings = 4;
 
   // Ingredient parsing state
   final TextEditingController _rawIngredientsController =
@@ -170,6 +172,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
           setState(() {
             _existingIngredients = existingIngredients;
             _instructionsController.text = selectedRecipe.instructions;
+            _servings = selectedRecipe.servings > 0 ? selectedRecipe.servings : 4;
             _hasUnsavedChanges =
                 false; // Reset unsaved changes when loading recipe (will be used in Phase 4)
           });
@@ -267,6 +270,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
       setState(() {
         _existingIngredients = existingIngredients;
         _instructionsController.text = recipe.instructions;
+        _servings = recipe.servings > 0 ? recipe.servings : 4;
         _hasUnsavedChanges = false; // Reset when loading new recipe
         _isLoadingIngredients = false;
       });
@@ -300,6 +304,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
       setState(() {
         _existingIngredients = existingIngredients;
         _instructionsController.text = newRecipe.instructions;
+        _servings = newRecipe.servings > 0 ? newRecipe.servings : 4;
         _hasUnsavedChanges = false; // Reset when navigating
         _isLoadingIngredients = false;
       });
@@ -336,6 +341,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
       setState(() {
         _existingIngredients = existingIngredients;
         _instructionsController.text = newRecipe.instructions;
+        _servings = newRecipe.servings > 0 ? newRecipe.servings : 4;
         _hasUnsavedChanges = false; // Reset when navigating
         _isLoadingIngredients = false;
       });
@@ -662,6 +668,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
         cookTimeMinutes: _selectedRecipe!.cookTimeMinutes,
         rating: _selectedRecipe!.rating,
         category: _selectedRecipe!.category,
+        servings: _servings,
       );
       await dbHelper.updateRecipe(updatedRecipe);
 
@@ -1420,6 +1427,14 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Servings stepper
+                  ServingsStepper(
+                    key: const Key('recipe_editor_servings_stepper'),
+                    value: _servings,
+                    onChanged: (v) => setState(() => _servings = v),
                   ),
                   const SizedBox(height: 12),
 

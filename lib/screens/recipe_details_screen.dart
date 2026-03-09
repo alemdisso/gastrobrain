@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
-import '../models/protein_type.dart';
-import '../models/measurement_unit.dart';
 import '../database/database_helper.dart';
 import '../widgets/add_ingredient_dialog.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/services/snackbar_service.dart';
 import '../l10n/app_localizations.dart';
-import '../utils/quantity_formatter.dart';
 import '../screens/meal_history_screen.dart';
 import '../screens/edit_recipe_screen.dart';
+import '../screens/recipe_details_overview_tab.dart';
+import '../screens/recipe_details_ingredients_tab.dart';
 
 /// Unified screen for viewing complete recipe details including overview,
 /// ingredients, instructions, and meal history.
@@ -259,6 +258,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
         cookTimeMinutes: _currentRecipe.cookTimeMinutes,
         rating: _currentRecipe.rating,
         category: _currentRecipe.category,
+        servings: _currentRecipe.servings,
       );
 
       await _dbHelper.updateRecipe(updatedRecipe);
@@ -470,220 +470,19 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
   }
 
   Widget _buildOverviewTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Category
-          _buildInfoRow(
-            icon: Icons.category,
-            label: AppLocalizations.of(context)!.category,
-            value: _currentRecipe.category.getLocalizedDisplayName(context),
-          ),
-          const SizedBox(height: 12),
-
-          // Rating
-          if (_currentRecipe.rating > 0)
-            _buildInfoRow(
-              icon: Icons.star,
-              label: AppLocalizations.of(context)!.rating,
-              value: '${_currentRecipe.rating}/5',
-            ),
-          if (_currentRecipe.rating > 0) const SizedBox(height: 12),
-
-          // Difficulty
-          _buildInfoRow(
-            icon: Icons.signal_cellular_alt,
-            label: AppLocalizations.of(context)!.difficulty,
-            value: '${_currentRecipe.difficulty}/5',
-          ),
-          const SizedBox(height: 12),
-
-          // Prep Time
-          if (_currentRecipe.prepTimeMinutes > 0)
-            _buildInfoRow(
-              icon: Icons.kitchen,
-              label: AppLocalizations.of(context)!.prepTimeLabel,
-              value: '${_currentRecipe.prepTimeMinutes} ${AppLocalizations.of(context)!.minuteAbbreviation}',
-            ),
-          if (_currentRecipe.prepTimeMinutes > 0) const SizedBox(height: 12),
-
-          // Cook Time
-          if (_currentRecipe.cookTimeMinutes > 0)
-            _buildInfoRow(
-              icon: Icons.whatshot,
-              label: AppLocalizations.of(context)!.cookTimeLabel,
-              value: '${_currentRecipe.cookTimeMinutes} ${AppLocalizations.of(context)!.minuteAbbreviation}',
-            ),
-          if (_currentRecipe.cookTimeMinutes > 0) const SizedBox(height: 12),
-
-          // Desired Frequency
-          _buildInfoRow(
-            icon: Icons.calendar_today,
-            label: AppLocalizations.of(context)!.desiredFrequency,
-            value: _currentRecipe.desiredFrequency.getLocalizedDisplayName(context),
-          ),
-          const SizedBox(height: 20),
-
-          // Notes
-          if (_currentRecipe.notes.isNotEmpty) ...[
-            const Divider(),
-            const SizedBox(height: 12),
-            Text(
-              AppLocalizations.of(context)!.notes,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _currentRecipe.notes,
-              style: const TextStyle(fontSize: 16, height: 1.5),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
-        const SizedBox(width: 8),
-        Text(
-          '$label: ',
-          style: const TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 16,
-          ),
-        ),
-        Text(
-          value,
-          style: const TextStyle(fontSize: 16),
-        ),
-      ],
-    );
+    return RecipeDetailsOverviewTab(recipe: _currentRecipe);
   }
 
   Widget _buildIngredientsTab() {
-    if (_isLoadingIngredients) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_ingredientsError != null) {
-      return _buildErrorView(_ingredientsError!);
-    }
-
-    if (_ingredients.isEmpty) {
-      return _buildEmptyIngredientsView();
-    }
-
-    return ListView.builder(
-      itemCount: _ingredients.length,
-      itemBuilder: (context, index) {
-        final ingredient = _ingredients[index];
-        final proteinType = ingredient['protein_type'] != null
-            ? ProteinType.values
-                .firstWhere((e) => e.name == ingredient['protein_type'])
-            : null;
-
-        // Get the effective unit (override or default)
-        final effectiveUnitString = ingredient['unit_override'] ??
-            ingredient['unit'] ??
-            '';
-
-        // Convert to MeasurementUnit enum and get localized name
-        final measurementUnit =
-            MeasurementUnit.fromString(effectiveUnitString);
-        final quantity = ingredient['quantity'] as double;
-        final localizedUnit =
-            measurementUnit?.getLocalizedQuantityName(context, quantity) ??
-                effectiveUnitString;
-
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          child: ListTile(
-            leading: Icon(
-              proteinType != null ? Icons.egg_alt : Icons.food_bank,
-              color: proteinType?.isMainProtein == true ? Colors.red : null,
-            ),
-            title: Text(ingredient['name']),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Hide quantity/unit for zero quantities ("to taste" ingredients)
-                if (quantity != 0)
-                  Row(
-                    children: [
-                      Text(
-                        '${QuantityFormatter.format(quantity)} $localizedUnit',
-                      ),
-                      if (ingredient['unit_override'] != null)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 4),
-                          child: Tooltip(
-                            message: AppLocalizations.of(context)!
-                                .unitOverridden(MeasurementUnit.fromString(
-                                            ingredient['unit'])
-                                        ?.getLocalizedDisplayName(context) ??
-                                    ingredient['unit'] ??
-                                    AppLocalizations.of(context)!.noUnit),
-                          ),
-                        ),
-                    ],
-                  ),
-                if (ingredient['preparation_notes'] != null)
-                  Text(
-                    ingredient['preparation_notes'],
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-              ],
-            ),
-            trailing: PopupMenuButton<String>(
-              onSelected: (value) {
-                switch (value) {
-                  case 'delete':
-                    _deleteIngredient(ingredient);
-                    break;
-                  case 'edit':
-                    _editIngredient(ingredient);
-                    break;
-                }
-              },
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'edit',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.edit),
-                      const SizedBox(width: 8),
-                      Text(AppLocalizations.of(context)!.edit),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.delete),
-                      const SizedBox(width: 8),
-                      Text(AppLocalizations.of(context)!.delete),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+    return RecipeDetailsIngredientsTab(
+      ingredients: _ingredients,
+      servings: _currentRecipe.servings,
+      isLoading: _isLoadingIngredients,
+      error: _ingredientsError,
+      onDeleteIngredient: _deleteIngredient,
+      onEditIngredient: _editIngredient,
+      onRetry: _loadIngredients,
+      onAdd: _addIngredient,
     );
   }
 
@@ -722,51 +521,6 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
 
   Widget _buildHistoryTab() {
     return MealHistoryScreen(recipe: _currentRecipe);
-  }
-
-  Widget _buildErrorView(String errorMessage) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 64, color: Colors.red),
-          const SizedBox(height: 16),
-          Text(
-            errorMessage,
-            style: const TextStyle(fontSize: 18, color: Colors.red),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: _loadIngredients,
-            icon: const Icon(Icons.refresh),
-            label: Text(AppLocalizations.of(context)!.tryAgain),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyIngredientsView() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.no_food, size: 64, color: Colors.grey),
-          const SizedBox(height: 16),
-          Text(
-            AppLocalizations.of(context)!.noIngredientsAddedYet,
-            style: const TextStyle(fontSize: 18, color: Colors.grey),
-          ),
-          const SizedBox(height: 8),
-          ElevatedButton.icon(
-            onPressed: _addIngredient,
-            icon: const Icon(Icons.add),
-            label: Text(AppLocalizations.of(context)!.addIngredient),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildEmptyInstructionsView() {

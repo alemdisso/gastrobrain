@@ -6,6 +6,7 @@ import '../database/database_helper.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/servings_stepper.dart';
 
 class EditRecipeScreen extends StatefulWidget {
   final Recipe recipe;
@@ -23,7 +24,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   late TextEditingController _instructionsController;
   late TextEditingController _prepTimeController;
   late TextEditingController _cookTimeController;
-  late TextEditingController _servingsController;
+  late int _servings;
   late FrequencyType _selectedFrequency;
   late RecipeCategory _selectedCategory;
   late int _difficulty;
@@ -33,17 +34,12 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize controllers with existing recipe data
     _nameController = TextEditingController(text: widget.recipe.name);
     _notesController = TextEditingController(text: widget.recipe.notes);
-    _instructionsController =
-        TextEditingController(text: widget.recipe.instructions);
-    _prepTimeController =
-        TextEditingController(text: widget.recipe.prepTimeMinutes.toString());
-    _cookTimeController =
-        TextEditingController(text: widget.recipe.cookTimeMinutes.toString());
-    _servingsController =
-        TextEditingController(text: widget.recipe.servings.toString());
+    _instructionsController = TextEditingController(text: widget.recipe.instructions);
+    _prepTimeController = TextEditingController(text: widget.recipe.prepTimeMinutes.toString());
+    _cookTimeController = TextEditingController(text: widget.recipe.cookTimeMinutes.toString());
+    _servings = widget.recipe.servings;
     _selectedFrequency = widget.recipe.desiredFrequency;
     _selectedCategory = widget.recipe.category;
     _difficulty = widget.recipe.difficulty;
@@ -57,37 +53,28 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         Text(label, style: const TextStyle(fontSize: 16)),
         const SizedBox(height: 8),
         Row(
-          children: List.generate(5, (index) {
-            return IconButton(
-              icon: Icon(
-                index < value ? Icons.star : Icons.star_border,
-                color: index < value ? Colors.amber : Colors.grey,
-              ),
-              onPressed: () => onChanged(index + 1),
-            );
-          }),
+          children: List.generate(5, (i) => IconButton(
+            icon: Icon(i < value ? Icons.star : Icons.star_border,
+                color: i < value ? Colors.amber : Colors.grey),
+            onPressed: () => onChanged(i + 1),
+          )),
         ),
       ],
     );
   }
 
-  Widget _buildDifficultyField(
-      String label, int value, Function(int) onChanged) {
+  Widget _buildDifficultyField(String label, int value, Function(int) onChanged) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: const TextStyle(fontSize: 16)),
         const SizedBox(height: 8),
         Row(
-          children: List.generate(5, (index) {
-            return IconButton(
-              icon: Icon(
-                index < value ? Icons.battery_full : Icons.battery_0_bar,
-                color: index < value ? Colors.green : Colors.grey,
-              ),
-              onPressed: () => onChanged(index + 1),
-            );
-          }),
+          children: List.generate(5, (i) => IconButton(
+            icon: Icon(i < value ? Icons.battery_full : Icons.battery_0_bar,
+                color: i < value ? Colors.green : Colors.grey),
+            onPressed: () => onChanged(i + 1),
+          )),
         ),
       ],
     );
@@ -104,26 +91,21 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
       ),
       keyboardType: TextInputType.number,
       validator: (value) {
-        if (value != null && value.isNotEmpty) {
-          final minutes = int.tryParse(value);
-          if (minutes == null || minutes < 0) {
-            return AppLocalizations.of(context)!.pleaseEnterValidTime;
-          }
+        if (value == null || value.isEmpty) return null;
+        final minutes = int.tryParse(value);
+        if (minutes == null || minutes < 0) {
+          return AppLocalizations.of(context)!.pleaseEnterValidTime;
         }
         return null;
       },
     );
   }
 
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
+  void _showErrorSnackBar(String message) => ScaffoldMessenger.of(context)
+      .showSnackBar(SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3)));
 
   Future<void> _saveRecipe() async {
     if (!_formKey.currentState!.validate()) {
@@ -136,7 +118,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
 
     try {
       // Validate recipe data
-      final servings = int.tryParse(_servingsController.text) ?? 4;
+      final servings = _servings;
 
       EntityValidator.validateRecipe(
         id: widget.recipe.id,
@@ -180,8 +162,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     } on NotFoundException catch (e) {
       _showErrorSnackBar(e.message);
     } on GastrobrainException catch (e) {
-      _showErrorSnackBar(
-          '${AppLocalizations.of(context)!.errorUpdatingRecipe} ${e.message}');
+      _showErrorSnackBar('${AppLocalizations.of(context)!.errorUpdatingRecipe} ${e.message}');
     } catch (e) {
       _showErrorSnackBar(AppLocalizations.of(context)!.unexpectedError);
     } finally {
@@ -200,8 +181,94 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     _instructionsController.dispose();
     _prepTimeController.dispose();
     _cookTimeController.dispose();
-    _servingsController.dispose();
     super.dispose();
+  }
+
+  List<Widget> _buildFormFields(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      TextFormField(
+        key: const Key('edit_recipe_name_field'),
+        controller: _nameController,
+        decoration: InputDecoration(labelText: l10n.recipeName),
+        validator: (value) {
+          if (value == null || value.isEmpty) return l10n.pleaseEnterRecipeName;
+          return null;
+        },
+      ),
+      const SizedBox(height: 16),
+      DropdownButtonFormField<FrequencyType>(
+        key: const Key('edit_recipe_frequency_field'),
+        initialValue: _selectedFrequency,
+        decoration: InputDecoration(labelText: l10n.desiredFrequency),
+        items: FrequencyType.values
+            .map((f) => DropdownMenuItem(
+                value: f, child: Text(f.getLocalizedDisplayName(context))))
+            .toList(),
+        onChanged: (v) { if (v != null) setState(() => _selectedFrequency = v); },
+      ),
+      const SizedBox(height: 16),
+      DropdownButtonFormField<RecipeCategory>(
+        key: const Key('edit_recipe_category_field'),
+        initialValue: _selectedCategory,
+        decoration: InputDecoration(labelText: l10n.category),
+        items: RecipeCategory.values
+            .map((c) => DropdownMenuItem(
+                value: c, child: Text(c.getLocalizedDisplayName(context))))
+            .toList(),
+        onChanged: (v) { if (v != null) setState(() => _selectedCategory = v); },
+      ),
+      const SizedBox(height: 16),
+      _buildDifficultyField(l10n.difficultyLevel, _difficulty,
+          (v) => setState(() => _difficulty = v)),
+      const SizedBox(height: 16),
+      _buildTimeField(l10n.preparationTime, _prepTimeController,
+          key: const Key('edit_recipe_prep_time_field')),
+      const SizedBox(height: 16),
+      _buildTimeField(l10n.cookingTime, _cookTimeController,
+          key: const Key('edit_recipe_cook_time_field')),
+      const SizedBox(height: 16),
+      ServingsStepper(
+        key: const Key('edit_recipe_servings_stepper'),
+        value: _servings,
+        onChanged: (v) => setState(() => _servings = v),
+      ),
+      const SizedBox(height: 16),
+      _buildRatingField(l10n.rating, _rating,
+          (v) => setState(() => _rating = v)),
+      const SizedBox(height: 16),
+      TextFormField(
+        key: const Key('edit_recipe_notes_field'),
+        controller: _notesController,
+        decoration: InputDecoration(labelText: l10n.notes),
+        maxLines: 3,
+      ),
+      const SizedBox(height: 16),
+      TextFormField(
+        key: const Key('edit_recipe_instructions_field'),
+        controller: _instructionsController,
+        decoration: InputDecoration(
+          labelText: l10n.instructionsLabel,
+          hintText: l10n.enterInstructions,
+        ),
+        maxLines: null,
+        minLines: 5,
+        keyboardType: TextInputType.multiline,
+      ),
+      const SizedBox(height: 24),
+      SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: _isSaving ? null : _saveRecipe,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: _isSaving
+                ? const CircularProgressIndicator()
+                : Text(l10n.saveChanges),
+          ),
+        ),
+      ),
+    ];
   }
 
   @override
@@ -211,7 +278,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         title: Text(AppLocalizations.of(context)!.editRecipe),
       ),
       body: SafeArea(
-        top: false, // AppBar handles top
+        top: false,
         bottom: true,
         child: SingleChildScrollView(
           child: Padding(
@@ -219,138 +286,12 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
             child: Form(
               key: _formKey,
               child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextFormField(
-                  key: const Key('edit_recipe_name_field'),
-                  controller: _nameController,
-                  decoration: InputDecoration(
-                    labelText: AppLocalizations.of(context)!.recipeName,
-                              ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return AppLocalizations.of(context)!
-                          .pleaseEnterRecipeName;
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<FrequencyType>(
-                  key: const Key('edit_recipe_frequency_field'),
-                  initialValue: _selectedFrequency,
-                  decoration: InputDecoration(
-                    labelText: AppLocalizations.of(context)!.desiredFrequency,
-                              ),
-                  items: FrequencyType.values.map((frequency) {
-                    return DropdownMenuItem<FrequencyType>(
-                      value: frequency,
-                      child: Text(frequency.getLocalizedDisplayName(context)),
-                    );
-                  }).toList(),
-                  onChanged: (FrequencyType? newValue) {
-                    if (newValue != null) {
-                      setState(() {
-                        _selectedFrequency = newValue;
-                      });
-                    }
-                  },
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<RecipeCategory>(
-                  key: const Key('edit_recipe_category_field'),
-                  initialValue: _selectedCategory,
-                  decoration: InputDecoration(
-                    labelText: AppLocalizations.of(context)!.category,
-                              ),
-                  items: RecipeCategory.values.map((category) {
-                    return DropdownMenuItem<RecipeCategory>(
-                      value: category,
-                      child: Text(category.getLocalizedDisplayName(context)),
-                    );
-                  }).toList(),
-                  onChanged: (RecipeCategory? newValue) {
-                    if (newValue != null) {
-                      setState(() {
-                        _selectedCategory = newValue;
-                      });
-                    }
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildDifficultyField(
-                    AppLocalizations.of(context)!.difficultyLevel, _difficulty,
-                    (value) {
-                  setState(() => _difficulty = value);
-                }),
-                const SizedBox(height: 16),
-                _buildTimeField(AppLocalizations.of(context)!.preparationTime,
-                    _prepTimeController,
-                    key: const Key('edit_recipe_prep_time_field')),
-                const SizedBox(height: 16),
-                _buildTimeField(AppLocalizations.of(context)!.cookingTime,
-                    _cookTimeController,
-                    key: const Key('edit_recipe_cook_time_field')),
-                const SizedBox(height: 16),
-                TextFormField(
-                  key: const Key('edit_recipe_servings_field'),
-                  controller: _servingsController,
-                  decoration: InputDecoration(
-                    labelText: AppLocalizations.of(context)!.servings,
-                  ),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    final n = int.tryParse(value ?? '');
-                    if (n == null || n < 1) {
-                      return AppLocalizations.of(context)!.servingsMustBePositive;
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildRatingField(AppLocalizations.of(context)!.rating, _rating,
-                    (value) {
-                  setState(() => _rating = value);
-                }),
-                const SizedBox(height: 16),
-                TextFormField(
-                  key: const Key('edit_recipe_notes_field'),
-                  controller: _notesController,
-                  decoration: InputDecoration(
-                    labelText: AppLocalizations.of(context)!.notes,
-                              ),
-                  maxLines: 3,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  key: const Key('edit_recipe_instructions_field'),
-                  controller: _instructionsController,
-                  decoration: InputDecoration(
-                    labelText: AppLocalizations.of(context)!.instructionsLabel,
-                    hintText: AppLocalizations.of(context)!.enterInstructions,
-                              ),
-                  maxLines: null,
-                  minLines: 5,
-                  keyboardType: TextInputType.multiline,
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isSaving ? null : _saveRecipe,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: _isSaving
-                          ? const CircularProgressIndicator()
-                          : Text(AppLocalizations.of(context)!.saveChanges),
-                    ),
-                  ),
-                ),
-              ],
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: _buildFormFields(context),
+              ),
             ),
           ),
         ),
-      ),
       ),
     );
   }
