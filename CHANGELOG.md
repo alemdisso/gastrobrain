@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.13] - 2026-03-09
+
+### Added
+
+- Simple sides: ingredients can now be added directly as meal sides in meal planning (#311)
+- Manual shopping list items: users can manually add custom items to the shopping list (#312)
+- Manual items grouped by ingredient category in the shopping list (#312)
+- Servings stepper replaces text field in recipe creation/editing forms (#313)
+- Servings displayed in recipe details screen (#314)
+
+### Changed
+
+- Refactored `ShoppingListService`: extracted `UnitConverter` and `IngredientAggregator` for improved maintainability (#315)
+
+---
+
 ## [0.1.12] - 2026-03-01
 
 ### Added
