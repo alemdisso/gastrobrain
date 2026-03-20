@@ -426,4 +426,15 @@ None — all 4 issues are independent.
 - Sprint plan written to `docs/planning/sprints/sprint-planning-0.1.14.md`
 
 ### 2026-03-20 — #292 implementation
- - Pre-Implementation Analysis & Roadmap — ~11:30 - ~12:00
+- Pre-Implementation Analysis & Roadmap — ~11:30 - ~12:00
+- **Scope discovery**: issue was written with 5 migrations; codebase had grown to 11 → chose Option B (consolidate all 001-011 into baseline)
+- **Decision**: `instructions` field wired end-to-end in conversion tool + `importRecipesFromJson` now — #317 needs no code changes, just export + re-run
+- Step 1: `tools/convert_export_to_seed.dart` built and run — 166 recipes, 198 ingredients written to assets/
+- Step 2: `001_initial_schema.dart` rewritten — complete 13-table consolidated schema
+- Step 3: `_onCreate` fixed — 6 gaps closed (servings, meal_type, planned_servings, to_buy bug, meal_plan_item_ingredients, meal_ingredients)
+- Step 4: migrations 002-011 archived to `_archived/`, excluded from `flutter analyze`
+- Step 5: migration registry stripped to `[InitialSchemaMigration()]` only
+- Deleted 2 obsolete migration-specific test files (simple_sides_tables, shopping_list_tables)
+- Phase 3: 19 new tests in `test/database/migration_consolidation_test.dart` — scenarios 1 and 3 green
+- Scenario 2 (legacy DB): manual on emulator — best-effort, documented in roadmap
+- **Gates**: `flutter analyze` clean, `flutter test` 1743/1743 passing
