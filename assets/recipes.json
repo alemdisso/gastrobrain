@@ -1,1 +1,1662 @@
-[{"id":"64656667-6869-6a6b-6c6d-6e6f70717273","name":"Abobora assada","created_at":"2025-03-21T00:04:17.625624","difficulty":2,"rating":2,"prep_time_minutes":20,"cook_time_minutes":40,"desired_frequency":"weekly","notes":"","main_ingredient":"Abobora","protein_type":null},{"id":"12131415-1617-1819-1a1b-1c1d1e1f2021","name":"Abobrinha grelhada","created_at":"2025-03-21T00:04:17.629158","difficulty":2,"rating":2,"prep_time_minutes":20,"cook_time_minutes":20,"desired_frequency":"weekly","notes":"","main_ingredient":"Abobrinha","protein_type":null},{"id":"12131415-1617-1819-1a1b-1c1d1e1f2021","name":"Abobrinha recheada com carne moída","created_at":"2025-03-21T00:04:17.629158","difficulty":2,"rating":2,"prep_time_minutes":20,"cook_time_minutes":40,"desired_frequency":"rarely","notes":"","main_ingredient":"Carne bovina","protein_type":"beef"},{"id":"12131415-1617-1819-1a1b-1c1d1e1f2021","name":"Abobrinha refogada","created_at":"2025-03-21T00:04:17.629158","difficulty":2,"rating":2,"prep_time_minutes":15,"cook_time_minutes":25,"desired_frequency":"rarely","notes":"","main_ingredient":"Abobrinha","protein_type":null},{"id":"12131415-1617-1819-1a1b-1c1d1e1f2021","name":"Almôndegas","created_at":"2025-03-21T00:04:17.629158","difficulty":4,"rating":4,"prep_time_minutes":50,"cook_time_minutes":40,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Carne bovina","protein_type":"beef"},{"id":"12131415-1617-1819-1a1b-1c1d1e1f2021","name":"Arroz caldoso de pernil","created_at":"2025-03-21T00:04:17.629158","difficulty":3,"rating":2,"prep_time_minutes":20,"cook_time_minutes":30,"desired_frequency":"rarely","notes":"","main_ingredient":"Pernil","protein_type":"pork"},{"id":"12131415-1617-1819-1a1b-1c1d1e1f2021","name":"Arroz com brocólis","created_at":"2025-03-21T00:04:17.629158","difficulty":3,"rating":3,"prep_time_minutes":30,"cook_time_minutes":25,"desired_frequency":"biweekly","notes":"","main_ingredient":"arroz","protein_type":null},{"id":"12131415-1617-1819-1a1b-1c1d1e1f2021","name":"Arroz com frango","created_at":"2025-03-21T00:04:17.629158","difficulty":2,"rating":3,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Frango","protein_type":"chicken"},{"id":"12131415-1617-1819-1a1b-1c1d1e1f2021","name":"Arroz de Lula","created_at":"2025-03-21T00:04:17.629158","difficulty":2,"rating":2,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"rarely","notes":"","main_ingredient":"Lula","protein_type":"seafood"},{"id":"12131415-1617-1819-1a1b-1c1d1e1f2021","name":"Arroz de Pato","created_at":"2025-03-21T00:04:17.629158","difficulty":4,"rating":5,"prep_time_minutes":120,"cook_time_minutes":90,"desired_frequency":"rarely","notes":"","main_ingredient":"Pato","protein_type":"chicken"},{"id":"12131415-1617-1819-1a1b-1c1d1e1f2021","name":"Arroz Frito Tailandês","created_at":"2025-03-21T00:04:17.629158","difficulty":3,"rating":3,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Arroz","protein_type":null},{"id":"12131415-1617-1819-1a1b-1c1d1e1f2021","name":"Atum Selado com crosta de gergelim","created_at":"2025-03-21T00:04:17.629158","difficulty":2,"rating":4,"prep_time_minutes":20,"cook_time_minutes":20,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Atum","protein_type":"fish"},{"id":"12131415-1617-1819-1a1b-1c1d1e1f2021","name":"Babaganouche","created_at":"2025-03-21T00:04:17.630157","difficulty":3,"rating":4,"prep_time_minutes":25,"cook_time_minutes":30,"desired_frequency":"biweekly","notes":"","main_ingredient":"Berinjela","protein_type":null},{"id":"fcfdfe00-0102-0304-0506-0708090a0b0c","name":"Baião de Dois","created_at":"2025-03-21T00:04:17.630157","difficulty":4,"rating":4,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Carne-seca","protein_type":"charcuterie"},{"id":"fcfdfe00-0102-0304-0506-0708090a0b0c","name":"Batata Dauphinoise","created_at":"2025-03-21T00:04:17.630157","difficulty":4,"rating":5,"prep_time_minutes":30,"cook_time_minutes":50,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Batata","protein_type":null},{"id":"fcfdfe00-0102-0304-0506-0708090a0b0c","name":"Batata Hasselback","created_at":"2025-03-21T00:04:17.630157","difficulty":3,"rating":4,"prep_time_minutes":30,"cook_time_minutes":40,"desired_frequency":"rarely","notes":"","main_ingredient":"Batata","protein_type":null},{"id":"fcfdfe00-0102-0304-0506-0708090a0b0c","name":"Batata Inglesa Recheada","created_at":"2025-03-21T00:04:17.630157","difficulty":3,"rating":3,"prep_time_minutes":20,"cook_time_minutes":50,"desired_frequency":"rarely","notes":"","main_ingredient":"Batata","protein_type":null},{"id":"fcfdfe00-0102-0304-0506-0708090a0b0c","name":"Batatas ao murro","created_at":"2025-03-21T00:04:17.630157","difficulty":4,"rating":3,"prep_time_minutes":30,"cook_time_minutes":90,"desired_frequency":"rarely","notes":"","main_ingredient":"Batata","protein_type":null},{"id":"fcfdfe00-0102-0304-0506-0708090a0b0c","name":"Batatas Assadas","created_at":"2025-03-21T00:04:17.630157","difficulty":3,"rating":2,"prep_time_minutes":15,"cook_time_minutes":50,"desired_frequency":"monthly","notes":"","main_ingredient":"Batata","protein_type":null},{"id":"fcfdfe00-0102-0304-0506-0708090a0b0c","name":"Batatas doce com missô e gengibre","created_at":"2025-03-21T00:04:17.630157","difficulty":2,"rating":2,"prep_time_minutes":20,"cook_time_minutes":40,"desired_frequency":"monthly","notes":"","main_ingredient":"Batata-doce","protein_type":null},{"id":"fcfdfe00-0102-0304-0506-0708090a0b0c","name":"Berinjela Assada","created_at":"2025-03-21T00:04:17.630157","difficulty":2,"rating":3,"prep_time_minutes":90,"cook_time_minutes":35,"desired_frequency":"weekly","notes":"","main_ingredient":"Berinjela","protein_type":null},{"id":"fcfdfe00-0102-0304-0506-0708090a0b0c","name":"Berinjela no Missô","created_at":"2025-03-21T00:04:17.630157","difficulty":3,"rating":4,"prep_time_minutes":30,"cook_time_minutes":45,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Berinjela","protein_type":null},{"id":"fcfdfe00-0102-0304-0506-0708090a0b0c","name":"Bife a milanesa","created_at":"2025-03-21T00:04:17.630157","difficulty":4,"rating":4,"prep_time_minutes":40,"cook_time_minutes":20,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Carne bovina","protein_type":"beef"},{"id":"fcfdfe00-0102-0304-0506-0708090a0b0c","name":"Bracciola","created_at":"2025-03-21T00:04:17.630157","difficulty":4,"rating":4,"prep_time_minutes":50,"cook_time_minutes":50,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Carne bovina","protein_type":"beef"},{"id":"fcfdfe00-0102-0304-0506-0708090a0b0c","name":"Camarão Vietnamita","created_at":"2025-03-21T00:04:17.630157","difficulty":3,"rating":5,"prep_time_minutes":50,"cook_time_minutes":30,"desired_frequency":"rarely","notes":"","main_ingredient":"Camarão","protein_type":"seafood"},{"id":"fcfdfe00-0102-0304-0506-0708090a0b0c","name":"Carne assada","created_at":"2025-03-21T00:04:17.630157","difficulty":3,"rating":2,"prep_time_minutes":15,"cook_time_minutes":70,"desired_frequency":"rarely","notes":"","main_ingredient":"Carne Bovina","protein_type":"beef"},{"id":"fcfdfe00-0102-0304-0506-0708090a0b0c","name":"Carne Moída","created_at":"2025-03-21T00:04:17.630157","difficulty":1,"rating":3,"prep_time_minutes":10,"cook_time_minutes":20,"desired_frequency":"weekly","notes":"","main_ingredient":"Carne bovina","protein_type":"beef"},{"id":"e7e8e9ea-ebec-edee-eff0-f1f2f3f4f5f6","name":"Ceviche","created_at":"2025-03-21T00:04:17.631156","difficulty":2,"rating":4,"prep_time_minutes":30,"cook_time_minutes":120,"desired_frequency":"monthly","notes":"","main_ingredient":"Peixe","protein_type":"fish"},{"id":"e7e8e9ea-ebec-edee-eff0-f1f2f3f4f5f6","name":"Coleslaw","created_at":"2025-03-21T00:04:17.631156","difficulty":3,"rating":3,"prep_time_minutes":150,"cook_time_minutes":0,"desired_frequency":"monthly","notes":"","main_ingredient":"Repolho","protein_type":null},{"id":"e7e8e9ea-ebec-edee-eff0-f1f2f3f4f5f6","name":"Copa lombo cozido (cha-sui)","created_at":"2025-03-21T00:04:17.631156","difficulty":5,"rating":5,"prep_time_minutes":30,"cook_time_minutes":120,"desired_frequency":"rarely","notes":"","main_ingredient":"Copa lombo","protein_type":"pork"},{"id":"e7e8e9ea-ebec-edee-eff0-f1f2f3f4f5f6","name":"Coq au vin","created_at":"2025-03-21T00:04:17.631156","difficulty":3,"rating":5,"prep_time_minutes":25,"cook_time_minutes":50,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Sobrecoxa de frango","protein_type":"chicken"},{"id":"e7e8e9ea-ebec-edee-eff0-f1f2f3f4f5f6","name":"Couve a mineira","created_at":"2025-03-21T00:04:17.631156","difficulty":1,"rating":2,"prep_time_minutes":10,"cook_time_minutes":15,"desired_frequency":"weekly","notes":"","main_ingredient":"Couve","protein_type":null},{"id":"e7e8e9ea-ebec-edee-eff0-f1f2f3f4f5f6","name":"Couve -flor assada em flores","created_at":"2025-03-21T00:04:17.631156","difficulty":2,"rating":3,"prep_time_minutes":20,"cook_time_minutes":30,"desired_frequency":"biweekly","notes":"","main_ingredient":"Couve-flor","protein_type":null},{"id":"e7e8e9ea-ebec-edee-eff0-f1f2f3f4f5f6","name":"Couve-flor assada com tahine","created_at":"2025-03-21T00:04:17.631156","difficulty":2,"rating":3,"prep_time_minutes":15,"cook_time_minutes":40,"desired_frequency":"rarely","notes":"","main_ingredient":"Couve-flor","protein_type":null},{"id":"e7e8e9ea-ebec-edee-eff0-f1f2f3f4f5f6","name":"Croque Madame","created_at":"2025-03-21T00:04:17.631156","difficulty":3,"rating":4,"prep_time_minutes":20,"cook_time_minutes":30,"desired_frequency":"rarely","notes":"","main_ingredient":"Ovo","protein_type":null},{"id":"e7e8e9ea-ebec-edee-eff0-f1f2f3f4f5f6","name":"Croque Monsieur","created_at":"2025-03-21T00:04:17.631156","difficulty":3,"rating":3,"prep_time_minutes":20,"cook_time_minutes":30,"desired_frequency":"rarely","notes":"","main_ingredient":"Presunto","protein_type":null},{"id":"e7e8e9ea-ebec-edee-eff0-f1f2f3f4f5f6","name":"Curry de carne bovina","created_at":"2025-03-21T00:04:17.631156","difficulty":3,"rating":4,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"monthly","notes":"","main_ingredient":"Carne bovina","protein_type":"beef"},{"id":"e7e8e9ea-ebec-edee-eff0-f1f2f3f4f5f6","name":"Curry de frango","created_at":"2025-03-21T00:04:17.631156","difficulty":3,"rating":4,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"monthly","notes":"","main_ingredient":"Frango","protein_type":"chicken"},{"id":"e7e8e9ea-ebec-edee-eff0-f1f2f3f4f5f6","name":"Curry de Grão de Bico","created_at":"2025-03-21T00:04:17.631156","difficulty":3,"rating":4,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Grão de bico","protein_type":null},{"id":"e7e8e9ea-ebec-edee-eff0-f1f2f3f4f5f6","name":"Curry de lombo suíno","created_at":"2025-03-21T00:04:17.631156","difficulty":3,"rating":4,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"monthly","notes":"","main_ingredient":"Lombo suíno","protein_type":"pork"},{"id":"e7e8e9ea-ebec-edee-eff0-f1f2f3f4f5f6","name":"Espaguete a bolonhesa","created_at":"2025-03-21T00:04:17.631156","difficulty":4,"rating":4,"prep_time_minutes":15,"cook_time_minutes":15,"desired_frequency":"biweekly","notes":"","main_ingredient":"Carne moída","protein_type":"beef"},{"id":"e7e8e9ea-ebec-edee-eff0-f1f2f3f4f5f6","name":"Espaguete ao sugo","created_at":"2025-03-21T00:04:17.631156","difficulty":2,"rating":3,"prep_time_minutes":10,"cook_time_minutes":20,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Tomate","protein_type":null},{"id":"d3d4d5d6-d7d8-d9da-dbdc-dddedfe0e1e2","name":"Estrogonofe de carne","created_at":"2025-03-21T00:04:17.632156","difficulty":3,"rating":3,"prep_time_minutes":30,"cook_time_minutes":40,"desired_frequency":"monthly","notes":"","main_ingredient":"Carne bovina","protein_type":"beef"},{"id":"d3d4d5d6-d7d8-d9da-dbdc-dddedfe0e1e2","name":"Estrogonofe de frango","created_at":"2025-03-21T00:04:17.632156","difficulty":3,"rating":2,"prep_time_minutes":30,"cook_time_minutes":40,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Frango","protein_type":"chicken"},{"id":"d3d4d5d6-d7d8-d9da-dbdc-dddedfe0e1e2","name":"Falafel","created_at":"2025-03-21T00:04:17.632156","difficulty":4,"rating":4,"prep_time_minutes":90,"cook_time_minutes":30,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Grão de bico","protein_type":null},{"id":"d3d4d5d6-d7d8-d9da-dbdc-dddedfe0e1e2","name":"Falso couscous de couve-flor","created_at":"2025-03-21T00:04:17.632156","difficulty":3,"rating":3,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"rarely","notes":"","main_ingredient":"Couve-flor","protein_type":null},{"id":"d3d4d5d6-d7d8-d9da-dbdc-dddedfe0e1e2","name":"Filé de peixe escalfado","created_at":"2025-03-21T00:04:17.632156","difficulty":3,"rating":3,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"rarely","notes":"","main_ingredient":"Filé de peixe","protein_type":"fish"},{"id":"d3d4d5d6-d7d8-d9da-dbdc-dddedfe0e1e2","name":"File de peixe grelhado","created_at":"2025-03-21T00:04:17.632156","difficulty":2,"rating":3,"prep_time_minutes":15,"cook_time_minutes":25,"desired_frequency":"weekly","notes":"","main_ingredient":"Filé de peixe","protein_type":"fish"},{"id":"d3d4d5d6-d7d8-d9da-dbdc-dddedfe0e1e2","name":"Filé de peixe no papelote","created_at":"2025-03-21T00:04:17.632156","difficulty":2,"rating":3,"prep_time_minutes":30,"cook_time_minutes":25,"desired_frequency":"rarely","notes":"","main_ingredient":"Filé de peixe","protein_type":"fish"},{"id":"d3d4d5d6-d7d8-d9da-dbdc-dddedfe0e1e2","name":"Frango a milanesa","created_at":"2025-03-21T00:04:17.632156","difficulty":4,"rating":3,"prep_time_minutes":40,"cook_time_minutes":20,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Peito de frango","protein_type":"chicken"},{"id":"d3d4d5d6-d7d8-d9da-dbdc-dddedfe0e1e2","name":"Frango com catupiry","created_at":"2025-03-21T00:04:17.632156","difficulty":3,"rating":3,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"monthly","notes":"","main_ingredient":"Frango","protein_type":"chicken"},{"id":"d3d4d5d6-d7d8-d9da-dbdc-dddedfe0e1e2","name":"Frango na Salmoura","created_at":"2025-03-21T00:04:17.632156","difficulty":3,"rating":3,"prep_time_minutes":120,"cook_time_minutes":30,"desired_frequency":"monthly","notes":"","main_ingredient":"Peito de frango","protein_type":"chicken"},{"id":"d3d4d5d6-d7d8-d9da-dbdc-dddedfe0e1e2","name":"Galinha Vietnamita","created_at":"2025-03-21T00:04:17.632156","difficulty":4,"rating":5,"prep_time_minutes":60,"cook_time_minutes":40,"desired_frequency":"rarely","notes":"","main_ingredient":"Frango","protein_type":"chicken"},{"id":"d3d4d5d6-d7d8-d9da-dbdc-dddedfe0e1e2","name":"Galinhada","created_at":"2025-03-21T00:04:17.632156","difficulty":2,"rating":5,"prep_time_minutes":30,"cook_time_minutes":45,"desired_frequency":"monthly","notes":"","main_ingredient":"Frango","protein_type":"chicken"},{"id":"d3d4d5d6-d7d8-d9da-dbdc-dddedfe0e1e2","name":"Homus Tahine","created_at":"2025-03-21T00:04:17.632156","difficulty":2,"rating":3,"prep_time_minutes":20,"cook_time_minutes":30,"desired_frequency":"biweekly","notes":"","main_ingredient":"Grão de bico","protein_type":null},{"id":"d3d4d5d6-d7d8-d9da-dbdc-dddedfe0e1e2","name":"Imitação de paella","created_at":"2025-03-21T00:04:17.632156","difficulty":3,"rating":5,"prep_time_minutes":40,"cook_time_minutes":30,"desired_frequency":"rarely","notes":"","main_ingredient":"Camarão","protein_type":"seafood"},{"id":"d3d4d5d6-d7d8-d9da-dbdc-dddedfe0e1e2","name":"Kafta assada","created_at":"2025-03-21T00:04:17.632156","difficulty":4,"rating":4,"prep_time_minutes":40,"cook_time_minutes":40,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Carne bovina","protein_type":"beef"},{"id":"bfc0c1c2-c3c4-c5c6-c7c8-c9cacbcccdce","name":"Kibeh assado","created_at":"2025-03-21T00:04:17.633156","difficulty":4,"rating":3,"prep_time_minutes":40,"cook_time_minutes":40,"desired_frequency":"rarely","notes":"","main_ingredient":"Carne bovina","protein_type":"beef"},{"id":"bfc0c1c2-c3c4-c5c6-c7c8-c9cacbcccdce","name":"lamen","created_at":"2025-03-21T00:04:17.633156","difficulty":5,"rating":5,"prep_time_minutes":90,"cook_time_minutes":60,"desired_frequency":"rarely","notes":"","main_ingredient":"lamen","protein_type":null},{"id":"bfc0c1c2-c3c4-c5c6-c7c8-c9cacbcccdce","name":"Lasanha a bolonhesa","created_at":"2025-03-21T00:04:17.633156","difficulty":4,"rating":5,"prep_time_minutes":30,"cook_time_minutes":20,"desired_frequency":"monthly","notes":"","main_ingredient":"Carne moída","protein_type":"beef"},{"id":"bfc0c1c2-c3c4-c5c6-c7c8-c9cacbcccdce","name":"Lasanha de Berinjela","created_at":"2025-03-21T00:04:17.633156","difficulty":3,"rating":5,"prep_time_minutes":30,"cook_time_minutes":110,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Berinjela","protein_type":null},{"id":"bfc0c1c2-c3c4-c5c6-c7c8-c9cacbcccdce","name":"Legumes assados","created_at":"2025-03-21T00:04:17.633156","difficulty":2,"rating":2,"prep_time_minutes":20,"cook_time_minutes":40,"desired_frequency":"weekly","notes":"","main_ingredient":"Legumes","protein_type":null},{"id":"bfc0c1c2-c3c4-c5c6-c7c8-c9cacbcccdce","name":"Legumes salteados","created_at":"2025-03-21T00:04:17.633156","difficulty":3,"rating":2,"prep_time_minutes":20,"cook_time_minutes":20,"desired_frequency":"biweekly","notes":"","main_ingredient":"Legumes","protein_type":null},{"id":"bfc0c1c2-c3c4-c5c6-c7c8-c9cacbcccdce","name":"Lombo Assado","created_at":"2025-03-21T00:04:17.633156","difficulty":3,"rating":3,"prep_time_minutes":20,"cook_time_minutes":50,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Lombo suíno","protein_type":"pork"},{"id":"bfc0c1c2-c3c4-c5c6-c7c8-c9cacbcccdce","name":"Lula a provençal","created_at":"2025-03-21T00:04:17.633156","difficulty":3,"rating":3,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"rarely","notes":"","main_ingredient":"Lula","protein_type":"seafood"},{"id":"bfc0c1c2-c3c4-c5c6-c7c8-c9cacbcccdce","name":"Macarrão a Putanesca","created_at":"2025-03-21T00:04:17.633156","difficulty":2,"rating":3,"prep_time_minutes":30,"cook_time_minutes":40,"desired_frequency":"monthly","notes":"","main_ingredient":"Tomate","protein_type":null},{"id":"bfc0c1c2-c3c4-c5c6-c7c8-c9cacbcccdce","name":"Macarrão ao pesto","created_at":"2025-03-21T00:04:17.633156","difficulty":1,"rating":3,"prep_time_minutes":0,"cook_time_minutes":15,"desired_frequency":"monthly","notes":"","main_ingredient":"Manjericão","protein_type":null},{"id":"bfc0c1c2-c3c4-c5c6-c7c8-c9cacbcccdce","name":"Macarrão com atum e creme de leite","created_at":"2025-03-21T00:04:17.633156","difficulty":1,"rating":2,"prep_time_minutes":0,"cook_time_minutes":15,"desired_frequency":"biweekly","notes":"","main_ingredient":"Atum","protein_type":"fish"},{"id":"bfc0c1c2-c3c4-c5c6-c7c8-c9cacbcccdce","name":"Mango Chutney","created_at":"2025-03-21T00:04:17.633156","difficulty":3,"rating":3,"prep_time_minutes":20,"cook_time_minutes":60,"desired_frequency":"rarely","notes":"","main_ingredient":"Manga","protein_type":null},{"id":"bfc0c1c2-c3c4-c5c6-c7c8-c9cacbcccdce","name":"Mejadra (arroz com lentilhas)","created_at":"2025-03-21T00:04:17.633156","difficulty":4,"rating":5,"prep_time_minutes":40,"cook_time_minutes":30,"desired_frequency":"rarely","notes":"","main_ingredient":"Arroz","protein_type":null},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"Molho bolonhesa","created_at":"2025-03-21T00:04:17.634156","difficulty":3,"rating":5,"prep_time_minutes":20,"cook_time_minutes":300,"desired_frequency":"monthly","notes":"","main_ingredient":"Carne moída","protein_type":"beef"},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"Molho de tomate (sugo)","created_at":"2025-03-21T00:04:17.634156","difficulty":2,"rating":4,"prep_time_minutes":20,"cook_time_minutes":60,"desired_frequency":"monthly","notes":"","main_ingredient":"Tomate","protein_type":null},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"Molho Pesto","created_at":"2025-03-21T00:04:17.634156","difficulty":2,"rating":4,"prep_time_minutes":30,"cook_time_minutes":0,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Manjericão","protein_type":null},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"Penne com gorgonzola","created_at":"2025-03-21T00:04:17.634156","difficulty":2,"rating":3,"prep_time_minutes":20,"cook_time_minutes":30,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Gorgonzola","protein_type":null},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"Pernil desfiado","created_at":"2025-03-21T00:04:17.634156","difficulty":2,"rating":3,"prep_time_minutes":20,"cook_time_minutes":50,"desired_frequency":"rarely","notes":"","main_ingredient":"Pernil","protein_type":"pork"},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"PF de contrafilé","created_at":"2025-03-21T00:04:17.634156","difficulty":2,"rating":3,"prep_time_minutes":30,"cook_time_minutes":60,"desired_frequency":"weekly","notes":"","main_ingredient":"contra-filé","protein_type":"beef"},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"PF de frango","created_at":"2025-03-21T00:04:17.634156","difficulty":2,"rating":3,"prep_time_minutes":30,"cook_time_minutes":60,"desired_frequency":"weekly","notes":"","main_ingredient":"frango","protein_type":"chicken"},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"PF de lombo suíno","created_at":"2025-03-21T00:04:17.634156","difficulty":2,"rating":3,"prep_time_minutes":30,"cook_time_minutes":60,"desired_frequency":"weekly","notes":"","main_ingredient":"Lombo suíno","protein_type":"pork"},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"PF de peixe","created_at":"2025-03-21T00:04:17.634156","difficulty":2,"rating":3,"prep_time_minutes":30,"cook_time_minutes":60,"desired_frequency":"weekly","notes":"","main_ingredient":"peixe","protein_type":"fish"},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"Picadinho de carne","created_at":"2025-03-21T00:04:17.634156","difficulty":3,"rating":3,"prep_time_minutes":25,"cook_time_minutes":55,"desired_frequency":"monthly","notes":"","main_ingredient":"Carne bovina","protein_type":"beef"},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"Poke Havaiano","created_at":"2025-03-21T00:04:17.634156","difficulty":4,"rating":4,"prep_time_minutes":90,"cook_time_minutes":20,"desired_frequency":"rarely","notes":"","main_ingredient":"Atum","protein_type":"fish"},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"Purê de batata","created_at":"2025-03-21T00:04:17.634156","difficulty":2,"rating":1,"prep_time_minutes":40,"cook_time_minutes":30,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Batata","protein_type":null},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"Purê de batata baroa","created_at":"2025-03-21T00:04:17.634156","difficulty":2,"rating":2,"prep_time_minutes":40,"cook_time_minutes":30,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Batata baroa","protein_type":null},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"Purê de couve-flor","created_at":"2025-03-21T00:04:17.634156","difficulty":2,"rating":3,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Couve-flor","protein_type":null},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"Queijo quente","created_at":"2025-03-21T00:04:17.634156","difficulty":1,"rating":2,"prep_time_minutes":10,"cook_time_minutes":10,"desired_frequency":"weekly","notes":"","main_ingredient":"Queijo","protein_type":null},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"Quiabo Spicy","created_at":"2025-03-21T00:04:17.634156","difficulty":2,"rating":4,"prep_time_minutes":20,"cook_time_minutes":30,"desired_frequency":"biweekly","notes":"","main_ingredient":"Quiabo","protein_type":null},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"Ragu de patinho","created_at":"2025-03-21T00:04:17.634156","difficulty":2,"rating":2,"prep_time_minutes":20,"cook_time_minutes":45,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Carne Bovina","protein_type":"beef"},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"Ratatouille","created_at":"2025-03-21T00:04:17.634156","difficulty":3,"rating":3,"prep_time_minutes":30,"cook_time_minutes":40,"desired_frequency":"monthly","notes":"","main_ingredient":"Berinjela","protein_type":null},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"Risoto de curry com camarão","created_at":"2025-03-21T00:04:17.634156","difficulty":3,"rating":5,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"rarely","notes":"","main_ingredient":"Camarão","protein_type":"seafood"},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"Rosbife","created_at":"2025-03-21T00:04:17.634156","difficulty":2,"rating":5,"prep_time_minutes":15,"cook_time_minutes":25,"desired_frequency":"biweekly","notes":"","main_ingredient":"Filé Mignon","protein_type":"beef"},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"Rosbife de Mignon Suíno","created_at":"2025-03-21T00:04:17.634156","difficulty":2,"rating":4,"prep_time_minutes":15,"cook_time_minutes":25,"desired_frequency":"biweekly","notes":"","main_ingredient":"Filé Mignon Suíno","protein_type":"pork"},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"Salada Camon para Tonkatsu","created_at":"2025-03-21T00:04:17.634156","difficulty":3,"rating":4,"prep_time_minutes":25,"cook_time_minutes":0,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Acelga","protein_type":null},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"Salada de couscous com tomate cereja","created_at":"2025-03-21T00:04:17.634156","difficulty":2,"rating":2,"prep_time_minutes":40,"cook_time_minutes":20,"desired_frequency":"rarely","notes":"","main_ingredient":"Cuscuz","protein_type":null},{"id":"abacadae-afb0-b1b2-b3b4-b5b6b7b8b9ba","name":"Salada de Macarrão com Salmão","created_at":"2025-03-21T00:04:17.634156","difficulty":2,"rating":3,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Salmão","protein_type":"fish"},{"id":"93949596-9798-999a-9b9c-9d9e9fa0a1a2","name":"Salada de macarrão, abobrinha e hortelã","created_at":"2025-03-21T00:04:17.635662","difficulty":3,"rating":3,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Abobrinha","protein_type":null},{"id":"93949596-9798-999a-9b9c-9d9e9fa0a1a2","name":"Salada de Pera, Rúcula e Burrata","created_at":"2025-03-21T00:04:17.635662","difficulty":2,"rating":4,"prep_time_minutes":30,"cook_time_minutes":20,"desired_frequency":"rarely","notes":"","main_ingredient":"pera","protein_type":null},{"id":"93949596-9798-999a-9b9c-9d9e9fa0a1a2","name":"Salada Mexicana de milho","created_at":"2025-03-21T00:04:17.635662","difficulty":3,"rating":5,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"monthly","notes":"","main_ingredient":"Milho","protein_type":null},{"id":"93949596-9798-999a-9b9c-9d9e9fa0a1a2","name":"Salada Niçoise","created_at":"2025-03-21T00:04:17.635662","difficulty":3,"rating":3,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"rarely","notes":"","main_ingredient":"Atum em lata","protein_type":"fish"},{"id":"93949596-9798-999a-9b9c-9d9e9fa0a1a2","name":"Salada Niçoise de salmão e batatas ao murro","created_at":"2025-03-21T00:04:17.635662","difficulty":4,"rating":4,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"rarely","notes":"","main_ingredient":"Salmão","protein_type":"fish"},{"id":"93949596-9798-999a-9b9c-9d9e9fa0a1a2","name":"Salada Thai de bifum","created_at":"2025-03-21T00:04:17.635662","difficulty":3,"rating":3,"prep_time_minutes":50,"cook_time_minutes":20,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Bifum","protein_type":null},{"id":"93949596-9798-999a-9b9c-9d9e9fa0a1a2","name":"Sardinhas Escabeche","created_at":"2025-03-21T00:04:17.635662","difficulty":4,"rating":3,"prep_time_minutes":90,"cook_time_minutes":50,"desired_frequency":"rarely","notes":"","main_ingredient":"Sardinhas","protein_type":"fish"},{"id":"93949596-9798-999a-9b9c-9d9e9fa0a1a2","name":"Sassame de frango empanado","created_at":"2025-03-21T00:04:17.635662","difficulty":3,"rating":3,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"rarely","notes":"","main_ingredient":"Peito de frango","protein_type":"chicken"},{"id":"93949596-9798-999a-9b9c-9d9e9fa0a1a2","name":"Shashouka","created_at":"2025-03-21T00:04:17.635662","difficulty":2,"rating":4,"prep_time_minutes":20,"cook_time_minutes":30,"desired_frequency":"monthly","notes":"","main_ingredient":"Tomate","protein_type":null},{"id":"93949596-9798-999a-9b9c-9d9e9fa0a1a2","name":"Sobrecoxa de frango assada","created_at":"2025-03-21T00:04:17.635662","difficulty":2,"rating":3,"prep_time_minutes":20,"cook_time_minutes":60,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Sobrecoxa de frango","protein_type":"chicken"},{"id":"93949596-9798-999a-9b9c-9d9e9fa0a1a2","name":"Sopa de Cebola","created_at":"2025-03-21T00:04:17.635662","difficulty":4,"rating":4,"prep_time_minutes":30,"cook_time_minutes":90,"desired_frequency":"rarely","notes":"","main_ingredient":"Cebola","protein_type":null},{"id":"93949596-9798-999a-9b9c-9d9e9fa0a1a2","name":"Sopa de Ervilha","created_at":"2025-03-21T00:04:17.635662","difficulty":2,"rating":3,"prep_time_minutes":10,"cook_time_minutes":40,"desired_frequency":"monthly","notes":"","main_ingredient":"Ervilha","protein_type":null},{"id":"93949596-9798-999a-9b9c-9d9e9fa0a1a2","name":"Sopa de Frango, shitake e gengibre","created_at":"2025-03-21T00:04:17.635662","difficulty":2,"rating":4,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"rarely","notes":"","main_ingredient":"Frango","protein_type":"chicken"},{"id":"93949596-9798-999a-9b9c-9d9e9fa0a1a2","name":"Sopa de Gengibre, alho e noodles (ottolenghi)","created_at":"2025-03-21T00:04:17.635662","difficulty":4,"rating":5,"prep_time_minutes":40,"cook_time_minutes":40,"desired_frequency":"rarely","notes":"","main_ingredient":"Gengibre","protein_type":null},{"id":"93949596-9798-999a-9b9c-9d9e9fa0a1a2","name":"Sopa de Grão de Bico","created_at":"2025-03-21T00:04:17.635662","difficulty":2,"rating":3,"prep_time_minutes":15,"cook_time_minutes":40,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Grão de bico","protein_type":null},{"id":"93949596-9798-999a-9b9c-9d9e9fa0a1a2","name":"Sopa de Tomate","created_at":"2025-03-21T00:04:17.635662","difficulty":2,"rating":4,"prep_time_minutes":20,"cook_time_minutes":70,"desired_frequency":"monthly","notes":"","main_ingredient":"Tomate","protein_type":null},{"id":"93949596-9798-999a-9b9c-9d9e9fa0a1a2","name":"taco de frango","created_at":"2025-03-21T00:04:17.635662","difficulty":3,"rating":3,"prep_time_minutes":35,"cook_time_minutes":0,"desired_frequency":"rarely","notes":"","main_ingredient":"Frango","protein_type":"chicken"},{"id":"93949596-9798-999a-9b9c-9d9e9fa0a1a2","name":"Tonkatsu","created_at":"2025-03-21T00:04:17.635662","difficulty":4,"rating":5,"prep_time_minutes":40,"cook_time_minutes":20,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Copalombo","protein_type":"pork"},{"id":"93949596-9798-999a-9b9c-9d9e9fa0a1a2","name":"Torta de atum da Eva","created_at":"2025-03-21T00:04:17.636668","difficulty":4,"rating":4,"prep_time_minutes":60,"cook_time_minutes":120,"desired_frequency":"rarely","notes":"","main_ingredient":"Atum em lata","protein_type":"fish"},{"id":"85868788-898a-8b8c-8d8e-8f9091929394","name":"Bobó de camarão","created_at":"2025-03-21T00:04:17.636668","difficulty":5,"rating":3,"prep_time_minutes":90,"cook_time_minutes":90,"desired_frequency":"rarely","notes":"","main_ingredient":"Camarão","protein_type":"seafood"},{"id":"85868788-898a-8b8c-8d8e-8f9091929394","name":"Hamburguer","created_at":"2025-03-21T00:04:17.636668","difficulty":4,"rating":4,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Carne bovina","protein_type":"beef"},{"id":"85868788-898a-8b8c-8d8e-8f9091929394","name":"Berinjela ao forno com carne moída","created_at":"2025-03-21T00:04:17.636668","difficulty":2,"rating":3,"prep_time_minutes":30,"cook_time_minutes":60,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Carne bovina","protein_type":"beef"},{"id":"85868788-898a-8b8c-8d8e-8f9091929394","name":"Conserva de atum","created_at":"2025-03-21T00:04:17.636668","difficulty":2,"rating":4,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"rarely","notes":"","main_ingredient":"Atum","protein_type":"fish"},{"id":"85868788-898a-8b8c-8d8e-8f9091929394","name":"Escondidinho","created_at":"2025-03-21T00:04:17.636668","difficulty":3,"rating":2,"prep_time_minutes":40,"cook_time_minutes":40,"desired_frequency":"rarely","notes":"","main_ingredient":"Carne-seca","protein_type":"charcuterie"},{"id":"85868788-898a-8b8c-8d8e-8f9091929394","name":"Fajitas","created_at":"2025-03-21T00:04:17.636668","difficulty":3,"rating":3,"prep_time_minutes":30,"cook_time_minutes":40,"desired_frequency":"rarely","notes":"","main_ingredient":"Carne bovina","protein_type":"beef"},{"id":"85868788-898a-8b8c-8d8e-8f9091929394","name":"Guacamole","created_at":"2025-03-21T00:04:17.636668","difficulty":2,"rating":4,"prep_time_minutes":30,"cook_time_minutes":0,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Abacate","protein_type":null},{"id":"85868788-898a-8b8c-8d8e-8f9091929394","name":"Cachorro quente","created_at":"2025-03-21T00:04:17.636668","difficulty":1,"rating":2,"prep_time_minutes":15,"cook_time_minutes":15,"desired_frequency":"monthly","notes":"","main_ingredient":"Salsicha","protein_type":"charcuterie"},{"id":"85868788-898a-8b8c-8d8e-8f9091929394","name":"Gyoza","created_at":"2025-03-21T00:04:17.636668","difficulty":4,"rating":4,"prep_time_minutes":50,"cook_time_minutes":50,"desired_frequency":"biweekly","notes":"","main_ingredient":"Copa lombo","protein_type":"pork"},{"id":"85868788-898a-8b8c-8d8e-8f9091929394","name":"Pizza","created_at":"2025-03-21T00:04:17.636668","difficulty":1,"rating":1,"prep_time_minutes":0,"cook_time_minutes":0,"desired_frequency":"biweekly","notes":"","main_ingredient":"Queijo","protein_type":null},{"id":"85868788-898a-8b8c-8d8e-8f9091929394","name":"Macarrão a Carbonara","created_at":"2025-03-21T00:04:17.636668","difficulty":2,"rating":4,"prep_time_minutes":15,"cook_time_minutes":20,"desired_frequency":"bimonthly","notes":"","main_ingredient":"ovo","protein_type":"other"},{"id":"85868788-898a-8b8c-8d8e-8f9091929394","name":"Panqueca de carne","created_at":"2025-03-21T00:04:17.636668","difficulty":3,"rating":3,"prep_time_minutes":120,"cook_time_minutes":30,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Carne moída","protein_type":"beef"},{"id":"85868788-898a-8b8c-8d8e-8f9091929394","name":"Pasta a carretiera","created_at":"2025-03-21T00:04:17.636668","difficulty":2,"rating":3,"prep_time_minutes":10,"cook_time_minutes":15,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Tomate","protein_type":null},{"id":"85868788-898a-8b8c-8d8e-8f9091929394","name":"Pico de Gallo","created_at":"2025-03-21T00:04:17.636668","difficulty":3,"rating":2,"prep_time_minutes":20,"cook_time_minutes":0,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Tomate","protein_type":null},{"id":"72737475-7677-7879-7a7b-7c7d7e7f8081","name":"Frijoles Charros","created_at":"2025-03-21T00:04:17.637669","difficulty":3,"rating":3,"prep_time_minutes":20,"cook_time_minutes":60,"desired_frequency":"rarely","notes":"","main_ingredient":"Feijão preto","protein_type":null},{"id":"72737475-7677-7879-7a7b-7c7d7e7f8081","name":"Risoto","created_at":"2025-03-21T00:04:17.637669","difficulty":2,"rating":3,"prep_time_minutes":15,"cook_time_minutes":40,"desired_frequency":"monthly","notes":"","main_ingredient":"Arroz","protein_type":null},{"id":"72737475-7677-7879-7a7b-7c7d7e7f8081","name":"Salada de feijão Fradinho","created_at":"2025-03-21T00:04:17.637669","difficulty":2,"rating":3,"prep_time_minutes":30,"cook_time_minutes":30,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Feijão fradinho","protein_type":null},{"id":"72737475-7677-7879-7a7b-7c7d7e7f8081","name":"Salada de Pepino com Iogurte","created_at":"2025-03-21T00:04:17.637669","difficulty":2,"rating":3,"prep_time_minutes":30,"cook_time_minutes":0,"desired_frequency":"bimonthly","notes":"","main_ingredient":"pepino","protein_type":null},{"id":"72737475-7677-7879-7a7b-7c7d7e7f8081","name":"Salsa Ranchera","created_at":"2025-03-21T00:04:17.637669","difficulty":2,"rating":3,"prep_time_minutes":15,"cook_time_minutes":30,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Tomate","protein_type":null},{"id":"72737475-7677-7879-7a7b-7c7d7e7f8081","name":"Sopa de Batata Baroa e Alho poró","created_at":"2025-03-21T00:04:17.637669","difficulty":2,"rating":3,"prep_time_minutes":15,"cook_time_minutes":40,"desired_frequency":"rarely","notes":"","main_ingredient":"Batata baroa","protein_type":null},{"id":"72737475-7677-7879-7a7b-7c7d7e7f8081","name":"Sopa de Vinagre e Pimenta","created_at":"2025-03-21T00:04:17.637669","difficulty":3,"rating":5,"prep_time_minutes":20,"cook_time_minutes":40,"desired_frequency":"rarely","notes":"","main_ingredient":"Shitake","protein_type":null},{"id":"72737475-7677-7879-7a7b-7c7d7e7f8081","name":"Suflê","created_at":"2025-03-21T00:04:17.637669","difficulty":3,"rating":3,"prep_time_minutes":20,"cook_time_minutes":30,"desired_frequency":"monthly","notes":"","main_ingredient":"Ovo","protein_type":null},{"id":"72737475-7677-7879-7a7b-7c7d7e7f8081","name":"Tabouli","created_at":"2025-03-21T00:04:17.637669","difficulty":4,"rating":3,"prep_time_minutes":40,"cook_time_minutes":0,"desired_frequency":"rarely","notes":"","main_ingredient":"Salsa","protein_type":null},{"id":"72737475-7677-7879-7a7b-7c7d7e7f8081","name":"Tzatziki","created_at":"2025-03-21T00:04:17.637669","difficulty":3,"rating":4,"prep_time_minutes":30,"cook_time_minutes":0,"desired_frequency":"rarely","notes":"","main_ingredient":"Pepino","protein_type":null},{"id":"72737475-7677-7879-7a7b-7c7d7e7f8081","name":"Medalhão com gorgonzola","created_at":"2025-03-21T00:04:17.637669","difficulty":2,"rating":4,"prep_time_minutes":20,"cook_time_minutes":20,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Carne bovina","protein_type":"beef"},{"id":"72737475-7677-7879-7a7b-7c7d7e7f8081","name":"Crudo de bonito","created_at":"2025-03-21T00:04:17.637669","difficulty":2,"rating":5,"prep_time_minutes":30,"cook_time_minutes":0,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Peixe","protein_type":"fish"},{"id":"72737475-7677-7879-7a7b-7c7d7e7f8081","name":"Usuzukuri","created_at":"2025-03-21T00:04:17.637669","difficulty":2,"rating":5,"prep_time_minutes":30,"cook_time_minutes":0,"desired_frequency":"bimonthly","notes":"","main_ingredient":"Peixe","protein_type":"fish"}]
+[
+  {
+    "name": "abobora assada",
+    "desired_frequency": "weekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.625624",
+    "difficulty": 2,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 40,
+    "rating": 2
+  },
+  {
+    "name": "abobrinha grelhada",
+    "desired_frequency": "weekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.629158",
+    "difficulty": 2,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 20,
+    "rating": 2
+  },
+  {
+    "name": "abobrinha recheada com carne moída",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.629158",
+    "difficulty": 2,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 40,
+    "rating": 2
+  },
+  {
+    "name": "almôndegas",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.629158",
+    "difficulty": 4,
+    "prep_time_minutes": 50,
+    "cook_time_minutes": 40,
+    "rating": 4
+  },
+  {
+    "name": "arroz",
+    "desired_frequency": "weekly",
+    "notes": "",
+    "created_at": "2025-11-06T16:41:40.539139",
+    "difficulty": 1,
+    "prep_time_minutes": 10,
+    "cook_time_minutes": 20,
+    "rating": 1
+  },
+  {
+    "name": "arroz caldoso de pernil",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.629158",
+    "difficulty": 3,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 30,
+    "rating": 2
+  },
+  {
+    "name": "arroz com brocólis",
+    "desired_frequency": "biweekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.629158",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 25,
+    "rating": 3
+  },
+  {
+    "name": "arroz com frango",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.629158",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "arroz de lula",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.629158",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 2
+  },
+  {
+    "name": "arroz de pato",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.629158",
+    "difficulty": 4,
+    "prep_time_minutes": 120,
+    "cook_time_minutes": 90,
+    "rating": 5
+  },
+  {
+    "name": "arroz frito tailandês",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.629158",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "arroz jasmine ",
+    "desired_frequency": "biweekly",
+    "notes": "",
+    "created_at": "2025-11-06T16:42:57.512376",
+    "difficulty": 1,
+    "prep_time_minutes": 5,
+    "cook_time_minutes": 25,
+    "rating": 2
+  },
+  {
+    "name": "atum selado com crosta de gergelim",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.629158",
+    "difficulty": 2,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 20,
+    "rating": 4
+  },
+  {
+    "name": "avocado toast",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-05-25T17:04:34.935664",
+    "difficulty": 2,
+    "prep_time_minutes": 10,
+    "cook_time_minutes": 15,
+    "rating": 3
+  },
+  {
+    "name": "babaganouche",
+    "desired_frequency": "biweekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.630157",
+    "difficulty": 3,
+    "prep_time_minutes": 25,
+    "cook_time_minutes": 30,
+    "rating": 4
+  },
+  {
+    "name": "baião de dois",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.630157",
+    "difficulty": 4,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 4
+  },
+  {
+    "name": "batata dauphinoise",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.630157",
+    "difficulty": 4,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 50,
+    "rating": 5
+  },
+  {
+    "name": "batata hasselback",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.630157",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 40,
+    "rating": 4
+  },
+  {
+    "name": "batata inglesa recheada",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.630157",
+    "difficulty": 3,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 50,
+    "rating": 3
+  },
+  {
+    "name": "batatas ao murro",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.630157",
+    "difficulty": 4,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 90,
+    "rating": 3
+  },
+  {
+    "name": "batatas assadas",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.630157",
+    "difficulty": 3,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 50,
+    "rating": 2
+  },
+  {
+    "name": "batatas doce com missô e gengibre",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.630157",
+    "difficulty": 2,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 40,
+    "rating": 2
+  },
+  {
+    "name": "berinjela ao forno com carne moída",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.636668",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 60,
+    "rating": 3
+  },
+  {
+    "name": "berinjela assada",
+    "desired_frequency": "weekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.630157",
+    "difficulty": 2,
+    "prep_time_minutes": 90,
+    "cook_time_minutes": 35,
+    "rating": 3
+  },
+  {
+    "name": "berinjela da jantinha",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-10-26T21:24:54.025675",
+    "difficulty": 1,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 25,
+    "rating": 3
+  },
+  {
+    "name": "berinjela no missô",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.630157",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 45,
+    "rating": 4
+  },
+  {
+    "name": "bife a milanesa",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.630157",
+    "difficulty": 4,
+    "prep_time_minutes": 40,
+    "cook_time_minutes": 20,
+    "rating": 4
+  },
+  {
+    "name": "bobó de camarão",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.636668",
+    "difficulty": 5,
+    "prep_time_minutes": 90,
+    "cook_time_minutes": 90,
+    "rating": 3
+  },
+  {
+    "name": "bracciola",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.630157",
+    "difficulty": 4,
+    "prep_time_minutes": 50,
+    "cook_time_minutes": 50,
+    "rating": 4
+  },
+  {
+    "name": "cachorro quente",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.636668",
+    "difficulty": 1,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 15,
+    "rating": 2
+  },
+  {
+    "name": "camarão vietnamita",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.630157",
+    "difficulty": 3,
+    "prep_time_minutes": 50,
+    "cook_time_minutes": 30,
+    "rating": 5
+  },
+  {
+    "name": "caponata de berinjela (micro-ondas)",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-10-26T11:00:53.392557",
+    "difficulty": 2,
+    "prep_time_minutes": 60,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "carne assada",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.630157",
+    "difficulty": 3,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 70,
+    "rating": 2
+  },
+  {
+    "name": "carne moída",
+    "desired_frequency": "weekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.630157",
+    "difficulty": 1,
+    "prep_time_minutes": 10,
+    "cook_time_minutes": 20,
+    "rating": 3
+  },
+  {
+    "name": "ceviche",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.631156",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 120,
+    "rating": 4
+  },
+  {
+    "name": "chancliche",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-08-14T20:10:17.891359",
+    "difficulty": 1,
+    "prep_time_minutes": 60,
+    "cook_time_minutes": 0,
+    "rating": 4
+  },
+  {
+    "name": "coleslaw",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.631156",
+    "difficulty": 3,
+    "prep_time_minutes": 150,
+    "cook_time_minutes": 0,
+    "rating": 3
+  },
+  {
+    "name": "conserva de atum",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.636668",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 4
+  },
+  {
+    "name": "copa lombo cozido (cha-sui)",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.631156",
+    "difficulty": 5,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 120,
+    "rating": 5
+  },
+  {
+    "name": "coq au vin",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.631156",
+    "difficulty": 3,
+    "prep_time_minutes": 25,
+    "cook_time_minutes": 50,
+    "rating": 5
+  },
+  {
+    "name": "couve -flor assada em flores",
+    "desired_frequency": "biweekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.631156",
+    "difficulty": 2,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "couve a mineira",
+    "desired_frequency": "weekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.631156",
+    "difficulty": 1,
+    "prep_time_minutes": 10,
+    "cook_time_minutes": 15,
+    "rating": 2
+  },
+  {
+    "name": "couve-flor assada com tahine",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.631156",
+    "difficulty": 2,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 40,
+    "rating": 3
+  },
+  {
+    "name": "creme de taça ",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-11-05T11:20:38.340373",
+    "difficulty": 2,
+    "prep_time_minutes": 0,
+    "cook_time_minutes": 0,
+    "rating": 0
+  },
+  {
+    "name": "croque madame",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.631156",
+    "difficulty": 3,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 30,
+    "rating": 4
+  },
+  {
+    "name": "croque monsieur",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.631156",
+    "difficulty": 3,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "crudo de bonito",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.637669",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 0,
+    "rating": 5
+  },
+  {
+    "name": "curry de carne bovina",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.631156",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 4
+  },
+  {
+    "name": "curry de frango",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.631156",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 4
+  },
+  {
+    "name": "curry de grão de bico",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.631156",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 4
+  },
+  {
+    "name": "curry de lombo suíno",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.631156",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 4
+  },
+  {
+    "name": "cuscuz de couve-flor ",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-11-03T14:20:46.741232",
+    "difficulty": 1,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "escondidinho",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.636668",
+    "difficulty": 3,
+    "prep_time_minutes": 40,
+    "cook_time_minutes": 40,
+    "rating": 2
+  },
+  {
+    "name": "espaguete a bolonhesa",
+    "desired_frequency": "biweekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.631156",
+    "difficulty": 4,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 15,
+    "rating": 4
+  },
+  {
+    "name": "espaguete ao sugo",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.631156",
+    "difficulty": 2,
+    "prep_time_minutes": 10,
+    "cook_time_minutes": 20,
+    "rating": 3
+  },
+  {
+    "name": "espaguete à calabresa",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-05-26T18:04:31.064300",
+    "difficulty": 1,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "estrogonofe de carne",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.632156",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 40,
+    "rating": 3
+  },
+  {
+    "name": "estrogonofe de frango",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.632156",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 40,
+    "rating": 2
+  },
+  {
+    "name": "fajitas",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.636668",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 40,
+    "rating": 3
+  },
+  {
+    "name": "falafel",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.632156",
+    "difficulty": 4,
+    "prep_time_minutes": 90,
+    "cook_time_minutes": 30,
+    "rating": 4
+  },
+  {
+    "name": "falso couscous de couve-flor",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.632156",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "feijão preto",
+    "desired_frequency": "weekly",
+    "notes": "",
+    "created_at": "2025-04-28T18:21:51.361033",
+    "difficulty": 1,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 60,
+    "rating": 3
+  },
+  {
+    "name": "file de peixe grelhado",
+    "desired_frequency": "weekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.632156",
+    "difficulty": 2,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 25,
+    "rating": 3
+  },
+  {
+    "name": "filé de peixe escalfado",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.632156",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "filé de peixe no papelote",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.632156",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 25,
+    "rating": 3
+  },
+  {
+    "name": "frango a milanesa",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.632156",
+    "difficulty": 4,
+    "prep_time_minutes": 40,
+    "cook_time_minutes": 20,
+    "rating": 3
+  },
+  {
+    "name": "frango com catupiry",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.632156",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "frango na salmoura",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.632156",
+    "difficulty": 3,
+    "prep_time_minutes": 120,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "frango xadrez",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-11-06T16:19:11.141606",
+    "difficulty": 2,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 15,
+    "rating": 2
+  },
+  {
+    "name": "frijoles charros",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.637669",
+    "difficulty": 3,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 60,
+    "rating": 3
+  },
+  {
+    "name": "galinha vietnamita",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.632156",
+    "difficulty": 4,
+    "prep_time_minutes": 60,
+    "cook_time_minutes": 40,
+    "rating": 5
+  },
+  {
+    "name": "galinhada",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.632156",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 45,
+    "rating": 5
+  },
+  {
+    "name": "guacamole",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.636668",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 0,
+    "rating": 4
+  },
+  {
+    "name": "gyoza",
+    "desired_frequency": "biweekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.636668",
+    "difficulty": 4,
+    "prep_time_minutes": 50,
+    "cook_time_minutes": 50,
+    "rating": 4
+  },
+  {
+    "name": "hachis parmentier",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-10-29T18:47:35.480234",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 50,
+    "rating": 4
+  },
+  {
+    "name": "hamburguer",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.636668",
+    "difficulty": 4,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 4
+  },
+  {
+    "name": "homus tahine",
+    "desired_frequency": "biweekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.632156",
+    "difficulty": 2,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "imitação de paella",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.632156",
+    "difficulty": 3,
+    "prep_time_minutes": 40,
+    "cook_time_minutes": 30,
+    "rating": 5
+  },
+  {
+    "name": "kafta assada",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.632156",
+    "difficulty": 4,
+    "prep_time_minutes": 40,
+    "cook_time_minutes": 40,
+    "rating": 4
+  },
+  {
+    "name": "kibeh assado",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.633156",
+    "difficulty": 4,
+    "prep_time_minutes": 40,
+    "cook_time_minutes": 40,
+    "rating": 3
+  },
+  {
+    "name": "lamen",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.633156",
+    "difficulty": 5,
+    "prep_time_minutes": 90,
+    "cook_time_minutes": 60,
+    "rating": 5
+  },
+  {
+    "name": "lasanha a bolonhesa",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.633156",
+    "difficulty": 4,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 20,
+    "rating": 5
+  },
+  {
+    "name": "lasanha de berinjela",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.633156",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 110,
+    "rating": 5
+  },
+  {
+    "name": "legumes assados",
+    "desired_frequency": "weekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.633156",
+    "difficulty": 2,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 40,
+    "rating": 2
+  },
+  {
+    "name": "legumes salteados",
+    "desired_frequency": "biweekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.633156",
+    "difficulty": 3,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 20,
+    "rating": 2
+  },
+  {
+    "name": "lentilhas",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-05-22T16:57:46.764513",
+    "difficulty": 1,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 45,
+    "rating": 3
+  },
+  {
+    "name": "lombo assado",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.633156",
+    "difficulty": 3,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 50,
+    "rating": 3
+  },
+  {
+    "name": "lula a provençal",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.633156",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "macarrão a carbonara",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.636668",
+    "difficulty": 2,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 20,
+    "rating": 4
+  },
+  {
+    "name": "macarrão a putanesca",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.633156",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 40,
+    "rating": 3
+  },
+  {
+    "name": "macarrão ao pesto",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.633156",
+    "difficulty": 1,
+    "prep_time_minutes": 0,
+    "cook_time_minutes": 15,
+    "rating": 3
+  },
+  {
+    "name": "macarrão com atum e creme de leite",
+    "desired_frequency": "biweekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.633156",
+    "difficulty": 1,
+    "prep_time_minutes": 0,
+    "cook_time_minutes": 15,
+    "rating": 2
+  },
+  {
+    "name": "macarrão com cogumelos e molho de tomates ",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-08-21T16:01:14.691408",
+    "difficulty": 2,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "mango chutney",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.633156",
+    "difficulty": 3,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 60,
+    "rating": 3
+  },
+  {
+    "name": "medalhão com gorgonzola",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.637669",
+    "difficulty": 2,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 20,
+    "rating": 4
+  },
+  {
+    "name": "mejadra (arroz com lentilhas)",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.633156",
+    "difficulty": 4,
+    "prep_time_minutes": 40,
+    "cook_time_minutes": 30,
+    "rating": 5
+  },
+  {
+    "name": "molho bolonhesa",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 3,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 300,
+    "rating": 5
+  },
+  {
+    "name": "molho de tomate (sugo)",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 2,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 60,
+    "rating": 4
+  },
+  {
+    "name": "molho pesto",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 0,
+    "rating": 4
+  },
+  {
+    "name": "panqueca de carne",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.636668",
+    "difficulty": 3,
+    "prep_time_minutes": 120,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "papelote de frango",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-10-30T19:01:52.533444",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 20,
+    "rating": 3
+  },
+  {
+    "name": "pasta a carretiera",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.636668",
+    "difficulty": 2,
+    "prep_time_minutes": 10,
+    "cook_time_minutes": 15,
+    "rating": 3
+  },
+  {
+    "name": "peixe empanado",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-04-27T20:54:06.143494",
+    "difficulty": 3,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 25,
+    "rating": 4
+  },
+  {
+    "name": "penne com gorgonzola",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 2,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "pernil desfiado",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 2,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 50,
+    "rating": 3
+  },
+  {
+    "name": "pf de contrafilé",
+    "desired_frequency": "weekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 60,
+    "rating": 3
+  },
+  {
+    "name": "pf de frango",
+    "desired_frequency": "weekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 60,
+    "rating": 3
+  },
+  {
+    "name": "pf de lombo suíno",
+    "desired_frequency": "weekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 60,
+    "rating": 3
+  },
+  {
+    "name": "pf de peixe",
+    "desired_frequency": "weekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 60,
+    "rating": 3
+  },
+  {
+    "name": "picadinho de carne",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 3,
+    "prep_time_minutes": 25,
+    "cook_time_minutes": 55,
+    "rating": 3
+  },
+  {
+    "name": "pico de gallo",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.636668",
+    "difficulty": 3,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 0,
+    "rating": 2
+  },
+  {
+    "name": "pizza",
+    "desired_frequency": "biweekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.636668",
+    "difficulty": 1,
+    "prep_time_minutes": 0,
+    "cook_time_minutes": 0,
+    "rating": 1
+  },
+  {
+    "name": "poke havaiano",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 4,
+    "prep_time_minutes": 90,
+    "cook_time_minutes": 20,
+    "rating": 4
+  },
+  {
+    "name": "purê de batata",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 2,
+    "prep_time_minutes": 40,
+    "cook_time_minutes": 30,
+    "rating": 1
+  },
+  {
+    "name": "purê de batata baroa",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 2,
+    "prep_time_minutes": 40,
+    "cook_time_minutes": 30,
+    "rating": 2
+  },
+  {
+    "name": "purê de couve-flor",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "queijo quente",
+    "desired_frequency": "weekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 1,
+    "prep_time_minutes": 10,
+    "cook_time_minutes": 10,
+    "rating": 2
+  },
+  {
+    "name": "quiabo spicy",
+    "desired_frequency": "biweekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 2,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 30,
+    "rating": 4
+  },
+  {
+    "name": "quiche",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-05-28T18:02:52.280497",
+    "difficulty": 1,
+    "prep_time_minutes": 1,
+    "cook_time_minutes": 8,
+    "rating": 4
+  },
+  {
+    "name": "ragu de patinho",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 2,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 45,
+    "rating": 2
+  },
+  {
+    "name": "ratatouille",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 40,
+    "rating": 3
+  },
+  {
+    "name": "risoto",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.637669",
+    "difficulty": 2,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 40,
+    "rating": 3
+  },
+  {
+    "name": "risoto de curry com camarão",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 5
+  },
+  {
+    "name": "rosbife",
+    "desired_frequency": "biweekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 2,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 25,
+    "rating": 5
+  },
+  {
+    "name": "rosbife de mignon suíno",
+    "desired_frequency": "biweekly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 2,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 25,
+    "rating": 4
+  },
+  {
+    "name": "salada camon para tonkatsu",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 3,
+    "prep_time_minutes": 25,
+    "cook_time_minutes": 0,
+    "rating": 4
+  },
+  {
+    "name": "salada de batata",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-11-06T16:47:59.856325",
+    "difficulty": 1,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 30,
+    "rating": 2
+  },
+  {
+    "name": "salada de couscous com tomate cereja",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 2,
+    "prep_time_minutes": 40,
+    "cook_time_minutes": 20,
+    "rating": 2
+  },
+  {
+    "name": "salada de feijão fradinho",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.637669",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "salada de macarrão com salmão",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.634156",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "salada de macarrão, abobrinha e hortelã",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.635662",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "salada de pepino com iogurte",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.637669",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 0,
+    "rating": 3
+  },
+  {
+    "name": "salada de pera, rúcula e burrata",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.635662",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 20,
+    "rating": 4
+  },
+  {
+    "name": "salada de vagens e cenoura",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-11-03T14:38:20.394908",
+    "difficulty": 1,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 30,
+    "rating": 2
+  },
+  {
+    "name": "salada mexicana de milho",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.635662",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 5
+  },
+  {
+    "name": "salada niçoise",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.635662",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "salada niçoise de salmão e batatas ao murro",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.635662",
+    "difficulty": 4,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 4
+  },
+  {
+    "name": "salada quase mexicana",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-06-05T17:00:29.373541",
+    "difficulty": 1,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 15,
+    "rating": 2
+  },
+  {
+    "name": "salada thai de bifum",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.635662",
+    "difficulty": 3,
+    "prep_time_minutes": 50,
+    "cook_time_minutes": 20,
+    "rating": 3
+  },
+  {
+    "name": "salsa ranchera",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.637669",
+    "difficulty": 2,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "saltimboca",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-05-01T19:13:40.970526",
+    "difficulty": 4,
+    "prep_time_minutes": 50,
+    "cook_time_minutes": 30,
+    "rating": 4
+  },
+  {
+    "name": "sanduíche de pernil",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-05-01T19:01:08.605887",
+    "difficulty": 1,
+    "prep_time_minutes": 5,
+    "cook_time_minutes": 10,
+    "rating": 3
+  },
+  {
+    "name": "sardinha com ovo",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-05-01T19:04:14.198403",
+    "difficulty": 1,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 15,
+    "rating": 3
+  },
+  {
+    "name": "sardinhas escabeche",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.635662",
+    "difficulty": 4,
+    "prep_time_minutes": 90,
+    "cook_time_minutes": 50,
+    "rating": 3
+  },
+  {
+    "name": "sassame de frango empanado",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.635662",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "shashouka",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.635662",
+    "difficulty": 2,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 30,
+    "rating": 4
+  },
+  {
+    "name": "sobrecoxa de frango assada",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.635662",
+    "difficulty": 2,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 60,
+    "rating": 3
+  },
+  {
+    "name": "sopa de batata baroa e alho poró",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.637669",
+    "difficulty": 2,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 40,
+    "rating": 3
+  },
+  {
+    "name": "sopa de cebola",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.635662",
+    "difficulty": 4,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 90,
+    "rating": 4
+  },
+  {
+    "name": "sopa de ervilha",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.635662",
+    "difficulty": 2,
+    "prep_time_minutes": 10,
+    "cook_time_minutes": 40,
+    "rating": 3
+  },
+  {
+    "name": "sopa de frango, shitake e gengibre",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.635662",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 30,
+    "rating": 4
+  },
+  {
+    "name": "sopa de gengibre, alho e noodles (ottolenghi)",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.635662",
+    "difficulty": 4,
+    "prep_time_minutes": 40,
+    "cook_time_minutes": 40,
+    "rating": 5
+  },
+  {
+    "name": "sopa de grão de bico",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.635662",
+    "difficulty": 2,
+    "prep_time_minutes": 15,
+    "cook_time_minutes": 40,
+    "rating": 3
+  },
+  {
+    "name": "sopa de tomate",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.635662",
+    "difficulty": 2,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 70,
+    "rating": 4
+  },
+  {
+    "name": "sopa de vinagre e pimenta",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.637669",
+    "difficulty": 3,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 40,
+    "rating": 5
+  },
+  {
+    "name": "suflê",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.637669",
+    "difficulty": 3,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 30,
+    "rating": 3
+  },
+  {
+    "name": "tabouli",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.637669",
+    "difficulty": 4,
+    "prep_time_minutes": 40,
+    "cook_time_minutes": 0,
+    "rating": 3
+  },
+  {
+    "name": "taco de frango",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.635662",
+    "difficulty": 3,
+    "prep_time_minutes": 35,
+    "cook_time_minutes": 0,
+    "rating": 3
+  },
+  {
+    "name": "tiras de carne com broto de feijão ",
+    "desired_frequency": "monthly",
+    "notes": "",
+    "created_at": "2025-05-26T18:00:59.467328",
+    "difficulty": 1,
+    "prep_time_minutes": 10,
+    "cook_time_minutes": 20,
+    "rating": 3
+  },
+  {
+    "name": "tonkatsu",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.635662",
+    "difficulty": 4,
+    "prep_time_minutes": 40,
+    "cook_time_minutes": 20,
+    "rating": 5
+  },
+  {
+    "name": "torta de atum da eva",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.636668",
+    "difficulty": 4,
+    "prep_time_minutes": 60,
+    "cook_time_minutes": 120,
+    "rating": 4
+  },
+  {
+    "name": "tzatziki",
+    "desired_frequency": "rarely",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.637669",
+    "difficulty": 3,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 0,
+    "rating": 4
+  },
+  {
+    "name": "usuzukuri",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-03-21T00:04:17.637669",
+    "difficulty": 2,
+    "prep_time_minutes": 30,
+    "cook_time_minutes": 0,
+    "rating": 5
+  },
+  {
+    "name": "yakisoba de frango",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-08-14T20:13:06.209356",
+    "difficulty": 2,
+    "prep_time_minutes": 20,
+    "cook_time_minutes": 20,
+    "rating": 3
+  },
+  {
+    "name": "yakisoba de lombo suíno ",
+    "desired_frequency": "biweekly",
+    "notes": "",
+    "created_at": "2025-04-24T21:19:22.692299",
+    "difficulty": 2,
+    "prep_time_minutes": 0,
+    "cook_time_minutes": 0,
+    "rating": 3
+  },
+  {
+    "name": "yakitori",
+    "desired_frequency": "bimonthly",
+    "notes": "",
+    "created_at": "2025-07-17T17:54:05.704630",
+    "difficulty": 3,
+    "prep_time_minutes": 25,
+    "cook_time_minutes": 30,
+    "rating": 3
+  }
+]
