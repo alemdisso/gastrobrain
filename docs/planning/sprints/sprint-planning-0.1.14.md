@@ -217,13 +217,19 @@ Real-world estimate: 4 days
 **Issues**:
 - **Issue #317**: Curate and prepare seed recipe data (8.0 adjusted pts)
   - **Why last**: Depends on #292 (conversion tool); content work has no dependency on docs issues
-  - **Approach**:
+  - **Conversion tool**: `tools/convert_export_to_seed.dart` — built in #292 (Day 1). Ready to use.
+  - Reads the latest `recipe_export_*.json` from `assets/` automatically
+  - Outputs `assets/recipes.json` + `assets/ingredients.json`
+  - `instructions` field is fully wired: export curated instructions → run tool → done, no code changes needed
+  - To use: export fresh data from the app → drop the new `recipe_export_*.json` in `assets/` → `dart run tools/convert_export_to_seed.dart`
+- **Approach**:
     1. Review exported recipe data — identify the ~32 fully complete recipes
     2. Decide inclusion criteria: minimum viable (32 complete only) vs. extended (complete a batch of high-value ones)
     3. For extended: write missing instructions and/or ingredients for selected recipes
-    4. Run `dart run tools/convert_export_to_seed.dart`
-    5. Review `assets/recipes.json` + `assets/ingredients.json` output
-    6. Commit final seed data files
+    4. Export fresh data from the app → drop new `recipe_export_*.json` in `assets/`
+    5. Run `dart run tools/convert_export_to_seed.dart`
+    6. Review `assets/recipes.json` + `assets/ingredients.json` output
+    7. Commit final seed data files
   - **Time-box**: Hard stop at end of day — ship whatever is complete; remaining incomplete recipes stay as-is in the DB
   - **Deliverable**: Committed seed files with production-quality recipes; fresh install verified
 
@@ -418,3 +424,6 @@ None — all 4 issues are independent.
 - **Estimate**: #317 → L (8 pts, 1.0x) — manual writing work, open-ended; hard time-box at end of Day 4
 - Sprint extended from 3 → 4 days (27 pts raw, 13.3 pts adjusted)
 - Sprint plan written to `docs/planning/sprints/sprint-planning-0.1.14.md`
+
+### 2026-03-20 — #292 implementation
+ - Pre-Implementation Analysis & Roadmap — ~11:30 - ~12:00
