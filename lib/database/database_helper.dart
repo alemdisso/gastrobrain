@@ -186,7 +186,8 @@ class DatabaseHelper {
         prep_time_minutes INTEGER DEFAULT 0,
         cook_time_minutes INTEGER DEFAULT 0,
         rating INTEGER DEFAULT 0,
-        category TEXT DEFAULT 'uncategorized'
+        category TEXT DEFAULT 'uncategorized',
+        servings INTEGER NOT NULL DEFAULT 4
       )
     ''');
 
@@ -202,6 +203,7 @@ class DatabaseHelper {
         actual_prep_time REAL DEFAULT 0,
         actual_cook_time REAL DEFAULT 0,
         modified_at TEXT,
+        meal_type TEXT,
         FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
       )
     ''');
@@ -256,6 +258,7 @@ class DatabaseHelper {
         meal_type TEXT NOT NULL,
         notes TEXT,
         has_been_cooked INTEGER DEFAULT 0,
+        planned_servings INTEGER NOT NULL DEFAULT 4,
         FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (id) ON DELETE CASCADE
       )
     ''');
@@ -320,8 +323,37 @@ class DatabaseHelper {
         quantity REAL NOT NULL,
         unit TEXT NOT NULL,
         category TEXT NOT NULL,
-        is_purchased INTEGER NOT NULL DEFAULT 0,
+        to_buy INTEGER NOT NULL DEFAULT 1,
         FOREIGN KEY (shopping_list_id) REFERENCES shopping_lists(id) ON DELETE CASCADE
+      )
+    ''');
+
+    // Create simple sides tables (ingredients attached to planned/recorded meals)
+    await db.execute('''
+      CREATE TABLE meal_plan_item_ingredients(
+        id TEXT PRIMARY KEY,
+        meal_plan_item_id TEXT NOT NULL,
+        ingredient_id TEXT,
+        custom_name TEXT,
+        notes TEXT,
+        quantity REAL NOT NULL DEFAULT 1.0,
+        unit TEXT,
+        FOREIGN KEY (meal_plan_item_id) REFERENCES meal_plan_items(id) ON DELETE CASCADE,
+        FOREIGN KEY (ingredient_id) REFERENCES ingredients(id) ON DELETE SET NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE meal_ingredients(
+        id TEXT PRIMARY KEY,
+        meal_id TEXT NOT NULL,
+        ingredient_id TEXT,
+        custom_name TEXT,
+        notes TEXT,
+        quantity REAL NOT NULL DEFAULT 1.0,
+        unit TEXT,
+        FOREIGN KEY (meal_id) REFERENCES meals(id) ON DELETE CASCADE,
+        FOREIGN KEY (ingredient_id) REFERENCES ingredients(id) ON DELETE SET NULL
       )
     ''');
   }
