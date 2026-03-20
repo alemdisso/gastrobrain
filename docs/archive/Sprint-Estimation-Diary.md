@@ -1652,6 +1652,142 @@ Third sprint in a row following the "anchor + domain batch" structure:
 
 ---
 
+### 0.1.13 - Meal Planning & Shopping Enhancements
+
+**Sprint Duration:** March 2–9, 2026
+**Calendar Days:** 8
+**Active Working Days:** ~4 (Mar 3, 6, 7, 8; Mar 2 = planning only; Mar 4–5 = rest; Mar 9 = release chores)
+**Planned Issues:** 5 (21 points)
+**Completed Issues:** 5 planned (100%)
+
+#### Estimation vs Actual
+
+| Issue | Title | Type | Est Points | Weighted Actual | Lines | Ratio | Assessment |
+|-------|-------|------|------------|-----------------|-------|-------|------------|
+| #314 | Display servings in recipe details | UI/display | 3 | 0.3d | 838 | 0.10x | ⚡ Faster |
+| #313 | ServingsStepper in recipe forms | UI/enhancement | 5 | 0.7d | 855 | 0.14x | ⚡ Faster |
+| #311 | Simple sides (ingredients as meal sides) | arch/feature | 8 | 1.0d | 1,902 | 0.13x | ⚡ Faster |
+| #312 | Manual shopping list items | UI/enhancement | 3 | 0.1d | 581 | 0.03x | ⚡ Very fast |
+| #315 | Extract UnitConverter + IngredientAggregator | refactor | 2 | 0.3d* | 623 | 0.15x | ⚡ Faster |
+| *Overhead* | *Windows Defender friction + release chores* | — | — | ~0.3d | — | — | 📋 |
+| **TOTAL (planned)** | | | **21** | **2.4d tracked / ~2.7d effective** | **4,799** | **0.11x** | ⚡ |
+
+*\* #315 tracked commit time only; ~0.3d additional overhead from Windows Defender blocking Dart network access during release phase not reflected in commits.*
+
+#### Accuracy by Type
+
+| Type | Issues | Est Total | Weighted Actual | Avg Ratio | Verdict |
+|------|--------|-----------|-----------------|-----------|---------|
+| UI display-only | #314 | 3 | 0.3d | 0.10x | ⚡ Fast — read-only addition; no interaction testing burden |
+| UI/enhancement (cross-sprint pattern reuse) | #313 | 5 | 0.7d | 0.14x | ⚡ Fast — `ServingsStepper` from #307 applied to 4 locations |
+| Architecture/feature (new DB tables) | #311 | 8 | 1.0d | 0.13x | ⚡ Fast — junction table pattern was clear; no discovery phase |
+| UI/enhancement (within-sprint pattern reuse) | #312 | 3 | 0.1d | 0.03x | ⚡ Very fast — dialog pattern from #311 reused in same sprint |
+| Refactor (mechanical extraction) | #315 | 2 | 0.3d | 0.15x | ⚡ Fast — fresh code context; extraction while code was warm |
+
+**Overall:** Actual effort was 11% of estimated (0.11x ratio tracked; ~0.13x including hidden overhead). Sprint closed all 5 issues in ~4 focused sessions, delivering 21 points — completing the 0.1.12 validation debt (#313, #314) and shipping two new features (#311, #312) plus an opportunistic refactor (#315).
+
+#### Variance Analysis
+
+**Very fast: #312 (manual shopping list, 0.03x)** — Estimated: 3 pts → Actual: ~0.1d (single 45-minute session)
+- All three #312 commits (feature: 23:42, category grouping: 23:54, widget tests: 00:27) span 45 minutes across Mar 7–8
+- `AddSimpleSideDialog` from #311 (built same sprint, earlier that week) provided the structural template directly
+- Category grouping emerged during testing in the same session — discovered and fixed in 12 minutes, never a separate day
+- This is the strongest within-sprint pattern compounding observed to date
+
+**Fast: #311 (simple sides, 0.13x)** — Estimated: 8 pts (L) → Actual: ~1.0d
+- 18 files, 2 new DB tables, 2 new models, CRUD, UI in 2 screens, shopping list integration, l10n — all in one concentrated day (committed 22:37)
+- No surprises: `MealPlanItemRecipe`/`MealRecipe` junction table pattern was a clear template; solution was known before opening the editor
+- Developer expected more friction; it didn't materialise
+
+**Fast: #313 (ServingsStepper in forms, 0.14x)** — Estimated: 5 pts → Actual: ~0.7d
+- `ServingsStepper` widget fully established in #307 (0.1.12); applying it to 4 form locations was mechanical
+- Landed same day as #314, afternoon session
+
+**Fast: #314 (display servings, 0.10x)** — Estimated: 3 pts → Actual: ~0.3d
+- Read-only display addition: no stepper, no interaction, no state management overhead
+- Fast because inherently simpler than form-equivalent work — not primarily pattern reuse
+
+**Hidden overhead: Windows Defender** — ~0.3d untracked
+- During Mar 8–9 release phase, Windows Defender blocked Dart's network access
+- Required diagnosing the failure mode and adding firewall exceptions for Dart/Flutter executables
+- No commit trace; absorbed as release overhead
+- Consistent category with adb/Android Studio friction from 0.1.5 and 0.1.8
+
+#### Working Pattern Observations
+
+```
+Mar 02 (Sun) │ ░░░░░░░░  Planning only (~0.25d)
+Mar 03 (Mon) │ ████████  #314 (morning) + #313 (afternoon) — committed 16:22
+Mar 04 (Tue) │ ────────  Rest
+Mar 05 (Wed) │ ────────  Rest
+Mar 06 (Thu) │ ████████  #311 — single long session, committed 22:37
+Mar 07 (Fri) │ ░░░░████  #312 feature + category grouping (late night: 23:42, 23:54)
+Mar 08 (Sat) │ ░░░░████  #312 tests (00:27) + #315 (21:49) + Defender friction
+Mar 09 (Sun) │ ░░░░░░██  Release chores only
+```
+
+**Patterns:**
+- Sprint followed "thematic grouping" structure: servings completion on Day 1, new feature on Day 2, follow-on feature + refactor on Days 3–4
+- Every issue was a single concentrated session — no context switching mid-issue
+- Late-night sessions (21:00–00:30) for #311 and #312 reflect calmer environment and higher focus; these are genuine productivity windows, not anomalies
+- Mar 4–5 were clean rest days; the sprint was efficient enough that rest didn't compromise delivery
+- All 5 issues delivered without a single rework commit or regression fix
+
+#### Lessons Learned
+
+1. **Within-sprint pattern compounding can collapse a 3pt issue to 45 minutes**
+   - #312 (3 pts) was completed in ~45 minutes because #311's `AddSimpleSideDialog` was built 3 days earlier in the same sprint
+   - The dialog pattern transfer was direct: structural template, input handling, and validation logic reused with minimal adaptation
+   - This is faster than cross-sprint reuse because the pattern is still fully loaded in working memory
+   - **Lesson: When planning a sprint with two related dialogs/features, the second is near-free if it reuses the first's dialog. Sequence them deliberately back-to-back.**
+
+2. **Display-only work needs its own calibration bucket**
+   - #314 (display servings, 3 pts, 0.10x) was fast not because of pattern reuse but because it is inherently simpler: no user input, no state machine, no validation, minimal edge cases
+   - Estimating display-only additions at the same point value as form additions overestimates by ~30–50%
+   - **Lesson: Distinguish "display-only" from "form/interaction" at estimation time. Display-only → apply 0.10x; form-extension with established pattern → 0.14x.**
+
+3. **L-size architecture issues execute reliably when the template pattern exists**
+   - #311 (8 pts, L-size) — 2 new DB tables, 2 models, CRUD, UI in 2 screens, shopping list integration — completed in 1 day with no surprises
+   - Key enabler: `MealPlanItemRecipe`/`MealRecipe` junction table structure was an exact template; implementation was translation, not design
+   - **Lesson: Don't over-buffer L-size issues when the junction table/model pattern is already established. The L estimate accounts for discovery that doesn't materialise when the path is clear.**
+
+4. **Cross-sprint pattern reuse is a reliable 0.14x for "apply to N locations" tasks**
+   - #313 (5 pts) applied `ServingsStepper` (from #307, 0.1.12) to 4 form locations in ~0.7d
+   - This matches the "cross-sprint pattern extension" profile consistently seen in 0.1.7b, 0.1.8, 0.1.12
+   - **Lesson: "Apply existing widget/pattern to N locations (N ≤ ~5)" tasks → estimate 0.14x regardless of N.**
+
+5. **Windows Defender is a Windows-specific release-phase tooling risk**
+   - Dart's network access was silently blocked during the Mar 8–9 release phase, requiring firewall exception configuration
+   - Similar category to adb/Android Studio friction (0.1.5, 0.1.8): Windows tooling overhead that leaves no commit trace
+   - Risk is highest during release phases when `flutter pub get` and build steps need network access
+   - **Lesson: Add Dart/Flutter firewall exception setup to new-machine checklist. If symptoms appear (Dart stops working), check Defender first before investigating app/tooling issues.**
+
+6. **Validation debt properly scoped as follow-up issues is cleanly repaid**
+   - #313 and #314 were explicit follow-ups from 0.1.12's deferred device testing on the servings chain
+   - Both landed on Day 1 without rework — the debt was well-specified and bounded
+   - **Lesson: Validation debt captured as explicit follow-up issues is low-risk to repay. The danger is untracked validation debt.**
+
+#### Recommendations for Future Sprints
+
+| Finding | Adjustment |
+|---------|------------|
+| Within-sprint dialog pattern reuse collapses 2nd issue to ~free | Sequence related dialog features back-to-back; estimate 2nd at 0.5–1 pt (not full story points) |
+| Display-only work cheaper than form estimates suggest | Apply ~0.10x for display-only additions; 0.14x for form-extension with established pattern |
+| L-size arch issues with clear template ≈ 0.13x | Don't buffer L issues for "complexity" when junction table pattern is established |
+| Windows Defender tooling risk | Add to new-machine checklist; budget ~0.3d if encountered during release phase |
+| Late-night concentrated sessions as productive as full days | Schedule single-issue sessions in preferred focus windows when possible |
+
+#### Notes
+
+- Sprint delivered 21 points in ~4 focused sessions (~2.4d tracked, ~2.7d effective) at ~8.75 pts/day tracked velocity
+- Consistent with recent cruising velocity (30 pts/week); above it on active-session basis due to focused late-night work style
+- Sprint completed the 0.1.12 validation debt story (#313, #314) plus shipped two new features (#311, #312) and opportunistic refactor (#315)
+- #313 (−235 net lines) and #315 (−49 net lines) were net simplifications — the sprint both added features and reduced codebase complexity
+- No rework commits, no regression fixes, no flaky tests
+- Windows Defender incident documented; add Dart/Flutter firewall exceptions to new-machine setup checklist
+
+---
+
 ## Cumulative Metrics
 
 ### Estimation Accuracy Trend
@@ -1670,6 +1806,7 @@ Third sprint in a row following the "anchor + domain batch" structure:
 | 0.1.10 | 13 | 2.00 | 0.15x | 6.5 | Pre-sprint scope clarity, anchor feature day, same-domain batch |
 | 0.1.11 | 14 | 2.50 | 0.18x | 5.6 | Real-life QA sprint: usage discovery → batch fix |
 | 0.1.12 | 17 | 3.30 | 0.17x | 5.7 | Servings chain + UX polish; validation debt deferred to #313-#315 |
+| 0.1.13 | 21 | 2.4 (tracked) / ~2.7 (effective) | 0.11x | ~8.75 | Within-sprint pattern compounding; L-size arch smooth; validation debt repaid |
 
 *\* 0.1.7a weighted-days methodology underrepresents actual effort due to shared day with 0.1.7b. Developer estimates ~0.5 days actual effort. Excluded from velocity calculations.*
 
@@ -1719,6 +1856,10 @@ Use these multipliers when estimating future work:
 | Dependency chain — anchor issue | 1 issue | 0.22x | 0.2-0.3x | **NEW**: First issue in chain sets the pattern; includes migration + cascade (0.1.12: #304) |
 | Dependency chain — follow-on issues | 2 issues | 0.16x | 0.1-0.2x | **NEW**: Follow issues reuse anchor pattern; discount 30-50% vs anchor estimate (0.1.12: #305, #306) |
 | UI micro-issues (< 30 lines, one-liner) | 2 issues | 0.05x | bundle | **NEW**: Bundle as "quick wins block", flat 0.5pt budget per set; Fibonacci scale too coarse (0.1.12: #309, #310) |
+| UI display-only (read-only additions) | 1 issue | 0.10x | 0.10x | **NEW**: No interaction, no state machine, no validation; calibrate separately from form-equivalent work (0.1.13: #314) |
+| UI/enhancement (cross-sprint pattern reuse, N locations) | 1 issue | 0.14x | 0.14x | **NEW**: "Apply existing widget to N locations (N ≤ 5)" — reliable 0.14x regardless of N (0.1.13: #313) |
+| UI/enhancement (within-sprint dialog reuse) | 1 issue | 0.03x | ~0.03-0.05x | **NEW**: Dialog pattern built earlier same sprint; fully loaded in working memory; estimate 2nd dialog at 0.5–1 pt (0.1.13: #312) |
+| Architecture/feature (junction table, established template) | 1 issue | 0.13x | 0.13x | **NEW**: L-size issues with clear junction table template execute without discovery overhead; don't over-buffer (0.1.13: #311) |
 
 **Key Insights from 0.1.7a/b:**
 - **Design system work has its own velocity profile** — 64 points in 7 days (0.11x) reflects both new-type overestimation AND genuine efficiency from clear vision, compound patterns, and effective batching
@@ -1752,6 +1893,12 @@ Use these multipliers when estimating future work:
 - **Post-usage bugs execute at 0.10x regardless of point estimate** — root cause is known before the editor opens; #300 (3 pts) + #301 (5 pts) + #298 (2 pts) all at 0.10x
 - **App usage days are a specification phase, not idle time** — Feb 19–20 with zero commits produced the clearest possible issue specs for Feb 21 and 24 execution
 - **Idempotent migrations are a non-negotiable baseline** — add to migration definition of done; e2e tests are the safety net that catches violations
+
+**Key Insights from 0.1.13:**
+- **Within-sprint pattern compounding is the fastest reuse mode** — #312 (3 pts) completed in 45 minutes because #311's dialog pattern was built 3 days earlier in the same sprint; the pattern was fully loaded in working memory; sequence related dialog features back-to-back deliberately
+- **Display-only work needs its own calibration bucket** — #314 (0.10x) was fast not from pattern reuse but from inherent simplicity: no input, no state machine, no validation; estimating display-only at the same level as form work overestimates by 30–50%
+- **L-size issues with a clear template execute at ~0.13x** — #311 (8 pts, 2 new DB tables, 2 models, CRUD, 2 screens, shopping list) delivered in 1 day; don't over-buffer L issues when the junction table/model pattern is already established
+- **Windows Defender is a Windows-specific release-phase risk** — Dart network access silently blocked during release; same category as adb/AS friction in 0.1.5 and 0.1.8; add firewall exceptions to new-machine checklist
 
 **Key Insights from 0.1.12:**
 - **Validation debt is a distinct failure mode from scope creep** — sprint closed 100% of points but generated 3 follow-up issues (#313-#315); fast execution through a chain without device testing creates deferred work, not completed work
