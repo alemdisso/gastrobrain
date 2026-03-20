@@ -1172,6 +1172,7 @@ class DatabaseHelper {
             desiredFrequency: FrequencyType.fromString(
                 recipeJson['desired_frequency'] as String? ?? 'monthly'),
             notes: recipeJson['notes'] as String? ?? '',
+            instructions: recipeJson['instructions'] as String? ?? '',
             createdAt: DateTime.parse(recipeJson['created_at'] as String),
             difficulty: recipeJson['difficulty'] as int? ?? 1,
             prepTimeMinutes: recipeJson['prep_time_minutes'] as int? ?? 0,

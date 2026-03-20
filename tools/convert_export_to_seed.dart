@@ -65,6 +65,7 @@ void main() async {
       'prep_time_minutes': (meta['prep_time_minutes'] as num?)?.toInt() ?? 0,
       'cook_time_minutes': (meta['cook_time_minutes'] as num?)?.toInt() ?? 0,
       'rating': (meta['rating'] as num?)?.toInt() ?? 0,
+      'instructions': raw['instructions'] as String? ?? '',
     });
   }
 
