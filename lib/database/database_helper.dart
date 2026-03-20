@@ -30,16 +30,6 @@ import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/migration/migration_runner.dart';
 import '../core/migration/migration.dart';
 import '../core/migration/migrations/001_initial_schema.dart';
-import '../core/migration/migrations/002_ingredient_enum_conversion.dart';
-import '../core/migration/migrations/003_add_meal_type.dart';
-import '../core/migration/migrations/004_add_shopping_list_tables.dart';
-import '../core/migration/migrations/005_rename_is_purchased_to_to_buy.dart';
-import '../core/migration/migrations/006_add_meal_plan_modified_at.dart';
-import '../core/migration/migrations/007_add_cooked_at_columns.dart';
-import '../core/migration/migrations/008_add_recipe_servings.dart';
-import '../core/migration/migrations/009_add_planned_servings.dart';
-import '../core/migration/migrations/010_add_simple_sides_tables.dart';
-import '../core/migration/migrations/011_add_simple_sides_quantity.dart';
 import '../core/repositories/base_repository.dart';
 
 class DatabaseHelper {
@@ -54,16 +44,6 @@ class DatabaseHelper {
   /// Get all available migrations in order
   static List<Migration> get _migrations => [
     InitialSchemaMigration(),
-    IngredientEnumConversionMigration(),
-    AddMealTypeMigration(),
-    AddShoppingListTablesMigration(),
-    RenameIsPurchasedToToBuyMigration(),
-    AddMealPlanModifiedAtMigration(),
-    AddCookedAtColumnsMigration(),
-    AddRecipeServingsMigration(),
-    AddPlannedServingsMigration(),
-    AddSimpleSidesMigration(),
-    AddSimpleSidesQuantityMigration(),
   ];
 
   /// Get the migration runner instance
@@ -186,7 +166,8 @@ class DatabaseHelper {
         prep_time_minutes INTEGER DEFAULT 0,
         cook_time_minutes INTEGER DEFAULT 0,
         rating INTEGER DEFAULT 0,
-        category TEXT DEFAULT 'uncategorized'
+        category TEXT DEFAULT 'uncategorized',
+        servings INTEGER NOT NULL DEFAULT 4
       )
     ''');
 
@@ -202,6 +183,7 @@ class DatabaseHelper {
         actual_prep_time REAL DEFAULT 0,
         actual_cook_time REAL DEFAULT 0,
         modified_at TEXT,
+        meal_type TEXT,
         FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
       )
     ''');
@@ -256,6 +238,7 @@ class DatabaseHelper {
         meal_type TEXT NOT NULL,
         notes TEXT,
         has_been_cooked INTEGER DEFAULT 0,
+        planned_servings INTEGER NOT NULL DEFAULT 4,
         FOREIGN KEY (meal_plan_id) REFERENCES meal_plans (id) ON DELETE CASCADE
       )
     ''');
@@ -320,8 +303,37 @@ class DatabaseHelper {
         quantity REAL NOT NULL,
         unit TEXT NOT NULL,
         category TEXT NOT NULL,
-        is_purchased INTEGER NOT NULL DEFAULT 0,
+        to_buy INTEGER NOT NULL DEFAULT 1,
         FOREIGN KEY (shopping_list_id) REFERENCES shopping_lists(id) ON DELETE CASCADE
+      )
+    ''');
+
+    // Create simple sides tables (ingredients attached to planned/recorded meals)
+    await db.execute('''
+      CREATE TABLE meal_plan_item_ingredients(
+        id TEXT PRIMARY KEY,
+        meal_plan_item_id TEXT NOT NULL,
+        ingredient_id TEXT,
+        custom_name TEXT,
+        notes TEXT,
+        quantity REAL NOT NULL DEFAULT 1.0,
+        unit TEXT,
+        FOREIGN KEY (meal_plan_item_id) REFERENCES meal_plan_items(id) ON DELETE CASCADE,
+        FOREIGN KEY (ingredient_id) REFERENCES ingredients(id) ON DELETE SET NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE meal_ingredients(
+        id TEXT PRIMARY KEY,
+        meal_id TEXT NOT NULL,
+        ingredient_id TEXT,
+        custom_name TEXT,
+        notes TEXT,
+        quantity REAL NOT NULL DEFAULT 1.0,
+        unit TEXT,
+        FOREIGN KEY (meal_id) REFERENCES meals(id) ON DELETE CASCADE,
+        FOREIGN KEY (ingredient_id) REFERENCES ingredients(id) ON DELETE SET NULL
       )
     ''');
   }
@@ -1172,6 +1184,7 @@ class DatabaseHelper {
             desiredFrequency: FrequencyType.fromString(
                 recipeJson['desired_frequency'] as String? ?? 'monthly'),
             notes: recipeJson['notes'] as String? ?? '',
+            instructions: recipeJson['instructions'] as String? ?? '',
             createdAt: DateTime.parse(recipeJson['created_at'] as String),
             difficulty: recipeJson['difficulty'] as int? ?? 1,
             prepTimeMinutes: recipeJson['prep_time_minutes'] as int? ?? 0,

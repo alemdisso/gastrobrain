@@ -14,3 +14,4 @@ Auto-flagged by the Code Quality Watchdog. Review during Sprint Planning as part
 - [ ] 🔴 `lib/widgets/add_side_dish_dialog.dart` — file length 349 lines (threshold: 250) — flagged during: #311 Phase 1 analysis — 2026-03-04
 - [ ] 🔴 `lib/screens/weekly_plan_screen.dart` — file length 1019 lines (threshold: 400) — flagged during: #311 Phase 1 analysis — 2026-03-04
 - [ ] 🔴 `lib/screens/shopping_list_screen.dart` — file length 517 lines — flagged during: #312 manual shopping items implementation — 2026-03-07
+- [ ] 🔴 `lib/database/database_helper.dart` — file length 2242 lines (threshold: 500) — flagged during: #292 Phase 1 analysis — 2026-03-20
