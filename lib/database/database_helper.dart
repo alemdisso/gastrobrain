@@ -30,16 +30,6 @@ import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/migration/migration_runner.dart';
 import '../core/migration/migration.dart';
 import '../core/migration/migrations/001_initial_schema.dart';
-import '../core/migration/migrations/002_ingredient_enum_conversion.dart';
-import '../core/migration/migrations/003_add_meal_type.dart';
-import '../core/migration/migrations/004_add_shopping_list_tables.dart';
-import '../core/migration/migrations/005_rename_is_purchased_to_to_buy.dart';
-import '../core/migration/migrations/006_add_meal_plan_modified_at.dart';
-import '../core/migration/migrations/007_add_cooked_at_columns.dart';
-import '../core/migration/migrations/008_add_recipe_servings.dart';
-import '../core/migration/migrations/009_add_planned_servings.dart';
-import '../core/migration/migrations/010_add_simple_sides_tables.dart';
-import '../core/migration/migrations/011_add_simple_sides_quantity.dart';
 import '../core/repositories/base_repository.dart';
 
 class DatabaseHelper {
@@ -54,16 +44,6 @@ class DatabaseHelper {
   /// Get all available migrations in order
   static List<Migration> get _migrations => [
     InitialSchemaMigration(),
-    IngredientEnumConversionMigration(),
-    AddMealTypeMigration(),
-    AddShoppingListTablesMigration(),
-    RenameIsPurchasedToToBuyMigration(),
-    AddMealPlanModifiedAtMigration(),
-    AddCookedAtColumnsMigration(),
-    AddRecipeServingsMigration(),
-    AddPlannedServingsMigration(),
-    AddSimpleSidesMigration(),
-    AddSimpleSidesQuantityMigration(),
   ];
 
   /// Get the migration runner instance
