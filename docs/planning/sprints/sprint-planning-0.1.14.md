@@ -210,7 +210,27 @@ Real-world estimate: 4 days
 
 ---
 
-### Day 4: Seed Data Curation (#317) (~8.0 adjusted pts)
+### Day 4 (Part 1): E2E Test Helper Scroll Fix (#318) (~3.0 adjusted pts)
+
+**Goal**: Fix the `e2e_test_helpers.dart` helpers that tap buttons without scrolling, eliminating 6 recurring integration test failures before closing the milestone.
+
+**Issues**:
+- **Issue #318**: Fix e2e test helpers to scroll before tapping off-screen buttons (3 pts)
+  - **Why before #317**: No failing integration tests should carry into 0.2.x; this is a quick fix with a clear scope
+  - **Approach**:
+    1. Audit all `tester.tap()` calls in `e2e_test_helpers.dart` for missing scroll guards
+    2. Add `await tester.ensureVisible(finder); await tester.pumpAndSettle();` before each affected tap
+    3. Known helpers: `tapSaveButton` (line 217), `saveMealEditDialog` (line 1038), `_adjustServingsViaStepper` (lines 1007/1012)
+    4. Run full integration suite and confirm 6 previously failing tests now pass
+  - **Deliverable**: Clean integration suite on API 33 AOSP; #318 closed
+
+**Testing**: Full integration suite run; expect `+73 -0`
+
+**Risks**: Very low — localized to one file, fix pattern is well-established
+
+---
+
+### Day 4 (Part 2): Seed Data Curation (#317) (~8.0 adjusted pts)
 
 **Goal**: Decide which recipes go into seed data, complete the selected ones, run the conversion tool, and commit production-quality seed files.
 
@@ -350,8 +370,8 @@ None — all 4 issues are independent.
 ## Success Criteria
 
 ### Primary Goals (Must Complete)
-- [ ] #292: Migration 001 consolidated, `to_buy` bug fixed, migrations 002-005 archived
-- [ ] #292: All integration tests pass for DB scenarios 1 + 3
+- [X] #292: Migration 001 consolidated, `to_buy` bug fixed, migrations 002-005 archived
+- [X] #292: All integration tests pass for DB scenarios 1 + 3
 - [ ] #263: UI component library doc created at `docs/architecture/ui-component-library.md`
 - [ ] #268: All skill files updated to standardized structure
 - [ ] #285: Test counts accurate; governance rules documented
@@ -439,3 +459,10 @@ None — all 4 issues are independent.
 - Scenario 2 (legacy DB): manual on emulator — best-effort, documented in roadmap
 - **Gates**: `flutter analyze` clean, `flutter test` 1743/1743 passing
 - **Completed**: ~16:40 - ~19:30 (with a 1 hour break) — merged to develop, #292 closed. Integration test suite running in parallel (results pending).
+
+### 2026-03-21 — Integration test suite diagnosis & emulator fix (~1h)
+- Diagnosed integration test failures from yesterday's full suite run (59 passed, 7 failed)
+- **Finding 1**: 3 E2E failures are test infrastructure bugs — `tapSaveButton` and `_adjustServingsViaStepper` helpers in `e2e_test_helpers.dart` tap buttons without scrolling first; buttons land off-screen or obscured. Not production bugs.
+- **Finding 2**: 4 service tests ("Unable to start the app on the device") traced to emulator storage exhaustion — `/data` partition at 93% full (436MB free on 6GB partition) due to API 36 + Google Play system image consuming most of the allocated space on cold boot.
+- **Fix**: Switched emulator from API 36 (Google Play) to API 33 (AOSP) — no Google Play services needed for Gastrobrain; AOSP image has a much smaller footprint.
+- **Unresolved**: The 3 E2E scroll/hit-test failures remain; will need a fix in `e2e_test_helpers.dart` (tracked separately).
