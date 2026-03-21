@@ -14,6 +14,7 @@ This directory contains comprehensive documentation for the Gastrobrain project,
 - **Adding localization?** Read [L10N Protocol](workflows/L10N_PROTOCOL.md)
 - **Planning milestone?** See [planning/milestones/](planning/milestones/)
 - **Designing UI/UX?** Check [design/ux/](design/ux/)
+- **Implementing UI components?** Start with [UI Component Library](design/component_library.md)
 
 ---
 
@@ -117,9 +118,13 @@ High-level feature specifications that may span multiple issues.
 
 | Document | Purpose | Status |
 |----------|---------|--------|
+| [component_library.md](design/component_library.md) | UI Component Library — quick reference for all components and patterns | ✅ Current |
 | [design-tokens.md](design/design-tokens.md) | Core design tokens (colors, spacing, typography) | ✅ Current |
 | [theme_usage.md](design/theme_usage.md) | Flutter theme implementation patterns | ✅ Current |
 | [visual_identity.md](design/visual_identity.md) | Gastrobrain visual identity ("Cultured & Flavorful") | ✅ Current |
+| [button_patterns.md](design/button_patterns.md) | Full button pattern reference | ✅ Current |
+| [input_patterns.md](design/input_patterns.md) | Full form input pattern reference | ✅ Current |
+| [navigation_patterns.md](design/navigation_patterns.md) | Full navigation element pattern reference | ✅ Current |
 
 ### Feature UX Designs
 
