@@ -147,8 +147,8 @@ All roadmaps follow a **4-phase approach**:
 - [ ] Run final `flutter analyze && flutter test`
 - [ ] Commit with proper message format: `type: description (#issue)`
 - [ ] Push to feature branch
-- [ ] Create pull request (if needed)
-- [ ] Close issue with reference to commit/PR
+- [ ] Merge to develop (`git checkout develop && git merge {branch}`)
+- [ ] Close issue and delete feature branch
 
 ## Testing Requirements by Issue Type
 
@@ -609,6 +609,22 @@ Before implementation, please clarify:
 
 ## Output Format Standards
 
+### Output File Location
+
+**Always save the roadmap to the correct path:**
+
+```
+docs/issues/roadmaps/issue-{number}-roadmap.md
+```
+
+**Examples:**
+- `docs/issues/roadmaps/issue-199-roadmap.md`
+- `docs/issues/roadmaps/issue-262-roadmap.md`
+
+**Never use old paths** like `docs/planning/0.1.X/ISSUE-XXX-ROADMAP.md`.
+
+See `docs/README.md` for the complete documentation structure and decision tree.
+
 ### Document Structure
 
 Use the template at `templates/roadmap_template.md` with these sections:
@@ -695,8 +711,8 @@ Always include these even if not in issue:
 - Feature branch: `type/issue-number-short-description`
 - Commit message: `type: description (#issue-number)`
 - Push to origin
-- Create PR (if applicable)
-- Close issue
+- Merge to develop (solo workflow — no PRs)
+- Close issue and clean up branch
 
 ## Issue Type Patterns
 

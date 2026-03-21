@@ -857,6 +857,23 @@ test/
 
 ## Output Format
 
+### Output File Locations
+
+**Sprint plans:**
+```
+docs/planning/sprints/sprint-planning-{version-or-dates}.md
+```
+**Examples:**
+- `docs/planning/sprints/sprint-planning-0.1.14.md`
+- `docs/planning/sprints/sprint-planning-0.1.7a-0.1.7b.md`
+
+**Sprint retrospective diary entries** (append to existing file):
+```
+docs/archive/Sprint-Estimation-Diary.md
+```
+
+See `docs/README.md` for the complete documentation structure and decision tree.
+
 Generate sprint plans using the template at `templates/sprint_plan_template.md`.
 
 ### Key Sections to Include

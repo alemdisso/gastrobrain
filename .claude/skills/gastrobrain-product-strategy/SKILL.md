@@ -71,6 +71,18 @@ gh issue list --milestone "0.1.X" --state all --json number,title,labels,state
 
 **Sprint velocity reference:** `docs/archive/Sprint-Estimation-Diary.md` — cruising velocity is **20 points/week**
 
+### Documentation Paths
+
+When this skill creates or references documents, use these paths:
+
+| Document Type | Path |
+|---------------|------|
+| Milestone roadmap | `docs/planning/milestones/roadmap-{version}.md` |
+| Sprint plan | `docs/planning/sprints/sprint-planning-{version-or-dates}.md` |
+| Sprint diary entries | `docs/archive/Sprint-Estimation-Diary.md` |
+
+See `docs/README.md` for the complete documentation decision tree.
+
 ### Automatic Actions
 
 When triggered, this skill will:

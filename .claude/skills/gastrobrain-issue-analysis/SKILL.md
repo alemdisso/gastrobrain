@@ -42,7 +42,7 @@ Use this skill when:
 When triggered:
 1. **Extract issue number** from input or current branch
 2. **Load GitHub issue** (title, description, acceptance criteria)
-3. **Load roadmap** from `docs/planning/0.1.X/ISSUE-XXX-ROADMAP.md`
+3. **Load roadmap** from `docs/issues/roadmaps/issue-XXX-roadmap.md`
 4. **Parse Phase 1 checklist** from roadmap
 5. **Determine issue type** (bug, feature, refactor, tech debt)
 6. **Execute 5-checkpoint analysis**
@@ -64,7 +64,7 @@ When triggered:
 2. Extract issue number: XXX
 3. Fetch issue from GitHub: gh issue view XXX
 4. Fetch story points from Project #3: gh project item-list 3 --owner alemdisso --format json --limit 100 (use `estimate` field as source of truth)
-5. Locate roadmap: docs/planning/0.1.X/ISSUE-XXX-ROADMAP.md
+5. Locate roadmap: docs/issues/roadmaps/issue-XXX-roadmap.md
 6. Parse Phase 1 checklist items
 7. Determine issue type from labels/content
 8. Load pattern library for reference
@@ -79,7 +79,7 @@ Phase 1 Analysis for Issue #XXX
 Branch: feature/XXX-description
 Issue: [Issue title]
 Type: [Bug/Feature/Refactor/Tech Debt]
-Roadmap: docs/planning/0.1.X/ISSUE-XXX-ROADMAP.md
+Roadmap: docs/issues/roadmaps/issue-XXX-roadmap.md
 
 Phase 1 Checklist (from roadmap):
 - [ ] [Checklist item 1]
@@ -652,7 +652,7 @@ Ready to update roadmap with these findings? (y/n)
 
 ### After Checkpoint 5, Update Roadmap
 
-Add the following sections to `docs/planning/0.1.X/ISSUE-XXX-ROADMAP.md`:
+Add the following sections to `docs/issues/roadmaps/issue-XXX-roadmap.md`:
 
 ```markdown
 ## Phase 1: Analysis & Understanding ✅ COMPLETE
@@ -994,7 +994,7 @@ Risks Mitigated: [N]
 Implementation Steps: [N]
 
 Roadmap Updated:
-✓ docs/planning/0.1.X/ISSUE-XXX-ROADMAP.md
+✓ docs/issues/roadmaps/issue-XXX-roadmap.md
   └─ Phase 1 section marked complete
   └─ Technical design documented
   └─ Code examples added
@@ -1029,7 +1029,7 @@ Please verify the issue number and try again.
 ```
 ⚠️ Roadmap not found for issue #XXX
 
-Expected location: docs/planning/0.1.X/ISSUE-XXX-ROADMAP.md
+Expected location: docs/issues/roadmaps/issue-XXX-roadmap.md
 
 Options:
 1. Create roadmap first with gastrobrain-issue-roadmap skill
@@ -1084,9 +1084,22 @@ This skill succeeds when:
 | Doc | Purpose |
 |-----|---------|
 | `CLAUDE.md` | Project conventions |
+| `docs/README.md` | Documentation structure, naming conventions, decision tree |
 | `docs/architecture/Gastrobrain-Codebase-Overview.md` | Architecture details |
 | `docs/workflows/ISSUE_WORKFLOW.md` | Issue management |
 | `docs/testing/EDGE_CASE_CATALOG.md` | Edge case reference |
+
+### Documentation Paths (New Standard Structure)
+
+| Document Type | Path Convention |
+|---------------|----------------|
+| Issue roadmap | `docs/issues/roadmaps/issue-{number}-roadmap.md` |
+| Issue analysis | `docs/issues/analysis/issue-{number}-analysis.md` |
+| UX design | `docs/design/ux/issue-{number}-ux-design.md` |
+| Sprint planning | `docs/planning/sprints/sprint-planning-{version-or-dates}.md` |
+| Milestone roadmap | `docs/planning/milestones/roadmap-{version}.md` |
+
+See `docs/README.md` for the complete decision tree and naming conventions.
 
 ---
 

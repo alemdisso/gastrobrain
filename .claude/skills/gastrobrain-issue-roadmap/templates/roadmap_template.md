@@ -1,5 +1,7 @@
 # Issue #[NUMBER]: [ISSUE_TITLE]
 
+<!-- Save to: docs/issues/roadmaps/issue-[NUMBER]-roadmap.md -->
+
 **Type**: [Feature/Bug/Refactor/Testing/Documentation]
 **Priority**: [P0-Critical / P1-High / P2-Medium / P3-Low]
 **Estimate**: [X story points / Y hours]
