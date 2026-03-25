@@ -168,6 +168,7 @@ UX designs and user flow documentation for specific features.
 | [createTestableWidget-pattern.md](testing/createTestableWidget-pattern.md) | Pattern for creating testable widgets | ✅ Current |
 | [RecipeProvider-test-setup.md](testing/RecipeProvider-test-setup.md) | Provider testing setup guide | ✅ Current |
 | [Revised-Flutter-Integration-Testing-Guidelines.md](testing/Revised-Flutter-Integration-Testing-Guidelines.md) | Integration testing approach and guidelines | ✅ Current |
+| [TEST_GOVERNANCE.md](testing/TEST_GOVERNANCE.md) | Governance rules for keeping test counts accurate; log naming conventions; when to update docs | ✅ Current (2026-03-25) |
 
 ### Testing Documentation Hierarchy
 
@@ -181,8 +182,8 @@ For testing-related work, follow this hierarchy:
    └─ EDGE_CASE_TEST_REVIEW.md (test quality review)
 
 2. Test Files
-   ├─ test/widgets/ (dialog tests - 122 tests across 6 dialogs)
-   ├─ test/edge_cases/ (458 edge case tests across 27 files)
+   ├─ test/widgets/ (200+ dialog/widget tests across 15 files)
+   ├─ test/edge_cases/ (500+ edge case tests across 30 files)
    ├─ test/regression/ (critical regression tests)
    └─ test/edge_cases/performance/ (performance benchmarks)
 ```

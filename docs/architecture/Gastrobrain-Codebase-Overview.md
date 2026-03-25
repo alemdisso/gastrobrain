@@ -197,14 +197,15 @@ Gastrobrain is a comprehensive meal planning and recipe management application b
 ## Testing Infrastructure
 
 ### Test Coverage Overview
-The application maintains comprehensive test coverage with **1670+ unit/widget tests** (including 458+ edge case tests from Issue #39, 122 dialog tests) and **8+ end-to-end/integration tests**, ensuring reliability and maintainability across all application layers. The testing infrastructure includes robust dialog testing utilities, comprehensive edge case testing framework, E2E testing framework with helper methods, regression test suite, and comprehensive coverage of critical user workflows.
+The application maintains comprehensive test coverage with **1740+ unit/widget tests** (including 500+ edge case tests, 200+ dialog/widget tests, 1000+ core/service/model tests) and **70+ end-to-end/integration tests**, ensuring reliability and maintainability across all application layers. The testing infrastructure includes robust dialog testing utilities, comprehensive edge case testing framework, E2E testing framework with helper methods, regression test suite, and comprehensive coverage of critical user workflows.
+
+> For up-to-date counts run `bash scripts/count-tests.sh`. See [TEST_GOVERNANCE.md](../testing/TEST_GOVERNANCE.md) for update cadence.
 
 **Test Breakdown:**
-- **Edge Case Tests** (Issue #39): 458+ tests across empty states, boundary conditions, error scenarios, interaction patterns, and data integrity
-- **Dialog Tests**: 122 tests across 6 dialogs (return values, cancellation, disposal, validation, error handling)
-- **Service/Core Tests**: 40+ tests (recommendations, database, ingredient matching)
-- **UI/Widget Tests**: 20+ tests (screens, components, navigation)
-- **Integration Tests**: 8+ E2E workflow tests
+- **Edge Case Tests** (Issue #39): 500+ tests across empty states, boundary conditions, error scenarios, interaction patterns, and data integrity
+- **Dialog / Widget Tests**: 200+ tests across 15 files (return values, cancellation, disposal, validation, error handling)
+- **Core / Service / Model Tests**: 1000+ tests (recommendations, database, ingredient matching, meal planning, shopping list)
+- **Integration / E2E Tests**: 70+ workflow tests
 - **Regression Tests**: Historical bug prevention (controller disposal, overflow issues)
 
 ### Unit & Widget Tests (`test/` directory)
