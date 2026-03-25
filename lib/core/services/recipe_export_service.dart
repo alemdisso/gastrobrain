@@ -15,6 +15,7 @@ import '../errors/gastrobrain_exceptions.dart';
 /// The exported JSON structure includes:
 /// - recipe_id: Unique identifier
 /// - name: Recipe name
+/// - instructions: Cooking instructions text
 /// - current_ingredients: Array of existing ingredients with full data
 /// - enhanced_ingredients: Empty array ready for enhancement
 /// - metadata: All recipe metadata (difficulty, times, rating, etc.)
@@ -58,6 +59,7 @@ class RecipeExportService {
         final recipeExport = {
           'recipe_id': recipe.id,
           'name': recipe.name,
+          'instructions': recipe.instructions,
           'current_ingredients': currentIngredientsData,
           'enhanced_ingredients': <Map<String, dynamic>>[],
           'metadata': {

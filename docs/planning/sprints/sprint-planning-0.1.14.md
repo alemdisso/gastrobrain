@@ -509,6 +509,14 @@ Deferred to next sprint. #318 took its slot on Day 4.
 - **Fix**: Switched emulator from API 36 (Google Play) to API 33 (AOSP) — no Google Play services needed for Gastrobrain; AOSP image has a much smaller footprint.
 - **Unresolved**: The 3 E2E scroll/hit-test failures remain; will need a fix in `e2e_test_helpers.dart` (tracked separately).
 
+### 2026-03-25 — #317 deferred to 0.2.1 (~19:45)
+
+- Analyzed `assets/recipe_export_1774478466021.json` (189 recipes) to assess seed data readiness
+- **Finding**: 95 recipes are stubs (0–1 ingredient); 94 have ingredient lists (2–35 ingredients); **0 have instructions** — not because the recipes lack instructions in the DB, but because the export service never fetched them
+- **Bug fixed**: `lib/core/services/recipe_export_service.dart` was not including `recipe.instructions` in the export map despite the field being available on the already-fetched `Recipe` object. Added `'instructions': recipe.instructions` to the export structure — one-line fix.
+- **Decision**: #317 moved to new milestone **0.2.1 - Data Seeding & Recipe Content** — the recipe content situation needs to be assessed with a correct export before committing to a curation approach. The export bug means we had no visibility into how many recipes actually have instructions written.
+- **For retrospective**: #317 estimated at 8 pts (1.0x) based on the assumption that ~32 recipes were "fully complete". That assumption was unverifiable with a broken export. Re-estimate after running a fresh export post-fix.
+
 ### 2026-03-25 — #285: Test Suite Governance (~1h, ~18:00)
 
 - Audited actual test counts vs. documented counts — all stale (122 dialog tests, 458 edge cases, 1670+ total)
