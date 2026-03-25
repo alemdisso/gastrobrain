@@ -509,6 +509,15 @@ Deferred to next sprint. #318 took its slot on Day 4.
 - **Fix**: Switched emulator from API 36 (Google Play) to API 33 (AOSP) — no Google Play services needed for Gastrobrain; AOSP image has a much smaller footprint.
 - **Unresolved**: The 3 E2E scroll/hit-test failures remain; will need a fix in `e2e_test_helpers.dart` (tracked separately).
 
+### 2026-03-25 — #285: Test Suite Governance (~1h, ~18:00)
+
+- Audited actual test counts vs. documented counts — all stale (122 dialog tests, 458 edge cases, 1670+ total)
+- Built `scripts/count-tests.sh`: static grep-based count by category + parses latest `test_logs/` run logs; outputs doc-ready approximate floor summary
+- Created `docs/testing/TEST_GOVERNANCE.md`: governance philosophy (approximate floors + script on demand), log naming conventions, update cadence (milestone release or 20%+ category growth)
+- Updated `docs/README.md` and `Gastrobrain-Codebase-Overview.md` with corrected counts (200+ dialog, 500+ edge cases, 1740+ total)
+- **Gates**: `flutter analyze` clean; no code changes
+- Merged to develop (`548d7c1`), #285 closed, branch deleted
+
 ### 2026-03-21 — #263, #268, docs housekeeping, #318 fix (~3h)
 - **#263** (UI Component Library doc): Written and merged — documents all reusable widgets with usage patterns and examples.
 - **#268** (Standardize skill paths): Skill files renamed to `gastrobrain-*.md` convention; `skills/` index and CLAUDE.md updated.
