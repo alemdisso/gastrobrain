@@ -46,7 +46,7 @@ Ready for seed data as-is.
 - batata dauphinoise
 - frango na salmoura
 - molho béchamel para lasanha
-- arroz
+- arroz ?
 - batatas portuguesa
 - arroz jasmine
 
@@ -65,10 +65,10 @@ Have ingredients, need instructions added before seeding.
 - batata inglesa recheada
 - rosbife
 - salada camon para tonkatsu
-- arroz caldoso de pernil
+- arroz caldoso de pernil?
 - curry de lombo suíno
 - mango chutney
-- salada quase mexicana
+- salada quase mexicana?
 - couve-flor assada com tahine
 - avocado toast
 - salada de batata
@@ -119,7 +119,7 @@ Need full data entry in the app before they can be seeded.
 
 ### 0 ingredients (6)
 - macarrão ao pesto
-- farofa de couve
+- farofa de couve *
 - macarrão ao funghi biancchi
 - minestroni
 - charutinho de repolho
@@ -130,21 +130,21 @@ Need full data entry in the app before they can be seeded.
 - bife a milanesa
 - bobô de camarão
 - camarão vietnamita
-- carne assada
+- carne assada *
 - copa lombo cozido (cha-sui)
 - couve-flor assada em flores
 - crudo de bonito
-- curry de carne bovina
+- curry de carne bovina*
 - curry de frango
 - curry de grão de bico
 - escondidinho
 - espaguete a bolonhesa
 - espaguete ao sugo
 - estrogonofe de frango
-- fajitas
-- falso couscous de couve-flor
-- feijão preto
-- feijão refrito
+- fajitas *
+- falso couscous de couve-flor*
+- feijão preto*
+- feijão refrito*
 - filé de peixe escalfado
 - file de peixe grelhado
 - filé de peixe no papelote
@@ -152,51 +152,51 @@ Need full data entry in the app before they can be seeded.
 - frango com catupiry
 - gyoza
 - hamburguer
-- imitação de paella
-- kafta assada
-- kibeh assado
-- lamen
-- lasanha a bolonhesa
+- imitação de paella*
+- kafta assada*
+- kibeh assado*
+- lamen*
+- lasanha a bolonhesa*
 - legumes assados
 - legumes salteados
-- lombo assado
-- macarrão a putanesca
-- macarrão com atum e creme de leite
-- medalão com gorgonzola
-- mejadra (arroz com lentilhas)
-- molho bolonhesa
-- molho de tomate (sugo)
+- lombo assado*
+- macarrão a putanesca*
+- macarrão com atum e creme de leite*
+- medalhão com gorgonzola *
+- mejadra (arroz com lentilhas)*
+- molho bolonhesa*
+- molho de tomate (sugo)*
 - musse de gorgonzola
 - panqueca de carne
 - papelote de frango
 - peixe empanado
 - penne com gorgonzola
 - pernil assado
-- pernil desfiado
+- pernil desfiado*
 - pf de contrafilé
 - pf de frango
 - pf de lombo suíno
 - pf de peixe
-- picadinho de carne
+- picadinho de carne *
 - pizza
 - purê de batata
 - purê de batata baroa
 - purê de couve-flor
 - queijo quente
 - quiche
-- ragu de patinho
-- ratatouille
+- ragu de patinho*
+- ratatouille*
 - risoto
-- risoto de curry com camarão
+- risoto de curry com camarão *
 - salada de couscous com tomate cereja
-- salada de feijão fradinho
+- salada de feijão fradinho*
 - salada de macarrão com salmão
-- salada de pepino com iogurte
+- salada de pepino com iogurte*
 - salada de pera, rúcula e burrata
-- salada mexicana de milho
+- salada mexicana de milho*
 - salada niçoise
-- salada thai de bifum
-- saltimboca
+- salada thai de bifum *
+- saltimboca*
 - sanduíche de pernil
 - sardinha com ovo
 - sardinhas escabeche
