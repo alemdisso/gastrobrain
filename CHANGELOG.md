@@ -9,6 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.14] - 2026-03-25
+
+### Changed
+- Instructions editing moved exclusively to the Instructions tab in RecipeDetailsScreen; removed redundant instructions field from EditRecipeScreen (#319)
+
+### Fixed
+- Recipe export service now correctly includes `instructions` field in exported JSON — was silently omitted despite being present on the Recipe model
+- E2E test helpers now dismiss software keyboard before tapping dialog actions, and use direct controller assignment for multiline fields on Android (#318)
+
+### Documentation
+- UI Component Library reference created at `docs/design/component_library.md` (#263)
+- Skill files standardized to consistent documentation structure (#268)
+- Test suite governance established with static count script; `docs/testing/TEST_GOVERNANCE.md` created (#285)
+
+### Refactoring
+- Database migrations 001–011 consolidated into single baseline schema (#292)
+- Critical `to_buy` column bug fixed in `_onCreate` — was using `is_purchased` instead of `to_buy` (#292)
+- Migrations 002–011 archived to `lib/core/migration/migrations/_archived/` (#292)
+- Conversion tool `tools/convert_export_to_seed.dart` added for generating seed data from device exports (#292)
+
+### Testing
+- 1735 tests passing (up from 1743 pre-consolidation; 8 stale instructions field tests removed, balanced by 19 new migration consolidation tests)
+
+---
+
 ## [0.1.13] - 2026-03-09
 
 ### Added

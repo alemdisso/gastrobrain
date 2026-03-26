@@ -493,6 +493,22 @@ Follow this systematic approach - **one checkpoint at a time, wait for user conf
 
 ---
 
+## Output File Location
+
+**Save UX design documents to:**
+
+```
+docs/design/ux/issue-{number}-ux-design.md
+```
+
+**Examples:**
+- `docs/design/ux/issue-258-ux-design.md`
+- `docs/design/ux/issue-199-ux-design.md`
+
+See `docs/README.md` for the complete documentation structure and decision tree.
+
+---
+
 ## Design Artifacts Summary
 
 All artifacts generated during UX design process:

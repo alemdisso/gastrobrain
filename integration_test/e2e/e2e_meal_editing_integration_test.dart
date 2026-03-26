@@ -273,10 +273,8 @@ void main() {
         // === SECOND RAPID EDIT ===
         print('\n=== SECOND EDIT: Change notes ===');
         await E2ETestHelpers.openMealEditDialog(tester);
-        final notesField =
-            find.byKey(const Key('edit_meal_recording_notes_field'));
-        await tester.enterText(notesField, 'Updated notes from second edit');
-        await tester.pumpAndSettle();
+        await E2ETestHelpers.fillMealEditDialog(tester,
+            notes: 'Updated notes from second edit');
         await E2ETestHelpers.saveMealEditDialog(tester);
         await tester.pumpAndSettle();
         print('✓ Second edit saved');
@@ -337,11 +335,8 @@ void main() {
         // === FIFTH RAPID EDIT ===
         print('\n=== FIFTH EDIT: Change cook time and notes ===');
         await E2ETestHelpers.openMealEditDialog(tester);
-        final cookTimeField =
-            find.byKey(const Key('edit_meal_recording_cook_time_field'));
-        await tester.enterText(cookTimeField, '45');
-        await tester.enterText(notesField, 'Final notes after all edits');
-        await tester.pumpAndSettle();
+        await E2ETestHelpers.fillMealEditDialog(tester,
+            cookTime: '45', notes: 'Final notes after all edits');
         await E2ETestHelpers.saveMealEditDialog(tester);
         await tester.pumpAndSettle();
         print('✓ Fifth edit saved');

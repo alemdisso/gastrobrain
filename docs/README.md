@@ -14,6 +14,7 @@ This directory contains comprehensive documentation for the Gastrobrain project,
 - **Adding localization?** Read [L10N Protocol](workflows/L10N_PROTOCOL.md)
 - **Planning milestone?** See [planning/milestones/](planning/milestones/)
 - **Designing UI/UX?** Check [design/ux/](design/ux/)
+- **Implementing UI components?** Start with [UI Component Library](design/component_library.md)
 
 ---
 
@@ -54,7 +55,7 @@ Analysis documents capture understanding of existing code before implementation.
 
 | Document | Issue | Status |
 |----------|-------|--------|
-| [issue-262-navigation-analysis.md](issues/analysis/issue-262-navigation-analysis.md) | #262 - Standardize Navigation Styles | ✅ Complete |
+| *(no active analysis documents)* | — | — |
 
 **Naming convention**: `issue-{number}-analysis.md`
 
@@ -64,7 +65,7 @@ Roadmaps provide phase-based implementation plans with checkbox lists for tracki
 
 | Document | Issue | Status |
 |----------|-------|--------|
-| [issue-262-standardize-navigation-styles.md](issues/roadmaps/issue-262-standardize-navigation-styles.md) | #262 - Standardize Navigation Styles | ✅ Complete |
+| *(no active roadmap documents)* | — | — |
 
 **Naming convention**: `issue-{number}-roadmap.md` or `issue-{number}-phase{X}-roadmap.md` for phased work
 
@@ -85,9 +86,7 @@ Strategic roadmaps for complete milestones (version releases).
 
 | Document | Milestone | Status |
 |----------|-----------|--------|
-| [roadmap-0.1.4.md](planning/milestones/roadmap-0.1.4.md) | 0.1.4 - Testing Infrastructure | ✅ Complete |
-| [roadmap-0.1.5.md](planning/milestones/roadmap-0.1.5.md) | 0.1.5 - Meal Recording Consolidation | ✅ Complete |
-| [roadmap-0.1.6.md](planning/milestones/roadmap-0.1.6.md) | 0.1.6 - Recipe Management Polish | ✅ Complete |
+| *(no active milestone roadmaps — see archive for completed milestones 0.1.4–0.1.6)* | — | — |
 
 **Naming convention**: `roadmap-{version}.md`
 
@@ -97,7 +96,10 @@ Sprint-level planning documents with velocity tracking and issue sequencing.
 
 | Document | Sprint | Status |
 |----------|--------|--------|
-| [sprint-planning-0.1.2-0.1.3.md](planning/sprints/sprint-planning-0.1.2-0.1.3.md) | Milestones 0.1.2-0.1.3 | ✅ Complete |
+| [sprint-planning-0.1.10.md](planning/sprints/sprint-planning-0.1.10.md) | Milestone 0.1.10 | 📅 Complete |
+| [sprint-planning-0.1.12.md](planning/sprints/sprint-planning-0.1.12.md) | Milestone 0.1.12 | 📅 Complete |
+| [sprint-planning-0.1.13.md](planning/sprints/sprint-planning-0.1.13.md) | Milestone 0.1.13 | 📅 Complete |
+| [sprint-planning-0.1.14.md](planning/sprints/sprint-planning-0.1.14.md) | Milestone 0.1.14 | 🔄 Current |
 
 **Naming convention**: `sprint-planning-{version-or-dates}.md`
 
@@ -117,9 +119,13 @@ High-level feature specifications that may span multiple issues.
 
 | Document | Purpose | Status |
 |----------|---------|--------|
+| [component_library.md](design/component_library.md) | UI Component Library — quick reference for all components and patterns | ✅ Current |
 | [design-tokens.md](design/design-tokens.md) | Core design tokens (colors, spacing, typography) | ✅ Current |
 | [theme_usage.md](design/theme_usage.md) | Flutter theme implementation patterns | ✅ Current |
 | [visual_identity.md](design/visual_identity.md) | Gastrobrain visual identity ("Cultured & Flavorful") | ✅ Current |
+| [button_patterns.md](design/button_patterns.md) | Full button pattern reference | ✅ Current |
+| [input_patterns.md](design/input_patterns.md) | Full form input pattern reference | ✅ Current |
+| [navigation_patterns.md](design/navigation_patterns.md) | Full navigation element pattern reference | ✅ Current |
 
 ### Feature UX Designs
 
@@ -162,6 +168,7 @@ UX designs and user flow documentation for specific features.
 | [createTestableWidget-pattern.md](testing/createTestableWidget-pattern.md) | Pattern for creating testable widgets | ✅ Current |
 | [RecipeProvider-test-setup.md](testing/RecipeProvider-test-setup.md) | Provider testing setup guide | ✅ Current |
 | [Revised-Flutter-Integration-Testing-Guidelines.md](testing/Revised-Flutter-Integration-Testing-Guidelines.md) | Integration testing approach and guidelines | ✅ Current |
+| [TEST_GOVERNANCE.md](testing/TEST_GOVERNANCE.md) | Governance rules for keeping test counts accurate; log naming conventions; when to update docs | ✅ Current (2026-03-25) |
 
 ### Testing Documentation Hierarchy
 
@@ -175,8 +182,8 @@ For testing-related work, follow this hierarchy:
    └─ EDGE_CASE_TEST_REVIEW.md (test quality review)
 
 2. Test Files
-   ├─ test/widgets/ (dialog tests - 122 tests across 6 dialogs)
-   ├─ test/edge_cases/ (458 edge case tests across 27 files)
+   ├─ test/widgets/ (200+ dialog/widget tests across 15 files)
+   ├─ test/edge_cases/ (500+ edge case tests across 30 files)
    ├─ test/regression/ (critical regression tests)
    └─ test/edge_cases/performance/ (performance benchmarks)
 ```
@@ -197,8 +204,14 @@ Historical planning documents and completed project tracking:
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| [Gastrobrain-Roadmap-Status.md](archive/Gastrobrain-Roadmap-Status.md) | Overall project roadmap and milestone tracking | 📅 Historical (2025-12-19) |
-| [Sprint-Estimation-Diary.md](archive/Sprint-Estimation-Diary.md) | Sprint estimation tracking and learnings | 📅 Historical (2025-12-19) |
+| [Gastrobrain-Roadmap-Status.md](archive/Gastrobrain-Roadmap-Status.md) | Overall project roadmap and milestone tracking | 📅 Historical (2025-12-19) — update when starting 0.2.x |
+| [Sprint-Estimation-Diary.md](archive/Sprint-Estimation-Diary.md) | Sprint estimation tracking and learnings | 📅 Historical |
+| [roadmap-0.1.4.md](archive/roadmap-0.1.4.md) | 0.1.4 - Testing Infrastructure milestone plan | 📅 Complete |
+| [roadmap-0.1.5.md](archive/roadmap-0.1.5.md) | 0.1.5 - Meal Recording Consolidation milestone plan | 📅 Complete |
+| [roadmap-0.1.6.md](archive/roadmap-0.1.6.md) | 0.1.6 - Recipe Management Polish milestone plan | 📅 Complete |
+| [issue-262-navigation-analysis.md](archive/issue-262-navigation-analysis.md) | #262 navigation standardization analysis | 📅 Complete |
+| [issue-262-standardize-navigation-styles.md](archive/issue-262-standardize-navigation-styles.md) | #262 navigation standardization roadmap | 📅 Complete |
+| [issue-292-consolidate-migrations-baseline-roadmap.md](archive/issue-292-consolidate-migrations-baseline-roadmap.md) | #292 migration consolidation roadmap | 📅 Complete |
 
 ---
 

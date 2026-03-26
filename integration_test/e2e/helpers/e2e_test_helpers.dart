@@ -203,6 +203,13 @@ class E2ETestHelpers {
 
     final saveButton = saveButtons.last;
 
+    // Dismiss the software keyboard if open — on API 33 AOSP, an open keyboard
+    // shrinks the visible area and pushes the save button off-screen even after
+    // scrolling. Removing focus collapses the keyboard first, then the scroll
+    // is applied against the full screen height.
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+
     // Scroll to the bottom of the form so the save button is fully on-screen.
     // tester.drag() simulates real pointer events and reliably moves the scroll
     // position in integration tests (programmatic ensureVisible does not work
@@ -452,7 +459,10 @@ class E2ETestHelpers {
     if (notes != null) {
       final notesField = find.byKey(const Key('meal_recording_notes_field'));
       expect(notesField, findsOneWidget);
-      await tester.enterText(notesField, notes);
+      // Set controller directly — see edit dialog equivalent for rationale.
+      final editableText = tester.widget<EditableText>(
+          find.descendant(of: notesField, matching: find.byType(EditableText)));
+      editableText.controller.text = notes;
       await tester.pumpAndSettle();
     }
 
@@ -460,6 +470,8 @@ class E2ETestHelpers {
       final successSwitch =
           find.byKey(const Key('meal_recording_success_switch'));
       expect(successSwitch, findsOneWidget);
+      await tester.ensureVisible(successSwitch);
+      await tester.pumpAndSettle();
       await tester.tap(successSwitch);
       await tester.pumpAndSettle();
     }
@@ -978,7 +990,13 @@ class E2ETestHelpers {
           find.byKey(const Key('edit_meal_recording_notes_field'));
       expect(notesField, findsOneWidget,
           reason: 'Notes field should exist in edit dialog');
-      await tester.enterText(notesField, notes);
+      // tester.enterText() does not reliably replace existing text in multiline
+      // TextFormFields on real Android devices — the platform IME holds its own
+      // state and may ignore updateEditingValue calls. Set the controller
+      // directly to ensure the value is updated regardless of IME state.
+      final editableText = tester.widget<EditableText>(
+          find.descendant(of: notesField, matching: find.byType(EditableText)));
+      editableText.controller.text = notes;
       await tester.pumpAndSettle();
     }
 
@@ -987,6 +1005,8 @@ class E2ETestHelpers {
           find.byKey(const Key('edit_meal_recording_success_switch'));
       expect(successSwitch, findsOneWidget,
           reason: 'Success switch should exist in edit dialog');
+      await tester.ensureVisible(successSwitch);
+      await tester.pumpAndSettle();
       await tester.tap(successSwitch);
       await tester.pumpAndSettle();
     }
@@ -1004,12 +1024,20 @@ class E2ETestHelpers {
     int current =
         int.parse((tester.widget(displayFinder) as Text).data!);
     while (current < target) {
-      await tester.tap(find.byKey(const Key('servings_increment_button')));
+      final incrementButton =
+          find.byKey(const Key('servings_increment_button'));
+      await tester.ensureVisible(incrementButton);
+      await tester.pumpAndSettle();
+      await tester.tap(incrementButton);
       await tester.pump();
       current++;
     }
     while (current > target) {
-      await tester.tap(find.byKey(const Key('servings_decrement_button')));
+      final decrementButton =
+          find.byKey(const Key('servings_decrement_button'));
+      await tester.ensureVisible(decrementButton);
+      await tester.pumpAndSettle();
+      await tester.tap(decrementButton);
       await tester.pump();
       current--;
     }
@@ -1031,10 +1059,18 @@ class E2ETestHelpers {
   /// ```
   static Future<void> saveMealEditDialog(WidgetTester tester) async {
     // Find the save button (ElevatedButton in the dialog actions)
+    // Dismiss the software keyboard if open — on API 33 AOSP, an open keyboard
+    // reduces visible height and pushes AlertDialog actions off-screen, causing
+    // silent tap misses. Removing focus returns the dialog to its full layout.
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+
     final saveButton = find.byType(ElevatedButton);
     expect(saveButton, findsOneWidget,
         reason: 'Save button should exist in edit dialog');
 
+    await tester.ensureVisible(saveButton);
+    await tester.pumpAndSettle();
     await tester.tap(saveButton);
     await tester.pumpAndSettle(standardSettleDuration);
   }
@@ -1061,6 +1097,8 @@ class E2ETestHelpers {
         reason: 'Cancel button should exist in edit dialog');
 
     // The cancel button is typically the first TextButton in the actions
+    await tester.ensureVisible(cancelButtons.first);
+    await tester.pumpAndSettle();
     await tester.tap(cancelButtons.first);
     await tester.pumpAndSettle();
   }
@@ -1090,6 +1128,8 @@ class E2ETestHelpers {
         reason: 'Add Recipe button should exist in edit dialog');
 
     // Tap the last add button (the one in the recipes section)
+    await tester.ensureVisible(addButton.last);
+    await tester.pumpAndSettle();
     await tester.tap(addButton.last);
     await tester.pumpAndSettle();
 

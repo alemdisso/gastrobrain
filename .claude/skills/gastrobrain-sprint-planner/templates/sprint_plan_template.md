@@ -1,5 +1,8 @@
 # Sprint Plan: [Sprint Number] - [Sprint Theme]
 
+<!-- Save to: docs/planning/sprints/sprint-planning-{version-or-dates}.md -->
+<!-- Example: docs/planning/sprints/sprint-planning-0.1.14.md -->
+
 **Sprint Period**: [Start Date] - [End Date] ([X] working days)
 **Milestone**: [Milestone Name/Number]
 **Total Story Points**: [Raw Points] ([Adjusted Points] adjusted)

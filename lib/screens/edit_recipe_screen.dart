@@ -21,7 +21,6 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _notesController;
-  late TextEditingController _instructionsController;
   late TextEditingController _prepTimeController;
   late TextEditingController _cookTimeController;
   late int _servings;
@@ -36,7 +35,6 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     super.initState();
     _nameController = TextEditingController(text: widget.recipe.name);
     _notesController = TextEditingController(text: widget.recipe.notes);
-    _instructionsController = TextEditingController(text: widget.recipe.instructions);
     _prepTimeController = TextEditingController(text: widget.recipe.prepTimeMinutes.toString());
     _cookTimeController = TextEditingController(text: widget.recipe.cookTimeMinutes.toString());
     _servings = widget.recipe.servings;
@@ -139,7 +137,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         name: _nameController.text,
         desiredFrequency: _selectedFrequency,
         notes: _notesController.text,
-        instructions: _instructionsController.text,
+        instructions: widget.recipe.instructions,
         createdAt: widget.recipe.createdAt,
         difficulty: _difficulty,
         prepTimeMinutes: prepTime ?? 0,
@@ -178,7 +176,6 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   void dispose() {
     _nameController.dispose();
     _notesController.dispose();
-    _instructionsController.dispose();
     _prepTimeController.dispose();
     _cookTimeController.dispose();
     super.dispose();
@@ -242,18 +239,6 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         controller: _notesController,
         decoration: InputDecoration(labelText: l10n.notes),
         maxLines: 3,
-      ),
-      const SizedBox(height: 16),
-      TextFormField(
-        key: const Key('edit_recipe_instructions_field'),
-        controller: _instructionsController,
-        decoration: InputDecoration(
-          labelText: l10n.instructionsLabel,
-          hintText: l10n.enterInstructions,
-        ),
-        maxLines: null,
-        minLines: 5,
-        keyboardType: TextInputType.multiline,
       ),
       const SizedBox(height: 24),
       SizedBox(
