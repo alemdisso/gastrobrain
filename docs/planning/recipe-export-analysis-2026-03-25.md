@@ -49,6 +49,8 @@ Ready for seed data as-is.
 - arroz ?
 - batatas portuguesa
 - arroz jasmine
+- galinhada
+- arroz frito tailandês
 
 ---
 
@@ -56,8 +58,6 @@ Ready for seed data as-is.
 
 Have ingredients, need instructions added before seeding.
 
-- galinhada
-- arroz frito tailandês
 - berinjela ao forno com carne moída
 - arroz com frango
 - poke havaiano
