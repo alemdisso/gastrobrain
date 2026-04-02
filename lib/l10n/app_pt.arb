@@ -2345,7 +2345,7 @@
   "@dashboardTagline": {
     "description": "Hero tagline on dashboard screen"
   },
-  "dashboardSubtitle": "Recomendações inteligentes para ajudar você a planejar refeições variadas.",
+  "dashboardSubtitle": "Recomendações para ajudar você a planejar refeições variadas.",
   "@dashboardSubtitle": {
     "description": "Hero subtitle describing the recommendation engine"
   },
