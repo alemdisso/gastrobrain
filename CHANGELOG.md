@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.15] - 2026-04-04
+
+### Fixed
+- Recipe import now correctly restores the `instructions` field — was reading from `metadata` instead of the top-level JSON key where export places it (#330)
+- Recipe import no longer destroys meal history and meal plan relationships — `meal_recipes` and `meal_plan_item_recipes` junction records are now snapshotted before the cascade delete and restored after recipes are re-inserted (#332)
+
+---
+
 ## [0.1.14] - 2026-03-25
 
 ### Changed

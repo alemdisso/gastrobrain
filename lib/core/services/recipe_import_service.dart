@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:sqflite/sqflite.dart';
 import '../../database/database_helper.dart';
 import '../errors/gastrobrain_exceptions.dart';
 import 'recipe_export_service.dart';
@@ -47,12 +48,24 @@ class RecipeImportService {
       final errors = <String>[];
 
       await db.transaction((txn) async {
-        // Step 1: Delete all existing recipes and ingredients
+        // Step 1: Snapshot junction tables before cascade delete so meal
+        // history and plan relationships survive the recipe replacement.
+        final mealRecipesSnapshot = List<Map<String, dynamic>>.from(
+            await txn.query('meal_recipes'));
+        final mealPlanItemRecipesSnapshot = List<Map<String, dynamic>>.from(
+            await txn.query('meal_plan_item_recipes'));
+
+        // Build set of recipe IDs being imported for orphan filtering.
+        final importedRecipeIds =
+            jsonData.map((r) => r['recipe_id'] as String).toSet();
+
+        // Step 2: Delete all existing recipes and ingredients.
+        // ON DELETE CASCADE wipes meal_recipes and meal_plan_item_recipes.
         await txn.delete('recipe_ingredients');
         await txn.delete('recipes');
         await txn.delete('ingredients');
 
-        // Step 2: Collect all unique ingredients from all recipes
+        // Step 3: Collect all unique ingredients from all recipes
         final uniqueIngredients = <String, Map<String, dynamic>>{};
 
         for (final recipeData in jsonData) {
@@ -68,7 +81,7 @@ class RecipeImportService {
           }
         }
 
-        // Step 3: Import all unique ingredients
+        // Step 4: Import all unique ingredients
         for (final ing in uniqueIngredients.values) {
           try {
             await txn.insert('ingredients', {
@@ -85,7 +98,7 @@ class RecipeImportService {
           }
         }
 
-        // Step 4: Import all recipes with their recipe_ingredients
+        // Step 5: Import all recipes with their recipe_ingredients
         for (final recipeData in jsonData) {
           try {
             final metadata = recipeData['metadata'] as Map<String, dynamic>;
@@ -102,7 +115,7 @@ class RecipeImportService {
               'category': metadata['category'],
               'desired_frequency': metadata['desired_frequency'],
               'notes': metadata['notes'] ?? '',
-              'instructions': metadata['instructions'] ?? '',
+              'instructions': recipeData['instructions'] ?? '',
               'created_at': metadata['created_at'],
             });
 
@@ -138,6 +151,22 @@ class RecipeImportService {
           } catch (e) {
             errors.add(
                 'Failed to import recipe ${recipeData['name']}: $e');
+          }
+        }
+
+        // Step 6: Restore junction records for recipes that survived import.
+        // Records referencing recipes not in the import file are dropped.
+        for (final row in mealRecipesSnapshot) {
+          if (importedRecipeIds.contains(row['recipe_id'])) {
+            await txn.insert('meal_recipes', Map<String, dynamic>.from(row),
+                conflictAlgorithm: ConflictAlgorithm.ignore);
+          }
+        }
+        for (final row in mealPlanItemRecipesSnapshot) {
+          if (importedRecipeIds.contains(row['recipe_id'])) {
+            await txn.insert(
+                'meal_plan_item_recipes', Map<String, dynamic>.from(row),
+                conflictAlgorithm: ConflictAlgorithm.ignore);
           }
         }
       });
