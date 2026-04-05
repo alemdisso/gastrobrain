@@ -102,7 +102,7 @@ class RecipeImportService {
               'category': metadata['category'],
               'desired_frequency': metadata['desired_frequency'],
               'notes': metadata['notes'] ?? '',
-              'instructions': metadata['instructions'] ?? '',
+              'instructions': recipeData['instructions'] ?? '',
               'created_at': metadata['created_at'],
             });
 
