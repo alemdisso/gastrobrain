@@ -72,6 +72,7 @@ dev_dependencies:
   sqflite_common_ffi: ">=2.3.0 <3.0.0"  # Added for database testing
   mocktail: ">=1.0.0 <2.0.0"     # Flexible range
   csv: ">=6.0.0 <7.0.0"          # Flexible range
+  flutter_launcher_icons: ">=0.13.0 <1.0.0"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -122,3 +123,10 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_launcher_icons:
+  android: "app_icon"
+  ios: true
+  image_path: "assets/images/app-icon-candidate-v1.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
