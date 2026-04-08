@@ -160,6 +160,76 @@ void main() {
     });
   });
 
+  // ─────────────────────────── Instructions tab ─────────────────────────── //
+
+  group('Instructions tab', () {
+    late MockDatabaseHelper mockDb;
+
+    setUp(() {
+      mockDb = MockDatabaseHelper();
+    });
+
+    tearDown(() {
+      mockDb.resetAllData();
+    });
+
+    testWidgets('shows empty state when recipe has no instructions', (tester) async {
+      final recipe = _makeRecipe();
+      await mockDb.insertRecipe(recipe);
+
+      await tester.pumpWidget(
+        _buildTestApp(
+          RecipeDetailsScreen(
+            recipe: recipe,
+            databaseHelper: mockDb,
+            initialTabIndex: 1,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('No instructions available for this recipe.'), findsOneWidget);
+      expect(find.text('Add Instructions'), findsOneWidget);
+    });
+
+    testWidgets('cancel leaves instructions unchanged', (tester) async {
+      final recipe = Recipe(
+        id: 'test-id',
+        name: 'Test Recipe',
+        createdAt: DateTime(2024, 1, 1),
+        servings: 4,
+        difficulty: 2,
+        rating: 4,
+        notes: '',
+        instructions: 'Original instructions',
+      );
+      await mockDb.insertRecipe(recipe);
+
+      await tester.pumpWidget(
+        _buildTestApp(
+          RecipeDetailsScreen(
+            recipe: recipe,
+            databaseHelper: mockDb,
+            initialTabIndex: 1,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'Changed instructions');
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      final stored = mockDb.recipes['test-id'];
+      expect(stored!.instructions, equals('Original instructions'));
+    });
+  });
+
   // ────────────────────────── Regression: _saveInstructions ─────────────── //
 
   group('_saveInstructions regression', () {
