@@ -16,6 +16,7 @@ import '../models/ingredient_category.dart';
 import '../models/measurement_unit.dart';
 import '../models/protein_type.dart';
 import '../models/recipe_ingredient.dart';
+import '../models/recipe_category.dart';
 import '../models/meal_plan.dart';
 import '../models/meal_plan_item.dart';
 import '../models/meal_plan_item_recipe.dart';
@@ -1190,20 +1191,22 @@ class DatabaseHelper {
             prepTimeMinutes: recipeJson['prep_time_minutes'] as int? ?? 0,
             cookTimeMinutes: recipeJson['cook_time_minutes'] as int? ?? 0,
             rating: recipeJson['rating'] as int? ?? 0,
+            category: RecipeCategory.fromString(
+                recipeJson['category'] as String? ?? 'uncategorized'),
           );
 
           // Insert the recipe
           await insertRecipe(recipe);
           successCount++;
 
-          // Handle main_ingredient if present
-          if (recipeJson.containsKey('main_ingredient') &&
-              recipeJson['main_ingredient'] != null &&
-              recipeJson['main_ingredient'].toString().isNotEmpty) {
+          // Handle ingredients list if present
+          final ingredientsList =
+              recipeJson['ingredients'] as List<dynamic>? ?? [];
+          for (final ingJson in ingredientsList) {
             final ingredientName =
-                (recipeJson['main_ingredient'] as String).toLowerCase();
+                (ingJson['name'] as String? ?? '').toLowerCase();
+            if (ingredientName.isEmpty) continue;
 
-            // Check if ingredient exists
             final db = await database;
             final existingIngredient = await db.query(
               'ingredients',
@@ -1214,10 +1217,50 @@ class DatabaseHelper {
 
             String ingredientId;
             if (existingIngredient.isNotEmpty) {
-              // Use existing ingredient
               ingredientId = existingIngredient.first['id'] as String;
             } else {
-              // Create new ingredient
+              final ingredient = Ingredient(
+                id: IdGenerator.generateId(),
+                name: ingredientName,
+                category: IngredientCategory.fromString(
+                    ingJson['category'] as String? ?? 'other'),
+                proteinType: null,
+              );
+              ingredientId = await insertIngredient(ingredient);
+              ingredientCount++;
+            }
+
+            final recipeIngredient = RecipeIngredient(
+              id: IdGenerator.generateId(),
+              recipeId: recipe.id,
+              ingredientId: ingredientId,
+              quantity: (ingJson['quantity'] as num?)?.toDouble() ?? 1.0,
+              unitOverride: ingJson['unit_override'] as String?,
+            );
+
+            await addIngredientToRecipe(recipeIngredient);
+          }
+
+          // Legacy: handle main_ingredient if present and no ingredients list
+          if (ingredientsList.isEmpty &&
+              recipeJson.containsKey('main_ingredient') &&
+              recipeJson['main_ingredient'] != null &&
+              recipeJson['main_ingredient'].toString().isNotEmpty) {
+            final ingredientName =
+                (recipeJson['main_ingredient'] as String).toLowerCase();
+
+            final db = await database;
+            final existingIngredient = await db.query(
+              'ingredients',
+              where: 'name = ?',
+              whereArgs: [ingredientName],
+              limit: 1,
+            );
+
+            String ingredientId;
+            if (existingIngredient.isNotEmpty) {
+              ingredientId = existingIngredient.first['id'] as String;
+            } else {
               final ingredient = Ingredient(
                 id: IdGenerator.generateId(),
                 name: ingredientName,
@@ -1228,7 +1271,6 @@ class DatabaseHelper {
               ingredientCount++;
             }
 
-            // Create recipe_ingredient relationship
             final recipeIngredient = RecipeIngredient(
               id: IdGenerator.generateId(),
               recipeId: recipe.id,

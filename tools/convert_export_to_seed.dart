@@ -100,6 +100,17 @@ void main(List<String> arguments) async {
   for (final raw in filteredData) {
     final meta = raw['metadata'] as Map<String, dynamic>? ?? {};
 
+    final ingredients = (raw['current_ingredients'] as List<dynamic>? ?? [])
+        .map((ing) => {
+              'name': (ing['name'] as String? ?? '').trim().toLowerCase(),
+              'quantity': (ing['quantity'] as num?)?.toDouble() ?? 1.0,
+              'unit': ing['unit'] as String?,
+              'unit_override': ing['unit_override'] as String?,
+              'category': ing['category'] as String? ?? 'other',
+            })
+        .where((ing) => (ing['name'] as String).isNotEmpty)
+        .toList();
+
     seedRecipes.add({
       'name': (raw['name'] as String).toLowerCase(),
       'desired_frequency': meta['desired_frequency'] as String? ?? 'monthly',
@@ -111,6 +122,8 @@ void main(List<String> arguments) async {
       'cook_time_minutes': (meta['cook_time_minutes'] as num?)?.toInt() ?? 0,
       'rating': (meta['rating'] as num?)?.toInt() ?? 0,
       'instructions': raw['instructions'] as String? ?? '',
+      'category': meta['category'] as String? ?? 'uncategorized',
+      'ingredients': ingredients,
     });
   }
 
