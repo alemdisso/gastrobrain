@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.1] - 2026-04-09
+
+### Added
+- App icon redesigned: cilantro branch silhouette on warm olive background, integrated via `flutter_launcher_icons` (#327)
+- Seed recipe data: 93 complete recipes with instructions, ingredients, and categories ship on fresh install (#317)
+- Seed data pipeline: UUID-based include list, export analyzer with `--generate-list` and `--delta` flags, converter updated to filter by include list (#338)
+- Seed data workflow documented in `docs/workflows/SEED_DATA_WORKFLOW.md` (#338)
+
+### Fixed
+- Seeded recipes now correctly include recipe category, ingredient relationships, and ingredient categories on fresh install (#317)
+- Bundled asset reference updated after export file rotation (#317)
+
+### Testing
+- Instructions tab coverage added to `recipe_details_screen_test.dart`: empty state and cancel scenarios (#319)
+
+---
+
 ## [0.1.15] - 2026-04-04
 
 ### Fixed
