@@ -1,0 +1,99 @@
+# Seed recipe include list
+# Generated from: assets/recipe_export_1775743662475.json
+# Format: <uuid>  # <recipe name>
+# Lines starting with # are ignored by the converter.
+
+## added in 0.2.1
+2a9565df-aa6f-45f7-bf3a-b21e14e4a70c  # abobora assada
+7f581276-09a0-4335-8e2f-b142102e2da5  # abobrinha grelhada
+1ae0be8b-81d6-4af7-91ce-b06c0601841e  # abobrinha recheada com carne moída
+c40843c6-21ef-4a5e-bbd3-bd856b938e67  # almôndegas
+32a5ef97-84b3-4aea-b8c6-88e430339e00  # arroz
+abfb5bb6-77be-483b-88ff-21c2984ba04a  # arroz com frango
+35bccf5b-4e95-4128-b000-610d7435deda  # arroz frito tailandês
+0331dd45-6e3c-4e1a-8952-e3db74ce6e15  # arroz jasmine
+a59549fc-e370-4b1f-b3df-d04cb05284bb  # atum selado com crosta de gergelim
+e8bbe800-d0ec-4f19-b74a-5fbbca7c8f01  # babaganouche
+03e7df8c-9f55-4b3e-9681-d93b55b8d1ba  # baião de dois
+d04840c5-1a04-4323-ac80-cd23b36a8473  # batata dauphinoise
+3ec956b8-ea26-44ee-86db-036931cd2327  # batatas doce com missô e gengibre
+5654e55a-d905-407b-bb12-a0028f1adc8d  # batatas portuguesa
+398c83cb-6e63-48cd-aebc-22e444eb98c5  # berinjela a parmegiana
+c652d7d9-702b-4670-ba00-516585c0e71c  # berinjela no missô
+f350bd3d-3d37-4a58-bfff-277a70cc2d26  # berinjela recheada com cordeiro e pinoli
+3a7f6d18-c1b4-432e-90f8-771c34e9f1b6  # bibimbap rápido
+3466e653-6e3e-4c25-837a-82ca091eacb7  # bracciola
+ef87c1be-8744-4cad-b4fb-9ecbd571322d  # caldo de lamen (ton tori suupu)
+3f99f015-0925-4318-a0dc-f0d3c6179f17  # camarão vietnamita
+f81d24bc-c9df-4a96-9c1e-6d008cb3448e  # caponata de berinjela (micro-ondas)
+fa3a71d1-8fe3-443e-aada-1efb67355383  # carne moída
+291632e5-6f92-4c0d-a903-87b112c50ccb  # coleslaw
+97206d31-3e3c-40d1-b1d1-4a1264c7d950  # conserva de atum
+0f4c6138-3e9f-400b-b34f-c821bf375d84  # copa lombo cozido (cha-sui)
+95c029fc-74f9-4ddd-a40a-399896bdf280  # coq au vin simplificado
+748e4846-8839-4362-83ba-b0ca0283405d  # couscous de couve-flor
+ff6da526-8c64-4404-b9b2-ac92e907d1ee  # creme de taça
+c75b81d4-9106-493f-a670-c673661bd716  # croque madame
+ea975a56-df79-4fa9-a2df-314938dcc2de  # croque monsieur
+a18aaf5e-4902-40fd-a5ca-259365a83467  # curry de filé mignon
+c4115b48-7b35-4047-9076-5035d46b6ba8  # curry de fraldinha
+6d9bcfde-2a47-4c9b-9e86-dac688363178  # curry de frango
+803c9cb9-82ac-46ce-a3ab-6de863bf06b1  # curry de grão de bico
+dc5e348b-6ca1-4cea-a336-120940b43d7c  # curry de patinho
+e13e2cb6-17cf-43e2-aac8-7edb4333960c  # cuscuz de couve-flor
+0f16ccdc-3af4-444d-a47e-ed0e3242cbe5  # dashi (marisa ono)
+2c706c9a-308b-4eb2-94b9-aef4dc733e05  # escondidinho francês do Claude Troisgros
+13ad34af-f5e4-4366-abf6-de018a1fbaa3  # espaguete ai funghi freschi bianchi
+6499193b-56b6-4685-bdbf-794cc32066c2  # espaguete ai funghi freschi rossi
+bd09eb43-cb9f-438a-a017-35b0ba061716  # espaguete ai funghi secchi bianchi
+8ea59781-0c3a-4061-9db3-7b183a8ba60a  # espaguete ai funghi secchi rossi
+db082dd5-a192-4f6b-bb84-fc321588bde7  # espaguete alla carretiera
+dd798352-8296-48ad-8b8e-bed0d9995939  # espaguete alla puttanesca
+3bb92b91-2ef4-42e2-bc80-4bea03ed8185  # estrogonofe de carne
+0ee66e83-cbc2-49d4-8a42-64634a172595  # fajitas
+1eaae5e3-a11f-45c8-9d23-ffbd042e6c4c  # falafel
+954d57ed-442c-4baf-ab41-475f956d7e49  # frango na salmoura
+0eb82802-9507-48ac-a432-616b3188fe85  # frango xadrez
+cb25a036-a3c9-43f6-853f-4fc98290d575  # frijoles charros
+c5bd9db4-f6a3-4d1b-b213-6ef3c9a28a56  # galinha vietnamita
+420f7240-c34c-44b6-933c-c9958dcb45bb  # galinhada
+a335a0a9-f534-4314-b09f-6e3c2dbd789a  # gazpacho
+80f10eaf-6415-4d73-9ced-008feff132a6  # gravlax de salmão com beterraba
+19dbf1d1-c368-4163-8bc3-a80a4b75994d  # guacamole
+a4037caa-2fc3-4eb5-86f0-c342c3da7eff  # homus tahine
+a821e476-114a-4f4f-bfd9-3c222f6f77e1  # lasanha de berinjela
+22eaa4b6-ee58-4a94-adff-e58b696aaf7d  # lasanha de linguiça e cogumelos
+9dc7fae6-76c5-4d11-8504-bf7b7d3b08ee  # lombo assado com tomates e ervas
+bf3ad9e3-1afa-4cc2-a2cf-fb241cea5af7  # lombo suíno grelhado vietnamita
+4922ca08-0c48-439e-98e3-ba74cf462d88  # macarrão a carbonara
+5d3cba23-f11d-41f2-91b1-61944bb8a89c  # macarrão com molho de pimentões assados
+e8bf2f78-a528-4d9f-9e91-8fe6e1c5a9b2  # mango chutney
+5d7a3423-1ab3-409b-9b4e-d1650a24199a  # medalhão com gorgonzola
+31a2ef64-1a74-4551-a94b-b460c5d36c2b  # mejadra (arroz com lentilhas)
+3a6a4f9f-2c21-49f2-9074-b2f593eb0698  # molho béchamel para lasanha
+639ee757-e945-4828-9c41-f01f7a25c4e6  # molho cítrico asiático
+558e0c51-4d82-4591-b98b-4e45ec9a171e  # molho de manga e habanero
+23da4bcd-4107-445c-8fba-c52e85bbb7cc  # molho de roquefort
+7c1dd101-d347-4fbd-9886-840e1d28273d  # paella prática
+699cf5c8-837a-4789-901c-79d8c90d2a06  # picles vietnamita de cenoura e nabo japonês
+6eaae0be-1f9f-4c00-81fc-64cacedac2cf  # pico de gallo
+c2fb02ac-3a8d-4be6-834e-7ceb72f4939c  # poke havaiano
+b7ebbd77-817a-4d6e-bf67-846157b9ac17  # quiabo spicy
+e931de74-c38f-41a7-ad20-910386704935  # ratatouille
+37186d99-a10f-42ff-911a-134c4f9ecad6  # risoto de curry com camarão
+18ba05f7-6e35-49ef-bcbb-2d37a567ee78  # salada camon para tonkatsu
+7c8400d9-a51d-493d-8bad-120892867cac  # salada de bifum vietnamita
+17153f94-604a-4ddc-a065-5271f418156d  # salada de chancliche
+4e748a6f-bff1-475d-98c8-fafc8f010dd6  # salada de pera, rúcula e burrata
+8b721bbf-2d89-4a07-b1fd-5ca2a4d4d9c3  # salada de vagens e cenoura
+a9e86f53-fd80-408e-8255-32af3b68e965  # salada mexicana de milho
+fd02a577-5b5b-44cb-b159-3443577fd107  # salada niçoise de salmão e batatas ao murro
+55c5520f-06a6-4798-af88-d35cffbb664e  # salsa ranchera
+b6222db4-ed15-461c-a83b-cdcf2c81721f  # saltimboca
+144bccc6-3196-4b79-93d1-78879e76f39e  # shashouka
+4484f870-89e2-4e36-909e-e80eec127565  # sopa de curry
+9e07d9a5-5159-44f0-b590-2e75bf3ad81b  # sopa de frango, shitake e gengibre
+efe2141d-15d8-44eb-8da9-8d24ed88fc8b  # sopa de gengibre, alho e noodles (ottolenghi)
+31bc6c76-73d4-40f2-8958-f7894e3693cd  # sopa de grão de bico
+1b24a014-bf1c-4fa9-84fa-c433337925fb  # sopa de vinagre e pimenta
+5456fbe1-4b7d-4bef-9d12-a36a8ccec7bb  # tiras de carne com broto de feijão

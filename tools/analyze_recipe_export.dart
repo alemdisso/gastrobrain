@@ -3,10 +3,16 @@
 // categorizing recipes as complete, ingredients-only, or stubs.
 //
 // Usage:
-//   dart run tools/analyze_recipe_export.dart <export_file_path>
+//   dart run tools/analyze_recipe_export.dart <export_file_path> [--generate-list] [--delta <include_list_path>]
 //
-// Example:
-//   dart run tools/analyze_recipe_export.dart assets/recipe_export_1775677070723.json
+// Flags:
+//   --generate-list            Output UUID include list for all complete recipes
+//   --delta <list_path>        Show complete recipes not yet in the include list
+//
+// Examples:
+//   dart run tools/analyze_recipe_export.dart assets/recipe_export_1775743662475.json
+//   dart run tools/analyze_recipe_export.dart assets/recipe_export_1775743662475.json --generate-list
+//   dart run tools/analyze_recipe_export.dart assets/recipe_export_1775743662475.json --delta tools/seed_recipe_list.txt
 
 // ignore_for_file: avoid_print
 
@@ -15,13 +21,17 @@ import 'dart:convert';
 
 Future<void> main(List<String> arguments) async {
   if (arguments.isEmpty) {
-    print('Usage: dart run tools/analyze_recipe_export.dart <export_file_path>');
-    print('\nExample:');
-    print('  dart run tools/analyze_recipe_export.dart assets/recipe_export_1775677070723.json');
+    print('Usage: dart run tools/analyze_recipe_export.dart <export_file_path> [--generate-list] [--delta <list_path>]');
     exit(1);
   }
 
   final exportPath = arguments[0];
+  final generateList = arguments.contains('--generate-list');
+  final deltaIndex = arguments.indexOf('--delta');
+  final deltaListPath = deltaIndex != -1 && deltaIndex + 1 < arguments.length
+      ? arguments[deltaIndex + 1]
+      : null;
+
   final exportFile = File(exportPath);
 
   if (!exportFile.existsSync()) {
@@ -33,18 +43,20 @@ Future<void> main(List<String> arguments) async {
   final List<dynamic> raw = json.decode(jsonString) as List<dynamic>;
   final recipes = raw.cast<Map<String, dynamic>>();
 
-  final complete = <String>[];
+  // name → uuid for complete recipes
+  final complete = <String, String>{};
   final ingredientsOnly = <String>[];
   final stubs = <MapEntry<String, int>>[];
 
   for (final r in recipes) {
-    final name = r['name'] as String;
+    final name = (r['name'] as String).trim();
+    final uuid = r['recipe_id'] as String? ?? '';
     final instructions = ((r['instructions'] as String?) ?? '').trim();
     final ingredients = (r['current_ingredients'] as List?) ?? [];
     final count = ingredients.length;
 
     if (instructions.isNotEmpty && count >= 2) {
-      complete.add(name);
+      complete[name] = uuid;
     } else if (count >= 2) {
       ingredientsOnly.add(name);
     } else {
@@ -52,7 +64,7 @@ Future<void> main(List<String> arguments) async {
     }
   }
 
-  complete.sort();
+  final sortedComplete = complete.keys.toList()..sort();
   ingredientsOnly.sort();
   stubs.sort((a, b) {
     final cmp = a.value.compareTo(b.value);
@@ -62,6 +74,46 @@ Future<void> main(List<String> arguments) async {
   final zeroIng = stubs.where((e) => e.value == 0).map((e) => e.key).toList();
   final oneIng = stubs.where((e) => e.value == 1).map((e) => e.key).toList();
 
+  // ── --generate-list mode ─────────────────────────────────────────────────
+  if (generateList) {
+    print('# Seed recipe include list');
+    print('# Generated from: $exportPath');
+    print('# Format: <uuid>  # <recipe name>');
+    print('# Lines starting with # are ignored by the converter.');
+    print('');
+    print('## added in 0.2.1');
+    for (final name in sortedComplete) {
+      print('${complete[name]}  # $name');
+    }
+    return;
+  }
+
+  // ── --delta mode ─────────────────────────────────────────────────────────
+  if (deltaListPath != null) {
+    final listFile = File(deltaListPath);
+    if (!listFile.existsSync()) {
+      print('Error: include list not found at $deltaListPath');
+      exit(1);
+    }
+    final listedUuids = listFile
+        .readAsLinesSync()
+        .where((l) => l.isNotEmpty && !l.trimLeft().startsWith('#'))
+        .map((l) => l.split(' ').first.trim())
+        .toSet();
+
+    final notInList = sortedComplete
+        .where((name) => !listedUuids.contains(complete[name]))
+        .toList();
+
+    print('Complete recipes not yet in include list: ${notInList.length}');
+    print('');
+    for (final name in notInList) {
+      print('${complete[name]}  # $name');
+    }
+    return;
+  }
+
+  // ── default analysis mode ─────────────────────────────────────────────────
   print('Export file: $exportPath');
   print('Total: ${recipes.length} recipes');
   print('');
@@ -75,7 +127,7 @@ Future<void> main(List<String> arguments) async {
   print('');
 
   print('── Complete (instructions + 2+ ingredients) — ${complete.length} recipes ──');
-  for (final name in complete) {
+  for (final name in sortedComplete) {
     print('  - $name');
   }
   print('');
