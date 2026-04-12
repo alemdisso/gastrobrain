@@ -1788,6 +1788,156 @@ Mar 09 (Sun) │ ░░░░░░██  Release chores only
 
 ---
 
+### 0.1.14 - DB Housekeeping & Documentation
+
+**Sprint Duration:** March 20–25, 2026
+**Calendar Days:** 6
+**Active Working Days:** ~4 (Mar 20, 21, 22, 25; weekends = rest)
+**Planned Issues:** 5 (~21 estimated points*)
+**Completed Issues:** 5 planned (100%)
+
+*Retroactive entry — sprint was not tracked in real time. Point estimates derived from 0.1.10 milestone planning documents where these issues were originally scoped and deferred. Commit-level weighted analysis not available.*
+
+#### Issue Summary
+
+| Issue | Title | Type | Est Points | Closed | Notes |
+|-------|-------|------|------------|--------|-------|
+| #292 | Consolidate DB migrations into baseline | Refactor/Tech Debt | 8 | Mar 20 | Anchor issue — first completed |
+| #268 | Update skills documentation structure | Tech Debt/Docs | 3 | Mar 21 | Batched with #263 |
+| #263 | Create UI Component Library Documentation | Documentation | 5 | Mar 21 | Batched with #268 |
+| #318 | Fix e2e test helpers (scroll before tap) | Testing | ~2 | Mar 22 | Emerged from test runs |
+| #285 | Test suite governance + count updates | Documentation | 3 | Mar 25 | Intentionally last |
+| **TOTAL** | | | **~21** | | |
+
+#### Sprint Character
+
+A deliberate **zero-features housekeeping sprint** — the cleanest possible way to close the 0.1.x series. Every issue was internal and invisible to users.
+
+- **#292** was the heaviest: consolidating 12+ migration files into a clean baseline before any 0.2.x work. Changed the DB foundation without any user-visible behavior.
+- **#268 + #263** were the documentation/skills pass: standardizing skill structure and documenting all UI components from 0.1.7–0.1.10. Batched on the same day for thematic efficiency.
+- **#318** was a testing correctness fix discovered from e2e runs — e2e helpers weren't scrolling before tapping off-screen buttons. Not pre-planned; emerged as standard test-suite overhead.
+- **#285** was intentionally sequenced last: test suite governance and count updates should capture all 0.1.x work, including the other four issues in this milestone.
+
+#### Working Pattern Observations
+
+```
+Mar 20 (Fri) │ ████████  #292 migration consolidation (anchor, heaviest issue)
+Mar 21 (Sat) │ ████████  #268 (skills) + #263 (UI docs) — documentation batch day
+Mar 22 (Sun) │ ████░░░░  #318 e2e test fix (shorter session)
+Mar 23–24    │ ──────────  Weekend
+Mar 25 (Wed) │ ████░░░░  #285 test governance (intentionally last)
+```
+
+**Patterns:**
+- Anchor issue first, on its own day — correct for the heaviest item
+- Documentation batch day (Mar 21): two thematically linked issues done together
+- Test fix (#318) isolated on a shorter day — consistent with emergent overhead pattern
+- Governance close (#285) deliberately last to capture final 0.1.x state
+
+#### Lessons Learned
+
+1. **Zero-features sprints close cleanly when issues were pre-validated**
+   - All 5 issues had clear acceptance criteria from 0.1.10 planning (where they were deferred)
+   - No scope discovery, no emergent complexity — just execution of well-specified internal work
+   - **Lesson: Deferred housekeeping issues are low-risk to execute when scope was already validated at deferral time**
+
+2. **"Must be last" sequencing discipline produces correct documentation**
+   - #285 (test governance) explicitly required capturing the final test count including the other 4 issues' work
+   - Done earlier, counts would have been stale immediately
+   - **Lesson: Establish explicit sequencing constraints for documentation issues that summarize other completed work**
+
+3. **Migration baseline consolidation is high-leverage, permanent simplification**
+   - #292 eliminated 12+ fragmented migration files — every future migration now has a clean baseline to build from
+   - This is permanent technical debt reduction; every future developer and DB schema change benefits
+   - **Lesson: Migration consolidation is high-leverage housekeeping — do it before adding more migrations, not after**
+
+4. **Dedicated housekeeping sprints protect feature sprints from quality drift**
+   - Batching documentation, skills governance, migrations, and test counts into one sprint prevents these from bleeding into 0.2.x feature work
+   - Feature sprints that absorb housekeeping work lose focus; housekeeping-only sprints finish cleanly
+   - **Lesson: One focused housekeeping sprint is more effective than spreading quality work across feature sprints at 10% each**
+
+#### Notes
+
+- Sprint closed the 0.1.x series with a clean internal state: consolidated DB baseline, documented UI components, updated skills infrastructure, and accurate test suite documentation
+- #318 emerged from test runs rather than pre-planning — absorbed as standard overhead (~0.5 day)
+- This milestone's completion was the prerequisite for clean 0.2.x work and the 0.2.1 data seeding milestone that followed
+
+---
+
+### 0.1.15 - Patch: Import Bug Fixes
+
+**Sprint Duration:** ~April 2–5, 2026 (discovery to fix)
+**Calendar Days:** ~4 (discovery phase + fix day)
+**Active Working Days:** ~1 (fix day: April 5)
+**Planned Issues:** 2 (both P0-Critical; emerged from 0.2.1 testing)
+**Completed Issues:** 2 (100%)
+
+*Retroactive entry — not a regular sprint. Both issues were P0 bugs discovered during 0.2.1 data seeding. Not pre-estimated; emergency patch.*
+
+#### Issue Summary
+
+| Issue | Title | Severity | Closed | Notes |
+|-------|-------|----------|--------|-------|
+| #330 | Recipe import does not restore instructions field | P0-Critical | Apr 5 | Silent data loss: imported recipes lost instructions |
+| #332 | Recipe import cascades delete meal history and plan relationships | P0-Critical | Apr 5 | Data destructive: import wiped meal history |
+
+#### Sprint Character
+
+An **unplanned emergency patch milestone** — not a sprint in the planned sense. Both P0 bugs were discovered through active use of 0.2.1's seed recipe data, which exercised the import pathway more thoroughly than any prior testing had.
+
+**#332 was the more dangerous bug:** recipe import was silently deleting meal history and meal plan relationships — real data loss for any user who imported recipes while having existing meal data.
+
+**#330 was a silent field omission:** the `instructions` field was not included in the import mapping, so imported recipes would lose their cooking instructions without warning.
+
+Both bugs shared the same root cause domain (the import service) and were fixed in a single focused session on Apr 5. The fact that two P0 bugs surfaced in the same subsystem simultaneously signals a structural coverage gap in import testing.
+
+#### Why These Bugs Were Invisible Through 0.1.x
+
+- The import feature existed since 0.1.2 (#229) but was rarely exercised during development
+- Prior test fixtures used minimal data — few recipes, no meal history, no relational depth
+- 0.2.1 introduced the first real seed dataset: recipes with full instructions, ingredients, categories, and associated meal history
+- Import + restore with full relational data exposed the cascade behavior and missing field restoration
+- **Pattern:** features exercised with synthetic/minimal fixtures can have silent production bugs that only surface with real relational data coverage
+
+#### Working Pattern
+
+```
+0.2.1 testing → Bug discovery (#330, #332 filed) → Root cause diagnosis → Fix (Apr 5, single session, both closed same day)
+```
+
+Both were targeted fixes in the import service: #332 required explicit cascade protection or junction table reconstruction during import, #330 required adding the missing `instructions` field to the import field mapping.
+
+#### Lessons Learned
+
+1. **The import subsystem had structural coverage gaps**
+   - Both P0 bugs existed through ~50 sprints of development without detection
+   - Import tests used minimal fixture data that didn't exercise relationship preservation
+   - **Lesson: Import/export integration tests must include full relational data: meals with history, plan relationships, instructions. This is mandatory before 0.2.7 extends the import system.**
+
+2. **Real seed data is a distinct integration test category that synthetic fixtures miss**
+   - 0.2.1's seed data (first real recipe content) exposed bugs that never surfaced in development
+   - Synthetic fixtures tend to be minimal and single-entity; they don't stress relationship cascade behavior
+   - **Lesson: "Real data smoke test" should be part of import/export feature validation — import a full-fidelity backup with all relationship types and verify integrity**
+
+3. **Two P0 bugs in the same subsystem is a coverage signal, not bad luck**
+   - If one area generates two P0s simultaneously, that area has structurally insufficient test coverage
+   - Fixing one and shipping does not close the risk — the coverage gap remains
+   - **Lesson: After fixing a P0 bug, audit the same subsystem for additional coverage gaps before shipping the patch**
+
+4. **Emergency patches with known root cause execute at the 0.10x post-usage-bug rate**
+   - Both bugs fixed in a single day — root causes were immediately clear from the import code
+   - No exploratory debugging phase; traced the import path directly to the failure point
+   - Consistent with 0.1.11's "post-usage bugs execute at 0.10x" pattern: known root cause → direct fix
+   - **Lesson: Emergency patches are fast when the bug is reproducible and the code path is understood**
+
+#### Notes
+
+- This milestone closed Apr 5, 2026 — after 0.2.1 shipped (March 2026)
+- Both bugs were P0-Critical with no safe workaround (users couldn't trust import)
+- **Action item for 0.2.7 (Import & Remaining UX) planning:** Add import integration tests with full relational data (meals, history, plans, instructions) as a prerequisite before extending import features further
+
+---
+
 ## Cumulative Metrics
 
 ### Estimation Accuracy Trend
@@ -1807,8 +1957,12 @@ Mar 09 (Sun) │ ░░░░░░██  Release chores only
 | 0.1.11 | 14 | 2.50 | 0.18x | 5.6 | Real-life QA sprint: usage discovery → batch fix |
 | 0.1.12 | 17 | 3.30 | 0.17x | 5.7 | Servings chain + UX polish; validation debt deferred to #313-#315 |
 | 0.1.13 | 21 | 2.4 (tracked) / ~2.7 (effective) | 0.11x | ~8.75 | Within-sprint pattern compounding; L-size arch smooth; validation debt repaid |
+| 0.1.14 | ~21 | ~4.0d | ~0.19x† | ~5.25 | Zero-features housekeeping: migration consolidation + docs + test governance (retroactive) |
+| 0.1.15 | n/a‡ | ~1.0d | n/a | n/a | Emergency P0 patch: 2 import data loss bugs discovered via 0.2.1 (retroactive; not a regular sprint) |
 
 *\* 0.1.7a weighted-days methodology underrepresents actual effort due to shared day with 0.1.7b. Developer estimates ~0.5 days actual effort. Excluded from velocity calculations.*
+*† 0.1.14 ratio is a retroactive estimate; no commit-level weighted analysis available. Calculated as active days / expected days at cruising velocity.*
+*‡ 0.1.15 issues were not pre-estimated (P0 emergency patch); ratio not applicable.*
 
 **Critical Insights:**
 - **Cruising velocity: 30 points/week** — validated across 0.1.7b–0.1.11 (5 consecutive sprints at 28-36 pts/week)
@@ -1860,6 +2014,8 @@ Use these multipliers when estimating future work:
 | UI/enhancement (cross-sprint pattern reuse, N locations) | 1 issue | 0.14x | 0.14x | **NEW**: "Apply existing widget to N locations (N ≤ 5)" — reliable 0.14x regardless of N (0.1.13: #313) |
 | UI/enhancement (within-sprint dialog reuse) | 1 issue | 0.03x | ~0.03-0.05x | **NEW**: Dialog pattern built earlier same sprint; fully loaded in working memory; estimate 2nd dialog at 0.5–1 pt (0.1.13: #312) |
 | Architecture/feature (junction table, established template) | 1 issue | 0.13x | 0.13x | **NEW**: L-size issues with clear junction table template execute without discovery overhead; don't over-buffer (0.1.13: #311) |
+| Zero-features housekeeping sprint (migration + docs + governance) | 1 sprint | ~0.19x | 0.15-0.25x | **NEW**: Deferred housekeeping issues execute reliably when scope pre-validated; docs fast, migration consolidation moderate (0.1.14) |
+| Emergency P0 patch (known root cause, post-release) | 2 issues | ~0.10x | 0.10x | **NEW**: Same 0.10x rate as post-usage bugs — root cause clear from bug report, no debugging phase; import bugs (0.1.15: #330, #332) |
 
 **Key Insights from 0.1.7a/b:**
 - **Design system work has its own velocity profile** — 64 points in 7 days (0.11x) reflects both new-type overestimation AND genuine efficiency from clear vision, compound patterns, and effective batching
@@ -1906,6 +2062,18 @@ Use these multipliers when estimating future work:
 - **Dependency chains have diminishing complexity** — anchor issue (#304, 0.22x) sets the pattern; follow-on issues (#305, #306) execute at ~0.16x by reusing it; discount 2nd+ chain issues 30-50% at estimation time
 - **UI micro-issues are uncalibrateable at 1pt floor** — #309 and #310 both at 0.05x regardless of 2pt/1pt estimates; bundle one-liner tasks as a flat "quick wins block" (0.5pt per set)
 - **Pre-sprint planning/testing day is standard overhead** — confirmed in 0.1.10 (Feb 16) and 0.1.12 (Feb 26); budget +0.5d as a planned investment, not lost time
+
+**Key Insights from 0.1.14:**
+- **Zero-features housekeeping sprints close cleanly when scope was pre-validated** — all 5 issues were deferred from 0.1.10 with clear acceptance criteria; no discovery, no emergent complexity, straight execution
+- **"Must be last" sequencing constraint is correct for governance issues** — #285 (test governance) captured test counts from all other issues in the milestone; done earlier, it would have been stale immediately
+- **Migration consolidation is permanent, high-leverage simplification** — eliminating 12+ fragmented migration files gives every future migration a clean baseline; do it before adding more migrations, not after
+- **One focused housekeeping sprint outperforms spreading quality work across feature sprints** — dedicated sprint finishes all internal obligations cleanly; interleaved housekeeping dilutes feature sprint focus
+
+**Key Insights from 0.1.15:**
+- **Real seed data is a distinct integration test category** — 0.2.1's first real recipe dataset exposed two P0 import bugs that existed undetected through 50+ sprints; synthetic fixtures don't stress relationship cascade behavior the same way
+- **Two P0 bugs in the same subsystem signals structural coverage gaps, not bad luck** — if one area generates multiple P0s simultaneously, the test coverage for that area is architecturally insufficient; fix + audit, don't just fix
+- **Import/export subsystems need full relational data in tests** — meals with history, plan relationships, instructions; any test that only exercises single-entity import misses the failure modes that matter
+- **Emergency P0 patches execute at the 0.10x post-usage-bug rate** — root cause was clear from the import code path; no debugging phase, direct fix; consistent with 0.1.11's post-usage bug pattern
 
 ---
 
@@ -1963,10 +2131,14 @@ Use historical velocity data to size future milestones and prevent overcommitmen
 | 0.1.10 | 13 | 2 | 6.50 | 32.5 | Pre-sprint scope clarity, anchor feature day, same-domain batch |
 | 0.1.11 | 14 | 2.5 | 5.60 | 28.0 | Real-life QA sprint: usage discovery + batch fix |
 | 0.1.12 | 17 | 3.3 | 5.15 | 28.3 | Servings chain + UX polish; validation debt to #313-#315 |
+| 0.1.13 | 21 | ~2.7 | ~7.8 | ~30.0 | Within-sprint pattern compounding; L-size arch with clear template; validation debt repaid |
+| 0.1.14 | ~21 | ~4.0 | ~5.25 | ~26.3 | Zero-features housekeeping sprint (retroactive; no commit-level data) |
+| 0.1.15 | — | ~1.0 | — | — | Emergency P0 patch (not a regular sprint; excluded from velocity calculations) |
 
 *\* 0.1.7a excluded from velocity calculations — shared day with 0.1.7b makes weighted-days unreliable.*
+*0.1.15 excluded from velocity calculations — emergency patch, not a regular sprint.*
 
-**Cruising Velocity: 30 points/week** — validated across 0.1.7b–0.1.11 (5 consecutive sprints at 28-36 pts/week).
+**Cruising Velocity: 30 points/week** — validated across 0.1.7b–0.1.14 (7 consecutive sprints at 26-36 pts/week).
 
 **Velocity Modes:**
 - **Discovery mode:** ~20 pts/week (new patterns, complex features, tooling overhead)
@@ -2125,3 +2297,12 @@ Use historical velocity data to size future milestones and prevent overcommitmen
   - New calibration: UI micro-issues < 30 lines → bundle as flat 0.5pt quick wins block; expect 0.05x
   - Pre-sprint planning/testing day confirmed as standard 0.5d overhead (0.1.10 + 0.1.12)
   - Cruising velocity (30 pts/week) validated across 5 consecutive sprints (0.1.7b–0.1.11)
+- **2026-04-09**: Added 0.1.14 and 0.1.15 retrospective entries (post-hoc captures; no real-time tracking for either milestone)
+  - 0.1.14 completed: 5 issues (~21 pts) in ~4 active days (Mar 20–25); zero-features housekeeping sprint: migration consolidation (#292), skills/docs (#268, #263), e2e test fix (#318), test governance (#285)
+  - 0.1.15 completed: 2 P0-Critical import bugs (#330, #332) in ~1 day (Apr 5); emergency patch discovered via 0.2.1 seed data
+  - **NEW PATTERN: "Zero-features housekeeping sprint"** — all internal obligations batched into one sprint; deferred issues execute cleanly when pre-validated; ~0.19x ratio
+  - **NEW INSIGHT: "Real seed data as integration test category"** — import bugs invisible through 50+ sprints of synthetic-fixture testing; surfaced only with full relational data from 0.2.1 seed content
+  - **NEW RULE: Import integration tests must include full relational data** — meals, history, plans, instructions; prerequisite for 0.2.7 (Import & Remaining UX)
+  - New calibration factors: zero-features housekeeping sprint (~0.19x), emergency P0 patch (~0.10x)
+  - Updated velocity reference table (added 0.1.13, 0.1.14; excluded 0.1.15 as non-regular sprint)
+  - Cruising velocity extended: validated across 0.1.7b–0.1.14 (7 consecutive sprints at 26-36 pts/week)
