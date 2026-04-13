@@ -120,43 +120,50 @@ void main() {
           equals(sideRecipe1.id));
     });
 
-    // TODO(#254): Fix failing test - investigate recipe filtering logic
-    // This test is currently failing and needs investigation
-    // testWidgets('excludes already selected recipes from list',
-    //     (WidgetTester tester) async {
-    //   await tester.pumpWidget(
-    //     wrapWithLocalizations(Scaffold(
-    //       body: Builder(
-    //         builder: (context) => ElevatedButton(
-    //           onPressed: () {
-    //             showDialog(
-    //               context: context,
-    //               builder: (context) => AddSideDishDialog(
-    //                 availableRecipes: availableRecipes,
-    //                 primaryRecipe: primaryRecipe,
-    //                 currentSideDishes: [sideRecipe1],
-    //               ),
-    //             );
-    //           },
-    //           child: const Text('Show Dialog'),
-    //         ),
-    //       ),
-    //     )),
-    //   );
+    testWidgets('excludes already selected recipes from list',
+        (WidgetTester tester) async {
+      // The dialog content is fixed at 500px height. When currentSideDishes is
+      // populated, the selected-dishes card is taller (primary + divider + label +
+      // ListTile), leaving the Expanded ListView less vertical room. In the default
+      // 800x600 test window the 3rd item is never built by ListView.builder.
+      // Use a taller viewport so all list items are rendered.
+      tester.view.physicalSize = const Size(800, 1400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    //   // Open dialog
-    //   await tester.tap(find.text('Show Dialog'));
-    //   await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AddSideDishDialog(
+                    availableRecipes: availableRecipes,
+                    primaryRecipe: primaryRecipe,
+                    currentSideDishes: [sideRecipe1],
+                  ),
+                );
+              },
+              child: const Text('Show Dialog'),
+            ),
+          ),
+        )),
+      );
 
-    //   // Verify already selected recipe is NOT in available list
-    //   // sideRecipe1 should appear in "current side dishes" section, not in selectable list
-    //   final sideRecipe1Finders = find.text(sideRecipe1.name);
-    //   expect(sideRecipe1Finders, findsOneWidget); // Shows in current side dishes
+      // Open dialog
+      await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
 
-    //   // Verify other recipes are still available
-    //   expect(find.text(sideRecipe2.name), findsOneWidget);
-    //   expect(find.text(sideRecipe3.name), findsOneWidget);
-    // });
+      // sideRecipe1 should appear exactly once: in the current side dishes card.
+      // It must NOT also appear in the selectable available-recipes list.
+      expect(find.text(sideRecipe1.name), findsOneWidget);
+
+      // The other recipes must still be available for selection.
+      expect(find.text(sideRecipe2.name), findsOneWidget);
+      expect(find.text(sideRecipe3.name), findsOneWidget);
+    });
 
     testWidgets('excludes primary recipe from selectable list',
         (WidgetTester tester) async {
