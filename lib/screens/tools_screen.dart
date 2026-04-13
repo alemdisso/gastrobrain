@@ -475,6 +475,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
   }
 
   void _showImportResultDialog(dynamic result, {bool hasErrors = false}) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -512,12 +513,70 @@ class _ToolsScreenState extends State<ToolsScreen> {
                 ),
               ),
             ],
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 8),
+            Text(
+              l10n.importRecipesMealHistoryNotice,
+              style: TextStyle(
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScopeNote(AppLocalizations l10n) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.info_outline,
+                size: 14,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  l10n.recipeExportImportScopeNote,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.only(left: 20),
+            child: Text(
+              l10n.recipeExportImportFullBackupHint,
+              style: TextStyle(
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
           ),
         ],
       ),
@@ -683,6 +742,8 @@ class _ToolsScreenState extends State<ToolsScreen> {
                       const Divider(),
                       const SizedBox(height: 16),
                       Text(l10n.importRecipesDescription),
+                      const SizedBox(height: 8),
+                      _buildScopeNote(l10n),
                       const SizedBox(height: 16),
                       SizedBox(
                         width: double.infinity,
@@ -739,6 +800,8 @@ class _ToolsScreenState extends State<ToolsScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(l10n.exportRecipesDescription),
+                      const SizedBox(height: 8),
+                      _buildScopeNote(l10n),
                       const SizedBox(height: 16),
                       SizedBox(
                         width: double.infinity,

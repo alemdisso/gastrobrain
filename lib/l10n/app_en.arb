@@ -2089,6 +2089,18 @@
   "@importRecipesDescription": {
     "description": "Description for recipe import tool"
   },
+  "recipeExportImportScopeNote": "Recipes & ingredients only — meal history not included",
+  "@recipeExportImportScopeNote": {
+    "description": "Scope clarification shown on recipe export/import cards"
+  },
+  "recipeExportImportFullBackupHint": "To recover complete data including meal history, use Full Backup & Restore.",
+  "@recipeExportImportFullBackupHint": {
+    "description": "Hint pointing users to full backup when they need meal history"
+  },
+  "importRecipesMealHistoryNotice": "Note: meal history was not restored. If you need complete data recovery including meal history, use Full Backup & Restore.",
+  "@importRecipesMealHistoryNotice": {
+    "description": "Post-import notice reminding user that meal history was not restored"
+  },
   "planningTabLabel": "Planning",
   "@planningTabLabel": {
     "description": "Tab label for planning mode in weekly meal plan screen"
