@@ -18,6 +18,49 @@ class MealPlanAnalysisService {
   // =============================================================================
   // PLANNED MEALS CONTEXT (from MealPlanItemRecipe junction table)
   // =============================================================================
+  /// Get planned recipe dates mapped by recipe ID to the nearest planned date
+  /// relative to [forDate].
+  ///
+  /// For recipes appearing multiple times in the plan, returns the occurrence
+  /// closest to [forDate]. No database queries required — reads from in-memory
+  /// plan items.
+  Future<Map<String, DateTime>> getPlannedRecipesByDate(
+      MealPlan? mealPlan, DateTime forDate) async {
+    final Map<String, DateTime> result = {};
+
+    if (mealPlan == null || mealPlan.items.isEmpty) {
+      return result;
+    }
+
+    final referenceDay = DateTime(forDate.year, forDate.month, forDate.day);
+
+    for (final item in mealPlan.items) {
+      if (item.mealPlanItemRecipes == null) continue;
+
+      final itemDate = DateTime.parse(item.plannedDate);
+      final normalizedDate =
+          DateTime(itemDate.year, itemDate.month, itemDate.day);
+
+      for (final mealRecipe in item.mealPlanItemRecipes!) {
+        final recipeId = mealRecipe.recipeId;
+
+        if (!result.containsKey(recipeId)) {
+          result[recipeId] = normalizedDate;
+        } else {
+          // Keep the date closest to forDate
+          final currentDist =
+              result[recipeId]!.difference(referenceDay).inDays.abs();
+          final newDist = normalizedDate.difference(referenceDay).inDays.abs();
+          if (newDist < currentDist) {
+            result[recipeId] = normalizedDate;
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
   /// Get all recipe IDs that are planned in the current meal plan
   Future<List<String>> getPlannedRecipeIds(MealPlan? mealPlan) async {
     assert(mealPlan != null, 'MealPlan cannot be null');

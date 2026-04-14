@@ -19,6 +19,7 @@ import 'recommendation_factors/difficulty_factor.dart';
 import 'recommendation_factors/variety_encouragement_factor.dart';
 import 'recommendation_factors/randomization_factor.dart';
 import 'recommendation_factors/user_feedback_factor.dart';
+import 'recommendation_factors/recipe_proximity_factor.dart';
 
 /// Results container for recommendation queries
 /// ## Performance Notes
@@ -140,6 +141,7 @@ class RecommendationService {
     registerFactor(DifficultyFactor());
     registerFactor(RandomizationFactor());
     registerFactor(UserFeedbackFactor());
+    registerFactor(RecipeProximityFactor());
 
     // Ensure weights are normalized to sum to 100
     _normalizeWeights();
@@ -530,6 +532,7 @@ class RecommendationService {
 
     // Add planned meal data when meal plan provided
     if (mealPlan != null && _mealPlanAnalysis != null) {
+      final referenceDate = forDate ?? DateTime.now();
       context['plannedRecipeIds'] =
           await _mealPlanAnalysis.getPlannedRecipeIds(mealPlan);
       context['plannedProteins'] =
@@ -539,9 +542,12 @@ class RecommendationService {
       context['penaltyStrategy'] =
           await _mealPlanAnalysis.calculateProteinPenaltyStrategy(
         mealPlan,
-        forDate ?? DateTime.now(),
+        referenceDate,
         mealType ?? 'lunch',
       );
+      context['plannedRecipesByDate'] =
+          await _mealPlanAnalysis.getPlannedRecipesByDate(mealPlan, referenceDate);
+      context['planWeekStartDate'] = mealPlan.weekStartDate;
     }
 
     // Load meal history data if required
@@ -721,37 +727,40 @@ class RecommendationService {
 
   /// Set a balanced recommendation profile
   void _setBalancedProfile() {
-    _factorWeights['frequency'] = 30;
-    _factorWeights['protein_rotation'] = 20;
+    _factorWeights['frequency'] = 27;
+    _factorWeights['protein_rotation'] = 18;
     _factorWeights['rating'] = 10;
-    _factorWeights['variety_encouragement'] = 15;
-    _factorWeights['difficulty'] = 10;
+    _factorWeights['variety_encouragement'] = 14;
+    _factorWeights['difficulty'] = 9;
     _factorWeights['randomization'] = 5;
-    _factorWeights['user_feedback'] = 10;
+    _factorWeights['user_feedback'] = 9;
+    _factorWeights['recipe_proximity'] = 8;
     _normalizeWeights();
   }
 
   /// Set a frequency-focused profile (emphasizes cooking recipes at their desired interval)
   void _setFrequencyFocusedProfile() {
-    _factorWeights['frequency'] = 45;
-    _factorWeights['protein_rotation'] = 20;
-    _factorWeights['rating'] = 10;
-    _factorWeights['variety_encouragement'] = 10;
+    _factorWeights['frequency'] = 40;
+    _factorWeights['protein_rotation'] = 18;
+    _factorWeights['rating'] = 9;
+    _factorWeights['variety_encouragement'] = 9;
     _factorWeights['difficulty'] = 5;
-    _factorWeights['randomization'] = 5;
+    _factorWeights['randomization'] = 4;
     _factorWeights['user_feedback'] = 5;
+    _factorWeights['recipe_proximity'] = 10;
     _normalizeWeights();
   }
 
   /// Set a variety-focused profile (emphasizes trying different recipes)
   void _setVarietyFocusedProfile() {
-    _factorWeights['frequency'] = 20;
-    _factorWeights['protein_rotation'] = 25;
-    _factorWeights['rating'] = 10;
-    _factorWeights['variety_encouragement'] = 25;
+    _factorWeights['frequency'] = 18;
+    _factorWeights['protein_rotation'] = 22;
+    _factorWeights['rating'] = 9;
+    _factorWeights['variety_encouragement'] = 22;
     _factorWeights['difficulty'] = 5;
     _factorWeights['randomization'] = 5;
-    _factorWeights['user_feedback'] = 10;
+    _factorWeights['user_feedback'] = 9;
+    _factorWeights['recipe_proximity'] = 10;
     _normalizeWeights();
   }
 
@@ -776,13 +785,14 @@ class RecommendationService {
   /// to appear in top recommendations compared to complex recipes.
 
   void _setWeekdayProfile() {
-    _factorWeights['frequency'] = 25;
-    _factorWeights['protein_rotation'] = 20;
-    _factorWeights['rating'] = 10;
-    _factorWeights['variety_encouragement'] = 10;
-    _factorWeights['difficulty'] = 20; // Higher weight for weekdays
+    _factorWeights['frequency'] = 23;
+    _factorWeights['protein_rotation'] = 18;
+    _factorWeights['rating'] = 9;
+    _factorWeights['variety_encouragement'] = 9;
+    _factorWeights['difficulty'] = 18; // Higher weight for weekdays
     _factorWeights['randomization'] = 5;
-    _factorWeights['user_feedback'] = 10;
+    _factorWeights['user_feedback'] = 9;
+    _factorWeights['recipe_proximity'] = 9;
     _normalizeWeights();
   }
 
@@ -806,13 +816,14 @@ class RecommendationService {
   /// while highly-rated recipes get 2x the influence, making weekend
   /// recommendations favor quality and complexity over simplicity.
   void _setWeekendProfile() {
-    _factorWeights['frequency'] = 25;
-    _factorWeights['protein_rotation'] = 20;
-    _factorWeights['rating'] = 20; // Higher weight on weekends
-    _factorWeights['variety_encouragement'] = 15;
-    _factorWeights['difficulty'] = 5; // Lower weight on weekends
+    _factorWeights['frequency'] = 23;
+    _factorWeights['protein_rotation'] = 18;
+    _factorWeights['rating'] = 18; // Higher weight on weekends
+    _factorWeights['variety_encouragement'] = 14;
+    _factorWeights['difficulty'] = 4; // Lower weight on weekends
     _factorWeights['randomization'] = 5;
-    _factorWeights['user_feedback'] = 10;
+    _factorWeights['user_feedback'] = 9;
+    _factorWeights['recipe_proximity'] = 9;
     _normalizeWeights();
   }
 }

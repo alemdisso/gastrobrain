@@ -45,7 +45,7 @@ void main() {
   group('RecommendationService - Factor Management', () {
     test('registers default factors correctly', () {
       // Verify the service has registered the correct factors
-      expect(recommendationService.factors.length, 7);
+      expect(recommendationService.factors.length, 8);
 
       final factorIds = recommendationService.factors.map((f) => f.id).toList();
       expect(factorIds, contains('frequency'));
@@ -55,21 +55,23 @@ void main() {
       expect(factorIds, contains('variety_encouragement'));
       expect(factorIds, contains('randomization'));
       expect(factorIds, contains('user_feedback'));
+      expect(factorIds, contains('recipe_proximity'));
 
       expect(recommendationService.totalWeight, 100);
     });
 
     test('can register and unregister factors', () {
       // Initial factors count
-      expect(recommendationService.factors.length, 7);
+      expect(recommendationService.factors.length, 8);
 
-      // Unregister five factors
+      // Unregister all but protein_rotation
       recommendationService.unregisterFactor('frequency');
       recommendationService.unregisterFactor('rating');
       recommendationService.unregisterFactor('variety_encouragement');
       recommendationService.unregisterFactor('randomization');
       recommendationService.unregisterFactor('difficulty');
       recommendationService.unregisterFactor('user_feedback');
+      recommendationService.unregisterFactor('recipe_proximity');
       expect(recommendationService.factors.length, 1);
       expect(recommendationService.factors.map((f) => f.id).toList(),
           ['protein_rotation']);

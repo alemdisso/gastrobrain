@@ -331,12 +331,12 @@ void main() {
       final weekendWeights =
           weekendRecommendation.metadata['factorWeights'] as Map<String, int>;
 
-      expect(weekdayWeights['difficulty'], equals(20),
-          reason: 'Weekday profile should have 20% difficulty weight');
-      expect(weekendWeights['difficulty'], equals(5),
-          reason: 'Weekend profile should have 5% difficulty weight');
-      expect(weekendWeights['rating'], equals(20),
-          reason: 'Weekend profile should have 20% rating weight');
+      expect(weekdayWeights['difficulty'], equals(18),
+          reason: 'Weekday profile should have 18% difficulty weight (reduced from 20 when recipe_proximity was added)');
+      expect(weekendWeights['difficulty'], equals(4),
+          reason: 'Weekend profile should have 4% difficulty weight');
+      expect(weekendWeights['rating'], equals(18),
+          reason: 'Weekend profile should have 18% rating weight');
     });
 
     test('temporal context is properly added to recommendation context',

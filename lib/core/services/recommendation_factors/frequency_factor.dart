@@ -89,15 +89,6 @@ class FrequencyFactor implements RecommendationFactor {
       score = overdueScore;
     }
 
-    // Apply penalty for recipes cooked very recently relative to their frequency
-    // This helps prevent the same recipe from being recommended multiple times in a row
-    if (dueRatio < 0.25) {
-      // Apply stronger penalty when a recipe was cooked very recently
-      // This creates more separation between just-cooked and almost-due recipes
-      score = score *
-          (0.5 + dueRatio * 2); // Smooth ramp-up from 50% to 100% of score
-    }
-
     return score;
   }
 
@@ -132,11 +123,6 @@ class FrequencyFactor implements RecommendationFactor {
       // Calculate a score between 85-100 based on overdueness
       final overdueScore = 85.0 + (15.0 * (log(1.0 + overdueness) / log(8.0)));
       score = overdueScore;
-    }
-
-    // Apply penalty for recipes cooked very recently
-    if (dueRatio < 0.25) {
-      score = score * (0.5 + dueRatio * 2);
     }
 
     return score;
