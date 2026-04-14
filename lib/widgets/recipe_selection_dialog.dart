@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/ingredient.dart';
 import '../models/recipe.dart';
 import '../models/recipe_recommendation.dart';
 import '../core/di/service_provider.dart';
+import '../core/providers/debug_settings_provider.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/recipe_selection_card.dart';
 import '../widgets/add_side_dish_dialog.dart';
@@ -136,6 +138,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
 
   @override
   Widget build(BuildContext context) {
+    final debugMode = context.watch<DebugSettingsProvider>().debugScoringMode;
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
       child: Padding(
@@ -151,7 +154,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
             ),
             const SizedBox(height: 8),
             Expanded(
-              child: _showingMenu ? _buildMenu() : _buildRecipeSelection(),
+              child: _showingMenu ? _buildMenu() : _buildRecipeSelection(debugMode),
             ),
             TextButton(
               key: const Key('recipe_selection_cancel_button'),
@@ -164,7 +167,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
     );
   }
 
-  Widget _buildRecipeSelection() {
+  Widget _buildRecipeSelection(bool debugMode) {
     final filtered = widget.recipes
         .where((recipe) =>
             recipe.name.toLowerCase().contains(_searchQuery.toLowerCase()))
@@ -253,6 +256,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
                                   _handleRecipeSelection(recommendation.recipe),
                               onFeedback: (userResponse) => _handleFeedback(
                                   recommendation.recipe.id, userResponse),
+                              debugMode: debugMode,
                             );
                           },
                         ),
@@ -261,7 +265,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
                 itemCount: filteredRecipes.length,
                 itemBuilder: (context, index) {
                   final recipe = filteredRecipes[index];
-                  return _buildRecipeListTile(recipe);
+                  return _buildRecipeListTile(recipe, debugMode);
                 },
               ),
             ],
@@ -387,7 +391,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
   }
 
   // Helper method to build consistent recipe list tiles
-  Widget _buildRecipeListTile(Recipe recipe) {
+  Widget _buildRecipeListTile(Recipe recipe, bool debugMode) {
     // Find the real recommendation for this recipe
     final realRecommendation = widget.allScoredRecipes
         .where((rec) => rec.recipe.id == recipe.id)
@@ -409,6 +413,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
       key: Key('recipe_card_${recipe.id}'),
       recommendation: recommendation,
       onTap: () => _handleRecipeSelection(recipe),
+      debugMode: debugMode,
     );
   }
 

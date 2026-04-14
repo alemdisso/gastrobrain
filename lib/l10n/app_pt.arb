@@ -2053,6 +2053,22 @@
   "@toolsScreenSubtitle": {
     "description": "Subtitle for tools screen"
   },
+  "developerTools": "Ferramentas de Desenvolvedor",
+  "@developerTools": {
+    "description": "Section header for developer tools in the tools screen"
+  },
+  "debugScoringMode": "Modo de Depuração de Pontuação",
+  "@debugScoringMode": {
+    "description": "Label for the debug scoring mode toggle"
+  },
+  "debugScoringModeDescription": "Exibe pontuações brutas e pesos por fator nos cartões de recomendação.",
+  "@debugScoringModeDescription": {
+    "description": "Description for the debug scoring mode toggle"
+  },
+  "debugScoringTotal": "total",
+  "@debugScoringTotal": {
+    "description": "Label for the total score row in the debug scoring breakdown"
+  },
   "recipeEditor": "Editor de Receitas",
   "@recipeEditor": {
     "description": "Título da ferramenta de editor de receitas"

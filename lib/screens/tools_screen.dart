@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../core/di/service_provider.dart';
+import '../core/providers/debug_settings_provider.dart';
 import '../core/services/snackbar_service.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 
@@ -536,6 +538,25 @@ class _ToolsScreenState extends State<ToolsScreen> {
     );
   }
 
+  Widget _buildDebugToggleCard(BuildContext context, AppLocalizations l10n) {
+    final debugSettings = context.watch<DebugSettingsProvider>();
+    return Card(
+      child: SwitchListTile(
+        secondary: Icon(
+          Icons.analytics_outlined,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        title: Text(l10n.debugScoringMode),
+        subtitle: Text(
+          l10n.debugScoringModeDescription,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        value: debugSettings.debugScoringMode,
+        onChanged: (_) => debugSettings.toggleDebugScoringMode(),
+      ),
+    );
+  }
+
   Widget _buildScopeNote(AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -623,6 +644,10 @@ class _ToolsScreenState extends State<ToolsScreen> {
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
               ),
+
+              // Developer Tools Section
+              _buildSectionHeader(l10n.developerTools, Icons.developer_mode),
+              _buildDebugToggleCard(context, l10n),
 
               // Recipe Management Section
               _buildSectionHeader(l10n.recipeManagement, Icons.restaurant_menu),

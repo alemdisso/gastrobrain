@@ -2053,6 +2053,22 @@
   "@toolsScreenSubtitle": {
     "description": "Subtitle for tools screen"
   },
+  "developerTools": "Developer Tools",
+  "@developerTools": {
+    "description": "Section header for developer tools in the tools screen"
+  },
+  "debugScoringMode": "Debug Scoring Mode",
+  "@debugScoringMode": {
+    "description": "Label for the debug scoring mode toggle"
+  },
+  "debugScoringModeDescription": "Shows raw factor scores and weights on recommendation cards.",
+  "@debugScoringModeDescription": {
+    "description": "Description for the debug scoring mode toggle"
+  },
+  "debugScoringTotal": "total",
+  "@debugScoringTotal": {
+    "description": "Label for the total score row in the debug scoring breakdown"
+  },
   "recipeEditor": "Recipe Editor",
   "@recipeEditor": {
     "description": "Title for recipe editor tool"

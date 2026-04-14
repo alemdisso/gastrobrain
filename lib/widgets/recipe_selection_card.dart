@@ -13,12 +13,14 @@ class RecipeSelectionCard extends StatefulWidget {
   final RecipeRecommendation recommendation;
   final VoidCallback? onTap;
   final Function(UserResponse)? onFeedback;
+  final bool debugMode;
 
   const RecipeSelectionCard({
     super.key,
     required this.recommendation,
     this.onTap,
     this.onFeedback,
+    this.debugMode = false,
   });
 
   @override
@@ -160,7 +162,9 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
                 child: _showFactorBadges
                     ? Column(
                         children: [
-                          _buildFactorIndicators(context),
+                          widget.debugMode
+                              ? _buildDebugScoring(context)
+                              : _buildFactorIndicators(context),
                           const SizedBox(height: 8),
                         ],
                       )
@@ -243,6 +247,85 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
       default:
         return badge.label;
     }
+  }
+
+  Widget _buildDebugScoring(BuildContext context) {
+    final factorScores = widget.recommendation.factorScores;
+    final weights = widget.recommendation.metadata['factorWeights'] as Map?;
+    final totalScore = widget.recommendation.totalScore;
+
+    final textStyle = TextStyle(
+      fontFamily: 'monospace',
+      fontSize: 10,
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
+    final headerStyle = textStyle.copyWith(fontWeight: FontWeight.w600);
+
+    // Build rows sorted by weight descending so the most influential factors
+    // appear first.
+    final factors = factorScores.entries.toList()
+      ..sort((a, b) {
+        final wA = (weights?[a.key] as int?) ?? 0;
+        final wB = (weights?[b.key] as int?) ?? 0;
+        return wB.compareTo(wA);
+      });
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header row
+          Row(
+            children: [
+              Expanded(flex: 5, child: Text('factor', style: headerStyle)),
+              Expanded(flex: 2, child: Text('score', style: headerStyle, textAlign: TextAlign.right)),
+              Expanded(flex: 2, child: Text('wt%', style: headerStyle, textAlign: TextAlign.right)),
+              Expanded(flex: 3, child: Text('contrib', style: headerStyle, textAlign: TextAlign.right)),
+            ],
+          ),
+          const SizedBox(height: 2),
+          // Factor rows
+          ...factors.map((entry) {
+            final weight = (weights?[entry.key] as int?) ?? 0;
+            final contribution = entry.value * weight / 100;
+            return Padding(
+              padding: const EdgeInsets.only(top: 1),
+              child: Row(
+                children: [
+                  Expanded(flex: 5, child: Text(entry.key, style: textStyle, overflow: TextOverflow.ellipsis)),
+                  Expanded(flex: 2, child: Text(entry.value.toStringAsFixed(1), style: textStyle, textAlign: TextAlign.right)),
+                  Expanded(flex: 2, child: Text('$weight%', style: textStyle, textAlign: TextAlign.right)),
+                  Expanded(flex: 3, child: Text(contribution.toStringAsFixed(2), style: textStyle, textAlign: TextAlign.right)),
+                ],
+              ),
+            );
+          }),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 3),
+            child: Divider(height: 1, thickness: 0.5),
+          ),
+          // Total row
+          Row(
+            children: [
+              const Expanded(flex: 9, child: SizedBox()),
+              Expanded(
+                flex: 3,
+                child: Text(
+                  totalScore.toStringAsFixed(2),
+                  style: headerStyle,
+                  textAlign: TextAlign.right,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildFactorIndicators(BuildContext context) {
