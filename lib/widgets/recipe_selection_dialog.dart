@@ -52,6 +52,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
   late TabController _tabController;
   bool _isLoading = false;
   late List<RecipeRecommendation> _recommendations;
+  late Set<String> _sessionExcludedIds; // IDs shown or dismissed in this session
   String? _recommendationHistoryId; // Store the history ID for feedback
   Recipe? _selectedRecipe;
   bool _showingMenu = false;
@@ -75,6 +76,8 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
 
     _simpleSides = List.from(widget.initialSimpleSides);
     _recommendations = List.from(widget.detailedRecommendations);
+    _sessionExcludedIds =
+        widget.detailedRecommendations.map((r) => r.recipe.id).toSet();
   }
 
   void _showFeedbackError() {
@@ -90,7 +93,19 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
         userResponse == UserResponse.lessOften ||
         userResponse == UserResponse.moreOften ||
         userResponse == UserResponse.neverAgain) {
-      setState(() => _recommendations.removeWhere((rec) => rec.recipe.id == recipeId));
+      _sessionExcludedIds.add(recipeId);
+
+      final replacement = widget.allScoredRecipes
+          .where((r) => !_sessionExcludedIds.contains(r.recipe.id))
+          .firstOrNull;
+
+      setState(() {
+        _recommendations.removeWhere((rec) => rec.recipe.id == recipeId);
+        if (replacement != null) {
+          _sessionExcludedIds.add(replacement.recipe.id);
+          _recommendations.add(replacement);
+        }
+      });
     }
 
     if (_recommendationHistoryId == null) return;
@@ -117,6 +132,8 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
         setState(() {
           _recommendations = result.recommendations;
           _recommendationHistoryId = result.historyId;
+          _sessionExcludedIds =
+              result.recommendations.map((r) => r.recipe.id).toSet();
           _isLoading = false;
         });
       }
