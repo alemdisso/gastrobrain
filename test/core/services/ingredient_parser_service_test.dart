@@ -936,6 +936,32 @@ void main() {
       });
     });
 
+    group('Regression: no-space mixed number quantities (#344)', () {
+      test('1½ xícara de farinha → quantity: 1.5, unit: cup', () {
+        final result = parserService.parseIngredientLine('1½ xícara de farinha');
+        expect(result.quantity, equals(1.5));
+        expect(result.unit, equals('cup'));
+      });
+
+      test('1¼ xícara de leite → quantity: 1.25, unit: cup', () {
+        final result = parserService.parseIngredientLine('1¼ xícara de leite');
+        expect(result.quantity, equals(1.25));
+        expect(result.unit, equals('cup'));
+      });
+
+      test('2¾ xícaras de arroz → quantity: 2.75, unit: cup', () {
+        final result = parserService.parseIngredientLine('2¾ xícaras de arroz');
+        expect(result.quantity, closeTo(2.75, 0.001));
+        expect(result.unit, equals('cup'));
+      });
+
+      test('ingredient name contains no fraction or unit remnants', () {
+        final result = parserService.parseIngredientLine('1½ xícara de farinha');
+        expect(result.ingredientName, isNot(contains('½')));
+        expect(result.ingredientName, isNot(contains('xícara')));
+      });
+    });
+
     group('Regression: pedaço de connector stripping (#343)', () {
       test('pedaço de gengibre → unit: piece, ingredient: gengibre', () {
         final result = parserService.parseIngredientLine('pedaço de gengibre');

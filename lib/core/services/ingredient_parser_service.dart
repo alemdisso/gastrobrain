@@ -321,11 +321,20 @@ class IngredientParserService {
   /// For mixed numbers, the whole and fractional parts are added together.
   /// If the string is not a mixed number, delegates to [_parseFraction].
   double _parseQuantity(String quantityStr) {
+    // Check for no-space mixed number: "1½", "2¾", etc.
+    final noSpaceMixedPattern = RegExp(r'^(\d+)([½⅓¼⅔¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])$');
+    final noSpaceMatch = noSpaceMixedPattern.firstMatch(quantityStr);
+    if (noSpaceMatch != null) {
+      final whole = double.tryParse(noSpaceMatch.group(1)!) ?? 0;
+      final fraction = _parseFraction(noSpaceMatch.group(2)!);
+      return whole + fraction;
+    }
+
     // Check for mixed number pattern: "2 1/2" or "1 ½"
     // Captures: (whole number) (space) (fraction part)
     final mixedPattern = RegExp(r'^(\d+)\s+(.+)$');
     final mixedMatch = mixedPattern.firstMatch(quantityStr);
-    
+
     if (mixedMatch != null) {
       final wholePart = mixedMatch.group(1)!;
       final fractionPart = mixedMatch.group(2)!;
@@ -472,9 +481,10 @@ class IngredientParserService {
     // Step 1: Extract quantity from beginning
     // Match: mixed number, slash fraction, unicode fraction, decimal, or integer
     // Pattern explanation:
-    // - (\d+\s+)?(\d+/\d+|[½⅓¼⅔¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]) : optional whole number + space + fraction
+    // - (\d+\s+)?(\d+/\d+|[unicode]) : optional whole number + space + fraction
+    // - |\d+[unicode] : integer immediately followed by unicode fraction (e.g. "1½")
     // - |\d+(?:[.,]\d+)? : OR decimal/integer
-    final quantityPattern = RegExp(r'^((?:\d+\s+)?(?:\d+/\d+|[½⅓¼⅔¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])|\d+(?:[.,]\d+)?)\s*');
+    final quantityPattern = RegExp(r'^((?:\d+\s+)?(?:\d+/\d+|[½⅓¼⅔¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])|\d+[½⅓¼⅔¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\d+(?:[.,]\d+)?)\s*');
     final quantityMatch = quantityPattern.firstMatch(trimmedLine);
     
     double quantity = 1.0;
