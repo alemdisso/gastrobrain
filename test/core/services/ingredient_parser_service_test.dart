@@ -936,6 +936,44 @@ void main() {
       });
     });
 
+    group('Regression: pedaço de connector stripping (#343)', () {
+      test('pedaço de gengibre → unit: piece, ingredient: gengibre', () {
+        final result = parserService.parseIngredientLine('pedaço de gengibre');
+        expect(result.unit, equals('piece'));
+        expect(result.ingredientName, equals('gengibre'));
+      });
+
+      test('1 pedaço de gengibre → quantity: 1, unit: piece, ingredient: gengibre', () {
+        final result = parserService.parseIngredientLine('1 pedaço de gengibre');
+        expect(result.quantity, equals(1));
+        expect(result.unit, equals('piece'));
+        expect(result.ingredientName, equals('gengibre'));
+      });
+
+      test('colher de sopa de azeite → unit: tbsp, ingredient: azeite', () {
+        final result = parserService.parseIngredientLine('colher de sopa de azeite');
+        expect(result.unit, equals('tbsp'));
+        expect(result.ingredientName, equals('azeite'));
+      });
+
+      test('molho de soja (no unit prefix) → no unit extracted', () {
+        final result = parserService.parseIngredientLine('molho de soja');
+        expect(result.unit, isNull);
+      });
+
+      test('leite de coco (no unit prefix) → no unit extracted', () {
+        final result = parserService.parseIngredientLine('leite de coco');
+        expect(result.unit, isNull);
+      });
+
+      test('1 pedaço gengibre (no de) → unit: piece, ingredient: gengibre', () {
+        final result = parserService.parseIngredientLine('1 pedaço gengibre');
+        expect(result.quantity, equals(1));
+        expect(result.unit, equals('piece'));
+        expect(result.ingredientName, equals('gengibre'));
+      });
+    });
+
     group('Initialization', () {
       test('throws StateError if not initialized', () {
         final uninitializedService = IngredientParserService();

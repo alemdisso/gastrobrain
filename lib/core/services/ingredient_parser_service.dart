@@ -190,6 +190,9 @@ class IngredientParserService {
     _unitStringMap['pç'] = 'piece';
     _unitStringMap['pc'] = 'piece';
     _unitStringMap['un'] = 'piece';
+    _unitStringMap['pedaço'] = 'piece';
+    _unitStringMap['pedaços'] = 'piece';
+    _unitStringMap['pedacos'] = 'piece'; // without cedilla (robustness)
     
     // Slice variants
     _unitStringMap['fatias'] = 'slice';
