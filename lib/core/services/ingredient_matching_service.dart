@@ -82,7 +82,18 @@ class IngredientMatchingService {
     // Sort by confidence (highest first)
     matches.sort((a, b) => b.confidence.compareTo(a.confidence));
 
-    return matches;
+    // Deduplicate: keep only the highest-confidence match per ingredient.
+    // The same ingredient can appear in multiple stages (e.g. normalized + fuzzy)
+    // with different confidence levels — preserve only the best one.
+    final deduplicated = <IngredientMatch>[];
+    final seenIds = <String>{};
+    for (final match in matches) {
+      if (seenIds.add(match.ingredient.id)) {
+        deduplicated.add(match);
+      }
+    }
+
+    return deduplicated;
   }
 
   /// Stage 1: Exact string match (case-sensitive)
@@ -126,11 +137,10 @@ class IngredientMatchingService {
     final normalizedParsed = _normalize(parsedName);
     final matches = <IngredientMatch>[];
 
-    // Search through all ingredients (already indexed)
-    final firstLetter = normalizedParsed.isNotEmpty ? normalizedParsed[0] : '';
-    final candidates = _firstLetterIndex[firstLetter] ?? [];
-
-    for (final ingredient in candidates) {
+    // Scan all ingredients directly — avoids first-letter index mismatch when
+    // an ingredient name starts with an accented character (e.g. "óleo" is
+    // indexed under 'ó' but the normalized lookup key would be 'o').
+    for (final ingredient in _allIngredients) {
       final normalizedIngredient = _getCachedNormalized(ingredient.name);
 
       if (normalizedIngredient == normalizedParsed) {
@@ -145,19 +155,16 @@ class IngredientMatchingService {
     // If no direct normalized match found, try singularization
     if (matches.isEmpty) {
       final singularizedParsed = _singularize(normalizedParsed);
-      
+
       // Only search if singularization produced a different form
       if (singularizedParsed != normalizedParsed) {
-        final singularFirstLetter = singularizedParsed.isNotEmpty ? singularizedParsed[0] : '';
-        final singularCandidates = _firstLetterIndex[singularFirstLetter] ?? [];
-        
-        for (final ingredient in singularCandidates) {
+        for (final ingredient in _allIngredients) {
           final normalizedIngredient = _getCachedNormalized(ingredient.name);
-          
+
           if (normalizedIngredient == singularizedParsed) {
             matches.add(IngredientMatch(
               ingredient: ingredient,
-              confidence: 0.90, // High confidence for plural-to-singular matches
+              confidence: 0.90,
               matchType: MatchType.normalized,
             ));
           }
