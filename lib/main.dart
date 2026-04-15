@@ -7,6 +7,7 @@ import 'l10n/app_localizations.dart';
 import 'core/providers/recipe_provider.dart';
 import 'core/providers/meal_provider.dart';
 import 'core/providers/meal_plan_provider.dart';
+import 'core/providers/debug_settings_provider.dart';
 import 'core/theme/app_theme.dart';
 
 void main() async {
@@ -54,6 +55,7 @@ class GastrobrainApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => RecipeProvider()),
         ChangeNotifierProvider(create: (_) => MealProvider()),
         ChangeNotifierProvider(create: (_) => MealPlanProvider()),
+        ChangeNotifierProvider(create: (_) => DebugSettingsProvider()),
       ],
       child: MaterialApp(
         title: 'Gastrobrain',

@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.2] - 2026-04-15
+
+### Added
+- Proximity-based avoidance logic in recommendation engine: recipes cooked recently are progressively penalised to improve variety (#82)
+- Debug mode toggle for recommendation scoring details on recipe cards (#213)
+- Replacement recipe appended automatically when user dismisses a recommendation (#214)
+- Import/export warning: user is now informed that recipe import/export does not include meal history, with a prompt to use full backup instead (#331)
+
+### Fixed
+- Same-day meals now appear in correct chronological order in the Recent Meals dashboard section (#341)
+- Ingredient parser no longer truncates mixed number quantities (e.g. `1½`) or bleeds fraction+unit into the ingredient name field (#344)
+- Portuguese connector `de` no longer leaks into ingredient name after unit extraction (#343)
+- Ingredient parser confidence scoring corrected; duplicate matches for existing ingredients eliminated (#342)
+
+### Changed
+- App icon background refined from dark desaturated olive to vivid herb-green, conveying freshness and natural vitality (#347)
+- Timestamp management anti-pattern resolved in database operations (#232)
+
+### Testing
+- Failing `AddSideDishDialog` test investigated and fixed (#254)
+
+---
+
 ## [0.2.1] - 2026-04-09
 
 ### Added

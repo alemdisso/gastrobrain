@@ -2053,6 +2053,22 @@
   "@toolsScreenSubtitle": {
     "description": "Subtitle for tools screen"
   },
+  "developerTools": "Ferramentas de Desenvolvedor",
+  "@developerTools": {
+    "description": "Section header for developer tools in the tools screen"
+  },
+  "debugScoringMode": "Modo de Depuração de Pontuação",
+  "@debugScoringMode": {
+    "description": "Label for the debug scoring mode toggle"
+  },
+  "debugScoringModeDescription": "Exibe pontuações brutas e pesos por fator nos cartões de recomendação.",
+  "@debugScoringModeDescription": {
+    "description": "Description for the debug scoring mode toggle"
+  },
+  "debugScoringTotal": "total",
+  "@debugScoringTotal": {
+    "description": "Label for the total score row in the debug scoring breakdown"
+  },
   "recipeEditor": "Editor de Receitas",
   "@recipeEditor": {
     "description": "Título da ferramenta de editor de receitas"
@@ -2088,6 +2104,18 @@
   "importRecipesDescription": "Importe receitas e ingredientes do JSON. Substitui todos os dados existentes.",
   "@importRecipesDescription": {
     "description": "Description for recipe import tool"
+  },
+  "recipeExportImportScopeNote": "Somente receitas e ingredientes — histórico de refeições não incluído",
+  "@recipeExportImportScopeNote": {
+    "description": "Scope clarification shown on recipe export/import cards"
+  },
+  "recipeExportImportFullBackupHint": "Para recuperar dados completos incluindo histórico de refeições, use Backup e Restauração Completos.",
+  "@recipeExportImportFullBackupHint": {
+    "description": "Hint pointing users to full backup when they need meal history"
+  },
+  "importRecipesMealHistoryNotice": "Observação: o histórico de refeições não foi restaurado. Para recuperação completa dos dados incluindo histórico, use Backup e Restauração Completos.",
+  "@importRecipesMealHistoryNotice": {
+    "description": "Post-import notice reminding user that meal history was not restored"
   },
   "planningTabLabel": "Planejamento",
   "@planningTabLabel": {

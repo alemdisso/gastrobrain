@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/ingredient.dart';
 import '../models/recipe.dart';
 import '../models/recipe_recommendation.dart';
 import '../core/di/service_provider.dart';
+import '../core/providers/debug_settings_provider.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/recipe_selection_card.dart';
 import '../widgets/add_side_dish_dialog.dart';
@@ -50,6 +52,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
   late TabController _tabController;
   bool _isLoading = false;
   late List<RecipeRecommendation> _recommendations;
+  late Set<String> _sessionExcludedIds; // IDs shown or dismissed in this session
   String? _recommendationHistoryId; // Store the history ID for feedback
   Recipe? _selectedRecipe;
   bool _showingMenu = false;
@@ -73,6 +76,8 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
 
     _simpleSides = List.from(widget.initialSimpleSides);
     _recommendations = List.from(widget.detailedRecommendations);
+    _sessionExcludedIds =
+        widget.detailedRecommendations.map((r) => r.recipe.id).toSet();
   }
 
   void _showFeedbackError() {
@@ -88,7 +93,19 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
         userResponse == UserResponse.lessOften ||
         userResponse == UserResponse.moreOften ||
         userResponse == UserResponse.neverAgain) {
-      setState(() => _recommendations.removeWhere((rec) => rec.recipe.id == recipeId));
+      _sessionExcludedIds.add(recipeId);
+
+      final replacement = widget.allScoredRecipes
+          .where((r) => !_sessionExcludedIds.contains(r.recipe.id))
+          .firstOrNull;
+
+      setState(() {
+        _recommendations.removeWhere((rec) => rec.recipe.id == recipeId);
+        if (replacement != null) {
+          _sessionExcludedIds.add(replacement.recipe.id);
+          _recommendations.add(replacement);
+        }
+      });
     }
 
     if (_recommendationHistoryId == null) return;
@@ -115,6 +132,8 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
         setState(() {
           _recommendations = result.recommendations;
           _recommendationHistoryId = result.historyId;
+          _sessionExcludedIds =
+              result.recommendations.map((r) => r.recipe.id).toSet();
           _isLoading = false;
         });
       }
@@ -136,6 +155,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
 
   @override
   Widget build(BuildContext context) {
+    final debugMode = context.watch<DebugSettingsProvider>().debugScoringMode;
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
       child: Padding(
@@ -151,7 +171,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
             ),
             const SizedBox(height: 8),
             Expanded(
-              child: _showingMenu ? _buildMenu() : _buildRecipeSelection(),
+              child: _showingMenu ? _buildMenu() : _buildRecipeSelection(debugMode),
             ),
             TextButton(
               key: const Key('recipe_selection_cancel_button'),
@@ -164,7 +184,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
     );
   }
 
-  Widget _buildRecipeSelection() {
+  Widget _buildRecipeSelection(bool debugMode) {
     final filtered = widget.recipes
         .where((recipe) =>
             recipe.name.toLowerCase().contains(_searchQuery.toLowerCase()))
@@ -253,6 +273,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
                                   _handleRecipeSelection(recommendation.recipe),
                               onFeedback: (userResponse) => _handleFeedback(
                                   recommendation.recipe.id, userResponse),
+                              debugMode: debugMode,
                             );
                           },
                         ),
@@ -261,7 +282,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
                 itemCount: filteredRecipes.length,
                 itemBuilder: (context, index) {
                   final recipe = filteredRecipes[index];
-                  return _buildRecipeListTile(recipe);
+                  return _buildRecipeListTile(recipe, debugMode);
                 },
               ),
             ],
@@ -387,7 +408,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
   }
 
   // Helper method to build consistent recipe list tiles
-  Widget _buildRecipeListTile(Recipe recipe) {
+  Widget _buildRecipeListTile(Recipe recipe, bool debugMode) {
     // Find the real recommendation for this recipe
     final realRecommendation = widget.allScoredRecipes
         .where((rec) => rec.recipe.id == recipe.id)
@@ -409,6 +430,7 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
       key: Key('recipe_card_${recipe.id}'),
       recommendation: recommendation,
       onTap: () => _handleRecipeSelection(recipe),
+      debugMode: debugMode,
     );
   }
 
