@@ -197,7 +197,7 @@ class AppTheme {
           backgroundColor: DesignTokens.primary,
           foregroundColor: DesignTokens.textOnPrimary,
           disabledBackgroundColor: DesignTokens.disabled,
-          disabledForegroundColor: DesignTokens.textDisabled,
+          disabledForegroundColor: DesignTokens.textOnDisabled,
           elevation: DesignTokens.elevation1,
           padding: DesignTokens.buttonPadding,
           shape: RoundedRectangleBorder(

@@ -50,6 +50,7 @@ class DesignTokens {
   static const Color textSecondary = Color(0xFF57534E);
   static const Color textTertiary = Color(0xFF78716C);
   static const Color textDisabled = Color(0xFFA8A29E);
+  static const Color textOnDisabled = Color(0xFFFFFFFF);
   static const Color textOnPrimary = Color(0xFFFFFFFF);
   static const Color textOnAccent = Color(0xFFFFFFFF);
 
