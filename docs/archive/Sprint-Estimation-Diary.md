@@ -2473,6 +2473,9 @@ Use historical velocity data to size future milestones and prevent overcommitmen
   - **#345 applied** — unit strings localized at 3 sites; confirmed all 20 `MeasurementUnit` values translated in `app_pt.arb`
   - **NEW INSIGHT: Mock ordering is vacuous** — `MockDatabaseHelper.getRecentMeals` sorts by `cookedAt` only, no CASE clause; real SQLite integration tests are the only reliable check for ordering correctness
   - **NEW RULE: Always create feature branch before coding** — two commits went directly to develop before the rule was flagged; enforced from #351 onwards
+  - **#339 applied** — added `textOnDisabled` (white) token; `disabledForegroundColor` in `ElevatedButtonThemeData` was identical to `disabledBackgroundColor` (#A8A29E), causing zero contrast; fix is app-wide
+  - **#340 applied** — wrapped `AddSimpleSideDialog` content column in `SingleChildScrollView`; suggestions list overflow was displacing the actions area; added 7 widget tests covering layout, button states, and return values
+  - **Root-cause pattern**: #339 and #340 were in the same dialog (same file, same branch) — batched correctly; 2 pts each, executed at ~0.10x combined
 - **2026-04-15**: Added 0.2.2 retrospective analysis
   - Sprint completed: 9 of 10 adjusted issues (24 confirmed pts); #341 committed but unvalidated on device
   - Effective ratio: ~0.11x (~2.7d tracked / ~3.8d effective); ~31.5 pts/week — cruising range
