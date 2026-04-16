@@ -116,9 +116,10 @@ class _AddSimpleSideDialogState extends State<AddSimpleSideDialog> {
       title: Text(l10n.addSimpleSideTitle),
       content: SizedBox(
         width: double.maxFinite,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
             // Ingredient search / free-text
             TextField(
               controller: _searchController,
@@ -184,6 +185,7 @@ class _AddSimpleSideDialogState extends State<AddSimpleSideDialog> {
               maxLines: 1,
             ),
           ],
+        ),
         ),
       ),
       actions: [
