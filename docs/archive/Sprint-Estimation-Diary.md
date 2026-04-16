@@ -2464,6 +2464,15 @@ Use historical velocity data to size future milestones and prevent overcommitmen
   - New calibration factors: zero-features housekeeping sprint (~0.19x), emergency P0 patch (~0.10x)
   - Updated velocity reference table (added 0.1.13, 0.1.14; excluded 0.1.15 as non-regular sprint)
   - Cruising velocity extended: validated across 0.1.7b–0.1.14 (7 consecutive sprints at 26-36 pts/week)
+- **2026-04-16**: 0.2.3 sprint started; pre-sprint investigation session
+  - Sprint plan created: `docs/planning/sprints/sprint-planning-0.2.3.md` (33 pts, 11 issues, ~6 days at cruising velocity)
+  - **Investigation finding: `MealCookedDialog` was dead code** — never called anywhere; deleted widget + 7 tests
+  - **#352 closed as misidentified** — `MealRecordingDialog` already handles `cooked_at = plannedDate` correctly
+  - **New test file: `test/database/meal_ordering_test.dart`** — 6 real-SQLite integration tests covering weekly plan path (slot midnight) and cook_meal_screen path (recording timestamp); confirms current query correct for primary flow
+  - **#351 applied** — `date(cooked_at)` fix in 3 queries; confirmed necessary only for `cook_meal_screen` path but applied as defensive hardening
+  - **#345 applied** — unit strings localized at 3 sites; confirmed all 20 `MeasurementUnit` values translated in `app_pt.arb`
+  - **NEW INSIGHT: Mock ordering is vacuous** — `MockDatabaseHelper.getRecentMeals` sorts by `cookedAt` only, no CASE clause; real SQLite integration tests are the only reliable check for ordering correctness
+  - **NEW RULE: Always create feature branch before coding** — two commits went directly to develop before the rule was flagged; enforced from #351 onwards
 - **2026-04-15**: Added 0.2.2 retrospective analysis
   - Sprint completed: 9 of 10 adjusted issues (24 confirmed pts); #341 committed but unvalidated on device
   - Effective ratio: ~0.11x (~2.7d tracked / ~3.8d effective); ~31.5 pts/week — cruising range
