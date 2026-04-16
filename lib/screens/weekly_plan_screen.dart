@@ -23,6 +23,7 @@ import '../core/providers/meal_provider.dart';
 import '../core/providers/meal_plan_provider.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../models/ingredient.dart';
+import '../models/measurement_unit.dart';
 import '../models/meal_plan_item_ingredient.dart';
 import '../widgets/weekly_calendar_widget.dart';
 import '../widgets/add_simple_side_dialog.dart';
@@ -1229,7 +1230,8 @@ class _SimpleSidesManageDialogState extends State<_SimpleSidesManageDialog> {
                     final qty = side.quantity == side.quantity.truncate()
                         ? side.quantity.toInt().toString()
                         : side.quantity.toString();
-                    final unit = side.unit ?? '';
+                    final parsedUnit = MeasurementUnit.fromString(side.unit);
+                    final unit = parsedUnit?.getLocalizedQuantityName(context, side.quantity) ?? side.unit ?? '';
                     return ListTile(
                       dense: true,
                       title: Text(name),
