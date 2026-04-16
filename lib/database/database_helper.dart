@@ -1391,7 +1391,7 @@ class DatabaseHelper {
       FROM meals m
       LEFT JOIN meal_recipes mr ON m.id = mr.meal_id
       WHERE mr.recipe_id = ? OR m.recipe_id = ?
-      ORDER BY m.cooked_at DESC,
+      ORDER BY date(m.cooked_at) DESC,
                CASE m.meal_type
                  WHEN 'dinner' THEN 0
                  WHEN 'lunch'  THEN 1
@@ -1461,7 +1461,7 @@ class DatabaseHelper {
     final List<Map<String, dynamic>> mealMaps = await db.query(
       'meals',
       orderBy:
-          "cooked_at DESC, CASE meal_type WHEN 'dinner' THEN 0 WHEN 'lunch' THEN 1 ELSE 2 END ASC",
+          "date(cooked_at) DESC, CASE meal_type WHEN 'dinner' THEN 0 WHEN 'lunch' THEN 1 ELSE 2 END ASC",
     );
 
     List<Meal> meals = [];
@@ -1582,7 +1582,7 @@ class DatabaseHelper {
     final List<Map<String, dynamic>> maps = await db.query(
       'meals',
       orderBy:
-          "cooked_at DESC, CASE meal_type WHEN 'dinner' THEN 0 WHEN 'lunch' THEN 1 ELSE 2 END ASC",
+          "date(cooked_at) DESC, CASE meal_type WHEN 'dinner' THEN 0 WHEN 'lunch' THEN 1 ELSE 2 END ASC",
       limit: limit,
     );
     return List.generate(maps.length, (i) => Meal.fromMap(maps[i]));
