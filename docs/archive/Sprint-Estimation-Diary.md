@@ -1938,6 +1938,153 @@ Both were targeted fixes in the import service: #332 required explicit cascade p
 
 ---
 
+### 0.2.2 - Algorithm & Stability
+
+**Sprint Duration:** April 12–15, 2026
+**Calendar Days:** 4
+**Active Working Days:** ~3.8 (Apr 12: planning only ~0.5d; Apr 13–15: 3 commit days + ~0.3d hidden Recraft design)
+**Planned Issues:** 11 (29 pts original; adjusted to 10 issues / 26 pts after #232 won't fix at planning)
+**Completed Issues:** 9 of 10 adjusted (90%); #341 committed but not validated on device
+
+#### Estimation vs Actual
+
+| Issue | Title | Type | Est Points | Weighted Actual | Lines | Ratio | Assessment |
+|-------|-------|------|------------|-----------------|-------|-------|------------|
+| #254 | Confidence dedup testing | Testing | 2 | ~0.50d* | 81 | 0.25x | ⚠️ Slowest in sprint |
+| #331 | P0 crash + user warning | Bug P0 | 1 | ~0.15d† | 28 real | 0.15x | ✅ On target |
+| #214 | Algorithm weight tuning | Algorithm | 3 | 0.20d | 170 | 0.07x | ⚡ Faster |
+| #82 | Ingredient frequency factor | Algorithm | 3 | 0.60d | 510 | 0.20x | ✅ On target |
+| #213 | Weekly variety constraint | Feature | 2 | 0.20d | 173 | 0.10x | ⚡ Faster |
+| #347 | App icon redesign | UX Design | 2 | ~0.31d‡ | 2+design | 0.16x | ✅ On target |
+| #342 | Parser bug (confidence) | Bug | 5 | 0.33d | 48 | 0.07x | ⚡ Faster (batched) |
+| #344 | Parser bug (PT-BR) | Bug | 3 | 0.29d | 42 | 0.10x | ⚡ Faster (batched) |
+| #343 | Parser bug (accented) | Bug | 3 | 0.28d | 41 | 0.09x | ⚡ Faster (batched) |
+| #341 | Same-day meal ordering | Bug | 2 | ~0.10d | 13 | — | ⚠️ Incomplete fix |
+| #232 | MealEditService consolidation | Refactor | 3 | — | 0 | — | Won't Fix |
+| **TOTAL (confirmed complete)** | | | **24** | **~2.7d tracked / ~3.8d effective** | **1,168** | **~0.11x** | |
+
+*#254 weighted actual slightly above raw script value after l10n correction to #331 redistributed Apr 13 proportional allocation.*
+†#331 adjusted for l10n inflation: raw commit included ~60 lines of generated `app_localizations.dart`; real effort ~28 lines / ~0.15d.
+‡#347: ~0.01d committed + ~0.30d hidden Recraft design iteration = ~0.31d adjusted.
+
+#### Accuracy by Type
+
+| Type | Issues | Est Total | Weighted Actual | Avg Ratio | Verdict |
+|------|--------|-----------|-----------------|-----------|---------|
+| Testing (new algorithm behavior) | #254 | 2 | ~0.50d | 0.25x | ⚠️ Slowest — dedup logic required analytical test design |
+| P0 Bug | #331 | 1 | ~0.15d | 0.15x | ✅ On target — warning-only fix; l10n adjusted |
+| Algorithm | #214, #82 | 6 | 0.80d | 0.13x | ✅ On target — established codebase; #82 heavier as expected |
+| Feature | #213 | 2 | 0.20d | 0.10x | ⚡ Faster — familiar service layer, well-specified |
+| UX Design | #347 | 2 | ~0.31d | 0.16x | ✅ On target (hidden Recraft work included) |
+| Parser Bugs (batched cluster) | #342–#344 | 11 | ~0.90d | 0.08x | ⚡ Faster — same root cause; cluster execution |
+| Incomplete | #341 | 2 | ~0.10d | — | ⚠️ Committed without device validation |
+| Won't Fix | #232 | 3 | — | — | Excluded at planning |
+
+**Overall:** 24 confirmed pts tracked at ~2.7d, ~0.11x — consistent with recent cruising range (0.10–0.17x). The parser bug cluster (#342–#344, 11 pts) compressed to ~0.90d through batch execution; the algorithm day (#214, #82, #213) delivered 8 pts cleanly in a single domain-focused session.
+
+#### Variance Analysis
+
+**Cluster execution: #342–#344 (parser bugs, 11 pts)**
+- Three bugs sharing the same root cause domain (ingredient normalization/matching), batched on Apr 15
+- First issue (#342) established the fix template; #343 and #344 were adaptations of the same approach
+- Combined: 11 pts, ~0.90d, 0.08x avg — significantly faster than tackling independently across separate days
+- The batch decision was correct and accounted for most of the sprint's apparent speed
+
+**Heavier: #82 (ingredient frequency, 0.20x)**
+- Largest single issue by lines (510) and weighted days (0.60d); highest-complexity algorithm issue
+- 0.20x is above the sprint average but within normal cruising range — more surface area across the recommendation service
+- Not a surprise; calibrated correctly as the heaviest algorithm item
+
+**Slowest: #254 (confidence dedup testing, 0.25x)**
+- Testing new dedup behavior required designing test cases from scratch, not following established fixtures
+- Contrast with 0.07–0.10x range for the parser bugs (known patterns) — analytical test design takes longer
+- Still fast in absolute terms; the sprint average of ~0.11x reflects the cluster batch skewing the baseline
+
+**Design invisible in commits: #347 (app icon)**
+- Two Recraft iterations (~0.30d) produced the icon assets; the committed change was only 2 lines (asset swap)
+- Without the design time adjustment, #347 appears trivially fast; with it, 0.16x — on target for a branding iteration
+- External design tooling leaves no commit trace by nature; must be accounted for explicitly in retrospective
+
+**Incomplete fix: #341 (same-day meal ordering)**
+- Two commits across Apr 13 and Apr 15 (CASE clause addition, `ffe7f7e`); 13 total lines
+- Fix was logically consistent with the data model but never rebuilt as an APK and tested on device before shipping in 0.2.2
+- Consequence: two downstream issues created post-sprint — #351 (query ordering hardening) and #352 (MealCookedDialog ignores plannedDate)
+- Pattern: end-of-sprint compression caused a close-but-untested fix to ship as complete
+
+**Won't Fix: #232 (MealEditService consolidation)**
+- Evaluated and dropped at Apr 12 planning — consolidation had insufficient value vs sprint cost
+- 0 implementation time spent; clean scope decision before the first commit
+
+#### Working Pattern Observations
+
+```
+Apr 12 (Sun) │ ░░░░░░░░  Planning only (~0.5d) — sprint scope, #232 dropped
+Apr 13 (Mon) │ ████████  #254 testing + #331 P0 warning + first #341 attempt
+Apr 14 (Tue) │ ████████████  #214 + #82 + #213 — algorithm cluster day (8 pts)
+Apr 15 (Wed) │ ████████████  #342 + #343 + #344 parser batch + #347 icon + #341 follow-up
+             │ ░░░░        (~0.3d Recraft design untracked, embedded in #347 day)
+```
+
+**Patterns:**
+- Apr 12 planning day produced clean Apr 13–15 execution — no scope uncertainty mid-sprint
+- Algorithm cluster (Apr 14): 3 issues, same recommendation service domain, single day — delivered 8 pts without context switching
+- Parser bug batch (Apr 15): same root cause → first fix set template, subsequent were mechanical
+- Last-day compression: #341 and #347 both closed Apr 15, the final day — likely contributed to #341 shipping without device validation
+
+#### Lessons Learned
+
+1. **Parser/algorithm bugs with the same root cause execute at ~0.08–0.10x when batched**
+   - #342 (5 pts), #343 (3 pts), #344 (3 pts) — all normalization/matching issues — delivered at 0.07–0.10x in a single day
+   - First issue establishes the fix template; subsequent issues are adaptations, not independent investigations
+   - This is faster than generic bug batching because the root cause is identical — no re-investigation per issue
+   - **Lesson: When ≥2 parser or algorithm bugs share the same root cause, plan as a cluster day. Estimate the first at standard rate; discount 2nd+ issues 40–50% at estimation time.**
+
+2. **End-of-sprint compression creates validation debt**
+   - #341 was committed and closed across two days, but never rebuilt as an APK and tested on device
+   - The CASE clause fix was logically sound but unverified in practice; issue shipped in 0.2.2 as "fixed"
+   - Consequence: two downstream issues (#351, #352) emerged post-release during investigation
+   - This is the same failure mode documented in 0.1.12 — fast execution through a bug without device validation generates deferred work, not completed work
+   - **Lesson: Any bug fix touching query ordering, time-sensitive behavior, or display logic requires an explicit "tested on device" acceptance criterion. Committed ≠ validated.**
+
+3. **Testing new algorithm behavior is analytically different from extending existing tests**
+   - #254 (2 pts, 0.25x) was the slowest issue in the sprint — new dedup logic had no established test fixtures
+   - Test design required understanding the dedup edge cases first, not following an established template
+   - Contrast with the parser bug tests (0.07–0.10x) which reused the same normalization assertion pattern
+   - **Lesson: Distinguish "test new algorithm behavior" from "extend existing test suite" at estimation time. Former is closer to "new test infrastructure" (0.20–0.30x); latter follows the established 0.07–0.10x pattern.**
+
+4. **L10n-generated files inflate line counts in retrospective proportional allocation**
+   - #331's raw line count was 88; ~60 of those were generated `app_localizations.dart` output from `flutter gen-l10n`
+   - The script-calculated proportional day allocation gave #331 0.52d — more than 3× the actual effort
+   - **Lesson: In retrospectives, check high-line commits on low-complexity issues for l10n generation artifacts. Adjust proportional allocation using "real effort" lines (exclude `app_localizations.dart` and `.g.dart` files) to avoid misrepresenting simple issues.**
+
+5. **External design tooling work needs explicit tracking**
+   - #347's Recraft iteration (~0.30d) was real creative effort that left zero commit trace
+   - Without the developer interview, the sprint would appear shorter than it was
+   - **Lesson: Note external design tool time (Recraft, Figma) during the sprint. Include as hidden overhead in the retrospective effective-day calculation — same treatment as adb friction or planning days.**
+
+6. **Won't fix decisions at sprint planning are cleaner than mid-sprint abandonment**
+   - #232 evaluated and dropped Apr 12; zero implementation time spent; sprint scope immediately clear
+   - **Lesson: Sprint planning is the correct boundary for won't fix decisions. If a won't fix is recognized after the first commit, that commit is waste. Decide before opening the editor.**
+
+#### Recommendations for Future Sprints
+
+| Finding | Adjustment |
+|---------|------------|
+| Parser/algorithm bug cluster (~0.08x avg) when same root cause | Estimate first issue normally; apply 50% discount to 2nd+ issues sharing root cause domain |
+| #341 shipped without device validation → 2 follow-up issues | Add "tested on device" as non-optional AC for bug fixes touching query ordering or display logic |
+| Testing new algorithm behavior: 0.25x (vs 0.08–0.10x for pattern extension) | Separate estimation: "test new behavior" → 0.20–0.30x; "extend test suite" → 0.07–0.10x |
+| L10n inflation distorts line-count proportional allocation | Exclude `app_localizations.dart` from line counts when computing proportional day attribution |
+| Hidden design tooling (~0.30d for #347) invisible in commits | Note external design time in sprint log; include in effective-day calculation at retrospective |
+
+#### Notes
+
+- Sprint confirmed-complete: 24 pts / 3.8d effective → ~6.3 pts/day → **~31.5 pts/week** (cruising range)
+- Milestone shipped: improved recommendation algorithm (ingredient frequency, weight tuning, variety constraint), P0 crash fix, parser normalization corrections (confidence, accented chars, PT-BR), refreshed app icon
+- The incomplete #341 is the sprint's lasting cost: #351 (query ordering hardening) and #352 (MealCookedDialog date bug) are its direct successors; both require device-validated fixes in 0.2.3
+- Parser bug cluster (11 pts in ~0.90d) created the perception of an unusually fast sprint, but the underlying velocity is normal cruising — the batch compressed one day's work, not the sprint's overall cadence
+
+---
+
 ## Cumulative Metrics
 
 ### Estimation Accuracy Trend
@@ -1959,13 +2106,14 @@ Both were targeted fixes in the import service: #332 required explicit cascade p
 | 0.1.13 | 21 | 2.4 (tracked) / ~2.7 (effective) | 0.11x | ~8.75 | Within-sprint pattern compounding; L-size arch smooth; validation debt repaid |
 | 0.1.14 | ~21 | ~4.0d | ~0.19x† | ~5.25 | Zero-features housekeeping: migration consolidation + docs + test governance (retroactive) |
 | 0.1.15 | n/a‡ | ~1.0d | n/a | n/a | Emergency P0 patch: 2 import data loss bugs discovered via 0.2.1 (retroactive; not a regular sprint) |
+| 0.2.2 | 24 | ~2.7d | 0.11x | 6.3 | Algorithm + parser batch cluster; validation debt on #341 (→ #351, #352) |
 
 *\* 0.1.7a weighted-days methodology underrepresents actual effort due to shared day with 0.1.7b. Developer estimates ~0.5 days actual effort. Excluded from velocity calculations.*
 *† 0.1.14 ratio is a retroactive estimate; no commit-level weighted analysis available. Calculated as active days / expected days at cruising velocity.*
 *‡ 0.1.15 issues were not pre-estimated (P0 emergency patch); ratio not applicable.*
 
 **Critical Insights:**
-- **Cruising velocity: 30 points/week** — validated across 0.1.7b–0.1.11 (5 consecutive sprints at 28-36 pts/week)
+- **Cruising velocity: 30 points/week** — validated across 0.1.7b–0.2.2 (8 consecutive sprints at 26-36 pts/week)
 - **Velocity step-change confirmed** — early sprints (0.1.2-0.1.6) averaged 1.1-3.0 pts/day; recent sprints (0.1.7b-0.1.11) sustain 5.6-9.0 pts/day. Genuine acceleration from codebase maturity, Claude Code, accumulated infrastructure, and developer proficiency
 - **Sprint ratio depends heavily on work type** — Can't use one sprint to predict another
 - **Velocity modes**: "Discovery mode" (~20 pts/week) vs "Cruising mode" (~30 pts/week) vs "Execution mode" (~36 pts/week)
@@ -1977,6 +2125,7 @@ Both were targeted fixes in the import service: #332 required explicit cascade p
 - **Scope discipline (0.1.10) is as powerful as execution skill** — selecting 13 of 32 available points enabled 0.15x execution; the deferred 19 points would have diluted focus without user-facing benefit
 - **"Real-life QA sprint" is a distinct sprint type (0.1.11)** — intensive app usage → issue discovery → batch fix; expect 0.15-0.25x ratio, ~28 pts/week; app usage days are not wasted, they're the specification phase
 - **Post-usage bugs execute at 0.10x** — root cause is known before the editor opens; no debugging phase needed
+- **"Committed ≠ validated" is a recurring failure mode** — confirmed in 0.1.12 (#313–#315, servings chain) and 0.2.2 (#341, meal ordering); fast execution through a bug without device testing generates deferred work, not completed work; "tested on device" must be a non-optional AC item for any data-facing or display-ordering fix
 - **"100% completion" can mask validation debt (0.1.12)** — all 17 pts closed but 3 follow-up issues (#313-#315) emerged from skipped device testing on the servings chain; completion rate ≠ feature completeness
 - **Dependency chains have diminishing complexity (0.1.12)** — #304 (anchor, 3pts, 0.22x) established the pattern; #305 and #306 followed it at ~0.16x; discount 2nd+ chain issues by 30-50%
 - **UI micro-issues are uncalibrateable at 1pt floor (0.1.12)** — bundle as "quick wins block" with 0.5pt flat budget; individual Fibonacci estimation adds no precision for <30-line changes
@@ -2016,6 +2165,8 @@ Use these multipliers when estimating future work:
 | Architecture/feature (junction table, established template) | 1 issue | 0.13x | 0.13x | **NEW**: L-size issues with clear junction table template execute without discovery overhead; don't over-buffer (0.1.13: #311) |
 | Zero-features housekeeping sprint (migration + docs + governance) | 1 sprint | ~0.19x | 0.15-0.25x | **NEW**: Deferred housekeeping issues execute reliably when scope pre-validated; docs fast, migration consolidation moderate (0.1.14) |
 | Emergency P0 patch (known root cause, post-release) | 2 issues | ~0.10x | 0.10x | **NEW**: Same 0.10x rate as post-usage bugs — root cause clear from bug report, no debugging phase; import bugs (0.1.15: #330, #332) |
+| Parser/algorithm bugs (batched cluster, same root cause) | 3 issues | 0.08x | 0.08-0.10x | **NEW**: Same root cause → template set by first fix; discount 2nd+ issues 40-50% vs first; batch on single day (0.2.2: #342, #343, #344) |
+| Testing new algorithm behavior (no established fixtures) | 1 issue | 0.25x | 0.20-0.30x | **NEW**: Distinct from "extend test suite" (0.07-0.10x); dedup/scoring logic requires analytical test design before fixtures can be written (0.2.2: #254) |
 
 **Key Insights from 0.1.7a/b:**
 - **Design system work has its own velocity profile** — 64 points in 7 days (0.11x) reflects both new-type overestimation AND genuine efficiency from clear vision, compound patterns, and effective batching
@@ -2068,6 +2219,12 @@ Use these multipliers when estimating future work:
 - **"Must be last" sequencing constraint is correct for governance issues** — #285 (test governance) captured test counts from all other issues in the milestone; done earlier, it would have been stale immediately
 - **Migration consolidation is permanent, high-leverage simplification** — eliminating 12+ fragmented migration files gives every future migration a clean baseline; do it before adding more migrations, not after
 - **One focused housekeeping sprint outperforms spreading quality work across feature sprints** — dedicated sprint finishes all internal obligations cleanly; interleaved housekeeping dilutes feature sprint focus
+
+**Key Insights from 0.2.2:**
+- **Parser/algorithm bug clusters have their own velocity profile** — when ≥2 bugs share the same root cause domain, the first fix establishes a template; subsequent are adaptations; batch on same day and discount 40–50% for 2nd+ at estimation time
+- **"Committed ≠ validated" confirmed again** — 0.1.12 (servings chain) and 0.2.2 (#341) both show the same failure: fast execution → shipped without device testing → downstream issues; device validation is a non-optional gate for any ordering or display-logic fix
+- **L10n-generated files are a known retrospective analysis distortion** — `app_localizations.dart` inflation can make a simple 1pt fix appear 3× slower than it was; exclude generated files from line counts before attributing high ratios to simple issues
+- **External design tool time (Recraft, Figma) leaves no commit trace** — account explicitly in effective-day calculation during retrospective; treat same as adb friction or planning-only days
 
 **Key Insights from 0.1.15:**
 - **Real seed data is a distinct integration test category** — 0.2.1's first real recipe dataset exposed two P0 import bugs that existed undetected through 50+ sprints; synthetic fixtures don't stress relationship cascade behavior the same way
@@ -2134,11 +2291,12 @@ Use historical velocity data to size future milestones and prevent overcommitmen
 | 0.1.13 | 21 | ~2.7 | ~7.8 | ~30.0 | Within-sprint pattern compounding; L-size arch with clear template; validation debt repaid |
 | 0.1.14 | ~21 | ~4.0 | ~5.25 | ~26.3 | Zero-features housekeeping sprint (retroactive; no commit-level data) |
 | 0.1.15 | — | ~1.0 | — | — | Emergency P0 patch (not a regular sprint; excluded from velocity calculations) |
+| 0.2.2 | 24 | ~3.8 | ~6.3 | ~31.5 | Algorithm tuning + parser bug batch; #341 incomplete (validation debt) |
 
 *\* 0.1.7a excluded from velocity calculations — shared day with 0.1.7b makes weighted-days unreliable.*
 *0.1.15 excluded from velocity calculations — emergency patch, not a regular sprint.*
 
-**Cruising Velocity: 30 points/week** — validated across 0.1.7b–0.1.14 (7 consecutive sprints at 26-36 pts/week).
+**Cruising Velocity: 30 points/week** — validated across 0.1.7b–0.2.2 (8 consecutive sprints at 26-36 pts/week).
 
 **Velocity Modes:**
 - **Discovery mode:** ~20 pts/week (new patterns, complex features, tooling overhead)
@@ -2306,3 +2464,11 @@ Use historical velocity data to size future milestones and prevent overcommitmen
   - New calibration factors: zero-features housekeeping sprint (~0.19x), emergency P0 patch (~0.10x)
   - Updated velocity reference table (added 0.1.13, 0.1.14; excluded 0.1.15 as non-regular sprint)
   - Cruising velocity extended: validated across 0.1.7b–0.1.14 (7 consecutive sprints at 26-36 pts/week)
+- **2026-04-15**: Added 0.2.2 retrospective analysis
+  - Sprint completed: 9 of 10 adjusted issues (24 confirmed pts); #341 committed but unvalidated on device
+  - Effective ratio: ~0.11x (~2.7d tracked / ~3.8d effective); ~31.5 pts/week — cruising range
+  - Key finding: parser bug cluster (#342–#344, 11 pts, 0.08x avg) confirms root-cause-batch pattern; #341 shipped as validation debt (→ #351, #352)
+  - New calibration factors: parser/algorithm same-root-cause cluster (0.08–0.10x); testing new algorithm behavior (0.20–0.30x)
+  - Retrospective methodology note: l10n-generated files (`app_localizations.dart`) inflate line-count proportional allocation; exclude from real-effort line counts
+  - Critical insight reinforced: "Committed ≠ validated" — same failure mode as 0.1.12; device validation is a non-optional AC gate for ordering/display fixes
+  - Cruising velocity extended: validated across 0.1.7b–0.2.2 (8 consecutive sprints at 26-36 pts/week)
