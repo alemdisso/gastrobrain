@@ -1,0 +1,248 @@
+import 'package:flutter/material.dart';
+import '../models/ingredient.dart';
+import '../models/recipe.dart';
+import '../database/database_helper.dart';
+import '../core/di/service_provider.dart';
+import '../l10n/app_localizations.dart';
+import '../screens/recipe_details_screen.dart';
+import '../core/theme/design_tokens.dart';
+
+class IngredientDetailScreen extends StatefulWidget {
+  final Ingredient ingredient;
+  final DatabaseHelper? databaseHelper;
+
+  const IngredientDetailScreen({
+    super.key,
+    required this.ingredient,
+    this.databaseHelper,
+  });
+
+  @override
+  State<IngredientDetailScreen> createState() => _IngredientDetailScreenState();
+}
+
+class _IngredientDetailScreenState extends State<IngredientDetailScreen>
+    with SingleTickerProviderStateMixin {
+  late DatabaseHelper _dbHelper;
+  late TabController _tabController;
+
+  List<Map<String, dynamic>> _usedInRecipes = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _dbHelper = widget.databaseHelper ?? ServiceProvider.database.dbHelper;
+    _tabController = TabController(length: 1, vsync: this);
+    _tabController.addListener(() {
+      if (mounted) setState(() {});
+    });
+    _loadUsedInData();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadUsedInData() async {
+    setState(() => _isLoading = true);
+    final rows =
+        await _dbHelper.getRecipesByIngredientId(widget.ingredient.id);
+    if (mounted) {
+      setState(() {
+        _usedInRecipes = rows;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.ingredient.name),
+        leading: const BackButton(),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: [
+            Tab(icon: const Icon(Icons.menu_book), text: l10n.usedIn),
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _UsedInTab(
+            isLoading: _isLoading,
+            recipes: _usedInRecipes,
+            l10n: l10n,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _UsedInTab extends StatelessWidget {
+  final bool isLoading;
+  final List<Map<String, dynamic>> recipes;
+  final AppLocalizations l10n;
+
+  const _UsedInTab({
+    required this.isLoading,
+    required this.recipes,
+    required this.l10n,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (recipes.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(DesignTokens.spacingLg),
+          child: Text(
+            l10n.noRecipesUsingIngredient,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            DesignTokens.spacingMd,
+            DesignTokens.spacingMd,
+            DesignTokens.spacingMd,
+            DesignTokens.spacingSm,
+          ),
+          child: Chip(
+            label: Text(l10n.usedInNRecipes(recipes.length)),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: recipes.length,
+            itemBuilder: (context, index) {
+              return _RecipeCard(row: recipes[index], l10n: l10n);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RecipeCard extends StatelessWidget {
+  final Map<String, dynamic> row;
+  final AppLocalizations l10n;
+
+  const _RecipeCard({required this.row, required this.l10n});
+
+  @override
+  Widget build(BuildContext context) {
+    final recipe = Recipe.fromMap(row);
+    final usageQuantity = row['usage_quantity'];
+    final ingredientCount = (row['ingredient_count'] as int?) ?? 0;
+    final isIncomplete = ingredientCount < 3;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(
+        horizontal: DesignTokens.spacingMd,
+        vertical: DesignTokens.spacingXs,
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(DesignTokens.borderRadiusMedium),
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => RecipeDetailsScreen(recipe: recipe),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(DesignTokens.spacingMd),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      recipe.name,
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  if (isIncomplete)
+                    Chip(
+                      label: Text(
+                        l10n.incompleteRecipe,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.white,
+                        ),
+                      ),
+                      backgroundColor: Colors.orange,
+                      padding: EdgeInsets.zero,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                ],
+              ),
+              const SizedBox(height: DesignTokens.spacingXs),
+              Row(
+                children: [
+                  Chip(
+                    label: Text(
+                      recipe.category
+                          .getLocalizedDisplayName(context),
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                    padding: EdgeInsets.zero,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  const SizedBox(width: DesignTokens.spacingSm),
+                  Text(
+                    '${'★' * recipe.difficulty}${'☆' * (5 - recipe.difficulty)}',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontSize: 12,
+                    ),
+                  ),
+                  if (recipe.rating > 0) ...[
+                    const SizedBox(width: DesignTokens.spacingSm),
+                    Text(
+                      '${'★' * recipe.rating}${'☆' * (5 - recipe.rating)}',
+                      style: const TextStyle(
+                        color: Colors.amber,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              if (usageQuantity != null)
+                Padding(
+                  padding:
+                      const EdgeInsets.only(top: DesignTokens.spacingXs),
+                  child: Text(
+                    'Qty: $usageQuantity',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

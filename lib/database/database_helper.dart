@@ -1102,6 +1102,20 @@ class DatabaseHelper {
     ''', [recipeId]);
   }
 
+  Future<List<Map<String, dynamic>>> getRecipesByIngredientId(
+      String ingredientId) async {
+    final Database db = await database;
+    return await db.rawQuery('''
+      SELECT r.*,
+        ri.quantity AS usage_quantity,
+        (SELECT COUNT(*) FROM recipe_ingredients WHERE recipe_id = r.id) AS ingredient_count
+      FROM recipes r
+      JOIN recipe_ingredients ri ON r.id = ri.recipe_id
+      WHERE ri.ingredient_id = ?
+      ORDER BY r.name ASC
+    ''', [ingredientId]);
+  }
+
   Future<int> updateRecipeIngredient(RecipeIngredient recipeIngredient) async {
     final Database db = await database;
     return await db.update(

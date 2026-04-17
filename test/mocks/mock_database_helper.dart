@@ -889,6 +889,27 @@ class MockDatabaseHelper implements DatabaseHelper {
   }
 
   @override
+  Future<List<Map<String, dynamic>>> getRecipesByIngredientId(
+      String ingredientId) async {
+    final matchingRIs = _recipeIngredients.values
+        .where((ri) => ri.ingredientId == ingredientId)
+        .toList();
+
+    return matchingRIs.map((ri) {
+      final recipe = _recipes[ri.recipeId];
+      if (recipe == null) return null;
+      final ingredientCount = _recipeIngredients.values
+          .where((r) => r.recipeId == ri.recipeId)
+          .length;
+      final map = recipe.toMap();
+      map['usage_quantity'] = ri.quantity;
+      map['ingredient_count'] = ingredientCount;
+      return map;
+    }).whereType<Map<String, dynamic>>().toList()
+      ..sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
+  }
+
+  @override
   Future<int> getRecipesCount() async {
     return _recipes.length;
   }

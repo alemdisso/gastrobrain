@@ -3,6 +3,8 @@ import 'package:gastrobrain/models/ingredient.dart';
 import 'package:gastrobrain/models/ingredient_category.dart';
 import 'package:gastrobrain/models/measurement_unit.dart';
 import 'package:gastrobrain/models/protein_type.dart';
+import 'package:gastrobrain/models/recipe.dart';
+import 'package:gastrobrain/models/recipe_ingredient.dart';
 import 'package:gastrobrain/core/errors/gastrobrain_exceptions.dart';
 import '../mocks/mock_database_helper.dart';
 
@@ -289,6 +291,45 @@ void main() {
         final ingredients = await dbHelper.getAllIngredients();
         expect(ingredients.length, 0);
       });
+    });
+  });
+
+  group('getRecipesByIngredientId (#193)', () {
+    test('returns empty list for ingredient not used in any recipe', () async {
+      final rows = await dbHelper.getRecipesByIngredientId('unused-ing');
+      expect(rows, isEmpty);
+    });
+
+    test('returns recipe with usage_quantity and ingredient_count fields',
+        () async {
+      final ingredient = Ingredient(
+        id: 'ing-1',
+        name: 'Salt',
+        category: IngredientCategory.seasoning,
+      );
+      final recipe = Recipe(
+        id: 'r-1',
+        name: 'Pasta',
+        createdAt: DateTime(2024, 1, 1),
+        notes: '',
+      );
+      dbHelper.recipes[recipe.id!] = recipe;
+      await dbHelper.addIngredientToRecipe(
+        RecipeIngredient(
+          id: 'ri-1',
+          recipeId: recipe.id!,
+          ingredientId: ingredient.id,
+          quantity: 2.5,
+        ),
+      );
+
+      final rows =
+          await dbHelper.getRecipesByIngredientId(ingredient.id);
+
+      expect(rows.length, 1);
+      expect(rows.first['name'], 'Pasta');
+      expect(rows.first['usage_quantity'], 2.5);
+      expect(rows.first['ingredient_count'], 1);
     });
   });
 }

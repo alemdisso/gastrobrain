@@ -2533,6 +2533,11 @@
         "type": "String"
       }
     }
-  }
+  },
+
+  "usedIn": "Usado Em",
+  "usedInNRecipes": "Usado em {count} receitas",
+  "noRecipesUsingIngredient": "Este ingrediente ainda não foi adicionado a nenhuma receita.",
+  "incompleteRecipe": "Incompleta"
 
 }
