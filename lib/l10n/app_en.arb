@@ -2573,6 +2573,28 @@
         "type": "String"
       }
     }
+  },
+
+  "usedIn": "Used In",
+  "@usedIn": {
+    "description": "Tab label for the Used In tab in ingredient detail screen"
+  },
+  "usedInNRecipes": "Used in {count} recipes",
+  "@usedInNRecipes": {
+    "description": "Usage count chip in ingredient detail Used In tab",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noRecipesUsingIngredient": "This ingredient hasn't been added to any recipes yet.",
+  "@noRecipesUsingIngredient": {
+    "description": "Empty state message in ingredient detail Used In tab"
+  },
+  "incompleteRecipe": "Incomplete",
+  "@incompleteRecipe": {
+    "description": "Chip label for recipes with fewer than 3 ingredients"
   }
 
 }

@@ -10,6 +10,7 @@ import '../widgets/add_new_ingredient_dialog.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/services/snackbar_service.dart';
 import '../l10n/app_localizations.dart';
+import '../screens/ingredient_detail_screen.dart';
 
 class IngredientsScreen extends StatefulWidget {
   const IngredientsScreen({super.key});
@@ -270,7 +271,16 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
                               return Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Padding(
+                                  InkWell(
+                                    onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => IngredientDetailScreen(
+                                          ingredient: ingredient,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Padding(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 16,
                                       vertical: 8,
@@ -343,6 +353,7 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
                                         ),
                                       ],
                                     ),
+                                  ),
                                   ),
                                   const Divider(height: 1),
                                 ],
