@@ -2,20 +2,22 @@ import 'package:flutter/material.dart';
 import '../../core/theme/design_tokens.dart';
 import '../../l10n/app_localizations.dart';
 
-/// Quick actions row on the dashboard.
+/// Quick actions grid on the dashboard.
 ///
-/// Displays 3 action buttons for common workflows:
-/// This Week, Add Recipe, Browse Recipes.
+/// Displays 4 action buttons (2×2) for common workflows:
+/// Plan Today, View This Week, Add Recipe, Browse Recipes.
 class QuickActionsPanel extends StatelessWidget {
   final VoidCallback onViewThisWeek;
   final VoidCallback onAddRecipe;
   final VoidCallback onBrowseRecipes;
+  final VoidCallback? onPlanToday;
 
   const QuickActionsPanel({
     super.key,
     required this.onViewThisWeek,
     required this.onAddRecipe,
     required this.onBrowseRecipes,
+    this.onPlanToday,
   });
 
   @override
@@ -34,13 +36,26 @@ class QuickActionsPanel extends StatelessWidget {
           children: [
             Expanded(
               child: _ActionCard(
+                icon: Icons.today,
+                label: l10n.planTodaysMeal,
+                color: DesignTokens.success,
+                onTap: onPlanToday,
+              ),
+            ),
+            const SizedBox(width: DesignTokens.spacingSm),
+            Expanded(
+              child: _ActionCard(
                 icon: Icons.date_range,
                 label: l10n.viewThisWeek,
                 color: DesignTokens.accent,
                 onTap: onViewThisWeek,
               ),
             ),
-            const SizedBox(width: DesignTokens.spacingSm),
+          ],
+        ),
+        const SizedBox(height: DesignTokens.spacingSm),
+        Row(
+          children: [
             Expanded(
               child: _ActionCard(
                 icon: Icons.add_circle_outline,
@@ -69,7 +84,7 @@ class _ActionCard extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const _ActionCard({
     required this.icon,

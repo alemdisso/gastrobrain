@@ -46,10 +46,10 @@ class WeeklyPlanScreen extends StatefulWidget {
   });
 
   @override
-  State<WeeklyPlanScreen> createState() => _WeeklyPlanScreenState();
+  State<WeeklyPlanScreen> createState() => WeeklyPlanScreenState();
 }
 
-class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
+class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   late DatabaseHelper _dbHelper;
   late RecommendationService _recommendationService;
   late MealPlanAnalysisService _mealPlanAnalysis;
@@ -67,6 +67,8 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   MealPlanSummary? _summaryData;
   // Bottom sheet state
   bool _isSummarySheetOpen = false;
+  // Pending scroll-to-today (set by scrollToToday(), consumed after _loadData)
+  bool _pendingScrollToToday = false;
 
   @override
   void initState() {
@@ -150,6 +152,33 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     }
   }
 
+  /// Called by HomeScreen when the user taps "Plan Today" on the Dashboard.
+  /// Ensures the current week is displayed, then scrolls to today's row.
+  void scrollToToday() {
+    if (_currentWeekContext != TimeContext.current) {
+      _jumpToCurrentWeek(); // triggers _loadData()
+    }
+    _pendingScrollToToday = true;
+    if (_currentWeekContext == TimeContext.current && !_isLoading) {
+      _scheduleScrollToToday();
+    }
+  }
+
+  void _scheduleScrollToToday() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) return;
+      final dayIndex = (DateTime.now().weekday + 2) % 7;
+      if (dayIndex == 0) return; // Friday — already at top
+      final maxExtent = _scrollController.position.maxScrollExtent;
+      if (maxExtent == 0) return; // Failsafe: layout not ready
+      _scrollController.animateTo(
+        (dayIndex / 6.0) * maxExtent,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
   Future<void> _loadData() async {
     _recommendationCache.clearAllCache();
     setState(() {
@@ -177,6 +206,12 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
 
         // Calculate summary data
         await _calculateSummaryData();
+
+        // Consume pending scroll-to-today now that the ListView is rendered
+        if (_pendingScrollToToday) {
+          _pendingScrollToToday = false;
+          _scheduleScrollToToday();
+        }
       }
     } catch (e) {
       if (mounted) {
