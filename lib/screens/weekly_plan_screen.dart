@@ -63,12 +63,16 @@ class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   List<Recipe> _availableRecipes = [];
   List<Ingredient> _availableIngredients = [];
   final ScrollController _scrollController = ScrollController();
+
+  /// Exposed for widget tests only — do not use in production code.
+  ScrollController get scrollControllerForTest => _scrollController;
   // Summary data (will be used in Summary bottom sheet - Checkpoint 3)
   MealPlanSummary? _summaryData;
   // Bottom sheet state
   bool _isSummarySheetOpen = false;
   // Pending scroll-to-today (set by scrollToToday(), consumed after _loadData)
   bool _pendingScrollToToday = false;
+  DateTime? _pendingScrollDate;
 
   @override
   void initState() {
@@ -154,20 +158,23 @@ class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
 
   /// Called by HomeScreen when the user taps "Plan Today" on the Dashboard.
   /// Ensures the current week is displayed, then scrolls to today's row.
-  void scrollToToday() {
+  /// Called by HomeScreen when the user taps "Plan Today" on the Dashboard.
+  /// [today] is injectable for testing; defaults to DateTime.now().
+  void scrollToToday({DateTime? today}) {
     if (_currentWeekContext != TimeContext.current) {
       _jumpToCurrentWeek(); // triggers _loadData()
     }
     _pendingScrollToToday = true;
+    _pendingScrollDate = today ?? DateTime.now();
     if (_currentWeekContext == TimeContext.current && !_isLoading) {
-      _scheduleScrollToToday();
+      _scheduleScrollToToday(_pendingScrollDate!);
     }
   }
 
-  void _scheduleScrollToToday() {
+  void _scheduleScrollToToday(DateTime today) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_scrollController.hasClients) return;
-      final dayIndex = (DateTime.now().weekday + 2) % 7;
+      final dayIndex = (today.weekday + 2) % 7;
       if (dayIndex == 0) return; // Friday — already at top
       final maxExtent = _scrollController.position.maxScrollExtent;
       if (maxExtent == 0) return; // Failsafe: layout not ready
@@ -210,7 +217,8 @@ class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         // Consume pending scroll-to-today now that the ListView is rendered
         if (_pendingScrollToToday) {
           _pendingScrollToToday = false;
-          _scheduleScrollToToday();
+          _scheduleScrollToToday(_pendingScrollDate ?? DateTime.now());
+          _pendingScrollDate = null;
         }
       }
     } catch (e) {
