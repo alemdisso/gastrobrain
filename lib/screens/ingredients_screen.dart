@@ -267,45 +267,85 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
                             itemBuilder: (context, index) {
                               final ingredient =
                                   _getFilteredIngredients()[index];
-                              return ListTile(
-                                title: Text(ingredient.name),
-                                subtitle: Text(
-                                  _buildIngredientSubtitle(context, ingredient),
-                                ),
-                                trailing: PopupMenuButton(
-                                  onSelected: (value) {
-                                    switch (value) {
-                                      case 'edit':
-                                        _editIngredient(ingredient);
-                                        break;
-                                      case 'delete':
-                                        _deleteIngredient(ingredient);
-                                        break;
-                                    }
-                                  },
-                                  itemBuilder: (context) => [
-                                    PopupMenuItem(
-                                      value: 'edit',
-                                      child: Row(
-                                        children: [
-                                          const Icon(Icons.edit),
-                                          const SizedBox(width: 8),
-                                          Text(AppLocalizations.of(context)!.edit),
-                                        ],
-                                      ),
+                              return Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 8,
                                     ),
-                                    PopupMenuItem(
-                                      value: 'delete',
-                                      child: Row(
-                                        children: [
-                                          const Icon(Icons.delete),
-                                          const SizedBox(width: 8),
-                                          Text(AppLocalizations.of(context)!.delete),
-                                        ],
-                                      ),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                ingredient.name,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium
+                                                    ?.copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                    ),
+                                              ),
+                                              Text(
+                                                _buildIngredientSubtitle(
+                                                    context, ingredient),
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        PopupMenuButton(
+                                          onSelected: (value) {
+                                            switch (value) {
+                                              case 'edit':
+                                                _editIngredient(ingredient);
+                                                break;
+                                              case 'delete':
+                                                _deleteIngredient(ingredient);
+                                                break;
+                                            }
+                                          },
+                                          itemBuilder: (context) => [
+                                            PopupMenuItem(
+                                              value: 'edit',
+                                              child: Row(
+                                                children: [
+                                                  const Icon(Icons.edit),
+                                                  const SizedBox(width: 8),
+                                                  Text(AppLocalizations.of(
+                                                          context)!
+                                                      .edit),
+                                                ],
+                                              ),
+                                            ),
+                                            PopupMenuItem(
+                                              value: 'delete',
+                                              child: Row(
+                                                children: [
+                                                  const Icon(Icons.delete),
+                                                  const SizedBox(width: 8),
+                                                  Text(AppLocalizations.of(
+                                                          context)!
+                                                      .delete),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  const Divider(height: 1),
+                                ],
                               );
                             },
                           ),

@@ -230,88 +230,121 @@ class _RecipeIngredientsScreenState extends State<RecipeIngredientsScreen> {
                                 effectiveUnitString;
 
                         return Card(
+                          elevation: 0,
                           margin: const EdgeInsets.symmetric(
                             horizontal: 8,
-                            vertical: 4,
+                            vertical: 2,
                           ),
-                          child: ListTile(
-                            leading: Icon(
-                              proteinType != null
-                                  ? Icons.egg_alt
-                                  : Icons.food_bank,
-                              color: proteinType?.isMainProtein == true
-                                  ? Colors.red
-                                  : null,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
                             ),
-                            title: Text(ingredient['name']),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Row(
                               children: [
-                                // Hide quantity/unit for zero quantities ("to taste" ingredients)
-                                if (ingredient['quantity'] != 0)
-                                  Row(
+                                Icon(
+                                  proteinType != null
+                                      ? Icons.egg_alt
+                                      : Icons.food_bank,
+                                  size: 20,
+                                  color: proteinType?.isMainProtein == true
+                                      ? Colors.red
+                                      : null,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(
-                                        '${QuantityFormatter.format(ingredient['quantity'])} $localizedUnit',
+                                        ingredient['name'],
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w500,
+                                            ),
                                       ),
-                                      if (ingredient['unit_override'] != null)
-                                        Padding(
-                                          padding: const EdgeInsets.only(left: 4),
-                                          child: Tooltip(
-                                            message: AppLocalizations.of(context)!
-                                                .unitOverridden(MeasurementUnit
-                                                            .fromString(
-                                                                ingredient[
-                                                                    'unit'])
-                                                        ?.getLocalizedDisplayName(
-                                                            context) ??
-                                                    ingredient['unit'] ??
-                                                    AppLocalizations.of(context)!
-                                                        .noUnit),
-                                          ),
+                                      // Hide quantity/unit for zero quantities ("to taste" ingredients)
+                                      if (ingredient['quantity'] != 0)
+                                        Row(
+                                          children: [
+                                            Text(
+                                              '${QuantityFormatter.format(ingredient['quantity'])} $localizedUnit',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall,
+                                            ),
+                                            if (ingredient['unit_override'] !=
+                                                null)
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    left: 4),
+                                                child: Tooltip(
+                                                  message: AppLocalizations.of(
+                                                          context)!
+                                                      .unitOverridden(MeasurementUnit
+                                                                  .fromString(
+                                                                      ingredient[
+                                                                          'unit'])
+                                                              ?.getLocalizedDisplayName(
+                                                                  context) ??
+                                                          ingredient['unit'] ??
+                                                          AppLocalizations.of(
+                                                                  context)!
+                                                              .noUnit),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      if (ingredient['preparation_notes'] !=
+                                          null)
+                                        Text(
+                                          ingredient['preparation_notes'],
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall,
                                         ),
                                     ],
                                   ),
-                                if (ingredient['preparation_notes'] != null)
-                                  Text(
-                                    ingredient['preparation_notes'],
-                                    style:
-                                        Theme.of(context).textTheme.bodySmall,
-                                  ),
-                              ],
-                            ),
-                            trailing: PopupMenuButton<String>(
-                              onSelected: (value) {
-                                switch (value) {
-                                  case 'delete':
-                                    _deleteIngredient(ingredient);
-                                    break;
-                                  case 'edit':
-                                    _editIngredient(ingredient);
-                                    break;
-                                }
-                              },
-                              itemBuilder: (context) => [
-                                PopupMenuItem(
-                                  value: 'edit',
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.edit),
-                                      const SizedBox(width: 8),
-                                      Text(AppLocalizations.of(context)!.edit),
-                                    ],
-                                  ),
                                 ),
-                                PopupMenuItem(
-                                  value: 'delete',
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.delete),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                          AppLocalizations.of(context)!.delete),
-                                    ],
-                                  ),
+                                PopupMenuButton<String>(
+                                  onSelected: (value) {
+                                    switch (value) {
+                                      case 'delete':
+                                        _deleteIngredient(ingredient);
+                                        break;
+                                      case 'edit':
+                                        _editIngredient(ingredient);
+                                        break;
+                                    }
+                                  },
+                                  itemBuilder: (context) => [
+                                    PopupMenuItem(
+                                      value: 'edit',
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.edit),
+                                          const SizedBox(width: 8),
+                                          Text(AppLocalizations.of(context)!
+                                              .edit),
+                                        ],
+                                      ),
+                                    ),
+                                    PopupMenuItem(
+                                      value: 'delete',
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.delete),
+                                          const SizedBox(width: 8),
+                                          Text(AppLocalizations.of(context)!
+                                              .delete),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
