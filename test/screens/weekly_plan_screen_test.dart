@@ -421,9 +421,9 @@ void main() {
       await tester.tap(mealSlot);
       await tester.pumpAndSettle();
 
-      // 3. Verify the Meal Options Dialog opened
-      expect(find.byType(SimpleDialog), findsOneWidget,
-          reason: 'Meal Options Dialog should be open');
+      // 3. Verify the Meal Options bottom sheet opened
+      expect(find.byType(BottomSheet), findsOneWidget,
+          reason: 'Meal Options bottom sheet should be open');
 
       // 4. Tap "Edit Cooked Meal" option
       final editOption = find.text('Edit Cooked Meal');

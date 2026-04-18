@@ -86,8 +86,8 @@ void main() {
       expect(find.text(sideRecipe3.name), findsOneWidget);
 
       // Verify action buttons (multi-recipe mode)
-      expect(find.text('Voltar'), findsOneWidget);
-      expect(find.text('Salvar Refeição'), findsOneWidget);
+      expect(find.text('Cancelar'), findsOneWidget);
+      expect(find.text('Concluído'), findsOneWidget);
     });
 
     testWidgets('returns selected recipes on save',
@@ -105,13 +105,14 @@ void main() {
       await tester.tap(find.text(sideRecipe1.name));
       await tester.pumpAndSettle();
 
-      // Save
-      await DialogTestHelpers.tapDialogButton(tester, 'Salvar Refeição');
+      // Confirm selection
+      await DialogTestHelpers.tapDialogButton(tester, 'Concluído');
       await tester.pumpAndSettle();
 
       // Verify return value
       expect(result.hasValue, isTrue);
       expect(result.value, isNotNull);
+      expect(result.value!['action'], equals('confirm'));
       expect(result.value!['primaryRecipe'], equals(primaryRecipe));
       expect(result.value!['additionalRecipes'], isA<List<Recipe>>());
       expect((result.value!['additionalRecipes'] as List<Recipe>).length,
@@ -265,8 +266,8 @@ void main() {
       await tester.tap(find.text(sideRecipe2.name));
       await tester.pumpAndSettle();
 
-      // Save
-      await DialogTestHelpers.tapDialogButton(tester, 'Salvar Refeição');
+      // Confirm selection
+      await DialogTestHelpers.tapDialogButton(tester, 'Concluído');
       await tester.pumpAndSettle();
 
       // Verify both recipes in return value
@@ -321,7 +322,8 @@ void main() {
       expect(find.text(sideRecipe1.name), findsOneWidget);
     });
 
-    testWidgets('returns null when cancelled', (WidgetTester tester) async {
+    testWidgets('Concluído returns confirm action with current selection',
+        (WidgetTester tester) async {
       final result = await DialogTestHelpers.openDialogAndCapture<Map>(
         tester,
         dialogBuilder: (context) => AddSideDishDialog(
@@ -331,13 +333,29 @@ void main() {
         ),
       );
 
-      // Cancel
-      await DialogTestHelpers.tapDialogButton(tester, 'Voltar');
+      await DialogTestHelpers.tapDialogButton(tester, 'Concluído');
       await tester.pumpAndSettle();
 
-      // Verify null return
+      expect(result.hasValue, isTrue);
+      expect(result.value!['action'], equals('confirm'));
+      expect(result.value!['additionalRecipes'], isA<List<Recipe>>());
+    });
+
+    testWidgets('Cancelar returns null without saving selection',
+        (WidgetTester tester) async {
+      final result = await DialogTestHelpers.openDialogAndCapture<Map>(
+        tester,
+        dialogBuilder: (context) => AddSideDishDialog(
+          availableRecipes: availableRecipes,
+          primaryRecipe: primaryRecipe,
+          excludeRecipes: [primaryRecipe],
+        ),
+      );
+
+      await DialogTestHelpers.tapDialogButton(tester, 'Cancelar');
+      await tester.pumpAndSettle();
+
       DialogTestHelpers.verifyDialogCancelled(result);
-      DialogTestHelpers.verifyDialogClosed<AddSideDishDialog>();
     });
 
     testWidgets('shows current side dishes correctly',
@@ -467,9 +485,9 @@ void main() {
       // Note: This text appears twice - once as title and once as section header
       expect(find.text('Adicionar Acompanhamento'), findsNWidgets(2));
 
-      // Verify only Cancel button (no Save button in single mode)
+      // Verify only Cancel button (no Done button in single mode)
       expect(find.text('Cancelar'), findsOneWidget);
-      expect(find.text('Salvar Refeição'), findsNothing);
+      expect(find.text('Concluído'), findsNothing);
     });
 
     testWidgets('returns recipe immediately on selection',
@@ -842,7 +860,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Cancel
-      await DialogTestHelpers.tapDialogButton(tester, 'Voltar');
+      await DialogTestHelpers.tapDialogButton(tester, 'Cancelar');
       await tester.pumpAndSettle();
 
       // Verify dialog closed without errors
@@ -917,8 +935,8 @@ void main() {
       await tester.tap(find.text('Show Dialog'));
       await tester.pumpAndSettle();
 
-      // Save
-      await DialogTestHelpers.tapDialogButton(tester, 'Salvar Refeição');
+      // Confirm
+      await DialogTestHelpers.tapDialogButton(tester, 'Concluído');
       await tester.pumpAndSettle();
 
       // Verify dialog closed without errors

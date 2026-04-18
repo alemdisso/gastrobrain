@@ -293,10 +293,12 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
   }
 
   Widget _buildMenu() {
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // Primary recipe header
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -316,88 +318,154 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
-          if (_additionalRecipes.isNotEmpty) ...[
-            Text(
-              AppLocalizations.of(context)!.sideDishesLabel,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+          // Acompanhamentos section — visible upfront, not buried in list
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              border: Border.all(
+                  color: Theme.of(context).colorScheme.outlineVariant),
+              borderRadius: BorderRadius.circular(8),
             ),
-            const SizedBox(height: 8),
-            ..._additionalRecipes.map((recipe) => ListTile(
-                  leading:
-                      const Icon(Icons.restaurant_menu, color: Colors.grey),
-                  title: Text(recipe.name),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.remove_circle_outline),
-                    onPressed: () => setState(() {
-                      _additionalRecipes.remove(recipe);
-                    }),
-                  ),
-                  contentPadding: EdgeInsets.zero,
-                )),
-            const SizedBox(height: 16),
-          ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.completeMealSection,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
 
-          if (_simpleSides.isNotEmpty) ...[
-            Text(
-              AppLocalizations.of(context)!.simpleSidesLabel,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+                // Existing recipe side dishes
+                if (_additionalRecipes.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  ..._additionalRecipes.map((recipe) => Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.restaurant_menu,
+                                size: 16, color: Colors.grey),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(recipe.name,
+                                  style:
+                                      Theme.of(context).textTheme.bodySmall),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close, size: 18),
+                              tooltip: '${l10n.remove} ${recipe.name}',
+                              visualDensity: VisualDensity.compact,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              onPressed: () => setState(
+                                  () => _additionalRecipes.remove(recipe)),
+                            ),
+                          ],
+                        ),
+                      )),
+                ],
+
+                // Existing simple sides
+                if (_simpleSides.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  ..._simpleSides.map((side) => Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.eco_outlined,
+                                size: 16, color: Colors.grey),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(_resolveSideName(side),
+                                  style:
+                                      Theme.of(context).textTheme.bodySmall),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close, size: 18),
+                              tooltip:
+                                  '${l10n.remove} ${_resolveSideName(side)}',
+                              visualDensity: VisualDensity.compact,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              onPressed: () => setState(
+                                  () => _simpleSides.remove(side)),
+                            ),
+                          ],
+                        ),
+                      )),
+                ],
+
+                const SizedBox(height: 8),
+
+                // Add recipe side — OutlinedButton, full-width, immediately visible
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    key: const Key('recipe_selection_add_side_dish_button'),
+                    icon: const Icon(Icons.add, size: 18),
+                    label: Text(_additionalRecipes.isNotEmpty
+                        ? l10n.manageSideDishes
+                        : l10n.addSideDishes),
+                    onPressed: _showEnhancedSideDishDialog,
+                  ),
+                ),
+                const SizedBox(height: 6),
+
+                // Add simple ingredient side — secondary OutlinedButton
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    key: const Key('recipe_selection_add_simple_side_button'),
+                    icon: const Icon(Icons.add_shopping_cart, size: 18),
+                    label: Text(_simpleSides.isNotEmpty
+                        ? l10n.manageSimpleSides
+                        : l10n.addSimpleSide),
+                    onPressed: _showAddSimpleSideDialog,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            ..._simpleSides.map((side) => ListTile(
-                  leading: const Icon(Icons.eco_outlined, color: Colors.grey),
-                  title: Text(_resolveSideName(side)),
-                  subtitle: _buildSideSubtitle(side),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.remove_circle_outline),
-                    onPressed: () => setState(() => _simpleSides.remove(side)),
-                  ),
-                  contentPadding: EdgeInsets.zero,
-                )),
-            const SizedBox(height: 16),
-          ],
+          ),
+          const SizedBox(height: 12),
 
+          // Servings stepper
           ServingsStepper(
             key: const Key('recipe_selection_planned_servings_stepper'),
             value: _plannedServings,
             onChanged: (v) => setState(() => _plannedServings = v),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
 
-          ListTile(
-            leading: const Icon(Icons.save),
-            title: Text(AppLocalizations.of(context)!.save),
-            subtitle:
-                Text(AppLocalizations.of(context)!.addThisRecipeToMealPlan),
-            onTap: () => Navigator.pop(context, {
-              'primaryRecipe': _selectedRecipe!,
-              'additionalRecipes': _additionalRecipes,
-              'plannedServings': _plannedServings,
-              'simpleSides': _simpleSides,
-            }),
+          // Save — primary action, full-width ElevatedButton
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              key: const Key('recipe_selection_save_button'),
+              icon: const Icon(Icons.save),
+              label: Text(l10n.saveMeal),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              onPressed: () => Navigator.pop(context, {
+                'primaryRecipe': _selectedRecipe!,
+                'additionalRecipes': _additionalRecipes,
+                'plannedServings': _plannedServings,
+                'simpleSides': _simpleSides,
+              }),
+            ),
           ),
-          ListTile(
-            leading: const Icon(Icons.add),
-            title: Text(_additionalRecipes.isNotEmpty
-                ? AppLocalizations.of(context)!.manageSideDishes
-                : AppLocalizations.of(context)!.addSideDishes),
-            subtitle:
-                Text(AppLocalizations.of(context)!.addMoreRecipesToThisMeal),
-            onTap: () => _showEnhancedSideDishDialog(),
-          ),
-          ListTile(
-            leading: const Icon(Icons.add_shopping_cart),
-            title: Text(_simpleSides.isNotEmpty
-                ? AppLocalizations.of(context)!.manageSimpleSides
-                : AppLocalizations.of(context)!.addSimpleSide),
-            onTap: _showAddSimpleSideDialog,
-          ),
-          ListTile(
-            leading: const Icon(Icons.arrow_back),
-            title: Text(AppLocalizations.of(context)!.back),
-            subtitle: Text(AppLocalizations.of(context)!.chooseDifferentRecipe),
-            onTap: () => setState(() {
+          const SizedBox(height: 4),
+
+          // Back — tertiary, text only
+          TextButton.icon(
+            icon: const Icon(Icons.arrow_back, size: 16),
+            label: Text(l10n.back),
+            onPressed: () => setState(() {
               _showingMenu = false;
               _selectedRecipe = null;
             }),
@@ -458,18 +526,6 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
     return side['customName'] as String? ?? '?';
   }
 
-  Widget? _buildSideSubtitle(Map<String, dynamic> side) {
-    final quantity = (side['quantity'] as num?)?.toDouble() ?? 1.0;
-    final unit = side['unit'] as String?;
-    if (unit != null && unit.isNotEmpty) {
-      final qty = quantity == quantity.truncateToDouble()
-          ? quantity.toInt().toString()
-          : quantity.toString();
-      return Text('$qty $unit');
-    }
-    return null;
-  }
-
   Future<void> _showEnhancedSideDishDialog() async {
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
@@ -483,13 +539,12 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
       ),
     );
 
-    if (result != null && mounted) {
-      // The enhanced dialog returns the complete meal composition.
-      // Merge in plannedServings so the caller always receives it.
-      Navigator.pop(context, {
-        ...result,
-        'plannedServings': _plannedServings,
-      });
+    if (result == null || !mounted) return;
+
+    final action = result['action'] as String?;
+    if (action == 'confirm') {
+      final sides = result['additionalRecipes'] as List<Recipe>? ?? [];
+      setState(() => _additionalRecipes = sides);
     }
   }
 

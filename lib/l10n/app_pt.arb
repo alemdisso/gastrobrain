@@ -533,6 +533,10 @@
   "@addSideDishes": {
     "description": "Texto do botão para adicionar acompanhamentos"
   },
+  "completeMealSection": "Complete sua refeição",
+  "@completeMealSection": {
+    "description": "Cabeçalho da seção de acompanhamentos no menu de seleção de receita"
+  },
   "selectRecipe": "Selecionar Receita",
   "@selectRecipe": {
     "description": "Texto do botão para selecionar receita"

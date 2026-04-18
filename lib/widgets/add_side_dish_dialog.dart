@@ -81,8 +81,9 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
     widget.onSideDishesChanged?.call(_currentSideDishes);
   }
 
-  void _saveMeal() {
+  void _confirmSelection() {
     Navigator.of(context).pop({
+      'action': 'confirm',
       'primaryRecipe': widget.primaryRecipe!,
       'additionalRecipes': _currentSideDishes,
     });
@@ -329,12 +330,12 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
       actions: [
         if (isMultiRecipeMode) ...[
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(AppLocalizations.of(context)!.back),
+            onPressed: () => Navigator.of(context).pop(null),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           ElevatedButton(
-            onPressed: _saveMeal,
-            child: Text(AppLocalizations.of(context)!.saveMeal),
+            onPressed: _confirmSelection,
+            child: Text(AppLocalizations.of(context)!.done),
           ),
         ] else ...[
           TextButton(

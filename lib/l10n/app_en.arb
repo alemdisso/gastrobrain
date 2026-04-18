@@ -551,6 +551,10 @@
   "@addSideDishes": {
     "description": "Button text to add side dishes"
   },
+  "completeMealSection": "Complete your meal",
+  "@completeMealSection": {
+    "description": "Section header in recipe selection menu for adding side dishes and simple sides"
+  },
   "selectRecipe": "Select Recipe",
   "@selectRecipe": {
     "description": "Button text to select recipe"
