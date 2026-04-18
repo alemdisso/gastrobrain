@@ -358,52 +358,110 @@ class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     }
 
     // Show options for the existing meal
-    final action = await showDialog<String>(
+    final action = await showModalBottomSheet<String>(
       context: context,
-      builder: (context) => SimpleDialog(
-        title: Text(AppLocalizations.of(context)!.mealOptions),
-        children: [
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(context, 'view'),
-            child: Text(AppLocalizations.of(context)!.viewRecipeDetails),
-          ),
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(context, 'change'),
-            child: Text(AppLocalizations.of(context)!.changeRecipe),
-          ),
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(context, 'manage_recipes'),
-            child: Text(AppLocalizations.of(context)!.manageRecipes),
-          ),
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(context, 'manage_simple_sides'),
-            child: Text(AppLocalizations.of(context)!.manageSimpleSides),
-          ),
-          if (!mealCooked)
-            SimpleDialogOption(
-              onPressed: () => Navigator.pop(context, 'cooked'),
-              child: Text(AppLocalizations.of(context)!.markAsCooked),
-            ),
-          if (mealCooked) ...[
-            SimpleDialogOption(
-              onPressed: () => Navigator.pop(context, 'edit_cooked'),
-              child: Text(AppLocalizations.of(context)!.editCookedMeal),
-            ),
-            SimpleDialogOption(
-              onPressed: () => Navigator.pop(context, 'add_side_dish'),
-              child: Text(AppLocalizations.of(context)!.manageSideDishes),
-            ),
-          ],
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(context, 'remove'),
-            child: Text(AppLocalizations.of(context)!.removeFromPlan),
-          ),
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-        ],
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Handle bar
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  // Section 1 — Side dishes
+                  Text(l10n.completeMealSection,
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color:
+                              Theme.of(context).colorScheme.onSurfaceVariant)),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.restaurant_menu, size: 18),
+                      label: Text(l10n.manageRecipes),
+                      onPressed: () =>
+                          Navigator.pop(context, 'manage_recipes'),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.add_shopping_cart, size: 18),
+                      label: Text(l10n.manageSimpleSides),
+                      onPressed: () =>
+                          Navigator.pop(context, 'manage_simple_sides'),
+                    ),
+                  ),
+                  const Divider(height: 24),
+                  // Section 2 — Actions
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.info_outline),
+                    title: Text(l10n.viewRecipeDetails),
+                    onTap: () => Navigator.pop(context, 'view'),
+                  ),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.swap_horiz),
+                    title: Text(l10n.changeRecipe),
+                    onTap: () => Navigator.pop(context, 'change'),
+                  ),
+                  if (!mealCooked)
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.check_circle_outline),
+                      title: Text(l10n.markAsCooked),
+                      onTap: () => Navigator.pop(context, 'cooked'),
+                    ),
+                  if (mealCooked) ...[
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.edit_outlined),
+                      title: Text(l10n.editCookedMeal),
+                      onTap: () => Navigator.pop(context, 'edit_cooked'),
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.restaurant),
+                      title: Text(l10n.manageSideDishes),
+                      onTap: () => Navigator.pop(context, 'add_side_dish'),
+                    ),
+                  ],
+                  const Divider(height: 24),
+                  // Section 3 — Destructive
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(Icons.delete_outline,
+                        color: Theme.of(context).colorScheme.error),
+                    title: Text(l10n.removeFromPlan,
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.error)),
+                    onTap: () => Navigator.pop(context, 'remove'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
     if (action == null) return;
 
