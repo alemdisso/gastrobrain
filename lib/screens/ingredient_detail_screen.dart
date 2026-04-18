@@ -21,23 +21,28 @@ class IngredientDetailScreen extends StatefulWidget {
   State<IngredientDetailScreen> createState() => _IngredientDetailScreenState();
 }
 
+enum _MealHistoryFilter { last30Days, last3Months, allTime }
+
 class _IngredientDetailScreenState extends State<IngredientDetailScreen>
     with SingleTickerProviderStateMixin {
   late DatabaseHelper _dbHelper;
   late TabController _tabController;
 
   List<Map<String, dynamic>> _usedInRecipes = [];
+  List<Map<String, dynamic>> _mealHistory = [];
+  List<Map<String, dynamic>> _filteredMealHistory = [];
+  _MealHistoryFilter _historyFilter = _MealHistoryFilter.allTime;
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _dbHelper = widget.databaseHelper ?? ServiceProvider.database.dbHelper;
-    _tabController = TabController(length: 1, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       if (mounted) setState(() {});
     });
-    _loadUsedInData();
+    _loadData();
   }
 
   @override
@@ -46,16 +51,44 @@ class _IngredientDetailScreenState extends State<IngredientDetailScreen>
     super.dispose();
   }
 
-  Future<void> _loadUsedInData() async {
+  Future<void> _loadData() async {
     setState(() => _isLoading = true);
-    final rows =
+    final recipes =
         await _dbHelper.getRecipesByIngredientId(widget.ingredient.id);
+    final history =
+        await _dbHelper.getMealHistoryByIngredientId(widget.ingredient.id);
     if (mounted) {
       setState(() {
-        _usedInRecipes = rows;
+        _usedInRecipes = recipes;
+        _mealHistory = history;
+        _filteredMealHistory = history;
         _isLoading = false;
       });
     }
+  }
+
+  void _applyFilter(_MealHistoryFilter filter) {
+    final now = DateTime.now();
+    List<Map<String, dynamic>> filtered;
+    if (filter == _MealHistoryFilter.last30Days) {
+      final cutoff = now.subtract(const Duration(days: 30));
+      filtered = _mealHistory
+          .where((r) =>
+              DateTime.parse(r['cooked_at'] as String).isAfter(cutoff))
+          .toList();
+    } else if (filter == _MealHistoryFilter.last3Months) {
+      final cutoff = now.subtract(const Duration(days: 90));
+      filtered = _mealHistory
+          .where((r) =>
+              DateTime.parse(r['cooked_at'] as String).isAfter(cutoff))
+          .toList();
+    } else {
+      filtered = _mealHistory;
+    }
+    setState(() {
+      _historyFilter = filter;
+      _filteredMealHistory = filtered;
+    });
   }
 
   @override
@@ -69,6 +102,7 @@ class _IngredientDetailScreenState extends State<IngredientDetailScreen>
           controller: _tabController,
           tabs: [
             Tab(icon: const Icon(Icons.menu_book), text: l10n.usedIn),
+            Tab(icon: const Icon(Icons.history), text: l10n.mealHistory),
           ],
         ),
       ),
@@ -78,6 +112,14 @@ class _IngredientDetailScreenState extends State<IngredientDetailScreen>
           _UsedInTab(
             isLoading: _isLoading,
             recipes: _usedInRecipes,
+            l10n: l10n,
+          ),
+          _MealHistoryTab(
+            isLoading: _isLoading,
+            meals: _filteredMealHistory,
+            totalCount: _mealHistory.length,
+            activeFilter: _historyFilter,
+            onFilterChanged: _applyFilter,
             l10n: l10n,
           ),
         ],
@@ -244,5 +286,138 @@ class _RecipeCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _MealHistoryTab extends StatelessWidget {
+  final bool isLoading;
+  final List<Map<String, dynamic>> meals;
+  final int totalCount;
+  final _MealHistoryFilter activeFilter;
+  final ValueChanged<_MealHistoryFilter> onFilterChanged;
+  final AppLocalizations l10n;
+
+  const _MealHistoryTab({
+    required this.isLoading,
+    required this.meals,
+    required this.totalCount,
+    required this.activeFilter,
+    required this.onFilterChanged,
+    required this.l10n,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            DesignTokens.spacingMd,
+            DesignTokens.spacingMd,
+            DesignTokens.spacingMd,
+            DesignTokens.spacingXs,
+          ),
+          child: Wrap(
+            spacing: DesignTokens.spacingXs,
+            children: [
+              FilterChip(
+                label: Text(l10n.filterLast30Days),
+                selected: activeFilter == _MealHistoryFilter.last30Days,
+                onSelected: (_) =>
+                    onFilterChanged(_MealHistoryFilter.last30Days),
+              ),
+              FilterChip(
+                label: Text(l10n.filterLast3Months),
+                selected: activeFilter == _MealHistoryFilter.last3Months,
+                onSelected: (_) =>
+                    onFilterChanged(_MealHistoryFilter.last3Months),
+              ),
+              FilterChip(
+                label: Text(l10n.filterAllTime),
+                selected: activeFilter == _MealHistoryFilter.allTime,
+                onSelected: (_) =>
+                    onFilterChanged(_MealHistoryFilter.allTime),
+              ),
+            ],
+          ),
+        ),
+        if (meals.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: DesignTokens.spacingMd,
+              vertical: DesignTokens.spacingXs,
+            ),
+            child: Chip(
+              label: Text(l10n.usedInNCookedMeals(meals.length)),
+            ),
+          ),
+        if (meals.isEmpty)
+          Expanded(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(DesignTokens.spacingLg),
+                child: Text(
+                  l10n.noMealsWithIngredient,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
+            ),
+          )
+        else
+          Expanded(
+            child: ListView.builder(
+              itemCount: meals.length,
+              itemBuilder: (context, index) {
+                return _MealHistoryTile(row: meals[index], l10n: l10n);
+              },
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _MealHistoryTile extends StatelessWidget {
+  final Map<String, dynamic> row;
+  final AppLocalizations l10n;
+
+  const _MealHistoryTile({required this.row, required this.l10n});
+
+  @override
+  Widget build(BuildContext context) {
+    final cookedAt = DateTime.parse(row['cooked_at'] as String);
+    final recipeName = row['recipe_name'] as String?;
+    final mealType = row['meal_type'] as String?;
+
+    return ListTile(
+      leading: const Icon(Icons.restaurant),
+      title: Text(
+        recipeName ?? l10n.directSideIngredient,
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+      subtitle: Text(
+        _formatDate(cookedAt),
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
+      trailing: mealType != null
+          ? Chip(
+              label: Text(
+                mealType,
+                style: const TextStyle(fontSize: 11),
+              ),
+              padding: EdgeInsets.zero,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            )
+          : null,
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 }

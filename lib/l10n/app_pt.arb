@@ -2538,6 +2538,13 @@
   "usedIn": "Usado Em",
   "usedInNRecipes": "Usado em {count} receitas",
   "noRecipesUsingIngredient": "Este ingrediente ainda não foi adicionado a nenhuma receita.",
-  "incompleteRecipe": "Incompleta"
+  "incompleteRecipe": "Incompleta",
+  "directSideIngredient": "Ingrediente de acompanhamento",
+  "mealHistory": "Histórico de Refeições",
+  "noMealsWithIngredient": "Este ingrediente ainda não apareceu em nenhuma refeição cozinhada.",
+  "usedInNCookedMeals": "{count, plural, =1{Usado em 1 refeição} other{Usado em {count} refeições}}",
+  "filterLast30Days": "Últimos 30 dias",
+  "filterLast3Months": "Últimos 3 meses",
+  "filterAllTime": "Todo o tempo"
 
 }

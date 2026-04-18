@@ -313,11 +313,11 @@ void main() {
         createdAt: DateTime(2024, 1, 1),
         notes: '',
       );
-      dbHelper.recipes[recipe.id!] = recipe;
+      dbHelper.recipes[recipe.id] = recipe;
       await dbHelper.addIngredientToRecipe(
         RecipeIngredient(
           id: 'ri-1',
-          recipeId: recipe.id!,
+          recipeId: recipe.id,
           ingredientId: ingredient.id,
           quantity: 2.5,
         ),
