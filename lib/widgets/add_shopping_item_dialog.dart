@@ -210,7 +210,7 @@ class _AddShoppingItemDialogState extends State<AddShoppingItemDialog> {
             dense: true,
             title: Text(ingredient.name),
             subtitle: ingredient.unit != null
-                ? Text(ingredient.unit!.value)
+                ? Text(ingredient.unit!.getLocalizedQuantityName(context, 1.0))
                 : null,
             onTap: () => _selectIngredient(ingredient),
           );

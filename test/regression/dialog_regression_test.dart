@@ -132,7 +132,6 @@ void main() {
       //
       // Coverage:
       // - test/widgets/meal_recording_dialog_test.dart (2 disposal tests)
-      // - test/widgets/meal_cooked_dialog_test.dart (2 disposal tests)
       // - test/widgets/add_ingredient_dialog_test.dart (2 disposal tests)
       // - test/widgets/add_new_ingredient_dialog_test.dart (1 disposal test)
       // - test/widgets/add_side_dish_dialog_test.dart (1 disposal test)

@@ -18,9 +18,20 @@ class _HomePageState extends State<HomePage> {
   /// Key for the DashboardScreen to allow triggering refresh from outside.
   final GlobalKey<DashboardScreenState> _dashboardKey = GlobalKey();
 
+  /// Key for the WeeklyPlanScreen to allow triggering scrollToToday from outside.
+  final GlobalKey<WeeklyPlanScreenState> _weeklyPlanKey = GlobalKey();
+
   void _navigateToTab(int index) {
     setState(() {
       _selectedIndex = index;
+    });
+  }
+
+  void _onPlanToday() {
+    _navigateToTab(1);
+    // Deferred so the tab switch setState has flushed before we scroll
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _weeklyPlanKey.currentState?.scrollToToday();
     });
   }
 
@@ -32,8 +43,9 @@ class _HomePageState extends State<HomePage> {
       DashboardScreen(
         key: _dashboardKey,
         onNavigateToTab: _navigateToTab,
+        onPlanToday: _onPlanToday,
       ),
-      const WeeklyPlanScreen(),
+      WeeklyPlanScreen(key: _weeklyPlanKey),
       const ContentScreen(),
     ];
 

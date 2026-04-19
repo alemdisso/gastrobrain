@@ -23,6 +23,7 @@ import '../core/providers/meal_provider.dart';
 import '../core/providers/meal_plan_provider.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../models/ingredient.dart';
+import '../models/measurement_unit.dart';
 import '../models/meal_plan_item_ingredient.dart';
 import '../widgets/weekly_calendar_widget.dart';
 import '../widgets/add_simple_side_dialog.dart';
@@ -45,10 +46,10 @@ class WeeklyPlanScreen extends StatefulWidget {
   });
 
   @override
-  State<WeeklyPlanScreen> createState() => _WeeklyPlanScreenState();
+  State<WeeklyPlanScreen> createState() => WeeklyPlanScreenState();
 }
 
-class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
+class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   late DatabaseHelper _dbHelper;
   late RecommendationService _recommendationService;
   late MealPlanAnalysisService _mealPlanAnalysis;
@@ -62,10 +63,16 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   List<Recipe> _availableRecipes = [];
   List<Ingredient> _availableIngredients = [];
   final ScrollController _scrollController = ScrollController();
+
+  /// Exposed for widget tests only — do not use in production code.
+  ScrollController get scrollControllerForTest => _scrollController;
   // Summary data (will be used in Summary bottom sheet - Checkpoint 3)
   MealPlanSummary? _summaryData;
   // Bottom sheet state
   bool _isSummarySheetOpen = false;
+  // Pending scroll-to-today (set by scrollToToday(), consumed after _loadData)
+  bool _pendingScrollToToday = false;
+  DateTime? _pendingScrollDate;
 
   @override
   void initState() {
@@ -149,6 +156,36 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     }
   }
 
+  /// Called by HomeScreen when the user taps "Plan Today" on the Dashboard.
+  /// Ensures the current week is displayed, then scrolls to today's row.
+  /// Called by HomeScreen when the user taps "Plan Today" on the Dashboard.
+  /// [today] is injectable for testing; defaults to DateTime.now().
+  void scrollToToday({DateTime? today}) {
+    if (_currentWeekContext != TimeContext.current) {
+      _jumpToCurrentWeek(); // triggers _loadData()
+    }
+    _pendingScrollToToday = true;
+    _pendingScrollDate = today ?? DateTime.now();
+    if (_currentWeekContext == TimeContext.current && !_isLoading) {
+      _scheduleScrollToToday(_pendingScrollDate!);
+    }
+  }
+
+  void _scheduleScrollToToday(DateTime today) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) return;
+      final dayIndex = (today.weekday + 2) % 7;
+      if (dayIndex == 0) return; // Friday — already at top
+      final maxExtent = _scrollController.position.maxScrollExtent;
+      if (maxExtent == 0) return; // Failsafe: layout not ready
+      _scrollController.animateTo(
+        (dayIndex / 6.0) * maxExtent,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
   Future<void> _loadData() async {
     _recommendationCache.clearAllCache();
     setState(() {
@@ -176,6 +213,13 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
 
         // Calculate summary data
         await _calculateSummaryData();
+
+        // Consume pending scroll-to-today now that the ListView is rendered
+        if (_pendingScrollToToday) {
+          _pendingScrollToToday = false;
+          _scheduleScrollToToday(_pendingScrollDate ?? DateTime.now());
+          _pendingScrollDate = null;
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -314,52 +358,110 @@ class _WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     }
 
     // Show options for the existing meal
-    final action = await showDialog<String>(
+    final action = await showModalBottomSheet<String>(
       context: context,
-      builder: (context) => SimpleDialog(
-        title: Text(AppLocalizations.of(context)!.mealOptions),
-        children: [
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(context, 'view'),
-            child: Text(AppLocalizations.of(context)!.viewRecipeDetails),
-          ),
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(context, 'change'),
-            child: Text(AppLocalizations.of(context)!.changeRecipe),
-          ),
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(context, 'manage_recipes'),
-            child: Text(AppLocalizations.of(context)!.manageRecipes),
-          ),
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(context, 'manage_simple_sides'),
-            child: Text(AppLocalizations.of(context)!.manageSimpleSides),
-          ),
-          if (!mealCooked)
-            SimpleDialogOption(
-              onPressed: () => Navigator.pop(context, 'cooked'),
-              child: Text(AppLocalizations.of(context)!.markAsCooked),
-            ),
-          if (mealCooked) ...[
-            SimpleDialogOption(
-              onPressed: () => Navigator.pop(context, 'edit_cooked'),
-              child: Text(AppLocalizations.of(context)!.editCookedMeal),
-            ),
-            SimpleDialogOption(
-              onPressed: () => Navigator.pop(context, 'add_side_dish'),
-              child: Text(AppLocalizations.of(context)!.manageSideDishes),
-            ),
-          ],
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(context, 'remove'),
-            child: Text(AppLocalizations.of(context)!.removeFromPlan),
-          ),
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-        ],
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Handle bar
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  // Section 1 — Side dishes
+                  Text(l10n.completeMealSection,
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color:
+                              Theme.of(context).colorScheme.onSurfaceVariant)),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.restaurant_menu, size: 18),
+                      label: Text(l10n.manageRecipes),
+                      onPressed: () =>
+                          Navigator.pop(context, 'manage_recipes'),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.add_shopping_cart, size: 18),
+                      label: Text(l10n.manageSimpleSides),
+                      onPressed: () =>
+                          Navigator.pop(context, 'manage_simple_sides'),
+                    ),
+                  ),
+                  const Divider(height: 24),
+                  // Section 2 — Actions
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.info_outline),
+                    title: Text(l10n.viewRecipeDetails),
+                    onTap: () => Navigator.pop(context, 'view'),
+                  ),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.swap_horiz),
+                    title: Text(l10n.changeRecipe),
+                    onTap: () => Navigator.pop(context, 'change'),
+                  ),
+                  if (!mealCooked)
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.check_circle_outline),
+                      title: Text(l10n.markAsCooked),
+                      onTap: () => Navigator.pop(context, 'cooked'),
+                    ),
+                  if (mealCooked) ...[
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.edit_outlined),
+                      title: Text(l10n.editCookedMeal),
+                      onTap: () => Navigator.pop(context, 'edit_cooked'),
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.restaurant),
+                      title: Text(l10n.manageSideDishes),
+                      onTap: () => Navigator.pop(context, 'add_side_dish'),
+                    ),
+                  ],
+                  const Divider(height: 24),
+                  // Section 3 — Destructive
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(Icons.delete_outline,
+                        color: Theme.of(context).colorScheme.error),
+                    title: Text(l10n.removeFromPlan,
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.error)),
+                    onTap: () => Navigator.pop(context, 'remove'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
     if (action == null) return;
 
@@ -1229,7 +1331,8 @@ class _SimpleSidesManageDialogState extends State<_SimpleSidesManageDialog> {
                     final qty = side.quantity == side.quantity.truncate()
                         ? side.quantity.toInt().toString()
                         : side.quantity.toString();
-                    final unit = side.unit ?? '';
+                    final parsedUnit = MeasurementUnit.fromString(side.unit);
+                    final unit = parsedUnit?.getLocalizedQuantityName(context, side.quantity) ?? side.unit ?? '';
                     return ListTile(
                       dense: true,
                       title: Text(name),

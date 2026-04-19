@@ -1102,6 +1102,69 @@ class DatabaseHelper {
     ''', [recipeId]);
   }
 
+  Future<List<Map<String, dynamic>>> getRecipesByIngredientId(
+      String ingredientId) async {
+    final Database db = await database;
+    return await db.rawQuery('''
+      SELECT r.*,
+        ri.quantity AS usage_quantity,
+        (SELECT COUNT(*) FROM recipe_ingredients WHERE recipe_id = r.id) AS ingredient_count
+      FROM recipes r
+      JOIN recipe_ingredients ri ON r.id = ri.recipe_id
+      WHERE ri.ingredient_id = ?
+      ORDER BY r.name ASC
+    ''', [ingredientId]);
+  }
+
+  /// Returns meals where this ingredient appeared (via recipes or direct sides).
+  /// [sinceDate] optional ISO-8601 cutoff (inclusive). Returns rows with meal
+  /// cooked_at, recipe name (nullable), and ingredient source.
+  Future<List<Map<String, dynamic>>> getMealHistoryByIngredientId(
+    String ingredientId, {
+    String? sinceDate,
+  }) async {
+    final Database db = await database;
+    final args = <dynamic>[ingredientId];
+    final dateFilter = sinceDate != null ? 'AND m.cooked_at >= ?' : '';
+    if (sinceDate != null) args.add(sinceDate);
+
+    // Path 1: ingredient is in a recipe that was cooked as part of a meal
+    final viaRecipes = await db.rawQuery('''
+      SELECT m.id AS meal_id, m.cooked_at, m.meal_type,
+             r.name AS recipe_name, 'recipe' AS source
+      FROM meals m
+      JOIN meal_recipes mr ON mr.meal_id = m.id
+      JOIN recipe_ingredients ri ON ri.recipe_id = mr.recipe_id
+      JOIN recipes r ON r.id = mr.recipe_id
+      WHERE ri.ingredient_id = ?
+      $dateFilter
+    ''', args);
+
+    // Path 2: ingredient added directly as a simple side on a recorded meal
+    final directArgs = <dynamic>[ingredientId];
+    if (sinceDate != null) directArgs.add(sinceDate);
+    final viaDirectSides = await db.rawQuery('''
+      SELECT m.id AS meal_id, m.cooked_at, m.meal_type,
+             NULL AS recipe_name, 'side' AS source
+      FROM meals m
+      JOIN meal_ingredients mi ON mi.meal_id = m.id
+      WHERE mi.ingredient_id = ?
+      $dateFilter
+    ''', directArgs);
+
+    // Merge and deduplicate by meal_id (a meal shouldn't be counted twice
+    // if the same ingredient appears in multiple recipes within the meal).
+    final seen = <String>{};
+    final merged = <Map<String, dynamic>>[];
+    for (final row in [...viaRecipes, ...viaDirectSides]) {
+      final mealId = row['meal_id'] as String;
+      if (seen.add(mealId)) merged.add(row);
+    }
+    merged.sort((a, b) =>
+        (b['cooked_at'] as String).compareTo(a['cooked_at'] as String));
+    return merged;
+  }
+
   Future<int> updateRecipeIngredient(RecipeIngredient recipeIngredient) async {
     final Database db = await database;
     return await db.update(
@@ -1391,7 +1454,7 @@ class DatabaseHelper {
       FROM meals m
       LEFT JOIN meal_recipes mr ON m.id = mr.meal_id
       WHERE mr.recipe_id = ? OR m.recipe_id = ?
-      ORDER BY m.cooked_at DESC,
+      ORDER BY date(m.cooked_at) DESC,
                CASE m.meal_type
                  WHEN 'dinner' THEN 0
                  WHEN 'lunch'  THEN 1
@@ -1461,7 +1524,7 @@ class DatabaseHelper {
     final List<Map<String, dynamic>> mealMaps = await db.query(
       'meals',
       orderBy:
-          "cooked_at DESC, CASE meal_type WHEN 'dinner' THEN 0 WHEN 'lunch' THEN 1 ELSE 2 END ASC",
+          "date(cooked_at) DESC, CASE meal_type WHEN 'dinner' THEN 0 WHEN 'lunch' THEN 1 ELSE 2 END ASC",
     );
 
     List<Meal> meals = [];
@@ -1582,7 +1645,7 @@ class DatabaseHelper {
     final List<Map<String, dynamic>> maps = await db.query(
       'meals',
       orderBy:
-          "cooked_at DESC, CASE meal_type WHEN 'dinner' THEN 0 WHEN 'lunch' THEN 1 ELSE 2 END ASC",
+          "date(cooked_at) DESC, CASE meal_type WHEN 'dinner' THEN 0 WHEN 'lunch' THEN 1 ELSE 2 END ASC",
       limit: limit,
     );
     return List.generate(maps.length, (i) => Meal.fromMap(maps[i]));

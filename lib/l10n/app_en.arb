@@ -551,6 +551,10 @@
   "@addSideDishes": {
     "description": "Button text to add side dishes"
   },
+  "completeMealSection": "Complete your meal",
+  "@completeMealSection": {
+    "description": "Section header in recipe selection menu for adding side dishes and simple sides"
+  },
   "selectRecipe": "Select Recipe",
   "@selectRecipe": {
     "description": "Button text to select recipe"
@@ -2573,6 +2577,61 @@
         "type": "String"
       }
     }
+  },
+
+  "usedIn": "Used In",
+  "@usedIn": {
+    "description": "Tab label for the Used In tab in ingredient detail screen"
+  },
+  "usedInNRecipes": "Used in {count} recipes",
+  "@usedInNRecipes": {
+    "description": "Usage count chip in ingredient detail Used In tab",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noRecipesUsingIngredient": "This ingredient hasn't been added to any recipes yet.",
+  "@noRecipesUsingIngredient": {
+    "description": "Empty state message in ingredient detail Used In tab"
+  },
+  "incompleteRecipe": "Incomplete",
+  "@incompleteRecipe": {
+    "description": "Chip label for recipes with fewer than 3 ingredients"
+  },
+  "directSideIngredient": "Side ingredient",
+  "@directSideIngredient": {
+    "description": "Label for ingredient added directly to a meal (not via a recipe)"
+  },
+  "mealHistory": "Meal History",
+  "@mealHistory": {
+    "description": "Tab label for ingredient meal history tab"
+  },
+  "noMealsWithIngredient": "This ingredient hasn't appeared in any cooked meals yet.",
+  "@noMealsWithIngredient": {
+    "description": "Empty state message in ingredient detail Meal History tab"
+  },
+  "usedInNCookedMeals": "{count, plural, =1{Used in 1 cooked meal} other{Used in {count} cooked meals}}",
+  "@usedInNCookedMeals": {
+    "description": "Summary chip showing how many cooked meals used this ingredient",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterLast30Days": "Last 30 days",
+  "@filterLast30Days": {
+    "description": "Time range filter chip: last 30 days"
+  },
+  "filterLast3Months": "Last 3 months",
+  "@filterLast3Months": {
+    "description": "Time range filter chip: last 3 months"
+  },
+  "filterAllTime": "All time",
+  "@filterAllTime": {
+    "description": "Time range filter chip: all time (no date restriction)"
   }
 
 }

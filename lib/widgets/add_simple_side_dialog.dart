@@ -116,9 +116,10 @@ class _AddSimpleSideDialogState extends State<AddSimpleSideDialog> {
       title: Text(l10n.addSimpleSideTitle),
       content: SizedBox(
         width: double.maxFinite,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
             // Ingredient search / free-text
             TextField(
               controller: _searchController,
@@ -185,6 +186,7 @@ class _AddSimpleSideDialogState extends State<AddSimpleSideDialog> {
             ),
           ],
         ),
+        ),
       ),
       actions: [
         TextButton(
@@ -221,7 +223,7 @@ class _AddSimpleSideDialogState extends State<AddSimpleSideDialog> {
             dense: true,
             title: Text(ingredient.name),
             subtitle: ingredient.unit != null
-                ? Text(ingredient.unit!.value)
+                ? Text(ingredient.unit!.getLocalizedQuantityName(context, 1.0))
                 : null,
             onTap: () => _selectIngredient(ingredient),
           );

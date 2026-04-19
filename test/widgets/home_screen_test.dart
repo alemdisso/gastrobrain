@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:gastrobrain/core/theme/app_theme.dart';
+import 'package:gastrobrain/l10n/app_localizations.dart';
+import 'package:gastrobrain/widgets/dashboard/quick_actions_panel.dart';
 
 void main() {
   group('BottomNavigationBar - Theme Compliance', () {
@@ -172,6 +175,65 @@ void main() {
 
       // Verify custom callback was called
       expect(wasPressed, isTrue);
+    });
+  });
+
+  group('Plan Today vs View This Week (#295)', () {
+    Widget buildPanel({
+      required VoidCallback onPlanToday,
+      required VoidCallback onViewThisWeek,
+    }) {
+      return MaterialApp(
+        theme: AppTheme.lightTheme,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale('en', '')],
+        home: Scaffold(
+          body: QuickActionsPanel(
+            onPlanToday: onPlanToday,
+            onViewThisWeek: onViewThisWeek,
+            onAddRecipe: () {},
+            onBrowseRecipes: () {},
+          ),
+        ),
+      );
+    }
+
+    testWidgets('Plan Today and View This Week fire independent callbacks',
+        (WidgetTester tester) async {
+      bool planTodayCalled = false;
+      bool viewThisWeekCalled = false;
+
+      await tester.pumpWidget(buildPanel(
+        onPlanToday: () => planTodayCalled = true,
+        onViewThisWeek: () => viewThisWeekCalled = true,
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Plan Today'));
+      await tester.pumpAndSettle();
+      expect(planTodayCalled, isTrue);
+      expect(viewThisWeekCalled, isFalse);
+    });
+
+    testWidgets('View This Week does not trigger Plan Today callback',
+        (WidgetTester tester) async {
+      bool planTodayCalled = false;
+
+      await tester.pumpWidget(buildPanel(
+        onPlanToday: () => planTodayCalled = true,
+        onViewThisWeek: () {},
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('This Week'));
+      await tester.pumpAndSettle();
+
+      expect(planTodayCalled, isFalse);
     });
   });
 }

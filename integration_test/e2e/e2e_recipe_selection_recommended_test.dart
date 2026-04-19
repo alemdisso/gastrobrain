@@ -188,7 +188,7 @@ void main() {
         print('✓ Menu is showing');
 
         // Find and tap the Save button
-        final saveButton = find.text('Salvar');
+        final saveButton = find.text('Salvar Refeição');
         expect(saveButton, findsOneWidget, reason: 'Save button should exist');
 
         await tester.tap(saveButton);

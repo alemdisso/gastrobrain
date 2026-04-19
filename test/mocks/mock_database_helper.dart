@@ -194,6 +194,8 @@ class MockDatabaseHelper implements DatabaseHelper {
   Map<String, RecipeIngredient> get recipeIngredients => _recipeIngredients;
   Map<String, MealPlanItem> get mealPlanItems => _mealPlanItems;
   Map<String, MealPlanItemRecipe> get mealPlanItemRecipes => _mealPlanItemRecipes;
+  Map<String, MealRecipe> get mealRecipes => _mealRecipes;
+  Map<String, MealIngredient> get mealIngredients => _mealIngredients;
 
   // Database property implementation
   // Note: For integration tests that need direct database access,
@@ -886,6 +888,77 @@ class MockDatabaseHelper implements DatabaseHelper {
         'unit': unit,
       };
     }).toList();
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getRecipesByIngredientId(
+      String ingredientId) async {
+    final matchingRIs = _recipeIngredients.values
+        .where((ri) => ri.ingredientId == ingredientId)
+        .toList();
+
+    return matchingRIs.map((ri) {
+      final recipe = _recipes[ri.recipeId];
+      if (recipe == null) return null;
+      final ingredientCount = _recipeIngredients.values
+          .where((r) => r.recipeId == ri.recipeId)
+          .length;
+      final map = recipe.toMap();
+      map['usage_quantity'] = ri.quantity;
+      map['ingredient_count'] = ingredientCount;
+      return map;
+    }).whereType<Map<String, dynamic>>().toList()
+      ..sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getMealHistoryByIngredientId(
+    String ingredientId, {
+    String? sinceDate,
+  }) async {
+    final cutoff = sinceDate != null ? DateTime.parse(sinceDate) : null;
+    final seen = <String>{};
+    final result = <Map<String, dynamic>>[];
+
+    // Path 1: via recipe_ingredients → meal_recipes → meals
+    for (final mr in _mealRecipes.values) {
+      final meal = _meals[mr.mealId];
+      if (meal == null) continue;
+      if (cutoff != null && meal.cookedAt.isBefore(cutoff)) continue;
+      final hasIngredient = _recipeIngredients.values.any(
+        (ri) => ri.recipeId == mr.recipeId && ri.ingredientId == ingredientId,
+      );
+      if (!hasIngredient) continue;
+      if (!seen.add(meal.id)) continue;
+      final recipe = _recipes[mr.recipeId];
+      result.add({
+        'meal_id': meal.id,
+        'cooked_at': meal.cookedAt.toIso8601String(),
+        'meal_type': meal.mealType?.name,
+        'recipe_name': recipe?.name,
+        'source': 'recipe',
+      });
+    }
+
+    // Path 2: direct meal_ingredients
+    for (final mi in _mealIngredients.values) {
+      if (mi.ingredientId != ingredientId) continue;
+      final meal = _meals[mi.mealId];
+      if (meal == null) continue;
+      if (cutoff != null && meal.cookedAt.isBefore(cutoff)) continue;
+      if (!seen.add(meal.id)) continue;
+      result.add({
+        'meal_id': meal.id,
+        'cooked_at': meal.cookedAt.toIso8601String(),
+        'meal_type': meal.mealType?.name,
+        'recipe_name': null,
+        'source': 'side',
+      });
+    }
+
+    result.sort((a, b) =>
+        (b['cooked_at'] as String).compareTo(a['cooked_at'] as String));
+    return result;
   }
 
   @override

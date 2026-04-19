@@ -238,7 +238,7 @@ void main() {
         print('✓ Menu is showing');
 
         // Find and tap the Save button
-        final lunchSaveButton = find.text('Salvar');
+        final lunchSaveButton = find.text('Salvar Refeição');
         expect(lunchSaveButton, findsOneWidget,
             reason: 'Save button should exist');
 
@@ -367,7 +367,7 @@ void main() {
         print('✓ Menu is showing');
 
         // Find and tap the Save button
-        final dinnerSaveButton = find.text('Salvar');
+        final dinnerSaveButton = find.text('Salvar Refeição');
         expect(dinnerSaveButton, findsOneWidget,
             reason: 'Save button should exist');
 

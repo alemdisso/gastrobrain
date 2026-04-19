@@ -35,11 +35,13 @@ class RecentMealEntry {
 class DashboardScreen extends StatefulWidget {
   final DatabaseHelper? databaseHelper;
   final void Function(int tabIndex)? onNavigateToTab;
+  final VoidCallback? onPlanToday;
 
   const DashboardScreen({
     super.key,
     this.databaseHelper,
     this.onNavigateToTab,
+    this.onPlanToday,
   });
 
   @override
@@ -187,6 +189,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                     onViewThisWeek: _navigateToMealPlan,
                     onAddRecipe: _navigateToAddRecipe,
                     onBrowseRecipes: _navigateToContent,
+                    onPlanToday: widget.onPlanToday,
                   ),
                   const SizedBox(height: DesignTokens.spacingLg),
                   SummaryCards(
