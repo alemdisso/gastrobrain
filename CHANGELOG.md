@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.3] - 2026-04-18
+
+### Added
+- Ingredient detail screen: Meal History tab showing ingredient usage across cooked meals with Last 30 days / Last 3 months / All time filter chips (#329)
+- Ingredient detail screen: Used In tab listing all recipes that include the ingredient (#193)
+
+### Changed
+- Weekly plan meal options replaced flat SimpleDialog with a grouped modal bottom sheet — side-dish actions in a distinct section, recipe actions in the middle, destructive action at the bottom (#121)
+- RecipeSelectionDialog menu: side-dish entry points promoted to full-width OutlinedButtons in a visually bordered section, Save promoted to full-width ElevatedButton (#121)
+- AddSideDishDialog refactored as a pure picker (Cancelar / Concluído) — Save shortcut removed so all saves flow through RecipeSelectionDialog as the single commit point; Voltar now returns to the menu with selections preserved (#121)
+- Plan Today action scrolls the weekly calendar to today's meal slot (#295)
+- Whitespace between ingredient cards in recipe details reduced (#296)
+
+### Fixed
+- MealCookedDialog now records the correct slot date as cooked_at instead of the current system time (#352)
+- Same-day meal ordering corrected after regression introduced in #341 (#351)
+- Unit strings in simple sides and ingredient suggestion dialogs now use localized labels instead of raw enum values (#345)
+- AddSimpleSideDialog layout no longer breaks when suggestion list is visible (#340)
+- Add button in AddSimpleSideDialog renders correctly before ingredient selection (#339)
+
+### Refactored
+- Removed dead RecipeIngredientsScreen (#353)
+
 ## [0.2.2] - 2026-04-15
 
 ### Added
