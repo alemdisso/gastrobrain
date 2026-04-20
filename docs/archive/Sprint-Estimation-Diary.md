@@ -2083,6 +2083,150 @@ Apr 15 (Wed) │ ████████████  #342 + #343 + #344 parser
 - The incomplete #341 is the sprint's lasting cost: #351 (query ordering hardening) and #352 (MealCookedDialog date bug) are its direct successors; both require device-validated fixes in 0.2.3
 - Parser bug cluster (11 pts in ~0.90d) created the perception of an unusually fast sprint, but the underlying velocity is normal cruising — the batch compressed one day's work, not the sprint's overall cadence
 
+### 0.2.3 - UX Polish
+
+**Sprint Duration:** April 16–18, 2026
+**Calendar Days:** 3
+**Active Working Days:** ~3.4 effective (3 commit days + ~0.4d hidden UX design/device testing overhead for #121)
+**Planned Issues:** 11 (33 pts); #291 deliberately deferred at sprint start; #352 resolved by dead code removal rather than one-line patch
+**Completed Issues:** 10 of 10 must-complete items (100%); #291 deferred; #353 unplanned refactor added
+
+#### Estimation vs Actual
+
+| Issue | Title | Type | Est Points | Weighted Actual | Lines | Ratio | Assessment |
+|-------|-------|------|------------|-----------------|-------|-------|------------|
+| #352 | MealCookedDialog `cooked_at` bug | Bug | 1 | ~0.10d* | ~50 | 0.10x | ✅ On target (resolved by dead code removal) |
+| #351 | Same-day meal ordering | Bug | 2 | ~0.15d* | 6+157 | 0.08x | ✅ On target (device-validated) |
+| #345 | Unit strings not localized | Bug | 2 | ~0.05d* | 5 | 0.03x | ⚡ Faster (trivial l10n pattern) |
+| #339 | Add button unlabelled grey box | Bug | 2 | ~0.05d* | 2 | 0.03x | ⚡ Faster (2-line fix) |
+| #340 | Dialog layout breaks with suggestions | Bug | 3 | ~0.30d* | 137 | 0.10x | ✅ On target |
+| #296 | Reduce whitespace in ingredient cards | Polish | 2 | ~0.35d* | 255 | 0.18x | ✅ On target |
+| #295 | Plan Today scrolls to today's slot | Feature | 3 | ~0.25d | 73+187 | 0.08x | ⚡ Faster (pre-diagnosed failure → no discovery phase) |
+| #193 | Ingredient detail screen — Used In tab | Feature | 3 | ~0.50d | 546 | 0.17x | ✅ On target |
+| #329 | Ingredient usage frequency — meal history | Feature | 2 | ~0.35d | 475 | 0.18x | ✅ On target |
+| #121 | Multi-recipe UX discoverability | P1 Feature | 8 | ~0.75d tracked / ~0.95d eff.† | 289+3 | 0.12x | ✅ On target |
+| #353 | Remove dead RecipeIngredientsScreen | Refactor | N/A | ~0.10d | 362 del | — | 📋 Unplanned (sprint-opportunistic) |
+| **TOTAL (confirmed complete)** | | | **33** | **~3.0d tracked / ~3.4d effective** | **~2,300** | **~0.10x** | |
+
+*\* Apr 16 issues proportional to insertions; l10n-generated output excluded from line counts per 0.2.2 methodology note.*
+†#121 tracked commits: 292 lines; ~0.20d hidden overhead for device testing, UX design decision (Option A vs B), and AddSideDishDialog flow iteration.
+
+#### Accuracy by Type
+
+| Type | Issues | Est Total | Weighted Actual | Avg Ratio | Verdict |
+|------|--------|-----------|-----------------|-----------|---------|
+| Bug fixes (prior-sprint validation debt) | #351, #352 | 3 | ~0.25d | 0.08x | ⚡ Faster — root cause pre-diagnosed in 0.2.2 |
+| Bug fixes (known patterns, batched Apr 16) | #345, #339, #340 | 7 | ~0.40d | 0.06x | ⚡ Faster — all known patterns, no debugging phase |
+| UX Polish | #296 | 2 | ~0.35d | 0.18x | ✅ On target |
+| Feature (medium-risk, pre-diagnosed) | #295 | 3 | ~0.25d | 0.08x | ⚡ Faster — prior failure mode known; no discovery |
+| Feature (new screen + second tab) | #193, #329 | 5 | ~0.85d | 0.17x | ✅ On target |
+| P1 Feature (discovery-adjacent) | #121 | 8 | ~0.95d effective | 0.12x | ✅ On target |
+
+**Overall:** 33 confirmed pts at ~3.4d effective → ~0.10x — consistent with recent cruising range (0.10–0.17x). The bug batch (Apr 16) and UX feature pair (#193+#329) executed as expected; #121 required UX iteration overhead but landed within cruising range.
+
+#### Variance Analysis
+
+**Validation debt repaid as expected: #351, #352 (0.08x)**
+- Root cause was fully diagnosed during 0.2.2 post-release investigation; no debugging phase in 0.2.3
+- #352 resolved by deletion rather than patching: MealCookedDialog was unreachable dead code — safer outcome than the planned one-line fix, and zero commit overhead for #351's integration test suite
+- Device-validated same-day: ordering queries pass on device, confirming `date(cooked_at)` fix is correct
+- Confirms the "prior-sprint debt executes at post-usage rates" pattern — the investigation phase already happened; execution is mechanical
+
+**Trivial bug batch at ~0.03-0.10x: #345, #339, #340**
+- #345 (5 insertions) and #339 (2 insertions) are at the extreme low end — applying known l10n and widget state patterns
+- #340 (137 insertions, 0.10x) was the only one requiring non-trivial layout constraint reasoning, but still batched on same day as the others
+- All three closed Apr 16 alongside #351/#352/#296 — 12 pts in a single day confirms execution-mode batch velocity
+
+**Medium-risk issue resolved cleanly when pre-diagnosed: #295 (0.08x)**
+- Sprint planning noted "prior attempt failed" and diagnosed root cause: `maxScrollExtent` returned 0 while ListView wasn't rendered. Prescribed fix: GlobalKey + `scrollToToday()` + post-frame callback.
+- Actual execution matched the prescription directly — no re-investigation. Tests added same day.
+- A "previously failed + sound diagnosis" is not a risk amplifier — it constrains the solution space and eliminates alternatives. The failure made the next attempt more reliable, not less.
+
+**UX iteration overhead on P1 feature: #121 (~0.20d hidden)**
+- Device testing after initial implementation revealed a flow problem: "Voltar" in `AddSideDishDialog` discarded side-dish selections; "Salvar Refeição" bypassed `RecipeSelectionDialog` entirely — no path existed to review the full meal before saving.
+- Design decision required: single save point in `RecipeSelectionDialog` (Option B) won over keeping the save button inside `AddSideDishDialog` (Option A). Pure-picker pattern applied.
+- Result also improved: bottom sheet replaced `SimpleDialog` for meal actions (better affordance, grouped sections).
+- ~0.20d overhead is comparable to 0.2.2's Recraft design work for #347. Device-testing-driven UX iteration on P1 features should be budgeted as standard overhead, not an overrun.
+
+**Integration test coupling to l10n keys: #121 follow-up fix**
+- Changing `l10n.save` → `l10n.saveMeal` in `_buildMenu()` silently broke 2 integration tests. Tests compiled without error (label text changed, not key reference) but failed at runtime.
+- Caught by running the full integration test suite post-release. Fast fix once identified (replace_all in both test files).
+- The issue is structural: integration tests asserting on translated button text couple test correctness to l10n key choices. Any button rename triggers a test hunt.
+
+**#291 deliberate deferral validated**
+- 5 pts: DB migration + model + full UI + history display + l10n. Disproportionate effort relative to the "UX Polish" theme value.
+- Milestone shipped cleanly without it. No user-facing gap. Correct scope decision.
+
+**Emergent refactor #353: free delivery**
+- `RecipeIngredientsScreen` was dead code (replaced by `recipe_details_ingredients_tab.dart` in a prior sprint). Removal cost ~0.10d and reduced codebase surface area. Opportunistic clean-up during an active sprint is consistently low-cost.
+
+#### Working Pattern Observations
+
+```
+Apr 16 (Wed) │ ████████████  #351+#352 validation debt + #345 + #339 + #340 + #296 — 12 pts, bug+polish batch
+Apr 17 (Thu) │ ████████      #295 (Plan Today) + #193 (ingredient detail) + #353 unplanned
+Apr 18 (Fri) │ ████████      #329 (meal history tab) + #121 (multi-recipe UX) + release + integration test fixes
+             │ ░░░░          (~0.20d hidden: #121 device testing, UX design decision, AddSideDishDialog iteration)
+```
+
+**Patterns:**
+- Bug batch compressed Days 1+2 of the sprint plan into one actual day (Apr 16 — 12 pts)
+- UX feature pair (#193+#329, same screen) executed across Apr 17–18 as planned; tab-extension pattern confirmed fast
+- P1 feature (#121) required mid-day UX iteration; release same day confirms high commit-to-ship confidence
+- Sprint plan was 5 working days; delivered in 3 — confirms execution-mode sprints (well-specified, no discovery) outperform velocity estimates
+
+#### Lessons Learned
+
+1. **0.2.2 validation debt repaid at expected post-usage rate (0.08x)**
+   - #341's incomplete fix created #351 and #352 as successors. Both executed at ~0.08x — the "debugging already happened" principle holds even across sprint boundaries.
+   - The cost of deferred validation is not re-investigation time; it's the issue management overhead and the risk of it blocking subsequent features. In this sprint it didn't block anything, but it consumed one of the three available days.
+   - **Prior lesson confirmed: "tested on device" is a non-optional AC for any data-facing fix.**
+
+2. **Dead code resolution beats patching when it applies**
+   - #352 was planned as a one-line patch to `MealCookedDialog.initState`. Inspection found the dialog was never called — dead code. Removal was safer (zero runtime path) and needed no device validation.
+   - **Lesson: Before implementing a bug fix, verify the buggy code path is reachable. If it isn't, deletion is the correct fix.**
+
+3. **"Previously failed + sound diagnosis" is lower risk than "new implementation"**
+   - #295 had a Medium risk rating due to the prior failed attempt. In practice it was the fastest feature in the sprint (0.08x). The prior failure left a correct diagnosis that eliminated all alternatives.
+   - **Lesson: Revise risk ratings downward when a failure mode has been documented and a prescribed fix exists. The failure made the next attempt more predictable, not less.**
+
+4. **Device-testing-driven UX iteration on P1 features is standard overhead (~0.20d)**
+   - #121 required one round of design iteration triggered by device testing (AddSideDishDialog flow problem). This is comparable to 0.2.2's external design tool time (#347, ~0.30d) — real creative work that leaves no commit trace.
+   - **Lesson: Budget ~0.20-0.30d hidden overhead for any P1 UX feature that requires real-device validation. It's not an overrun; it's the spec phase for interaction details that aren't visible until you hold the device.**
+
+5. **Integration tests asserting on translated button labels couple test correctness to l10n key names**
+   - Changing `l10n.save` → `l10n.saveMeal` broke 2 integration tests that found the button by its translated text ("Salvar"). Tests compiled and passed static analysis but failed at runtime.
+   - **Lesson: When changing a button's l10n key, immediately search integration tests for the old translated text. Better practice: integration tests should use semantic keys (`Key('save_meal_button')`) rather than translated labels for tap targets. Using translated text for assertions (not taps) is acceptable and desirable.**
+
+6. **#193 → #329 tab extension pattern executes at expected 0.17-0.18x**
+   - Ingredient detail screen (#193) built the scaffold; meal history tab (#329) extended it. Both landed at ~0.17-0.18x — consistent with the "follow-on tab in established scaffold" category.
+   - The dependency (#193 before #329) was the main sequencing constraint; executing on consecutive days was correct.
+
+7. **Post-release real-device testing surfaces platform issues that simulator can't catch (#354)**
+   - Backup/restore broken on Android 10+ (scoped storage): `/sdcard/Download/` path access blocked, text-field path input also blocked. Discovered on wife's physical device post-release.
+   - Issue #354 created and scoped (2 pts: `share_plus` for backup, `file_picker` for restore, `restoreDatabaseFromString()` overload).
+   - **Lesson: Sprint completion and test suite passing is not a substitute for post-release physical device testing. The gap between emulator behavior and scoped-storage enforcement on production Android is real.**
+
+#### Recommendations for Future Sprints
+
+| Finding | Adjustment |
+|---------|------------|
+| Prior-sprint validation debt executes at post-usage rate (0.08x) | No change — this is expected; the cost is issue management, not re-investigation |
+| Dead code check before patching | Add "verify code path is reachable" to bug fix checklist; deletion is safer than patching when applicable |
+| "Previously failed + diagnosis" = lower risk | Revise risk downward when a prescribed fix exists from prior failed attempt |
+| P1 UX features: ~0.20d hidden device/iteration overhead | Build into planning; do not count as overrun |
+| Integration test coupling to translated labels | Use `Key()` for tappable elements in integration tests; search old label text when l10n keys change |
+| Post-release physical device testing required | Create a post-release device checklist: backup/restore, scoped paths, platform-specific permissions |
+
+#### Notes
+
+- Sprint confirmed-complete: 33 pts / 3.4d effective → ~9.7 pts/day → **~48 pts/week** (execution mode, above cruising baseline)
+- Milestone shipped: 0.2.2 validation debt closed (#351, #352), 3 UX bug fixes (#345, #339, #340), ingredient card whitespace (#296), Plan Today scroll (#295), ingredient detail screen with Used In + Meal History tabs (#193, #329), multi-recipe UX discoverability (#121)
+- 1793 tests passing at release; all integration tests green post-release fix
+- #291 deliberately deferred to 0.2.4+; does not affect milestone theme
+- Post-release: backup/restore scoped storage issue discovered (#354, 2 pts, 0.2.x road)
+- The 0.2.2 and 0.2.3 sprints together delivered the full UX Polish milestone in ~7.2 effective days (3.8d + 3.4d)
+
 ---
 
 ## Cumulative Metrics
@@ -2107,13 +2251,14 @@ Apr 15 (Wed) │ ████████████  #342 + #343 + #344 parser
 | 0.1.14 | ~21 | ~4.0d | ~0.19x† | ~5.25 | Zero-features housekeeping: migration consolidation + docs + test governance (retroactive) |
 | 0.1.15 | n/a‡ | ~1.0d | n/a | n/a | Emergency P0 patch: 2 import data loss bugs discovered via 0.2.1 (retroactive; not a regular sprint) |
 | 0.2.2 | 24 | ~2.7d | 0.11x | 6.3 | Algorithm + parser batch cluster; validation debt on #341 (→ #351, #352) |
+| 0.2.3 | 33 | ~3.0d tracked / ~3.4d effective | 0.10x | 9.7 | Execution-mode sprint: 6 bugs + 4 UX features + P1 feature; validation debt repaid; #354 discovered post-release |
 
 *\* 0.1.7a weighted-days methodology underrepresents actual effort due to shared day with 0.1.7b. Developer estimates ~0.5 days actual effort. Excluded from velocity calculations.*
 *† 0.1.14 ratio is a retroactive estimate; no commit-level weighted analysis available. Calculated as active days / expected days at cruising velocity.*
 *‡ 0.1.15 issues were not pre-estimated (P0 emergency patch); ratio not applicable.*
 
 **Critical Insights:**
-- **Cruising velocity: 30 points/week** — validated across 0.1.7b–0.2.2 (8 consecutive sprints at 26-36 pts/week)
+- **Cruising velocity: 30 points/week** — validated across 0.1.7b–0.2.3 (9 consecutive sprints at 26-48 pts/week); execution-mode sprints (pure bugs + well-specified features, no discovery) can spike above 40 pts/week
 - **Velocity step-change confirmed** — early sprints (0.1.2-0.1.6) averaged 1.1-3.0 pts/day; recent sprints (0.1.7b-0.1.11) sustain 5.6-9.0 pts/day. Genuine acceleration from codebase maturity, Claude Code, accumulated infrastructure, and developer proficiency
 - **Sprint ratio depends heavily on work type** — Can't use one sprint to predict another
 - **Velocity modes**: "Discovery mode" (~20 pts/week) vs "Cruising mode" (~30 pts/week) vs "Execution mode" (~36 pts/week)
@@ -2167,6 +2312,8 @@ Use these multipliers when estimating future work:
 | Emergency P0 patch (known root cause, post-release) | 2 issues | ~0.10x | 0.10x | **NEW**: Same 0.10x rate as post-usage bugs — root cause clear from bug report, no debugging phase; import bugs (0.1.15: #330, #332) |
 | Parser/algorithm bugs (batched cluster, same root cause) | 3 issues | 0.08x | 0.08-0.10x | **NEW**: Same root cause → template set by first fix; discount 2nd+ issues 40-50% vs first; batch on single day (0.2.2: #342, #343, #344) |
 | Testing new algorithm behavior (no established fixtures) | 1 issue | 0.25x | 0.20-0.30x | **NEW**: Distinct from "extend test suite" (0.07-0.10x); dedup/scoring logic requires analytical test design before fixtures can be written (0.2.2: #254) |
+| Feature (medium-risk, prior failure + diagnosis documented) | 1 issue | 0.08x | 0.08-0.10x | **NEW**: "Previously failed + sound diagnosis" lowers risk — failure constrained solution space; no re-investigation phase; treat like post-usage bug (0.2.3: #295) |
+| P1 Feature (discovery-adjacent, device-test iteration) | 1 issue | 0.12x | 0.10-0.15x | **NEW**: UX design decisions + one round of device-triggered flow iteration; budget ~0.20d hidden overhead beyond commit estimate; analogous to external design tool time (0.2.3: #121) |
 
 **Key Insights from 0.1.7a/b:**
 - **Design system work has its own velocity profile** — 64 points in 7 days (0.11x) reflects both new-type overestimation AND genuine efficiency from clear vision, compound patterns, and effective batching
