@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart' show SharePlus, ShareParams, XFile;
 import '../../database/database_helper.dart';
 import '../errors/gastrobrain_exceptions.dart';
 
@@ -19,12 +21,13 @@ class DatabaseBackupService {
 
   DatabaseBackupService(this._databaseHelper);
 
-  /// Creates a complete backup of all database data to JSON
+  /// Creates a complete backup of all database data to JSON.
   ///
-  /// Saves to Downloads folder with timestamp:
-  /// gastrobrain_backup_YYYY-MM-DD_HHMMSS.json
+  /// Writes to app-private storage and triggers the native share sheet so the
+  /// user can send the file to Drive, email, WhatsApp, etc. No storage
+  /// permissions are required on Android 10+.
   ///
-  /// Returns the path to the created backup file.
+  /// Returns the path of the written file (app-private directory).
   Future<String> backupDatabase() async {
     try {
       final backupData = <String, dynamic>{
@@ -32,28 +35,14 @@ class DatabaseBackupService {
         'backup_date': DateTime.now().toIso8601String(),
       };
 
-      // Export recipes with full data
       backupData['recipes'] = await _exportRecipes();
-
-      // Export ingredients
       backupData['ingredients'] = await _exportIngredients();
-
-      // Export meal plans
       backupData['meal_plans'] = await _exportMealPlans();
-
-      // Export meals (cooked meal records)
       backupData['meals'] = await _exportMeals();
-
-      // Export recommendation history
       backupData['recommendation_history'] = await _exportRecommendationHistory();
 
-      // Generate JSON
       final jsonString = const JsonEncoder.withIndent('  ').convert(backupData);
-
-      // Write to file in Downloads
-      final filePath = await _writeBackupToFile(jsonString);
-
-      return filePath;
+      return await _writeAndShareBackup(jsonString);
     } catch (e) {
       throw GastrobrainException('Failed to create backup: ${e.toString()}');
     }
@@ -209,10 +198,11 @@ class DatabaseBackupService {
         .toList();
   }
 
-  /// Writes backup JSON to Downloads folder
-  Future<String> _writeBackupToFile(String jsonString) async {
+  /// Writes backup JSON to app-private storage and triggers the share sheet.
+  ///
+  /// Returns the path of the written file.
+  Future<String> _writeAndShareBackup(String jsonString) async {
     try {
-      // Generate filename with timestamp
       final timestamp = DateTime.now();
       final formattedDate =
           '${timestamp.year}-${timestamp.month.toString().padLeft(2, '0')}-${timestamp.day.toString().padLeft(2, '0')}';
@@ -220,209 +210,206 @@ class DatabaseBackupService {
           '${timestamp.hour.toString().padLeft(2, '0')}${timestamp.minute.toString().padLeft(2, '0')}${timestamp.second.toString().padLeft(2, '0')}';
       final fileName = 'gastrobrain_backup_${formattedDate}_$formattedTime.json';
 
-      // Save to Downloads directory
-      final file = File('/sdcard/Download/$fileName');
-
-      // Create Downloads directory if it doesn't exist
-      await file.parent.create(recursive: true);
-
-      // Write JSON to file
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/$fileName');
       await file.writeAsString(jsonString);
+
+      await SharePlus.instance.share(
+        ShareParams(files: [XFile(file.path)], subject: fileName),
+      );
 
       return file.path;
     } catch (e) {
       throw GastrobrainException(
-          'Failed to write backup file: ${e.toString()}');
+          'Failed to share backup: ${e.toString()}');
     }
   }
 
-  /// Restores database from a backup JSON file
+  /// Restores database from a backup JSON file at the given path.
   ///
   /// IMPORTANT: This operation replaces ALL existing data.
-  /// Make sure to show a warning dialog before calling this.
-  ///
-  /// [backupFilePath] Path to the JSON backup file to restore from
+  /// Show a warning dialog before calling this.
   Future<void> restoreDatabase(String backupFilePath) async {
     try {
-      // Read and parse JSON file
       final file = File(backupFilePath);
       if (!await file.exists()) {
         throw GastrobrainException('Backup file not found: $backupFilePath');
       }
-
       final jsonString = await file.readAsString();
       final Map<String, dynamic> backupData = json.decode(jsonString);
+      await _restoreFromJson(backupData);
+    } catch (e) {
+      throw GastrobrainException('Failed to restore backup: ${e.toString()}');
+    }
+  }
 
-      // Validate backup format
-      if (backupData['version'] == null) {
-        throw const GastrobrainException('Invalid backup file: missing version');
+  /// Restores database from backup JSON content (string).
+  ///
+  /// Use when file_picker returns bytes instead of a resolvable path (SAF
+  /// content URI on Android 10+). Content must be valid Gastrobrain backup JSON.
+  Future<void> restoreDatabaseFromString(String jsonContent) async {
+    try {
+      final Map<String, dynamic> backupData = json.decode(jsonContent);
+      await _restoreFromJson(backupData);
+    } catch (e) {
+      throw GastrobrainException('Failed to restore backup: ${e.toString()}');
+    }
+  }
+
+  /// Validates and applies backup data inside a single database transaction.
+  Future<void> _restoreFromJson(Map<String, dynamic> backupData) async {
+    if (backupData['version'] == null) {
+      throw const GastrobrainException('Invalid backup file: missing version');
+    }
+
+    final db = await _databaseHelper.database;
+
+    await db.transaction((txn) async {
+      // Delete all existing data (reverse dependency order)
+      await txn.delete('meal_recipes');
+      await txn.delete('meals');
+      await txn.delete('meal_plan_item_recipes');
+      await txn.delete('meal_plan_items');
+      await txn.delete('meal_plans');
+      await txn.delete('recipe_ingredients');
+      await txn.delete('recipes');
+      await txn.delete('ingredients');
+      await txn.delete('recommendation_history');
+
+      if (backupData['ingredients'] != null) {
+        final ingredients = backupData['ingredients'] as List;
+        for (final ing in ingredients) {
+          await txn.insert('ingredients', {
+            'id': ing['id'],
+            'name': ing['name'],
+            'category': ing['category'],
+            'unit': ing['unit'],
+            'protein_type': ing['protein_type'],
+            'notes': ing['notes'],
+          });
+        }
       }
 
-      // Get database instance and perform restore in a transaction
-      final db = await _databaseHelper.database;
+      if (backupData['recipes'] != null) {
+        final recipes = backupData['recipes'] as List;
+        for (final recipe in recipes) {
+          await txn.insert('recipes', {
+            'id': recipe['id'],
+            'name': recipe['name'],
+            'difficulty': recipe['difficulty'],
+            'prep_time_minutes': recipe['prep_time_minutes'],
+            'cook_time_minutes': recipe['cook_time_minutes'],
+            'rating': recipe['rating'],
+            'category': recipe['category'],
+            'desired_frequency': recipe['desired_frequency'],
+            'notes': recipe['notes'],
+            'instructions': recipe['instructions'],
+            'created_at': recipe['created_at'],
+          });
 
-      await db.transaction((txn) async {
-        // Step 1: Delete all existing data (in reverse dependency order)
-        await txn.delete('meal_recipes');
-        await txn.delete('meals');
-        await txn.delete('meal_plan_item_recipes');
-        await txn.delete('meal_plan_items');
-        await txn.delete('meal_plans');
-        await txn.delete('recipe_ingredients');
-        await txn.delete('recipes');
-        await txn.delete('ingredients');
-        await txn.delete('recommendation_history');
-
-        // Step 2: Import ingredients
-        if (backupData['ingredients'] != null) {
-          final ingredients = backupData['ingredients'] as List;
-          for (final ing in ingredients) {
-            await txn.insert('ingredients', {
-              'id': ing['id'],
-              'name': ing['name'],
-              'category': ing['category'],
-              'unit': ing['unit'],
-              'protein_type': ing['protein_type'],
-              'notes': ing['notes'],
-            });
-          }
-        }
-
-        // Step 3: Import recipes with ingredients
-        if (backupData['recipes'] != null) {
-          final recipes = backupData['recipes'] as List;
-          for (final recipe in recipes) {
-            // Insert recipe
-            await txn.insert('recipes', {
-              'id': recipe['id'],
-              'name': recipe['name'],
-              'difficulty': recipe['difficulty'],
-              'prep_time_minutes': recipe['prep_time_minutes'],
-              'cook_time_minutes': recipe['cook_time_minutes'],
-              'rating': recipe['rating'],
-              'category': recipe['category'],
-              'desired_frequency': recipe['desired_frequency'],
-              'notes': recipe['notes'],
-              'instructions': recipe['instructions'],
-              'created_at': recipe['created_at'],
-            });
-
-            // Insert recipe ingredients
-            if (recipe['recipe_ingredients'] != null) {
-              final recipeIngredients = recipe['recipe_ingredients'] as List;
-              for (final ri in recipeIngredients) {
-                await txn.insert('recipe_ingredients', {
-                  'id': ri['id'],
-                  'recipe_id': ri['recipe_id'],
-                  'ingredient_id': ri['ingredient_id'],
-                  'quantity': ri['quantity'],
-                  'notes': ri['notes'],
-                  'unit_override': ri['unit_override'],
-                  'custom_name': ri['custom_name'],
-                  'custom_category': ri['custom_category'],
-                  'custom_unit': ri['custom_unit'],
-                });
-              }
+          if (recipe['recipe_ingredients'] != null) {
+            final recipeIngredients = recipe['recipe_ingredients'] as List;
+            for (final ri in recipeIngredients) {
+              await txn.insert('recipe_ingredients', {
+                'id': ri['id'],
+                'recipe_id': ri['recipe_id'],
+                'ingredient_id': ri['ingredient_id'],
+                'quantity': ri['quantity'],
+                'notes': ri['notes'],
+                'unit_override': ri['unit_override'],
+                'custom_name': ri['custom_name'],
+                'custom_category': ri['custom_category'],
+                'custom_unit': ri['custom_unit'],
+              });
             }
           }
         }
+      }
 
-        // Step 4: Import meal plans with items
-        if (backupData['meal_plans'] != null) {
-          final mealPlans = backupData['meal_plans'] as List;
-          for (final plan in mealPlans) {
-            // Insert meal plan
-            await txn.insert('meal_plans', {
-              'id': plan['id'],
-              'week_start_date': plan['week_start_date'],
-              'notes': plan['notes'],
-              'created_at': plan['created_at'],
-              'modified_at': plan['modified_at'],
-            });
+      if (backupData['meal_plans'] != null) {
+        final mealPlans = backupData['meal_plans'] as List;
+        for (final plan in mealPlans) {
+          await txn.insert('meal_plans', {
+            'id': plan['id'],
+            'week_start_date': plan['week_start_date'],
+            'notes': plan['notes'],
+            'created_at': plan['created_at'],
+            'modified_at': plan['modified_at'],
+          });
 
-            // Insert meal plan items
-            if (plan['items'] != null) {
-              final items = plan['items'] as List;
-              for (final item in items) {
-                await txn.insert('meal_plan_items', {
-                  'id': item['id'],
-                  'meal_plan_id': item['meal_plan_id'],
-                  'planned_date': item['planned_date'],
-                  'meal_type': item['meal_type'],
-                  'notes': item['notes'] ?? '',
-                  'has_been_cooked': item['has_been_cooked'] ? 1 : 0,
-                });
+          if (plan['items'] != null) {
+            final items = plan['items'] as List;
+            for (final item in items) {
+              await txn.insert('meal_plan_items', {
+                'id': item['id'],
+                'meal_plan_id': item['meal_plan_id'],
+                'planned_date': item['planned_date'],
+                'meal_type': item['meal_type'],
+                'notes': item['notes'] ?? '',
+                'has_been_cooked': item['has_been_cooked'] ? 1 : 0,
+              });
 
-                // Insert meal plan item recipes
-                if (item['recipes'] != null) {
-                  final recipes = item['recipes'] as List;
-                  for (final recipe in recipes) {
-                    await txn.insert('meal_plan_item_recipes', {
-                      'id': recipe['id'],
-                      'meal_plan_item_id': recipe['meal_plan_item_id'],
-                      'recipe_id': recipe['recipe_id'],
-                      'is_primary_dish': recipe['is_primary_dish'] ? 1 : 0,
-                      'notes': recipe['notes'],
-                    });
-                  }
+              if (item['recipes'] != null) {
+                final recipes = item['recipes'] as List;
+                for (final recipe in recipes) {
+                  await txn.insert('meal_plan_item_recipes', {
+                    'id': recipe['id'],
+                    'meal_plan_item_id': recipe['meal_plan_item_id'],
+                    'recipe_id': recipe['recipe_id'],
+                    'is_primary_dish': recipe['is_primary_dish'] ? 1 : 0,
+                    'notes': recipe['notes'],
+                  });
                 }
               }
             }
           }
         }
+      }
 
-        // Step 5: Import meals with recipes
-        if (backupData['meals'] != null) {
-          final meals = backupData['meals'] as List;
-          for (final meal in meals) {
-            // Insert meal
-            await txn.insert('meals', {
-              'id': meal['id'],
-              'recipe_id': meal['recipe_id'],
-              'cooked_at': meal['cooked_at'],
-              'servings': meal['servings'],
-              'notes': meal['notes'],
-              'was_successful': meal['was_successful'] ? 1 : 0,
-              'actual_prep_time': meal['actual_prep_time'],
-              'actual_cook_time': meal['actual_cook_time'],
-              'modified_at': meal['modified_at'],
-            });
+      if (backupData['meals'] != null) {
+        final meals = backupData['meals'] as List;
+        for (final meal in meals) {
+          await txn.insert('meals', {
+            'id': meal['id'],
+            'recipe_id': meal['recipe_id'],
+            'cooked_at': meal['cooked_at'],
+            'servings': meal['servings'],
+            'notes': meal['notes'],
+            'was_successful': meal['was_successful'] ? 1 : 0,
+            'actual_prep_time': meal['actual_prep_time'],
+            'actual_cook_time': meal['actual_cook_time'],
+            'modified_at': meal['modified_at'],
+          });
 
-            // Insert meal recipes
-            if (meal['meal_recipes'] != null) {
-              final mealRecipes = meal['meal_recipes'] as List;
-              for (final recipe in mealRecipes) {
-                await txn.insert('meal_recipes', {
-                  'id': recipe['id'],
-                  'meal_id': recipe['meal_id'],
-                  'recipe_id': recipe['recipe_id'],
-                  'is_primary_dish': recipe['is_primary_dish'] ? 1 : 0,
-                  'notes': recipe['notes'],
-                });
-              }
+          if (meal['meal_recipes'] != null) {
+            final mealRecipes = meal['meal_recipes'] as List;
+            for (final recipe in mealRecipes) {
+              await txn.insert('meal_recipes', {
+                'id': recipe['id'],
+                'meal_id': recipe['meal_id'],
+                'recipe_id': recipe['recipe_id'],
+                'is_primary_dish': recipe['is_primary_dish'] ? 1 : 0,
+                'notes': recipe['notes'],
+              });
             }
           }
         }
+      }
 
-        // Step 6: Import recommendation history
-        if (backupData['recommendation_history'] != null) {
-          final records = backupData['recommendation_history'] as List;
-          for (final record in records) {
-            await txn.insert('recommendation_history', {
-              'id': record['id'],
-              'result_data': record['result_data'],
-              'created_at': record['created_at'],
-              'context_type': record['context_type'],
-              'target_date': record['target_date'],
-              'meal_type': record['meal_type'],
-              'user_id': record['user_id'],
-            });
-          }
+      if (backupData['recommendation_history'] != null) {
+        final records = backupData['recommendation_history'] as List;
+        for (final record in records) {
+          await txn.insert('recommendation_history', {
+            'id': record['id'],
+            'result_data': record['result_data'],
+            'created_at': record['created_at'],
+            'context_type': record['context_type'],
+            'target_date': record['target_date'],
+            'meal_type': record['meal_type'],
+            'user_id': record['user_id'],
+          });
         }
-      });
-    } catch (e) {
-      throw GastrobrainException(
-          'Failed to restore backup: ${e.toString()}');
-    }
+      }
+    });
   }
 }

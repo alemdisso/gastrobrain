@@ -16,3 +16,4 @@ Auto-flagged by the Code Quality Watchdog. Review during Sprint Planning as part
 - [ ] 🔴 `lib/screens/shopping_list_screen.dart` — file length 517 lines — flagged during: #312 manual shopping items implementation — 2026-03-07
 - [ ] 🔴 `lib/database/database_helper.dart` — file length 2242 lines (threshold: 500) — flagged during: #292 Phase 1 analysis — 2026-03-20
 - [ ] 🔴 `lib/screens/tools_screen.dart` — file length 869 lines — flagged during: issue #331 analysis — 2026-04-13
+- [ ] 🔴 `lib/core/services/database_backup_service.dart` — file length ~430 lines (threshold: 350 for services) — flagged during: #354 implementation — 2026-04-20

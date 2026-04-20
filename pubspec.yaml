@@ -53,6 +53,9 @@ dependencies:
   provider: ">=6.0.0 <7.0.0"  # State management solution
   string_similarity: ">=2.0.0 <3.0.0"  # For fuzzy ingredient matching
   diacritic: ^0.1.6
+  path_provider: ">=2.1.0 <3.0.0"    # App-private storage directory
+  share_plus: ">=9.0.0 <12.0.0"      # Native share sheet for backup delivery
+  file_picker: ">=8.0.0 <10.0.0"     # SAF-compliant file picker for restore
 
 dev_dependencies:
   flutter_test:
