@@ -17,3 +17,5 @@ Auto-flagged by the Code Quality Watchdog. Review during Sprint Planning as part
 - [ ] 🔴 `lib/database/database_helper.dart` — file length 2242 lines (threshold: 500) — flagged during: #292 Phase 1 analysis — 2026-03-20
 - [ ] 🔴 `lib/screens/tools_screen.dart` — file length 869 lines — flagged during: issue #331 analysis — 2026-04-13
 - [ ] 🔴 `lib/core/services/database_backup_service.dart` — file length ~430 lines (threshold: 350 for services) — flagged during: #354 implementation — 2026-04-20
+- [ ] 🔴 `lib/core/services/ingredient_matching_service.dart` — file length 517 lines (threshold: 350 for services) — flagged during: #198 Phase 1 analysis — 2026-04-22
+- [ ] 🔴 `lib/screens/ingredient_detail_screen.dart` — file length 424 lines (threshold: 400 for screens) — flagged during: #198 Phase 1 analysis — 2026-04-22
