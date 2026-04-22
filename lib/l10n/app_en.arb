@@ -1211,6 +1211,14 @@
   "@anyAdditionalInformation": {
     "description": "Hint text for notes field"
   },
+  "ingredientAliasesLabel": "Aliases (Optional)",
+  "@ingredientAliasesLabel": {
+    "description": "Label for the ingredient aliases input field"
+  },
+  "ingredientAliasesHint": "aipo, celery",
+  "@ingredientAliasesHint": {
+    "description": "Hint text for aliases field showing example comma-separated values"
+  },
   "addRecipeTitle": "Add Recipe",
   "@addRecipeTitle": {
     "description": "Text for add recipe button/dialog"

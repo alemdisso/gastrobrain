@@ -31,6 +31,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _notesController = TextEditingController();
+  final _aliasesController = TextEditingController();
   IngredientCategory _selectedCategory = IngredientCategory.vegetable;
   MeasurementUnit? _selectedUnit;
   ProteinType? _selectedProteinType;
@@ -50,6 +51,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
     if (widget.ingredient != null) {
       _nameController.text = widget.ingredient!.name;
       _notesController.text = widget.ingredient!.notes ?? '';
+      _aliasesController.text = widget.ingredient!.aliases.join(', ');
       _selectedCategory = widget.ingredient!.category;
       _selectedUnit = widget.ingredient!.unit;
       _selectedProteinType = widget.ingredient!.proteinType;
@@ -75,6 +77,12 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
         proteinType: _selectedProteinType,
       );
 
+      final aliases = _aliasesController.text
+          .split(',')
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty)
+          .toList();
+
       final ingredient = Ingredient(
         id: widget.ingredient?.id ?? IdGenerator.generateId(),
         name: _nameController.text,
@@ -82,6 +90,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
         unit: _selectedUnit,
         proteinType: _selectedProteinType,
         notes: _notesController.text.isEmpty ? null : _notesController.text,
+        aliases: aliases,
       );
 
       if (widget.ingredient != null) {
@@ -124,6 +133,7 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
   void dispose() {
     _nameController.dispose();
     _notesController.dispose();
+    _aliasesController.dispose();
     super.dispose();
   }
 
@@ -257,6 +267,19 @@ class _AddNewIngredientDialogState extends State<AddNewIngredientDialog> {
                       AppLocalizations.of(context)!.anyAdditionalInformation,
                 ),
                 maxLines: 2,
+              ),
+              const SizedBox(height: 16),
+
+              // Aliases (alternative names for ingredient matching)
+              TextFormField(
+                key: const Key('add_new_ingredient_aliases_field'),
+                controller: _aliasesController,
+                decoration: InputDecoration(
+                  labelText:
+                      AppLocalizations.of(context)!.ingredientAliasesLabel,
+                  hintText:
+                      AppLocalizations.of(context)!.ingredientAliasesHint,
+                ),
               ),
             ],
           ),

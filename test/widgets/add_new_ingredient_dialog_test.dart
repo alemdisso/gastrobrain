@@ -483,5 +483,116 @@ void main() {
         TestSetup.cleanupMockDatabase(mockDbHelper);
       });
     });
+
+    group('Aliases Field', () {
+      testWidgets('aliases pre-populated when editing ingredient with aliases',
+          (tester) async {
+        final mockDbHelper = TestSetup.setupMockDatabase();
+        final existing = Ingredient(
+          id: 'ing_1',
+          name: 'Salsão',
+          category: IngredientCategory.vegetable,
+          aliases: ['aipo', 'celery'],
+        );
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddNewIngredientDialog(
+            databaseHelper: mockDbHelper,
+            ingredient: existing,
+          ),
+        );
+
+        final aliasesField =
+            tester.widget<TextFormField>(find.byKey(const Key('add_new_ingredient_aliases_field')));
+        expect(aliasesField.controller!.text, equals('aipo, celery'));
+
+        TestSetup.cleanupMockDatabase(mockDbHelper);
+      });
+
+      testWidgets('whitespace around aliases is trimmed on save',
+          (tester) async {
+        final mockDbHelper = TestSetup.setupMockDatabase();
+
+        final result = await DialogTestHelpers.openDialogAndCapture<Ingredient>(
+          tester,
+          dialogBuilder: (context) => AddNewIngredientDialog(
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.enterText(
+          find.byKey(const Key('add_new_ingredient_name_field')),
+          'Coentro',
+        );
+        await tester.pumpAndSettle();
+
+        await tester.enterText(
+          find.byKey(const Key('add_new_ingredient_aliases_field')),
+          '  cilantro ,  coriander  ',
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Salvar'));
+        await tester.pumpAndSettle();
+
+        expect(result.hasValue, isTrue);
+        expect(result.value!.aliases, containsAll(['cilantro', 'coriander']));
+        expect(result.value!.aliases, isNot(contains('  cilantro ')));
+
+        TestSetup.cleanupMockDatabase(mockDbHelper);
+      });
+
+      testWidgets('comma-separated input is parsed into aliases list on save',
+          (tester) async {
+        final mockDbHelper = TestSetup.setupMockDatabase();
+
+        final result = await DialogTestHelpers.openDialogAndCapture<Ingredient>(
+          tester,
+          dialogBuilder: (context) => AddNewIngredientDialog(
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.enterText(
+          find.byKey(const Key('add_new_ingredient_name_field')),
+          'Salsão',
+        );
+        await tester.pumpAndSettle();
+
+        await tester.enterText(
+          find.byKey(const Key('add_new_ingredient_aliases_field')),
+          'aipo, celery',
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Salvar'));
+        await tester.pumpAndSettle();
+
+        expect(result.hasValue, isTrue);
+        expect(result.value!.aliases, hasLength(2));
+        expect(result.value!.aliases, containsAll(['aipo', 'celery']));
+
+        TestSetup.cleanupMockDatabase(mockDbHelper);
+      });
+
+      testWidgets('aliases field is visible in the dialog', (tester) async {
+        final mockDbHelper = TestSetup.setupMockDatabase();
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddNewIngredientDialog(
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        expect(
+          find.byKey(const Key('add_new_ingredient_aliases_field')),
+          findsOneWidget,
+        );
+
+        TestSetup.cleanupMockDatabase(mockDbHelper);
+      });
+    });
   });
 }

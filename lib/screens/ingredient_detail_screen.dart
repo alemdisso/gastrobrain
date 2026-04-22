@@ -106,21 +106,43 @@ class _IngredientDetailScreenState extends State<IngredientDetailScreen>
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _UsedInTab(
-            isLoading: _isLoading,
-            recipes: _usedInRecipes,
-            l10n: l10n,
-          ),
-          _MealHistoryTab(
-            isLoading: _isLoading,
-            meals: _filteredMealHistory,
-            totalCount: _mealHistory.length,
-            activeFilter: _historyFilter,
-            onFilterChanged: _applyFilter,
-            l10n: l10n,
+          if (widget.ingredient.aliases.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                DesignTokens.spacingMd,
+                DesignTokens.spacingMd,
+                DesignTokens.spacingMd,
+                0,
+              ),
+              child: Wrap(
+                spacing: DesignTokens.spacingXs,
+                children: widget.ingredient.aliases
+                    .map((alias) => Chip(label: Text(alias)))
+                    .toList(),
+              ),
+            ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _UsedInTab(
+                  isLoading: _isLoading,
+                  recipes: _usedInRecipes,
+                  l10n: l10n,
+                ),
+                _MealHistoryTab(
+                  isLoading: _isLoading,
+                  meals: _filteredMealHistory,
+                  totalCount: _mealHistory.length,
+                  activeFilter: _historyFilter,
+                  onFilterChanged: _applyFilter,
+                  l10n: l10n,
+                ),
+              ],
+            ),
           ),
         ],
       ),

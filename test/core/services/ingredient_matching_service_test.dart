@@ -1456,5 +1456,116 @@ void main() {
         });
       });
     });
+
+    group('alias match (Stage 1.5)', () {
+      late List<Ingredient> ingredientsWithAliases;
+
+      setUp(() {
+        ingredientsWithAliases = [
+          Ingredient(
+            id: '100',
+            name: 'salsão',
+            category: IngredientCategory.vegetable,
+            aliases: ['aipo', 'celery'],
+          ),
+          Ingredient(
+            id: '101',
+            name: 'coentro',
+            category: IngredientCategory.herb,
+            aliases: ['cilantro', 'coriander'],
+          ),
+          Ingredient(
+            id: '102',
+            name: 'tomate',
+            category: IngredientCategory.vegetable,
+          ),
+        ];
+        service.initialize(ingredientsWithAliases);
+      });
+
+      test('alias match found with MatchType.alias', () {
+        final matches = service.findMatches('aipo');
+
+        expect(matches, isNotEmpty);
+        expect(matches.first.matchType, equals(MatchType.alias));
+        expect(matches.first.ingredient.name, equals('salsão'));
+      });
+
+      test('alias match confidence is 0.95', () {
+        final matches = service.findMatches('aipo');
+
+        expect(matches, isNotEmpty);
+        expect(matches.first.confidence, equals(0.95));
+      });
+
+      test('exact name match (1.0) wins over alias match (0.95)', () {
+        // Add an ingredient whose primary name is 'aipo'
+        final mixed = [
+          Ingredient(
+            id: '200',
+            name: 'aipo',
+            category: IngredientCategory.vegetable,
+          ),
+          Ingredient(
+            id: '201',
+            name: 'salsão',
+            category: IngredientCategory.vegetable,
+            aliases: ['aipo'],
+          ),
+        ];
+        service.initialize(mixed);
+
+        final matches = service.findMatches('aipo');
+
+        // Should return immediately after exact match — only one result
+        expect(matches.length, equals(1));
+        expect(matches.first.matchType, equals(MatchType.exact));
+        expect(matches.first.confidence, equals(1.0));
+        expect(matches.first.ingredient.name, equals('aipo'));
+      });
+
+      test('two ingredients sharing same alias both returned', () {
+        final shared = [
+          Ingredient(
+            id: '300',
+            name: 'salsão',
+            category: IngredientCategory.vegetable,
+            aliases: ['aipo'],
+          ),
+          Ingredient(
+            id: '301',
+            name: 'aipo-rábano',
+            category: IngredientCategory.vegetable,
+            aliases: ['aipo'],
+          ),
+        ];
+        service.initialize(shared);
+
+        final matches = service.findMatches('aipo');
+
+        final aliasMatches =
+            matches.where((m) => m.matchType == MatchType.alias).toList();
+        expect(aliasMatches.length, equals(2));
+      });
+
+      test('case-insensitive alias matching', () {
+        final matches = service.findMatches('AIPO');
+
+        expect(matches, isNotEmpty);
+        expect(matches.first.matchType, equals(MatchType.alias));
+        expect(matches.first.ingredient.name, equals('salsão'));
+      });
+
+      test('ingredient with no aliases produces no alias matches', () {
+        // 'tomate' has no aliases — parsing 'tomate' hits exact match, not alias
+        // Parse something that only tomate could match via alias (but it has none)
+        final matches = service.findMatches('tomato');
+
+        // No alias match; may find fuzzy/partial but NOT alias type
+        final aliasMatches =
+            matches.where((m) => m.matchType == MatchType.alias).toList();
+        expect(aliasMatches, isEmpty);
+      });
+    });
   });
 }
