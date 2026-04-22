@@ -11,6 +11,7 @@ class Recipe {
   int difficulty; // 1-5 scale
   int prepTimeMinutes; // Preparation time in minutes
   int cookTimeMinutes; // Cooking time in minutes
+  int marinatingTimeMinutes; // Marinating time in minutes (0 = not applicable)
   int rating; // 1-5 scale
   RecipeCategory category; // Category of the recipe
   int servings; // Baseline yield (how many people this recipe serves)
@@ -25,6 +26,7 @@ class Recipe {
     this.difficulty = 1,
     this.prepTimeMinutes = 0,
     this.cookTimeMinutes = 0,
+    this.marinatingTimeMinutes = 0,
     this.rating = 0,
     RecipeCategory? category,
     this.servings = 4,
@@ -42,6 +44,7 @@ class Recipe {
       'difficulty': difficulty,
       'prep_time_minutes': prepTimeMinutes,
       'cook_time_minutes': cookTimeMinutes,
+      'marinating_time_minutes': marinatingTimeMinutes,
       'rating': rating,
       'category': category.value,
       'servings': servings,
@@ -60,6 +63,7 @@ class Recipe {
       difficulty: map['difficulty'] ?? 1,
       prepTimeMinutes: map['prep_time_minutes'] ?? 0,
       cookTimeMinutes: map['cook_time_minutes'] ?? 0,
+      marinatingTimeMinutes: map['marinating_time_minutes'] ?? 0,
       rating: map['rating'] ?? 0,
       category: RecipeCategory.fromString(map['category'] ?? 'uncategorized'),
       servings: map['servings'] ?? 4,
@@ -76,6 +80,7 @@ class Recipe {
     int? difficulty,
     int? prepTimeMinutes,
     int? cookTimeMinutes,
+    int? marinatingTimeMinutes,
     int? rating,
     RecipeCategory? category,
     int? servings,
@@ -90,6 +95,7 @@ class Recipe {
       difficulty: difficulty ?? this.difficulty,
       prepTimeMinutes: prepTimeMinutes ?? this.prepTimeMinutes,
       cookTimeMinutes: cookTimeMinutes ?? this.cookTimeMinutes,
+      marinatingTimeMinutes: marinatingTimeMinutes ?? this.marinatingTimeMinutes,
       rating: rating ?? this.rating,
       category: category ?? this.category,
       servings: servings ?? this.servings,

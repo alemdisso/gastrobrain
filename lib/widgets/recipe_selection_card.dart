@@ -182,8 +182,11 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
   }
 
   double _calculateEffortScore() {
+    final marinatingContribution =
+        widget.recommendation.recipe.marinatingTimeMinutes.clamp(0, 120);
     final totalTime = widget.recommendation.recipe.prepTimeMinutes +
-        widget.recommendation.recipe.cookTimeMinutes;
+        widget.recommendation.recipe.cookTimeMinutes +
+        marinatingContribution;
     final difficulty = widget.recommendation.recipe.difficulty;
 
     // Base score from difficulty (0-100)
@@ -236,7 +239,8 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
 
       case 'effort':
         final timeText = widget.recommendation.recipe.prepTimeMinutes +
-            widget.recommendation.recipe.cookTimeMinutes;
+            widget.recommendation.recipe.cookTimeMinutes +
+            widget.recommendation.recipe.marinatingTimeMinutes;
         final difficultyText = widget.recommendation.recipe.difficulty;
         return l10n.recipeEffortTooltip(
           badge.score.toStringAsFixed(0),
@@ -468,7 +472,9 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
     final l10n = AppLocalizations.of(context)!;
     final prepTime = widget.recommendation.recipe.prepTimeMinutes;
     final cookTime = widget.recommendation.recipe.cookTimeMinutes;
-    final totalTime = prepTime + cookTime;
+    final marinatingContribution =
+        widget.recommendation.recipe.marinatingTimeMinutes.clamp(0, 120);
+    final totalTime = prepTime + cookTime + marinatingContribution;
     final difficulty = widget.recommendation.recipe.difficulty;
 
     // Default to Moderate if not explicitly set (meaning they're at their default values)

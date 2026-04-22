@@ -32,6 +32,7 @@ import '../core/migration/migration_runner.dart';
 import '../core/migration/migration.dart';
 import '../core/migration/migrations/001_initial_schema.dart';
 import '../core/migration/migrations/002_add_ingredient_aliases.dart';
+import '../core/migration/migrations/003_add_marinating_time.dart';
 import '../core/repositories/base_repository.dart';
 
 class DatabaseHelper {
@@ -47,6 +48,7 @@ class DatabaseHelper {
   static List<Migration> get _migrations => [
     InitialSchemaMigration(),
     AddIngredientAliasesMigration(),
+    AddMarinatingTimeMigration(),
   ];
 
   /// Get the migration runner instance

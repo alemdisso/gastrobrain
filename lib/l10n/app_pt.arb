@@ -164,6 +164,10 @@
   "@cookingTime": {
     "description": "Rótulo do campo tempo de cozimento"
   },
+  "marinatingTime": "Tempo de Marinada",
+  "@marinatingTime": {
+    "description": "Rótulo do campo tempo de marinada nos formulários de receita"
+  },
   "servings": "Porções",
   "@servings": {
     "description": "Rótulo do campo porções da receita (quantas pessoas serve)"
@@ -1462,6 +1466,10 @@
   "cookTimeLabel": "Tempo de Cozimento (min)",
   "@cookTimeLabel": {
     "description": "Rótulo para campo de tempo de cozimento"
+  },
+  "marinatingTimeLabel": "Tempo de Marinada (min)",
+  "@marinatingTimeLabel": {
+    "description": "Rótulo para o tempo de marinada na exibição de detalhes da receita"
   },
   "minuteAbbreviation": "min",
   "@minuteAbbreviation": {

@@ -164,6 +164,10 @@
   "@cookingTime": {
     "description": "Label for cooking time field"
   },
+  "marinatingTime": "Marinating Time",
+  "@marinatingTime": {
+    "description": "Label for marinating time field in recipe forms"
+  },
   "servings": "Servings",
   "@servings": {
     "description": "Label for the recipe servings field (how many people it serves)"
@@ -1480,6 +1484,10 @@
   "cookTimeLabel": "Cook Time (min)",
   "@cookTimeLabel": {
     "description": "Label for cook time field"
+  },
+  "marinatingTimeLabel": "Marinate Time (min)",
+  "@marinatingTimeLabel": {
+    "description": "Label for marinating time in recipe details display"
   },
   "minuteAbbreviation": "min",
   "@minuteAbbreviation": {

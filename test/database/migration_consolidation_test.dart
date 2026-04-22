@@ -4,6 +4,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:gastrobrain/core/migration/migration.dart';
 import 'package:gastrobrain/core/migration/migration_runner.dart';
 import 'package:gastrobrain/core/migration/migrations/001_initial_schema.dart';
+import 'package:gastrobrain/core/migration/migrations/003_add_marinating_time.dart';
 
 void main() {
   setUpAll(() {
@@ -252,6 +253,67 @@ void main() {
       );
       expect(rows.length, equals(1));
       expect(rows.first['name'], equals('frango assado'));
+    });
+  });
+
+  // ── Migration 003: AddMarinatingTimeMigration ─────────────────────────────
+
+  group('Migration 003 — AddMarinatingTimeMigration', () {
+    late Database db;
+    late AddMarinatingTimeMigration migration;
+    late DatabaseWrapper wrapper;
+
+    setUp(() async {
+      db = await openEmpty();
+      migration = AddMarinatingTimeMigration();
+      wrapper = DatabaseWrapper(db);
+      // Apply initial schema first so the recipes table exists
+      await InitialSchemaMigration().up(wrapper);
+    });
+
+    tearDown(() async => db.close());
+
+    test('up() adds marinating_time_minutes column to recipes table', () async {
+      await migration.up(wrapper);
+
+      final cols = await db.rawQuery('PRAGMA table_info(recipes)');
+      final names = cols.map((r) => r['name'] as String).toSet();
+      expect(names, contains('marinating_time_minutes'));
+    });
+
+    test('existing rows have marinating_time_minutes defaulting to 0', () async {
+      // Insert a recipe before the migration runs
+      await db.rawInsert(
+        "INSERT INTO recipes (id, name, desired_frequency, created_at, difficulty, "
+        "prep_time_minutes, cook_time_minutes, rating, servings) "
+        "VALUES ('r-1', 'frango grelhado', 'weekly', '2025-01-01T00:00:00', 2, 10, 20, 4, 4)",
+      );
+
+      await migration.up(wrapper);
+
+      final rows = await db.rawQuery(
+        'SELECT marinating_time_minutes FROM recipes WHERE id = ?',
+        ['r-1'],
+      );
+      expect(rows.length, equals(1));
+      expect(rows.first['marinating_time_minutes'], equals(0));
+    });
+
+    test('validate() returns true after up()', () async {
+      await migration.up(wrapper);
+
+      expect(await migration.validate(wrapper), isTrue);
+    });
+
+    test('down() removes marinating_time_minutes column', () async {
+      await migration.up(wrapper);
+      await migration.down(wrapper);
+
+      final cols = await db.rawQuery('PRAGMA table_info(recipes)');
+      final names = cols.map((r) => r['name'] as String).toSet();
+      expect(names, isNot(contains('marinating_time_minutes')));
+      // Original columns still present after rollback
+      expect(names, containsAll(['prep_time_minutes', 'cook_time_minutes', 'servings']));
     });
   });
 }

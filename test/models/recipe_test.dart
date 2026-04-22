@@ -75,6 +75,61 @@ void main() {
       expect(recipe.rating, 4);
     });
 
+    test('toMap() includes marinating_time_minutes', () {
+      final recipe = Recipe(
+        id: 'test_id',
+        name: 'Test Recipe',
+        createdAt: DateTime.now(),
+        marinatingTimeMinutes: 90,
+      );
+
+      final map = recipe.toMap();
+      expect(map['marinating_time_minutes'], 90);
+    });
+
+    test('fromMap() populates marinatingTimeMinutes when key is present', () {
+      final map = {
+        'id': 'test_id',
+        'name': 'Test Recipe',
+        'desired_frequency': 'monthly',
+        'created_at': DateTime.now().toIso8601String(),
+        'marinating_time_minutes': 120,
+      };
+
+      final recipe = Recipe.fromMap(map);
+      expect(recipe.marinatingTimeMinutes, 120);
+    });
+
+    test('fromMap() defaults marinatingTimeMinutes to 0 when key is absent', () {
+      final map = {
+        'id': 'test_id',
+        'name': 'Test Recipe',
+        'desired_frequency': 'monthly',
+        'created_at': DateTime.now().toIso8601String(),
+        // marinating_time_minutes intentionally omitted (old recipe JSON)
+      };
+
+      final recipe = Recipe.fromMap(map);
+      expect(recipe.marinatingTimeMinutes, 0);
+    });
+
+    test('copyWith() overrides marinatingTimeMinutes and preserves other fields', () {
+      final original = Recipe(
+        id: 'test_id',
+        name: 'Test Recipe',
+        createdAt: DateTime.now(),
+        prepTimeMinutes: 15,
+        cookTimeMinutes: 30,
+        marinatingTimeMinutes: 60,
+      );
+
+      final updated = original.copyWith(marinatingTimeMinutes: 240);
+      expect(updated.marinatingTimeMinutes, 240);
+      expect(updated.prepTimeMinutes, 15);
+      expect(updated.cookTimeMinutes, 30);
+      expect(updated.id, 'test_id');
+    });
+
     test('handles legacy or invalid frequency in map', () {
       final map = {
         'id': 'test_id',

@@ -77,6 +77,17 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
             ),
           if (recipe.cookTimeMinutes > 0) const SizedBox(height: 12),
 
+          // Marinating Time
+          if (recipe.marinatingTimeMinutes > 0)
+            _buildInfoRow(
+              context,
+              icon: Icons.schedule,
+              label: AppLocalizations.of(context)!.marinatingTimeLabel,
+              value:
+                  '${recipe.marinatingTimeMinutes} ${AppLocalizations.of(context)!.minuteAbbreviation}',
+            ),
+          if (recipe.marinatingTimeMinutes > 0) const SizedBox(height: 12),
+
           // Desired Frequency
           _buildInfoRow(
             context,

@@ -23,6 +23,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   late TextEditingController _notesController;
   late TextEditingController _prepTimeController;
   late TextEditingController _cookTimeController;
+  late TextEditingController _marinatingTimeController;
   late int _servings;
   late FrequencyType _selectedFrequency;
   late RecipeCategory _selectedCategory;
@@ -37,6 +38,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     _notesController = TextEditingController(text: widget.recipe.notes);
     _prepTimeController = TextEditingController(text: widget.recipe.prepTimeMinutes.toString());
     _cookTimeController = TextEditingController(text: widget.recipe.cookTimeMinutes.toString());
+    _marinatingTimeController = TextEditingController(text: widget.recipe.marinatingTimeMinutes.toString());
     _servings = widget.recipe.servings;
     _selectedFrequency = widget.recipe.desiredFrequency;
     _selectedCategory = widget.recipe.category;
@@ -128,9 +130,11 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
 
       final prepTime = int.tryParse(_prepTimeController.text);
       final cookTime = int.tryParse(_cookTimeController.text);
+      final marinatingTime = int.tryParse(_marinatingTimeController.text);
 
       EntityValidator.validateTime(prepTime?.toDouble(), 'Preparation');
       EntityValidator.validateTime(cookTime?.toDouble(), 'Cooking');
+      EntityValidator.validateTime(marinatingTime?.toDouble(), 'Marinating');
 
       final updatedRecipe = Recipe(
         id: widget.recipe.id,
@@ -142,6 +146,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         difficulty: _difficulty,
         prepTimeMinutes: prepTime ?? 0,
         cookTimeMinutes: cookTime ?? 0,
+        marinatingTimeMinutes: marinatingTime ?? 0,
         rating: _rating,
         category: _selectedCategory,
         servings: servings,
@@ -178,6 +183,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     _notesController.dispose();
     _prepTimeController.dispose();
     _cookTimeController.dispose();
+    _marinatingTimeController.dispose();
     super.dispose();
   }
 
@@ -224,6 +230,9 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
       const SizedBox(height: 16),
       _buildTimeField(l10n.cookingTime, _cookTimeController,
           key: const Key('edit_recipe_cook_time_field')),
+      const SizedBox(height: 16),
+      _buildTimeField(l10n.marinatingTime, _marinatingTimeController,
+          key: const Key('edit_recipe_marinating_time_field')),
       const SizedBox(height: 16),
       ServingsStepper(
         key: const Key('edit_recipe_servings_stepper'),

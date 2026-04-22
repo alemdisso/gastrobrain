@@ -35,6 +35,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   final _notesController = TextEditingController();
   final _prepTimeController = TextEditingController();
   final _cookTimeController = TextEditingController();
+  final _marinatingTimeController = TextEditingController();
   int _servings = 4;
   FrequencyType _selectedFrequency = FrequencyType.monthly;
   RecipeCategory _selectedCategory = RecipeCategory.uncategorized;
@@ -178,6 +179,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       difficulty: _difficulty,
       prepTimeMinutes: int.tryParse(_prepTimeController.text) ?? 0,
       cookTimeMinutes: int.tryParse(_cookTimeController.text) ?? 0,
+      marinatingTimeMinutes: int.tryParse(_marinatingTimeController.text) ?? 0,
       rating: _rating,
       category: _selectedCategory,
       servings: _servings,
@@ -213,9 +215,11 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
 
       final prepTime = int.tryParse(_prepTimeController.text);
       final cookTime = int.tryParse(_cookTimeController.text);
+      final marinatingTime = int.tryParse(_marinatingTimeController.text);
 
       EntityValidator.validateTime(prepTime?.toDouble(), 'Preparation');
       EntityValidator.validateTime(cookTime?.toDouble(), 'Cooking');
+      EntityValidator.validateTime(marinatingTime?.toDouble(), 'Marinating');
 
       final recipe = Recipe(
         id: _tempRecipeId,
@@ -226,6 +230,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         difficulty: _difficulty,
         prepTimeMinutes: prepTime ?? 0,
         cookTimeMinutes: cookTime ?? 0,
+        marinatingTimeMinutes: marinatingTime ?? 0,
         rating: _rating,
         servings: servings,
       );
@@ -256,6 +261,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     _notesController.dispose();
     _prepTimeController.dispose();
     _cookTimeController.dispose();
+    _marinatingTimeController.dispose();
     super.dispose();
   }
 
@@ -337,6 +343,9 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       const SizedBox(height: 16),
       _buildTimeField(l10n.cookingTime, _cookTimeController,
           key: const Key('add_recipe_cook_time_field')),
+      const SizedBox(height: 16),
+      _buildTimeField(l10n.marinatingTime, _marinatingTimeController,
+          key: const Key('add_recipe_marinating_time_field')),
       const SizedBox(height: 16),
       ServingsStepper(
         key: const Key('add_recipe_servings_stepper'),
