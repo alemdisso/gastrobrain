@@ -1201,6 +1201,26 @@
   "@ingredientAliasesHint": {
     "description": "Texto de dica para o campo de apelidos com exemplos separados por vírgula"
   },
+  "ingredientExactDuplicateError": "Já existe um ingrediente chamado '{name}'.",
+  "@ingredientExactDuplicateError": {
+    "description": "Erro exibido quando o nome digitado corresponde exatamente a um ingrediente existente ou seu apelido",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Nome do ingrediente existente"
+      }
+    }
+  },
+  "ingredientSimilarSuggestion": "Ingredientes similares: {list}",
+  "@ingredientSimilarSuggestion": {
+    "description": "Aviso não-bloqueante exibido quando o nome digitado é prefixo de ingredientes existentes",
+    "placeholders": {
+      "list": {
+        "type": "String",
+        "description": "Lista de nomes de ingredientes similares separados por vírgula"
+      }
+    }
+  },
   "addRecipeTitle": "Adicionar Receita",
   "@addRecipeTitle": {
     "description": "Texto para botão/diálogo de adicionar receita"

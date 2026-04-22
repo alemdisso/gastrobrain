@@ -1219,6 +1219,26 @@
   "@ingredientAliasesHint": {
     "description": "Hint text for aliases field showing example comma-separated values"
   },
+  "ingredientExactDuplicateError": "An ingredient named '{name}' already exists.",
+  "@ingredientExactDuplicateError": {
+    "description": "Error shown when the entered name exactly matches an existing ingredient or its alias",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "The name of the existing ingredient"
+      }
+    }
+  },
+  "ingredientSimilarSuggestion": "Similar ingredients: {list}",
+  "@ingredientSimilarSuggestion": {
+    "description": "Non-blocking warning shown when the entered name is a prefix match of existing ingredients",
+    "placeholders": {
+      "list": {
+        "type": "String",
+        "description": "Comma-separated list of similar ingredient names"
+      }
+    }
+  },
   "addRecipeTitle": "Add Recipe",
   "@addRecipeTitle": {
     "description": "Text for add recipe button/dialog"

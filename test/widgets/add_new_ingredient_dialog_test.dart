@@ -107,7 +107,7 @@ void main() {
         expect(result.hasValue, isTrue);
         expect(result.value, isNotNull);
         expect(result.value, isA<Ingredient>());
-        expect(result.value!.name, equals('Tomato'));
+        expect(result.value!.name, equals('tomato')); // lowercased on save
         expect(result.value!.category,
             equals(IngredientCategory.vegetable)); // Default category
         expect(result.value!.unit, equals(MeasurementUnit.gram));
@@ -193,7 +193,7 @@ void main() {
         expect(result.hasValue, isTrue);
         expect(result.value, isNotNull);
         expect(result.value!.category, equals(IngredientCategory.grain));
-        expect(result.value!.name, equals('Rice'));
+        expect(result.value!.name, equals('rice')); // lowercased on save
 
         TestSetup.cleanupMockDatabase(mockDbHelper);
       });
@@ -232,7 +232,7 @@ void main() {
         expect(result.hasValue, isTrue);
         expect(result.value, isNotNull);
         expect(result.value!.unit, equals(MeasurementUnit.milliliter));
-        expect(result.value!.name, equals('Olive Oil'));
+        expect(result.value!.name, equals('olive oil')); // lowercased on save
 
         TestSetup.cleanupMockDatabase(mockDbHelper);
       });
@@ -289,7 +289,7 @@ void main() {
         expect(result.value, isNotNull);
         expect(result.value!.category, equals(IngredientCategory.protein));
         expect(result.value!.proteinType, equals(ProteinType.chicken));
-        expect(result.value!.name, equals('Chicken Breast'));
+        expect(result.value!.name, equals('chicken breast')); // lowercased on save
 
         TestSetup.cleanupMockDatabase(mockDbHelper);
       });
@@ -372,7 +372,7 @@ void main() {
         // Verify ingredient was saved to database
         expect(mockDbHelper.ingredients.length, equals(1));
         final savedIngredient = mockDbHelper.ingredients.values.first;
-        expect(savedIngredient.name, equals('Bell Pepper'));
+        expect(savedIngredient.name, equals('bell pepper')); // lowercased on save
         expect(savedIngredient.category, equals(IngredientCategory.vegetable));
         expect(savedIngredient.unit, equals(MeasurementUnit.gram));
         expect(savedIngredient.notes, equals('Red or green'));
@@ -590,6 +590,296 @@ void main() {
           find.byKey(const Key('add_new_ingredient_aliases_field')),
           findsOneWidget,
         );
+
+        TestSetup.cleanupMockDatabase(mockDbHelper);
+      });
+    });
+
+    group('Duplicate Detection', () {
+      testWidgets('shows exact duplicate error when name matches existing ingredient',
+          (tester) async {
+        final mockDbHelper = TestSetup.setupMockDatabase();
+        mockDbHelper.ingredients['ing_existing'] = Ingredient(
+          id: 'ing_existing',
+          name: 'tomate',
+          category: IngredientCategory.vegetable,
+        );
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddNewIngredientDialog(
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.enterText(
+          find.byKey(const Key('add_new_ingredient_name_field')),
+          'tomate',
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.textContaining('tomate'), findsWidgets);
+        expect(find.byIcon(Icons.error_outline), findsOneWidget);
+
+        TestSetup.cleanupMockDatabase(mockDbHelper);
+      });
+
+      testWidgets('exact duplicate detection is case-insensitive', (tester) async {
+        final mockDbHelper = TestSetup.setupMockDatabase();
+        mockDbHelper.ingredients['ing_existing'] = Ingredient(
+          id: 'ing_existing',
+          name: 'tomate',
+          category: IngredientCategory.vegetable,
+        );
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddNewIngredientDialog(
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.enterText(
+          find.byKey(const Key('add_new_ingredient_name_field')),
+          'TOMATE',
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.error_outline), findsOneWidget);
+
+        TestSetup.cleanupMockDatabase(mockDbHelper);
+      });
+
+      testWidgets('blocks save when exact duplicate exists', (tester) async {
+        final mockDbHelper = TestSetup.setupMockDatabase();
+        mockDbHelper.ingredients['ing_existing'] = Ingredient(
+          id: 'ing_existing',
+          name: 'tomate',
+          category: IngredientCategory.vegetable,
+        );
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddNewIngredientDialog(
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.enterText(
+          find.byKey(const Key('add_new_ingredient_name_field')),
+          'Tomate',
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Salvar'));
+        await tester.pumpAndSettle();
+
+        // Dialog should still be open — save was blocked
+        expect(find.byType(AddNewIngredientDialog), findsOneWidget);
+        // Only the pre-existing ingredient should remain
+        expect(mockDbHelper.ingredients.length, equals(1));
+
+        TestSetup.cleanupMockDatabase(mockDbHelper);
+      });
+
+      testWidgets('shows alias-based duplicate error', (tester) async {
+        final mockDbHelper = TestSetup.setupMockDatabase();
+        mockDbHelper.ingredients['ing_salsao'] = Ingredient(
+          id: 'ing_salsao',
+          name: 'salsão',
+          category: IngredientCategory.vegetable,
+          aliases: ['aipo', 'celery'],
+        );
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddNewIngredientDialog(
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.enterText(
+          find.byKey(const Key('add_new_ingredient_name_field')),
+          'aipo',
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.error_outline), findsOneWidget);
+        // Error message should mention the primary ingredient name
+        expect(find.textContaining('salsão'), findsWidgets);
+
+        TestSetup.cleanupMockDatabase(mockDbHelper);
+      });
+
+      testWidgets('shows similar suggestion (non-blocking) for prefix match',
+          (tester) async {
+        final mockDbHelper = TestSetup.setupMockDatabase();
+        mockDbHelper.ingredients['ing_tomate'] = Ingredient(
+          id: 'ing_tomate',
+          name: 'tomate',
+          category: IngredientCategory.vegetable,
+        );
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddNewIngredientDialog(
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        // 'tomate cereja' starts with 'tomate' → shows suggestion, not error
+        await tester.enterText(
+          find.byKey(const Key('add_new_ingredient_name_field')),
+          'tomate cereja',
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.info_outline), findsOneWidget);
+        expect(find.byIcon(Icons.error_outline), findsNothing);
+
+        TestSetup.cleanupMockDatabase(mockDbHelper);
+      });
+
+      testWidgets('allows save when similar (non-exact) match exists', (tester) async {
+        final mockDbHelper = TestSetup.setupMockDatabase();
+        mockDbHelper.ingredients['ing_tomate'] = Ingredient(
+          id: 'ing_tomate',
+          name: 'tomate',
+          category: IngredientCategory.vegetable,
+        );
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddNewIngredientDialog(
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.enterText(
+          find.byKey(const Key('add_new_ingredient_name_field')),
+          'tomate cereja',
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Salvar'));
+        await tester.pumpAndSettle();
+
+        // Dialog closed — save succeeded
+        expect(find.byType(AddNewIngredientDialog), findsNothing);
+        expect(mockDbHelper.ingredients.length, equals(2));
+
+        TestSetup.cleanupMockDatabase(mockDbHelper);
+      });
+
+      testWidgets('name is lowercased on save', (tester) async {
+        final mockDbHelper = TestSetup.setupMockDatabase();
+
+        final result = await DialogTestHelpers.openDialogAndCapture<Ingredient>(
+          tester,
+          dialogBuilder: (context) => AddNewIngredientDialog(
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.enterText(
+          find.byKey(const Key('add_new_ingredient_name_field')),
+          'Cenoura',
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Salvar'));
+        await tester.pumpAndSettle();
+
+        expect(result.hasValue, isTrue);
+        expect(result.value!.name, equals('cenoura'));
+
+        TestSetup.cleanupMockDatabase(mockDbHelper);
+      });
+
+      testWidgets('edit mode does not flag ingredient against itself', (tester) async {
+        final mockDbHelper = TestSetup.setupMockDatabase();
+        final existing = Ingredient(
+          id: 'ing_tomate',
+          name: 'tomate',
+          category: IngredientCategory.vegetable,
+        );
+        mockDbHelper.ingredients['ing_tomate'] = existing;
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddNewIngredientDialog(
+            databaseHelper: mockDbHelper,
+            ingredient: existing,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Should show no error — editing the same ingredient
+        expect(find.byIcon(Icons.error_outline), findsNothing);
+
+        TestSetup.cleanupMockDatabase(mockDbHelper);
+      });
+
+      testWidgets('edit mode flags duplicate when renaming to another existing ingredient',
+          (tester) async {
+        final mockDbHelper = TestSetup.setupMockDatabase();
+        final cenoura = Ingredient(
+          id: 'ing_cenoura',
+          name: 'cenoura',
+          category: IngredientCategory.vegetable,
+        );
+        final tomate = Ingredient(
+          id: 'ing_tomate',
+          name: 'tomate',
+          category: IngredientCategory.vegetable,
+        );
+        mockDbHelper.ingredients['ing_cenoura'] = cenoura;
+        mockDbHelper.ingredients['ing_tomate'] = tomate;
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddNewIngredientDialog(
+            databaseHelper: mockDbHelper,
+            ingredient: cenoura,
+          ),
+        );
+
+        // Rename 'cenoura' to 'tomate' — should show error
+        await tester.enterText(
+          find.byKey(const Key('add_new_ingredient_name_field')),
+          'tomate',
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.error_outline), findsOneWidget);
+
+        TestSetup.cleanupMockDatabase(mockDbHelper);
+      });
+
+      testWidgets('no feedback shown for completely new ingredient name', (tester) async {
+        final mockDbHelper = TestSetup.setupMockDatabase();
+        mockDbHelper.ingredients['ing_tomate'] = Ingredient(
+          id: 'ing_tomate',
+          name: 'tomate',
+          category: IngredientCategory.vegetable,
+        );
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddNewIngredientDialog(
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.enterText(
+          find.byKey(const Key('add_new_ingredient_name_field')),
+          'batata doce',
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.error_outline), findsNothing);
+        expect(find.byIcon(Icons.info_outline), findsNothing);
 
         TestSetup.cleanupMockDatabase(mockDbHelper);
       });
