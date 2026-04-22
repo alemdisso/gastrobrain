@@ -217,9 +217,11 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
     if (_searchQuery.isEmpty) {
       return _ingredients;
     }
+    final query = _searchQuery.toLowerCase();
     return _ingredients
         .where((ingredient) =>
-            ingredient.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+            ingredient.name.toLowerCase().contains(query) ||
+            ingredient.aliases.any((alias) => alias.toLowerCase().contains(query)))
         .toList();
   }
 
