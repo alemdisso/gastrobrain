@@ -97,7 +97,9 @@ git merge {type}/{issue-number}-{short-description}
 # Push to remote
 git push origin develop
 
-# Close the issue
+# Close the issue (only if commit message did NOT contain "Closes #XXX")
+# When "Closes #XXX" is present in the commit message, GitHub auto-closes
+# the issue on push — running gh issue close is redundant in that case.
 gh issue close {issue-number}
 ```
 
