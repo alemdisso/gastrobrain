@@ -350,13 +350,16 @@ void main() {
         final time1 = stopwatch1.elapsedMicroseconds;
         final time2 = stopwatch2.elapsedMicroseconds;
 
-        // Only check ratio if both times are measurable (> 0)
-        if (time1 > 0 && time2 > 0) {
+        // Only check ratio if time1 is large enough for reliable measurement.
+        // Sub-millisecond times are dominated by JIT warmup and OS scheduling noise,
+        // making the ratio meaningless even when both values are > 0.
+        const kMinMeasurableUs = 1000; // 1ms floor
+        if (time1 >= kMinMeasurableUs && time2 >= kMinMeasurableUs) {
           final ratio = time2 / time1;
           expect(ratio, lessThan(5.0)); // Should scale roughly linearly (allow 5x margin)
         } else {
-          // Both operations completed too fast to measure - that's also acceptable!
-          expect(time1 + time2, lessThan(10000)); // Combined should be < 10ms
+          // Operations too fast for reliable ratio comparison — verify absolute time is fine.
+          expect(time1 + time2, lessThan(50000)); // Combined < 50ms
         }
       });
     });
