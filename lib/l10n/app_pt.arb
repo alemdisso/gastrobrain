@@ -1933,6 +1933,14 @@
   "@instructionsHint": {
     "description": "Texto de dica mostrando exemplo de formato de instruções"
   },
+  "instructionsEditLabel": "Editar",
+  "@instructionsEditLabel": {
+    "description": "Rótulo do botão para alternar para o modo de edição das instruções"
+  },
+  "instructionsPreviewLabel": "Visualizar",
+  "@instructionsPreviewLabel": {
+    "description": "Rótulo do botão para alternar para a pré-visualização Markdown das instruções"
+  },
   "noneOfTheseCreateNew": "Criar Novo Ingrediente",
   "@noneOfTheseCreateNew": {
     "description": "Texto do botão quando o usuário deseja criar um novo ingrediente em vez de selecionar das correspondências"

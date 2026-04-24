@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import '../models/recipe.dart';
 import '../database/database_helper.dart';
 import '../widgets/add_ingredient_dialog.dart';
@@ -202,33 +203,80 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
   Future<void> _editInstructions() async {
     final TextEditingController controller =
         TextEditingController(text: _instructions);
+    bool isPreviewMode = false;
 
     final result = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.instructions),
-        content: SingleChildScrollView(
-          child: TextField(
-            controller: controller,
-            decoration: InputDecoration(
-              hintText: AppLocalizations.of(context)!.enterInstructions,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) {
+          final l10n = AppLocalizations.of(dialogContext)!;
+          return AlertDialog(
+            title: Text(l10n.instructions),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SegmentedButton<bool>(
+                      segments: [
+                        ButtonSegment(
+                          value: false,
+                          label: Text(l10n.instructionsEditLabel),
+                          icon: const Icon(Icons.edit_outlined),
+                        ),
+                        ButtonSegment(
+                          value: true,
+                          label: Text(l10n.instructionsPreviewLabel),
+                          icon: const Icon(Icons.visibility_outlined),
+                        ),
+                      ],
+                      selected: {isPreviewMode},
+                      onSelectionChanged: (v) =>
+                          setDialogState(() => isPreviewMode = v.first),
+                    ),
+                    const SizedBox(height: 12),
+                    if (isPreviewMode)
+                      MarkdownBody(
+                        data: controller.text.isEmpty
+                            ? '_${l10n.enterInstructions}_'
+                            : controller.text,
+                        shrinkWrap: true,
+                        styleSheet: MarkdownStyleSheet.fromTheme(
+                          Theme.of(dialogContext),
+                        ).copyWith(
+                          p: const TextStyle(fontSize: 16, height: 1.5),
+                        ),
+                      )
+                    else
+                      TextField(
+                        controller: controller,
+                        decoration: InputDecoration(
+                          hintText: l10n.enterInstructions,
+                        ),
+                        maxLines: null,
+                        minLines: 8,
+                        keyboardType: TextInputType.multiline,
+                        autofocus: true,
+                        onChanged: (_) => setDialogState(() {}),
+                      ),
+                  ],
+                ),
+              ),
             ),
-            maxLines: null,
-            minLines: 10,
-            keyboardType: TextInputType.multiline,
-            autofocus: true,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context)!.buttonCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, controller.text),
-            child: Text(AppLocalizations.of(context)!.save),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: Text(l10n.buttonCancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, controller.text),
+                child: Text(l10n.save),
+              ),
+            ],
+          );
+        },
       ),
     );
 
@@ -507,11 +555,11 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
             ),
           ),
           const SizedBox(height: 16),
-          Text(
-            _instructions,
-            style: const TextStyle(
-              fontSize: 16,
-              height: 1.5,
+          MarkdownBody(
+            data: _instructions,
+            shrinkWrap: true,
+            styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+              p: const TextStyle(fontSize: 16, height: 1.5),
             ),
           ),
         ],

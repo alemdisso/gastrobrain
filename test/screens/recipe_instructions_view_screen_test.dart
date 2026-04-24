@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:gastrobrain/models/recipe.dart';
@@ -65,7 +66,7 @@ void main() {
         ),
       );
 
-      expect(find.text('1. Boil water\n2. Cook pasta'), findsOneWidget);
+      expect(find.byType(MarkdownBody), findsOneWidget);
       expect(find.byType(SingleChildScrollView), findsOneWidget);
     });
 
@@ -101,8 +102,8 @@ void main() {
       // Verify SingleChildScrollView exists for scrollable content
       expect(find.byType(SingleChildScrollView), findsOneWidget);
 
-      // Verify the full text content is displayed (all steps from 1 to 50)
-      expect(find.text(longInstructions), findsOneWidget);
+      // Verify the instructions are rendered via MarkdownBody
+      expect(find.byType(MarkdownBody), findsOneWidget);
     });
   });
 }

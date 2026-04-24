@@ -1933,6 +1933,14 @@
   "@instructionsHint": {
     "description": "Hint text showing example instructions format"
   },
+  "instructionsEditLabel": "Edit",
+  "@instructionsEditLabel": {
+    "description": "Toggle label to switch instructions to raw edit mode"
+  },
+  "instructionsPreviewLabel": "Preview",
+  "@instructionsPreviewLabel": {
+    "description": "Toggle label to switch instructions to rendered Markdown preview"
+  },
   "noneOfTheseCreateNew": "Create New Ingredient",
   "@noneOfTheseCreateNew": {
     "description": "Button text when user wants to create new ingredient instead of selecting from matches"
