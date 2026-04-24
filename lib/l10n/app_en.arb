@@ -2676,6 +2676,35 @@
   "filterAllTime": "All time",
   "@filterAllTime": {
     "description": "Time range filter chip: all time (no date restriction)"
+  },
+
+  "recipeStory": "Story",
+  "@recipeStory": {
+    "description": "Label for the recipe story/narrative field"
+  },
+  "recipeStoryLabel": "Story (optional)",
+  "@recipeStoryLabel": {
+    "description": "Label for story field in recipe editor screens"
+  },
+  "recipeStoryHint": "What's the story behind this recipe?",
+  "@recipeStoryHint": {
+    "description": "Hint text for the story input field"
+  },
+  "addStory": "Add story",
+  "@addStory": {
+    "description": "Button label to add a story to a recipe"
+  },
+  "editStory": "Edit story",
+  "@editStory": {
+    "description": "Button tooltip for editing the recipe story"
+  },
+  "storyUpdatedSuccessfully": "Story updated successfully",
+  "@storyUpdatedSuccessfully": {
+    "description": "Success message when story is saved"
+  },
+  "enterStory": "Write the story behind this recipe...",
+  "@enterStory": {
+    "description": "Hint text for story input in edit dialog"
   }
 
 }

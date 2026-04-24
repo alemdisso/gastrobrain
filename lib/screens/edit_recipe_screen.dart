@@ -21,6 +21,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _notesController;
+  late TextEditingController _storyController;
   late TextEditingController _prepTimeController;
   late TextEditingController _cookTimeController;
   late TextEditingController _marinatingTimeController;
@@ -36,6 +37,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     super.initState();
     _nameController = TextEditingController(text: widget.recipe.name);
     _notesController = TextEditingController(text: widget.recipe.notes);
+    _storyController = TextEditingController(text: widget.recipe.story);
     _prepTimeController = TextEditingController(text: widget.recipe.prepTimeMinutes.toString());
     _cookTimeController = TextEditingController(text: widget.recipe.cookTimeMinutes.toString());
     _marinatingTimeController = TextEditingController(text: widget.recipe.marinatingTimeMinutes.toString());
@@ -141,6 +143,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         name: _nameController.text,
         desiredFrequency: _selectedFrequency,
         notes: _notesController.text,
+        story: _storyController.text,
         instructions: widget.recipe.instructions,
         createdAt: widget.recipe.createdAt,
         difficulty: _difficulty,
@@ -181,6 +184,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   void dispose() {
     _nameController.dispose();
     _notesController.dispose();
+    _storyController.dispose();
     _prepTimeController.dispose();
     _cookTimeController.dispose();
     _marinatingTimeController.dispose();
@@ -248,6 +252,16 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         controller: _notesController,
         decoration: InputDecoration(labelText: l10n.notes),
         maxLines: 3,
+      ),
+      const SizedBox(height: 16),
+      TextFormField(
+        key: const Key('edit_recipe_story_field'),
+        controller: _storyController,
+        decoration: InputDecoration(
+          labelText: l10n.recipeStoryLabel,
+          hintText: l10n.recipeStoryHint,
+        ),
+        maxLines: 5,
       ),
       const SizedBox(height: 24),
       SizedBox(

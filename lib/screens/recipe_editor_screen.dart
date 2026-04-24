@@ -658,18 +658,8 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
       }
 
       // Step 4: Save instructions
-      final updatedRecipe = Recipe(
-        id: _selectedRecipe!.id,
-        name: _selectedRecipe!.name,
-        desiredFrequency: _selectedRecipe!.desiredFrequency,
-        notes: _selectedRecipe!.notes,
+      final updatedRecipe = _selectedRecipe!.copyWith(
         instructions: _instructionsController.text,
-        createdAt: _selectedRecipe!.createdAt,
-        difficulty: _selectedRecipe!.difficulty,
-        prepTimeMinutes: _selectedRecipe!.prepTimeMinutes,
-        cookTimeMinutes: _selectedRecipe!.cookTimeMinutes,
-        rating: _selectedRecipe!.rating,
-        category: _selectedRecipe!.category,
         servings: _servings,
       );
       await dbHelper.updateRecipe(updatedRecipe);

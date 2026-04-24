@@ -2593,6 +2593,14 @@
   "usedInNCookedMeals": "{count, plural, =1{Usado em 1 refeição} other{Usado em {count} refeições}}",
   "filterLast30Days": "Últimos 30 dias",
   "filterLast3Months": "Últimos 3 meses",
-  "filterAllTime": "Todo o tempo"
+  "filterAllTime": "Todo o tempo",
+
+  "recipeStory": "História",
+  "recipeStoryLabel": "História (opcional)",
+  "recipeStoryHint": "Qual é a história por trás desta receita?",
+  "addStory": "Adicionar história",
+  "editStory": "Editar história",
+  "storyUpdatedSuccessfully": "História atualizada com sucesso",
+  "enterStory": "Escreve a história por trás desta receita..."
 
 }

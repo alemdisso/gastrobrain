@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import '../models/recipe.dart';
 import '../l10n/app_localizations.dart';
 
@@ -18,6 +19,12 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Story — shown first, hidden when absent
+          if (recipe.story.isNotEmpty) ...[
+            _buildStoryCard(context),
+            const SizedBox(height: 20),
+          ],
+
           // Category
           _buildInfoRow(
             context,
@@ -115,6 +122,58 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
               style: const TextStyle(fontSize: 16, height: 1.5),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStoryCard(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: colorScheme.secondaryContainer.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: colorScheme.secondary.withValues(alpha: 0.25),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.auto_stories_outlined,
+                size: 18,
+                color: colorScheme.secondary,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                AppLocalizations.of(context)!.recipeStory,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                  color: colorScheme.secondary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          MarkdownBody(
+            data: recipe.story,
+            shrinkWrap: true,
+            styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+              p: TextStyle(
+                fontSize: 15,
+                height: 1.65,
+                fontStyle: FontStyle.italic,
+                color: colorScheme.onSecondaryContainer,
+              ),
+            ),
+          ),
         ],
       ),
     );

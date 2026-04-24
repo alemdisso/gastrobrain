@@ -33,6 +33,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _notesController = TextEditingController();
+  final _storyController = TextEditingController();
   final _prepTimeController = TextEditingController();
   final _cookTimeController = TextEditingController();
   final _marinatingTimeController = TextEditingController();
@@ -226,6 +227,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         name: _nameController.text,
         desiredFrequency: _selectedFrequency,
         notes: _notesController.text,
+        story: _storyController.text,
         createdAt: DateTime.now(),
         difficulty: _difficulty,
         prepTimeMinutes: prepTime ?? 0,
@@ -259,6 +261,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   void dispose() {
     _nameController.dispose();
     _notesController.dispose();
+    _storyController.dispose();
     _prepTimeController.dispose();
     _cookTimeController.dispose();
     _marinatingTimeController.dispose();
@@ -360,6 +363,16 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         controller: _notesController,
         decoration: InputDecoration(labelText: l10n.notes),
         maxLines: 3,
+      ),
+      const SizedBox(height: 16),
+      TextFormField(
+        key: const Key('add_recipe_story_field'),
+        controller: _storyController,
+        decoration: InputDecoration(
+          labelText: l10n.recipeStoryLabel,
+          hintText: l10n.recipeStoryHint,
+        ),
+        maxLines: 5,
       ),
       const SizedBox(height: 16),
       _buildIngredientsCard(context),
