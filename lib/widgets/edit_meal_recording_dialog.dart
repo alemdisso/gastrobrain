@@ -3,6 +3,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import '../models/meal_recipe.dart';
 import '../models/recipe.dart';
 import '../models/meal.dart';
 import '../database/database_helper.dart';
@@ -16,6 +17,7 @@ class EditMealRecordingDialog extends StatefulWidget {
   final Meal meal;
   final Recipe primaryRecipe;
   final List<Recipe> additionalRecipes;
+  final List<MealRecipe> mealRecipes;
   final DatabaseHelper? databaseHelper;
 
   const EditMealRecordingDialog({
@@ -23,6 +25,7 @@ class EditMealRecordingDialog extends StatefulWidget {
     required this.meal,
     required this.primaryRecipe,
     this.additionalRecipes = const [],
+    this.mealRecipes = const [],
     this.databaseHelper,
   });
 
@@ -41,6 +44,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
   late DateTime _cookedAt;
 
   final List<Recipe> _additionalRecipes = [];
+  final Map<String, TextEditingController> _recipeNoteControllers = {};
   late final DatabaseHelper _dbHelper;
   List<Recipe> _availableRecipes = [];
   bool _isLoadingRecipes = false;
@@ -60,8 +64,19 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
     _wasSuccessful = widget.meal.wasSuccessful;
     _cookedAt = widget.meal.cookedAt;
 
+    // Initialise per-recipe note controllers, pre-filled from existing MealRecipe.notes
+    final notesByRecipeId = {
+      for (final mr in widget.mealRecipes) mr.recipeId: mr.notes ?? '',
+    };
+    _recipeNoteControllers[widget.primaryRecipe.id] =
+        TextEditingController(text: notesByRecipeId[widget.primaryRecipe.id] ?? '');
+
     // Pre-populate additional recipes
     _additionalRecipes.addAll(widget.additionalRecipes);
+    for (final r in widget.additionalRecipes) {
+      _recipeNoteControllers[r.id] =
+          TextEditingController(text: notesByRecipeId[r.id] ?? '');
+    }
 
     // Load available recipes for modification
     _loadAvailableRecipes();
@@ -178,8 +193,17 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
     if (selectedRecipe != null && mounted) {
       setState(() {
         _additionalRecipes.add(selectedRecipe);
+        _recipeNoteControllers[selectedRecipe.id] = TextEditingController();
       });
     }
+  }
+
+  void _removeAdditionalRecipe(int index) {
+    setState(() {
+      final recipe = _additionalRecipes[index];
+      _recipeNoteControllers.remove(recipe.id)?.dispose();
+      _additionalRecipes.removeAt(index);
+    });
   }
 
   void _saveChanges() {
@@ -196,6 +220,13 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
       EntityValidator.validateTime(
           cookTime, AppLocalizations.of(context)!.cookingTime);
 
+      // Collect non-empty per-recipe notes
+      final recipeNotes = <String, String?>{};
+      for (final entry in _recipeNoteControllers.entries) {
+        final text = entry.value.text.trim();
+        if (text.isNotEmpty) recipeNotes[entry.key] = text;
+      }
+
       // Return the updated meal data
       Navigator.of(context).pop({
         'mealId': widget.meal.id,
@@ -208,6 +239,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
         'primaryRecipe': widget.primaryRecipe,
         'additionalRecipes': _additionalRecipes,
         'modifiedAt': DateTime.now(),
+        'recipeNotes': recipeNotes,
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -222,6 +254,9 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
     _notesController.dispose();
     _prepTimeController.dispose();
     _cookTimeController.dispose();
+    for (final c in _recipeNoteControllers.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -286,27 +321,59 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
                     subtitle: Text(AppLocalizations.of(context)!.mainDish),
                     contentPadding: EdgeInsets.zero,
                   ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: TextFormField(
+                      controller:
+                          _recipeNoteControllers[widget.primaryRecipe.id],
+                      decoration: InputDecoration(
+                        hintText:
+                            AppLocalizations.of(context)!.recipeNoteHint,
+                        prefixIcon:
+                            const Icon(Icons.note_outlined, size: 18),
+                        isDense: true,
+                      ),
+                      maxLines: 2,
+                    ),
+                  ),
 
                   // Additional recipes
                   if (_additionalRecipes.isNotEmpty) ...[
                     const Divider(),
                     ...List.generate(_additionalRecipes.length, (index) {
                       final recipe = _additionalRecipes[index];
-                      return ListTile(
-                        leading: const Icon(Icons.restaurant_menu,
-                            color: Colors.grey),
-                        title: Text(recipe.name),
-                        subtitle: Text(AppLocalizations.of(context)!.sideDish),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete_outline),
-                          onPressed: () {
-                            setState(() {
-                              _additionalRecipes.removeAt(index);
-                            });
-                          },
-                          tooltip: AppLocalizations.of(context)!.removeTooltip,
-                        ),
-                        contentPadding: EdgeInsets.zero,
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ListTile(
+                            leading: const Icon(Icons.restaurant_menu,
+                                color: Colors.grey),
+                            title: Text(recipe.name),
+                            subtitle:
+                                Text(AppLocalizations.of(context)!.sideDish),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete_outline),
+                              onPressed: () => _removeAdditionalRecipe(index),
+                              tooltip:
+                                  AppLocalizations.of(context)!.removeTooltip,
+                            ),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: TextFormField(
+                              controller: _recipeNoteControllers[recipe.id],
+                              decoration: InputDecoration(
+                                hintText: AppLocalizations.of(context)!
+                                    .recipeNoteHint,
+                                prefixIcon: const Icon(Icons.note_outlined,
+                                    size: 18),
+                                isDense: true,
+                              ),
+                              maxLines: 2,
+                            ),
+                          ),
+                        ],
                       );
                     }),
                   ],

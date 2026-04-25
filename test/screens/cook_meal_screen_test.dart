@@ -317,14 +317,15 @@ void main() {
       await tester.tap(find.text('Registrar Detalhes da Refeição'));
       await tester.pumpAndSettle();
 
-      // Toggle the switch off
-      await tester.tap(find.byKey(const Key('meal_recording_success_switch')));
+      // Toggle the switch off (scroll to it first — dialog is taller with per-recipe note fields)
+      final switchFinder = find.byKey(const Key('meal_recording_success_switch'));
+      await tester.ensureVisible(switchFinder);
+      await tester.pumpAndSettle();
+      await tester.tap(switchFinder);
       await tester.pumpAndSettle();
 
       // Verify it's now false
-      final successSwitch = tester.widget<Switch>(
-        find.byKey(const Key('meal_recording_success_switch')),
-      );
+      final successSwitch = tester.widget<Switch>(switchFinder);
       expect(successSwitch.value, false);
     });
 
@@ -339,18 +340,21 @@ void main() {
       await tester.tap(find.text('Registrar Detalhes da Refeição'));
       await tester.pumpAndSettle();
 
+      // Scroll to switch first — dialog is taller with per-recipe note fields
+      final switchFinder = find.byKey(const Key('meal_recording_success_switch'));
+      await tester.ensureVisible(switchFinder);
+      await tester.pumpAndSettle();
+
       // Toggle off
-      await tester.tap(find.byKey(const Key('meal_recording_success_switch')));
+      await tester.tap(switchFinder);
       await tester.pumpAndSettle();
 
       // Toggle back on
-      await tester.tap(find.byKey(const Key('meal_recording_success_switch')));
+      await tester.tap(switchFinder);
       await tester.pumpAndSettle();
 
       // Verify it's true again
-      final successSwitch = tester.widget<Switch>(
-        find.byKey(const Key('meal_recording_success_switch')),
-      );
+      final successSwitch = tester.widget<Switch>(switchFinder);
       expect(successSwitch.value, true);
     });
   });

@@ -1193,6 +1193,14 @@
   "@notesOptional": {
     "description": "Rótulo para campo de observações"
   },
+  "recipeNoteHint": "Nota sobre este prato (opcional)",
+  "@recipeNoteHint": {
+    "description": "Texto de dica para o campo de nota por receita no diálogo de registo"
+  },
+  "mealNoteLabel": "Nota da refeição",
+  "@mealNoteLabel": {
+    "description": "Rótulo para a nota geral da refeição no histórico"
+  },
   "anyAdditionalInformation": "Qualquer informação adicional",
   "@anyAdditionalInformation": {
     "description": "Texto de dica para campo de observações"

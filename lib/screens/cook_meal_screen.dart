@@ -78,6 +78,8 @@ class _CookMealScreenState extends State<CookMealScreen> {
       final Recipe primaryRecipe = mealData['primaryRecipe'];
       final List<Recipe> additionalRecipes = mealData['additionalRecipes'];
       final MealType? mealType = mealData['mealType'];
+      final Map<String, String?>? recipeNotes =
+          mealData['recipeNotes'] as Map<String, String?>?;
 
       // Create the meal with a new ID
       final mealId = IdGenerator.generateId();
@@ -102,6 +104,7 @@ class _CookMealScreenState extends State<CookMealScreen> {
         meal: meal,
         primaryRecipe: primaryRecipe,
         additionalRecipes: additionalRecipes,
+        recipeNotes: recipeNotes,
       );
 
       // Refresh meal statistics in the RecipeProvider to reflect the new meal

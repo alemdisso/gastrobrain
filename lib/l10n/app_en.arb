@@ -1211,6 +1211,14 @@
   "@notesOptional": {
     "description": "Label for notes field"
   },
+  "recipeNoteHint": "Note about this dish (optional)",
+  "@recipeNoteHint": {
+    "description": "Hint text for per-recipe note field in meal recording dialog"
+  },
+  "mealNoteLabel": "Meal note",
+  "@mealNoteLabel": {
+    "description": "Label for the general meal-level note in history display"
+  },
   "anyAdditionalInformation": "Any additional information",
   "@anyAdditionalInformation": {
     "description": "Hint text for notes field"
