@@ -290,11 +290,13 @@ class _RecipeCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.only(top: DesignTokens.spacingXs),
                   child: Text(
-                    l10n.ingredientUsageQuantityLabel(
-                      usageUnit != null && usageUnit.isNotEmpty
-                          ? '$usageQuantity $usageUnit'
-                          : '$usageQuantity',
-                    ),
+                    (usageQuantity as num) == 0
+                        ? l10n.toTaste
+                        : l10n.ingredientUsageQuantityLabel(
+                            usageUnit != null && usageUnit.isNotEmpty
+                                ? '$usageQuantity $usageUnit'
+                                : '$usageQuantity',
+                          ),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),

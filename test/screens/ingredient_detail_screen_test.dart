@@ -146,6 +146,25 @@ void main() {
       expect(find.textContaining('null'), findsNothing);
     });
 
+    testWidgets('recipe card shows "to taste" when quantity is zero',
+        (tester) async {
+      final recipe = _makeRecipe();
+      mockDb.recipes[recipe.id] = recipe;
+      await mockDb.addIngredientToRecipe(
+        _makeRecipeIngredient(
+            recipeId: recipe.id, ingredientId: ingredient.id, quantity: 0),
+      );
+
+      await tester.pumpWidget(_buildTestApp(
+        IngredientDetailScreen(
+            ingredient: ingredient, databaseHelper: mockDb),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('to taste'), findsOneWidget);
+      expect(find.textContaining('0'), findsNothing);
+    });
+
     testWidgets('tapping recipe card navigates to RecipeDetailsScreen',
         (tester) async {
       final recipe = _makeRecipe();
