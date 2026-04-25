@@ -903,8 +903,13 @@ class MockDatabaseHelper implements DatabaseHelper {
       final ingredientCount = _recipeIngredients.values
           .where((r) => r.recipeId == ri.recipeId)
           .length;
+      final ingredient = _ingredients[ri.ingredientId];
+      final resolvedUnit = ri.customUnit ??
+          ri.unitOverride ??
+          ingredient?.unit?.value;
       final map = recipe.toMap();
       map['usage_quantity'] = ri.quantity;
+      map['usage_unit'] = resolvedUnit;
       map['ingredient_count'] = ingredientCount;
       return map;
     }).whereType<Map<String, dynamic>>().toList()

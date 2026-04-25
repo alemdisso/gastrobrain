@@ -215,6 +215,7 @@ class _RecipeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final recipe = Recipe.fromMap(row);
     final usageQuantity = row['usage_quantity'];
+    final usageUnit = row['usage_unit'] as String?;
     final ingredientCount = (row['ingredient_count'] as int?) ?? 0;
     final isIncomplete = ingredientCount < 3;
 
@@ -289,7 +290,11 @@ class _RecipeCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.only(top: DesignTokens.spacingXs),
                   child: Text(
-                    l10n.ingredientUsageQuantityLabel(usageQuantity),
+                    l10n.ingredientUsageQuantityLabel(
+                      usageUnit != null && usageUnit.isNotEmpty
+                          ? '$usageQuantity $usageUnit'
+                          : '$usageQuantity',
+                    ),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
