@@ -2595,6 +2595,7 @@
   "usedInNRecipes": "Usado em {count} receitas",
   "noRecipesUsingIngredient": "Este ingrediente ainda não foi adicionado a nenhuma receita.",
   "incompleteRecipe": "Incompleta",
+  "ingredientUsageQuantityLabel": "Qtd: {quantity}",
   "directSideIngredient": "Ingrediente de acompanhamento",
   "mealHistory": "Histórico de Refeições",
   "noMealsWithIngredient": "Este ingrediente ainda não apareceu em nenhuma refeição cozinhada.",

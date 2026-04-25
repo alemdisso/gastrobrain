@@ -2652,6 +2652,15 @@
   "@incompleteRecipe": {
     "description": "Chip label for recipes with fewer than 3 ingredients"
   },
+  "ingredientUsageQuantityLabel": "Qty: {quantity}",
+  "@ingredientUsageQuantityLabel": {
+    "description": "Quantity label shown on recipe cards in the ingredient Used In tab",
+    "placeholders": {
+      "quantity": {
+        "type": "Object"
+      }
+    }
+  },
   "directSideIngredient": "Side ingredient",
   "@directSideIngredient": {
     "description": "Label for ingredient added directly to a meal (not via a recipe)"

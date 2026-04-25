@@ -289,7 +289,7 @@ class _RecipeCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.only(top: DesignTokens.spacingXs),
                   child: Text(
-                    'Qty: $usageQuantity',
+                    l10n.ingredientUsageQuantityLabel(usageQuantity),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
