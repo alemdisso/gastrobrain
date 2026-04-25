@@ -48,74 +48,87 @@ class IngredientParserService {
       
       // Add English display name
       _unitStringMap[unit.displayName.toLowerCase()] = standardValue;
-      
-      // Add localized display name (Portuguese)
-      final localizedName = unit.getLocalizedDisplayName(null); // Uses fallback
-      if (localizedName != unit.displayName) {
-        _unitStringMap[localizedName.toLowerCase()] = standardValue;
-      }
-      
-      // Get Portuguese localized name using the localizations object
-      // Map each unit to its Portuguese equivalent
-      String? portugueseName;
+
+      // Add localized singular and plural forms from l10n (single source of truth)
+      String? localizedName;
+      String? localizedPlural;
       switch (unit) {
         case MeasurementUnit.cup:
-          portugueseName = localizations.measurementUnitCup.toLowerCase();
+          localizedName = localizations.measurementUnitCup.toLowerCase();
+          localizedPlural = localizations.measurementUnitCupQuantity(2).toLowerCase();
           break;
         case MeasurementUnit.tablespoon:
-          portugueseName = localizations.measurementUnitTablespoon.toLowerCase();
+          localizedName = localizations.measurementUnitTablespoon.toLowerCase();
+          localizedPlural = localizations.measurementUnitTablespoonQuantity(2).toLowerCase();
           break;
         case MeasurementUnit.teaspoon:
-          portugueseName = localizations.measurementUnitTeaspoon.toLowerCase();
+          localizedName = localizations.measurementUnitTeaspoon.toLowerCase();
+          localizedPlural = localizations.measurementUnitTeaspoonQuantity(2).toLowerCase();
           break;
         case MeasurementUnit.piece:
-          portugueseName = localizations.measurementUnitPiece.toLowerCase();
+          localizedName = localizations.measurementUnitPiece.toLowerCase();
+          localizedPlural = localizations.measurementUnitPieceQuantity(2).toLowerCase();
           break;
         case MeasurementUnit.slice:
-          portugueseName = localizations.measurementUnitSlice.toLowerCase();
+          localizedName = localizations.measurementUnitSlice.toLowerCase();
+          localizedPlural = localizations.measurementUnitSliceQuantity(2).toLowerCase();
           break;
         case MeasurementUnit.bunch:
-          portugueseName = localizations.measurementUnitBunch.toLowerCase();
+          localizedName = localizations.measurementUnitBunch.toLowerCase();
+          localizedPlural = localizations.measurementUnitBunchQuantity(2).toLowerCase();
           break;
         case MeasurementUnit.leaves:
-          portugueseName = localizations.measurementUnitLeaves.toLowerCase();
+          localizedName = localizations.measurementUnitLeaves.toLowerCase();
+          localizedPlural = localizations.measurementUnitLeavesQuantity(2).toLowerCase();
           break;
         case MeasurementUnit.pinch:
-          portugueseName = localizations.measurementUnitPinch.toLowerCase();
+          localizedName = localizations.measurementUnitPinch.toLowerCase();
+          localizedPlural = localizations.measurementUnitPinchQuantity(2).toLowerCase();
           break;
         case MeasurementUnit.clove:
-          portugueseName = localizations.measurementUnitClove.toLowerCase();
+          localizedName = localizations.measurementUnitClove.toLowerCase();
+          localizedPlural = localizations.measurementUnitCloveQuantity(2).toLowerCase();
           break;
         case MeasurementUnit.head:
-          portugueseName = localizations.measurementUnitHead.toLowerCase();
+          localizedName = localizations.measurementUnitHead.toLowerCase();
+          localizedPlural = localizations.measurementUnitHeadQuantity(2).toLowerCase();
           break;
         case MeasurementUnit.can:
-          portugueseName = localizations.measurementUnitCan.toLowerCase();
+          localizedName = localizations.measurementUnitCan.toLowerCase();
+          localizedPlural = localizations.measurementUnitCanQuantity(2).toLowerCase();
           break;
         case MeasurementUnit.box:
-          portugueseName = localizations.measurementUnitBox.toLowerCase();
+          localizedName = localizations.measurementUnitBox.toLowerCase();
+          localizedPlural = localizations.measurementUnitBoxQuantity(2).toLowerCase();
           break;
         case MeasurementUnit.stem:
-          portugueseName = localizations.measurementUnitStem.toLowerCase();
+          localizedName = localizations.measurementUnitStem.toLowerCase();
+          localizedPlural = localizations.measurementUnitStemQuantity(2).toLowerCase();
           break;
         case MeasurementUnit.sprig:
-          portugueseName = localizations.measurementUnitSprig.toLowerCase();
+          localizedName = localizations.measurementUnitSprig.toLowerCase();
+          localizedPlural = localizations.measurementUnitSprigQuantity(2).toLowerCase();
           break;
         case MeasurementUnit.seed:
-          portugueseName = localizations.measurementUnitSeed.toLowerCase();
+          localizedName = localizations.measurementUnitSeed.toLowerCase();
+          localizedPlural = localizations.measurementUnitSeedQuantity(2).toLowerCase();
           break;
         case MeasurementUnit.grain:
-          portugueseName = localizations.measurementUnitGrain.toLowerCase();
+          localizedName = localizations.measurementUnitGrain.toLowerCase();
+          localizedPlural = localizations.measurementUnitGrainQuantity(2).toLowerCase();
           break;
         case MeasurementUnit.centimeter:
-          portugueseName = localizations.measurementUnitCm.toLowerCase();
+          localizedName = localizations.measurementUnitCm.toLowerCase();
           break;
         default:
-          portugueseName = null;
+          break;
       }
-      
-      if (portugueseName != null && portugueseName.isNotEmpty) {
-        _unitStringMap[portugueseName] = standardValue;
+
+      if (localizedName != null && localizedName.isNotEmpty) {
+        _unitStringMap[localizedName] = standardValue;
+      }
+      if (localizedPlural != null && localizedPlural.isNotEmpty && localizedPlural != localizedName) {
+        _unitStringMap[localizedPlural] = standardValue;
       }
     }
     
@@ -129,7 +142,15 @@ class IngredientParserService {
     _isInitialized = true;
   }
   
-  /// Add common abbreviations and variants for units
+  /// Add abbreviations, accent-stripped variants, and cross-locale aliases.
+  ///
+  /// The initialize() switch covers localized singular and plural forms for the
+  /// current app locale (e.g., PT: "xícara"/"xícaras", EN: "cup"/"cups").
+  /// This method covers what the switch cannot:
+  ///   - Accent-stripped robustness variants (xicara, grao, cabeca, …)
+  ///   - Abbreviations (col, cs, csp, cc, pç, pc, un, c)
+  ///   - Cross-locale aliases (PT forms when app is EN, EN forms when app is PT)
+  ///   - Special compound mappings not in l10n (colher de sobremesa, pedaço, …)
   void _addUnitVariants() {
     // Weight variants
     _unitStringMap['gram'] = 'g';
@@ -139,140 +160,126 @@ class IngredientParserService {
     _unitStringMap['quilogramas'] = 'kg';
     _unitStringMap['kilogram'] = 'kg';
     _unitStringMap['kilograms'] = 'kg';
-    
+
     // Volume variants
     _unitStringMap['litro'] = 'l';
     _unitStringMap['litros'] = 'l';
     _unitStringMap['liter'] = 'l';
     _unitStringMap['liters'] = 'l';
-    
+
     // Cup variants
-    _unitStringMap['xícara'] = 'cup';
-    _unitStringMap['xicara'] = 'cup';
-    _unitStringMap['xícaras'] = 'cup';
-    _unitStringMap['xicaras'] = 'cup';
-    _unitStringMap['cups'] = 'cup';
+    _unitStringMap['xícara'] = 'cup';   // cross-locale: PT singular (needed when locale=EN)
+    _unitStringMap['xicara'] = 'cup';   // accent-stripped robustness variant
+    _unitStringMap['xícaras'] = 'cup';  // cross-locale: PT plural (needed when locale=EN)
+    _unitStringMap['xicaras'] = 'cup';  // accent-stripped plural robustness variant
+    _unitStringMap['cups'] = 'cup';     // cross-locale: EN plural (needed when locale=PT)
     _unitStringMap['c'] = 'cup';
-    
+
     // Tablespoon variants (including compound forms)
-    _unitStringMap['tablespoon'] = 'tbsp';
-    _unitStringMap['tablespoons'] = 'tbsp';
-    _unitStringMap['colher'] = 'tbsp';
-    _unitStringMap['colheres'] = 'tbsp';
+    _unitStringMap['tablespoon'] = 'tbsp';   // cross-locale: EN full name
+    _unitStringMap['tablespoons'] = 'tbsp';  // cross-locale: EN plural
+    _unitStringMap['colher'] = 'tbsp';       // PT stem (e.g., "colher" alone → tbsp default)
+    _unitStringMap['colheres'] = 'tbsp';     // PT plural stem
     _unitStringMap['col'] = 'tbsp';
     _unitStringMap['cs'] = 'tbsp';
     _unitStringMap['csp'] = 'tbsp';
-    // Compound forms (primary Portuguese forms)
-    _unitStringMap['colher de sopa'] = 'tbsp';
-    _unitStringMap['colheres de sopa'] = 'tbsp';
-    _unitStringMap['colher de sobremesa'] = 'tbsp'; // dessert spoon (≈ tbsp)
+    _unitStringMap['colher de sopa'] = 'tbsp';        // cross-locale: PT compound (needed when locale=EN)
+    _unitStringMap['colheres de sopa'] = 'tbsp';      // cross-locale: PT plural compound
+    _unitStringMap['colher de sobremesa'] = 'tbsp';   // dessert spoon (≈ tbsp), not in l10n
     _unitStringMap['colheres de sobremesa'] = 'tbsp';
-    
+
     // Teaspoon variants (including compound forms)
-    _unitStringMap['teaspoon'] = 'tsp';
-    _unitStringMap['teaspoons'] = 'tsp';
-    // Compound forms with accent (primary Portuguese forms)
-    _unitStringMap['colher de chá'] = 'tsp';
-    _unitStringMap['colheres de chá'] = 'tsp';
-    // Compound forms without accent (variant)
-    _unitStringMap['colher de cha'] = 'tsp';
-    _unitStringMap['colheres de cha'] = 'tsp';
-    // Simple forms
+    _unitStringMap['teaspoon'] = 'tsp';   // cross-locale: EN full name
+    _unitStringMap['teaspoons'] = 'tsp';  // cross-locale: EN plural
+    _unitStringMap['colher de chá'] = 'tsp';    // cross-locale: PT compound (needed when locale=EN)
+    _unitStringMap['colheres de chá'] = 'tsp';  // cross-locale: PT plural compound
+    _unitStringMap['colher de cha'] = 'tsp';    // accent-stripped robustness variant
+    _unitStringMap['colheres de cha'] = 'tsp';  // accent-stripped plural robustness variant
     _unitStringMap['chá'] = 'tsp';
     _unitStringMap['cha'] = 'tsp';
     _unitStringMap['cc'] = 'tsp';
-    
+
     // Count variants
-    _unitStringMap['unidade'] = 'piece';
-    _unitStringMap['unidades'] = 'piece';
-    _unitStringMap['piece'] = 'piece';
-    _unitStringMap['pieces'] = 'piece';
+    _unitStringMap['unidade'] = 'piece';   // cross-locale: PT singular (needed when locale=EN)
+    _unitStringMap['unidades'] = 'piece';  // cross-locale: PT plural (needed when locale=EN)
+    _unitStringMap['pieces'] = 'piece';    // cross-locale: EN plural (needed when locale=PT)
     _unitStringMap['pç'] = 'piece';
     _unitStringMap['pc'] = 'piece';
     _unitStringMap['un'] = 'piece';
-    _unitStringMap['pedaço'] = 'piece';
+    _unitStringMap['pedaço'] = 'piece';   // PT alternative name, not in l10n
     _unitStringMap['pedaços'] = 'piece';
-    _unitStringMap['pedacos'] = 'piece'; // without cedilla (robustness)
-    
+    _unitStringMap['pedacos'] = 'piece';  // accent-stripped robustness variant
+
     // Slice variants
-    _unitStringMap['fatias'] = 'slice';
-    _unitStringMap['slice'] = 'slice';
-    _unitStringMap['slices'] = 'slice';
-    
+    _unitStringMap['fatias'] = 'slice';   // cross-locale: PT plural (needed when locale=EN)
+    _unitStringMap['slices'] = 'slice';   // cross-locale: EN plural (needed when locale=PT)
+
     // Bunch variants
-    _unitStringMap['maço'] = 'bunch';
-    _unitStringMap['maços'] = 'bunch';  // plural with cedilla (proper Portuguese)
-    _unitStringMap['macos'] = 'bunch';  // plural without cedilla (robustness)
-    _unitStringMap['bunch'] = 'bunch';
-    _unitStringMap['bunches'] = 'bunch';
-    
+    _unitStringMap['maço'] = 'bunch';    // cross-locale: PT singular (needed when locale=EN)
+    _unitStringMap['maços'] = 'bunch';   // cross-locale: PT plural (needed when locale=EN)
+    _unitStringMap['macos'] = 'bunch';   // accent-stripped robustness variant
+    _unitStringMap['bunches'] = 'bunch'; // cross-locale: EN plural (needed when locale=PT)
+
     // Leaves variants
-    _unitStringMap['folha'] = 'leaves';
-    _unitStringMap['folhas'] = 'leaves';
-    _unitStringMap['leaf'] = 'leaves';
-    
+    _unitStringMap['folha'] = 'leaves';   // PT singular (l10n "leaves" key is already plural "Folhas")
+    _unitStringMap['folhas'] = 'leaves';  // cross-locale: PT form (needed when locale=EN)
+    _unitStringMap['leaf'] = 'leaves';    // EN singular (l10n EN singular is "Leaves", leaf not in l10n)
+
     // Pinch variants
-    _unitStringMap['pitada'] = 'pinch';
-    _unitStringMap['pitadas'] = 'pinch';
-    
+    _unitStringMap['pitada'] = 'pinch';   // cross-locale: PT singular (needed when locale=EN)
+    _unitStringMap['pitadas'] = 'pinch';  // cross-locale: PT plural (needed when locale=EN)
+
     // Clove variants
-    _unitStringMap['dente'] = 'clove';
-    _unitStringMap['dentes'] = 'clove';
-    _unitStringMap['cloves'] = 'clove';
-    
+    _unitStringMap['dente'] = 'clove';   // cross-locale: PT singular (needed when locale=EN)
+    _unitStringMap['dentes'] = 'clove';  // cross-locale: PT plural (needed when locale=EN)
+    _unitStringMap['cloves'] = 'clove';  // cross-locale: EN plural (needed when locale=PT)
+
     // Head variants
-    _unitStringMap['cabeça'] = 'head';
-    _unitStringMap['cabeca'] = 'head';
-    _unitStringMap['cabeças'] = 'head';
-    _unitStringMap['cabecas'] = 'head';
-    _unitStringMap['heads'] = 'head';
-    
+    _unitStringMap['cabeça'] = 'head';    // cross-locale: PT singular (needed when locale=EN)
+    _unitStringMap['cabeca'] = 'head';    // accent-stripped robustness variant
+    _unitStringMap['cabeças'] = 'head';   // cross-locale: PT plural (needed when locale=EN)
+    _unitStringMap['cabecas'] = 'head';   // accent-stripped plural robustness variant
+    _unitStringMap['heads'] = 'head';     // cross-locale: EN plural (needed when locale=PT)
+
     // Can variants
-    _unitStringMap['lata'] = 'can';
-    _unitStringMap['latas'] = 'can';
-    _unitStringMap['can'] = 'can';
-    _unitStringMap['cans'] = 'can';
-    
+    _unitStringMap['lata'] = 'can';   // cross-locale: PT singular (needed when locale=EN)
+    _unitStringMap['latas'] = 'can';  // cross-locale: PT plural (needed when locale=EN)
+    _unitStringMap['cans'] = 'can';   // cross-locale: EN plural (needed when locale=PT)
+
     // Box variants
-    _unitStringMap['caixa'] = 'box';
-    _unitStringMap['caixas'] = 'box';
-    _unitStringMap['box'] = 'box';
-    _unitStringMap['boxes'] = 'box';
-    
+    _unitStringMap['caixa'] = 'box';   // cross-locale: PT singular (needed when locale=EN)
+    _unitStringMap['caixas'] = 'box';  // cross-locale: PT plural (needed when locale=EN)
+    _unitStringMap['boxes'] = 'box';   // cross-locale: EN plural (needed when locale=PT)
+
     // Stem variants
-    _unitStringMap['talo'] = 'stem';
-    _unitStringMap['talos'] = 'stem';
-    _unitStringMap['stem'] = 'stem';
-    _unitStringMap['stems'] = 'stem';
-    
+    _unitStringMap['talo'] = 'stem';   // cross-locale: PT singular (needed when locale=EN)
+    _unitStringMap['talos'] = 'stem';  // cross-locale: PT plural (needed when locale=EN)
+    _unitStringMap['stems'] = 'stem';  // cross-locale: EN plural (needed when locale=PT)
+
     // Sprig variants
-    _unitStringMap['ramo'] = 'sprig';
-    _unitStringMap['ramos'] = 'sprig';
-    _unitStringMap['sprig'] = 'sprig';
-    _unitStringMap['sprigs'] = 'sprig';
-    
+    _unitStringMap['ramo'] = 'sprig';   // cross-locale: PT singular (needed when locale=EN)
+    _unitStringMap['ramos'] = 'sprig';  // cross-locale: PT plural (needed when locale=EN)
+    _unitStringMap['sprigs'] = 'sprig'; // cross-locale: EN plural (needed when locale=PT)
+
     // Seed variants
-    _unitStringMap['semente'] = 'seed';
-    _unitStringMap['sementes'] = 'seed';
-    _unitStringMap['seed'] = 'seed';
-    _unitStringMap['seeds'] = 'seed';
-    
+    _unitStringMap['semente'] = 'seed';   // cross-locale: PT singular (needed when locale=EN)
+    _unitStringMap['sementes'] = 'seed';  // cross-locale: PT plural (needed when locale=EN)
+    _unitStringMap['seeds'] = 'seed';     // cross-locale: EN plural (needed when locale=PT)
+
     // Grain variants (for peppercorns, cardamom, etc.)
-    _unitStringMap['grão'] = 'grain';
-    _unitStringMap['grao'] = 'grain'; // without tilde
-    _unitStringMap['grãos'] = 'grain';
-    _unitStringMap['graos'] = 'grain'; // without tilde
-    _unitStringMap['grain'] = 'grain';
-    _unitStringMap['grains'] = 'grain';
+    _unitStringMap['grão'] = 'grain';    // cross-locale: PT singular (needed when locale=EN)
+    _unitStringMap['grao'] = 'grain';    // accent-stripped robustness variant
+    _unitStringMap['grãos'] = 'grain';   // cross-locale: PT plural (needed when locale=EN)
+    _unitStringMap['graos'] = 'grain';   // accent-stripped plural robustness variant
+    _unitStringMap['grains'] = 'grain';  // cross-locale: EN plural (needed when locale=PT)
     
-    // Centimeter variants
-    _unitStringMap['cm'] = 'cm';
+    // Centimeter variants ('cm' is the standard value, already in map from first loop)
     _unitStringMap['centímetro'] = 'cm';
-    _unitStringMap['centimetro'] = 'cm'; // without accent
+    _unitStringMap['centimetro'] = 'cm';   // accent-stripped robustness variant
     _unitStringMap['centímetros'] = 'cm';
-    _unitStringMap['centimetros'] = 'cm'; // without accent
-    _unitStringMap['centimeter'] = 'cm';
-    _unitStringMap['centimeters'] = 'cm';
+    _unitStringMap['centimetros'] = 'cm';  // accent-stripped robustness variant
+    _unitStringMap['centimeter'] = 'cm';   // cross-locale: EN full name
+    _unitStringMap['centimeters'] = 'cm';  // cross-locale: EN plural
   }
   
   /// Match a unit string at the start of the text
