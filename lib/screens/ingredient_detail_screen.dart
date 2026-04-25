@@ -266,6 +266,10 @@ class _RecipeCard extends StatelessWidget {
               const SizedBox(height: DesignTokens.spacingXs),
               Row(
                 children: [
+                  Icon(Icons.signal_cellular_alt,
+                      size: 13,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  const SizedBox(width: 3),
                   Text(
                     '${'★' * recipe.difficulty}${'☆' * (5 - recipe.difficulty)}',
                     style: TextStyle(
@@ -275,6 +279,8 @@ class _RecipeCard extends StatelessWidget {
                   ),
                   if (recipe.rating > 0) ...[
                     const SizedBox(width: DesignTokens.spacingSm),
+                    const Icon(Icons.star, size: 13, color: Colors.amber),
+                    const SizedBox(width: 3),
                     Text(
                       '${'★' * recipe.rating}${'☆' * (5 - recipe.rating)}',
                       style: const TextStyle(

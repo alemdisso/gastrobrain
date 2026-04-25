@@ -99,6 +99,9 @@ void main() {
       expect(find.text('★★★☆☆'), findsOneWidget); // difficulty 3
       expect(find.text('★★★★☆'), findsOneWidget); // rating 4
       expect(find.textContaining('2.5'), findsOneWidget); // quantity
+      // Disambiguating icons: signal_cellular_alt for difficulty, star for rating
+      expect(find.byIcon(Icons.signal_cellular_alt), findsOneWidget);
+      expect(find.byIcon(Icons.star), findsOneWidget);
     });
 
     testWidgets('recipe card shows unit alongside quantity when ingredient has a unit',

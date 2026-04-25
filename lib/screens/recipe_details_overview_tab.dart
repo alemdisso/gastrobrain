@@ -40,7 +40,17 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
               context,
               icon: Icons.star,
               label: AppLocalizations.of(context)!.rating,
-              value: '${recipe.rating}/5',
+              valueWidget: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(
+                  5,
+                  (i) => Icon(
+                    i < recipe.rating ? Icons.star : Icons.star_border,
+                    size: 18,
+                    color: i < recipe.rating ? Colors.amber : Colors.grey,
+                  ),
+                ),
+              ),
             ),
           if (recipe.rating > 0) const SizedBox(height: 12),
 
@@ -49,7 +59,19 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
             context,
             icon: Icons.signal_cellular_alt,
             label: AppLocalizations.of(context)!.difficulty,
-            value: '${recipe.difficulty}/5',
+            valueWidget: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(
+                5,
+                (i) => Icon(
+                  i < recipe.difficulty
+                      ? Icons.battery_full
+                      : Icons.battery_0_bar,
+                  size: 18,
+                  color: i < recipe.difficulty ? Colors.green : Colors.grey,
+                ),
+              ),
+            ),
           ),
           const SizedBox(height: 12),
 
@@ -183,7 +205,8 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
     BuildContext context, {
     required IconData icon,
     required String label,
-    required String value,
+    String? value,
+    Widget? valueWidget,
   }) {
     return Row(
       children: [
@@ -198,10 +221,13 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
             fontSize: 16,
           ),
         ),
-        Text(
-          value,
-          style: const TextStyle(fontSize: 16),
-        ),
+        if (valueWidget != null)
+          valueWidget
+        else
+          Text(
+            value ?? '',
+            style: const TextStyle(fontSize: 16),
+          ),
       ],
     );
   }
