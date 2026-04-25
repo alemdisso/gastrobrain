@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/ingredient.dart';
+import '../models/measurement_unit.dart';
 import '../models/recipe.dart';
 import '../database/database_helper.dart';
 import '../core/di/service_provider.dart';
@@ -218,6 +219,12 @@ class _RecipeCard extends StatelessWidget {
     final usageUnit = row['usage_unit'] as String?;
     final ingredientCount = (row['ingredient_count'] as int?) ?? 0;
     final isIncomplete = ingredientCount < 3;
+    final localizedUnit = usageUnit != null && usageUnit.isNotEmpty
+        ? MeasurementUnit.fromString(usageUnit)
+                ?.getLocalizedQuantityName(
+                    context, (usageQuantity as num).toDouble()) ??
+            usageUnit
+        : null;
 
     return Card(
       margin: const EdgeInsets.symmetric(
@@ -303,8 +310,8 @@ class _RecipeCard extends StatelessWidget {
                     (usageQuantity as num) == 0
                         ? l10n.toTaste
                         : l10n.ingredientUsageQuantityLabel(
-                            usageUnit != null && usageUnit.isNotEmpty
-                                ? '$usageQuantity $usageUnit'
+                            localizedUnit != null
+                                ? '$usageQuantity $localizedUnit'
                                 : '$usageQuantity',
                           ),
                     style: Theme.of(context).textTheme.bodySmall,
