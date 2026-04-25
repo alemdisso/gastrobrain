@@ -96,7 +96,7 @@ void main() {
 
       expect(find.text('Test Recipe'), findsOneWidget);
       expect(find.text('Uncategorized'), findsNothing);
-      expect(find.textContaining('2.5'), findsOneWidget); // quantity
+      expect(find.textContaining('2½'), findsOneWidget); // quantity (formatted)
       // Difficulty 3: three filled batteries, two empty
       expect(find.byIcon(Icons.battery_full), findsNWidgets(3));
       expect(find.byIcon(Icons.battery_0_bar), findsNWidgets(2));
