@@ -96,12 +96,13 @@ void main() {
 
       expect(find.text('Test Recipe'), findsOneWidget);
       expect(find.text('Uncategorized'), findsNothing);
-      expect(find.text('★★★☆☆'), findsOneWidget); // difficulty 3
-      expect(find.text('★★★★☆'), findsOneWidget); // rating 4
       expect(find.textContaining('2.5'), findsOneWidget); // quantity
-      // Disambiguating icons: signal_cellular_alt for difficulty, star for rating
-      expect(find.byIcon(Icons.signal_cellular_alt), findsOneWidget);
-      expect(find.byIcon(Icons.star), findsOneWidget);
+      // Difficulty 3: three filled batteries, two empty
+      expect(find.byIcon(Icons.battery_full), findsNWidgets(3));
+      expect(find.byIcon(Icons.battery_0_bar), findsNWidgets(2));
+      // Rating 4: four filled stars, one empty
+      expect(find.byIcon(Icons.star), findsNWidgets(4));
+      expect(find.byIcon(Icons.star_border), findsNWidgets(1));
     });
 
     testWidgets('recipe card shows unit alongside quantity when ingredient has a unit',
