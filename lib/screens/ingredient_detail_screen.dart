@@ -265,16 +265,6 @@ class _RecipeCard extends StatelessWidget {
               const SizedBox(height: DesignTokens.spacingXs),
               Row(
                 children: [
-                  Chip(
-                    label: Text(
-                      recipe.category
-                          .getLocalizedDisplayName(context),
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                    padding: EdgeInsets.zero,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  const SizedBox(width: DesignTokens.spacingSm),
                   Text(
                     '${'★' * recipe.difficulty}${'☆' * (5 - recipe.difficulty)}',
                     style: TextStyle(

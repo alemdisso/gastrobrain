@@ -78,7 +78,7 @@ void main() {
   });
 
   group('IngredientDetailScreen — Used In tab', () {
-    testWidgets('recipe card shows name, category, difficulty, rating, quantity',
+    testWidgets('recipe card shows name, difficulty, rating, quantity',
         (tester) async {
       final recipe = _makeRecipe(difficulty: 3, rating: 4);
       mockDb.recipes[recipe.id] = recipe;
@@ -94,7 +94,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Test Recipe'), findsOneWidget);
-      expect(find.text('Uncategorized'), findsOneWidget);
+      expect(find.text('Uncategorized'), findsNothing);
       expect(find.text('★★★☆☆'), findsOneWidget); // difficulty 3
       expect(find.text('★★★★☆'), findsOneWidget); // rating 4
       expect(find.textContaining('2.5'), findsOneWidget); // quantity
