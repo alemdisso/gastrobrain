@@ -9,6 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.4] - 2026-04-25
+
+### Added
+- Ingredient aliases for alternative names — recipes and search match any known alias (#198)
+- Duplicate ingredient prevention: similar matches shown while typing in ingredient fields (#320)
+- Markdown rendering support for recipe instructions (#321)
+- Recipe story/narrative field for personal and cultural context (#326)
+- Marinating time as a separate recipe field (#348)
+- Per-recipe notes in multi-dish meals (#291)
+
+### Fixed
+- Backup/restore broken on Android 10+ due to scoped storage restrictions (#354)
+- Hardcoded "Qty:" label in ingredient usage list now properly localized (#361)
+- Unit shown alongside quantity in ingredient usage list (#362)
+- Difficulty and rating stars disambiguated in ingredient usage list (#360)
+
+### Changed
+- Category chip removed from ingredient usage list for cleaner layout (#363)
+
+### Refactored
+- Ingredient parser refactored to use localized measurement unit strings (#170)
+
+---
+
 ## [0.2.3] - 2026-04-18
 
 ### Added
