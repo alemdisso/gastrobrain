@@ -31,6 +31,9 @@ import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/migration/migration_runner.dart';
 import '../core/migration/migration.dart';
 import '../core/migration/migrations/001_initial_schema.dart';
+import '../core/migration/migrations/002_add_ingredient_aliases.dart';
+import '../core/migration/migrations/003_add_marinating_time.dart';
+import '../core/migration/migrations/004_add_recipe_story.dart';
 import '../core/repositories/base_repository.dart';
 
 class DatabaseHelper {
@@ -45,6 +48,9 @@ class DatabaseHelper {
   /// Get all available migrations in order
   static List<Migration> get _migrations => [
     InitialSchemaMigration(),
+    AddIngredientAliasesMigration(),
+    AddMarinatingTimeMigration(),
+    AddRecipeStoryMigration(),
   ];
 
   /// Get the migration runner instance
@@ -1108,9 +1114,11 @@ class DatabaseHelper {
     return await db.rawQuery('''
       SELECT r.*,
         ri.quantity AS usage_quantity,
+        COALESCE(ri.custom_unit, COALESCE(ri.unit_override, i.unit)) AS usage_unit,
         (SELECT COUNT(*) FROM recipe_ingredients WHERE recipe_id = r.id) AS ingredient_count
       FROM recipes r
       JOIN recipe_ingredients ri ON r.id = ri.recipe_id
+      LEFT JOIN ingredients i ON i.id = ri.ingredient_id
       WHERE ri.ingredient_id = ?
       ORDER BY r.name ASC
     ''', [ingredientId]);

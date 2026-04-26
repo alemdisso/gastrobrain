@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -109,33 +111,19 @@ class _ToolsScreenState extends State<ToolsScreen> {
 
     try {
       final backupService = ServiceProvider.database.backup;
-      final backupPath = await backupService.backupDatabase();
+      await backupService.backupDatabase(); // triggers share sheet
 
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        SnackbarService.showSuccess(
-          context,
-          l10n.backupSuccess,
-        );
-
-        // Show detailed success dialog
-        _showBackupSuccessDialog(backupPath);
+        SnackbarService.showSuccess(context, l10n.backupSuccess);
       }
     } on GastrobrainException catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        // Check if user cancelled
-        if (e.message.contains('cancelled')) {
-          SnackbarService.showSuccess(
-            context,
-            l10n.backupCancelled,
-          );
-        } else {
-          SnackbarService.showError(
-            context,
-            '${l10n.backupFailed}: ${e.message}',
-          );
-        }
+        SnackbarService.showError(
+          context,
+          '${l10n.backupFailed}: ${e.message}',
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -159,40 +147,16 @@ class _ToolsScreenState extends State<ToolsScreen> {
 
     final l10n = AppLocalizations.of(context)!;
 
-    // Get backup file path from user
-    final filePathController = TextEditingController(
-        text: '/sdcard/Download/'); // Pre-fill with Downloads directory
-    final backupFilePath = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.selectBackupFile),
-        content: TextField(
-          controller: filePathController,
-          decoration: InputDecoration(
-            labelText: l10n.backupFilePath,
-            hintText:
-                '/sdcard/Download/gastrobrain_backup_2024-12-04_120000.json',
-          ),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(null),
-            child: Text(l10n.cancel),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(filePathController.text),
-            child: Text(l10n.ok),
-          ),
-        ],
-      ),
+    // Open native file picker (SAF-compliant — no storage permissions needed)
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json'],
     );
 
-    if (backupFilePath == null || backupFilePath.trim().isEmpty) {
-      return; // User cancelled or provided empty path
-    }
+    if (result == null) return; // user cancelled
 
     // Show warning dialog before proceeding
+    if (!mounted) return;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -223,31 +187,29 @@ class _ToolsScreenState extends State<ToolsScreen> {
 
     try {
       final backupService = ServiceProvider.database.backup;
-      await backupService.restoreDatabase(backupFilePath);
+      final pickedFile = result.files.first;
+
+      if (pickedFile.path != null) {
+        // Direct filesystem path available
+        await backupService.restoreDatabase(pickedFile.path!);
+      } else if (pickedFile.bytes != null) {
+        // SAF content URI — only bytes returned (Android 10+ scoped storage)
+        await backupService
+            .restoreDatabaseFromString(utf8.decode(pickedFile.bytes!));
+      } else {
+        throw const GastrobrainException('Could not read the selected file');
+      }
 
       if (mounted) {
-        SnackbarService.showSuccess(
-          context,
-          l10n.restoreSuccess,
-        );
-
-        // Show success dialog
+        SnackbarService.showSuccess(context, l10n.restoreSuccess);
         _showRestoreSuccessDialog();
       }
     } on GastrobrainException catch (e) {
       if (mounted) {
-        // Check if user cancelled
-        if (e.message.contains('cancelled')) {
-          SnackbarService.showSuccess(
-            context,
-            l10n.restoreCancelled,
-          );
-        } else {
-          SnackbarService.showError(
-            context,
-            '${l10n.restoreFailed}: ${e.message}',
-          );
-        }
+        SnackbarService.showError(
+          context,
+          '${l10n.restoreFailed}: ${e.message}',
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -302,34 +264,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
         ],
       ),
     );
-  }
-
-  void _showBackupSuccessDialog(String filePath) {
-    final l10n = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.backupSuccess),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l10n.backupSuccessDetails(filePath)),
-            const SizedBox(height: 16),
-            const Text('📋 File path copied to clipboard'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-
-    // Copy file path to clipboard
-    Clipboard.setData(ClipboardData(text: filePath));
   }
 
   void _showRestoreSuccessDialog() {

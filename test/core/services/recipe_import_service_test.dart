@@ -5,11 +5,13 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:gastrobrain/core/services/recipe_import_service.dart';
 import 'package:gastrobrain/core/migration/migration.dart';
 import 'package:gastrobrain/core/migration/migrations/001_initial_schema.dart';
+import 'package:gastrobrain/core/migration/migrations/003_add_marinating_time.dart';
 import '../../mocks/mock_database_helper.dart';
 
 Future<Database> _openInMemoryDb() async {
   final db = await databaseFactoryFfi.openDatabase(inMemoryDatabasePath);
   await InitialSchemaMigration().up(DatabaseWrapper(db));
+  await AddMarinatingTimeMigration().up(DatabaseWrapper(db));
   return db;
 }
 

@@ -164,6 +164,10 @@
   "@cookingTime": {
     "description": "Rótulo do campo tempo de cozimento"
   },
+  "marinatingTime": "Tempo de Marinada",
+  "@marinatingTime": {
+    "description": "Rótulo do campo tempo de marinada nos formulários de receita"
+  },
   "servings": "Porções",
   "@servings": {
     "description": "Rótulo do campo porções da receita (quantas pessoas serve)"
@@ -1189,9 +1193,45 @@
   "@notesOptional": {
     "description": "Rótulo para campo de observações"
   },
+  "recipeNoteHint": "Nota sobre este prato (opcional)",
+  "@recipeNoteHint": {
+    "description": "Texto de dica para o campo de nota por receita no diálogo de registo"
+  },
+  "mealNoteLabel": "Nota da refeição",
+  "@mealNoteLabel": {
+    "description": "Rótulo para a nota geral da refeição no histórico"
+  },
   "anyAdditionalInformation": "Qualquer informação adicional",
   "@anyAdditionalInformation": {
     "description": "Texto de dica para campo de observações"
+  },
+  "ingredientAliasesLabel": "Apelidos (Opcional)",
+  "@ingredientAliasesLabel": {
+    "description": "Rótulo para o campo de apelidos do ingrediente"
+  },
+  "ingredientAliasesHint": "aipo, celery",
+  "@ingredientAliasesHint": {
+    "description": "Texto de dica para o campo de apelidos com exemplos separados por vírgula"
+  },
+  "ingredientExactDuplicateError": "Já existe um ingrediente chamado '{name}'.",
+  "@ingredientExactDuplicateError": {
+    "description": "Erro exibido quando o nome digitado corresponde exatamente a um ingrediente existente ou seu apelido",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Nome do ingrediente existente"
+      }
+    }
+  },
+  "ingredientSimilarSuggestion": "Ingredientes similares: {list}",
+  "@ingredientSimilarSuggestion": {
+    "description": "Aviso não-bloqueante exibido quando o nome digitado é prefixo de ingredientes existentes",
+    "placeholders": {
+      "list": {
+        "type": "String",
+        "description": "Lista de nomes de ingredientes similares separados por vírgula"
+      }
+    }
   },
   "addRecipeTitle": "Adicionar Receita",
   "@addRecipeTitle": {
@@ -1434,6 +1474,10 @@
   "cookTimeLabel": "Tempo de Cozimento (min)",
   "@cookTimeLabel": {
     "description": "Rótulo para campo de tempo de cozimento"
+  },
+  "marinatingTimeLabel": "Tempo de Marinada (min)",
+  "@marinatingTimeLabel": {
+    "description": "Rótulo para o tempo de marinada na exibição de detalhes da receita"
   },
   "minuteAbbreviation": "min",
   "@minuteAbbreviation": {
@@ -1896,6 +1940,14 @@
   "instructionsHint": "Exemplo:\n1. Preaqueça o forno a 180°C\n2. Misture os ingredientes em uma tigela\n3. Asse por 30 minutos",
   "@instructionsHint": {
     "description": "Texto de dica mostrando exemplo de formato de instruções"
+  },
+  "instructionsEditLabel": "Editar",
+  "@instructionsEditLabel": {
+    "description": "Rótulo do botão para alternar para o modo de edição das instruções"
+  },
+  "instructionsPreviewLabel": "Visualizar",
+  "@instructionsPreviewLabel": {
+    "description": "Rótulo do botão para alternar para a pré-visualização Markdown das instruções"
   },
   "noneOfTheseCreateNew": "Criar Novo Ingrediente",
   "@noneOfTheseCreateNew": {
@@ -2543,12 +2595,21 @@
   "usedInNRecipes": "Usado em {count} receitas",
   "noRecipesUsingIngredient": "Este ingrediente ainda não foi adicionado a nenhuma receita.",
   "incompleteRecipe": "Incompleta",
+  "ingredientUsageQuantityLabel": "Qtd: {quantity}",
   "directSideIngredient": "Ingrediente de acompanhamento",
   "mealHistory": "Histórico de Refeições",
   "noMealsWithIngredient": "Este ingrediente ainda não apareceu em nenhuma refeição cozinhada.",
   "usedInNCookedMeals": "{count, plural, =1{Usado em 1 refeição} other{Usado em {count} refeições}}",
   "filterLast30Days": "Últimos 30 dias",
   "filterLast3Months": "Últimos 3 meses",
-  "filterAllTime": "Todo o tempo"
+  "filterAllTime": "Todo o tempo",
+
+  "recipeStory": "História",
+  "recipeStoryLabel": "História (opcional)",
+  "recipeStoryHint": "Qual é a história por trás desta receita?",
+  "addStory": "Adicionar história",
+  "editStory": "Editar história",
+  "storyUpdatedSuccessfully": "História atualizada com sucesso",
+  "enterStory": "Escreve a história por trás desta receita..."
 
 }

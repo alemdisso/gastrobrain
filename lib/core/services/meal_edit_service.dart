@@ -33,6 +33,7 @@ class MealEditService {
   /// - [actualPrepTime]: Actual preparation time in minutes
   /// - [actualCookTime]: Actual cooking time in minutes
   /// - [additionalRecipes]: List of side dish recipes to associate
+  /// - [recipeNotes]: Optional per-recipe notes keyed by recipe ID
   ///
   /// Throws [NotFoundException] if meal not found.
   Future<void> updateMealWithRecipes({
@@ -44,6 +45,7 @@ class MealEditService {
     required double actualPrepTime,
     required double actualCookTime,
     required List<Recipe> additionalRecipes,
+    Map<String, String?>? recipeNotes,
   }) async {
     // 1. Get current meal
     final currentMeal = await _dbHelper.getMeal(mealId);
@@ -75,7 +77,7 @@ class MealEditService {
         mealId: mealId,
         recipeId: recipe.id,
         isPrimaryDish: false,
-        notes: 'Side dish',
+        notes: recipeNotes?[recipe.id],
       );
       await _dbHelper.insertMealRecipe(sideDishMealRecipe);
     }
@@ -92,12 +94,14 @@ class MealEditService {
   /// - [meal]: The meal to record
   /// - [primaryRecipe]: The main recipe for this meal
   /// - [additionalRecipes]: List of side dish recipes
+  /// - [recipeNotes]: Optional per-recipe notes keyed by recipe ID
   ///
   /// Returns the meal ID.
   Future<String> recordMealWithRecipes({
     required Meal meal,
     required Recipe primaryRecipe,
     required List<Recipe> additionalRecipes,
+    Map<String, String?>? recipeNotes,
   }) async {
     // 1. Record meal
     await _dbHelper.insertMeal(meal);
@@ -107,7 +111,7 @@ class MealEditService {
       mealId: meal.id,
       recipeId: primaryRecipe.id,
       isPrimaryDish: true,
-      notes: 'Main dish',
+      notes: recipeNotes?[primaryRecipe.id],
     );
     await _dbHelper.insertMealRecipe(primaryMealRecipe);
 
@@ -117,7 +121,7 @@ class MealEditService {
         mealId: meal.id,
         recipeId: recipe.id,
         isPrimaryDish: false,
-        notes: 'Side dish',
+        notes: recipeNotes?[recipe.id],
       );
       await _dbHelper.insertMealRecipe(sideDishMealRecipe);
     }

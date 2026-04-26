@@ -117,7 +117,7 @@ class _RecipeCardState extends State<RecipeCard> {
                             ),
                             const SizedBox(width: DesignTokens.spacingXs),
                             Text(
-                              '${widget.recipe.prepTimeMinutes + widget.recipe.cookTimeMinutes} min',
+                              '${widget.recipe.prepTimeMinutes + widget.recipe.cookTimeMinutes + widget.recipe.marinatingTimeMinutes} min',
                               style: Theme.of(context)
                                   .textTheme
                                   .bodySmall

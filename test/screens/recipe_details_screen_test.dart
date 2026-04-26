@@ -63,6 +63,39 @@ void main() {
       expect(find.text('4'), findsOneWidget);
     });
 
+    testWidgets('shows marinating time row when marinatingTimeMinutes > 0', (tester) async {
+      final recipe = Recipe(
+        id: 'test-id',
+        name: 'Overnight Chicken',
+        createdAt: DateTime(2024, 1, 1),
+        marinatingTimeMinutes: 480,
+      );
+
+      await tester.pumpWidget(
+        _buildTestApp(RecipeDetailsOverviewTab(recipe: recipe)),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Marinate Time (min): '), findsOneWidget);
+      expect(find.text('480 min'), findsOneWidget);
+    });
+
+    testWidgets('hides marinating time row when marinatingTimeMinutes is 0', (tester) async {
+      final recipe = Recipe(
+        id: 'test-id',
+        name: 'Quick Pasta',
+        createdAt: DateTime(2024, 1, 1),
+        marinatingTimeMinutes: 0, // default — no marinating
+      );
+
+      await tester.pumpWidget(
+        _buildTestApp(RecipeDetailsOverviewTab(recipe: recipe)),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Marinate Time (min): '), findsNothing);
+    });
+
     testWidgets('servings row is always visible regardless of value', (tester) async {
       await tester.pumpWidget(
         _buildTestApp(RecipeDetailsOverviewTab(recipe: _makeRecipe(servings: 1))),

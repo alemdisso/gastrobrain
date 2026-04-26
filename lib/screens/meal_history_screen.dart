@@ -156,6 +156,7 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
             meal: meal,
             primaryRecipe: primaryRecipe,
             additionalRecipes: additionalRecipes,
+            mealRecipes: meal.mealRecipes ?? [],
             databaseHelper: _dbHelper,
           ),
         );
@@ -173,14 +174,17 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
         final List<Recipe> updatedAdditionalRecipes =
             result['additionalRecipes'];
         final DateTime modifiedAt = result['modifiedAt'];
+        final Map<String, String?>? recipeNotes =
+            result['recipeNotes'] as Map<String, String?>?;
 
         // Update meal in database
         await _updateMealInDatabase(mealId, cookedAt, servings, notes,
             wasSuccessful, actualPrepTime, actualCookTime, modifiedAt);
 
-        // Update recipe associations
+        // Update recipe associations (including per-recipe notes)
         await _updateMealRecipeAssociations(
-            mealId, primaryRecipe.id, updatedAdditionalRecipes);
+            mealId, primaryRecipe.id, updatedAdditionalRecipes,
+            recipeNotes: recipeNotes);
 
         // Refresh the meal list
         await _loadMeals();
@@ -242,10 +246,24 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
     await _dbHelper.updateMeal(updatedMeal);
   }
 
-  Future<void> _updateMealRecipeAssociations(String mealId,
-      String primaryRecipeId, List<Recipe> additionalRecipes) async {
+  Future<void> _updateMealRecipeAssociations(
+    String mealId,
+    String primaryRecipeId,
+    List<Recipe> additionalRecipes, {
+    Map<String, String?>? recipeNotes,
+  }) async {
     // Get all current meal recipes for this meal
     final currentMealRecipes = await _dbHelper.getMealRecipesForMeal(mealId);
+
+    // Update primary recipe note if present
+    final primaryMealRecipe = currentMealRecipes
+        .where((mr) => mr.isPrimaryDish)
+        .firstOrNull;
+    if (primaryMealRecipe != null) {
+      await _dbHelper.updateMealRecipe(
+        primaryMealRecipe.copyWith(notes: recipeNotes?[primaryRecipeId]),
+      );
+    }
 
     // Delete all existing side dishes (keep only primary)
     for (final mealRecipe in currentMealRecipes) {
@@ -260,9 +278,8 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
         mealId: mealId,
         recipeId: recipe.id,
         isPrimaryDish: false,
-        notes: 'Side dish - edited',
+        notes: recipeNotes?[recipe.id],
       );
-
       await _dbHelper.insertMealRecipe(sideDishMealRecipe);
     }
   }
@@ -574,12 +591,56 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                                     ],
                                   ),
                                 ],
+                                // Per-recipe note (primary): specific to this recipe
+                                Builder(builder: (context) {
+                                  final mealRecipe = meal.mealRecipes
+                                      ?.where((mr) =>
+                                          mr.recipeId == widget.recipe.id)
+                                      .firstOrNull;
+                                  final recipeNote = mealRecipe?.notes;
+                                  if (recipeNote == null ||
+                                      recipeNote.isEmpty) {
+                                    return const SizedBox.shrink();
+                                  }
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: Text(
+                                      recipeNote,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall,
+                                    ),
+                                  );
+                                }),
+                                // Meal-level note (contextual): general observation
                                 if (meal.notes.isNotEmpty) ...[
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    meal.notes,
-                                    style:
-                                        Theme.of(context).textTheme.bodySmall,
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Icon(
+                                        Icons.dinner_dining,
+                                        size: 12,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .outline,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          meal.notes,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .outline,
+                                              ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ],

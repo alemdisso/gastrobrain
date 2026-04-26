@@ -49,6 +49,9 @@ enum MatchType {
 
   /// Partial/contains match
   partial,
+
+  /// Match via a user-defined alias on the ingredient
+  alias,
 }
 
 /// Confidence level for easy UI decisions

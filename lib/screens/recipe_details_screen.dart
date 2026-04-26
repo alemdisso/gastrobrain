@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import '../models/recipe.dart';
 import '../database/database_helper.dart';
 import '../widgets/add_ingredient_dialog.dart';
@@ -202,33 +203,80 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
   Future<void> _editInstructions() async {
     final TextEditingController controller =
         TextEditingController(text: _instructions);
+    bool isPreviewMode = false;
 
     final result = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.instructions),
-        content: SingleChildScrollView(
-          child: TextField(
-            controller: controller,
-            decoration: InputDecoration(
-              hintText: AppLocalizations.of(context)!.enterInstructions,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) {
+          final l10n = AppLocalizations.of(dialogContext)!;
+          return AlertDialog(
+            title: Text(l10n.instructions),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SegmentedButton<bool>(
+                      segments: [
+                        ButtonSegment(
+                          value: false,
+                          label: Text(l10n.instructionsEditLabel),
+                          icon: const Icon(Icons.edit_outlined),
+                        ),
+                        ButtonSegment(
+                          value: true,
+                          label: Text(l10n.instructionsPreviewLabel),
+                          icon: const Icon(Icons.visibility_outlined),
+                        ),
+                      ],
+                      selected: {isPreviewMode},
+                      onSelectionChanged: (v) =>
+                          setDialogState(() => isPreviewMode = v.first),
+                    ),
+                    const SizedBox(height: 12),
+                    if (isPreviewMode)
+                      MarkdownBody(
+                        data: controller.text.isEmpty
+                            ? '_${l10n.enterInstructions}_'
+                            : controller.text,
+                        shrinkWrap: true,
+                        styleSheet: MarkdownStyleSheet.fromTheme(
+                          Theme.of(dialogContext),
+                        ).copyWith(
+                          p: const TextStyle(fontSize: 16, height: 1.5),
+                        ),
+                      )
+                    else
+                      TextField(
+                        controller: controller,
+                        decoration: InputDecoration(
+                          hintText: l10n.enterInstructions,
+                        ),
+                        maxLines: null,
+                        minLines: 8,
+                        keyboardType: TextInputType.multiline,
+                        autofocus: true,
+                        onChanged: (_) => setDialogState(() {}),
+                      ),
+                  ],
+                ),
+              ),
             ),
-            maxLines: null,
-            minLines: 10,
-            keyboardType: TextInputType.multiline,
-            autofocus: true,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context)!.buttonCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, controller.text),
-            child: Text(AppLocalizations.of(context)!.save),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: Text(l10n.buttonCancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, controller.text),
+                child: Text(l10n.save),
+              ),
+            ],
+          );
+        },
       ),
     );
 
@@ -246,19 +294,8 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
 
   Future<void> _saveInstructions(String newInstructions) async {
     try {
-      final updatedRecipe = Recipe(
-        id: _currentRecipe.id,
-        name: _currentRecipe.name,
-        desiredFrequency: _currentRecipe.desiredFrequency,
-        notes: _currentRecipe.notes,
+      final updatedRecipe = _currentRecipe.copyWith(
         instructions: newInstructions,
-        createdAt: _currentRecipe.createdAt,
-        difficulty: _currentRecipe.difficulty,
-        prepTimeMinutes: _currentRecipe.prepTimeMinutes,
-        cookTimeMinutes: _currentRecipe.cookTimeMinutes,
-        rating: _currentRecipe.rating,
-        category: _currentRecipe.category,
-        servings: _currentRecipe.servings,
       );
 
       await _dbHelper.updateRecipe(updatedRecipe);
@@ -272,6 +309,126 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
         SnackbarService.showSuccess(
           context,
           AppLocalizations.of(context)!.instructionsUpdatedSuccessfully,
+        );
+      }
+    } on GastrobrainException catch (e) {
+      if (mounted) {
+        SnackbarService.showError(context, e.message);
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackbarService.showError(
+          context,
+          AppLocalizations.of(context)!.unexpectedError,
+        );
+      }
+    }
+  }
+
+  Future<void> _editStory() async {
+    final TextEditingController controller =
+        TextEditingController(text: _currentRecipe.story);
+    bool isPreviewMode = false;
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) {
+          final l10n = AppLocalizations.of(dialogContext)!;
+          return AlertDialog(
+            title: Text(l10n.recipeStory),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SegmentedButton<bool>(
+                      segments: [
+                        ButtonSegment(
+                          value: false,
+                          label: Text(l10n.instructionsEditLabel),
+                          icon: const Icon(Icons.edit_outlined),
+                        ),
+                        ButtonSegment(
+                          value: true,
+                          label: Text(l10n.instructionsPreviewLabel),
+                          icon: const Icon(Icons.visibility_outlined),
+                        ),
+                      ],
+                      selected: {isPreviewMode},
+                      onSelectionChanged: (v) =>
+                          setDialogState(() => isPreviewMode = v.first),
+                    ),
+                    const SizedBox(height: 12),
+                    if (isPreviewMode)
+                      MarkdownBody(
+                        data: controller.text.isEmpty
+                            ? '_${l10n.enterStory}_'
+                            : controller.text,
+                        shrinkWrap: true,
+                        styleSheet: MarkdownStyleSheet.fromTheme(
+                          Theme.of(dialogContext),
+                        ).copyWith(
+                          p: const TextStyle(fontSize: 16, height: 1.6),
+                        ),
+                      )
+                    else
+                      TextField(
+                        controller: controller,
+                        decoration: InputDecoration(
+                          hintText: l10n.enterStory,
+                        ),
+                        maxLines: null,
+                        minLines: 8,
+                        keyboardType: TextInputType.multiline,
+                        autofocus: true,
+                        onChanged: (_) => setDialogState(() {}),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: Text(l10n.buttonCancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, controller.text),
+                child: Text(l10n.save),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    if (mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.dispose();
+      });
+    }
+
+    if (result != null) {
+      await _saveStory(result);
+    }
+  }
+
+  Future<void> _saveStory(String newStory) async {
+    try {
+      final updatedRecipe = _currentRecipe.copyWith(story: newStory);
+      await _dbHelper.updateRecipe(updatedRecipe);
+
+      if (mounted) {
+        setState(() {
+          _currentRecipe = updatedRecipe;
+          _hasChanges = true;
+        });
+        SnackbarService.showSuccess(
+          context,
+          AppLocalizations.of(context)!.storyUpdatedSuccessfully,
         );
       }
     } on GastrobrainException catch (e) {
@@ -507,11 +664,11 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
             ),
           ),
           const SizedBox(height: 16),
-          Text(
-            _instructions,
-            style: const TextStyle(
-              fontSize: 16,
-              height: 1.5,
+          MarkdownBody(
+            data: _instructions,
+            shrinkWrap: true,
+            styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+              p: const TextStyle(fontSize: 16, height: 1.5),
             ),
           ),
         ],
@@ -575,8 +732,17 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
               : AppLocalizations.of(context)!.addInstructions,
           child: Icon(hasInstructions ? Icons.edit : Icons.add),
         );
+      case 2: // Overview tab — edit story
+        final bool hasStory = _currentRecipe.story.isNotEmpty;
+        return FloatingActionButton(
+          onPressed: _editStory,
+          tooltip: hasStory
+              ? AppLocalizations.of(context)!.editStory
+              : AppLocalizations.of(context)!.addStory,
+          child: Icon(hasStory ? Icons.edit : Icons.add),
+        );
       default:
-        return null; // No FAB for Overview and History tabs
+        return null; // No FAB for History tab
     }
   }
 }

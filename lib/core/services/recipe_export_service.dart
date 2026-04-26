@@ -66,6 +66,7 @@ class RecipeExportService {
             'difficulty': recipe.difficulty,
             'prep_time_minutes': recipe.prepTimeMinutes,
             'cook_time_minutes': recipe.cookTimeMinutes,
+            'marinating_time_minutes': recipe.marinatingTimeMinutes,
             'rating': recipe.rating,
             'category': recipe.category.value,
             'desired_frequency': recipe.desiredFrequency.value,

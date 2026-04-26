@@ -332,4 +332,52 @@ void main() {
       expect(rows.first['ingredient_count'], 1);
     });
   });
+
+  group('aliases persistence', () {
+    test('ingredient stored with aliases retains them after retrieval', () async {
+      final ingredient = Ingredient(
+        id: 'ing-aliases-1',
+        name: 'Salsão',
+        category: IngredientCategory.vegetable,
+        aliases: ['aipo', 'celery'],
+      );
+
+      await dbHelper.insertIngredient(ingredient);
+      final all = await dbHelper.getAllIngredients();
+      final retrieved = all.firstWhere((i) => i.id == ingredient.id);
+
+      expect(retrieved.aliases, hasLength(2));
+      expect(retrieved.aliases, containsAll(['aipo', 'celery']));
+    });
+
+    test('ingredient stored with empty aliases list returns empty aliases', () async {
+      final ingredient = Ingredient(
+        id: 'ing-aliases-2',
+        name: 'Tomate',
+        category: IngredientCategory.vegetable,
+        aliases: [],
+      );
+
+      await dbHelper.insertIngredient(ingredient);
+      final all = await dbHelper.getAllIngredients();
+      final retrieved = all.firstWhere((i) => i.id == ingredient.id);
+
+      expect(retrieved.aliases, isEmpty);
+    });
+
+    test('ingredient created without aliases field defaults to empty list', () async {
+      final ingredient = Ingredient(
+        id: 'ing-aliases-3',
+        name: 'Sal',
+        category: IngredientCategory.seasoning,
+      );
+
+      await dbHelper.insertIngredient(ingredient);
+      final all = await dbHelper.getAllIngredients();
+      final retrieved = all.firstWhere((i) => i.id == ingredient.id);
+
+      expect(retrieved.aliases, isEmpty);
+      expect(retrieved.aliases, isA<List<String>>());
+    });
+  });
 }

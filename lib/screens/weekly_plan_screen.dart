@@ -591,6 +591,8 @@ class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       final double actualCookTime = result['actualCookTime'];
       final Recipe primaryRecipe = result['primaryRecipe'];
       final List<Recipe> finalAdditionalRecipes = result['additionalRecipes'];
+      final Map<String, String?>? recipeNotes =
+          result['recipeNotes'] as Map<String, String?>?;
 
       // Create the meal with a new ID
       final mealId = IdGenerator.generateId();
@@ -622,7 +624,7 @@ class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         mealId: mealId,
         recipeId: primaryRecipe.id,
         isPrimaryDish: true,
-        notes: AppLocalizations.of(context)!.mainDish,
+        notes: recipeNotes?[primaryRecipe.id],
       );
       await mealProvider.addMealRecipe(primaryMealRecipe);
 
@@ -632,7 +634,7 @@ class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           mealId: mealId,
           recipeId: recipe.id,
           isPrimaryDish: false,
-          notes: AppLocalizations.of(context)!.sideDish,
+          notes: recipeNotes?[recipe.id],
         );
         await mealProvider.addMealRecipe(sideDishMealRecipe);
       }
@@ -725,6 +727,8 @@ class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       final double actualPrepTime = result['actualPrepTime'];
       final double actualCookTime = result['actualCookTime'];
       final List<Recipe> updatedAdditionalRecipes = result['additionalRecipes'];
+      final Map<String, String?>? recipeNotes =
+          result['recipeNotes'] as Map<String, String?>?;
 
       // Update meal and recipe associations using service
       // Use the screen's database helper instance to ensure test mocks work
@@ -738,6 +742,7 @@ class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         actualPrepTime: actualPrepTime,
         actualCookTime: actualCookTime,
         additionalRecipes: updatedAdditionalRecipes,
+        recipeNotes: recipeNotes,
       );
 
       if (mounted) {
@@ -849,6 +854,10 @@ class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         return;
       }
 
+      // Load existing MealRecipe records for pre-populating per-recipe notes
+      final existingMealRecipes =
+          await _dbHelper.getMealRecipesForMeal(targetMeal.id);
+
       // Show the edit dialog
       Map<String, dynamic>? result;
       if (mounted) {
@@ -858,6 +867,7 @@ class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
             meal: targetMeal,
             primaryRecipe: recipes.primary,
             additionalRecipes: recipes.additional,
+            mealRecipes: existingMealRecipes,
           ),
         );
       }
@@ -873,6 +883,8 @@ class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       final double actualPrepTime = result['actualPrepTime'];
       final double actualCookTime = result['actualCookTime'];
       final List<Recipe> updatedAdditionalRecipes = result['additionalRecipes'];
+      final Map<String, String?>? recipeNotes =
+          result['recipeNotes'] as Map<String, String?>?;
 
       // Update meal and recipe associations using service
       // Use the screen's database helper instance to ensure test mocks work
@@ -886,6 +898,7 @@ class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
         actualPrepTime: actualPrepTime,
         actualCookTime: actualCookTime,
         additionalRecipes: updatedAdditionalRecipes,
+        recipeNotes: recipeNotes,
       );
 
       if (mounted) {

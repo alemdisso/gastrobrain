@@ -45,6 +45,13 @@ class IngredientMatchingService {
       return matches; // Exact match found, no need to continue
     }
 
+    // Stage 1.5: Alias match — user-defined alternative names
+    final aliasMatches = _findAliasMatches(parsedName);
+    if (aliasMatches.isNotEmpty) {
+      matches.addAll(aliasMatches);
+      return matches;
+    }
+
     // Stage 2: Case-insensitive match
     final caseInsensitiveMatch = _findCaseInsensitiveMatch(parsedName);
     if (caseInsensitiveMatch != null) {
@@ -130,6 +137,31 @@ class IngredientMatchingService {
       }
     }
     return null;
+  }
+
+  /// Stage 1.5: Alias match — user-defined alternative names (e.g. "aipo" for "salsão")
+  ///
+  /// Returns all ingredients whose aliases normalize to the parsed name.
+  /// Returning the full list handles the ambiguous case where two ingredients
+  /// share the same alias — [shouldAutoSelect] then falls back to user choice.
+  List<IngredientMatch> _findAliasMatches(String parsedName) {
+    final normalizedParsed = _normalize(parsedName);
+    final results = <IngredientMatch>[];
+
+    for (final ingredient in _allIngredients) {
+      if (ingredient.aliases.isEmpty) continue;
+      for (final alias in ingredient.aliases) {
+        if (_normalize(alias) == normalizedParsed) {
+          results.add(IngredientMatch(
+            ingredient: ingredient,
+            confidence: 0.95,
+            matchType: MatchType.alias,
+          ));
+          break; // One match per ingredient is sufficient
+        }
+      }
+    }
+    return results;
   }
 
   /// Stage 3: Normalized match (removes accents, special characters, handles plurals)

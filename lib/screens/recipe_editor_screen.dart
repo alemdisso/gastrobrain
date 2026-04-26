@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:uuid/uuid.dart';
 import '../core/di/service_provider.dart';
 import '../core/services/ingredient_matching_service.dart';
@@ -52,6 +53,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
   // Instructions state
   final TextEditingController _instructionsController = TextEditingController();
   bool _hasUnsavedChanges = false;
+  bool _isInstructionsPreviewMode = false;
 
   // Session tracking (Phase 5)
   int _recipesUpdatedInSession = 0;
@@ -656,18 +658,8 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
       }
 
       // Step 4: Save instructions
-      final updatedRecipe = Recipe(
-        id: _selectedRecipe!.id,
-        name: _selectedRecipe!.name,
-        desiredFrequency: _selectedRecipe!.desiredFrequency,
-        notes: _selectedRecipe!.notes,
+      final updatedRecipe = _selectedRecipe!.copyWith(
         instructions: _instructionsController.text,
-        createdAt: _selectedRecipe!.createdAt,
-        difficulty: _selectedRecipe!.difficulty,
-        prepTimeMinutes: _selectedRecipe!.prepTimeMinutes,
-        cookTimeMinutes: _selectedRecipe!.cookTimeMinutes,
-        rating: _selectedRecipe!.rating,
-        category: _selectedRecipe!.category,
         servings: _servings,
       );
       await dbHelper.updateRecipe(updatedRecipe);
@@ -1799,34 +1791,94 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const Spacer(),
-                  Flexible(
-                    child: Text(
-                      '${_instructionsController.text.length} characters',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                      overflow: TextOverflow.ellipsis,
+                  if (!_isInstructionsPreviewMode)
+                    Flexible(
+                      child: Text(
+                        '${_instructionsController.text.length} characters',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  const SizedBox(width: 8),
+                  SegmentedButton<bool>(
+                    segments: const [
+                      ButtonSegment(
+                        value: false,
+                        icon: Icon(Icons.edit_outlined),
+                      ),
+                      ButtonSegment(
+                        value: true,
+                        icon: Icon(Icons.visibility_outlined),
+                      ),
+                    ],
+                    selected: {_isInstructionsPreviewMode},
+                    onSelectionChanged: (v) => setState(
+                      () => _isInstructionsPreviewMode = v.first,
+                    ),
+                    style: const ButtonStyle(
+                      visualDensity: VisualDensity(
+                        horizontal: VisualDensity.minimumDensity,
+                        vertical: VisualDensity.minimumDensity,
+                      ),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
-              TextField(
-                controller: _instructionsController,
-                maxLines: 12,
-                decoration: const InputDecoration(
-                  hintText:
-                      'Enter cooking instructions here...\n\nExample:\n1. Preheat oven to 180°C\n2. Mix ingredients...',
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.all(12),
+              if (_isInstructionsPreviewMode)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: _instructionsController.text.isEmpty
+                      ? Text(
+                          'Enter cooking instructions here...',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                                fontStyle: FontStyle.italic,
+                              ),
+                        )
+                      : MarkdownBody(
+                          data: _instructionsController.text,
+                          shrinkWrap: true,
+                          styleSheet: MarkdownStyleSheet.fromTheme(
+                            Theme.of(context),
+                          ).copyWith(
+                            p: const TextStyle(fontSize: 16, height: 1.5),
+                          ),
+                        ),
+                )
+              else
+                TextField(
+                  controller: _instructionsController,
+                  maxLines: 12,
+                  decoration: const InputDecoration(
+                    hintText:
+                        'Enter cooking instructions here...\n\nExample:\n1. Preheat oven to 180°C\n2. Mix ingredients...',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.all(12),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _hasUnsavedChanges = true;
+                    });
+                  },
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    _hasUnsavedChanges = true;
-                  });
-                },
-              ),
               const SizedBox(height: 24),
 
               // Workflow control buttons

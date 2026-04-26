@@ -200,5 +200,99 @@ void main() {
         expect(recreated.category, category);
       }
     });
+
+    group('aliases field', () {
+      test('defaults to empty list when not provided', () {
+        final ingredient = Ingredient(
+          id: 'test_id',
+          name: 'Salsão',
+          category: IngredientCategory.vegetable,
+        );
+
+        expect(ingredient.aliases, isEmpty);
+        expect(ingredient.aliases, isA<List<String>>());
+      });
+
+      test('toMap() stores null when aliases is empty', () {
+        final ingredient = Ingredient(
+          id: 'test_id',
+          name: 'Tomate',
+          category: IngredientCategory.vegetable,
+          aliases: [],
+        );
+
+        final map = ingredient.toMap();
+
+        expect(map['aliases'], isNull);
+      });
+
+      test('toMap() encodes non-empty aliases as JSON string', () {
+        final ingredient = Ingredient(
+          id: 'test_id',
+          name: 'Salsão',
+          category: IngredientCategory.vegetable,
+          aliases: ['aipo', 'celery'],
+        );
+
+        final map = ingredient.toMap();
+
+        expect(map['aliases'], isA<String>());
+        expect(map['aliases'], equals('["aipo","celery"]'));
+      });
+
+      test('fromMap() decodes JSON string to List<String>', () {
+        final map = {
+          'id': 'test_id',
+          'name': 'Salsão',
+          'category': 'vegetable',
+          'aliases': '["aipo","celery"]',
+        };
+
+        final ingredient = Ingredient.fromMap(map);
+
+        expect(ingredient.aliases, hasLength(2));
+        expect(ingredient.aliases, containsAll(['aipo', 'celery']));
+      });
+
+      test('fromMap() handles null aliases column (existing DB rows)', () {
+        final map = {
+          'id': 'test_id',
+          'name': 'Tomate',
+          'category': 'vegetable',
+          'aliases': null,
+        };
+
+        final ingredient = Ingredient.fromMap(map);
+
+        expect(ingredient.aliases, isEmpty);
+      });
+
+      test('fromMap() handles malformed JSON gracefully', () {
+        final map = {
+          'id': 'test_id',
+          'name': 'Tomate',
+          'category': 'vegetable',
+          'aliases': 'not-valid-json{{{',
+        };
+
+        final ingredient = Ingredient.fromMap(map);
+
+        expect(ingredient.aliases, isEmpty);
+      });
+
+      test('round-trip toMap → fromMap preserves aliases', () {
+        final original = Ingredient(
+          id: 'test_id',
+          name: 'Coentro',
+          category: IngredientCategory.herb,
+          aliases: ['cilantro', 'coriander'],
+        );
+
+        final recreated = Ingredient.fromMap(original.toMap());
+
+        expect(recreated.aliases, hasLength(2));
+        expect(recreated.aliases, containsAll(['cilantro', 'coriander']));
+      });
+    });
   });
 }

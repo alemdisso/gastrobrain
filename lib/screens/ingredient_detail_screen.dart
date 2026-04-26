@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import '../models/ingredient.dart';
+import '../models/measurement_unit.dart';
 import '../models/recipe.dart';
 import '../database/database_helper.dart';
 import '../core/di/service_provider.dart';
 import '../l10n/app_localizations.dart';
 import '../screens/recipe_details_screen.dart';
 import '../core/theme/design_tokens.dart';
+import '../utils/quantity_formatter.dart';
 
 class IngredientDetailScreen extends StatefulWidget {
   final Ingredient ingredient;
@@ -73,14 +75,14 @@ class _IngredientDetailScreenState extends State<IngredientDetailScreen>
     if (filter == _MealHistoryFilter.last30Days) {
       final cutoff = now.subtract(const Duration(days: 30));
       filtered = _mealHistory
-          .where((r) =>
-              DateTime.parse(r['cooked_at'] as String).isAfter(cutoff))
+          .where(
+              (r) => DateTime.parse(r['cooked_at'] as String).isAfter(cutoff))
           .toList();
     } else if (filter == _MealHistoryFilter.last3Months) {
       final cutoff = now.subtract(const Duration(days: 90));
       filtered = _mealHistory
-          .where((r) =>
-              DateTime.parse(r['cooked_at'] as String).isAfter(cutoff))
+          .where(
+              (r) => DateTime.parse(r['cooked_at'] as String).isAfter(cutoff))
           .toList();
     } else {
       filtered = _mealHistory;
@@ -106,21 +108,43 @@ class _IngredientDetailScreenState extends State<IngredientDetailScreen>
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _UsedInTab(
-            isLoading: _isLoading,
-            recipes: _usedInRecipes,
-            l10n: l10n,
-          ),
-          _MealHistoryTab(
-            isLoading: _isLoading,
-            meals: _filteredMealHistory,
-            totalCount: _mealHistory.length,
-            activeFilter: _historyFilter,
-            onFilterChanged: _applyFilter,
-            l10n: l10n,
+          if (widget.ingredient.aliases.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                DesignTokens.spacingMd,
+                DesignTokens.spacingMd,
+                DesignTokens.spacingMd,
+                0,
+              ),
+              child: Wrap(
+                spacing: DesignTokens.spacingXs,
+                children: widget.ingredient.aliases
+                    .map((alias) => Chip(label: Text(alias)))
+                    .toList(),
+              ),
+            ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _UsedInTab(
+                  isLoading: _isLoading,
+                  recipes: _usedInRecipes,
+                  l10n: l10n,
+                ),
+                _MealHistoryTab(
+                  isLoading: _isLoading,
+                  meals: _filteredMealHistory,
+                  totalCount: _mealHistory.length,
+                  activeFilter: _historyFilter,
+                  onFilterChanged: _applyFilter,
+                  l10n: l10n,
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -192,9 +216,19 @@ class _RecipeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final recipe = Recipe.fromMap(row);
-    final usageQuantity = row['usage_quantity'];
+    final rawQuantity = row['usage_quantity'];
+    final usageUnit = row['usage_unit'] as String?;
     final ingredientCount = (row['ingredient_count'] as int?) ?? 0;
     final isIncomplete = ingredientCount < 3;
+    final double? quantity =
+        rawQuantity != null ? (rawQuantity as num).toDouble() : null;
+    final formattedQuantity =
+        quantity != null ? QuantityFormatter.format(quantity) : null;
+    final localizedUnit = usageUnit != null && usageUnit.isNotEmpty && quantity != null
+        ? MeasurementUnit.fromString(usageUnit)
+                ?.getLocalizedQuantityName(context, quantity) ??
+            usageUnit
+        : null;
 
     return Card(
       margin: const EdgeInsets.symmetric(
@@ -243,41 +277,40 @@ class _RecipeCard extends StatelessWidget {
               const SizedBox(height: DesignTokens.spacingXs),
               Row(
                 children: [
-                  Chip(
-                    label: Text(
-                      recipe.category
-                          .getLocalizedDisplayName(context),
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                    padding: EdgeInsets.zero,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  const SizedBox(width: DesignTokens.spacingSm),
-                  Text(
-                    '${'★' * recipe.difficulty}${'☆' * (5 - recipe.difficulty)}',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontSize: 12,
+                  ...List.generate(
+                    5,
+                    (i) => Icon(
+                      i < recipe.difficulty
+                          ? Icons.battery_full
+                          : Icons.battery_0_bar,
+                      size: 14,
+                      color: i < recipe.difficulty ? Colors.green : Colors.grey,
                     ),
                   ),
                   if (recipe.rating > 0) ...[
                     const SizedBox(width: DesignTokens.spacingSm),
-                    Text(
-                      '${'★' * recipe.rating}${'☆' * (5 - recipe.rating)}',
-                      style: const TextStyle(
-                        color: Colors.amber,
-                        fontSize: 12,
+                    ...List.generate(
+                      5,
+                      (i) => Icon(
+                        i < recipe.rating ? Icons.star : Icons.star_border,
+                        size: 14,
+                        color: i < recipe.rating ? Colors.amber : Colors.grey,
                       ),
                     ),
                   ],
                 ],
               ),
-              if (usageQuantity != null)
+              if (quantity != null)
                 Padding(
-                  padding:
-                      const EdgeInsets.only(top: DesignTokens.spacingXs),
+                  padding: const EdgeInsets.only(top: DesignTokens.spacingXs),
                   child: Text(
-                    'Qty: $usageQuantity',
+                    quantity == 0
+                        ? l10n.toTaste
+                        : l10n.ingredientUsageQuantityLabel(
+                            localizedUnit != null
+                                ? '$formattedQuantity $localizedUnit'
+                                : formattedQuantity!,
+                          ),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
@@ -339,8 +372,7 @@ class _MealHistoryTab extends StatelessWidget {
               FilterChip(
                 label: Text(l10n.filterAllTime),
                 selected: activeFilter == _MealHistoryFilter.allTime,
-                onSelected: (_) =>
-                    onFilterChanged(_MealHistoryFilter.allTime),
+                onSelected: (_) => onFilterChanged(_MealHistoryFilter.allTime),
               ),
             ],
           ),

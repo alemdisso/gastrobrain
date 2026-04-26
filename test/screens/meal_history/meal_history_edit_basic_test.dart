@@ -587,9 +587,11 @@ void main() {
       await tester.tap(find.text('Edit'));
       await tester.pumpAndSettle();
 
-      // Find and toggle the success switch
+      // Find and toggle the success switch (scroll to it — dialog is taller with per-recipe note fields)
       final successSwitch = find.byKey(const Key('edit_meal_recording_success_switch'));
       expect(successSwitch, findsOneWidget);
+      await tester.ensureVisible(successSwitch);
+      await tester.pumpAndSettle();
       await tester.tap(successSwitch);
       await tester.pumpAndSettle();
 

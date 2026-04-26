@@ -651,9 +651,11 @@ void main() {
       await tester.tap(find.text('Show Dialog'));
       await tester.pumpAndSettle();
 
-      // Get success switch
+      // Get success switch (scroll to it — dialog is taller with per-recipe note fields)
       final successSwitch =
           find.byKey(const Key('meal_recording_success_switch'));
+      await tester.ensureVisible(successSwitch);
+      await tester.pumpAndSettle();
       expect(tester.widget<Switch>(successSwitch).value, isTrue);
 
       // Toggle switch
@@ -673,9 +675,11 @@ void main() {
         ),
       );
 
-      // Toggle success switch to OFF
+      // Toggle success switch to OFF (scroll to it — dialog is taller with per-recipe note fields)
       final successSwitch =
           find.byKey(const Key('meal_recording_success_switch'));
+      await tester.ensureVisible(successSwitch);
+      await tester.pumpAndSettle();
       await tester.tap(successSwitch);
       await tester.pumpAndSettle();
 

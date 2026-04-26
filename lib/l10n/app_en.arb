@@ -164,6 +164,10 @@
   "@cookingTime": {
     "description": "Label for cooking time field"
   },
+  "marinatingTime": "Marinating Time",
+  "@marinatingTime": {
+    "description": "Label for marinating time field in recipe forms"
+  },
   "servings": "Servings",
   "@servings": {
     "description": "Label for the recipe servings field (how many people it serves)"
@@ -1207,9 +1211,45 @@
   "@notesOptional": {
     "description": "Label for notes field"
   },
+  "recipeNoteHint": "Note about this dish (optional)",
+  "@recipeNoteHint": {
+    "description": "Hint text for per-recipe note field in meal recording dialog"
+  },
+  "mealNoteLabel": "Meal note",
+  "@mealNoteLabel": {
+    "description": "Label for the general meal-level note in history display"
+  },
   "anyAdditionalInformation": "Any additional information",
   "@anyAdditionalInformation": {
     "description": "Hint text for notes field"
+  },
+  "ingredientAliasesLabel": "Aliases (Optional)",
+  "@ingredientAliasesLabel": {
+    "description": "Label for the ingredient aliases input field"
+  },
+  "ingredientAliasesHint": "aipo, celery",
+  "@ingredientAliasesHint": {
+    "description": "Hint text for aliases field showing example comma-separated values"
+  },
+  "ingredientExactDuplicateError": "An ingredient named '{name}' already exists.",
+  "@ingredientExactDuplicateError": {
+    "description": "Error shown when the entered name exactly matches an existing ingredient or its alias",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "The name of the existing ingredient"
+      }
+    }
+  },
+  "ingredientSimilarSuggestion": "Similar ingredients: {list}",
+  "@ingredientSimilarSuggestion": {
+    "description": "Non-blocking warning shown when the entered name is a prefix match of existing ingredients",
+    "placeholders": {
+      "list": {
+        "type": "String",
+        "description": "Comma-separated list of similar ingredient names"
+      }
+    }
   },
   "addRecipeTitle": "Add Recipe",
   "@addRecipeTitle": {
@@ -1452,6 +1492,10 @@
   "cookTimeLabel": "Cook Time (min)",
   "@cookTimeLabel": {
     "description": "Label for cook time field"
+  },
+  "marinatingTimeLabel": "Marinate Time (min)",
+  "@marinatingTimeLabel": {
+    "description": "Label for marinating time in recipe details display"
   },
   "minuteAbbreviation": "min",
   "@minuteAbbreviation": {
@@ -1896,6 +1940,14 @@
   "instructionsHint": "Example:\n1. Preheat oven to 180°C\n2. Mix ingredients in a bowl\n3. Bake for 30 minutes",
   "@instructionsHint": {
     "description": "Hint text showing example instructions format"
+  },
+  "instructionsEditLabel": "Edit",
+  "@instructionsEditLabel": {
+    "description": "Toggle label to switch instructions to raw edit mode"
+  },
+  "instructionsPreviewLabel": "Preview",
+  "@instructionsPreviewLabel": {
+    "description": "Toggle label to switch instructions to rendered Markdown preview"
   },
   "noneOfTheseCreateNew": "Create New Ingredient",
   "@noneOfTheseCreateNew": {
@@ -2600,6 +2652,15 @@
   "@incompleteRecipe": {
     "description": "Chip label for recipes with fewer than 3 ingredients"
   },
+  "ingredientUsageQuantityLabel": "Qty: {quantity}",
+  "@ingredientUsageQuantityLabel": {
+    "description": "Quantity label shown on recipe cards in the ingredient Used In tab",
+    "placeholders": {
+      "quantity": {
+        "type": "Object"
+      }
+    }
+  },
   "directSideIngredient": "Side ingredient",
   "@directSideIngredient": {
     "description": "Label for ingredient added directly to a meal (not via a recipe)"
@@ -2632,6 +2693,35 @@
   "filterAllTime": "All time",
   "@filterAllTime": {
     "description": "Time range filter chip: all time (no date restriction)"
+  },
+
+  "recipeStory": "Story",
+  "@recipeStory": {
+    "description": "Label for the recipe story/narrative field"
+  },
+  "recipeStoryLabel": "Story (optional)",
+  "@recipeStoryLabel": {
+    "description": "Label for story field in recipe editor screens"
+  },
+  "recipeStoryHint": "What's the story behind this recipe?",
+  "@recipeStoryHint": {
+    "description": "Hint text for the story input field"
+  },
+  "addStory": "Add story",
+  "@addStory": {
+    "description": "Button label to add a story to a recipe"
+  },
+  "editStory": "Edit story",
+  "@editStory": {
+    "description": "Button tooltip for editing the recipe story"
+  },
+  "storyUpdatedSuccessfully": "Story updated successfully",
+  "@storyUpdatedSuccessfully": {
+    "description": "Success message when story is saved"
+  },
+  "enterStory": "Write the story behind this recipe...",
+  "@enterStory": {
+    "description": "Hint text for story input in edit dialog"
   }
 
 }

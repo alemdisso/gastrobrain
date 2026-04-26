@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'ingredient_category.dart';
 import 'measurement_unit.dart';
 import 'protein_type.dart';
@@ -9,6 +11,7 @@ class Ingredient {
   MeasurementUnit? unit;
   ProteinType? proteinType; // null for non-proteins
   String? notes;
+  List<String> aliases;
 
   Ingredient({
     required this.id,
@@ -17,6 +20,7 @@ class Ingredient {
     this.unit,
     this.proteinType,
     this.notes,
+    this.aliases = const [],
   });
 
   Map<String, dynamic> toMap() {
@@ -27,22 +31,34 @@ class Ingredient {
       'unit': unit?.value,
       'protein_type': proteinType?.name,
       'notes': notes,
+      'aliases': aliases.isEmpty ? null : jsonEncode(aliases),
     };
   }
 
   factory Ingredient.fromMap(Map<String, dynamic> map) {
+    List<String> aliases = [];
+    if (map['aliases'] != null) {
+      try {
+        aliases = List<String>.from(
+          jsonDecode(map['aliases'] as String) as List,
+        );
+      } catch (_) {
+        // Malformed JSON — treat as no aliases
+      }
+    }
     return Ingredient(
       id: map['id'],
       name: map['name'],
       category: IngredientCategory.fromString(map['category']),
       unit: MeasurementUnit.fromString(map['unit']),
-      proteinType: map['protein_type'] != null 
+      proteinType: map['protein_type'] != null
           ? ProteinType.values.firstWhere(
               (type) => type.name == map['protein_type'],
               orElse: () => ProteinType.other,
             )
           : null,
       notes: map['notes'],
+      aliases: aliases,
     );
   }
 

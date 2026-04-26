@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:gastrobrain/models/ingredient.dart';
 import 'package:gastrobrain/models/ingredient_category.dart';
+import 'package:gastrobrain/models/measurement_unit.dart';
 import 'package:gastrobrain/models/meal.dart';
 import 'package:gastrobrain/models/meal_ingredient.dart';
 import 'package:gastrobrain/models/meal_recipe.dart';
@@ -78,7 +79,7 @@ void main() {
   });
 
   group('IngredientDetailScreen — Used In tab', () {
-    testWidgets('recipe card shows name, category, difficulty, rating, quantity',
+    testWidgets('recipe card shows name, difficulty, rating, quantity',
         (tester) async {
       final recipe = _makeRecipe(difficulty: 3, rating: 4);
       mockDb.recipes[recipe.id] = recipe;
@@ -94,10 +95,78 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Test Recipe'), findsOneWidget);
-      expect(find.text('Uncategorized'), findsOneWidget);
-      expect(find.text('★★★☆☆'), findsOneWidget); // difficulty 3
-      expect(find.text('★★★★☆'), findsOneWidget); // rating 4
-      expect(find.textContaining('2.5'), findsOneWidget); // quantity
+      expect(find.text('Uncategorized'), findsNothing);
+      expect(find.textContaining('2½'), findsOneWidget); // quantity (formatted)
+      // Difficulty 3: three filled batteries, two empty
+      expect(find.byIcon(Icons.battery_full), findsNWidgets(3));
+      expect(find.byIcon(Icons.battery_0_bar), findsNWidgets(2));
+      // Rating 4: four filled stars, one empty
+      expect(find.byIcon(Icons.star), findsNWidgets(4));
+      expect(find.byIcon(Icons.star_border), findsNWidgets(1));
+    });
+
+    testWidgets('recipe card shows unit alongside quantity when ingredient has a unit',
+        (tester) async {
+      final ingredientWithUnit = _makeIngredient(id: 'ing-2', name: 'Flour');
+      ingredientWithUnit.unit = MeasurementUnit.gram;
+      mockDb.ingredients[ingredientWithUnit.id] = ingredientWithUnit;
+
+      final recipe = _makeRecipe();
+      mockDb.recipes[recipe.id] = recipe;
+      await mockDb.addIngredientToRecipe(
+        _makeRecipeIngredient(
+            recipeId: recipe.id,
+            ingredientId: ingredientWithUnit.id,
+            quantity: 100),
+      );
+
+      await tester.pumpWidget(_buildTestApp(
+        IngredientDetailScreen(
+            ingredient: ingredientWithUnit, databaseHelper: mockDb),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('100'), findsOneWidget);
+      expect(find.textContaining('g'), findsOneWidget);
+    });
+
+    testWidgets('recipe card shows quantity without unit when no unit is defined',
+        (tester) async {
+      final recipe = _makeRecipe();
+      mockDb.recipes[recipe.id] = recipe;
+      await mockDb.addIngredientToRecipe(
+        _makeRecipeIngredient(
+            recipeId: recipe.id, ingredientId: ingredient.id, quantity: 3),
+      );
+
+      await tester.pumpWidget(_buildTestApp(
+        IngredientDetailScreen(
+            ingredient: ingredient, databaseHelper: mockDb),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('3'), findsOneWidget);
+      // null unit — rendered as bare number, no crash
+      expect(find.textContaining('null'), findsNothing);
+    });
+
+    testWidgets('recipe card shows "to taste" when quantity is zero',
+        (tester) async {
+      final recipe = _makeRecipe();
+      mockDb.recipes[recipe.id] = recipe;
+      await mockDb.addIngredientToRecipe(
+        _makeRecipeIngredient(
+            recipeId: recipe.id, ingredientId: ingredient.id, quantity: 0),
+      );
+
+      await tester.pumpWidget(_buildTestApp(
+        IngredientDetailScreen(
+            ingredient: ingredient, databaseHelper: mockDb),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('to taste'), findsOneWidget);
+      expect(find.textContaining('0'), findsNothing);
     });
 
     testWidgets('tapping recipe card navigates to RecipeDetailsScreen',

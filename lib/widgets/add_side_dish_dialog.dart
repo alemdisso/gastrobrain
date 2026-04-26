@@ -309,7 +309,7 @@ class _AddSideDishDialogState extends State<AddSideDishDialog> {
                           ),
                           title: Text(recipe.name),
                           subtitle: Text(
-                            '${recipe.prepTimeMinutes + recipe.cookTimeMinutes} min • '
+                            '${recipe.prepTimeMinutes + recipe.cookTimeMinutes + recipe.marinatingTimeMinutes} min • '
                             'Difficulty: ${recipe.difficulty}/5',
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
