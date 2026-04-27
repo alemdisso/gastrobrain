@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../models/frequency_type.dart';
 import '../models/recipe_category.dart';
-import '../database/database_helper.dart';
+import '../core/di/service_provider.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
 import '../l10n/app_localizations.dart';
@@ -155,7 +155,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         servings: servings,
       );
 
-      final dbHelper = DatabaseHelper();
+      final dbHelper = ServiceProvider.database.helper;
       await dbHelper.updateRecipe(updatedRecipe);
 
       if (mounted) {
