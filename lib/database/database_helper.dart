@@ -34,6 +34,7 @@ import '../core/migration/migrations/001_initial_schema.dart';
 import '../core/migration/migrations/002_add_ingredient_aliases.dart';
 import '../core/migration/migrations/003_add_marinating_time.dart';
 import '../core/migration/migrations/004_add_recipe_story.dart';
+import '../core/migration/migrations/005_add_tags.dart';
 import '../core/repositories/base_repository.dart';
 
 class DatabaseHelper {
@@ -51,6 +52,7 @@ class DatabaseHelper {
     AddIngredientAliasesMigration(),
     AddMarinatingTimeMigration(),
     AddRecipeStoryMigration(),
+    AddTagsMigration(),
   ];
 
   /// Get the migration runner instance
@@ -1914,6 +1916,20 @@ class DatabaseHelper {
       if (filters.containsKey('category')) {
         whereConditions.add('category = ?');
         arguments.add(filters['category']);
+      }
+
+      if (filters.containsKey('tag_filters')) {
+        final tagFilters = filters['tag_filters'] as List<Map<String, String>>;
+        for (final tf in tagFilters) {
+          whereConditions.add(
+            'EXISTS (SELECT 1 FROM recipe_tags rt '
+            'JOIN tags t ON t.id = rt.tag_id '
+            'WHERE rt.recipe_id = recipes.id '
+            'AND t.type_id = ? AND t.name = ?)',
+          );
+          arguments.add(tf['type_id']);
+          arguments.add(tf['name']);
+        }
       }
 
       if (whereConditions.isNotEmpty) {

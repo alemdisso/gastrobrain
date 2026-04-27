@@ -17,6 +17,7 @@ class RecipeProvider extends ChangeNotifier {
   String? _currentSortBy = 'name';
   String? _currentSortOrder = 'ASC';
   Map<String, dynamic> _filters = {};
+  List<Map<String, String>> _tagFilters = [];
 
   // Getters for UI consumption
   List<Recipe> get recipes => List.unmodifiable(_recipes);
@@ -31,7 +32,8 @@ class RecipeProvider extends ChangeNotifier {
   Map<String, dynamic> get filters => Map.unmodifiable(_filters);
 
   // Filter state helpers
-  bool get hasActiveFilters => _filters.isNotEmpty;
+  bool get hasActiveFilters => _filters.isNotEmpty || _tagFilters.isNotEmpty;
+  List<Map<String, String>> get tagFilters => List.unmodifiable(_tagFilters);
   int get totalRecipeCount => _totalRecipeCount;
   int get filteredRecipeCount => _recipes.length;
 
@@ -42,10 +44,15 @@ class RecipeProvider extends ChangeNotifier {
     _setLoading(true);
     _clearError();
 
+    final combinedFilters = Map<String, dynamic>.from(_filters);
+    if (_tagFilters.isNotEmpty) {
+      combinedFilters['tag_filters'] = _tagFilters;
+    }
+
     final result = await _repository.getRecipes(
       sortBy: _currentSortBy,
       sortOrder: _currentSortOrder,
-      filters: _filters.isEmpty ? null : _filters,
+      filters: combinedFilters.isEmpty ? null : combinedFilters,
       forceRefresh: forceRefresh,
     );
 
@@ -164,9 +171,16 @@ class RecipeProvider extends ChangeNotifier {
     await loadRecipes(forceRefresh: true);
   }
 
-  /// Clears all filters and reloads recipes
+  /// Updates tag filter parameters and reloads recipes
+  Future<void> setTagFilters(List<Map<String, String>> tagFilters) async {
+    _tagFilters = List.from(tagFilters);
+    await loadRecipes(forceRefresh: true);
+  }
+
+  /// Clears all filters (including tag filters) and reloads recipes
   Future<void> clearFilters() async {
     _filters.clear();
+    _tagFilters.clear();
     await loadRecipes(forceRefresh: true);
   }
 

@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../models/recipe.dart';
+import '../models/tag.dart';
 import '../l10n/app_localizations.dart';
 
 /// Overview tab for RecipeDetailsScreen.
 ///
 /// Displays recipe metadata: category, rating, difficulty, servings,
-/// prep/cook time, desired frequency, and notes.
+/// prep/cook time, desired frequency, notes, and tags.
 class RecipeDetailsOverviewTab extends StatelessWidget {
-  const RecipeDetailsOverviewTab({super.key, required this.recipe});
+  const RecipeDetailsOverviewTab({
+    super.key,
+    required this.recipe,
+    this.tags = const [],
+  });
 
   final Recipe recipe;
+  final List<Tag> tags;
 
   @override
   Widget build(BuildContext context) {
@@ -125,6 +131,30 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
             value: recipe.desiredFrequency.getLocalizedDisplayName(context),
           ),
           const SizedBox(height: 20),
+
+          // Tags
+          if (tags.isNotEmpty) ...[
+            const Divider(),
+            const SizedBox(height: 12),
+            Text(
+              AppLocalizations.of(context)!.tags,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              children: tags.map((t) => Chip(
+                label: Text(t.name),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
+              )).toList(),
+            ),
+          ],
 
           // Notes
           if (recipe.notes.isNotEmpty) ...[

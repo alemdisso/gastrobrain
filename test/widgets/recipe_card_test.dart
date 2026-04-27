@@ -216,6 +216,9 @@ class MockRecipeProvider extends ChangeNotifier implements RecipeProvider {
   bool get hasActiveFilters => false;
 
   @override
+  List<Map<String, String>> get tagFilters => [];
+
+  @override
   int get totalRecipeCount => 0;
 
   @override
@@ -238,6 +241,9 @@ class MockRecipeProvider extends ChangeNotifier implements RecipeProvider {
 
   @override
   Future<void> setFilters(Map<String, dynamic> filters) async {}
+
+  @override
+  Future<void> setTagFilters(List<Map<String, String>> tagFilters) async {}
 
   @override
   Future<void> clearFilters() async {}

@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../models/frequency_type.dart';
 import '../models/recipe_category.dart';
+import '../models/tag.dart';
+import '../models/tag_type.dart';
 import '../core/di/service_provider.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
+import '../core/repositories/tag_repository.dart';
+import '../core/services/tag_duplicate_checker.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/servings_stepper.dart';
+import '../widgets/tag_picker_widget.dart';
 
 class EditRecipeScreen extends StatefulWidget {
   final Recipe recipe;
@@ -32,6 +37,11 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   late int _rating;
   bool _isSaving = false;
 
+  List<TagType> _tagTypes = [];
+  Map<String, List<Tag>> _tagsByType = {};
+  List<String> _selectedTagIds = [];
+  late TagRepository _tagRepo;
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +56,38 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     _selectedCategory = widget.recipe.category;
     _difficulty = widget.recipe.difficulty;
     _rating = widget.recipe.rating;
+    _tagRepo = TagRepository(ServiceProvider.database.helper);
+    _loadTagData();
+  }
+
+  Future<void> _loadTagData() async {
+    try {
+      final types = await _tagRepo.getAllTagTypes();
+      final byType = <String, List<Tag>>{};
+      for (final t in types) {
+        byType[t.id] = await _tagRepo.getTagsByType(t.id);
+      }
+      final existing = await _tagRepo.getTagsForRecipe(widget.recipe.id);
+      if (mounted) {
+        setState(() {
+          _tagTypes = types;
+          _tagsByType = byType;
+          _selectedTagIds = existing.map((t) => t.id).toList();
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<Tag?> _onCreateTag(String name, String typeId) async {
+    try {
+      final existing = _tagsByType[typeId] ?? [];
+      if (TagDuplicateChecker(existing).check(name).isExact) return null;
+      final tag = await _tagRepo.createTag(name, typeId);
+      if (mounted) {
+        setState(() => _tagsByType = {..._tagsByType, typeId: [...existing, tag]});
+      }
+      return tag;
+    } catch (_) { return null; }
   }
 
   Widget _buildRatingField(String label, int value, Function(int) onChanged) {
@@ -157,6 +199,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
 
       final dbHelper = ServiceProvider.database.helper;
       await dbHelper.updateRecipe(updatedRecipe);
+      await _tagRepo.setTagsForRecipe(widget.recipe.id, _selectedTagIds);
 
       if (mounted) {
         Navigator.pop(context, true);
@@ -262,6 +305,15 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
           hintText: l10n.recipeStoryHint,
         ),
         maxLines: 5,
+      ),
+      const SizedBox(height: 16),
+      TagPickerWidget(
+        key: const Key('edit_recipe_tag_picker'),
+        tagTypes: _tagTypes,
+        tagsByType: _tagsByType,
+        selectedTagIds: _selectedTagIds,
+        onChanged: (ids) => setState(() => _selectedTagIds = ids),
+        onCreateTag: _onCreateTag,
       ),
       const SizedBox(height: 24),
       SizedBox(
