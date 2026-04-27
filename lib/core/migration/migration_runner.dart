@@ -120,32 +120,32 @@ class MigrationRunner {
   /// Run a specific migration
   Future<MigrationResult> _runMigration(Migration migration) async {
     final stopwatch = Stopwatch()..start();
-    
+
     try {
-      // Run the migration within a transaction for atomicity
+      // Run the migration and record it atomically. Validation is intentionally
+      // outside the transaction: ALTER TABLE schema changes are not visible to
+      // PRAGMA queries within the same sqflite transaction on some Android
+      // SQLite builds, causing false-negative validation and silent rollbacks
+      // that leave columns unadded (issue #372).
       await _db.transaction((txn) async {
         final executor = TransactionWrapper(txn);
-        
-        // Execute the migration
         await migration.up(executor);
-        
-        // Validate the migration if validation is provided
-        final isValid = await migration.validate(executor);
-        if (!isValid) {
-          throw MigrationException(
-            'Migration validation failed',
-            version: migration.version,
-            operation: 'validate',
-          );
-        }
-        
-        // Record the migration as applied
         await _recordMigration(txn, migration);
       });
-      
+
+      // Validate after commit — schema changes are guaranteed visible here.
+      final isValid = await migration.validate(DatabaseWrapper(_db));
+      if (!isValid) {
+        throw MigrationException(
+          'Migration validation failed',
+          version: migration.version,
+          operation: 'validate',
+        );
+      }
+
       stopwatch.stop();
       return MigrationResult.success(migration.version, stopwatch.elapsed);
-      
+
     } catch (e) {
       stopwatch.stop();
       return MigrationResult.failure(

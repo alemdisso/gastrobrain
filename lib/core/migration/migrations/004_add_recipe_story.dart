@@ -17,6 +17,8 @@ class AddRecipeStoryMigration extends Migration {
 
   @override
   Future<void> up(DatabaseExecutor db) async {
+    final cols = await db.rawQuery('PRAGMA table_info(recipes)');
+    if (cols.any((r) => r['name'] == 'story')) return;
     await db.execute(
       "ALTER TABLE recipes ADD COLUMN story TEXT DEFAULT ''",
     );
@@ -56,10 +58,7 @@ class AddRecipeStoryMigration extends Migration {
 
   @override
   Future<bool> validate(DatabaseExecutor db) async {
-    final result = await db.rawQuery(
-      "SELECT COUNT(*) as count FROM pragma_table_info('recipes') "
-      "WHERE name = 'story'",
-    );
-    return (result.first['count'] as int) > 0;
+    final result = await db.rawQuery('PRAGMA table_info(recipes)');
+    return result.any((r) => r['name'] == 'story');
   }
 }
