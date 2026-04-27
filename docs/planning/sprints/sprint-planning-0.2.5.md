@@ -2,7 +2,7 @@
 
 **Sprint Period**: ~6 days (starting 2026-04-27, milestone due 2026-05-02)
 **Milestone**: 0.2.5 - Tagging & Filtering
-**Total Story Points**: 31 pts
+**Total Story Points**: 33 pts (31 planned + 2 unplanned P1 bug fix)
 **Target Velocity**: 6.5 pts/day (cruising)
 
 ---
@@ -38,6 +38,25 @@ Key deliverables:
 ---
 
 ## Issues by Theme
+
+### Unplanned P1 Bug Fix — Must Complete (2 pts)
+
+#### #372 — Recipe save crash: `story` column missing from DB
+- **Story Points**: 2 (S) — **P1-High**
+- **Est Days**: 0.31d — well-scoped, all affected files identified during investigation
+- **Type**: Bug fix (migration system + one screen)
+- **Dependencies**: None — isolated to migration infrastructure
+- **Risk**: **Low** — root cause fully diagnosed; fix is structural and non-destructive
+- **Root Cause**: Migration 004 (`004_add_recipe_story.dart`) silently failed on some Android SQLite builds because its validation query ran inside the same sqflite transaction as the `ALTER TABLE` — schema changes are not visible to `PRAGMA` queries within the same transaction. The transaction rolled back, the column was never added, and the failure was swallowed. Repeats on every launch.
+- **Scope**:
+  - [ ] `lib/core/migration/migration_runner.dart` — move `validate()` call to after transaction commit (post-commit, schema changes guaranteed visible)
+  - [ ] `lib/core/migration/migrations/002_add_ingredient_aliases.dart` — idempotent `up()` (check before ALTER); fix `validate()` to use `PRAGMA table_info(table)` direct form
+  - [ ] `lib/core/migration/migrations/003_add_marinating_time.dart` — same as 002
+  - [ ] `lib/core/migration/migrations/004_add_recipe_story.dart` — same as 002
+  - [ ] `lib/screens/edit_recipe_screen.dart` — replace `DatabaseHelper()` at line 158 with `ServiceProvider.database.helper`
+- **On-device recovery**: No action needed — on the next app launch after the fix, migration 004 retries automatically (it's still pending in `schema_migrations`) and succeeds.
+
+---
 
 ### Theme 1: Tagging Foundation — Must Complete (8 pts)
 
@@ -155,16 +174,19 @@ Key deliverables:
 
 ## Day-by-Day Breakdown
 
-### Day 1 (Apr 27 Sun or Apr 28 Mon): Tagging Foundation — DB + Backend
+### Day 1 (Apr 27 Sun or Apr 28 Mon): Bug Fix + Tagging Foundation — DB + Backend
 
-**Goal**: Get the DB schema and seed data landed so all downstream work unblocks.
+**Goal**: Clear the P1 bug first thing, then get the tagging DB schema and seed data landed so all downstream work unblocks.
 
 **Issues**:
+- **#372** — P1 bug fix: recipe save crash (story column missing)
+  - Why first: P1 blocks basic recipe functionality; fix is fast and fully scoped
+  - Deliverable: Migration runner validates post-commit; migrations 002–004 idempotent; edit_recipe_screen uses ServiceProvider
 - **#324** — DB migration (tag_types, tags, recipe_tags) + seed predefined types + initial vocabulary
   - Why first: Everything in the sprint depends on this. DB work must come first within the issue — never leave migration to mid-sprint.
   - Deliverable: Migration runs cleanly on both empty and seeded DB; tag types and initial vocabulary seeded; model layer updated
 
-**Testing**: Migration idempotency test; unit tests for Tag/TagType models
+**Testing**: #372: `flutter analyze` + migration consolidation test; #324: Migration idempotency test; unit tests for Tag/TagType models
 
 **Risks**: Migration design decisions surface here — if schema needs adjustment, better now than after UI is built
 
@@ -322,6 +344,7 @@ All migrations must run on Day 1 (#324) or immediately when their issue starts. 
 ## Success Criteria
 
 ### Primary — Must Complete
+- [ ] Recipe save crash resolved: `story` column added on next app launch (#372)
 - [ ] Tag system fully functional: create, display, filter by tags (#324)
 - [ ] Range-based filtering operational: difficulty, frequency, rating (#111)
 - [ ] Tag-based filtering operational: hard (dietary) and soft (cuisine, occasion) (#111)
@@ -357,4 +380,4 @@ All migrations must run on Day 1 (#324) or immediately when their issue starts. 
 ---
 
 **Plan Created**: 2026-04-26
-**Last Updated**: 2026-04-26
+**Last Updated**: 2026-04-27 — added unplanned P1 bug fix #372 (recipe save crash, 2 pts)
