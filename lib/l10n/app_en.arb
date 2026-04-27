@@ -136,6 +136,34 @@
   "@filterByCategory": {
     "description": "Filter type label for category"
   },
+  "filterByTags": "Filter by tags",
+  "@filterByTags": {
+    "description": "Section header for tag filter in recipe filter dialog"
+  },
+  "tags": "Tags",
+  "@tags": {
+    "description": "Label for the tags section in recipe forms and details"
+  },
+  "addTag": "Add tag",
+  "@addTag": {
+    "description": "Button label to expand the tag search field"
+  },
+  "searchOrAddTag": "Search or add tag",
+  "@searchOrAddTag": {
+    "description": "Hint text for the tag search field"
+  },
+  "tagTypeCuisine": "Cuisine",
+  "@tagTypeCuisine": {
+    "description": "Display name for the built-in Cuisine tag type"
+  },
+  "tagTypeOccasion": "Occasion",
+  "@tagTypeOccasion": {
+    "description": "Display name for the built-in Occasion tag type"
+  },
+  "tagTypeDietary": "Dietary",
+  "@tagTypeDietary": {
+    "description": "Display name for the built-in Dietary tag type"
+  },
   "addRecipe": "Add Recipe",
   "@addRecipe": {
     "description": "Tooltip for add recipe button"

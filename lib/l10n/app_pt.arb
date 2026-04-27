@@ -136,6 +136,34 @@
   "@filterByCategory": {
     "description": "Rótulo do tipo de filtro para categoria"
   },
+  "filterByTags": "Filtrar por etiquetas",
+  "@filterByTags": {
+    "description": "Cabeçalho da seção de filtro por etiqueta no diálogo de filtro"
+  },
+  "tags": "Etiquetas",
+  "@tags": {
+    "description": "Rótulo da seção de etiquetas em formulários e detalhes de receitas"
+  },
+  "addTag": "Adicionar etiqueta",
+  "@addTag": {
+    "description": "Rótulo do botão para expandir o campo de busca de etiquetas"
+  },
+  "searchOrAddTag": "Pesquisar ou adicionar etiqueta",
+  "@searchOrAddTag": {
+    "description": "Texto de dica para o campo de busca de etiquetas"
+  },
+  "tagTypeCuisine": "Culinária",
+  "@tagTypeCuisine": {
+    "description": "Nome exibido para o tipo de etiqueta Culinária"
+  },
+  "tagTypeOccasion": "Ocasião",
+  "@tagTypeOccasion": {
+    "description": "Nome exibido para o tipo de etiqueta Ocasião"
+  },
+  "tagTypeDietary": "Dieta",
+  "@tagTypeDietary": {
+    "description": "Nome exibido para o tipo de etiqueta Dietético"
+  },
   "addRecipe": "Adicionar Receita",
   "@addRecipe": {
     "description": "Dica do botão adicionar receita"

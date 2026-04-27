@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../models/recipe.dart';
+import '../models/tag.dart';
 import '../database/database_helper.dart';
 import '../widgets/add_ingredient_dialog.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
+import '../core/repositories/tag_repository.dart';
 import '../core/services/snackbar_service.dart';
 import '../l10n/app_localizations.dart';
 import '../screens/meal_history_screen.dart';
@@ -48,6 +50,10 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
   bool _isLoadingIngredients = true;
   String? _ingredientsError;
 
+  // Tags state
+  List<Tag> _recipeTags = [];
+  late TagRepository _tagRepo;
+
   // Instructions tab state
   late String _instructions;
 
@@ -55,6 +61,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
   void initState() {
     super.initState();
     _dbHelper = widget.databaseHelper ?? DatabaseHelper();
+    _tagRepo = TagRepository(_dbHelper);
     _tabController = TabController(
       length: 4,
       vsync: this,
@@ -63,6 +70,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
     _currentRecipe = widget.recipe;
     _instructions = widget.recipe.instructions;
     _loadIngredients();
+    _loadTags();
 
     // Listen to tab changes to rebuild AppBar actions
     _tabController.addListener(() {
@@ -116,6 +124,13 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
         });
       }
     }
+  }
+
+  Future<void> _loadTags() async {
+    try {
+      final tags = await _tagRepo.getTagsForRecipe(_currentRecipe.id);
+      if (mounted) setState(() => _recipeTags = tags);
+    } catch (_) {}
   }
 
   Future<void> _addIngredient() async {
@@ -627,7 +642,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
   }
 
   Widget _buildOverviewTab() {
-    return RecipeDetailsOverviewTab(recipe: _currentRecipe);
+    return RecipeDetailsOverviewTab(recipe: _currentRecipe, tags: _recipeTags);
   }
 
   Widget _buildIngredientsTab() {

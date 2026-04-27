@@ -5,6 +5,7 @@ import 'package:gastrobrain/core/migration/migration.dart';
 import 'package:gastrobrain/core/migration/migration_runner.dart';
 import 'package:gastrobrain/core/migration/migrations/001_initial_schema.dart';
 import 'package:gastrobrain/core/migration/migrations/003_add_marinating_time.dart';
+import 'package:gastrobrain/core/migration/migrations/005_add_tags.dart';
 
 void main() {
   setUpAll(() {
@@ -314,6 +315,145 @@ void main() {
       expect(names, isNot(contains('marinating_time_minutes')));
       // Original columns still present after rollback
       expect(names, containsAll(['prep_time_minutes', 'cook_time_minutes', 'servings']));
+    });
+  });
+
+  // ── Migration 005: AddTagsMigration ──────────────────────────────────────
+
+  group('Migration 005 — AddTagsMigration', () {
+    late Database db;
+    late AddTagsMigration migration;
+    late DatabaseWrapper wrapper;
+
+    setUp(() async {
+      db = await openEmpty();
+      migration = AddTagsMigration();
+      wrapper = DatabaseWrapper(db);
+      await InitialSchemaMigration().up(wrapper);
+    });
+
+    tearDown(() async => db.close());
+
+    test('up() creates tag_types, tags, and recipe_tags tables', () async {
+      await migration.up(wrapper);
+
+      final tables = await tableNames(db);
+      expect(tables, containsAll(['tag_types', 'tags', 'recipe_tags']));
+    });
+
+    test('up() inserts three built-in tag types', () async {
+      await migration.up(wrapper);
+
+      final rows = await db.rawQuery(
+        'SELECT id FROM tag_types ORDER BY id',
+      );
+      final ids = rows.map((r) => r['id'] as String).toSet();
+      expect(ids, containsAll(['cuisine', 'occasion', 'dietary']));
+    });
+
+    test('up() inserts four closed dietary tags', () async {
+      await migration.up(wrapper);
+
+      final rows = await db.rawQuery(
+        "SELECT id FROM tags WHERE type_id = 'dietary' ORDER BY id",
+      );
+      final ids = rows.map((r) => r['id'] as String).toSet();
+      expect(ids, containsAll([
+        'dietary-vegetarian',
+        'dietary-vegan',
+        'dietary-gluten-free',
+        'dietary-dairy-free',
+      ]));
+    });
+
+    test('dietary tag type has is_hard=1 and is_open=0', () async {
+      await migration.up(wrapper);
+
+      final rows = await db.rawQuery(
+        "SELECT is_hard, is_open FROM tag_types WHERE id = 'dietary'",
+      );
+      expect(rows.length, equals(1));
+      expect(rows.first['is_hard'], equals(1));
+      expect(rows.first['is_open'], equals(0));
+    });
+
+    test('cuisine and occasion tag types have is_hard=0 and is_open=1', () async {
+      await migration.up(wrapper);
+
+      final rows = await db.rawQuery(
+        "SELECT id, is_hard, is_open FROM tag_types WHERE id IN ('cuisine','occasion')",
+      );
+      for (final row in rows) {
+        expect(row['is_hard'], equals(0), reason: '${row['id']} should not be hard');
+        expect(row['is_open'], equals(1), reason: '${row['id']} should be open');
+      }
+    });
+
+    test('validate() returns true after up()', () async {
+      await migration.up(wrapper);
+
+      expect(await migration.validate(wrapper), isTrue);
+    });
+
+    test('validate() returns false before up()', () async {
+      expect(await migration.validate(wrapper), isFalse);
+    });
+
+    test('up() is idempotent — safe to run twice', () async {
+      await migration.up(wrapper);
+      await migration.up(wrapper); // should not throw
+
+      final tables = await tableNames(db);
+      expect(tables, containsAll(['tag_types', 'tags', 'recipe_tags']));
+
+      final rows = await db.rawQuery('SELECT id FROM tag_types ORDER BY id');
+      expect(rows.length, equals(3));
+    });
+
+    test('down() removes all three tag tables', () async {
+      await migration.up(wrapper);
+      await migration.down(wrapper);
+
+      final tables = await tableNames(db);
+      expect(tables, isNot(contains('tag_types')));
+      expect(tables, isNot(contains('tags')));
+      expect(tables, isNot(contains('recipe_tags')));
+    });
+
+    test('down() is safe when tables do not exist', () async {
+      // No up() called — down() should not throw.
+      await expectLater(migration.down(wrapper), completes);
+    });
+
+    test('up → down → up cycle restores tables and seed data', () async {
+      await migration.up(wrapper);
+      await migration.down(wrapper);
+      await migration.up(wrapper);
+
+      final tables = await tableNames(db);
+      expect(tables, containsAll(['tag_types', 'tags', 'recipe_tags']));
+
+      final rows = await db.rawQuery('SELECT id FROM tag_types ORDER BY id');
+      expect(rows.length, equals(3));
+    });
+
+    test('recipe_tags can link a recipe to a tag', () async {
+      await migration.up(wrapper);
+
+      await db.rawInsert(
+        "INSERT INTO recipes (id, name, desired_frequency, created_at, difficulty, "
+        "prep_time_minutes, cook_time_minutes, rating, servings) "
+        "VALUES ('r-1', 'salada', 'weekly', '2025-01-01T00:00:00', 1, 5, 0, 3, 2)",
+      );
+      await db.rawInsert(
+        "INSERT INTO recipe_tags (recipe_id, tag_id) VALUES ('r-1', 'dietary-vegan')",
+      );
+
+      final rows = await db.rawQuery(
+        "SELECT tag_id FROM recipe_tags WHERE recipe_id = 'r-1'",
+      );
+      expect(rows.length, equals(1));
+      expect(rows.first['tag_id'], equals('dietary-vegan'));
     });
   });
 }
