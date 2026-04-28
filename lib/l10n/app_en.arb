@@ -164,6 +164,14 @@
   "@tagTypeDietary": {
     "description": "Display name for the built-in Dietary tag type"
   },
+  "tagTypeMealRole": "Meal Role",
+  "@tagTypeMealRole": {
+    "description": "Display name for the built-in Meal Role tag type"
+  },
+  "tagTypeFoodType": "Food Type",
+  "@tagTypeFoodType": {
+    "description": "Display name for the built-in Food Type tag type"
+  },
   "addRecipe": "Add Recipe",
   "@addRecipe": {
     "description": "Tooltip for add recipe button"

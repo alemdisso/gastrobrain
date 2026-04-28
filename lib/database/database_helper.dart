@@ -35,6 +35,7 @@ import '../core/migration/migrations/002_add_ingredient_aliases.dart';
 import '../core/migration/migrations/003_add_marinating_time.dart';
 import '../core/migration/migrations/004_add_recipe_story.dart';
 import '../core/migration/migrations/005_add_tags.dart';
+import '../core/migration/migrations/006_add_meal_role_food_type.dart';
 import '../core/repositories/base_repository.dart';
 
 class DatabaseHelper {
@@ -53,6 +54,7 @@ class DatabaseHelper {
     AddMarinatingTimeMigration(),
     AddRecipeStoryMigration(),
     AddTagsMigration(),
+    AddMealRoleFoodTypeMigration(),
   ];
 
   /// Get the migration runner instance

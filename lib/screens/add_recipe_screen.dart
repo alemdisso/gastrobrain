@@ -67,9 +67,13 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     _loadTagData();
   }
 
+  // meal_role and food_type are excluded until recipe creation is redesigned (#370).
+  static const _hiddenTagTypeIds = {'meal_role', 'food_type'};
+
   Future<void> _loadTagData() async {
     try {
-      final types = await _tagRepo.getAllTagTypes();
+      final all = await _tagRepo.getAllTagTypes();
+      final types = all.where((t) => !_hiddenTagTypeIds.contains(t.id)).toList();
       final byType = <String, List<Tag>>{};
       for (final t in types) {
         byType[t.id] = await _tagRepo.getTagsByType(t.id);

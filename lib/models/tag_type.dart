@@ -39,6 +39,10 @@ class TagType {
         return l10n.tagTypeOccasion;
       case 'dietary':
         return l10n.tagTypeDietary;
+      case 'meal_role':
+        return l10n.tagTypeMealRole;
+      case 'food_type':
+        return l10n.tagTypeFoodType;
       default:
         return name;
     }
