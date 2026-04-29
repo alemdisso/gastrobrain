@@ -22,6 +22,7 @@ class LocalizedErrorMessages {
     'errorCalculatingProteinPenaltyStrategy': 'Error calculating protein penalty strategy',
     'errorGettingProteinTypesForRecipes': 'Error getting protein types for recipes',
     'errorGeneratingDetailedRecommendations': 'Error generating detailed recommendations',
+    'errorGettingRecipeTagsForScoring': 'Error getting recipe tags for scoring',
   };
 
   // Portuguese messages (for reference)
@@ -40,6 +41,7 @@ class LocalizedErrorMessages {
     'errorCalculatingProteinPenaltyStrategy': 'Erro ao calcular estratégia de penalidade de proteína',
     'errorGettingProteinTypesForRecipes': 'Erro ao obter tipos de proteína para receitas',
     'errorGeneratingDetailedRecommendations': 'Erro ao gerar recomendações detalhadas',
+    'errorGettingRecipeTagsForScoring': 'Erro ao obter tags de receitas para pontuação',
   };
 
   /// Get error message in English (for logging/debugging)

@@ -20,6 +20,7 @@ import 'recommendation_factors/variety_encouragement_factor.dart';
 import 'recommendation_factors/randomization_factor.dart';
 import 'recommendation_factors/user_feedback_factor.dart';
 import 'recommendation_factors/recipe_proximity_factor.dart';
+import 'recommendation_factors/meal_role_factor.dart';
 
 /// Results container for recommendation queries
 /// ## Performance Notes
@@ -142,6 +143,8 @@ class RecommendationService {
     registerFactor(RandomizationFactor());
     registerFactor(UserFeedbackFactor());
     registerFactor(RecipeProximityFactor());
+    // Registered with weight 0 so it's inactive unless a meal-type profile is applied
+    registerFactor(const MealRoleFactor());
 
     // Ensure weights are normalized to sum to 100
     _normalizeWeights();
@@ -310,11 +313,7 @@ class RecommendationService {
         // Don't modify original weights, just apply a temporary profile
         final originalWeights = Map<String, int>.from(_factorWeights);
         try {
-          if (weekdayMeal) {
-            _setWeekdayProfile();
-          } else {
-            _setWeekendProfile();
-          }
+          _applyDayMealProfile(weekdayMeal, mealType);
 
           // Calculate scores for each recipe using all factors
           final scoredRecipes = await _scoreRecipes(recipes, context);
@@ -352,6 +351,22 @@ class RecommendationService {
     } catch (e) {
       throw GastrobrainException(
           '${LocalizedErrorMessages.getMessage('errorGeneratingRecommendations')}: ${e.toString()}');
+    }
+  }
+
+  /// Selects and applies the best profile for the given day/meal combination.
+  ///
+  /// When [mealType] is provided alongside [weekdayMeal], uses one of the 4
+  /// combined profiles (weekday_lunch, weekday_dinner, weekend_lunch,
+  /// weekend_dinner). Falls back to the legacy day-only profiles when
+  /// [mealType] is null or unrecognised.
+  void _applyDayMealProfile(bool weekdayMeal, String? mealType) {
+    if (mealType == 'lunch') {
+      weekdayMeal ? _setWeekdayLunchProfile() : _setWeekendLunchProfile();
+    } else if (mealType == 'dinner') {
+      weekdayMeal ? _setWeekdayDinnerProfile() : _setWeekendDinnerProfile();
+    } else {
+      weekdayMeal ? _setWeekdayProfile() : _setWeekendProfile();
     }
   }
 
@@ -432,11 +447,7 @@ class RecommendationService {
         // Don't modify original weights, just apply a temporary profile
         final originalWeights = Map<String, int>.from(_factorWeights);
         try {
-          if (weekdayMeal) {
-            _setWeekdayProfile();
-          } else {
-            _setWeekendProfile();
-          }
+          _applyDayMealProfile(weekdayMeal, mealType);
 
           // Calculate scores for each recipe using all factors
           final scoredRecipes = await _scoreRecipes(recipes, context);
@@ -606,6 +617,11 @@ class RecommendationService {
       context['recentMeals'] = recentMeals;
     }
 
+    // Load recipe tags for meal-type scoring if required
+    if (requiredData.contains('recipeTags')) {
+      context['recipeTags'] = await _dbQueries.getRecipeTagsForScoring();
+    }
+
     // Load feedback history if required
     if (requiredData.contains('feedbackHistory')) {
       // Get candidate recipes to determine which ones need feedback history
@@ -720,6 +736,18 @@ class RecommendationService {
       case 'weekend':
         _setWeekendProfile();
         break;
+      case 'weekday_lunch':
+        _setWeekdayLunchProfile();
+        break;
+      case 'weekday_dinner':
+        _setWeekdayDinnerProfile();
+        break;
+      case 'weekend_lunch':
+        _setWeekendLunchProfile();
+        break;
+      case 'weekend_dinner':
+        _setWeekendDinnerProfile();
+        break;
       default:
         throw ValidationException(LocalizedErrorMessages.unknownWeightProfile(profileName));
     }
@@ -735,6 +763,7 @@ class RecommendationService {
     _factorWeights['randomization'] = 5;
     _factorWeights['user_feedback'] = 9;
     _factorWeights['recipe_proximity'] = 8;
+    _factorWeights['meal_role'] = 0;
     _normalizeWeights();
   }
 
@@ -748,6 +777,7 @@ class RecommendationService {
     _factorWeights['randomization'] = 4;
     _factorWeights['user_feedback'] = 5;
     _factorWeights['recipe_proximity'] = 10;
+    _factorWeights['meal_role'] = 0;
     _normalizeWeights();
   }
 
@@ -761,6 +791,7 @@ class RecommendationService {
     _factorWeights['randomization'] = 5;
     _factorWeights['user_feedback'] = 9;
     _factorWeights['recipe_proximity'] = 10;
+    _factorWeights['meal_role'] = 0;
     _normalizeWeights();
   }
 
@@ -793,6 +824,7 @@ class RecommendationService {
     _factorWeights['randomization'] = 5;
     _factorWeights['user_feedback'] = 9;
     _factorWeights['recipe_proximity'] = 9;
+    _factorWeights['meal_role'] = 0;
     _normalizeWeights();
   }
 
@@ -824,6 +856,59 @@ class RecommendationService {
     _factorWeights['randomization'] = 5;
     _factorWeights['user_feedback'] = 9;
     _factorWeights['recipe_proximity'] = 9;
+    _factorWeights['meal_role'] = 0;
+    _normalizeWeights();
+  }
+
+  void _setWeekdayLunchProfile() {
+    _factorWeights['frequency'] = 20;
+    _factorWeights['protein_rotation'] = 15;
+    _factorWeights['rating'] = 10;
+    _factorWeights['variety_encouragement'] = 8;
+    _factorWeights['difficulty'] = 15;
+    _factorWeights['randomization'] = 4;
+    _factorWeights['user_feedback'] = 8;
+    _factorWeights['recipe_proximity'] = 8;
+    _factorWeights['meal_role'] = 12;
+    _normalizeWeights();
+  }
+
+  void _setWeekdayDinnerProfile() {
+    _factorWeights['frequency'] = 20;
+    _factorWeights['protein_rotation'] = 15;
+    _factorWeights['rating'] = 10;
+    _factorWeights['variety_encouragement'] = 8;
+    _factorWeights['difficulty'] = 18;
+    _factorWeights['randomization'] = 4;
+    _factorWeights['user_feedback'] = 8;
+    _factorWeights['recipe_proximity'] = 7;
+    _factorWeights['meal_role'] = 10;
+    _normalizeWeights();
+  }
+
+  void _setWeekendLunchProfile() {
+    _factorWeights['frequency'] = 18;
+    _factorWeights['protein_rotation'] = 15;
+    _factorWeights['rating'] = 18;
+    _factorWeights['variety_encouragement'] = 12;
+    _factorWeights['difficulty'] = 4;
+    _factorWeights['randomization'] = 5;
+    _factorWeights['user_feedback'] = 10;
+    _factorWeights['recipe_proximity'] = 8;
+    _factorWeights['meal_role'] = 10;
+    _normalizeWeights();
+  }
+
+  void _setWeekendDinnerProfile() {
+    _factorWeights['frequency'] = 18;
+    _factorWeights['protein_rotation'] = 15;
+    _factorWeights['rating'] = 16;
+    _factorWeights['variety_encouragement'] = 14;
+    _factorWeights['difficulty'] = 5;
+    _factorWeights['randomization'] = 5;
+    _factorWeights['user_feedback'] = 10;
+    _factorWeights['recipe_proximity'] = 7;
+    _factorWeights['meal_role'] = 10;
     _normalizeWeights();
   }
 }

@@ -2389,4 +2389,24 @@ class DatabaseHelper {
     final db = await database;
     return db.path;
   }
+
+  /// Return meal_role and food_type tag IDs for all recipes.
+  ///
+  /// Keyed by recipe ID; only recipes with at least one relevant tag appear.
+  Future<Map<String, List<String>>> getRecipeTagsForScoring() async {
+    final db = await database;
+    final rows = await db.rawQuery('''
+      SELECT rt.recipe_id, t.id AS tag_id
+      FROM recipe_tags rt
+      JOIN tags t ON t.id = rt.tag_id
+      WHERE t.type_id IN ('meal_role', 'food_type')
+    ''');
+    final result = <String, List<String>>{};
+    for (final row in rows) {
+      final recipeId = row['recipe_id'] as String;
+      final tagId = row['tag_id'] as String;
+      (result[recipeId] ??= []).add(tagId);
+    }
+    return result;
+  }
 }

@@ -237,6 +237,20 @@ class RecommendationDatabaseQueries {
     }
   }
 
+  /// Get meal_role and food_type tag IDs for all recipes in a single query.
+  ///
+  /// Returns Map<recipeId, List<tagId>> containing only tags of type
+  /// `meal_role` or `food_type`. Recipes with no such tags are absent from
+  /// the map (callers should treat missing entries as empty lists).
+  Future<Map<String, List<String>>> getRecipeTagsForScoring() async {
+    try {
+      return await _dbHelper.getRecipeTagsForScoring();
+    } catch (e) {
+      throw GastrobrainException(
+          '${LocalizedErrorMessages.getMessage('errorGettingRecipeTagsForScoring')}: ${e.toString()}');
+    }
+  }
+
   /// Get meals cooked in a specific date range
   ///
   /// Returns a list of meal data with ALL recipe information (primary + secondary)
