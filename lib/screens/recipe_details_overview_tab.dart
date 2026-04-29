@@ -221,7 +221,7 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
                 spacing: 6,
                 runSpacing: 4,
                 children: group.map((t) => Chip(
-                  label: Text(t.name),
+                  label: Text(t.getLocalizedName(l10n)),
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   visualDensity: VisualDensity.compact,
                 )).toList(),

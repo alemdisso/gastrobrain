@@ -116,7 +116,7 @@ class _TagPickerWidgetState extends State<TagPickerWidget> {
             Wrap(
               spacing: 6,
               children: selected.map((t) => Chip(
-                label: Text(t.name),
+                label: Text(t.getLocalizedName(l10n)),
                 onDeleted: () => _removeTag(t.id),
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               )).toList(),
@@ -138,7 +138,7 @@ class _TagPickerWidgetState extends State<TagPickerWidget> {
                 for (final t in filtered)
                   if (!widget.selectedTagIds.contains(t.id))
                     ActionChip(
-                      label: Text(t.name),
+                      label: Text(t.getLocalizedName(l10n)),
                       onPressed: () => _selectTag(t),
                     ),
                 if (showCreate)
