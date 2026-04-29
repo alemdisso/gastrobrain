@@ -132,10 +132,6 @@
   "@filterByFrequency": {
     "description": "Rótulo do tipo de filtro para frequência de preparo"
   },
-  "filterByCategory": "Categoria",
-  "@filterByCategory": {
-    "description": "Rótulo do tipo de filtro para categoria"
-  },
   "filterByTags": "Filtrar por etiquetas",
   "@filterByTags": {
     "description": "Cabeçalho da seção de filtro por etiqueta no diálogo de filtro"

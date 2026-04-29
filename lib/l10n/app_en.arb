@@ -132,10 +132,6 @@
   "@filterByFrequency": {
     "description": "Filter type label for cooking frequency"
   },
-  "filterByCategory": "Category",
-  "@filterByCategory": {
-    "description": "Filter type label for category"
-  },
   "filterByTags": "Filter by tags",
   "@filterByTags": {
     "description": "Section header for tag filter in recipe filter dialog"

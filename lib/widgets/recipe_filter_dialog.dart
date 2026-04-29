@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/frequency_type.dart';
-import '../models/recipe_category.dart';
 import '../models/tag.dart';
 import '../models/tag_type.dart';
 import '../core/theme/design_tokens.dart';
@@ -35,7 +34,6 @@ class _RecipeFilterDialogState extends State<RecipeFilterDialog> {
   late int? _difficulty;
   late int? _rating;
   late String? _frequency;
-  late String? _category;
   late Set<String> _selectedTagKeys; // 'typeId::tagName'
 
   @override
@@ -44,7 +42,6 @@ class _RecipeFilterDialogState extends State<RecipeFilterDialog> {
     _difficulty = widget.initialFilters['difficulty'] as int?;
     _rating = widget.initialFilters['rating'] as int?;
     _frequency = widget.initialFilters['desired_frequency'] as String?;
-    _category = widget.initialFilters['category'] as String?;
     _selectedTagKeys = {
       for (final tf in widget.initialTagFilters)
         '${tf['type_id']}::${tf['name']}',
@@ -55,7 +52,6 @@ class _RecipeFilterDialogState extends State<RecipeFilterDialog> {
         _difficulty = null;
         _rating = null;
         _frequency = null;
-        _category = null;
         _selectedTagKeys.clear();
       });
 
@@ -64,7 +60,6 @@ class _RecipeFilterDialogState extends State<RecipeFilterDialog> {
       if (_difficulty != null) 'difficulty': _difficulty,
       if (_rating != null) 'rating': _rating,
       if (_frequency != null) 'desired_frequency': _frequency,
-      if (_category != null) 'category': _category,
     };
     final tagFilters = _selectedTagKeys.map((key) {
       final parts = key.split('::');
@@ -91,8 +86,6 @@ class _RecipeFilterDialogState extends State<RecipeFilterDialog> {
               _buildRating(l10n),
               const SizedBox(height: 16),
               _buildFrequency(l10n),
-              const SizedBox(height: 16),
-              _buildCategory(l10n),
               if (widget.tagTypes.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 const Divider(),
@@ -164,21 +157,6 @@ class _RecipeFilterDialogState extends State<RecipeFilterDialog> {
             )),
       ],
       onChanged: (v) => setState(() => _frequency = v),
-    );
-  }
-
-  Widget _buildCategory(AppLocalizations l10n) {
-    return DropdownButtonFormField<String>(
-      initialValue: _category,
-      decoration: InputDecoration(labelText: l10n.category),
-      items: [
-        DropdownMenuItem(value: null, child: Text(l10n.any)),
-        ...RecipeCategory.values.map((c) => DropdownMenuItem(
-              value: c.value,
-              child: Text(c.getLocalizedDisplayName(context)),
-            )),
-      ],
-      onChanged: (v) => setState(() => _category = v),
     );
   }
 

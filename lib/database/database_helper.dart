@@ -36,6 +36,7 @@ import '../core/migration/migrations/003_add_marinating_time.dart';
 import '../core/migration/migrations/004_add_recipe_story.dart';
 import '../core/migration/migrations/005_add_tags.dart';
 import '../core/migration/migrations/006_add_meal_role_food_type.dart';
+import '../core/migration/migrations/007_migrate_category_to_tags.dart';
 import '../core/repositories/base_repository.dart';
 
 class DatabaseHelper {
@@ -55,6 +56,7 @@ class DatabaseHelper {
     AddRecipeStoryMigration(),
     AddTagsMigration(),
     AddMealRoleFoodTypeMigration(),
+    MigrateCategoryToTagsMigration(),
   ];
 
   /// Get the migration runner instance
@@ -1913,11 +1915,6 @@ class DatabaseHelper {
       if (filters.containsKey('desired_frequency')) {
         whereConditions.add('desired_frequency = ?');
         arguments.add(filters['desired_frequency']);
-      }
-
-      if (filters.containsKey('category')) {
-        whereConditions.add('category = ?');
-        arguments.add(filters['category']);
       }
 
       if (filters.containsKey('tag_filters')) {

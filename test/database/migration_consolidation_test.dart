@@ -7,6 +7,7 @@ import 'package:gastrobrain/core/migration/migrations/001_initial_schema.dart';
 import 'package:gastrobrain/core/migration/migrations/003_add_marinating_time.dart';
 import 'package:gastrobrain/core/migration/migrations/005_add_tags.dart';
 import 'package:gastrobrain/core/migration/migrations/006_add_meal_role_food_type.dart';
+import 'package:gastrobrain/core/migration/migrations/007_migrate_category_to_tags.dart';
 
 void main() {
   setUpAll(() {
@@ -603,6 +604,161 @@ void main() {
         "SELECT id FROM tags WHERE type_id IN ('meal_role', 'food_type')",
       );
       expect(tagRows.length, equals(17));
+    });
+  });
+
+  // ── Migration 007: MigrateCategoryToTagsMigration ────────────────────────
+
+  group('Migration 007 — MigrateCategoryToTagsMigration', () {
+    late Database db;
+    late MigrateCategoryToTagsMigration migration;
+    late DatabaseWrapper wrapper;
+
+    Future<void> insertRecipe(Database db, String id, String category) =>
+        db.rawInsert(
+          'INSERT INTO recipes (id, name, desired_frequency, created_at, '
+          'difficulty, prep_time_minutes, cook_time_minutes, rating, servings, category) '
+          'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [id, id, 'weekly', '2025-01-01T00:00:00', 1, 10, 20, 3, 4, category],
+        );
+
+    setUp(() async {
+      db = await openEmpty();
+      migration = MigrateCategoryToTagsMigration();
+      wrapper = DatabaseWrapper(db);
+      await InitialSchemaMigration().up(wrapper);
+      await AddTagsMigration().up(wrapper);
+      await AddMealRoleFoodTypeMigration().up(wrapper);
+    });
+
+    tearDown(() async => db.close());
+
+    test('up() maps main_dishes → meal-role-main-dish', () async {
+      await insertRecipe(db, 'r-1', 'main_dishes');
+      await migration.up(wrapper);
+
+      final rows = await db.rawQuery(
+        "SELECT tag_id FROM recipe_tags WHERE recipe_id = 'r-1'",
+      );
+      expect(rows.map((r) => r['tag_id']), contains('meal-role-main-dish'));
+    });
+
+    test('up() maps side_dishes → meal-role-side-dish', () async {
+      await insertRecipe(db, 'r-1', 'side_dishes');
+      await migration.up(wrapper);
+
+      final rows = await db.rawQuery(
+        "SELECT tag_id FROM recipe_tags WHERE recipe_id = 'r-1'",
+      );
+      expect(rows.map((r) => r['tag_id']), contains('meal-role-side-dish'));
+    });
+
+    test('up() maps all 8 supported categories correctly', () async {
+      const mappings = [
+        ('r-main', 'main_dishes', 'meal-role-main-dish'),
+        ('r-side', 'side_dishes', 'meal-role-side-dish'),
+        ('r-complete', 'complete_meals', 'meal-role-complete-meal'),
+        ('r-dessert', 'desserts', 'meal-role-dessert'),
+        ('r-snack', 'snacks', 'meal-role-snack'),
+        ('r-sandwich', 'sandwiches', 'food-type-sandwich'),
+        ('r-salad', 'salads', 'food-type-salad'),
+        ('r-soup', 'soups_stews', 'food-type-soup'),
+      ];
+      for (final (id, category, _) in mappings) {
+        await insertRecipe(db, id, category);
+      }
+
+      await migration.up(wrapper);
+
+      for (final (id, _, tagId) in mappings) {
+        final rows = await db.rawQuery(
+          'SELECT tag_id FROM recipe_tags WHERE recipe_id = ?',
+          [id],
+        );
+        expect(
+          rows.map((r) => r['tag_id']),
+          contains(tagId),
+          reason: '$id should have tag $tagId',
+        );
+      }
+    });
+
+    test('up() skips unmappable categories (breakfast_items, sauces, dips, pickles_fermented)', () async {
+      const skipped = ['breakfast_items', 'sauces', 'dips', 'pickles_fermented', 'uncategorized'];
+      for (final (i, cat) in skipped.indexed) {
+        await insertRecipe(db, 'r-$i', cat);
+      }
+
+      await migration.up(wrapper);
+
+      final rows = await db.rawQuery('SELECT * FROM recipe_tags');
+      expect(rows, isEmpty);
+    });
+
+    test('up() is idempotent — safe to run twice', () async {
+      await insertRecipe(db, 'r-1', 'main_dishes');
+      await migration.up(wrapper);
+      await migration.up(wrapper); // second run must not throw or duplicate
+
+      final rows = await db.rawQuery(
+        "SELECT tag_id FROM recipe_tags WHERE recipe_id = 'r-1'",
+      );
+      expect(rows.length, equals(1));
+    });
+
+    test('up() on empty recipes table produces no recipe_tags', () async {
+      await migration.up(wrapper);
+
+      final rows = await db.rawQuery('SELECT * FROM recipe_tags');
+      expect(rows, isEmpty);
+    });
+
+    test('validate() returns true after up() with no recipes', () async {
+      await migration.up(wrapper);
+      expect(await migration.validate(wrapper), isTrue);
+    });
+
+    test('validate() returns true after up() with mapped recipes', () async {
+      await insertRecipe(db, 'r-1', 'main_dishes');
+      await insertRecipe(db, 'r-2', 'salads');
+      await migration.up(wrapper);
+
+      expect(await migration.validate(wrapper), isTrue);
+    });
+
+    test('validate() returns false when mapped recipe has no tag', () async {
+      await insertRecipe(db, 'r-1', 'main_dishes');
+      // Do NOT call up() — tags not inserted
+
+      expect(await migration.validate(wrapper), isFalse);
+    });
+
+    test('down() is a no-op — does not throw', () async {
+      await insertRecipe(db, 'r-1', 'main_dishes');
+      await migration.up(wrapper);
+      await expectLater(migration.down(wrapper), completes);
+
+      // Tags still present after down() — no-op by design
+      final rows = await db.rawQuery(
+        "SELECT tag_id FROM recipe_tags WHERE recipe_id = 'r-1'",
+      );
+      expect(rows.length, equals(1));
+    });
+
+    test('existing manually-added tags are preserved by up()', () async {
+      await insertRecipe(db, 'r-1', 'main_dishes');
+      // Pre-insert a dietary tag on the same recipe
+      await db.rawInsert(
+        "INSERT INTO recipe_tags (recipe_id, tag_id) VALUES ('r-1', 'dietary-vegan')",
+      );
+
+      await migration.up(wrapper);
+
+      final rows = await db.rawQuery(
+        "SELECT tag_id FROM recipe_tags WHERE recipe_id = 'r-1' ORDER BY tag_id",
+      );
+      final tagIds = rows.map((r) => r['tag_id'] as String).toSet();
+      expect(tagIds, containsAll(['dietary-vegan', 'meal-role-main-dish']));
     });
   });
 }

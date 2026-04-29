@@ -232,9 +232,6 @@ class _RecipesScreenState extends State<RecipesScreen> {
     if (filters.containsKey('desired_frequency')) {
       filterParts.add('${AppLocalizations.of(context)!.filterByFrequency}');
     }
-    if (filters.containsKey('category')) {
-      filterParts.add('${AppLocalizations.of(context)!.filterByCategory}');
-    }
 
     final tagFilters = provider.tagFilters;
     if (tagFilters.isNotEmpty) {
