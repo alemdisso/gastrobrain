@@ -176,7 +176,7 @@ class _RecipeFilterDialogState extends State<RecipeFilterDialog> {
               final key = '${type.id}::${tag.name}';
               final selected = _selectedTagKeys.contains(key);
               return FilterChip(
-                label: Text(tag.name),
+                label: Text(tag.getLocalizedName(AppLocalizations.of(context)!)),
                 selected: selected,
                 onSelected: (v) => setState(() {
                   v ? _selectedTagKeys.add(key) : _selectedTagKeys.remove(key);

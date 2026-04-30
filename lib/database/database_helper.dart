@@ -2409,4 +2409,31 @@ class DatabaseHelper {
     }
     return result;
   }
+
+  /// Re-applies the migration 007 category→tag mapping for any recipe that
+  /// has a mappable category but no corresponding tag yet.
+  ///
+  /// Needed because migration 007 runs at DB-open time, before seed data is
+  /// loaded on a fresh install. Calling this after seeding is idempotent
+  /// (INSERT OR IGNORE) and safe to call on upgraded databases too.
+  Future<void> backfillCategoryTags() async {
+    final db = await database;
+    const mapping = [
+      ('main_dishes', 'meal-role-main-dish'),
+      ('side_dishes', 'meal-role-side-dish'),
+      ('complete_meals', 'meal-role-complete-meal'),
+      ('desserts', 'meal-role-dessert'),
+      ('snacks', 'meal-role-snack'),
+      ('sandwiches', 'food-type-sandwich'),
+      ('salads', 'food-type-salad'),
+      ('soups_stews', 'food-type-soup'),
+    ];
+    for (final (category, tagId) in mapping) {
+      await db.execute(
+        'INSERT OR IGNORE INTO recipe_tags (recipe_id, tag_id) '
+        'SELECT id, ? FROM recipes WHERE category = ?',
+        [tagId, category],
+      );
+    }
+  }
 }
