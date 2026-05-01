@@ -2457,11 +2457,11 @@
   "@dashboard": {
     "description": "Tab label for the dashboard/landing page"
   },
-  "dashboardTagline": "Seu Assistente Inteligente de Refeições",
+  "dashboardTagline": "Seu Assistente Culinário",
   "@dashboardTagline": {
     "description": "Hero tagline on dashboard screen"
   },
-  "dashboardSubtitle": "Recomendações para ajudar você a planejar refeições variadas.",
+  "dashboardSubtitle": "Ajudando você a planejar refeições variadas.",
   "@dashboardSubtitle": {
     "description": "Hero subtitle describing the recommendation engine"
   },
