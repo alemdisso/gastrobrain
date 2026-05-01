@@ -2,14 +2,18 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/recipe.dart';
-import '../models/recipe_category.dart';
 import '../models/frequency_type.dart';
+import '../models/recipe.dart';
+import '../models/tag.dart';
+import '../models/tag_type.dart';
 import '../widgets/recipe_card.dart';
+import '../widgets/recipe_filter_dialog.dart';
 import '../l10n/app_localizations.dart';
 import '../core/theme/button_styles.dart';
 import '../core/providers/recipe_provider.dart';
+import '../core/repositories/tag_repository.dart';
 import '../core/theme/design_tokens.dart';
+import '../core/di/service_provider.dart';
 import 'add_recipe_screen.dart';
 import 'edit_recipe_screen.dart';
 import 'cook_meal_screen.dart';
@@ -25,13 +29,34 @@ class _RecipesScreenState extends State<RecipesScreen> {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
 
+  List<TagType> _tagTypes = [];
+  Map<String, List<Tag>> _tagsByType = {};
+  late final TagRepository _tagRepo;
+
   @override
   void initState() {
     super.initState();
-    // Load recipes when widget initializes
+    _tagRepo = TagRepository(ServiceProvider.database.helper);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<RecipeProvider>().loadRecipes();
+      _loadTagData();
     });
+  }
+
+  Future<void> _loadTagData() async {
+    try {
+      final types = await _tagRepo.getAllTagTypes();
+      final byType = <String, List<Tag>>{};
+      for (final t in types) {
+        byType[t.id] = await _tagRepo.getTagsByType(t.id);
+      }
+      if (mounted) {
+        setState(() {
+          _tagTypes = types;
+          _tagsByType = byType;
+        });
+      }
+    } catch (_) {}
   }
 
   @override
@@ -188,187 +213,49 @@ class _RecipesScreenState extends State<RecipesScreen> {
   /// Gets a human-readable description of active filters
   String _getFilterDescription(BuildContext context, RecipeProvider provider) {
     final List<String> filterParts = [];
+    final l10n = AppLocalizations.of(context)!;
 
     // Add search query if present
     if (_searchQuery.isNotEmpty) {
-      filterParts.add(
-          '${AppLocalizations.of(context)!.filterByName}: "$_searchQuery"');
+      filterParts.add('${l10n.filterByName}: "$_searchQuery"');
     }
 
     // Add provider filters
     final filters = provider.filters;
     if (filters.containsKey('difficulty')) {
-      filterParts.add(
-          '${AppLocalizations.of(context)!.filterByDifficulty}: ${filters['difficulty']}');
+      filterParts.add(l10n.filterByDifficulty(filters['difficulty'] as int));
     }
     if (filters.containsKey('rating')) {
-      filterParts.add(
-          '${AppLocalizations.of(context)!.filterByRating}: ${filters['rating']}+');
+      filterParts.add('${l10n.filterByRating}: ${filters['rating']}+');
     }
     if (filters.containsKey('desired_frequency')) {
-      filterParts.add('${AppLocalizations.of(context)!.filterByFrequency}');
+      final freq = FrequencyType.fromString(filters['desired_frequency'] as String);
+      filterParts.add(l10n.filterByFrequency(freq.getLocalizedDisplayName(context)));
     }
-    if (filters.containsKey('category')) {
-      filterParts.add('${AppLocalizations.of(context)!.filterByCategory}');
+
+    final tagFilters = provider.tagFilters;
+    if (tagFilters.isNotEmpty) {
+      filterParts.add('Tags (${tagFilters.length})');
     }
 
     return filterParts.join(', ');
   }
 
-  void _showFilterDialog() {
-    final currentFilters = context.read<RecipeProvider>().filters;
-    int? selectedDifficulty = currentFilters['difficulty'];
-    int? selectedRating = currentFilters['rating'];
-    String? selectedFrequency = currentFilters['desired_frequency'];
-    String? selectedCategory = currentFilters['category'];
-
-    showDialog(
+  Future<void> _showFilterDialog() async {
+    final provider = context.read<RecipeProvider>();
+    final result = await showDialog<RecipeFilterResult>(
       context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: Text(AppLocalizations.of(context)!.filterRecipes),
-              content: SizedBox(
-                width: double.maxFinite,
-                height: MediaQuery.of(context).size.height * 0.6,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(AppLocalizations.of(context)!.difficulty),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: List.generate(5, (index) {
-                          return IconButton(
-                            icon: Icon(
-                              index < (selectedDifficulty ?? -1)
-                                  ? Icons.battery_full
-                                  : Icons.battery_0_bar,
-                              color: index < (selectedDifficulty ?? -1)
-                                  ? DesignTokens.success
-                                  : DesignTokens.textSecondary,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                selectedDifficulty = index + 1;
-                              });
-                            },
-                          );
-                        }),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(AppLocalizations.of(context)!.minimumRating),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: List.generate(5, (index) {
-                          return IconButton(
-                            icon: Icon(
-                              index < (selectedRating ?? -1)
-                                  ? Icons.star
-                                  : Icons.star_border,
-                              color: index < (selectedRating ?? -1)
-                                  ? Colors.amber // Keep standard rating color
-                                  : DesignTokens.textSecondary,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                selectedRating = index + 1;
-                              });
-                            },
-                          );
-                        }),
-                      ),
-                      const SizedBox(height: 16),
-                      DropdownButtonFormField<String>(
-                        initialValue: selectedFrequency,
-                        decoration: InputDecoration(
-                          labelText:
-                              AppLocalizations.of(context)!.cookingFrequency,
-                        ),
-                        items: [
-                          DropdownMenuItem(
-                              value: null,
-                              child: Text(AppLocalizations.of(context)!.any)),
-                          ...FrequencyType.values.map((frequency) =>
-                              DropdownMenuItem(
-                                  value: frequency.value,
-                                  child: Text(frequency
-                                      .getLocalizedDisplayName(context)))),
-                        ],
-                        onChanged: (value) {
-                          setState(() {
-                            selectedFrequency = value;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      DropdownButtonFormField<String>(
-                        initialValue: selectedCategory,
-                        decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!.category,
-                        ),
-                        items: [
-                          DropdownMenuItem(
-                              value: null,
-                              child: Text(AppLocalizations.of(context)!.any)),
-                          ...RecipeCategory.values.map(
-                            (category) => DropdownMenuItem(
-                              value: category.value,
-                              child: Text(
-                                  category.getLocalizedDisplayName(context)),
-                            ),
-                          ),
-                        ],
-                        onChanged: (value) {
-                          setState(() {
-                            selectedCategory = value;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      selectedDifficulty = null;
-                      selectedRating = null;
-                      selectedFrequency = null;
-                      selectedCategory = null;
-                    });
-                  },
-                  child: Text(AppLocalizations.of(context)!.clear),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(AppLocalizations.of(context)!.cancel),
-                ),
-                TextButton(
-                  onPressed: () {
-                    final newFilters = <String, dynamic>{
-                      if (selectedDifficulty != null)
-                        'difficulty': selectedDifficulty,
-                      if (selectedRating != null) 'rating': selectedRating,
-                      if (selectedFrequency != null)
-                        'desired_frequency': selectedFrequency,
-                      if (selectedCategory != null)
-                        'category': selectedCategory,
-                    };
-                    context.read<RecipeProvider>().setFilters(newFilters);
-                    Navigator.pop(context);
-                  },
-                  child: Text(AppLocalizations.of(context)!.apply),
-                ),
-              ],
-            );
-          },
-        );
-      },
+      builder: (_) => RecipeFilterDialog(
+        initialFilters: provider.filters,
+        initialTagFilters: provider.tagFilters,
+        tagTypes: _tagTypes,
+        tagsByType: _tagsByType,
+      ),
     );
+    if (result != null && mounted) {
+      await provider.setFilters(result.filters);
+      await provider.setTagFilters(result.tagFilters);
+    }
   }
 
   List<Recipe> _getFilteredRecipes(List<Recipe> recipes) {

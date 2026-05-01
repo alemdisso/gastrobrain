@@ -2227,6 +2227,145 @@ Apr 18 (Fri) │ ████████      #329 (meal history tab) + #121 (m
 - Post-release: backup/restore scoped storage issue discovered (#354, 2 pts, 0.2.x road)
 - The 0.2.2 and 0.2.3 sprints together delivered the full UX Polish milestone in ~7.2 effective days (3.8d + 3.4d)
 
+### 0.2.4 - Recipe Enhancement
+
+**Sprint Duration:** April 20–25, 2026
+**Calendar Days:** 6
+**Active Working Days:** 4 (Apr 20, 22, 24, 25); Apr 21 and Apr 23 were public holidays (rest days); Apr 25 (Saturday) used for final push and release
+**Planned Issues:** 10 core must-complete + 3 deferrable/stretch (#291 stretch-only, #170/#150/#151 deferrable)
+**Completed Issues:** 12 (10 core + #170 deferrable + #291 stretch + 4 unplanned #360–#363); #150 and #151 deferred
+
+> **Methodology note:** From this entry onward, ratio = actual days ÷ estimated days, where estimated days = estimated points ÷ 6.5 (cruising velocity). Prior entries used 1pt = 1 day as the baseline and are not directly comparable.
+
+#### Estimation vs Actual
+
+| Issue | Title | Type | Est Pts | Est Days | Weighted Actual | Ratio | Assessment |
+|-------|-------|------|---------|----------|-----------------|-------|------------|
+| #354 | Backup/restore broken on Android 10+ | Bug (platform) | 2 | 0.31d | ~0.70d* | 2.27x | 🔴 Over (SAF + new packages; plan narrative hedged correctly) |
+| #198 | Ingredient aliases | Feature (model+UI) | 5 | 0.77d | 0.39d | 0.51x | ⚡ Faster (well-specified; code samples in issue) |
+| #320 | Duplicate ingredient prevention | Feature (UI) | 3 | 0.46d | 0.37d | 0.80x | ✅ On target (used #198 alias infra directly) |
+| #348 | Marinating time field | Feature (model) | 2 | 0.31d | 0.23d | 0.74x | ✅ On target (servings pattern) |
+| #321 | Markdown rendering for instructions | Feature (UI) | 3 | 0.46d | 0.49d | 1.06x | ✅ On target |
+| #326 | Recipe story/narrative field | Feature (model+UI) | 2 | 0.31d | ~0.15d† | 0.49x | ⚡ Faster (near-free after #321 — shared widget, model, editor) |
+| #291 | Per-recipe notes in multi-dish meals *(stretch)* | Feature (model+UI) | 5 | 0.77d | 0.54d | 0.70x | ✅ On target (leveraged existing multi-dish meal infra) |
+| #170 | Parser refactor to localized units *(deferrable)* | Refactor | 2 | 0.31d | 0.24d | 0.78x | ✅ On target |
+| #362 | Unit in ingredient usage list | Bug (UX) | 2 | 0.31d | 0.11d | 0.36x | ⚡ Faster |
+| #360 | Disambiguate difficulty/rating stars | Bug (UX) | 2 | 0.31d | 0.09d | 0.29x | ⚡ Faster |
+| #361 | Localize "Qty:" label | Bug (i18n) | 1 | 0.15d | 0.01d | 0.07x | ⚡ Faster |
+| #363 | Remove category chip | UX | 1 | 0.15d | 0.01d | 0.07x | ⚡ Faster |
+| Untagged | CI timing fix, to-taste bugfix, release prep | Overhead | — | — | ~0.3d | — | 📋 Overhead |
+| **TOTAL** | | | **30** | **4.62d** | **~4.0d** | **~0.87x** | ✅ |
+
+*\* Adjusted for sprint planning overhead (untagged 476-line commit on same day; full 1.0d weighted-day overstates fix effort)*
+*† Adjusted for same-day line-proportion weighting artifact; developer confirmed near-free after #321*
+
+#### Accuracy by Type
+
+| Type | Issues | Est Pts | Est Days (÷6.5) | Weighted Actual | Avg Ratio | Verdict |
+|------|--------|---------|-----------------|-----------------|-----------|---------|
+| Bug (platform, new packages) | #354 | 2 | 0.31d | ~0.70d | 2.27x | 🔴 Over — SAF complexity + new packages underpriced at current velocity |
+| Bug (UX display, batched cluster) | #360–#363 | 6‡ | 0.92d | ~0.22d | 0.24x | ⚡ Faster — trivial display fixes; est. inflated by individual ticketing |
+| Feature (model+UI, dependency chain) | #198, #326, #291 | 12 | 1.85d | ~1.08d | 0.58x | ⚡ Faster — code samples + dependency compounding across all three |
+| Feature (UI, dependency chain) | #320, #321 | 6 | 0.92d | ~0.86d | 0.93x | ✅ On target |
+| Feature (model, established pattern) | #348 | 2 | 0.31d | ~0.23d | 0.74x | ✅ On target |
+| Refactor (mechanical) | #170 | 2 | 0.31d | ~0.24d | 0.78x | ✅ On target |
+
+*‡ As a single "fix ingredient usage list" cluster: ~3 pts → ~0.46d est. → ratio ~0.48x — individual ticketing inflated the total without inflating effort*
+
+**Overall:** 30 pts / ~4.0d effective → **~0.87x** — slightly faster than cruising. A well-executed sprint with three dependency chains driving the efficiency edge. #354 was the only genuine overrun, driven by platform complexity, not a planning failure.
+
+#### Variance Analysis
+
+**#354: the only genuine overrun (2.27x)**
+- SAF content URI handling on Android 10+ required two new packages (`share_plus`, `file_picker`), a new `restoreDatabaseFromString()` service overload, and virtual device testing. Plan noted "full-day focus is correct even at 2 pts" — a correct hedge in the narrative. At 6.5 pts/day, 2 pts implies 0.31d; actual was ~0.70d.
+- Story points reflect relative complexity; the 2pt weight was coherent. The calendar mismatch was real and pre-acknowledged. Going forward, platform/permission bugs requiring new packages should be estimated at 3–5 pts to match actual calendar cost at current velocity.
+
+**Three independent dependency chains confirming the compounding pattern:**
+
+**#198→#320 (alias infra → duplicate prevention, 0.51x/0.80x)**
+- #198 built the alias-aware matching service; #320 consumed it directly on the same day. Code samples in the #198 spec eliminated design discovery overhead. Combined 8 pts in ~0.76d on Apr 22 alongside #348.
+
+**#321→#326 (MarkdownBody → story field, 1.06x/0.49x)**
+- #321 integrated `flutter_markdown` and built the preview toggle. #326 reused `MarkdownBody`, the same recipe model, and the same editor section. Plan described #326 as "near-free" — 0.49x confirms it. The 1.06x on #321 shows the first integration cost was fully absorbed there.
+
+**Existing infra→#291 (multi-dish architecture → per-recipe notes, 0.70x)**
+- Labeled stretch-only. Landed Apr 25 after core work complete. Multi-dish junction tables and dialog patterns already existed; #291 added a notes field without new architecture. 0.70x is solidly on target — the "easy" feel came from having no infrastructure work to do.
+
+**Unplanned UX cluster #360–#363 (0.24x average)**
+- Discovered while working in the ingredient usage list / Used In tab. Four individually-estimated issues (6 pts → 0.92d expected) that as a bundle would have been ~3 pts → ~0.46d. Actual: ~0.22d. Compensated by deferring #150+#151 (5 pts), keeping net scope change to +1 pt. In-context discovery while code is warm is consistently efficient.
+
+**Deferred #150 and #151: correct scope decisions**
+- #150 (range formatting): schema implications for min/max quantities proved deeper than estimated.
+- #151 (smart rounding): value questioned during sprint. Both were pre-labeled deferrable; no course correction needed.
+
+#### Working Pattern Observations
+
+```
+Apr 20 (Mon) │ ████████  #354 (platform bug) ░░░░ sprint planning (~0.3d hidden)
+Apr 21 (Tue) │ ────────  Holiday (rest)
+Apr 22 (Wed) │ ████████████  #198 + #320 + #348 — ingredient cluster (stretched day; holidays on both sides)
+Apr 23 (Thu) │ ────────  Holiday (rest)
+Apr 24 (Fri) │ ████████  #321 + #326 ░░ CI timing fix (~1h overhead)
+Apr 25 (Sat) │ ████████████  #291 + #170 + #360–#363 cluster + to-taste bugfix + release
+             │ ░░░░  (~0.3d hidden: virtual device testing across sprint, release prep)
+```
+
+**Patterns:**
+- Holiday sandwich (Tue+Thu) concentrated work into Mon+Wed+Fri with Saturday for final push
+- Wed Apr 22 was the heaviest day (10 pts across three issues), motivated partly by knowing rest days bracketed it
+- Dependency chains drove sequencing naturally: #198→#320 on Apr 22, #321→#326 on Apr 24, multi-dish infra→#291 on Apr 25
+- Final day (Apr 25) delivered stretch goal + deferrable + unplanned cluster + release — high throughput from code familiarity
+
+#### Lessons Learned
+
+1. **Dependency chain compounding is a planning tool, not an accident**
+   - Three chains generated three "free rides" in one sprint. All were deliberately sequenced in the sprint plan, not discovered mid-execution.
+   - **Lesson: When planning, actively identify "free ride" issues and schedule them immediately after their enablers. The compounding is reliable when the sequence is enforced.**
+
+2. **Platform/permission bugs with new packages are underpriced at 2 pts given current velocity**
+   - At 6.5 pts/day, 2 pts implies 0.31d. #354 cost ~0.70d (SAF, new packages, platform testing). Story points are now the primary planning unit and must reflect actual calendar cost at current velocity.
+   - **Lesson: Platform/permission bugs requiring new packages should be estimated at 3–5 pts. The relative complexity weight must match the calendar reality at 6.5 pts/day.**
+
+3. **Fine-grained UX cluster ticketing inflates point totals without inflating effort**
+   - #360–#363 (6 pts individually, ~0.22d actual). As a bundle: ~3 pts → ~0.46d expected → ratio ~0.48x.
+   - **Lesson: Bundle related small fixes as one ticket when discovered together. Flag granularity in the retro; don't adjust individual estimates upward.**
+
+4. **Stretch/deferrable labeling functions as a capacity absorption mechanism**
+   - #291 and #170 filled Apr 25's remaining capacity after core work was done. #150 and #151 were correctly deferred.
+   - **Lesson: Continue pre-tagging flex issues. The tier prevents scope creep while providing ready options when capacity opens.**
+
+5. **Holiday-interrupted weeks don't disrupt well-sequenced sprints**
+   - Mon+Wed+Fri+Sat schedule with two mid-week holidays. Each day started with an unambiguous next issue — the dependency-ordered backlog removed decision overhead entirely.
+   - **Lesson: Sprint sequencing is load-bearing in irregular calendars. A clear ordered backlog eliminates the daily "what do I work on?" cost.**
+
+6. **CI/tooling failures are cheap when CI is maintained as a passing baseline**
+   - Timing test failure cost ~1h on Apr 24: caught immediately by GitHub Actions, diagnosed quickly, fixed in one commit. No sprint impact.
+   - **Lesson: A consistently-green CI baseline converts tooling failures from blockers into 1h diagnostics.**
+
+7. **In-context UX discovery is high-efficiency cleanup**
+   - #360–#363 surfaced while already in the ingredient usage list code. Fixed while the code was warm. Same pattern as 0.2.3's #353 dead code removal and 0.1.11's real-life QA sprint.
+   - **Lesson: Budget 10–15% for in-context discovery cleanup. Adjacent trivial wins have near-zero context-switching cost when you're already in the area.**
+
+#### Recommendations for Future Sprints
+
+| Finding | Adjustment |
+|---------|------------|
+| Dependency chains reliably compound velocity | Explicitly sequence "free ride" issues immediately after their enablers |
+| Platform/permission bugs: 2 pts underprices at 6.5 pts/day | Estimate at 3–5 pts when new packages or SAF/permissions involved |
+| UX cluster ticketing inflates individual point totals | Bundle related small fixes as one ticket; note granularity inflation in retro |
+| Stretch/deferrable tier functioning as designed | Continue pre-tagging flex work |
+| Irregular calendars: no impact when sprint is sequenced | Dependency ordering removes daily decision overhead automatically |
+| CI baseline green → tooling failures = 1h diagnostic | Maintain passing CI as standard discipline |
+
+#### Notes
+
+- Sprint confirmed-complete: 30 pts / 4.0d effective → ~7.5 pts/day → **~37.5 pts/week** (execution mode)
+- Milestone shipped: backup/restore fixed for Android 10+ (#354), ingredient aliases (#198), duplicate prevention (#320), marinating time (#348), Markdown instructions (#321), recipe story field (#326), per-recipe meal notes (#291), parser l10n refactor (#170), ingredient usage list polish (#360–#363)
+- 1857 tests passing at release
+- #150 deferred (range quantity formatting — deeper schema complexity than estimated); #151 deferred (smart rounding — value questioned)
+- Unplanned: #360–#363 ingredient usage list cluster (in-context discovery); to-taste bugfix (found during cluster testing)
+- Apr 25 used as final sprint day (Saturday); compensated for 2 mid-week public holidays
+
 ---
 
 ## Cumulative Metrics
@@ -2252,13 +2391,15 @@ Apr 18 (Fri) │ ████████      #329 (meal history tab) + #121 (m
 | 0.1.15 | n/a‡ | ~1.0d | n/a | n/a | Emergency P0 patch: 2 import data loss bugs discovered via 0.2.1 (retroactive; not a regular sprint) |
 | 0.2.2 | 24 | ~2.7d | 0.11x | 6.3 | Algorithm + parser batch cluster; validation debt on #341 (→ #351, #352) |
 | 0.2.3 | 33 | ~3.0d tracked / ~3.4d effective | 0.10x | 9.7 | Execution-mode sprint: 6 bugs + 4 UX features + P1 feature; validation debt repaid; #354 discovered post-release |
+| 0.2.4 | 30 | ~4.0d | ~0.87x§ | 7.5 | Execution mode: dependency chains, holiday-interrupted week, stretch goal delivered; #354 only overrun (platform complexity) |
 
 *\* 0.1.7a weighted-days methodology underrepresents actual effort due to shared day with 0.1.7b. Developer estimates ~0.5 days actual effort. Excluded from velocity calculations.*
 *† 0.1.14 ratio is a retroactive estimate; no commit-level weighted analysis available. Calculated as active days / expected days at cruising velocity.*
 *‡ 0.1.15 issues were not pre-estimated (P0 emergency patch); ratio not applicable.*
+*§ From 0.2.4 onward, ratio = actual days ÷ (estimated pts ÷ 6.5). Prior entries used 1pt = 1 day baseline — not directly comparable.*
 
 **Critical Insights:**
-- **Cruising velocity: 30 points/week** — validated across 0.1.7b–0.2.3 (9 consecutive sprints at 26-48 pts/week); execution-mode sprints (pure bugs + well-specified features, no discovery) can spike above 40 pts/week
+- **Cruising velocity: 30 points/week** — validated across 0.1.7b–0.2.4 (10 consecutive sprints at 26-48 pts/week); execution-mode sprints (pure bugs + well-specified features, no discovery) can spike above 40 pts/week
 - **Velocity step-change confirmed** — early sprints (0.1.2-0.1.6) averaged 1.1-3.0 pts/day; recent sprints (0.1.7b-0.1.11) sustain 5.6-9.0 pts/day. Genuine acceleration from codebase maturity, Claude Code, accumulated infrastructure, and developer proficiency
 - **Sprint ratio depends heavily on work type** — Can't use one sprint to predict another
 - **Velocity modes**: "Discovery mode" (~20 pts/week) vs "Cruising mode" (~30 pts/week) vs "Execution mode" (~36 pts/week)
@@ -2279,6 +2420,8 @@ Apr 18 (Fri) │ ████████      #329 (meal history tab) + #121 (m
 ### Type-Based Calibration Factors
 
 Use these multipliers when estimating future work:
+
+> **Methodology note:** Entries up to 0.2.3 use ratio = actual days ÷ estimated points (1pt = 1day baseline). Entries marked **0.2.4 methodology** use ratio = actual days ÷ (estimated pts ÷ 6.5). Rows marked `*` use the new formula and are not directly comparable to prior rows.
 
 | Type | Sample Size | Avg Ratio | Recommended Multiplier | Notes |
 |------|-------------|-----------|------------------------|-------|
@@ -2314,6 +2457,9 @@ Use these multipliers when estimating future work:
 | Testing new algorithm behavior (no established fixtures) | 1 issue | 0.25x | 0.20-0.30x | **NEW**: Distinct from "extend test suite" (0.07-0.10x); dedup/scoring logic requires analytical test design before fixtures can be written (0.2.2: #254) |
 | Feature (medium-risk, prior failure + diagnosis documented) | 1 issue | 0.08x | 0.08-0.10x | **NEW**: "Previously failed + sound diagnosis" lowers risk — failure constrained solution space; no re-investigation phase; treat like post-usage bug (0.2.3: #295) |
 | P1 Feature (discovery-adjacent, device-test iteration) | 1 issue | 0.12x | 0.10-0.15x | **NEW**: UX design decisions + one round of device-triggered flow iteration; budget ~0.20d hidden overhead beyond commit estimate; analogous to external design tool time (0.2.3: #121) |
+| Bug (platform/permission, new packages required) | 1 issue | 2.27x* | 2.0-2.5x* | **NEW (0.2.4 methodology)**: SAF + new packages + platform testing; estimate at 3–5 pts at current velocity (6.5 pts/day); 2 pts implies 0.31d but actual ~0.70d (0.2.4: #354) |
+| Feature (model+UI, within-sprint dependency — same-session follow-on) | 1 issue | 0.49x* | ~0.5x* | **NEW (0.2.4 methodology)**: Enabler ships same day → full working memory load; estimate follow-on at 1 pt; MarkdownBody fully loaded → story field nearly free (0.2.4: #326 after #321) |
+| UX bug cluster (individually ticketed, discovered in-context) | 4 issues | 0.24x* | 0.2-0.3x* | **NEW (0.2.4 methodology)**: In-context discovery while code is warm; individual ticketing inflates pts (6pts actual ≈ 3pt bundle); batch on one session (0.2.4: #360–#363) |
 
 **Key Insights from 0.1.7a/b:**
 - **Design system work has its own velocity profile** — 64 points in 7 days (0.11x) reflects both new-type overestimation AND genuine efficiency from clear vision, compound patterns, and effective batching
@@ -2439,11 +2585,13 @@ Use historical velocity data to size future milestones and prevent overcommitmen
 | 0.1.14 | ~21 | ~4.0 | ~5.25 | ~26.3 | Zero-features housekeeping sprint (retroactive; no commit-level data) |
 | 0.1.15 | — | ~1.0 | — | — | Emergency P0 patch (not a regular sprint; excluded from velocity calculations) |
 | 0.2.2 | 24 | ~3.8 | ~6.3 | ~31.5 | Algorithm tuning + parser bug batch; #341 incomplete (validation debt) |
+| 0.2.3 | 33 | ~3.4 | ~9.7 | ~48.5 | Execution-mode sprint: bug batch + UX features + P1 feature; 3 working days |
+| 0.2.4 | 30 | ~4.0 | ~7.5 | ~37.5 | Dependency chains, holiday-interrupted week (4 days); stretch goal delivered |
 
 *\* 0.1.7a excluded from velocity calculations — shared day with 0.1.7b makes weighted-days unreliable.*
 *0.1.15 excluded from velocity calculations — emergency patch, not a regular sprint.*
 
-**Cruising Velocity: 30 points/week** — validated across 0.1.7b–0.2.2 (8 consecutive sprints at 26-36 pts/week).
+**Cruising Velocity: 30 points/week** — validated across 0.1.7b–0.2.4 (10 consecutive sprints at 26-48 pts/week).
 
 **Velocity Modes:**
 - **Discovery mode:** ~20 pts/week (new patterns, complex features, tooling overhead)

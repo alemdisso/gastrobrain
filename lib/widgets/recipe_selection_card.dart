@@ -47,7 +47,7 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-// Recipe name and category with context menu and toggle
+// Recipe name with context menu and toggle
               Row(
                 children: [
                   Expanded(
@@ -130,15 +130,6 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
               const SizedBox(height: 2),
               Row(
                 children: [
-                  Expanded(
-                    child: Text(
-                      widget.recommendation.recipe.category
-                          .getLocalizedDisplayName(context),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.blue.shade700,
-                          ),
-                    ),
-                  ),
                   GestureDetector(
                     onTap: () {
                       setState(() {

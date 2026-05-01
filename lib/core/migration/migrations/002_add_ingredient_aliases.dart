@@ -17,6 +17,8 @@ class AddIngredientAliasesMigration extends Migration {
 
   @override
   Future<void> up(DatabaseExecutor db) async {
+    final cols = await db.rawQuery('PRAGMA table_info(ingredients)');
+    if (cols.any((r) => r['name'] == 'aliases')) return;
     await db.execute('ALTER TABLE ingredients ADD COLUMN aliases TEXT');
   }
 
@@ -47,10 +49,7 @@ class AddIngredientAliasesMigration extends Migration {
 
   @override
   Future<bool> validate(DatabaseExecutor db) async {
-    final result = await db.rawQuery(
-      "SELECT COUNT(*) as count FROM pragma_table_info('ingredients') "
-      "WHERE name = 'aliases'",
-    );
-    return (result.first['count'] as int) > 0;
+    final result = await db.rawQuery('PRAGMA table_info(ingredients)');
+    return result.any((r) => r['name'] == 'aliases');
   }
 }

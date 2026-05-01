@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:gastrobrain/models/recipe.dart';
-import 'package:gastrobrain/models/recipe_category.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/widgets/recipe_card.dart';
 import 'package:gastrobrain/l10n/app_localizations.dart';
@@ -32,7 +31,6 @@ void main() {
       final zeroRatedRecipe = Recipe(
         id: 'test-recipe-0',
         name: 'Test Recipe',
-        category: RecipeCategory.mainDishes,
         desiredFrequency: FrequencyType.weekly,
         difficulty: 3,
         prepTimeMinutes: 30,
@@ -66,7 +64,6 @@ void main() {
       final threeStarRecipe = Recipe(
         id: 'test-recipe-3',
         name: 'Test Recipe',
-        category: RecipeCategory.mainDishes,
         desiredFrequency: FrequencyType.weekly,
         difficulty: 3,
         prepTimeMinutes: 30,
@@ -101,7 +98,6 @@ void main() {
       final fiveStarRecipe = Recipe(
         id: 'test-recipe-5',
         name: 'Test Recipe',
-        category: RecipeCategory.mainDishes,
         desiredFrequency: FrequencyType.weekly,
         difficulty: 3,
         prepTimeMinutes: 30,
@@ -135,7 +131,6 @@ void main() {
       final oneStarRecipe = Recipe(
         id: 'test-recipe-1',
         name: 'Test Recipe',
-        category: RecipeCategory.mainDishes,
         desiredFrequency: FrequencyType.weekly,
         difficulty: 3,
         prepTimeMinutes: 30,
@@ -170,7 +165,6 @@ void main() {
       final fourStarRecipe = Recipe(
         id: 'test-recipe-4',
         name: 'Test Recipe',
-        category: RecipeCategory.mainDishes,
         desiredFrequency: FrequencyType.weekly,
         difficulty: 3,
         prepTimeMinutes: 30,

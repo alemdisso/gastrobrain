@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/recipe_recommendation.dart';
-import 'package:gastrobrain/models/recipe_category.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/widgets/recipe_selection_card.dart';
 import 'package:gastrobrain/l10n/app_localizations.dart';
@@ -42,7 +41,6 @@ void main() {
     testRecipe = Recipe(
       id: 'test-recipe',
       name: 'Test Recipe',
-      category: RecipeCategory.mainDishes,
       desiredFrequency: FrequencyType.weekly,
       difficulty: 3,
       prepTimeMinutes: 30,
@@ -64,7 +62,7 @@ void main() {
   });
 
   group('RecipeSelectionCard - Basic Rendering', () {
-    testWidgets('displays recipe name and category - English',
+    testWidgets('displays recipe name',
         (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestableWidget(
@@ -74,30 +72,9 @@ void main() {
         ),
       );
 
-      // Verify recipe name is displayed
       expect(find.text('Test Recipe'), findsOneWidget);
-
-      // Verify category is displayed
-      expect(find.text('Main dishes'), findsOneWidget);
     });
 
-    testWidgets('displays recipe name and category - Portuguese',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(
-        createTestableWidget(
-          RecipeSelectionCard(
-            recommendation: testRecommendation,
-          ),
-          locale: const Locale('pt', ''),
-        ),
-      );
-
-      // Verify recipe name is displayed
-      expect(find.text('Test Recipe'), findsOneWidget);
-
-      // Verify category is displayed
-      expect(find.text('Pratos principais'), findsOneWidget);
-    });
     testWidgets('displays all three badge types when expanded', (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestableWidget(
@@ -344,8 +321,7 @@ void main() {
         testRecipe = Recipe(
           id: 'test-recipe',
           name: 'Test Recipe',
-          category: RecipeCategory.mainDishes,
-          prepTimeMinutes: testCase.time ~/ 2,
+            prepTimeMinutes: testCase.time ~/ 2,
           cookTimeMinutes: testCase.time ~/ 2,
           difficulty: testCase.difficulty,
           createdAt: DateTime.now(), // Adding required createdAt field
@@ -395,7 +371,6 @@ void main() {
       testRecipe = Recipe(
         id: 'test-recipe',
         name: 'Test Recipe',
-        category: RecipeCategory.mainDishes,
         createdAt: DateTime.now(),
       );
 
@@ -479,7 +454,6 @@ void main() {
       testRecipe = Recipe(
         id: 'test-recipe',
         name: 'Test Recipe',
-        category: RecipeCategory.mainDishes,
         createdAt: DateTime.now(),
         // No prepTimeMinutes or difficulty
       );
@@ -583,8 +557,7 @@ void main() {
         testRecipe = Recipe(
           id: 'test-recipe',
           name: 'Test Recipe',
-          category: RecipeCategory.mainDishes,
-          createdAt: DateTime.now(),
+            createdAt: DateTime.now(),
           difficulty: test.difficulty,
           prepTimeMinutes: test.time ~/ 2,
           cookTimeMinutes: test.time ~/ 2,

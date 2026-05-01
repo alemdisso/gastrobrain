@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../models/frequency_type.dart';
-import '../models/recipe_category.dart';
-import '../database/database_helper.dart';
+import '../models/tag.dart';
+import '../models/tag_type.dart';
+import '../core/di/service_provider.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
+import '../core/repositories/tag_repository.dart';
+import '../core/services/tag_duplicate_checker.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/servings_stepper.dart';
+import '../widgets/tag_picker_widget.dart';
 
 class EditRecipeScreen extends StatefulWidget {
   final Recipe recipe;
@@ -27,10 +31,14 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   late TextEditingController _marinatingTimeController;
   late int _servings;
   late FrequencyType _selectedFrequency;
-  late RecipeCategory _selectedCategory;
   late int _difficulty;
   late int _rating;
   bool _isSaving = false;
+
+  List<TagType> _tagTypes = [];
+  Map<String, List<Tag>> _tagsByType = {};
+  List<String> _selectedTagIds = [];
+  late TagRepository _tagRepo;
 
   @override
   void initState() {
@@ -43,9 +51,41 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     _marinatingTimeController = TextEditingController(text: widget.recipe.marinatingTimeMinutes.toString());
     _servings = widget.recipe.servings;
     _selectedFrequency = widget.recipe.desiredFrequency;
-    _selectedCategory = widget.recipe.category;
     _difficulty = widget.recipe.difficulty;
     _rating = widget.recipe.rating;
+    _tagRepo = TagRepository(ServiceProvider.database.helper);
+    _loadTagData();
+  }
+
+  Future<void> _loadTagData() async {
+    try {
+      final all = await _tagRepo.getAllTagTypes();
+      final types = all.toList();
+      final byType = <String, List<Tag>>{};
+      for (final t in types) {
+        byType[t.id] = await _tagRepo.getTagsByType(t.id);
+      }
+      final existing = await _tagRepo.getTagsForRecipe(widget.recipe.id);
+      if (mounted) {
+        setState(() {
+          _tagTypes = types;
+          _tagsByType = byType;
+          _selectedTagIds = existing.map((t) => t.id).toList();
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<Tag?> _onCreateTag(String name, String typeId) async {
+    try {
+      final existing = _tagsByType[typeId] ?? [];
+      if (TagDuplicateChecker(existing).check(name).isExact) return null;
+      final tag = await _tagRepo.createTag(name, typeId);
+      if (mounted) {
+        setState(() => _tagsByType = {..._tagsByType, typeId: [...existing, tag]});
+      }
+      return tag;
+    } catch (_) { return null; }
   }
 
   Widget _buildRatingField(String label, int value, Function(int) onChanged) {
@@ -151,12 +191,12 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         cookTimeMinutes: cookTime ?? 0,
         marinatingTimeMinutes: marinatingTime ?? 0,
         rating: _rating,
-        category: _selectedCategory,
         servings: servings,
       );
 
-      final dbHelper = DatabaseHelper();
+      final dbHelper = ServiceProvider.database.helper;
       await dbHelper.updateRecipe(updatedRecipe);
+      await _tagRepo.setTagsForRecipe(widget.recipe.id, _selectedTagIds);
 
       if (mounted) {
         Navigator.pop(context, true);
@@ -215,17 +255,6 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         onChanged: (v) { if (v != null) setState(() => _selectedFrequency = v); },
       ),
       const SizedBox(height: 16),
-      DropdownButtonFormField<RecipeCategory>(
-        key: const Key('edit_recipe_category_field'),
-        initialValue: _selectedCategory,
-        decoration: InputDecoration(labelText: l10n.category),
-        items: RecipeCategory.values
-            .map((c) => DropdownMenuItem(
-                value: c, child: Text(c.getLocalizedDisplayName(context))))
-            .toList(),
-        onChanged: (v) { if (v != null) setState(() => _selectedCategory = v); },
-      ),
-      const SizedBox(height: 16),
       _buildDifficultyField(l10n.difficultyLevel, _difficulty,
           (v) => setState(() => _difficulty = v)),
       const SizedBox(height: 16),
@@ -262,6 +291,15 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
           hintText: l10n.recipeStoryHint,
         ),
         maxLines: 5,
+      ),
+      const SizedBox(height: 16),
+      TagPickerWidget(
+        key: const Key('edit_recipe_tag_picker'),
+        tagTypes: _tagTypes,
+        tagsByType: _tagsByType,
+        selectedTagIds: _selectedTagIds,
+        onChanged: (ids) => setState(() => _selectedTagIds = ids),
+        onCreateTag: _onCreateTag,
       ),
       const SizedBox(height: 24),
       SizedBox(

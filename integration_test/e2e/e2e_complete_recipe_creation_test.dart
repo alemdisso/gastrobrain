@@ -101,7 +101,6 @@ void main() {
           print('✓ Name: ${recipe.name}');
           print('✓ Difficulty: ${recipe.difficulty}');
           print('✓ Rating: ${recipe.rating}');
-          print('✓ Category: ${recipe.category.value}');
 
           // VERIFY: Recipe appears in UI
           print('\n=== CHECKING UI ===');

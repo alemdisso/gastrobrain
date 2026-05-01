@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../models/recipe.dart';
+import '../models/tag.dart';
 import '../l10n/app_localizations.dart';
 
 /// Overview tab for RecipeDetailsScreen.
 ///
-/// Displays recipe metadata: category, rating, difficulty, servings,
-/// prep/cook time, desired frequency, and notes.
+/// Displays recipe metadata: rating, difficulty, servings,
+/// prep/cook time, desired frequency, notes, and tags.
 class RecipeDetailsOverviewTab extends StatelessWidget {
-  const RecipeDetailsOverviewTab({super.key, required this.recipe});
+  const RecipeDetailsOverviewTab({
+    super.key,
+    required this.recipe,
+    this.tags = const [],
+  });
 
   final Recipe recipe;
+  final List<Tag> tags;
 
   @override
   Widget build(BuildContext context) {
@@ -24,15 +30,6 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
             _buildStoryCard(context),
             const SizedBox(height: 20),
           ],
-
-          // Category
-          _buildInfoRow(
-            context,
-            icon: Icons.category,
-            label: AppLocalizations.of(context)!.category,
-            value: recipe.category.getLocalizedDisplayName(context),
-          ),
-          const SizedBox(height: 12),
 
           // Rating
           if (recipe.rating > 0)
@@ -126,6 +123,22 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
+          // Tags — grouped by type, meal_role and food_type first
+          if (tags.isNotEmpty) ...[
+            const Divider(),
+            const SizedBox(height: 12),
+            Text(
+              AppLocalizations.of(context)!.tags,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            ..._buildGroupedTags(context),
+          ],
+
           // Notes
           if (recipe.notes.isNotEmpty) ...[
             const Divider(),
@@ -147,6 +160,69 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  static const _typeOrder = [
+    'meal_role',
+    'food_type',
+    'cuisine',
+    'occasion',
+    'dietary',
+  ];
+
+  String _typeDisplayName(String typeId, AppLocalizations l10n) {
+    switch (typeId) {
+      case 'meal_role': return l10n.tagTypeMealRole;
+      case 'food_type': return l10n.tagTypeFoodType;
+      case 'cuisine': return l10n.tagTypeCuisine;
+      case 'occasion': return l10n.tagTypeOccasion;
+      case 'dietary': return l10n.tagTypeDietary;
+      default: return typeId;
+    }
+  }
+
+  List<Widget> _buildGroupedTags(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final byType = <String, List<Tag>>{};
+    for (final tag in tags) {
+      (byType[tag.typeId] ??= []).add(tag);
+    }
+    final orderedIds = [
+      ..._typeOrder.where(byType.containsKey),
+      ...byType.keys.where((id) => !_typeOrder.contains(id)),
+    ];
+    final widgets = <Widget>[];
+    for (final typeId in orderedIds) {
+      final group = byType[typeId]!;
+      widgets.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _typeDisplayName(typeId, l10n),
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: group.map((t) => Chip(
+                  label: Text(t.getLocalizedName(l10n)),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                )).toList(),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return widgets;
   }
 
   Widget _buildStoryCard(BuildContext context) {

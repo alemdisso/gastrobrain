@@ -17,7 +17,6 @@ import 'package:gastrobrain/models/ingredient_category.dart';
 import 'package:gastrobrain/models/measurement_unit.dart';
 import 'package:gastrobrain/models/protein_type.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
-import 'package:gastrobrain/models/recipe_category.dart';
 import 'package:gastrobrain/utils/id_generator.dart';
 
 void main() {
@@ -164,7 +163,6 @@ void main() {
           prepTimeMinutes: 10,
           cookTimeMinutes: 0,
           rating: 4,
-          category: RecipeCategory.salads,
           desiredFrequency: FrequencyType.weekly,
           notes: 'Quick and easy',
           instructions: 'Chop tomatoes and serve',
@@ -230,7 +228,6 @@ void main() {
           name: 'Test Recipe',
           difficulty: 1,
           desiredFrequency: FrequencyType.weekly,
-          category: RecipeCategory.mainDishes,
           createdAt: DateTime(2025, 1, 1),
         );
         await dbHelper.insertRecipe(recipe);
@@ -319,7 +316,6 @@ void main() {
           name: 'Test Recipe',
           difficulty: 1,
           desiredFrequency: FrequencyType.weekly,
-          category: RecipeCategory.mainDishes,
           createdAt: DateTime(2025, 1, 1),
         );
         await dbHelper.insertRecipe(recipe);
@@ -541,7 +537,6 @@ void main() {
           prepTimeMinutes: 5,
           cookTimeMinutes: 15,
           rating: 5,
-          category: RecipeCategory.mainDishes,
           desiredFrequency: FrequencyType.weekly,
           notes: 'Simple pasta',
           instructions: 'Cook pasta',
@@ -581,7 +576,6 @@ void main() {
         expect(restoredRecipe.prepTimeMinutes, equals(5));
         expect(restoredRecipe.cookTimeMinutes, equals(15));
         expect(restoredRecipe.rating, equals(5));
-        expect(restoredRecipe.category, equals(RecipeCategory.mainDishes));
         expect(restoredRecipe.desiredFrequency, equals(FrequencyType.weekly));
         expect(restoredRecipe.notes, equals('Simple pasta'));
         expect(restoredRecipe.instructions, equals('Cook pasta'));
@@ -614,7 +608,6 @@ void main() {
           name: 'Backup Test Recipe',
           difficulty: 2,
           desiredFrequency: FrequencyType.weekly,
-          category: RecipeCategory.mainDishes,
           createdAt: DateTime(2025, 1, 15),
         );
         await dbHelper.insertRecipe(recipe);
@@ -704,7 +697,6 @@ void main() {
           name: 'Meal Restore Test',
           difficulty: 3,
           desiredFrequency: FrequencyType.monthly,
-          category: RecipeCategory.mainDishes,
           createdAt: DateTime(2025, 1, 20),
         );
         await dbHelper.insertRecipe(recipe);
@@ -849,7 +841,6 @@ void main() {
           name: 'Original Recipe',
           difficulty: 1,
           desiredFrequency: FrequencyType.weekly,
-          category: RecipeCategory.mainDishes,
           createdAt: DateTime(2025, 1, 1),
         );
         await dbHelper.insertRecipe(originalRecipe);
@@ -870,7 +861,6 @@ void main() {
           name: 'New Recipe',
           difficulty: 3,
           desiredFrequency: FrequencyType.monthly,
-          category: RecipeCategory.desserts,
           createdAt: DateTime(2025, 2, 1),
         );
         await dbHelper.insertRecipe(newRecipe);
@@ -915,7 +905,6 @@ void main() {
           prepTimeMinutes: 15,
           cookTimeMinutes: 30,
           rating: 4,
-          category: RecipeCategory.mainDishes,
           desiredFrequency: FrequencyType.weekly,
           notes: 'Recipe notes',
           instructions: 'Cook it well',
@@ -969,7 +958,6 @@ void main() {
         expect(restoredRecipe.prepTimeMinutes, equals(recipe.prepTimeMinutes));
         expect(restoredRecipe.cookTimeMinutes, equals(recipe.cookTimeMinutes));
         expect(restoredRecipe.rating, equals(recipe.rating));
-        expect(restoredRecipe.category, equals(recipe.category));
         expect(restoredRecipe.desiredFrequency, equals(recipe.desiredFrequency));
         expect(restoredRecipe.notes, equals(recipe.notes));
         expect(restoredRecipe.instructions, equals(recipe.instructions));
@@ -1083,7 +1071,6 @@ void main() {
           name: 'Original Recipe',
           difficulty: 1,
           desiredFrequency: FrequencyType.weekly,
-          category: RecipeCategory.mainDishes,
           createdAt: DateTime(2025, 1, 1),
         );
         await dbHelper.insertRecipe(originalRecipe);
@@ -1217,7 +1204,6 @@ void main() {
           name: 'Test Recipe',
           difficulty: 1,
           desiredFrequency: FrequencyType.weekly,
-          category: RecipeCategory.mainDishes,
           createdAt: DateTime.now(),
         );
         await dbHelper.insertRecipe(recipe);
@@ -1316,7 +1302,6 @@ void main() {
           name: 'Recipe 1',
           difficulty: 1,
           desiredFrequency: FrequencyType.weekly,
-          category: RecipeCategory.mainDishes,
           createdAt: DateTime.now(),
         );
         final recipe2 = Recipe(
@@ -1324,7 +1309,6 @@ void main() {
           name: 'Recipe 2',
           difficulty: 2,
           desiredFrequency: FrequencyType.monthly,
-          category: RecipeCategory.sideDishes,
           createdAt: DateTime.now(),
         );
         await dbHelper.insertRecipe(recipe1);
@@ -1473,7 +1457,6 @@ void main() {
           prepTimeMinutes: 20,
           cookTimeMinutes: 45,
           rating: 5,
-          category: RecipeCategory.mainDishes,
           desiredFrequency: FrequencyType.weekly,
           notes: 'Recipe notes',
           instructions: 'Detailed instructions',
@@ -1530,7 +1513,6 @@ void main() {
         expect(rec.prepTimeMinutes, equals(20));
         expect(rec.cookTimeMinutes, equals(45));
         expect(rec.rating, equals(5));
-        expect(rec.category, equals(RecipeCategory.mainDishes));
         expect(rec.desiredFrequency, equals(FrequencyType.weekly));
         expect(rec.notes, equals('Recipe notes'));
         expect(rec.instructions, equals('Detailed instructions'));

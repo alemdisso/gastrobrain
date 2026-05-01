@@ -4,17 +4,21 @@ import '../models/recipe.dart';
 import '../models/ingredient.dart';
 import '../models/recipe_ingredient.dart';
 import '../models/frequency_type.dart';
-import '../models/recipe_category.dart';
 import '../models/measurement_unit.dart';
+import '../models/tag.dart';
+import '../models/tag_type.dart';
 import '../database/database_helper.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/validators/entity_validator.dart';
 import '../core/di/service_provider.dart';
+import '../core/repositories/tag_repository.dart';
+import '../core/services/tag_duplicate_checker.dart';
 import '../utils/id_generator.dart';
 import '../core/services/snackbar_service.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/quantity_formatter.dart';
 import '../widgets/servings_stepper.dart';
+import '../widgets/tag_picker_widget.dart';
 
 class AddRecipeScreen extends StatefulWidget {
   final DatabaseHelper? databaseHelper;
@@ -39,7 +43,6 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   final _marinatingTimeController = TextEditingController();
   int _servings = 4;
   FrequencyType _selectedFrequency = FrequencyType.monthly;
-  RecipeCategory _selectedCategory = RecipeCategory.uncategorized;
   int _difficulty = 1;
   int _rating = 0;
   bool _isSaving = false;
@@ -47,12 +50,43 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   final List<RecipeIngredient> _pendingIngredients = [];
   final Map<String, Ingredient> _ingredientDetails = {};
 
+  List<TagType> _tagTypes = [];
+  Map<String, List<Tag>> _tagsByType = {};
+  List<String> _selectedTagIds = [];
+  late TagRepository _tagRepo;
+
   final frequencies = FrequencyType.values;
 
   @override
   void initState() {
     super.initState();
     _dbHelper = widget.databaseHelper ?? ServiceProvider.database.dbHelper;
+    _tagRepo = TagRepository(_dbHelper);
+    _loadTagData();
+  }
+
+  Future<void> _loadTagData() async {
+    try {
+      final all = await _tagRepo.getAllTagTypes();
+      final types = all.toList();
+      final byType = <String, List<Tag>>{};
+      for (final t in types) {
+        byType[t.id] = await _tagRepo.getTagsByType(t.id);
+      }
+      if (mounted) setState(() { _tagTypes = types; _tagsByType = byType; });
+    } catch (_) {}
+  }
+
+  Future<Tag?> _onCreateTag(String name, String typeId) async {
+    try {
+      final existing = _tagsByType[typeId] ?? [];
+      if (TagDuplicateChecker(existing).check(name).isExact) return null;
+      final tag = await _tagRepo.createTag(name, typeId);
+      if (mounted) {
+        setState(() => _tagsByType = {..._tagsByType, typeId: [...existing, tag]});
+      }
+      return tag;
+    } catch (_) { return null; }
   }
 
   Widget _buildRatingField(String label, int value, Function(int) onChanged) {
@@ -182,7 +216,6 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       cookTimeMinutes: int.tryParse(_cookTimeController.text) ?? 0,
       marinatingTimeMinutes: int.tryParse(_marinatingTimeController.text) ?? 0,
       rating: _rating,
-      category: _selectedCategory,
       servings: _servings,
     );
 
@@ -241,6 +274,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       for (final ingredient in _pendingIngredients) {
         await _dbHelper.addIngredientToRecipe(ingredient);
       }
+      await _tagRepo.setTagsForRecipe(_tempRecipeId, _selectedTagIds);
 
       if (mounted) Navigator.pop(context, true);
     } on ValidationException catch (e) {
@@ -327,17 +361,6 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         onChanged: (v) { if (v != null) setState(() => _selectedFrequency = v); },
       ),
       const SizedBox(height: 16),
-      DropdownButtonFormField<RecipeCategory>(
-        key: const Key('add_recipe_category_field'),
-        initialValue: _selectedCategory,
-        decoration: InputDecoration(labelText: l10n.category),
-        items: RecipeCategory.values
-            .map((c) => DropdownMenuItem(
-                value: c, child: Text(c.getLocalizedDisplayName(context))))
-            .toList(),
-        onChanged: (v) { if (v != null) setState(() => _selectedCategory = v); },
-      ),
-      const SizedBox(height: 16),
       _buildDifficultyField(l10n.difficultyLevel, _difficulty,
           (v) => setState(() => _difficulty = v)),
       const SizedBox(height: 16),
@@ -376,6 +399,15 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       ),
       const SizedBox(height: 16),
       _buildIngredientsCard(context),
+      const SizedBox(height: 16),
+      TagPickerWidget(
+        key: const Key('add_recipe_tag_picker'),
+        tagTypes: _tagTypes,
+        tagsByType: _tagsByType,
+        selectedTagIds: _selectedTagIds,
+        onChanged: (ids) => setState(() => _selectedTagIds = ids),
+        onCreateTag: _onCreateTag,
+      ),
       const SizedBox(height: 24),
       SizedBox(
         width: double.infinity,

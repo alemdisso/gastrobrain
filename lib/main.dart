@@ -34,9 +34,7 @@ void main() async {
   if (recipesCount == 0) {
     // Only seed if there are no recipes yet
     try {
-      //print('Seeding ingredients database...');
       await dbHelper.importRecipesFromJson('assets/recipes.json');
-      //print('Recipes database seeded successfully');
     } catch (e) {
       //print('Error seeding recipes: $e');
     }

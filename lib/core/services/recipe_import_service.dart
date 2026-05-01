@@ -113,7 +113,6 @@ class RecipeImportService {
               'cook_time_minutes': metadata['cook_time_minutes'],
               'marinating_time_minutes': metadata['marinating_time_minutes'] ?? 0,
               'rating': metadata['rating'],
-              'category': metadata['category'],
               'desired_frequency': metadata['desired_frequency'],
               'notes': metadata['notes'] ?? '',
               'instructions': recipeData['instructions'] ?? '',

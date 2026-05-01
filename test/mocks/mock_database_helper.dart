@@ -28,6 +28,9 @@ import 'package:sqflite/sqflite.dart';
 /// testing the recommendation algorithm. Other methods throw UnimplementedError.
 class MockDatabaseHelper implements DatabaseHelper {
   Map<String, List<ProteinType>> recipeProteinTypes = {};
+
+  /// Tag IDs (meal_role + food_type) per recipe, used by MealRoleFactor scoring.
+  Map<String, List<String>> recipeTagsForScoring = {};
   List<Map<String, dynamic>>? returnCustomMealsForRecommendations;
 
   // Error simulation properties
@@ -269,6 +272,7 @@ class MockDatabaseHelper implements DatabaseHelper {
     _nextShoppingListItemId = 1;
     _lastCookedDates.clear();
     _mealCounts.clear();
+    recipeTagsForScoring.clear();
   }
 
   // RECIPE OPERATIONS
@@ -1648,5 +1652,10 @@ class MockDatabaseHelper implements DatabaseHelper {
   @override
   Future<Ingredient?> getIngredient(String id) async {
     return _ingredients[id];
+  }
+
+  @override
+  Future<Map<String, List<String>>> getRecipeTagsForScoring() async {
+    return Map<String, List<String>>.from(recipeTagsForScoring);
   }
 }

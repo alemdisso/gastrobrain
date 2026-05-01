@@ -74,13 +74,17 @@
   "@minimumRating": {
     "description": "Rótulo para filtro de avaliação mínima"
   },
+  "maxDifficulty": "Dificuldade Máxima",
+  "@maxDifficulty": {
+    "description": "Rótulo para filtro de dificuldade máxima (mostra receitas até esse nível)"
+  },
+  "minimumFrequency": "Frequência Mínima",
+  "@minimumFrequency": {
+    "description": "Rótulo para filtro de frequência mínima (mostra receitas preparadas nessa frequência ou mais)"
+  },
   "cookingFrequency": "Frequência de Preparo",
   "@cookingFrequency": {
     "description": "Rótulo para filtro de frequência de preparo"
-  },
-  "category": "Categoria",
-  "@category": {
-    "description": "Rótulo para filtro de categoria"
   },
   "any": "Qualquer",
   "@any": {
@@ -120,22 +124,102 @@
   "@filterByName": {
     "description": "Rótulo do tipo de filtro para busca por nome"
   },
-  "filterByDifficulty": "Dificuldade",
+  "filterByDifficulty": "Dificuldade máx.: {level}",
   "@filterByDifficulty": {
-    "description": "Rótulo do tipo de filtro para dificuldade"
+    "description": "Rótulo do banner de filtro para dificuldade máxima",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "description": "Nível máximo de dificuldade selecionado"
+      }
+    }
   },
   "filterByRating": "Avaliação",
   "@filterByRating": {
     "description": "Rótulo do tipo de filtro para avaliação"
   },
-  "filterByFrequency": "Frequência",
+  "filterByFrequency": "Frequência: {name}+",
   "@filterByFrequency": {
-    "description": "Rótulo do tipo de filtro para frequência de preparo"
+    "description": "Rótulo do banner de filtro para frequência mínima",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Nome da frequência mínima selecionada"
+      }
+    }
   },
-  "filterByCategory": "Categoria",
-  "@filterByCategory": {
-    "description": "Rótulo do tipo de filtro para categoria"
+  "filterByTags": "Filtrar por etiquetas",
+  "@filterByTags": {
+    "description": "Cabeçalho da seção de filtro por etiqueta no diálogo de filtro"
   },
+  "tags": "Etiquetas",
+  "@tags": {
+    "description": "Rótulo da seção de etiquetas em formulários e detalhes de receitas"
+  },
+  "addTag": "Adicionar etiqueta",
+  "@addTag": {
+    "description": "Rótulo do botão para expandir o campo de busca de etiquetas"
+  },
+  "searchOrAddTag": "Pesquisar ou adicionar etiqueta",
+  "@searchOrAddTag": {
+    "description": "Texto de dica para o campo de busca de etiquetas"
+  },
+  "tagTypeCuisine": "Culinária",
+  "@tagTypeCuisine": {
+    "description": "Nome exibido para o tipo de etiqueta Culinária"
+  },
+  "tagTypeOccasion": "Ocasião",
+  "@tagTypeOccasion": {
+    "description": "Nome exibido para o tipo de etiqueta Ocasião"
+  },
+  "tagTypeDietary": "Dieta",
+  "@tagTypeDietary": {
+    "description": "Nome exibido para o tipo de etiqueta Dietético"
+  },
+  "tagTypeMealRole": "Função no Prato",
+  "@tagTypeMealRole": {
+    "description": "Nome exibido para o tipo de etiqueta Função no Prato"
+  },
+  "tagTypeFoodType": "Tipo de Alimento",
+  "@tagTypeFoodType": {
+    "description": "Nome exibido para o tipo de etiqueta Tipo de Alimento"
+  },
+  "tagMealRoleMainDish": "Prato Principal",
+  "@tagMealRoleMainDish": { "description": "Etiqueta de função: prato principal" },
+  "tagMealRoleSideDish": "Acompanhamento",
+  "@tagMealRoleSideDish": { "description": "Etiqueta de função: acompanhamento" },
+  "tagMealRoleCompleteMeal": "Refeição Completa",
+  "@tagMealRoleCompleteMeal": { "description": "Etiqueta de função: refeição completa" },
+  "tagMealRoleAppetizer": "Entrada",
+  "@tagMealRoleAppetizer": { "description": "Etiqueta de função: entrada" },
+  "tagMealRoleAccompaniment": "Guarnição",
+  "@tagMealRoleAccompaniment": { "description": "Etiqueta de função: guarnição" },
+  "tagMealRoleDessert": "Sobremesa",
+  "@tagMealRoleDessert": { "description": "Etiqueta de função: sobremesa" },
+  "tagMealRoleSnack": "Lanche",
+  "@tagMealRoleSnack": { "description": "Etiqueta de função: lanche" },
+  "tagFoodTypeSoup": "Sopa",
+  "@tagFoodTypeSoup": { "description": "Etiqueta de tipo de alimento: sopa" },
+  "tagFoodTypeStew": "Ensopado",
+  "@tagFoodTypeStew": { "description": "Etiqueta de tipo de alimento: ensopado" },
+  "tagFoodTypeSalad": "Salada",
+  "@tagFoodTypeSalad": { "description": "Etiqueta de tipo de alimento: salada" },
+  "tagFoodTypeStock": "Caldo",
+  "@tagFoodTypeStock": { "description": "Etiqueta de tipo de alimento: caldo" },
+  "tagFoodTypeSandwich": "Sanduíche",
+  "@tagFoodTypeSandwich": { "description": "Etiqueta de tipo de alimento: sanduíche" },
+  "tagFoodTypePasta": "Massa",
+  "@tagFoodTypePasta": { "description": "Etiqueta de tipo de alimento: massa" },
+  "tagFoodTypeRice": "Arroz",
+  "@tagFoodTypeRice": { "description": "Etiqueta de tipo de alimento: arroz" },
+  "tagFoodTypeGrilled": "Grelhado",
+  "@tagFoodTypeGrilled": { "description": "Etiqueta de tipo de alimento: grelhado" },
+  "tagFoodTypeBaked": "Assado",
+  "@tagFoodTypeBaked": { "description": "Etiqueta de tipo de alimento: assado" },
+  "tagFoodTypeRaw": "Cru",
+  "@tagFoodTypeRaw": { "description": "Etiqueta de tipo de alimento: cru" },
+  "tagFoodTypeSauce": "Molho",
+  "@tagFoodTypeSauce": { "description": "Etiqueta de tipo de alimento: molho" },
   "addRecipe": "Adicionar Receita",
   "@addRecipe": {
     "description": "Dica do botão adicionar receita"
@@ -740,58 +824,6 @@
   "proteinOther": "Outro",
   "@proteinOther": {
     "description": "Nome para outro tipo de proteína"
-  },
-  "categoryMainDishes": "Pratos principais",
-  "@categoryMainDishes": {
-    "description": "Nome para categoria de pratos principais"
-  },
-  "categorySideDishes": "Acompanhamentos",
-  "@categorySideDishes": {
-    "description": "Nome para categoria de acompanhamentos"
-  },
-  "categorySandwiches": "Sanduíches",
-  "@categorySandwiches": {
-    "description": "Nome para categoria de sanduíches"
-  },
-  "categoryCompleteMeals": "Refeições completas",
-  "@categoryCompleteMeals": {
-    "description": "Nome para categoria de refeições completas"
-  },
-  "categoryBreakfastItems": "Itens de café da manhã",
-  "@categoryBreakfastItems": {
-    "description": "Nome para categoria de itens de café da manhã"
-  },
-  "categoryDesserts": "Sobremesas",
-  "@categoryDesserts": {
-    "description": "Nome para categoria de sobremesas"
-  },
-  "categorySoupsStews": "Sopas/ensopados",
-  "@categorySoupsStews": {
-    "description": "Nome para categoria de sopas/ensopados"
-  },
-  "categorySalads": "Saladas",
-  "@categorySalads": {
-    "description": "Nome para categoria de saladas"
-  },
-  "categorySauces": "Molhos",
-  "@categorySauces": {
-    "description": "Nome para categoria de molhos"
-  },
-  "categoryDips": "Patês/molhos para mergulhar",
-  "@categoryDips": {
-    "description": "Nome para categoria de patês/molhos"
-  },
-  "categorySnacks": "Petiscos",
-  "@categorySnacks": {
-    "description": "Nome para categoria de petiscos"
-  },
-  "categoryPicklesFermented": "Conservas/fermentados",
-  "@categoryPicklesFermented": {
-    "description": "Nome para a categoria de conservas e fermentados"
-  },
-  "categoryUncategorized": "Sem categoria",
-  "@categoryUncategorized": {
-    "description": "Nome para categoria sem classificação"
   },
   "timeContextPast": "Passado",
   "@timeContextPast": {
@@ -2425,11 +2457,11 @@
   "@dashboard": {
     "description": "Tab label for the dashboard/landing page"
   },
-  "dashboardTagline": "Seu Assistente Inteligente de Refeições",
+  "dashboardTagline": "Seu Assistente Culinário",
   "@dashboardTagline": {
     "description": "Hero tagline on dashboard screen"
   },
-  "dashboardSubtitle": "Recomendações para ajudar você a planejar refeições variadas.",
+  "dashboardSubtitle": "Ajudando você a planejar refeições variadas.",
   "@dashboardSubtitle": {
     "description": "Hero subtitle describing the recommendation engine"
   },

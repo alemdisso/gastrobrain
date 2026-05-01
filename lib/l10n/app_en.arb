@@ -74,13 +74,17 @@
   "@minimumRating": {
     "description": "Label for minimum rating filter"
   },
+  "maxDifficulty": "Max Difficulty",
+  "@maxDifficulty": {
+    "description": "Label for maximum difficulty filter (shows recipes at or below this level)"
+  },
+  "minimumFrequency": "Minimum Frequency",
+  "@minimumFrequency": {
+    "description": "Label for minimum frequency filter (shows recipes cooked at this frequency or more often)"
+  },
   "cookingFrequency": "Cooking Frequency",
   "@cookingFrequency": {
     "description": "Label for cooking frequency filter"
-  },
-  "category": "Category",
-  "@category": {
-    "description": "Label for category filter"
   },
   "any": "Any",
   "@any": {
@@ -120,22 +124,102 @@
   "@filterByName": {
     "description": "Filter type label for name search"
   },
-  "filterByDifficulty": "Difficulty",
+  "filterByDifficulty": "Max difficulty: {level}",
   "@filterByDifficulty": {
-    "description": "Filter type label for difficulty"
+    "description": "Filter banner label for max difficulty filter",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "description": "Max difficulty level selected"
+      }
+    }
   },
   "filterByRating": "Rating",
   "@filterByRating": {
     "description": "Filter type label for rating"
   },
-  "filterByFrequency": "Frequency",
+  "filterByFrequency": "Frequency: {name}+",
   "@filterByFrequency": {
-    "description": "Filter type label for cooking frequency"
+    "description": "Filter banner label for minimum frequency filter",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Name of the minimum frequency selected"
+      }
+    }
   },
-  "filterByCategory": "Category",
-  "@filterByCategory": {
-    "description": "Filter type label for category"
+  "filterByTags": "Filter by tags",
+  "@filterByTags": {
+    "description": "Section header for tag filter in recipe filter dialog"
   },
+  "tags": "Tags",
+  "@tags": {
+    "description": "Label for the tags section in recipe forms and details"
+  },
+  "addTag": "Add tag",
+  "@addTag": {
+    "description": "Button label to expand the tag search field"
+  },
+  "searchOrAddTag": "Search or add tag",
+  "@searchOrAddTag": {
+    "description": "Hint text for the tag search field"
+  },
+  "tagTypeCuisine": "Cuisine",
+  "@tagTypeCuisine": {
+    "description": "Display name for the built-in Cuisine tag type"
+  },
+  "tagTypeOccasion": "Occasion",
+  "@tagTypeOccasion": {
+    "description": "Display name for the built-in Occasion tag type"
+  },
+  "tagTypeDietary": "Dietary",
+  "@tagTypeDietary": {
+    "description": "Display name for the built-in Dietary tag type"
+  },
+  "tagTypeMealRole": "Meal Role",
+  "@tagTypeMealRole": {
+    "description": "Display name for the built-in Meal Role tag type"
+  },
+  "tagTypeFoodType": "Food Type",
+  "@tagTypeFoodType": {
+    "description": "Display name for the built-in Food Type tag type"
+  },
+  "tagMealRoleMainDish": "Main Dish",
+  "@tagMealRoleMainDish": { "description": "Meal role tag: main dish" },
+  "tagMealRoleSideDish": "Side Dish",
+  "@tagMealRoleSideDish": { "description": "Meal role tag: side dish" },
+  "tagMealRoleCompleteMeal": "Complete Meal",
+  "@tagMealRoleCompleteMeal": { "description": "Meal role tag: complete meal" },
+  "tagMealRoleAppetizer": "Appetizer",
+  "@tagMealRoleAppetizer": { "description": "Meal role tag: appetizer" },
+  "tagMealRoleAccompaniment": "Accompaniment",
+  "@tagMealRoleAccompaniment": { "description": "Meal role tag: accompaniment" },
+  "tagMealRoleDessert": "Dessert",
+  "@tagMealRoleDessert": { "description": "Meal role tag: dessert" },
+  "tagMealRoleSnack": "Snack",
+  "@tagMealRoleSnack": { "description": "Meal role tag: snack" },
+  "tagFoodTypeSoup": "Soup",
+  "@tagFoodTypeSoup": { "description": "Food type tag: soup" },
+  "tagFoodTypeStew": "Stew",
+  "@tagFoodTypeStew": { "description": "Food type tag: stew" },
+  "tagFoodTypeSalad": "Salad",
+  "@tagFoodTypeSalad": { "description": "Food type tag: salad" },
+  "tagFoodTypeStock": "Stock",
+  "@tagFoodTypeStock": { "description": "Food type tag: stock" },
+  "tagFoodTypeSandwich": "Sandwich",
+  "@tagFoodTypeSandwich": { "description": "Food type tag: sandwich" },
+  "tagFoodTypePasta": "Pasta",
+  "@tagFoodTypePasta": { "description": "Food type tag: pasta" },
+  "tagFoodTypeRice": "Rice",
+  "@tagFoodTypeRice": { "description": "Food type tag: rice" },
+  "tagFoodTypeGrilled": "Grilled",
+  "@tagFoodTypeGrilled": { "description": "Food type tag: grilled" },
+  "tagFoodTypeBaked": "Baked",
+  "@tagFoodTypeBaked": { "description": "Food type tag: baked" },
+  "tagFoodTypeRaw": "Raw",
+  "@tagFoodTypeRaw": { "description": "Food type tag: raw" },
+  "tagFoodTypeSauce": "Sauce",
+  "@tagFoodTypeSauce": { "description": "Food type tag: sauce" },
   "addRecipe": "Add Recipe",
   "@addRecipe": {
     "description": "Tooltip for add recipe button"
@@ -758,58 +842,6 @@
   "proteinOther": "Other",
   "@proteinOther": {
     "description": "Display name for other protein type"
-  },
-  "categoryMainDishes": "Main dishes",
-  "@categoryMainDishes": {
-    "description": "Display name for main dishes category"
-  },
-  "categorySideDishes": "Side dishes",
-  "@categorySideDishes": {
-    "description": "Display name for side dishes category"
-  },
-  "categorySandwiches": "Sandwiches",
-  "@categorySandwiches": {
-    "description": "Display name for sandwiches category"
-  },
-  "categoryCompleteMeals": "Complete meals",
-  "@categoryCompleteMeals": {
-    "description": "Display name for complete meals category"
-  },
-  "categoryBreakfastItems": "Breakfast items",
-  "@categoryBreakfastItems": {
-    "description": "Display name for breakfast items category"
-  },
-  "categoryDesserts": "Desserts",
-  "@categoryDesserts": {
-    "description": "Display name for desserts category"
-  },
-  "categorySoupsStews": "Soups/stews",
-  "@categorySoupsStews": {
-    "description": "Display name for soups/stews category"
-  },
-  "categorySalads": "Salads",
-  "@categorySalads": {
-    "description": "Display name for salads category"
-  },
-  "categorySauces": "Sauces",
-  "@categorySauces": {
-    "description": "Display name for sauces category"
-  },
-  "categoryDips": "Dips",
-  "@categoryDips": {
-    "description": "Display name for dips category"
-  },
-  "categorySnacks": "Snacks",
-  "@categorySnacks": {
-    "description": "Display name for snacks category"
-  },
-  "categoryPicklesFermented": "Pickles/fermented",
-  "@categoryPicklesFermented": {
-    "description": "Display name for pickles/fermented category"
-  },
-  "categoryUncategorized": "Uncategorized",
-  "@categoryUncategorized": {
-    "description": "Display name for uncategorized category"
   },
   "timeContextPast": "Past",
   "@timeContextPast": {

@@ -332,6 +332,7 @@ git branch -d hotfix/0.1.3.1
 | 0.1.11 | 2026-02-25 | UX Polish & Stability | release/0.1.11 | New categories, shopping list fixes, idempotent migrations, e2e stability |
 | 0.1.12 | 2026-03-01 | Servings & Quantity Tracking | release/0.1.12 | Recipe servings, planned servings, ServingsStepper, shopping list quantity scaling |
 | 0.1.13 | 2026-03-09 | Meal Planning & Shopping Enhancements | release/0.1.13 | Simple sides, manual shopping items, ServingsStepper in recipe forms, ShoppingListService refactor |
+| 0.2.4 | 2026-04-25 | Recipe Enhancement | release/0.2.4 | Ingredient aliases, duplicate prevention, markdown instructions, recipe story, marinating time, per-recipe notes, Android 10+ backup fix |
 
 ---
 

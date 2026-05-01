@@ -134,7 +134,6 @@ class _RecipeInstructionsViewScreenState
         prepTimeMinutes: widget.recipe.prepTimeMinutes,
         cookTimeMinutes: widget.recipe.cookTimeMinutes,
         rating: widget.recipe.rating,
-        category: widget.recipe.category,
       );
 
       await _dbHelper.updateRecipe(updatedRecipe);
