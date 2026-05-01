@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.5] - 2026-05-01
+
+### Added
+- Recipe tagging system with flexible typed tags (cuisines, dietary, occasions, techniques, and more) (#324)
+- `meal_role` and `food_type` tag types for structured meal composition (#333)
+- Enhanced recipe filtering with range-based criteria and tag-based filtering (OR/AND logic) (#111)
+- Meal type-specific recommendation profiles for lunch/dinner temporal context (#127)
+
+### Changed
+- Migrated recipe category field to `meal_role` and `food_type` tags (#334)
+- Deprecated and removed legacy recipe category field — tags are now the single source of truth (#335)
+- Recommendation engine now considers servings data as a factor (#303)
+
+### Fixed
+- Error when saving any recipe edit after schema changes (#372)
+
+---
+
 ## [0.2.4] - 2026-04-25
 
 ### Added
