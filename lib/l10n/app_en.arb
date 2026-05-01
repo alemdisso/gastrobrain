@@ -78,10 +78,6 @@
   "@cookingFrequency": {
     "description": "Label for cooking frequency filter"
   },
-  "category": "Category",
-  "@category": {
-    "description": "Label for category filter"
-  },
   "any": "Any",
   "@any": {
     "description": "Option for any/no filter"
@@ -826,58 +822,6 @@
   "proteinOther": "Other",
   "@proteinOther": {
     "description": "Display name for other protein type"
-  },
-  "categoryMainDishes": "Main dishes",
-  "@categoryMainDishes": {
-    "description": "Display name for main dishes category"
-  },
-  "categorySideDishes": "Side dishes",
-  "@categorySideDishes": {
-    "description": "Display name for side dishes category"
-  },
-  "categorySandwiches": "Sandwiches",
-  "@categorySandwiches": {
-    "description": "Display name for sandwiches category"
-  },
-  "categoryCompleteMeals": "Complete meals",
-  "@categoryCompleteMeals": {
-    "description": "Display name for complete meals category"
-  },
-  "categoryBreakfastItems": "Breakfast items",
-  "@categoryBreakfastItems": {
-    "description": "Display name for breakfast items category"
-  },
-  "categoryDesserts": "Desserts",
-  "@categoryDesserts": {
-    "description": "Display name for desserts category"
-  },
-  "categorySoupsStews": "Soups/stews",
-  "@categorySoupsStews": {
-    "description": "Display name for soups/stews category"
-  },
-  "categorySalads": "Salads",
-  "@categorySalads": {
-    "description": "Display name for salads category"
-  },
-  "categorySauces": "Sauces",
-  "@categorySauces": {
-    "description": "Display name for sauces category"
-  },
-  "categoryDips": "Dips",
-  "@categoryDips": {
-    "description": "Display name for dips category"
-  },
-  "categorySnacks": "Snacks",
-  "@categorySnacks": {
-    "description": "Display name for snacks category"
-  },
-  "categoryPicklesFermented": "Pickles/fermented",
-  "@categoryPicklesFermented": {
-    "description": "Display name for pickles/fermented category"
-  },
-  "categoryUncategorized": "Uncategorized",
-  "@categoryUncategorized": {
-    "description": "Display name for uncategorized category"
   },
   "timeContextPast": "Past",
   "@timeContextPast": {

@@ -78,10 +78,6 @@
   "@cookingFrequency": {
     "description": "Rótulo para filtro de frequência de preparo"
   },
-  "category": "Categoria",
-  "@category": {
-    "description": "Rótulo para filtro de categoria"
-  },
   "any": "Qualquer",
   "@any": {
     "description": "Opção para qualquer/sem filtro"
@@ -808,58 +804,6 @@
   "proteinOther": "Outro",
   "@proteinOther": {
     "description": "Nome para outro tipo de proteína"
-  },
-  "categoryMainDishes": "Pratos principais",
-  "@categoryMainDishes": {
-    "description": "Nome para categoria de pratos principais"
-  },
-  "categorySideDishes": "Acompanhamentos",
-  "@categorySideDishes": {
-    "description": "Nome para categoria de acompanhamentos"
-  },
-  "categorySandwiches": "Sanduíches",
-  "@categorySandwiches": {
-    "description": "Nome para categoria de sanduíches"
-  },
-  "categoryCompleteMeals": "Refeições completas",
-  "@categoryCompleteMeals": {
-    "description": "Nome para categoria de refeições completas"
-  },
-  "categoryBreakfastItems": "Itens de café da manhã",
-  "@categoryBreakfastItems": {
-    "description": "Nome para categoria de itens de café da manhã"
-  },
-  "categoryDesserts": "Sobremesas",
-  "@categoryDesserts": {
-    "description": "Nome para categoria de sobremesas"
-  },
-  "categorySoupsStews": "Sopas/ensopados",
-  "@categorySoupsStews": {
-    "description": "Nome para categoria de sopas/ensopados"
-  },
-  "categorySalads": "Saladas",
-  "@categorySalads": {
-    "description": "Nome para categoria de saladas"
-  },
-  "categorySauces": "Molhos",
-  "@categorySauces": {
-    "description": "Nome para categoria de molhos"
-  },
-  "categoryDips": "Patês/molhos para mergulhar",
-  "@categoryDips": {
-    "description": "Nome para categoria de patês/molhos"
-  },
-  "categorySnacks": "Petiscos",
-  "@categorySnacks": {
-    "description": "Nome para categoria de petiscos"
-  },
-  "categoryPicklesFermented": "Conservas/fermentados",
-  "@categoryPicklesFermented": {
-    "description": "Nome para a categoria de conservas e fermentados"
-  },
-  "categoryUncategorized": "Sem categoria",
-  "@categoryUncategorized": {
-    "description": "Nome para categoria sem classificação"
   },
   "timeContextPast": "Passado",
   "@timeContextPast": {

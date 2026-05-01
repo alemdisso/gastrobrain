@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:gastrobrain/models/recipe.dart';
-import 'package:gastrobrain/models/recipe_category.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/widgets/recipe_card.dart';
 import 'package:gastrobrain/screens/recipe_details_screen.dart';
@@ -41,7 +40,6 @@ void main() {
       testRecipe = Recipe(
         id: 'test-recipe',
         name: 'Test Recipe with a Very Long Name That Might Cause Issues',
-        category: RecipeCategory.mainDishes,
         desiredFrequency: FrequencyType.weekly,
         difficulty: 3,
         prepTimeMinutes: 30,
@@ -50,45 +48,6 @@ void main() {
         createdAt: DateTime.now(),
       );
       mockRecipeProvider = MockRecipeProvider();
-    });
-
-    testWidgets('recipe card displays localized category - English',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(
-        createTestableWidget(
-          RecipeCard(
-            recipe: testRecipe,
-            onEdit: () {},
-            onDelete: () {},
-            onCooked: () {},
-            mealCount: 5,
-            lastCooked: DateTime(2023, 12, 25),
-          ),
-        ),
-      );
-
-      // Should display English category name
-      expect(find.text('Main dishes'), findsOneWidget);
-    });
-
-    testWidgets('recipe card displays localized category - Portuguese',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(
-        createTestableWidget(
-          RecipeCard(
-            recipe: testRecipe,
-            onEdit: () {},
-            onDelete: () {},
-            onCooked: () {},
-            mealCount: 5,
-            lastCooked: DateTime(2023, 12, 25),
-          ),
-          locale: const Locale('pt', ''),
-        ),
-      );
-
-      // Should display Portuguese category name
-      expect(find.text('Pratos principais'), findsOneWidget);
     });
 
     testWidgets('recipe card displays recipe name',

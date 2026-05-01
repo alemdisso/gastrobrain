@@ -1,5 +1,4 @@
 import 'frequency_type.dart';
-import 'recipe_category.dart';
 
 class Recipe {
   String id;
@@ -14,7 +13,6 @@ class Recipe {
   int cookTimeMinutes; // Cooking time in minutes
   int marinatingTimeMinutes; // Marinating time in minutes (0 = not applicable)
   int rating; // 1-5 scale
-  RecipeCategory category; // Category of the recipe
   int servings; // Baseline yield (how many people this recipe serves)
 
   Recipe({
@@ -30,10 +28,8 @@ class Recipe {
     this.cookTimeMinutes = 0,
     this.marinatingTimeMinutes = 0,
     this.rating = 0,
-    RecipeCategory? category,
     this.servings = 4,
-  })  : desiredFrequency = desiredFrequency ?? FrequencyType.monthly,
-        category = category ?? RecipeCategory.uncategorized;
+  }) : desiredFrequency = desiredFrequency ?? FrequencyType.monthly;
 
   Map<String, dynamic> toMap() {
     return {
@@ -49,7 +45,6 @@ class Recipe {
       'cook_time_minutes': cookTimeMinutes,
       'marinating_time_minutes': marinatingTimeMinutes,
       'rating': rating,
-      'category': category.value,
       'servings': servings,
     };
   }
@@ -69,7 +64,6 @@ class Recipe {
       cookTimeMinutes: map['cook_time_minutes'] ?? 0,
       marinatingTimeMinutes: map['marinating_time_minutes'] ?? 0,
       rating: map['rating'] ?? 0,
-      category: RecipeCategory.fromString(map['category'] ?? 'uncategorized'),
       servings: map['servings'] ?? 4,
     );
   }
@@ -87,7 +81,6 @@ class Recipe {
     int? cookTimeMinutes,
     int? marinatingTimeMinutes,
     int? rating,
-    RecipeCategory? category,
     int? servings,
   }) {
     return Recipe(
@@ -103,7 +96,6 @@ class Recipe {
       cookTimeMinutes: cookTimeMinutes ?? this.cookTimeMinutes,
       marinatingTimeMinutes: marinatingTimeMinutes ?? this.marinatingTimeMinutes,
       rating: rating ?? this.rating,
-      category: category ?? this.category,
       servings: servings ?? this.servings,
     );
   }

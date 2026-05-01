@@ -68,7 +68,6 @@ class RecipeExportService {
             'cook_time_minutes': recipe.cookTimeMinutes,
             'marinating_time_minutes': recipe.marinatingTimeMinutes,
             'rating': recipe.rating,
-            'category': recipe.category.value,
             'desired_frequency': recipe.desiredFrequency.value,
             'notes': recipe.notes,
             'created_at': recipe.createdAt.toIso8601String(),
@@ -135,7 +134,7 @@ class RecipeExportService {
       final metadata = item['metadata'];
       if (metadata is! Map<String, dynamic>) return false;
       
-      final metadataFields = ['difficulty', 'prep_time_minutes', 'cook_time_minutes', 'rating', 'category', 'desired_frequency'];
+      final metadataFields = ['difficulty', 'prep_time_minutes', 'cook_time_minutes', 'rating', 'desired_frequency'];
       for (final field in metadataFields) {
         if (!metadata.containsKey(field)) return false;
       }

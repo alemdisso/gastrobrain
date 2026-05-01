@@ -76,33 +76,6 @@ class _RecipeCardState extends State<RecipeCard> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Category row
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.category,
-                              size: 16,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            const SizedBox(width: DesignTokens.spacingXs),
-                            Flexible(
-                              child: Text(
-                                widget.recipe.category
-                                    .getLocalizedDisplayName(context),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                      fontWeight: DesignTokens.weightMedium,
-                                    ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: DesignTokens.spacingSm),
                         // Time and rating row
                         Row(
                           children: [

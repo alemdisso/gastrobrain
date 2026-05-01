@@ -35,10 +35,6 @@ void main() async {
     // Only seed if there are no recipes yet
     try {
       await dbHelper.importRecipesFromJson('assets/recipes.json');
-      // Migration 007 runs at DB-open time, before seed data exists on a
-      // fresh install. Re-apply the category→tag backfill now that recipes
-      // are present; INSERT OR IGNORE makes this safe on upgraded DBs too.
-      await dbHelper.backfillCategoryTags();
     } catch (e) {
       //print('Error seeding recipes: $e');
     }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/recipe.dart';
 import '../models/frequency_type.dart';
-import '../models/recipe_category.dart';
 import '../models/tag.dart';
 import '../models/tag_type.dart';
 import '../core/di/service_provider.dart';
@@ -32,7 +31,6 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   late TextEditingController _marinatingTimeController;
   late int _servings;
   late FrequencyType _selectedFrequency;
-  late RecipeCategory _selectedCategory;
   late int _difficulty;
   late int _rating;
   bool _isSaving = false;
@@ -53,7 +51,6 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     _marinatingTimeController = TextEditingController(text: widget.recipe.marinatingTimeMinutes.toString());
     _servings = widget.recipe.servings;
     _selectedFrequency = widget.recipe.desiredFrequency;
-    _selectedCategory = widget.recipe.category;
     _difficulty = widget.recipe.difficulty;
     _rating = widget.recipe.rating;
     _tagRepo = TagRepository(ServiceProvider.database.helper);
@@ -194,7 +191,6 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         cookTimeMinutes: cookTime ?? 0,
         marinatingTimeMinutes: marinatingTime ?? 0,
         rating: _rating,
-        category: _selectedCategory,
         servings: servings,
       );
 
@@ -257,17 +253,6 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
                 value: f, child: Text(f.getLocalizedDisplayName(context))))
             .toList(),
         onChanged: (v) { if (v != null) setState(() => _selectedFrequency = v); },
-      ),
-      const SizedBox(height: 16),
-      DropdownButtonFormField<RecipeCategory>(
-        key: const Key('edit_recipe_category_field'),
-        initialValue: _selectedCategory,
-        decoration: InputDecoration(labelText: l10n.category),
-        items: RecipeCategory.values
-            .map((c) => DropdownMenuItem(
-                value: c, child: Text(c.getLocalizedDisplayName(context))))
-            .toList(),
-        onChanged: (v) { if (v != null) setState(() => _selectedCategory = v); },
       ),
       const SizedBox(height: 16),
       _buildDifficultyField(l10n.difficultyLevel, _difficulty,

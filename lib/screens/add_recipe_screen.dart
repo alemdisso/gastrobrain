@@ -4,7 +4,6 @@ import '../models/recipe.dart';
 import '../models/ingredient.dart';
 import '../models/recipe_ingredient.dart';
 import '../models/frequency_type.dart';
-import '../models/recipe_category.dart';
 import '../models/measurement_unit.dart';
 import '../models/tag.dart';
 import '../models/tag_type.dart';
@@ -44,7 +43,6 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   final _marinatingTimeController = TextEditingController();
   int _servings = 4;
   FrequencyType _selectedFrequency = FrequencyType.monthly;
-  RecipeCategory _selectedCategory = RecipeCategory.uncategorized;
   int _difficulty = 1;
   int _rating = 0;
   bool _isSaving = false;
@@ -218,7 +216,6 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
       cookTimeMinutes: int.tryParse(_cookTimeController.text) ?? 0,
       marinatingTimeMinutes: int.tryParse(_marinatingTimeController.text) ?? 0,
       rating: _rating,
-      category: _selectedCategory,
       servings: _servings,
     );
 
@@ -362,17 +359,6 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                 value: f, child: Text(f.getLocalizedDisplayName(context))))
             .toList(),
         onChanged: (v) { if (v != null) setState(() => _selectedFrequency = v); },
-      ),
-      const SizedBox(height: 16),
-      DropdownButtonFormField<RecipeCategory>(
-        key: const Key('add_recipe_category_field'),
-        initialValue: _selectedCategory,
-        decoration: InputDecoration(labelText: l10n.category),
-        items: RecipeCategory.values
-            .map((c) => DropdownMenuItem(
-                value: c, child: Text(c.getLocalizedDisplayName(context))))
-            .toList(),
-        onChanged: (v) { if (v != null) setState(() => _selectedCategory = v); },
       ),
       const SizedBox(height: 16),
       _buildDifficultyField(l10n.difficultyLevel, _difficulty,

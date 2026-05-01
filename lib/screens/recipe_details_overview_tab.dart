@@ -6,7 +6,7 @@ import '../l10n/app_localizations.dart';
 
 /// Overview tab for RecipeDetailsScreen.
 ///
-/// Displays recipe metadata: category, rating, difficulty, servings,
+/// Displays recipe metadata: rating, difficulty, servings,
 /// prep/cook time, desired frequency, notes, and tags.
 class RecipeDetailsOverviewTab extends StatelessWidget {
   const RecipeDetailsOverviewTab({
@@ -30,15 +30,6 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
             _buildStoryCard(context),
             const SizedBox(height: 20),
           ],
-
-          // Category
-          _buildInfoRow(
-            context,
-            icon: Icons.category,
-            label: AppLocalizations.of(context)!.category,
-            value: recipe.category.getLocalizedDisplayName(context),
-          ),
-          const SizedBox(height: 12),
 
           // Rating
           if (recipe.rating > 0)

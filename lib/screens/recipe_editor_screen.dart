@@ -1331,21 +1331,6 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
                               .titleLarge
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
-                        const SizedBox(height: 8),
-                        // Category badge (compact)
-                        Chip(
-                          avatar: const Icon(Icons.category, size: 16),
-                          label: Text(
-                            recipe.category.getLocalizedDisplayName(context),
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                          backgroundColor: Theme.of(context)
-                              .colorScheme
-                              .primaryContainer
-                              .withValues(alpha: 0.5),
-                          visualDensity: VisualDensity.compact,
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                        ),
                       ],
                     ),
                   ),
