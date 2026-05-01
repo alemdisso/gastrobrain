@@ -74,6 +74,14 @@
   "@minimumRating": {
     "description": "Label for minimum rating filter"
   },
+  "maxDifficulty": "Max Difficulty",
+  "@maxDifficulty": {
+    "description": "Label for maximum difficulty filter (shows recipes at or below this level)"
+  },
+  "minimumFrequency": "Minimum Frequency",
+  "@minimumFrequency": {
+    "description": "Label for minimum frequency filter (shows recipes cooked at this frequency or more often)"
+  },
   "cookingFrequency": "Cooking Frequency",
   "@cookingFrequency": {
     "description": "Label for cooking frequency filter"
@@ -116,17 +124,29 @@
   "@filterByName": {
     "description": "Filter type label for name search"
   },
-  "filterByDifficulty": "Difficulty",
+  "filterByDifficulty": "Max difficulty: {level}",
   "@filterByDifficulty": {
-    "description": "Filter type label for difficulty"
+    "description": "Filter banner label for max difficulty filter",
+    "placeholders": {
+      "level": {
+        "type": "int",
+        "description": "Max difficulty level selected"
+      }
+    }
   },
   "filterByRating": "Rating",
   "@filterByRating": {
     "description": "Filter type label for rating"
   },
-  "filterByFrequency": "Frequency",
+  "filterByFrequency": "Frequency: {name}+",
   "@filterByFrequency": {
-    "description": "Filter type label for cooking frequency"
+    "description": "Filter banner label for minimum frequency filter",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "description": "Name of the minimum frequency selected"
+      }
+    }
   },
   "filterByTags": "Filter by tags",
   "@filterByTags": {

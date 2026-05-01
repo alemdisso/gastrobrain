@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/frequency_type.dart';
 import '../models/recipe.dart';
 import '../models/tag.dart';
 import '../models/tag_type.dart';
@@ -212,25 +213,24 @@ class _RecipesScreenState extends State<RecipesScreen> {
   /// Gets a human-readable description of active filters
   String _getFilterDescription(BuildContext context, RecipeProvider provider) {
     final List<String> filterParts = [];
+    final l10n = AppLocalizations.of(context)!;
 
     // Add search query if present
     if (_searchQuery.isNotEmpty) {
-      filterParts.add(
-          '${AppLocalizations.of(context)!.filterByName}: "$_searchQuery"');
+      filterParts.add('${l10n.filterByName}: "$_searchQuery"');
     }
 
     // Add provider filters
     final filters = provider.filters;
     if (filters.containsKey('difficulty')) {
-      filterParts.add(
-          '${AppLocalizations.of(context)!.filterByDifficulty}: ${filters['difficulty']}');
+      filterParts.add(l10n.filterByDifficulty(filters['difficulty'] as int));
     }
     if (filters.containsKey('rating')) {
-      filterParts.add(
-          '${AppLocalizations.of(context)!.filterByRating}: ${filters['rating']}+');
+      filterParts.add('${l10n.filterByRating}: ${filters['rating']}+');
     }
     if (filters.containsKey('desired_frequency')) {
-      filterParts.add('${AppLocalizations.of(context)!.filterByFrequency}');
+      final freq = FrequencyType.fromString(filters['desired_frequency'] as String);
+      filterParts.add(l10n.filterByFrequency(freq.getLocalizedDisplayName(context)));
     }
 
     final tagFilters = provider.tagFilters;

@@ -1886,6 +1886,9 @@ class DatabaseHelper {
     );
   }
 
+  // Frequency values ordered from most to least frequent — used for "at least X" filter logic.
+  static const _frequencyOrder = ['daily', 'weekly', 'biweekly', 'monthly', 'bimonthly', 'rarely'];
+
   Future<List<Recipe>> getRecipesWithSortAndFilter({
     String? sortBy,
     String? sortOrder,
@@ -1893,16 +1896,14 @@ class DatabaseHelper {
   }) async {
     final Database db = await database;
 
-    // Start building the query
     String query = 'SELECT * FROM recipes';
     List<dynamic> arguments = [];
 
-    // Add filters if any
     if (filters != null && filters.isNotEmpty) {
       List<String> whereConditions = [];
 
       if (filters.containsKey('difficulty')) {
-        whereConditions.add('difficulty = ?');
+        whereConditions.add('difficulty <= ?');
         arguments.add(filters['difficulty']);
       }
 
@@ -1912,21 +1913,53 @@ class DatabaseHelper {
       }
 
       if (filters.containsKey('desired_frequency')) {
-        whereConditions.add('desired_frequency = ?');
-        arguments.add(filters['desired_frequency']);
+        final freq = filters['desired_frequency'] as String;
+        final idx = _frequencyOrder.indexOf(freq);
+        final validFreqs = idx == -1 ? [freq] : _frequencyOrder.sublist(0, idx + 1);
+        final placeholders = List.filled(validFreqs.length, '?').join(', ');
+        whereConditions.add('desired_frequency IN ($placeholders)');
+        arguments.addAll(validFreqs);
       }
 
       if (filters.containsKey('tag_filters')) {
         final tagFilters = filters['tag_filters'] as List<Map<String, String>>;
+
+        // Group by type. Hard types (is_hard=true): AND within type — each tag gets its own EXISTS.
+        // Soft types (is_hard=false): OR within type — one EXISTS with IN clause.
+        final Map<String, List<String>> namesByType = {};
+        final Map<String, bool> isHardByType = {};
         for (final tf in tagFilters) {
-          whereConditions.add(
-            'EXISTS (SELECT 1 FROM recipe_tags rt '
-            'JOIN tags t ON t.id = rt.tag_id '
-            'WHERE rt.recipe_id = recipes.id '
-            'AND t.type_id = ? AND t.name = ?)',
-          );
-          arguments.add(tf['type_id']);
-          arguments.add(tf['name']);
+          final typeId = tf['type_id']!;
+          namesByType.putIfAbsent(typeId, () => []).add(tf['name']!);
+          isHardByType[typeId] = tf['is_hard'] == 'true';
+        }
+
+        for (final entry in namesByType.entries) {
+          final typeId = entry.key;
+          final names = entry.value;
+          final isHard = isHardByType[typeId] ?? false;
+
+          if (isHard) {
+            for (final name in names) {
+              whereConditions.add(
+                'EXISTS (SELECT 1 FROM recipe_tags rt '
+                'JOIN tags t ON t.id = rt.tag_id '
+                'WHERE rt.recipe_id = recipes.id '
+                'AND t.type_id = ? AND t.name = ?)',
+              );
+              arguments.addAll([typeId, name]);
+            }
+          } else {
+            final placeholders = List.filled(names.length, '?').join(', ');
+            whereConditions.add(
+              'EXISTS (SELECT 1 FROM recipe_tags rt '
+              'JOIN tags t ON t.id = rt.tag_id '
+              'WHERE rt.recipe_id = recipes.id '
+              'AND t.type_id = ? AND t.name IN ($placeholders))',
+            );
+            arguments.add(typeId);
+            arguments.addAll(names);
+          }
         }
       }
 

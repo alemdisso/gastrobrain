@@ -61,9 +61,15 @@ class _RecipeFilterDialogState extends State<RecipeFilterDialog> {
       if (_rating != null) 'rating': _rating,
       if (_frequency != null) 'desired_frequency': _frequency,
     };
+    final typeIsHard = {for (final t in widget.tagTypes) t.id: t.isHard};
     final tagFilters = _selectedTagKeys.map((key) {
       final parts = key.split('::');
-      return {'type_id': parts[0], 'name': parts[1]};
+      final typeId = parts[0];
+      return {
+        'type_id': typeId,
+        'name': parts[1],
+        'is_hard': typeIsHard[typeId] == true ? 'true' : 'false',
+      };
     }).toList();
     Navigator.pop(context, RecipeFilterResult(filters: filters, tagFilters: tagFilters));
   }
@@ -111,7 +117,7 @@ class _RecipeFilterDialogState extends State<RecipeFilterDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.difficulty),
+        Text(l10n.maxDifficulty),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: List.generate(5, (i) => IconButton(
@@ -119,7 +125,9 @@ class _RecipeFilterDialogState extends State<RecipeFilterDialog> {
               i < (_difficulty ?? -1) ? Icons.battery_full : Icons.battery_0_bar,
               color: i < (_difficulty ?? -1) ? DesignTokens.success : DesignTokens.textSecondary,
             ),
-            onPressed: () => setState(() => _difficulty = i + 1),
+            onPressed: () => setState(
+              () => _difficulty = (_difficulty == i + 1) ? null : i + 1,
+            ),
           )),
         ),
       ],
@@ -138,7 +146,9 @@ class _RecipeFilterDialogState extends State<RecipeFilterDialog> {
               i < (_rating ?? -1) ? Icons.star : Icons.star_border,
               color: i < (_rating ?? -1) ? Colors.amber : DesignTokens.textSecondary,
             ),
-            onPressed: () => setState(() => _rating = i + 1),
+            onPressed: () => setState(
+              () => _rating = (_rating == i + 1) ? null : i + 1,
+            ),
           )),
         ),
       ],
@@ -148,7 +158,7 @@ class _RecipeFilterDialogState extends State<RecipeFilterDialog> {
   Widget _buildFrequency(AppLocalizations l10n) {
     return DropdownButtonFormField<String>(
       initialValue: _frequency,
-      decoration: InputDecoration(labelText: l10n.cookingFrequency),
+      decoration: InputDecoration(labelText: l10n.minimumFrequency),
       items: [
         DropdownMenuItem(value: null, child: Text(l10n.any)),
         ...FrequencyType.values.map((f) => DropdownMenuItem(
