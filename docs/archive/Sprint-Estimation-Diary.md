@@ -1912,7 +1912,7 @@ Both were targeted fixes in the import service: #332 required explicit cascade p
 1. **The import subsystem had structural coverage gaps**
    - Both P0 bugs existed through ~50 sprints of development without detection
    - Import tests used minimal fixture data that didn't exercise relationship preservation
-   - **Lesson: Import/export integration tests must include full relational data: meals with history, plan relationships, instructions. This is mandatory before 0.2.7 extends the import system.**
+   - **Lesson: Import/export integration tests must include full relational data: meals with history, plan relationships, instructions. This is mandatory before 0.2.8 extends the import system.**
 
 2. **Real seed data is a distinct integration test category that synthetic fixtures miss**
    - 0.2.1's seed data (first real recipe content) exposed bugs that never surfaced in development
@@ -1934,7 +1934,7 @@ Both were targeted fixes in the import service: #332 required explicit cascade p
 
 - This milestone closed Apr 5, 2026 — after 0.2.1 shipped (March 2026)
 - Both bugs were P0-Critical with no safe workaround (users couldn't trust import)
-- **Action item for 0.2.7 (Import & Remaining UX) planning:** Add import integration tests with full relational data (meals, history, plans, instructions) as a prerequisite before extending import features further
+- **Action item for 0.2.8 (Import & Remaining UX) planning:** Add import integration tests with full relational data (meals, history, plans, instructions) as a prerequisite before extending import features further
 
 ---
 
@@ -2755,7 +2755,7 @@ Use historical velocity data to size future milestones and prevent overcommitmen
   - 0.1.15 completed: 2 P0-Critical import bugs (#330, #332) in ~1 day (Apr 5); emergency patch discovered via 0.2.1 seed data
   - **NEW PATTERN: "Zero-features housekeeping sprint"** — all internal obligations batched into one sprint; deferred issues execute cleanly when pre-validated; ~0.19x ratio
   - **NEW INSIGHT: "Real seed data as integration test category"** — import bugs invisible through 50+ sprints of synthetic-fixture testing; surfaced only with full relational data from 0.2.1 seed content
-  - **NEW RULE: Import integration tests must include full relational data** — meals, history, plans, instructions; prerequisite for 0.2.7 (Import & Remaining UX)
+  - **NEW RULE: Import integration tests must include full relational data** — meals, history, plans, instructions; prerequisite for 0.2.8 (Import & Remaining UX)
   - New calibration factors: zero-features housekeeping sprint (~0.19x), emergency P0 patch (~0.10x)
   - Updated velocity reference table (added 0.1.13, 0.1.14; excluded 0.1.15 as non-regular sprint)
   - Cruising velocity extended: validated across 0.1.7b–0.1.14 (7 consecutive sprints at 26-36 pts/week)

@@ -31,7 +31,7 @@ Key deliverables:
 | Sprint total | 31 pts (4.77d estimated) |
 | Buffer | ~0.23d (~5%) — effectively at capacity |
 
-**Capacity warning**: Two 8-pt L-size issues (#324 and #334) occupy 16 of 31 pts and are sequential (can't start #334 without #324 + #333 + #127 complete). If #324 runs over its estimated 1.23d, the entire downstream chain slides. #334 and #335 are the designated pressure valve — they defer cleanly to 0.2.6 without breaking milestone theme.
+**Capacity warning**: Two 8-pt L-size issues (#324 and #334) occupy 16 of 31 pts and are sequential (can't start #334 without #324 + #333 + #127 complete). If #324 runs over its estimated 1.23d, the entire downstream chain slides. #334 and #335 are the designated pressure valve — they defer cleanly to 0.2.7 without breaking milestone theme.
 
 **New architecture risk adjustment for #324**: First-time implementation (3 new DB tables + new UI patterns). Historical calibration for "Feature (model+UI, well-specified)" = 0.51x at current methodology. Estimate of 1.23d × 1/0.51 ≈ 2.4d realistic without dependency acceleration. **Budget 2 days for #324 and sequence accordingly.**
 
@@ -132,7 +132,7 @@ Key deliverables:
 
 ---
 
-### Theme 4: Category Migration — Stretch / Deferrable to 0.2.6 (10 pts)
+### Theme 4: Category Migration — Stretch / Deferrable to 0.2.7 (10 pts)
 
 #### #334 — Migrate recipe category field to meal_role + food_type tags
 - **Story Points**: 8 (L) — **P2**
@@ -140,7 +140,7 @@ Key deliverables:
 - **Type**: Architecture (data migration + model + recommendation + UI)
 - **Dependencies**: #333 (tag types must exist) + #127 (recommendation must be tag-ready) — hard sequential
 - **Risk**: **High** — touches recommendation engine, filters, and UI simultaneously; data migration for all existing recipes
-- **Deferral condition**: If #324 + #333 + #127 consume more than 3.5 days, defer #334 and #335 to 0.2.6. The migration is a correctness improvement, not a user-facing blocker.
+- **Deferral condition**: If #324 + #333 + #127 consume more than 3.5 days, defer #334 and #335 to 0.2.7. The migration is a correctness improvement, not a user-facing blocker.
 - **Scope**:
   - [ ] Map all existing category values to equivalent meal_role and/or food_type tags for all recipes
   - [ ] Update recommendation engine to read tags instead of category
@@ -371,7 +371,7 @@ All migrations must run on Day 1 (#324) or immediately when their issue starts. 
 
 ## Notes & Assumptions
 
-- **#334 and #335 are explicitly deferrable.** If Days 1–4 deliver #324 + #111 + #333 + #127, the milestone theme ("Tagging & Filtering") is complete. The category migration is a correctness improvement that can ship in 0.2.6 without user-facing regression.
+- **#334 and #335 are explicitly deferrable.** If Days 1–4 deliver #324 + #111 + #333 + #127, the milestone theme ("Tagging & Filtering") is complete. The category migration is a correctness improvement that can ship in 0.2.7 without user-facing regression.
 - **#127 has a soft dependency on #333.** Initial implementation uses the existing `category` field as a proxy for meal_role. This is documented in the issue as intentional — tag-based heuristics replace it once #334 migrates the data.
 - **#303 is research only.** 0 pts, no implementation. Can be absorbed into any idle moment.
 - **open-type tag creation pattern (#324)** should reuse the deduplication logic from #320 (ingredient duplicate prevention) directly — same prefix-match + case normalization approach.
