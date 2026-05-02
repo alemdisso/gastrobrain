@@ -23,6 +23,80 @@ class _ToolsScreenState extends State<ToolsScreen> {
   bool _isImportingRecipes = false;
   bool _isExportingRecipes = false;
   bool _isExportingIngredients = false;
+  bool _isInspectingSchema = false;
+
+  Future<void> _inspectSchema() async {
+    if (_isInspectingSchema) return;
+    setState(() => _isInspectingSchema = true);
+    try {
+      final db = await ServiceProvider.database.helper.database;
+
+      final migrations = await db.rawQuery(
+        'SELECT version, description, applied_at FROM schema_migrations ORDER BY version',
+      );
+      final recipeColumns = await db.rawQuery('PRAGMA table_info(recipes)');
+      final tables = await db.rawQuery(
+        "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name",
+      );
+
+      final buf = StringBuffer();
+      buf.writeln('=== schema_migrations ===');
+      if (migrations.isEmpty) {
+        buf.writeln('(empty)');
+      } else {
+        for (final r in migrations) {
+          buf.writeln('v${r['version']}  ${r['description']}  applied: ${r['applied_at']}');
+        }
+      }
+
+      buf.writeln('\n=== recipes columns ===');
+      for (final r in recipeColumns) {
+        buf.writeln('  ${r['name']}  ${r['type']}  notnull=${r['notnull']}  dflt=${r['dflt_value']}');
+      }
+
+      buf.writeln('\n=== tables ===');
+      for (final r in tables) {
+        buf.writeln('  ${r['name']}');
+      }
+
+      final report = buf.toString();
+
+      if (mounted) {
+        await showDialog<void>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Schema Inspector'),
+            content: SingleChildScrollView(
+              child: SelectableText(
+                report,
+                style: const TextStyle(fontFamily: 'monospace', fontSize: 11),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: report));
+                  Navigator.pop(ctx);
+                  SnackbarService.showSuccess(context, 'Copied to clipboard');
+                },
+                child: const Text('Copy & Close'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackbarService.showError(context, 'Schema inspect failed: $e');
+      }
+    } finally {
+      if (mounted) setState(() => _isInspectingSchema = false);
+    }
+  }
 
   Future<void> _exportRecipes() async {
     if (_isExportingRecipes) return;
@@ -582,6 +656,18 @@ class _ToolsScreenState extends State<ToolsScreen> {
               // Developer Tools Section
               _buildSectionHeader(l10n.developerTools, Icons.developer_mode),
               _buildDebugToggleCard(context, l10n),
+              const SizedBox(height: 8),
+              Card(
+                child: ListTile(
+                  leading: Icon(Icons.storage, color: Theme.of(context).colorScheme.primary),
+                  title: const Text('Schema Inspector'),
+                  subtitle: const Text('Show schema_migrations, recipes columns, and tables'),
+                  trailing: _isInspectingSchema
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.chevron_right),
+                  onTap: _inspectSchema,
+                ),
+              ),
 
               // Recipe Management Section
               _buildSectionHeader(l10n.recipeManagement, Icons.restaurant_menu),

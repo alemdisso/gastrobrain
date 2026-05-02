@@ -6,7 +6,7 @@ import '../migration.dart';
 /// and were left for manual re-tagging. This tag provides that target.
 class AddSauceFoodTypeMigration extends Migration {
   @override
-  int get version => 8;
+  int get version => 108;
 
   @override
   String get description => "Add 'sauce' to food_type vocabulary";
