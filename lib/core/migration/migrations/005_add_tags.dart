@@ -14,7 +14,7 @@ import '../migration.dart';
 /// All INSERTs use OR IGNORE so re-running up() is safe.
 class AddTagsMigration extends Migration {
   @override
-  int get version => 5;
+  int get version => 105;
 
   @override
   String get description => 'Add tag_types, tags, and recipe_tags tables';

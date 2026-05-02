@@ -39,11 +39,8 @@ class MigrationRunner {
   /// Check if any migrations need to be run
   Future<bool> needsMigration() async {
     if (_migrations.isEmpty) return false;
-    
-    final currentVersion = await _getCurrentVersion();
-    final latestVersion = _migrations.last.version;
-    
-    return currentVersion < latestVersion;
+    final applied = await _getAppliedVersions();
+    return _migrations.any((m) => !applied.contains(m.version));
   }
 
   /// Get the current database schema version
@@ -57,15 +54,19 @@ class MigrationRunner {
   }
 
   /// Get list of pending migrations
+  ///
+  /// Uses set membership so gaps in applied versions are detected.
+  /// A migration is pending if its version is absent from schema_migrations,
+  /// regardless of whether higher-numbered versions have been recorded.
   Future<List<Migration>> getPendingMigrations() async {
-    final currentVersion = await _getCurrentVersion();
-    return _migrations.where((m) => m.version > currentVersion).toList();
+    final applied = await _getAppliedVersions();
+    return _migrations.where((m) => !applied.contains(m.version)).toList();
   }
 
   /// Get list of applied migrations
   Future<List<Migration>> getAppliedMigrations() async {
-    final currentVersion = await _getCurrentVersion();
-    return _migrations.where((m) => m.version <= currentVersion).toList();
+    final applied = await _getAppliedVersions();
+    return _migrations.where((m) => applied.contains(m.version)).toList();
   }
 
   /// Run all pending migrations
@@ -249,6 +250,16 @@ class MigrationRunner {
         duration_ms INTEGER NOT NULL
       )
     ''');
+  }
+
+  /// Get the set of migration versions already recorded in schema_migrations.
+  Future<Set<int>> _getAppliedVersions() async {
+    try {
+      final rows = await _db.rawQuery('SELECT version FROM schema_migrations');
+      return rows.map((r) => r['version'] as int).toSet();
+    } catch (_) {
+      return {};
+    }
   }
 
   /// Get the current schema version from the database

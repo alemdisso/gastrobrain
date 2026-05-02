@@ -7,7 +7,7 @@ import '../migration.dart';
 /// same ingredient, reducing duplicates from recipe parsing.
 class AddIngredientAliasesMigration extends Migration {
   @override
-  int get version => 2;
+  int get version => 102;
 
   @override
   String get description => 'Add aliases column to ingredients table';

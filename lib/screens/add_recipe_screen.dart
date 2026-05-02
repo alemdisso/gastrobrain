@@ -74,7 +74,9 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         byType[t.id] = await _tagRepo.getTagsByType(t.id);
       }
       if (mounted) setState(() { _tagTypes = types; _tagsByType = byType; });
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Failed to load tag data: $e');
+    }
   }
 
   Future<Tag?> _onCreateTag(String name, String typeId) async {

@@ -21,7 +21,7 @@ import '../migration.dart';
 /// manually-added tags after the fact.
 class MigrateCategoryToTagsMigration extends Migration {
   @override
-  int get version => 7;
+  int get version => 107;
 
   @override
   String get description => 'Migrate recipe category values to meal_role and food_type tags';

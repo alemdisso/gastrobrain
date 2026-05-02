@@ -7,7 +7,7 @@ import '../migration.dart';
 /// Markdown. Stored as TEXT DEFAULT ''; empty string means no story present.
 class AddRecipeStoryMigration extends Migration {
   @override
-  int get version => 4;
+  int get version => 104;
 
   @override
   String get description => 'Add story column to recipes table';
