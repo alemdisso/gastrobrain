@@ -9,7 +9,7 @@ import '../migration.dart';
 /// These types are filtered out of the recipe editor until then.
 class AddMealRoleFoodTypeMigration extends Migration {
   @override
-  int get version => 6;
+  int get version => 106;
 
   @override
   String get description => 'Add meal_role and food_type closed tag types with vocabulary';

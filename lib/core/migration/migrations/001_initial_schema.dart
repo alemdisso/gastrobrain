@@ -15,7 +15,7 @@ import '../migration.dart';
 ///   meal_plan_item_ingredients, meal_ingredients
 class InitialSchemaMigration extends Migration {
   @override
-  int get version => 1;
+  int get version => 101;
 
   @override
   String get description =>
@@ -34,7 +34,7 @@ class InitialSchemaMigration extends Migration {
     // ── Core recipe & ingredient tables ────────────────────────────────────
 
     await db.execute('''
-      CREATE TABLE recipes(
+      CREATE TABLE IF NOT EXISTS recipes(
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         desired_frequency TEXT NOT NULL,
@@ -51,7 +51,7 @@ class InitialSchemaMigration extends Migration {
     ''');
 
     await db.execute('''
-      CREATE TABLE ingredients(
+      CREATE TABLE IF NOT EXISTS ingredients(
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         category TEXT NOT NULL,
@@ -62,7 +62,7 @@ class InitialSchemaMigration extends Migration {
     ''');
 
     await db.execute('''
-      CREATE TABLE recipe_ingredients(
+      CREATE TABLE IF NOT EXISTS recipe_ingredients(
         id TEXT PRIMARY KEY,
         recipe_id TEXT NOT NULL,
         ingredient_id TEXT NOT NULL,
@@ -80,7 +80,7 @@ class InitialSchemaMigration extends Migration {
     // ── Meal recording tables ───────────────────────────────────────────────
 
     await db.execute('''
-      CREATE TABLE meals(
+      CREATE TABLE IF NOT EXISTS meals(
         id TEXT PRIMARY KEY,
         recipe_id TEXT,
         cooked_at TEXT NOT NULL,
@@ -96,7 +96,7 @@ class InitialSchemaMigration extends Migration {
     ''');
 
     await db.execute('''
-      CREATE TABLE meal_recipes(
+      CREATE TABLE IF NOT EXISTS meal_recipes(
         id TEXT PRIMARY KEY,
         meal_id TEXT NOT NULL,
         recipe_id TEXT NOT NULL,
@@ -108,7 +108,7 @@ class InitialSchemaMigration extends Migration {
     ''');
 
     await db.execute('''
-      CREATE TABLE meal_ingredients(
+      CREATE TABLE IF NOT EXISTS meal_ingredients(
         id TEXT PRIMARY KEY,
         meal_id TEXT NOT NULL,
         ingredient_id TEXT,
@@ -124,7 +124,7 @@ class InitialSchemaMigration extends Migration {
     // ── Meal planning tables ────────────────────────────────────────────────
 
     await db.execute('''
-      CREATE TABLE meal_plans(
+      CREATE TABLE IF NOT EXISTS meal_plans(
         id TEXT PRIMARY KEY,
         week_start_date TEXT NOT NULL,
         notes TEXT,
@@ -135,7 +135,7 @@ class InitialSchemaMigration extends Migration {
     ''');
 
     await db.execute('''
-      CREATE TABLE meal_plan_items(
+      CREATE TABLE IF NOT EXISTS meal_plan_items(
         id TEXT PRIMARY KEY,
         meal_plan_id TEXT NOT NULL,
         planned_date TEXT NOT NULL,
@@ -148,7 +148,7 @@ class InitialSchemaMigration extends Migration {
     ''');
 
     await db.execute('''
-      CREATE TABLE meal_plan_item_recipes(
+      CREATE TABLE IF NOT EXISTS meal_plan_item_recipes(
         id TEXT PRIMARY KEY,
         meal_plan_item_id TEXT NOT NULL,
         recipe_id TEXT NOT NULL,
@@ -160,7 +160,7 @@ class InitialSchemaMigration extends Migration {
     ''');
 
     await db.execute('''
-      CREATE TABLE meal_plan_item_ingredients(
+      CREATE TABLE IF NOT EXISTS meal_plan_item_ingredients(
         id TEXT PRIMARY KEY,
         meal_plan_item_id TEXT NOT NULL,
         ingredient_id TEXT,
@@ -176,7 +176,7 @@ class InitialSchemaMigration extends Migration {
     // ── Shopping list tables ────────────────────────────────────────────────
 
     await db.execute('''
-      CREATE TABLE shopping_lists(
+      CREATE TABLE IF NOT EXISTS shopping_lists(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         date_created INTEGER NOT NULL,
@@ -188,7 +188,7 @@ class InitialSchemaMigration extends Migration {
     ''');
 
     await db.execute('''
-      CREATE TABLE shopping_list_items(
+      CREATE TABLE IF NOT EXISTS shopping_list_items(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         shopping_list_id INTEGER NOT NULL,
         ingredient_name TEXT NOT NULL,
@@ -203,7 +203,7 @@ class InitialSchemaMigration extends Migration {
     // ── Recommendation history ──────────────────────────────────────────────
 
     await db.execute('''
-      CREATE TABLE recommendation_history(
+      CREATE TABLE IF NOT EXISTS recommendation_history(
         id TEXT PRIMARY KEY,
         result_data TEXT NOT NULL,
         created_at TEXT NOT NULL,
@@ -288,69 +288,69 @@ class InitialSchemaMigration extends Migration {
   Future<void> _createIndexes(DatabaseExecutor db) async {
     // Recipes
     await db.execute(
-        'CREATE INDEX idx_recipes_category ON recipes(category)');
+        'CREATE INDEX IF NOT EXISTS idx_recipes_category ON recipes(category)');
     await db.execute(
-        'CREATE INDEX idx_recipes_frequency ON recipes(desired_frequency)');
-    await db.execute('CREATE INDEX idx_recipes_rating ON recipes(rating)');
+        'CREATE INDEX IF NOT EXISTS idx_recipes_frequency ON recipes(desired_frequency)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_recipes_rating ON recipes(rating)');
     await db.execute(
-        'CREATE INDEX idx_recipes_difficulty ON recipes(difficulty)');
+        'CREATE INDEX IF NOT EXISTS idx_recipes_difficulty ON recipes(difficulty)');
 
     // Meals
     await db.execute(
-        'CREATE INDEX idx_meals_recipe_id ON meals(recipe_id)');
+        'CREATE INDEX IF NOT EXISTS idx_meals_recipe_id ON meals(recipe_id)');
     await db.execute(
-        'CREATE INDEX idx_meals_cooked_at ON meals(cooked_at)');
+        'CREATE INDEX IF NOT EXISTS idx_meals_cooked_at ON meals(cooked_at)');
     await db.execute(
-        'CREATE INDEX idx_meals_successful ON meals(was_successful)');
+        'CREATE INDEX IF NOT EXISTS idx_meals_successful ON meals(was_successful)');
 
     // Ingredients
     await db.execute(
-        'CREATE INDEX idx_ingredients_category ON ingredients(category)');
+        'CREATE INDEX IF NOT EXISTS idx_ingredients_category ON ingredients(category)');
     await db.execute(
-        'CREATE INDEX idx_ingredients_protein_type ON ingredients(protein_type)');
+        'CREATE INDEX IF NOT EXISTS idx_ingredients_protein_type ON ingredients(protein_type)');
 
     // Recipe ingredients
     await db.execute(
-        'CREATE INDEX idx_recipe_ingredients_recipe_id ON recipe_ingredients(recipe_id)');
+        'CREATE INDEX IF NOT EXISTS idx_recipe_ingredients_recipe_id ON recipe_ingredients(recipe_id)');
     await db.execute(
-        'CREATE INDEX idx_recipe_ingredients_ingredient_id ON recipe_ingredients(ingredient_id)');
+        'CREATE INDEX IF NOT EXISTS idx_recipe_ingredients_ingredient_id ON recipe_ingredients(ingredient_id)');
 
     // Meal plans
     await db.execute(
-        'CREATE INDEX idx_meal_plans_week_start ON meal_plans(week_start_date)');
+        'CREATE INDEX IF NOT EXISTS idx_meal_plans_week_start ON meal_plans(week_start_date)');
 
     // Meal plan items
     await db.execute(
-        'CREATE INDEX idx_meal_plan_items_plan_id ON meal_plan_items(meal_plan_id)');
+        'CREATE INDEX IF NOT EXISTS idx_meal_plan_items_plan_id ON meal_plan_items(meal_plan_id)');
     await db.execute(
-        'CREATE INDEX idx_meal_plan_items_date ON meal_plan_items(planned_date)');
+        'CREATE INDEX IF NOT EXISTS idx_meal_plan_items_date ON meal_plan_items(planned_date)');
     await db.execute(
-        'CREATE INDEX idx_meal_plan_items_type ON meal_plan_items(meal_type)');
+        'CREATE INDEX IF NOT EXISTS idx_meal_plan_items_type ON meal_plan_items(meal_type)');
 
     // Junction tables
     await db.execute(
-        'CREATE INDEX idx_meal_plan_item_recipes_item_id ON meal_plan_item_recipes(meal_plan_item_id)');
+        'CREATE INDEX IF NOT EXISTS idx_meal_plan_item_recipes_item_id ON meal_plan_item_recipes(meal_plan_item_id)');
     await db.execute(
-        'CREATE INDEX idx_meal_plan_item_recipes_recipe_id ON meal_plan_item_recipes(recipe_id)');
+        'CREATE INDEX IF NOT EXISTS idx_meal_plan_item_recipes_recipe_id ON meal_plan_item_recipes(recipe_id)');
     await db.execute(
-        'CREATE INDEX idx_meal_recipes_meal_id ON meal_recipes(meal_id)');
+        'CREATE INDEX IF NOT EXISTS idx_meal_recipes_meal_id ON meal_recipes(meal_id)');
     await db.execute(
-        'CREATE INDEX idx_meal_recipes_recipe_id ON meal_recipes(recipe_id)');
+        'CREATE INDEX IF NOT EXISTS idx_meal_recipes_recipe_id ON meal_recipes(recipe_id)');
 
     // Simple sides
     await db.execute(
-        'CREATE INDEX idx_meal_plan_item_ingredients_item_id ON meal_plan_item_ingredients(meal_plan_item_id)');
+        'CREATE INDEX IF NOT EXISTS idx_meal_plan_item_ingredients_item_id ON meal_plan_item_ingredients(meal_plan_item_id)');
     await db.execute(
-        'CREATE INDEX idx_meal_ingredients_meal_id ON meal_ingredients(meal_id)');
+        'CREATE INDEX IF NOT EXISTS idx_meal_ingredients_meal_id ON meal_ingredients(meal_id)');
 
     // Shopping lists
     await db.execute(
-        'CREATE INDEX idx_shopping_list_items_list_id ON shopping_list_items(shopping_list_id)');
+        'CREATE INDEX IF NOT EXISTS idx_shopping_list_items_list_id ON shopping_list_items(shopping_list_id)');
 
     // Recommendation history
     await db.execute(
-        'CREATE INDEX idx_recommendation_history_created_at ON recommendation_history(created_at)');
+        'CREATE INDEX IF NOT EXISTS idx_recommendation_history_created_at ON recommendation_history(created_at)');
     await db.execute(
-        'CREATE INDEX idx_recommendation_history_context ON recommendation_history(context_type)');
+        'CREATE INDEX IF NOT EXISTS idx_recommendation_history_context ON recommendation_history(context_type)');
   }
 }

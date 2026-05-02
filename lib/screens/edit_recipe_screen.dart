@@ -73,7 +73,9 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
           _selectedTagIds = existing.map((t) => t.id).toList();
         });
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Failed to load tag data: $e');
+    }
   }
 
   Future<Tag?> _onCreateTag(String name, String typeId) async {

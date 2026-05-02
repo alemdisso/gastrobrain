@@ -6,7 +6,7 @@ import '../migration.dart';
 /// time. Stored as INTEGER DEFAULT 0; 0 means the recipe has no marinating step.
 class AddMarinatingTimeMigration extends Migration {
   @override
-  int get version => 3;
+  int get version => 103;
 
   @override
   String get description => 'Add marinating_time_minutes column to recipes table';
