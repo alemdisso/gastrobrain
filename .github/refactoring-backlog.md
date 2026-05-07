@@ -23,3 +23,4 @@ Auto-flagged by the Code Quality Watchdog. Review during Sprint Planning as part
 - [ ] 🔴 `lib/screens/ingredient_detail_screen.dart` — file length 424 lines (threshold: 400 for screens) — flagged during: #198 Phase 1 analysis — 2026-04-22
 - [ ] 🔴 `lib/widgets/add_new_ingredient_dialog.dart` — file length 383 lines (threshold: 250 for widgets) — flagged during: #320 duplicate detection implementation — 2026-04-22 — contains business logic (DB access, service calls) that should move to a screen-level controller
 - [ ] 🟡 `lib/widgets/tag_picker_widget.dart` — file length 155 lines (threshold: 150 for widgets) — flagged during: #324 tagging system implementation — 2026-04-27
+- [ ] 🔴 `lib/widgets/weekly_calendar_widget.dart` — file length 669 lines (threshold: 250 for widgets) — flagged during: issue creation analysis — 2026-05-06

@@ -2366,6 +2366,231 @@ Apr 25 (Sat) │ ████████████  #291 + #170 + #360–#363
 - Unplanned: #360–#363 ingredient usage list cluster (in-context discovery); to-taste bugfix (found during cluster testing)
 - Apr 25 used as final sprint day (Saturday); compensated for 2 mid-week public holidays
 
+### 0.2.5 - Tagging & Filtering
+
+**Sprint Duration:** April 26–May 1, 2026
+**Calendar Days:** 6
+**Active Working Days:** 5 (Apr 26: sprint planning docs only; Apr 27–May 1: active coding + release)
+**Planned Issues:** #324, #333, #334, #335, #111, #127, #303 (research); #372 added mid-sprint Apr 27 as P1 bug
+**Completed Issues:** 8 (all planned + #372)
+
+> Commit analysis via `scripts/analyze_sprint_commits.py --since 2026-04-26 --until 2026-05-01`. Untagged commits on Apr 29 (sauce migration 008, l10n, tag UI wiring — 305 lines) and Apr 30 (backfill seeds fix — 35 lines) are attributed to the tag expansion chain (#333/#334/#335) in the variance section.
+
+#### Estimation vs Actual
+
+| Issue | Title | Type | Est Pts | Est Days (÷6.5) | Weighted Actual | Ratio | Assessment |
+|-------|-------|------|---------|-----------------|-----------------|-------|------------|
+| #324 | Recipe tagging system | Feature (model+UI+migration) | 8 | 1.23d | 0.94d* | 0.76x | ✅ On target |
+| #372† | Story column validation fix | Bug (migration, initial) | 2 | 0.31d | 0.06d* | 0.19x | ⚡ Faster (symptom fix only; root cause missed — see 0.2.6) |
+| #333 | Add meal_role + food_type tag types + vocabulary | Feature (data+migration) | 3 | 0.46d | ~1.11d‡ | 2.41x | 🔴 Over (underestimated vocabulary scope; untagged sauce migration + l10n absorbed) |
+| #334 | Migrate category → meal_role + food_type | Chore (data migration) | 8 | 1.23d | ~0.55d‡ | 0.45x | ⚡ Faster (chain compounding after #333; SQL + UI hookup only) |
+| #127 | Meal type recommendation profiles | Feature (algorithm) | 5 | 0.77d | ~0.45d* | 0.58x | ⚡ Faster |
+| #335 | Deprecate + remove category field | Chore (cleanup) | 2 | 0.31d | ~0.93d‡ | 3.0x | 🔴 Over (445-line enum sweep + backfill seeds fix; underestimated blast radius) |
+| #111 | Range-based filtering + tag filtering | Feature (UI+query) | 5 | 0.77d | 1.0d | 1.30x | ✅ On target (P1 priority; correctly scoped) |
+| #303 | Research: servings as recommendation factor | Research | 1 | 0.15d | 0d | 0x | ⚡ Faster (closed as design decision during #127; no code) |
+| **TOTAL** | | | **34** | **5.23d** | **~5.5d eff.** | **~1.05x** | ✅ |
+
+*\* Weighted by line proportions on shared day (script output).*
+*† #372 initial fix (Apr 27, 0.06d) targeted the story column validation symptom. Root cause — migration numbering collision with legacy schema_migrations v1–v11 — was diagnosed post-0.2.5 and fixed in 0.2.6. Combined #372 effort across both sprints: ~1.1d for a 2pt estimate (3.5x total).*
+*‡ Adjusted to include untagged commits on the same day that belong to this work chain (see variance).*
+
+#### Accuracy by Type
+
+| Type | Issues | Est Pts | Est Days (÷6.5) | Effective Actual | Avg Ratio | Verdict |
+|------|--------|---------|-----------------|------------------|-----------|---------|
+| Feature (large, model+UI+migration) | #324 | 8 | 1.23d | ~0.94d | 0.76x | ✅ On target — solid estimate for a broad feature |
+| Feature (algorithm, recommendation) | #127 | 5 | 0.77d | ~0.45d | 0.58x | ⚡ Faster — well-specified; existing score-factor pattern |
+| Feature (UI+query, filtering) | #111 | 5 | 0.77d | 1.0d | 1.30x | ✅ On target — OR/AND logic added complexity but absorbed |
+| Tag chain (#333→#334→#335) | #333, #334, #335 | 13 | 2.0d | ~2.59d eff. | 1.30x | 🟡 Slight over — #333 underestimated (vocabulary scope); #334 fast (chain compounding); #335 underestimated (enum sweep) |
+| Bug (migration, initial/symptom) | #372 | 2 | 0.31d | 0.06d | 0.19x | ⚡ Faster — but incomplete; root cause missed, see 0.2.6 |
+| Research | #303 | 1 | 0.15d | 0d | 0x | ⚡ Faster — design decision only |
+
+**Overall:** 34 pts / ~5.5d effective → **~1.05x** — essentially at cruising pace. The tag vocabulary chain (#333→#334→#335) traded hours internally (underestimated vocabulary scope in #333, overdelivered on #334 via chain compounding, underestimated enum sweep in #335) but landed within 30% total. The hidden cost was the silent migration failure baked into the architecture, which did not surface until post-release.
+
+#### Variance Analysis
+
+**#333 significantly underestimated (2.41x adjusted)**
+- Estimated at 3 pts as "add two new tag types." Actual scope: two new tag types + 17 seed vocabulary items + two new migrations + UI wiring for tag pickers in create/edit screens + sauce vocabulary addition (migration 008, discovered in-context Apr 29).
+- The Apr 29 untagged commits (feat: add sauce to food_type vocabulary, 114 lines; fix: localize meal_role and food_type tag names, 106 lines; feat: expose tags in create/edit, 85 lines = 305 lines untagged) belong to this chain and were missed by the estimator.
+- **Lesson: "Add N tag types with vocabulary" should be estimated as 5–8 pts when the type is new (includes migrations, seed data, UI wiring, l10n). 3 pts is appropriate only for adding individual tags to an existing type.**
+
+**#334 fast despite large estimate (0.45x)**
+- Estimated at 8 pts as the "migration and UI rewrite" for category → tag. In practice, #333 had already created all the infrastructure (tag types, migrations, pickers). #334 was a SQL migration for existing data + routing the existing picker to replace the category dropdown. Chain compounding: the anchor (#333) bore the real cost.
+- **Lesson: When a chore is the direct successor of a feature that created the required infrastructure, discount the chore estimate by 50–60%. The "migration" part is data-only; no new code patterns needed.**
+
+**#335 underestimated (3.0x adjusted)**
+- Estimated at 2 pts as "remove category field." Actual scope: 443-line enum removal sweep across 21 files (the `RecipeCategory` enum was referenced throughout the codebase), plus a backfill seeds fix (Apr 30, 35 lines untagged) to remap seeded recipe data. The enum's blast radius was wider than expected.
+- **Lesson: "Remove an enum used throughout the codebase" is not a chore — it's a refactor. Audit call sites before estimating. If an enum appears in >5 files, estimate at 3–5 pts.**
+
+**#372 initial fix — fastest issue, wrong outcome (0.19x, but symptom only)**
+- Apr 27 fix was 104 lines targeting the `004_add_recipe_story.dart` validation: the story column migration was failing silently because `validate()` returned false when the column existed. Fix seemed correct and closed the visible symptom (recipe save error in 0.2.4).
+- Root cause — migration runner using `MAX(version)` detection, which silently skipped all new migrations (numbered 2–8) on devices with legacy schema_migrations (v1–v11) — was invisible to the symptom-level fix. No test existed for the collision scenario.
+- **Lesson: When a migration-related bug fix touches only the migration's validate() or up() logic without examining the runner's detection strategy, treat it as provisional. The root cause may be architectural.**
+
+**#303 closed as design decision (0d)**
+- Servings data considered as a recommendation factor during #127 implementation. Decided: servings data is better used for scaling display than weighting recommendations (risk of penalizing large-batch recipes). Closed as a planning decision with no code. Cost: ~30 min of design thinking already absorbed into #127.
+- **Lesson: P3 research issues with no code output should be estimated at 1 pt max; they often resolve to a design decision made during the adjacent feature sprint.**
+
+**Silent migration failure: the invisible cost of 0.2.5**
+- All 0.2.5 migrations (005–008: tags, meal_role, food_type, sauce) were numbered 2–8. On existing devices, `schema_migrations` contained rows v1–v11 from before the #292 consolidation. The migration runner used `MAX(version)` → `MAX(11) >= 8` → all new migrations silently skipped. Tags, meal_role, food_type: broken on all existing devices since 0.2.4, with no error or crash.
+- This was not detectable by the sprint's test suite because `migration_consolidation_test.dart` Scenario 3 tested the old-device path correctly for the post-consolidation world (one migration, version=1) but did not model the "what if new migrations have numbers below legacy ceiling" scenario.
+- **Lesson: After any migration consolidation, new migrations must be assigned numbers above the legacy ceiling. This is now documented in `docs/workflows/DATABASE_MIGRATION_WORKFLOW.md` and enforced by convention (101+ namespace). The absence of a scenario test for "new migration numbered below legacy MAX" is what allowed this to ship silently.**
+
+#### Working Pattern Observations
+
+```
+Apr 26 (Sun) │ sprint planning (docs only — 7f4ad26 sprint plan commit)
+Apr 27 (Mon) │ #324 (1613 lines, 0.94d) + #372-initial (104 lines, 0.06d) — tagging system anchor day
+Apr 28 (Tue) │ #333 (262 lines, 1.0d) — tag types + vocabulary + migrations
+Apr 29 (Wed) │ #127 (472 lines) + #334 (270 lines) + untagged sauce/l10n/expose (305 lines) — tag migration + algorithm
+Apr 30 (Thu) │ #335 (450 lines) + untagged backfill (35 lines) — enum removal sweep
+May 1  (Fri) │ #111 (271 lines) + release prep + #303 closed (0d)
+```
+
+**Patterns:**
+- Anchor day (Apr 27) delivered the largest single piece of work (#324, 8 pts, 1,613 lines) — confirms large well-specified features execute cleanly as day-1 anchors
+- Chain sequencing (#333 → #334 → #335) across Apr 28–30 was correct; each day built on the previous day's context
+- Untagged work on Apr 29 and Apr 30 (340 lines combined) represents real effort not captured in estimates; these should have been tagged commits
+- P1 feature (#111) delivered on the final day after the full tag chain was stable — correct dependency ordering
+
+#### Lessons Learned
+
+1. **Tag vocabulary additions are more expensive than tag type additions**
+   - "Add a tag type" is a data + migration task (fast). "Add a tag type with full vocabulary" includes seeding 7–17 items, l10n strings for each, and UI wiring for pickers. The scope difference is 3x.
+   - **Lesson: Estimate tag vocabulary additions at 5–8 pts. Reserve 2–3 pt estimates for adding individual tags to an existing type with established patterns.**
+
+2. **Enum removal blast radius requires upfront audit**
+   - `RecipeCategory` was referenced in 21 files. Removing it was a 443-line sweep, not a 2-point chore. The estimate didn't account for the enum's reach.
+   - **Lesson: Before estimating "remove X," run a grep for X and count unique files. >5 files = refactor, not chore. Estimate 3–5 pts.**
+
+3. **Symptom-level bug fixes on migration issues deserve architectural review**
+   - #372's Apr 27 fix was correct for the story column symptom but didn't examine the detection strategy. A single question — "does the runner handle the case where new migration numbers are below legacy DB state?" — would have surfaced the root cause.
+   - **Lesson: For any migration bug fix, add a checklist item: "Does this fix the root cause or the visible symptom? Is the detection/validation strategy sound for the expected DB state range?"**
+
+4. **Untagged commits on the same day as tagged work inflate the tagged issue's apparent effort**
+   - Apr 29 had 305 lines of untagged work alongside #127 and #334. The script attributes the full day proportionally to tagged issues only, but effective effort for the day was higher than the weighted estimate.
+   - **Lesson: Tag all commits at the time of writing them. Retroactive tagging produces inaccurate weighted-day splits and under-represents the total sprint effort.**
+
+5. **Research issues with no code are near-zero cost when run alongside the adjacent feature**
+   - #303 (servings factor research) was resolved in ~30 min of design discussion during #127 implementation. No separate sprint allocation needed.
+   - **Lesson: P3 research issues can be batched as 0.5pt "design decision" tasks alongside the feature that makes them concrete. Scheduling them as separate items wastes issue overhead.**
+
+#### Recommendations for Future Sprints
+
+| Finding | Adjustment |
+|---------|------------|
+| Tag vocabulary additions underestimated at 3 pts | Estimate "add tag type + vocabulary + UI wiring" at 5–8 pts |
+| Enum removal blast radius | Grep for call sites before estimating; >5 files = refactor (3–5 pts) |
+| Migration bug fixes: symptom vs root cause | Add checklist: "Is the detection strategy sound for full DB state range?" |
+| Untagged commits inflate weighted-day splits | Tag every commit at write time, no exceptions |
+| Research issues adjacent to feature sprint | Schedule as 0.5pt "design decision" batch alongside anchor feature |
+
+#### Notes
+
+- Sprint confirmed-complete: 34 pts / ~5.5d effective → **~6.2 pts/day → ~31 pts/week** (cruising baseline)
+- Milestone shipped: recipe tagging system (#324), meal_role + food_type tag vocabulary (#333), category → tag migration (#334), category field removal (#335), range-based + tag filtering (#111), meal-type recommendation profiles (#127), servings factor research decision (#303), story column validation fix (#372-initial)
+- Post-release: root cause of #372 discovered — migration numbering collision; emergency 0.2.6 fix required (see next entry)
+- Untracked unplanned work: sauce food-type vocabulary (migration 008, Apr 29, 114 lines); tag l10n + UI wiring commits (305 lines combined across Apr 29–30)
+- Cruising velocity sustained: ~31 pts/week — consistent with 0.2.4 and prior cruising-mode sprints
+
+---
+
+### 0.2.6 - Schema Migration Fix (Emergency Release)
+
+**Release Date:** May 2, 2026 (day after 0.2.5)
+**Sprint Type:** Emergency hotfix — not a planned sprint
+**Root Cause Discovered:** Post-0.2.5 release, while investigating recipe edit failures on an existing-data device
+
+> This was not a standard development sprint. It is recorded here for completeness and calibration. Format matches 0.1.15 (emergency P0 patch).
+
+#### What Happened
+
+After 0.2.5 shipped, investigation of recipe edit failures (tags not saving, `meal_role` and `food_type` fields empty on existing devices) revealed a silent migration failure:
+
+- The #292 consolidation (0.1.14) had set `InitialSchemaMigration.version = 1`. New post-consolidation migrations (tags, marinating time, aliases, etc.) were numbered 2–8.
+- The `MigrationRunner` used `MAX(version)` to detect pending work.
+- Existing users had `schema_migrations` rows v1–v11 from before the consolidation. `MAX(11) >= 8` → all 0.2.5 migrations silently skipped on every existing device.
+- The Apr 27 fix (#372-initial) had corrected the story column `validate()` logic but never examined the runner's detection strategy — fixing the visible symptom without reaching the architectural cause.
+
+#### Fix
+
+| Commit | Change | Lines |
+|--------|--------|-------|
+| `b1fd710` | Renumber migrations 1–8 → 101–108; switch `MigrationRunner` to set-membership detection (`_getAppliedVersions`); add `IF NOT EXISTS` to migration 101; add Schema Inspector to developer tools | 215 |
+| `73d1522` | Expand `DatabaseBackupService.restoreDatabaseFromString()` to cover tag tables (`recipe_tags`, `tags`, `tag_types`) | 88 |
+
+**Total May 2 effort:** ~1.5d (root cause investigation + fix implementation + Schema Inspector addition + backup service update + release overhead)
+
+#### Estimation vs Actual (combined #372)
+
+| Sprint | Phase | Est Pts | Actual Days | Assessment |
+|--------|-------|---------|-------------|------------|
+| 0.2.5 | Symptom fix (story column validate()) | 2 | 0.06d | ⚡ Fast — but wrong fix |
+| 0.2.6 | Root cause fix (runner + renumbering + tooling) | — | ~1.5d | Unplanned emergency |
+| **Combined** | | **2** | **~1.56d** | **🔴 3.5x** vs original 2pt estimate |
+
+The original 2-point estimate priced the visible bug. The architectural root cause cost ~3× more than the symptom fix. At 6.5 pts/day, the actual 0.2.6 work represents approximately **3–4 story points** of unplanned debt.
+
+#### Test Debt Generated
+
+The `b1fd710` renumbering changed `InitialSchemaMigration.version` from 1 → 101 but did not update `migration_consolidation_test.dart` Scenario 3, which asserted `getLatestVersion() == 1` and seeded `schema_migrations` with v1–v11. The `73d1522` backup service expansion did not update the test `setUp` to include tag migrations.
+
+Result: 6 tests broken on `develop` after May 2. Tracked as #378 and #379 (both added to 0.2.7).
+
+**Lesson: Version number changes in migration files and service table scope changes are atomic with their tests. The commit that changes the version or the scope must update the tests in the same PR.**
+
+#### Working Pattern Observations
+
+```
+May 1  (Thu) │ 0.2.5 ships; recipe edit failures reported on existing-data device
+May 2  (Fri) │ Root cause investigation → #372 comprehensive fix (215 lines) + Schema Inspector
+             │ + backup service expansion (88 lines, untagged) + release + milestone rename
+```
+
+The entire 0.2.6 lifecycle — discovery, diagnosis, fix, test (Schema Inspector), release — completed in a single day. This reflects:
+- A well-scoped root cause (single architectural assumption in the runner)
+- Schema Inspector providing immediate production-DB validation
+- Git Flow hotfix pattern executing without friction
+
+#### Lessons Learned
+
+1. **"Symptom ≠ root cause" in migration bugs requires active verification**
+   - The Apr 27 fix looked correct in isolation. The runner's detection strategy was never questioned. A single test scenario — "new migration numbered below legacy MAX" — would have caught it.
+   - **Lesson: Migration bug fixes require a runner-level review: "What is the detection strategy, and does it hold under the full range of possible DB states?" Add this as a required checklist step in `DATABASE_MIGRATION_WORKFLOW.md`.**
+
+2. **The 101+ namespace convention prevents this class of bug permanently**
+   - Renumbering to 101+ ensures new migrations can never collide with legacy v1–v11 state. Set-membership detection ensures no MAX-based blind spots. Combined, these changes eliminate the failure mode entirely for future migrations.
+   - **Lesson: This is now documented and mandatory. The cost of getting it right was one emergency release; the cost of ignoring it would compound with every new migration.**
+
+3. **Schema Inspector was the right response to "we can't see the production DB"**
+   - Adding a production DB diagnostic tool as part of the fix — not as a future issue — was the correct priority call. It enabled immediate validation on the affected device and provides ongoing visibility for future migration issues.
+   - **Lesson: When a bug class is "invisible at runtime," build observability into the fix itself. Don't file "add diagnostic tool" as a backlog item.**
+
+4. **Emergency releases generate test debt when commits are not atomic**
+   - `73d1522` expanded the backup service scope but didn't update the test harness. This was committed under time pressure on the same day as the emergency fix. The test debt materialized as 6 broken tests on `develop`.
+   - **Lesson: Even under time pressure, a service expansion that touches table scope is not complete until the test setUp matches the new scope. Two broken test suites are a higher cost than the 10 minutes it would have taken to update `setUp` atomically.**
+
+5. **Emergency release cadence: ~1.5d total for a well-diagnosed architectural fix**
+   - Investigation + fix + Schema Inspector + backup update + release = ~1.5d. This matches the 0.1.15 calibration (emergency P0 patch at ~0.10x, ~1.0d). The extra 0.5d reflects the architectural scope (runner redesign vs. a data-only fix).
+   - **Lesson: Budget 1.0–1.5d for an emergency release when root cause is clearly diagnosed. Add 0.5d if the fix requires architectural changes (runner strategy, service scope). The release process itself is fast when Git Flow is followed.**
+
+#### Recommendations for Future Sprints
+
+| Finding | Adjustment |
+|---------|------------|
+| Migration bug fix: symptom vs root cause | Require runner-level review in migration bug fix checklist |
+| 101+ namespace | Mandatory for all new migrations; documented in DATABASE_MIGRATION_WORKFLOW.md |
+| Service scope expansion requires atomic test update | Never commit a service table scope change without updating setUp in the same commit |
+| Emergency release calibration | Budget 1.0–1.5d; architectural root cause adds 0.5d vs data-only fix |
+
+#### Notes
+
+- Emergency release: single fix day (May 2, 2026); released as hotfix from develop per Git Flow
+- Not counted in velocity calculations (non-regular sprint)
+- Combined #372 effort (0.2.5 + 0.2.6): ~1.56d for a 2pt estimate → **~3.5x** — the migration architecture assumption was the unpriced risk
+- Post-release test debt: #378 (migration consolidation test Scenario 3), #379 (backup service test setUp) — both assigned to 0.2.7
+- Documentation created: `docs/workflows/DATABASE_MIGRATION_WORKFLOW.md` — migration numbering convention, set-membership detection model, atomicity rules
+
 ---
 
 ## Cumulative Metrics
@@ -2392,11 +2617,14 @@ Apr 25 (Sat) │ ████████████  #291 + #170 + #360–#363
 | 0.2.2 | 24 | ~2.7d | 0.11x | 6.3 | Algorithm + parser batch cluster; validation debt on #341 (→ #351, #352) |
 | 0.2.3 | 33 | ~3.0d tracked / ~3.4d effective | 0.10x | 9.7 | Execution-mode sprint: 6 bugs + 4 UX features + P1 feature; validation debt repaid; #354 discovered post-release |
 | 0.2.4 | 30 | ~4.0d | ~0.87x§ | 7.5 | Execution mode: dependency chains, holiday-interrupted week, stretch goal delivered; #354 only overrun (platform complexity) |
+| 0.2.5 | 34 | ~5.5d eff. | ~1.05x§ | 6.2 | Tagging system sprint; tag chain (#333→#334→#335) traded hours internally; silent migration failure (numbering collision) discovered post-release → 0.2.6 |
+| 0.2.6 | n/a‖ | ~1.5d | n/a | n/a | Emergency architectural fix: migration numbering collision; set-membership runner; Schema Inspector; test debt generated (#378, #379) |
 
 *\* 0.1.7a weighted-days methodology underrepresents actual effort due to shared day with 0.1.7b. Developer estimates ~0.5 days actual effort. Excluded from velocity calculations.*
 *† 0.1.14 ratio is a retroactive estimate; no commit-level weighted analysis available. Calculated as active days / expected days at cruising velocity.*
 *‡ 0.1.15 issues were not pre-estimated (P0 emergency patch); ratio not applicable.*
 *§ From 0.2.4 onward, ratio = actual days ÷ (estimated pts ÷ 6.5). Prior entries used 1pt = 1 day baseline — not directly comparable.*
+*‖ 0.2.6 was an emergency hotfix release; issues were not pre-estimated. Not counted in velocity calculations.*
 
 **Critical Insights:**
 - **Cruising velocity: 30 points/week** — validated across 0.1.7b–0.2.4 (10 consecutive sprints at 26-48 pts/week); execution-mode sprints (pure bugs + well-specified features, no discovery) can spike above 40 pts/week
@@ -2416,6 +2644,9 @@ Apr 25 (Sat) │ ████████████  #291 + #170 + #360–#363
 - **Dependency chains have diminishing complexity (0.1.12)** — #304 (anchor, 3pts, 0.22x) established the pattern; #305 and #306 followed it at ~0.16x; discount 2nd+ chain issues by 30-50%
 - **UI micro-issues are uncalibrateable at 1pt floor (0.1.12)** — bundle as "quick wins block" with 0.5pt flat budget; individual Fibonacci estimation adds no precision for <30-line changes
 - **Pre-sprint planning/testing day is standard overhead** — confirmed in 0.1.10 (Feb 16) and 0.1.12 (Feb 26); budget +0.5d per sprint as standard investment
+- **Migration bugs have two prices: symptom and root cause (0.2.5/0.2.6)** — the visible symptom can be fast to fix (0.06d); the architectural root cause can cost 25× more (1.5d). Migration bug fixes require a runner-level review: "Is the detection strategy sound for all possible DB states?" Skipping this review guarantees a follow-up emergency release
+- **Silent failures in migration architecture leave no trace (0.2.5)** — `MAX(version)` detection silently skipped 8 migrations across all existing devices; tags, recipe editing, meal_role: broken since 0.2.4 with no error, no crash, no log. The cost of an architectural assumption that goes untested is an unplanned emergency sprint
+- **Cruising velocity sustained through 0.2.5** — 0.2.5 delivered at ~1.05x (31 pts/week); velocity remains stable across 0.2.4–0.2.5 despite the hidden migration architecture risk
 
 ### Type-Based Calibration Factors
 
@@ -2460,6 +2691,11 @@ Use these multipliers when estimating future work:
 | Bug (platform/permission, new packages required) | 1 issue | 2.27x* | 2.0-2.5x* | **NEW (0.2.4 methodology)**: SAF + new packages + platform testing; estimate at 3–5 pts at current velocity (6.5 pts/day); 2 pts implies 0.31d but actual ~0.70d (0.2.4: #354) |
 | Feature (model+UI, within-sprint dependency — same-session follow-on) | 1 issue | 0.49x* | ~0.5x* | **NEW (0.2.4 methodology)**: Enabler ships same day → full working memory load; estimate follow-on at 1 pt; MarkdownBody fully loaded → story field nearly free (0.2.4: #326 after #321) |
 | UX bug cluster (individually ticketed, discovered in-context) | 4 issues | 0.24x* | 0.2-0.3x* | **NEW (0.2.4 methodology)**: In-context discovery while code is warm; individual ticketing inflates pts (6pts actual ≈ 3pt bundle); batch on one session (0.2.4: #360–#363) |
+| Tag type + full vocabulary (new type, migrations, seed data, UI wiring, l10n) | 1 issue | 2.41x* | estimate 5–8 pts | **NEW (0.2.5)**: "Add tag type" is fast; "add tag type + vocabulary + pickers + l10n" is 3x more expensive; audit scope before estimating (0.2.5: #333) |
+| Enum removal (codebase-wide sweep) | 1 issue | 3.0x* | 3–5 pts | **NEW (0.2.5)**: Grep call sites first; >5 files = refactor, not chore; `RecipeCategory` touched 21 files (443 lines); 2pt estimate was too low (0.2.5: #335) |
+| Chore (data-only successor to infrastructure feature) | 1 issue | 0.45x* | 0.4–0.6x* | **NEW (0.2.5)**: When anchor feature (#333) built all infrastructure same sprint, successor chore (#334) is SQL + routing only; discount 50–60% from standalone estimate (0.2.5: #334 after #333) |
+| Migration bug fix (symptom-only, root cause missed) | 1 issue | ~3.5x combined | price at root-cause scope | **NEW (0.2.5/0.2.6)**: Symptom fix (0.06d) vs architectural root-cause fix (1.5d); always review runner detection strategy, not just the failing migration; combined #372 = 3.5x the original 2pt estimate |
+| Emergency architectural fix (migration runner redesign) | 1 release | ~1.5d | 3–5 pts | **NEW (0.2.6)**: Root cause investigation + runner strategy change + renumbering + Schema Inspector + release; add 0.5d vs data-only emergency fix; budget as unplanned sprint overhead (0.2.6: #372 comprehensive) |
 
 **Key Insights from 0.1.7a/b:**
 - **Design system work has its own velocity profile** — 64 points in 7 days (0.11x) reflects both new-type overestimation AND genuine efficiency from clear vision, compound patterns, and effective batching
