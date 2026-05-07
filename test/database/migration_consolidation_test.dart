@@ -170,9 +170,10 @@ void main() {
 
   // ── Scenario 3: Already-migrated database ─────────────────────────────────
   //
-  // Simulates a device that already ran migrations 1-11. The registry now
-  // only contains version 1, so currentVersion (11) >= latestVersion (1)
-  // and no migrations should run.
+  // Simulates a device that has completed all migrations. schema_migrations
+  // contains v1–v11 (legacy) and v101–v108 (post-consolidation). The runner
+  // only registers InitialSchemaMigration (v101), so currentVersion (108)
+  // >= latestVersion (101) and no migrations should run.
 
   group('Scenario 3 — Already-migrated database', () {
     late Database db;
@@ -185,7 +186,8 @@ void main() {
       final migration = InitialSchemaMigration();
       await migration.up(DatabaseWrapper(db));
 
-      // Seed schema_migrations with versions 1-11 (existing user's DB)
+      // Seed schema_migrations with the full set a real device carries:
+      // v1–v11 (legacy pre-consolidation rows) + v101–v108 (post-consolidation).
       await db.execute('''
         CREATE TABLE schema_migrations (
           version INTEGER PRIMARY KEY,
@@ -201,6 +203,13 @@ void main() {
           [v, DateTime.now().toIso8601String(), 'migration $v', 0],
         );
       }
+      for (int v = 101; v <= 108; v++) {
+        await db.rawInsert(
+          'INSERT INTO schema_migrations (version, applied_at, description, duration_ms) '
+          'VALUES (?, ?, ?, ?)',
+          [v, DateTime.now().toIso8601String(), 'migration $v', 0],
+        );
+      }
 
       // Wire up the runner exactly as DatabaseHelper does post-consolidation
       runner = MigrationRunner(db, [InitialSchemaMigration()]);
@@ -209,12 +218,12 @@ void main() {
 
     tearDown(() async => db.close());
 
-    test('currentVersion is 11 (highest version in schema_migrations)', () async {
-      expect(await runner.getCurrentVersion(), equals(11));
+    test('currentVersion is 108 (highest version in schema_migrations)', () async {
+      expect(await runner.getCurrentVersion(), equals(108));
     });
 
-    test('latestVersion is 1 (only migration in registry)', () {
-      expect(runner.getLatestVersion(), equals(1));
+    test('latestVersion is 101 (only migration in registry)', () {
+      expect(runner.getLatestVersion(), equals(101));
     });
 
     test('needsMigration() returns false', () async {
