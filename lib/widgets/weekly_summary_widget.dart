@@ -62,8 +62,10 @@ class WeeklySummaryWidget extends StatelessWidget {
           _buildProteinSequenceSection(context),
           const SizedBox(height: DesignTokens.spacingLg),
           _buildPlannedMealsSection(context),
-          const SizedBox(height: DesignTokens.spacingLg),
-          _buildVarietySection(context),
+          if (summaryData!.uniqueRecipes > 0) ...[
+            const SizedBox(height: DesignTokens.spacingLg),
+            _buildVarietySection(context),
+          ],
         ],
       ),
     );
