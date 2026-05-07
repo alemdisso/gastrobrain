@@ -5,6 +5,12 @@ import 'package:gastrobrain/core/services/database_backup_service.dart';
 import 'package:gastrobrain/core/errors/gastrobrain_exceptions.dart';
 import 'package:gastrobrain/core/migration/migration.dart';
 import 'package:gastrobrain/core/migration/migrations/001_initial_schema.dart';
+import 'package:gastrobrain/core/migration/migrations/002_add_ingredient_aliases.dart';
+import 'package:gastrobrain/core/migration/migrations/003_add_marinating_time.dart';
+import 'package:gastrobrain/core/migration/migrations/004_add_recipe_story.dart';
+import 'package:gastrobrain/core/migration/migrations/005_add_tags.dart';
+import 'package:gastrobrain/core/migration/migrations/006_add_meal_role_food_type.dart';
+import 'package:gastrobrain/core/migration/migrations/008_add_sauce_food_type.dart';
 import '../../mocks/mock_database_helper.dart';
 
 String _validBackupJson({
@@ -35,7 +41,14 @@ void main() {
 
     setUp(() async {
       db = await databaseFactoryFfi.openDatabase(inMemoryDatabasePath);
-      await InitialSchemaMigration().up(DatabaseWrapper(db));
+      final wrapper = DatabaseWrapper(db);
+      await InitialSchemaMigration().up(wrapper);
+      await AddIngredientAliasesMigration().up(wrapper);
+      await AddMarinatingTimeMigration().up(wrapper);
+      await AddRecipeStoryMigration().up(wrapper);
+      await AddTagsMigration().up(wrapper);
+      await AddMealRoleFoodTypeMigration().up(wrapper);
+      await AddSauceFoodTypeMigration().up(wrapper);
       mockDbHelper = MockDatabaseHelper();
       mockDbHelper.setDatabase(db);
       backupService = DatabaseBackupService(mockDbHelper);
