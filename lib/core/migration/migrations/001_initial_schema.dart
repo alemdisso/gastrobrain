@@ -45,7 +45,6 @@ class InitialSchemaMigration extends Migration {
         prep_time_minutes INTEGER DEFAULT 0,
         cook_time_minutes INTEGER DEFAULT 0,
         rating INTEGER DEFAULT 0,
-        category TEXT DEFAULT 'uncategorized',
         servings INTEGER NOT NULL DEFAULT 4
       )
     ''');
@@ -287,8 +286,6 @@ class InitialSchemaMigration extends Migration {
 
   Future<void> _createIndexes(DatabaseExecutor db) async {
     // Recipes
-    await db.execute(
-        'CREATE INDEX IF NOT EXISTS idx_recipes_category ON recipes(category)');
     await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_recipes_frequency ON recipes(desired_frequency)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_recipes_rating ON recipes(rating)');

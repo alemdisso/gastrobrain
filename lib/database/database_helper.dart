@@ -37,6 +37,7 @@ import '../core/migration/migrations/005_add_tags.dart';
 import '../core/migration/migrations/006_add_meal_role_food_type.dart';
 import '../core/migration/migrations/007_migrate_category_to_tags.dart';
 import '../core/migration/migrations/008_add_sauce_food_type.dart';
+import '../core/migration/migrations/009_drop_recipe_category.dart';
 import '../core/repositories/base_repository.dart';
 
 class DatabaseHelper {
@@ -58,6 +59,7 @@ class DatabaseHelper {
     AddMealRoleFoodTypeMigration(),
     MigrateCategoryToTagsMigration(),
     AddSauceFoodTypeMigration(),
+    DropRecipeCategoryMigration(),
   ];
 
   /// Get the migration runner instance

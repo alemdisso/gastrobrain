@@ -76,7 +76,7 @@ Key deliverables:
 | #151 | UI: Implement smart metric conversion with intelligent rounding | 2 | P3 | Low | Logic/utility work. Round to practical cooking increments (25ml, 50ml, 100ml intervals). Preserve precision for small quantities. Show `~` when rounding is significant. Extends existing conversion utilities. |
 | #150 | UI: Implement range formatting for approximate ingredient quantities | 3 | P3 | Medium | Extends `RecipeIngredient` model for min/max quantities. Likely needs schema update. Do after #151 (soft dependency). Display: `{min}-{max} {unit}`. Backward-compatible with existing single values. |
 
-### Theme 5: Stretch — Deferrable to 0.2.7 (5 pts)
+### Theme 5: Stretch — Deferrable to 0.2.8 (5 pts)
 
 | # | Title | Est | Priority | Risk | Notes |
 |---|-------|-----|----------|------|-------|
@@ -102,7 +102,7 @@ Key deliverables:
 5. Tests: unit tests for `restoreDatabaseFromString()`; verify backup JSON format unchanged
 6. Emulator validation: any available emulator (all are API 33+, confirmed above API 29 threshold)
 
-**Note**: After this, `file_picker` is in the project — no re-setup cost for #216 in 0.2.7.
+**Note**: After this, `file_picker` is in the project — no re-setup cost for #216 in 0.2.8.
 
 ---
 
@@ -198,7 +198,7 @@ Key deliverables:
 3. Display: `{min}-{max} {unit}`; edit UI: toggle to reveal range fields
 4. Tests: display format, backward-compat single values, DB round-trip
 
-**Day 4 scope guard**: If #150 schema design takes > 1 hour, defer to 0.2.7. Ship 26 pts.
+**Day 4 scope guard**: If #150 schema design takes > 1 hour, defer to 0.2.8. Ship 26 pts.
 
 ---
 
@@ -269,7 +269,7 @@ Key deliverables:
 |----------|--------|--------|---------------|
 | Must-complete | #354, #198, #320, #321 | 13 | P1 bug + two ingredient issues (model + UX, directly linked) + P2 Markdown |
 | Should-complete | #348, #326, #170 | 6 | Quick issues; high value/effort ratio; all < 0.3 effective days each |
-| Could-complete | #151, #150 | 5 | P3; #150 has schema risk; no user-facing impact if deferred to 0.2.7 |
+| Could-complete | #151, #150 | 5 | P3; #150 has schema risk; no user-facing impact if deferred to 0.2.8 |
 | Stretch | #291 | 5 | Per-recipe notes; DI limitation; Day 5 only if Days 1–4 are clean |
 
 ---
@@ -296,7 +296,7 @@ Key deliverables:
 - [ ] Recipe story field displayed at top of recipe detail, Markdown-rendered (#326)
 - [ ] `_parseUnit()` uses l10n strings + abbreviation fallbacks (#170)
 
-### Could Complete (Deferrable to 0.2.7)
+### Could Complete (Deferrable to 0.2.8)
 - [ ] Metric conversions show rounded value with `~` prefix when ≥5% rounding (#151)
 - [ ] `RecipeIngredient` supports optional min/max range; displayed as `{min}-{max} {unit}` (#150)
 

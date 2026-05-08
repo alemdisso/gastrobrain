@@ -465,10 +465,18 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
           TextButton.icon(
             icon: const Icon(Icons.arrow_back, size: 16),
             label: Text(l10n.back),
-            onPressed: () => setState(() {
-              _showingMenu = false;
-              _selectedRecipe = null;
-            }),
+            onPressed: () {
+              if (widget.initialPrimaryRecipe != null) {
+                // Edit flow: dialog opened directly at the menu — close it
+                Navigator.pop(context);
+              } else {
+                // Add flow: came from recipe selection — go back there
+                setState(() {
+                  _showingMenu = false;
+                  _selectedRecipe = null;
+                });
+              }
+            },
           ),
         ],
       ),

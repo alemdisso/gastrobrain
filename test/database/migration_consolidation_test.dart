@@ -5,10 +5,12 @@ import 'package:gastrobrain/core/migration/migration.dart';
 import 'package:gastrobrain/core/migration/migration_runner.dart';
 import 'package:gastrobrain/core/migration/migrations/001_initial_schema.dart';
 import 'package:gastrobrain/core/migration/migrations/003_add_marinating_time.dart';
+import 'package:gastrobrain/core/migration/migrations/004_add_recipe_story.dart';
 import 'package:gastrobrain/core/migration/migrations/005_add_tags.dart';
 import 'package:gastrobrain/core/migration/migrations/006_add_meal_role_food_type.dart';
 import 'package:gastrobrain/core/migration/migrations/007_migrate_category_to_tags.dart';
 import 'package:gastrobrain/core/migration/migrations/008_add_sauce_food_type.dart';
+import 'package:gastrobrain/core/migration/migrations/009_drop_recipe_category.dart';
 
 void main() {
   setUpAll(() {
@@ -170,9 +172,10 @@ void main() {
 
   // ── Scenario 3: Already-migrated database ─────────────────────────────────
   //
-  // Simulates a device that already ran migrations 1-11. The registry now
-  // only contains version 1, so currentVersion (11) >= latestVersion (1)
-  // and no migrations should run.
+  // Simulates a device that has completed all migrations. schema_migrations
+  // contains v1–v11 (legacy) and v101–v108 (post-consolidation). The runner
+  // only registers InitialSchemaMigration (v101), so currentVersion (108)
+  // >= latestVersion (101) and no migrations should run.
 
   group('Scenario 3 — Already-migrated database', () {
     late Database db;
@@ -185,7 +188,8 @@ void main() {
       final migration = InitialSchemaMigration();
       await migration.up(DatabaseWrapper(db));
 
-      // Seed schema_migrations with versions 1-11 (existing user's DB)
+      // Seed schema_migrations with the full set a real device carries:
+      // v1–v11 (legacy pre-consolidation rows) + v101–v108 (post-consolidation).
       await db.execute('''
         CREATE TABLE schema_migrations (
           version INTEGER PRIMARY KEY,
@@ -201,6 +205,13 @@ void main() {
           [v, DateTime.now().toIso8601String(), 'migration $v', 0],
         );
       }
+      for (int v = 101; v <= 109; v++) {
+        await db.rawInsert(
+          'INSERT INTO schema_migrations (version, applied_at, description, duration_ms) '
+          'VALUES (?, ?, ?, ?)',
+          [v, DateTime.now().toIso8601String(), 'migration $v', 0],
+        );
+      }
 
       // Wire up the runner exactly as DatabaseHelper does post-consolidation
       runner = MigrationRunner(db, [InitialSchemaMigration()]);
@@ -209,12 +220,12 @@ void main() {
 
     tearDown(() async => db.close());
 
-    test('currentVersion is 11 (highest version in schema_migrations)', () async {
-      expect(await runner.getCurrentVersion(), equals(11));
+    test('currentVersion is 109 (highest version in schema_migrations)', () async {
+      expect(await runner.getCurrentVersion(), equals(109));
     });
 
-    test('latestVersion is 1 (only migration in registry)', () {
-      expect(runner.getLatestVersion(), equals(1));
+    test('latestVersion is 101 (only migration in registry)', () {
+      expect(runner.getLatestVersion(), equals(101));
     });
 
     test('needsMigration() returns false', () async {
@@ -628,6 +639,12 @@ void main() {
       migration = MigrateCategoryToTagsMigration();
       wrapper = DatabaseWrapper(db);
       await InitialSchemaMigration().up(wrapper);
+      // Simulate pre-009 state: InitialSchemaMigration no longer creates the
+      // category column (removed in issue #377), so add it here to let these
+      // tests exercise the actual migration-007 mapping logic.
+      await db.execute(
+        "ALTER TABLE recipes ADD COLUMN category TEXT DEFAULT 'uncategorized'",
+      );
       await AddTagsMigration().up(wrapper);
       await AddMealRoleFoodTypeMigration().up(wrapper);
     });
@@ -830,6 +847,87 @@ void main() {
         "SELECT id FROM tags WHERE type_id = 'food_type'",
       );
       expect(rows.length, equals(10));
+    });
+  });
+
+  // ── Migration 009: DropRecipeCategoryMigration ───────────────────────────
+
+  group('Migration 009 — DropRecipeCategoryMigration', () {
+    late Database db;
+    late DropRecipeCategoryMigration migration;
+    late DatabaseWrapper wrapper;
+
+    setUp(() async {
+      db = await openEmpty();
+      migration = DropRecipeCategoryMigration();
+      wrapper = DatabaseWrapper(db);
+      await InitialSchemaMigration().up(wrapper);
+      await AddMarinatingTimeMigration().up(wrapper);
+      await AddRecipeStoryMigration().up(wrapper);
+      // Simulate pre-009 state: add the category column and index as they
+      // existed before issue #377 removed them from InitialSchemaMigration.
+      await db.execute(
+        "ALTER TABLE recipes ADD COLUMN category TEXT DEFAULT 'uncategorized'",
+      );
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_recipes_category ON recipes(category)',
+      );
+    });
+
+    tearDown(() async => db.close());
+
+    test('up() removes category column from recipes', () async {
+      await migration.up(wrapper);
+
+      final cols = await columnNames(db, 'recipes');
+      expect(cols, isNot(contains('category')));
+    });
+
+    test('up() is a no-op when category column is already absent', () async {
+      // Remove category before up() runs (simulates fresh install post-#377)
+      await db.execute('DROP INDEX IF EXISTS idx_recipes_category');
+      // Recreate table without category to simulate already-clean state
+      await migration.up(wrapper); // first run removes it
+      await expectLater(migration.up(wrapper), completes); // second run is no-op
+      final cols = await columnNames(db, 'recipes');
+      expect(cols, isNot(contains('category')));
+    });
+
+    test('validate() returns true after up()', () async {
+      await migration.up(wrapper);
+
+      expect(await migration.validate(wrapper), isTrue);
+    });
+
+    test('validate() returns false when category column is still present', () async {
+      // setUp adds category column — do NOT call up()
+      expect(await migration.validate(wrapper), isFalse);
+    });
+
+    test('up() preserves all recipe data', () async {
+      await db.rawInsert(
+        'INSERT INTO recipes (id, name, desired_frequency, created_at, '
+        'difficulty, prep_time_minutes, cook_time_minutes, rating, servings, '
+        'marinating_time_minutes, story, category) '
+        "VALUES ('r-1', 'frango assado', 'weekly', '2025-01-01T00:00:00', "
+        "2, 20, 60, 4, 4, 30, 'marinated overnight', 'main_dishes')",
+      );
+
+      await migration.up(wrapper);
+
+      final rows = await db.rawQuery("SELECT * FROM recipes WHERE id = 'r-1'");
+      expect(rows.length, equals(1));
+      expect(rows.first['name'], equals('frango assado'));
+      expect(rows.first['marinating_time_minutes'], equals(30));
+      expect(rows.first['story'], equals('marinated overnight'));
+    });
+
+    test('down() restores category column with default uncategorized', () async {
+      await migration.up(wrapper);
+      await migration.down(wrapper);
+
+      final cols = await columnNames(db, 'recipes');
+      expect(cols, contains('category'));
     });
   });
 }

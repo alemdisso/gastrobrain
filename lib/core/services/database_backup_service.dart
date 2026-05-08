@@ -8,8 +8,9 @@ import '../errors/gastrobrain_exceptions.dart';
 /// Service for complete database backup and restore using JSON format
 ///
 /// Creates a single JSON file containing ALL application data:
-/// - Recipes (with ingredients, metadata, cooking history)
-/// - Ingredients
+/// - Tag Types and Tags (taxonomy)
+/// - Recipes (with ingredients, story, marinating time, servings, tags)
+/// - Ingredients (with aliases)
 /// - Meal Plans
 /// - Meals (cooked meal records)
 /// - Recommendation History (user preferences and interactions)
@@ -35,6 +36,8 @@ class DatabaseBackupService {
         'backup_date': DateTime.now().toIso8601String(),
       };
 
+      backupData['tag_types'] = await _exportTagTypes();
+      backupData['tags'] = await _exportTags();
       backupData['recipes'] = await _exportRecipes();
       backupData['ingredients'] = await _exportIngredients();
       backupData['meal_plans'] = await _exportMealPlans();
@@ -55,9 +58,13 @@ class DatabaseBackupService {
     final db = await _databaseHelper.database;
 
     for (final recipe in recipes) {
-      // Query recipe_ingredients table directly to get actual table data
       final recipeIngredients = await db.query(
         'recipe_ingredients',
+        where: 'recipe_id = ?',
+        whereArgs: [recipe.id],
+      );
+      final recipeTags = await db.query(
+        'recipe_tags',
         where: 'recipe_id = ?',
         whereArgs: [recipe.id],
       );
@@ -68,10 +75,13 @@ class DatabaseBackupService {
         'difficulty': recipe.difficulty,
         'prep_time_minutes': recipe.prepTimeMinutes,
         'cook_time_minutes': recipe.cookTimeMinutes,
+        'marinating_time_minutes': recipe.marinatingTimeMinutes,
         'rating': recipe.rating,
         'desired_frequency': recipe.desiredFrequency.value,
         'notes': recipe.notes,
+        'story': recipe.story,
         'instructions': recipe.instructions,
+        'servings': recipe.servings,
         'created_at': recipe.createdAt.toIso8601String(),
         'recipe_ingredients': recipeIngredients
             .map((ri) => {
@@ -86,6 +96,7 @@ class DatabaseBackupService {
                   'custom_unit': ri['custom_unit'],
                 })
             .toList(),
+        'tag_ids': recipeTags.map((rt) => rt['tag_id'] as String).toList(),
       });
     }
 
@@ -104,6 +115,7 @@ class DatabaseBackupService {
               'unit': ingredient.unit?.value,
               'protein_type': ingredient.proteinType?.name,
               'notes': ingredient.notes,
+              'aliases': ingredient.aliases.isEmpty ? null : ingredient.aliases,
             })
         .toList();
   }
@@ -177,6 +189,33 @@ class DatabaseBackupService {
     }
 
     return exportData;
+  }
+
+  /// Exports all tag types
+  Future<List<Map<String, dynamic>>> _exportTagTypes() async {
+    final db = await _databaseHelper.database;
+    final rows = await db.query('tag_types');
+    return rows
+        .map((r) => {
+              'id': r['id'],
+              'name': r['name'],
+              'color': r['color'],
+              'icon': r['icon'],
+            })
+        .toList();
+  }
+
+  /// Exports all tags
+  Future<List<Map<String, dynamic>>> _exportTags() async {
+    final db = await _databaseHelper.database;
+    final rows = await db.query('tags');
+    return rows
+        .map((r) => {
+              'id': r['id'],
+              'name': r['name'],
+              'type_id': r['type_id'],
+            })
+        .toList();
   }
 
   /// Exports all recommendation history records
@@ -271,13 +310,40 @@ class DatabaseBackupService {
       await txn.delete('meal_plan_items');
       await txn.delete('meal_plans');
       await txn.delete('recipe_ingredients');
+      await txn.delete('recipe_tags');
       await txn.delete('recipes');
       await txn.delete('ingredients');
       await txn.delete('recommendation_history');
+      await txn.delete('tags');
+      await txn.delete('tag_types');
+
+      if (backupData['tag_types'] != null) {
+        final tagTypes = backupData['tag_types'] as List;
+        for (final tt in tagTypes) {
+          await txn.insert('tag_types', {
+            'id': tt['id'],
+            'name': tt['name'],
+            'color': tt['color'],
+            'icon': tt['icon'],
+          });
+        }
+      }
+
+      if (backupData['tags'] != null) {
+        final tags = backupData['tags'] as List;
+        for (final tag in tags) {
+          await txn.insert('tags', {
+            'id': tag['id'],
+            'name': tag['name'],
+            'type_id': tag['type_id'],
+          });
+        }
+      }
 
       if (backupData['ingredients'] != null) {
         final ingredients = backupData['ingredients'] as List;
         for (final ing in ingredients) {
+          final aliases = ing['aliases'];
           await txn.insert('ingredients', {
             'id': ing['id'],
             'name': ing['name'],
@@ -285,6 +351,9 @@ class DatabaseBackupService {
             'unit': ing['unit'],
             'protein_type': ing['protein_type'],
             'notes': ing['notes'],
+            'aliases': aliases == null
+                ? null
+                : (aliases is List ? jsonEncode(aliases) : aliases as String),
           });
         }
       }
@@ -298,10 +367,13 @@ class DatabaseBackupService {
             'difficulty': recipe['difficulty'],
             'prep_time_minutes': recipe['prep_time_minutes'],
             'cook_time_minutes': recipe['cook_time_minutes'],
+            'marinating_time_minutes': recipe['marinating_time_minutes'] ?? 0,
             'rating': recipe['rating'],
             'desired_frequency': recipe['desired_frequency'],
             'notes': recipe['notes'],
+            'story': recipe['story'] ?? '',
             'instructions': recipe['instructions'],
+            'servings': recipe['servings'] ?? 4,
             'created_at': recipe['created_at'],
           });
 
@@ -318,6 +390,16 @@ class DatabaseBackupService {
                 'custom_name': ri['custom_name'],
                 'custom_category': ri['custom_category'],
                 'custom_unit': ri['custom_unit'],
+              });
+            }
+          }
+
+          if (recipe['tag_ids'] != null) {
+            final tagIds = recipe['tag_ids'] as List;
+            for (final tagId in tagIds) {
+              await txn.insert('recipe_tags', {
+                'recipe_id': recipe['id'],
+                'tag_id': tagId as String,
               });
             }
           }

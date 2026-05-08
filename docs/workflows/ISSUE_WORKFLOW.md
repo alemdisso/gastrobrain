@@ -73,16 +73,27 @@ Closes #{issue-number}
 ```
 
 #### 4. Testing Before Integration
-```bash
-# Run relevant tests
-flutter test test/path/to/related/tests/
 
-# Run full test suite if major changes
+**Always run the full test suite before merging to develop.** A green CI build is a safety net, not a substitute for local verification — by the time CI catches a failure, it has already landed on the integration branch.
+
+```bash
+# Run the full test suite — required before merging
 flutter test
 
 # Check code quality
 flutter analyze
 ```
+
+**Migration and backup service changes require targeted verification:**
+```bash
+# After any migration version change or new migration
+flutter test test/database/migration_consolidation_test.dart
+
+# After any change to DatabaseBackupService table scope
+flutter test test/core/services/database_backup_service_test.dart
+```
+
+See [DATABASE_MIGRATION_WORKFLOW.md](DATABASE_MIGRATION_WORKFLOW.md) for the full migration checklist.
 
 #### 5. Merge to Develop
 ```bash

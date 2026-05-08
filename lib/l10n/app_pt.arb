@@ -899,16 +899,6 @@
       }
     }
   },
-  "additionalRecipesCount": "{count,plural, =1{1 receita} other{{count} receitas}}",
-  "@additionalRecipesCount": {
-    "description": "Contagem de receitas adicionais com pluralização adequada",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "description": "Número de receitas adicionais"
-      }
-    }
-  },
   "sunday": "Domingo",
   "@sunday": {
     "description": "Nomes dos dias para o calendário semanal"
@@ -2642,6 +2632,8 @@
   "addStory": "Adicionar história",
   "editStory": "Editar história",
   "storyUpdatedSuccessfully": "História atualizada com sucesso",
-  "enterStory": "Escreve a história por trás desta receita..."
+  "enterStory": "Escreve a história por trás desta receita...",
+
+  "appVersionLabel": "Versão"
 
 }

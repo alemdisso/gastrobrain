@@ -27,6 +27,7 @@ class AddMarinatingTimeMigration extends Migration {
   Future<void> down(DatabaseExecutor db) async {
     // SQLite older than 3.35 does not support DROP COLUMN.
     // Recreate the recipes table without the marinating_time_minutes column.
+    // category column is excluded — it was dropped by migration 009 (#377).
     await db.execute('''
       CREATE TABLE recipes_backup(
         id TEXT PRIMARY KEY,
@@ -39,15 +40,13 @@ class AddMarinatingTimeMigration extends Migration {
         prep_time_minutes INTEGER DEFAULT 0,
         cook_time_minutes INTEGER DEFAULT 0,
         rating INTEGER DEFAULT 0,
-        category TEXT DEFAULT 'uncategorized',
         servings INTEGER NOT NULL DEFAULT 4
       )
     ''');
     await db.execute('''
       INSERT INTO recipes_backup
       SELECT id, name, desired_frequency, notes, instructions, created_at,
-             difficulty, prep_time_minutes, cook_time_minutes, rating,
-             category, servings
+             difficulty, prep_time_minutes, cook_time_minutes, rating, servings
       FROM recipes
     ''');
     await db.execute('DROP TABLE recipes');

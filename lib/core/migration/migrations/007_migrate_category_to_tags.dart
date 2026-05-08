@@ -42,6 +42,10 @@ class MigrateCategoryToTagsMigration extends Migration {
 
   @override
   Future<void> up(DatabaseExecutor db) async {
+    // category column absent on fresh installs (dropped by migration 009 from 001)
+    final cols = await db.rawQuery('PRAGMA table_info(recipes)');
+    if (!cols.any((r) => r['name'] == 'category')) return;
+
     for (final (category, tagId) in _mapping) {
       await db.execute(
         'INSERT OR IGNORE INTO recipe_tags (recipe_id, tag_id) '
@@ -59,6 +63,10 @@ class MigrateCategoryToTagsMigration extends Migration {
 
   @override
   Future<bool> validate(DatabaseExecutor db) async {
+    // category column absent on fresh installs — nothing to validate
+    final cols = await db.rawQuery('PRAGMA table_info(recipes)');
+    if (!cols.any((r) => r['name'] == 'category')) return true;
+
     for (final (category, tagId) in _mapping) {
       final rows = await db.rawQuery(
         'SELECT COUNT(*) as cnt FROM recipes '

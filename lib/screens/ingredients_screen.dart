@@ -13,14 +13,16 @@ import '../l10n/app_localizations.dart';
 import '../screens/ingredient_detail_screen.dart';
 
 class IngredientsScreen extends StatefulWidget {
-  const IngredientsScreen({super.key});
+  final DatabaseHelper? databaseHelper;
+
+  const IngredientsScreen({super.key, this.databaseHelper});
 
   @override
   State<IngredientsScreen> createState() => _IngredientsScreenState();
 }
 
 class _IngredientsScreenState extends State<IngredientsScreen> {
-  final DatabaseHelper _dbHelper = DatabaseHelper();
+  late DatabaseHelper _dbHelper;
   List<Ingredient> _ingredients = [];
   bool _isLoading = true;
   String? _errorMessage;
@@ -66,6 +68,7 @@ class _IngredientsScreenState extends State<IngredientsScreen> {
   @override
   void initState() {
     super.initState();
+    _dbHelper = widget.databaseHelper ?? DatabaseHelper();
     _loadIngredients();
   }
 

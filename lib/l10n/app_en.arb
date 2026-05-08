@@ -917,16 +917,6 @@
       }
     }
   },
-  "additionalRecipesCount": "{count,plural, =1{1 recipe} other{{count} recipes}}",
-  "@additionalRecipesCount": {
-    "description": "Count of additional recipes with proper pluralization",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "description": "Number of additional recipes"
-      }
-    }
-  },
   "sunday": "Sunday",
   "@sunday": {
     "description": "Day names for the weekly calendar"
@@ -2754,6 +2744,11 @@
   "enterStory": "Write the story behind this recipe...",
   "@enterStory": {
     "description": "Hint text for story input in edit dialog"
+  },
+
+  "appVersionLabel": "Version",
+  "@appVersionLabel": {
+    "description": "Label prefix for the app version displayed in the Tools screen footer"
   }
 
 }

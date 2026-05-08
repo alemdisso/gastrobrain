@@ -40,7 +40,98 @@ Widget _wrapDialog(Widget dialog) {
   );
 }
 
+/// Opens the dialog as a proper modal route via showDialog so Navigator.pop works.
+Widget _buildDialogLauncher(Widget Function(BuildContext) dialogBuilder) {
+  return ChangeNotifierProvider(
+    create: (_) => DebugSettingsProvider(),
+    child: MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('en', '')],
+      home: Builder(
+        builder: (ctx) => Scaffold(
+          body: Center(
+            child: ElevatedButton(
+              onPressed: () =>
+                  showDialog<void>(context: ctx, builder: dialogBuilder),
+              child: const Text('Open'),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
 void main() {
+  group("RecipeSelectionDialog — 'Voltar' navigation (#366)", () {
+    testWidgets('edit mode: Voltar dismisses the dialog', (tester) async {
+      final primaryRecipe = Recipe(
+        id: 'r_edit',
+        name: 'Frango Assado',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+      );
+
+      await tester.pumpWidget(_buildDialogLauncher(
+        (_) => RecipeSelectionDialog(
+          recipes: const [],
+          detailedRecommendations: const [],
+          initialPrimaryRecipe: primaryRecipe,
+        ),
+      ));
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      // Confirm we're in menu mode
+      expect(find.byKey(const Key('recipe_selection_save_button')), findsOneWidget);
+
+      // Tap Voltar
+      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.pumpAndSettle();
+
+      // Dialog dismissed — Save button gone
+      expect(find.byKey(const Key('recipe_selection_save_button')), findsNothing);
+    });
+
+    testWidgets('add mode: Voltar returns to recipe selection, not dismissing',
+        (tester) async {
+      final rec = _makeRec('r1', 'Pasta', 90);
+
+      await tester.pumpWidget(_wrapDialog(
+        RecipeSelectionDialog(
+          recipes: [rec.recipe],
+          detailedRecommendations: [rec],
+          allScoredRecipes: [rec],
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      // Start in selection mode — Save button not visible
+      expect(find.byKey(const Key('recipe_selection_save_button')), findsNothing);
+
+      // Select the recipe to enter menu mode
+      await tester.tap(find.text('SELECT'));
+      await tester.pumpAndSettle();
+
+      // Now in menu mode
+      expect(find.byKey(const Key('recipe_selection_save_button')), findsOneWidget);
+
+      // Tap Voltar
+      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.pumpAndSettle();
+
+      // Back in selection mode — Save button gone, recipe list visible
+      expect(find.byKey(const Key('recipe_selection_save_button')), findsNothing);
+      expect(find.text('Pasta'), findsOneWidget);
+    });
+  });
+
   group('RecipeSelectionDialog — replacement on dismissal', () {
     late RecipeRecommendation rec1;
     late RecipeRecommendation rec2;

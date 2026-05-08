@@ -412,8 +412,12 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
     final result = _parserService.parseIngredientLine(line);
 
     // Convert parser result to _ParsedIngredient format
+    // Only auto-select if confidence >= 0.80 (medium/high boundary from IngredientMatchingService)
+    // Low-confidence matches stay unselected so "Create New Ingredient" button remains visible
     final selectedMatch =
-        result.matches.isNotEmpty ? result.matches.first : null;
+        result.matches.isNotEmpty && result.matches.first.confidence >= 0.80
+            ? result.matches.first
+            : null;
 
     return _ParsedIngredient(
       quantity: result.quantity,

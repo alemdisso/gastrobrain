@@ -38,7 +38,7 @@ Key deliverables:
 - **Execution mode** (Days 1–2): 5 bugs + 1 UX polish = 11 pts. All well-specified, small scopes. Historical pattern: post-usage bugs execute at 0.10x–0.20x; expect ~0.5–1 actual day for this block.
 - **Cruising mode** (Days 3–4): #295, #193, #329 = 7 pts. Reasonably well-specified; #295 has a documented technical challenge (failed prior attempt).
 - **Discovery-adjacent** (Day 5): #121 = 8 pts. Unmade design decisions in its acceptance criteria. Requires scope lock before coding.
-- **Stretch** (Day 6): #291 = 5 pts. Full DB migration + UI. Can be deferred to 0.2.4 or 0.2.7 without affecting the milestone theme.
+- **Stretch** (Day 6): #291 = 5 pts. Full DB migration + UI. Can be deferred to 0.2.4 or 0.2.8 without affecting the milestone theme.
 
 **Key dependencies:**
 - #352 before #351 — fixing `cooked_at` before the ordering query makes the ordering fix fully reliable
@@ -146,12 +146,12 @@ Key deliverables:
 | Backward compatibility | Single-recipe workflow unchanged. Existing multi-recipe data unaffected. |
 | Tests | Widget tests: multi-recipe entry discoverable; single-recipe regression; count indicator correct. |
 
-- **Scope guard**: Implement the chosen entry point approach and visual cues. Defer "onboarding hints for first-time users" and "user testing validation" ACs to 0.2.7 if Day 5 is tight.
+- **Scope guard**: Implement the chosen entry point approach and visual cues. Defer "onboarding hints for first-time users" and "user testing validation" ACs to 0.2.8 if Day 5 is tight.
 - **Day 5 is the milestone's quality gate**: If #121 ships and is solid, the sprint is a success regardless of #291.
 
 ### Day 6: Per-Recipe Notes (#291) — Stretch Only
 
-**Goal**: If #121 is complete and time allows, start #291. Otherwise, defer to 0.2.4 or 0.2.7.
+**Goal**: If #121 is complete and time allows, start #291. Otherwise, defer to 0.2.4 or 0.2.8.
 
 | Focus | Details |
 |-------|---------|
@@ -160,7 +160,7 @@ Key deliverables:
 | History display | `recipe_details_screen.dart`: recipe-specific note (primary) + meal-level note (secondary/contextual). |
 | l10n | New strings to both ARB files. `flutter gen-l10n`. |
 
-- **Explicitly deferrable**: If Day 5 required iteration on #121 or there is any doubt about quality, defer #291. It does not belong to the "UX Polish" theme — it is a data model enhancement. It fits equally well in 0.2.4 (Recipe Enhancement) or 0.2.7 (Import & Remaining UX).
+- **Explicitly deferrable**: If Day 5 required iteration on #121 or there is any doubt about quality, defer #291. It does not belong to the "UX Polish" theme — it is a data model enhancement. It fits equally well in 0.2.4 (Recipe Enhancement) or 0.2.8 (Import & Remaining UX).
 
 ---
 
@@ -168,7 +168,7 @@ Key deliverables:
 
 | Risk | Impact | Likelihood | Mitigation |
 |------|--------|------------|------------|
-| **#121 design decisions unmade** — AC lists multiple UI approaches without choosing | High | High | Lock scope on Day 4 afternoon. Choose simplest approach that satisfies "discoverable without menu navigation." Defer onboarding hints to 0.2.7. |
+| **#121 design decisions unmade** — AC lists multiple UI approaches without choosing | High | High | Lock scope on Day 4 afternoon. Choose simplest approach that satisfies "discoverable without menu navigation." Defer onboarding hints to 0.2.8. |
 | **#295 prior attempt failed** — `maxScrollExtent` returned 0 | Medium | Medium | Timebox investigation to 1 hour. Fallback: `WidgetsBinding.addPostFrameCallback` with frame delay after tab switch. |
 | **#351 device validation fails again** | High | Low | `date(cooked_at)` is analytically correct. Validate on device on Day 1. If it still fails, treat as P0 before moving on. |
 | **#291 `MealRecordingDialog` lacks DI** (CLAUDE.md issue #237) | Medium | Medium | Known limitation. Unit-test DB layer and model separately. Accept reduced dialog test coverage per existing guidance. Deferred anyway if time is tight. |

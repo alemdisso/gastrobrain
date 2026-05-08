@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../core/di/service_provider.dart';
@@ -24,6 +25,15 @@ class _ToolsScreenState extends State<ToolsScreen> {
   bool _isExportingRecipes = false;
   bool _isExportingIngredients = false;
   bool _isInspectingSchema = false;
+  PackageInfo? _packageInfo;
+
+  @override
+  void initState() {
+    super.initState();
+    PackageInfo.fromPlatform().then((info) {
+      if (mounted) setState(() => _packageInfo = info);
+    });
+  }
 
   Future<void> _inspectSchema() async {
     if (_isInspectingSchema) return;
@@ -967,6 +977,20 @@ class _ToolsScreenState extends State<ToolsScreen> {
                   ),
                 ),
               ),
+
+              // App version footer
+              if (_packageInfo != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 24, bottom: 8),
+                  child: Center(
+                    child: Text(
+                      '${l10n.appVersionLabel} ${_packageInfo!.version} (${_packageInfo!.buildNumber})',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

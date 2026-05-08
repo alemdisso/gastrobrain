@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gastrobrain/models/meal_plan.dart';
 import 'package:gastrobrain/models/meal_plan_item.dart';
+import 'package:gastrobrain/models/meal_plan_item_ingredient.dart';
 import 'package:gastrobrain/models/meal_plan_item_recipe.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
@@ -100,7 +101,7 @@ void main() {
       expect(find.text(primaryRecipe.name), findsOneWidget);
       expect(find.textContaining('receitas'), findsNothing);
     });
-    testWidgets('displays multi-recipe meal with count badge in regular layout',
+    testWidgets('displays multi-recipe meal with side dish names in regular layout',
         (WidgetTester tester) async {
       // Force regular layout with larger screen size
       tester.view.physicalSize =
@@ -154,13 +155,13 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Should show count badge for multiple recipes (3 total - 1 = 2 additional) - Portuguese
-      expect(find.text('2 receitas'), findsOneWidget);
+      // Should show side recipe names in a single comma-separated line
+      expect(find.text('Rice Pilaf, Green Salad'), findsOneWidget);
 
       // Reset view for other tests
       addTearDown(tester.view.reset);
     });
-    testWidgets('shows different badge counts correctly',
+    testWidgets('shows single side dish name when only one side recipe',
         (WidgetTester tester) async {
       // Force regular layout
       tester.view.physicalSize = const Size(800, 1200);
@@ -208,8 +209,8 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Should show "1 recipes" for 2 total recipes (2-1=1 additional)
-      expect(find.text('1 receita'), findsOneWidget);
+      // Should show the single side recipe name
+      expect(find.text('Rice Pilaf'), findsOneWidget);
 
       addTearDown(tester.view.reset);
     });
@@ -277,9 +278,68 @@ void main() {
       // Single recipe meal should not show badge
       expect(find.text(primaryRecipe.name), findsOneWidget);
 
-      // Multi-recipe meal should show badge
+      // Multi-recipe meal: primary name + side dish name below it
       expect(find.text(sideRecipe1.name), findsOneWidget);
-      expect(find.text('1 receita'), findsOneWidget);
+      expect(find.text(sideRecipe2.name), findsOneWidget);
+
+      addTearDown(tester.view.reset);
+    });
+
+    testWidgets('merges recipe sides and simple sides into one comma-separated line',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1.0;
+
+      final mealPlanItem = MealPlanItem(
+        id: 'mixed-sides-item',
+        mealPlanId: 'test-plan',
+        plannedDate: '2024-03-01',
+        mealType: MealPlanItem.dinner,
+      );
+
+      mealPlanItem.mealPlanItemRecipes = [
+        MealPlanItemRecipe(
+          mealPlanItemId: 'mixed-sides-item',
+          recipeId: primaryRecipe.id,
+          isPrimaryDish: true,
+        ),
+        MealPlanItemRecipe(
+          mealPlanItemId: 'mixed-sides-item',
+          recipeId: sideRecipe1.id,
+          isPrimaryDish: false,
+        ),
+      ];
+      mealPlanItem.mealPlanItemIngredients = [
+        MealPlanItemIngredient(
+          id: 'simp-1',
+          mealPlanItemId: 'mixed-sides-item',
+          customName: 'brócolis',
+        ),
+      ];
+
+      final mealPlan = MealPlan(
+        id: 'test-plan',
+        weekStartDate: testWeekStart,
+        createdAt: DateTime.now(),
+        modifiedAt: DateTime.now(),
+        items: [mealPlanItem],
+      );
+
+      await tester.pumpWidget(
+        wrapWithLocalizations(Scaffold(
+          body: WeeklyCalendarWidget(
+            weekStartDate: testWeekStart,
+            mealPlan: mealPlan,
+            timeContext: TimeContext.current,
+            databaseHelper: mockDbHelper,
+          ),
+        )),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Recipe side first, then simple side — all on one line
+      expect(find.text('Rice Pilaf, brócolis'), findsOneWidget);
 
       addTearDown(tester.view.reset);
     });
