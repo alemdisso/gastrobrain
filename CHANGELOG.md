@@ -9,6 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.7] - 2026-05-08
+
+### Added
+- App version and build number displayed in Settings screen (#367)
+- Side dish recipe names shown in meal slot cards instead of a recipe count (#374)
+- DatabaseHelper dependency injection for IngredientsScreen, enabling isolated widget tests (#355)
+
+### Changed
+- `recipes.category` column permanently dropped from the database schema; migration 009 handles the upgrade path for existing devices (#377)
+- Ingredient parser no longer auto-selects matches below 0.80 confidence — low-confidence matches now leave "Create New Ingredient" visible (#364)
+
+### Fixed
+- "Voltar" in the meal options dialog now dismisses the dialog in edit mode and returns to recipe selection in add mode (#366)
+- Migration consolidation test Scenario 3 assertions updated after #372 migration renumbering (#378)
+- Database backup service test setUp missing tag table migrations (#379)
+- "Variedade de Receitas" section header no longer appears when the week plan is empty (#375)
+
+---
+
 ## [0.2.5] - 2026-05-01
 
 ### Added
