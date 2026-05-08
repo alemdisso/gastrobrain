@@ -1457,6 +1457,99 @@ void main() {
       });
     });
 
+    group('confidence threshold for auto-selection (#364)', () {
+      // These tests verify that the confidence values produced by the matching
+      // service align with the 0.80 threshold applied in recipe_editor_screen.dart.
+      // A match with confidence < 0.80 must NOT auto-select so the
+      // "Create New Ingredient" button stays visible.
+
+      test('low-confidence partial-word match stays below 0.80 threshold', () {
+        final thresholdService = IngredientMatchingService();
+        thresholdService.initialize([
+          Ingredient(
+            id: '1',
+            name: 'óleo de girassol',
+            category: IngredientCategory.other,
+            unit: MeasurementUnit.milliliter,
+          ),
+        ]);
+
+        final matches = thresholdService.findMatches('sementes de girassol');
+
+        // The shared word "girassol" may produce a partial/fuzzy match, but the
+        // overall similarity must be below 0.80 so it does not auto-select.
+        if (matches.isNotEmpty) {
+          expect(
+            matches.first.confidence,
+            lessThan(0.80),
+            reason:
+                '"sementes de girassol" must not reach the 0.80 auto-select threshold against "óleo de girassol"',
+          );
+        }
+        // isEmpty is also a valid outcome — no match means selectedMatch stays null.
+      });
+
+      test('exact match "cebola" produces confidence >= 0.80 (auto-select regression)', () {
+        final thresholdService = IngredientMatchingService();
+        thresholdService.initialize([
+          Ingredient(
+            id: '1',
+            name: 'cebola',
+            category: IngredientCategory.vegetable,
+            unit: MeasurementUnit.piece,
+          ),
+        ]);
+
+        final matches = thresholdService.findMatches('cebola');
+
+        expect(matches, isNotEmpty);
+        expect(
+          matches.first.confidence,
+          greaterThanOrEqualTo(0.80),
+          reason: 'Exact match must exceed the 0.80 threshold and auto-select correctly',
+        );
+        expect(matches.first.matchType, equals(MatchType.exact));
+      });
+
+      test('case-insensitive match produces confidence >= 0.80 (auto-select regression)', () {
+        final thresholdService = IngredientMatchingService();
+        thresholdService.initialize([
+          Ingredient(
+            id: '1',
+            name: 'Cebola',
+            category: IngredientCategory.vegetable,
+            unit: MeasurementUnit.piece,
+          ),
+        ]);
+
+        final matches = thresholdService.findMatches('cebola');
+
+        expect(matches, isNotEmpty);
+        expect(
+          matches.first.confidence,
+          greaterThanOrEqualTo(0.80),
+          reason: 'Case-insensitive match (0.95) must exceed the 0.80 threshold',
+        );
+      });
+
+      test('no matches returns empty list — selectedMatch stays null', () {
+        final thresholdService = IngredientMatchingService();
+        thresholdService.initialize([
+          Ingredient(
+            id: '1',
+            name: 'cebola',
+            category: IngredientCategory.vegetable,
+            unit: MeasurementUnit.piece,
+          ),
+        ]);
+
+        final matches = thresholdService.findMatches('ingrediente inexistente xyz');
+
+        // Empty matches → selectedMatch = null → Create New Ingredient button visible.
+        expect(matches, isEmpty);
+      });
+    });
+
     group('alias match (Stage 1.5)', () {
       late List<Ingredient> ingredientsWithAliases;
 
