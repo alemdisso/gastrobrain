@@ -2754,6 +2754,11 @@
   "enterStory": "Write the story behind this recipe...",
   "@enterStory": {
     "description": "Hint text for story input in edit dialog"
+  },
+
+  "appVersionLabel": "Version",
+  "@appVersionLabel": {
+    "description": "Label prefix for the app version displayed in the Tools screen footer"
   }
 
 }

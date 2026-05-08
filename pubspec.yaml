@@ -57,6 +57,7 @@ dependencies:
   share_plus: ">=9.0.0 <12.0.0"      # Native share sheet for backup delivery
   file_picker: ">=8.0.0 <10.0.0"     # SAF-compliant file picker for restore
   flutter_markdown: ">=0.6.0 <1.0.0" # Markdown rendering for recipe instructions
+  package_info_plus: ">=8.0.0 <9.0.0" # Read version from pubspec at runtime
 
 dev_dependencies:
   flutter_test:

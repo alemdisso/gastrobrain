@@ -2642,6 +2642,8 @@
   "addStory": "Adicionar história",
   "editStory": "Editar história",
   "storyUpdatedSuccessfully": "História atualizada com sucesso",
-  "enterStory": "Escreve a história por trás desta receita..."
+  "enterStory": "Escreve a história por trás desta receita...",
+
+  "appVersionLabel": "Versão"
 
 }
