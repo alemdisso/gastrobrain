@@ -516,6 +516,35 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
     );
   }
 
+  /// Returns a comma-separated list of side dish names for display.
+  /// Recipe-based sides (isPrimaryDish == false) come first, then
+  /// ingredient-based simple sides.
+  String _buildSideNames(MealPlanItem plannedMeal) {
+    final parts = <String>[];
+
+    if (plannedMeal.mealPlanItemRecipes != null) {
+      for (final r in plannedMeal.mealPlanItemRecipes!
+          .where((r) => !r.isPrimaryDish)) {
+        final name = _recipes[r.recipeId]?.name;
+        if (name != null) parts.add(name);
+      }
+    }
+
+    if (plannedMeal.mealPlanItemIngredients != null) {
+      for (final s in plannedMeal.mealPlanItemIngredients!) {
+        if (s.ingredientId != null) {
+          parts.add(
+            widget.ingredientNames[s.ingredientId] ?? s.customName ?? '?',
+          );
+        } else {
+          parts.add(s.customName ?? '?');
+        }
+      }
+    }
+
+    return parts.join(', ');
+  }
+
   Widget _buildMealSection(DateTime date, String mealType, int dayIndex) {
     final MealPlanItem? plannedMeal =
         widget.mealPlan?.getItemsForDateAndMealType(date, mealType).firstOrNull;
@@ -568,6 +597,8 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
       ],
     );
 
+    final sideLine = hasPlannedMeal ? _buildSideNames(plannedMeal) : '';
+
     return InkWell(
       key: _generateSlotKey(dayIndex, mealType),
       onTap: () => _handleTap(date, mealType, plannedMeal, hasPlannedMeal),
@@ -609,31 +640,11 @@ class _WeeklyCalendarWidgetState extends State<WeeklyCalendarWidget>
                           fontWeight: DesignTokens.weightBold,
                         ),
                   ),
-                  // Recipe count (below name, only for multi-recipe meals)
-                  if (plannedMeal.mealPlanItemRecipes != null &&
-                      plannedMeal.mealPlanItemRecipes!.length > 1) ...[
+                  // Side dish names: recipe sides first, then simple sides
+                  if (sideLine.isNotEmpty) ...[
                     const SizedBox(height: DesignTokens.spacingXs),
                     Text(
-                      AppLocalizations.of(context)!.additionalRecipesCount(
-                          plannedMeal.mealPlanItemRecipes!.length - 1),
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: DesignTokens.mealBadgeContent,
-                          ),
-                    ),
-                  ],
-                  // Simple sides names
-                  if (plannedMeal.mealPlanItemIngredients != null &&
-                      plannedMeal.mealPlanItemIngredients!.isNotEmpty) ...[
-                    const SizedBox(height: DesignTokens.spacingXs),
-                    Text(
-                      plannedMeal.mealPlanItemIngredients!.map((s) {
-                        if (s.ingredientId != null) {
-                          return widget.ingredientNames[s.ingredientId] ??
-                              s.customName ??
-                              '?';
-                        }
-                        return s.customName ?? '?';
-                      }).join(', '),
+                      sideLine,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(

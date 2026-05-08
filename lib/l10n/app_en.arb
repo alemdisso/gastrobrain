@@ -917,16 +917,6 @@
       }
     }
   },
-  "additionalRecipesCount": "{count,plural, =1{1 recipe} other{{count} recipes}}",
-  "@additionalRecipesCount": {
-    "description": "Count of additional recipes with proper pluralization",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "description": "Number of additional recipes"
-      }
-    }
-  },
   "sunday": "Sunday",
   "@sunday": {
     "description": "Day names for the weekly calendar"

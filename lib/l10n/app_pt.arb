@@ -899,16 +899,6 @@
       }
     }
   },
-  "additionalRecipesCount": "{count,plural, =1{1 receita} other{{count} receitas}}",
-  "@additionalRecipesCount": {
-    "description": "Contagem de receitas adicionais com pluralização adequada",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "description": "Número de receitas adicionais"
-      }
-    }
-  },
   "sunday": "Domingo",
   "@sunday": {
     "description": "Nomes dos dias para o calendário semanal"
