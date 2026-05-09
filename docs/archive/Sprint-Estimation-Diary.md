@@ -9,61 +9,60 @@
 
 ## How to Run a Sprint Retrospective
 
-### 1. Generate Commit Analysis
+> **Methodology note (from 0.2.7 onward):** Per-issue weighted actual days and point-to-time ratios are no longer used. Story points are relative complexity units, not time units — distributing actual days across issues by lines and dividing by points converts points back into time, making the metric circular. The only velocity metric is sprint-level: **pts delivered ÷ actual days**. Per-issue tables record estimated pts and binary completion status only.
 
-Use the analysis script to extract commit data:
+### 1. Establish Sprint Boundaries
+
+Use the commit log to identify the sprint date range:
 
 ```bash
-# Basic usage - analyze commits from start date to now
-python3 scripts/analyze_sprint_commits.py --since YYYY-MM-DD --branch develop
-
-# With end date (for completed sprints)
-python3 scripts/analyze_sprint_commits.py --since 2025-12-02 --until 2025-12-17 --branch develop
-
-# Focus on specific issues only
-python3 scripts/analyze_sprint_commits.py --since 2025-12-02 --issues "223,228,124"
+git log --format="%h %ad %s" --date=short develop | head -30
 ```
 
-**Note:** Use `python3` command (not `python`) in Linux environments. On Windows, use `python`.
+Confirm with the developer: commits are a proxy, not the truth. A day without commits may be a rest day, planning session, or device-testing day.
 
-### 2. Review Output
+### 2. Fetch Issue Data
 
-The script outputs:
-- **Commits by Issue** - Active days and commit counts per issue
-- **Untagged Commits** - Commits without issue numbers that need attribution
-- **Working Days Summary** - Utilization and date range
-- **Daily Activity** - Visual timeline of work
+Collect estimated points from GitHub Project #3 (source of truth for estimates):
+
+```bash
+gh project item-list 3 --owner alemdisso --format json --limit 100
+```
+
+For issues not in the project board, use the sprint planning doc estimate.
 
 ### 3. Interview the Developer (CRITICAL)
 
-Before interpreting data, **ask the developer** about aspects commits don't capture:
-- **Sprint boundaries:** Confirm actual start/end dates (commits are a proxy, not the truth)
-- **Hidden work:** Device testing, design thinking, planning, debugging that left no commit trace
+Before interpreting data, ask about aspects commits don't capture:
+- **Sprint boundaries:** Confirm actual start/end dates
 - **Rest days vs no-commit work days:** A day without commits may have been research, testing, or rest
-- **Milestone transitions:** How did sprints overlap? Was there a deliberate handoff or continuous flow?
-- **Unplanned work context:** Why did emergent issues appear? UX feedback loop? Bug discovery? Scope evolution?
-- **Efficiency drivers:** What went well? New skills applied? Pattern reuse? Better tooling?
+- **Hidden work:** Device testing, design thinking, planning, debugging that left no commit trace
+- **Unplanned work context:** Why did emergent issues appear? UX feedback loop? Bug discovery?
+- **Efficiency drivers:** What went well? Pattern reuse? Better tooling?
 - **Blockers or friction:** Anything that slowed down but doesn't show in data?
 
-This step prevents the analyst from guessing at context and attributing fast execution solely to overestimation when genuine efficiency may be a factor.
+### 4. Calculate Sprint Metrics
 
-### 4. Attribute Untagged Commits
+```
+Actual days    = confirmed working days (from developer interview + commit log)
+Pts delivered  = sum of est pts for all completed issues (planned + stretch + unplanned)
+Velocity       = pts delivered ÷ actual days
+Expected days  = planned pts ÷ 6.5 (cruising velocity)
+Sprint result  = Under / On target / Over (compare actual vs expected days)
+```
 
-Review untagged commits and mentally assign them to issues based on commit message content. Common patterns:
-- Test commits without `#number` often belong to nearby tagged test issues
-- Merge commits can be ignored
-- Doc/style commits may be general maintenance
+### 5. Document in This File
 
-### 5. Compare with Estimates
+Add a new section under "Sprint Reviews" using the format introduced in 0.2.7:
 
-Cross-reference actual days with estimates from sprint planning doc or GitHub Project fields (Size/Estimate columns) to calculate ratios.
+**Issue table columns:** Issue | Title | Type | Est Pts | Status
+- Status values: ✅ Done / 📋 Stretch / ⚠️ Deferred / 📋 Unplanned
 
-### 6. Document in This File
+**Sprint Performance table:** Planned pts, delivered pts, actual days, expected days, velocity, sprint result
 
-Add a new section under "Sprint Reviews" following the 0.1.2 template. When writing the analysis:
-- **Balance overestimation vs efficiency** — fast execution can be both; acknowledge genuine skill gains
-- **Distinguish work types** — design system, features, testing, and polish have different velocity profiles
-- **Frame emergent work contextually** — UX feedback is a healthy product cycle, not just "unplanned work"
+**Working Pattern:** Qualitative commit timeline (dates + which issues, no line-weighted fractions)
+
+**Lessons:** Balanced framing — genuine efficiency vs genuine overestimation; emergent work context; patterns applicable to future sprints
 
 ---
 
@@ -2593,6 +2592,104 @@ The entire 0.2.6 lifecycle — discovery, diagnosis, fix, test (Schema Inspector
 
 ---
 
+### 0.2.7 — Code Health
+
+> **Methodology note:** From this entry onward, retrospectives use sprint-level velocity only. Per-issue weighted actual days and point-to-time ratios are no longer computed — story points are relative complexity units, not time units. The issue table records estimated pts and binary completion status.
+
+**Sprint Duration:** May 6–8, 2026
+**Calendar Days:** 3
+**Rest Days:** 1 (May 6)
+**Active Working Days:** ~1.5d (May 7 late session + May 8 full day)
+**Planned Issues:** 8 (15 pts)
+**Completed Issues:** 9 (8 planned + 1 stretch)
+**Total Points Delivered:** 17 pts
+
+#### Sprint Performance
+
+| Metric | Value |
+|--------|-------|
+| Planned pts | 15 |
+| Delivered pts | 17 (incl. #374 stretch) |
+| Actual days | ~1.5d |
+| Expected days at cruising | 15 ÷ 6.5 = 2.3d |
+| Velocity | 17 ÷ 1.5 = 11.3 pts/day (~79 pts/week) |
+| Sprint result | ⚡ Under — all planned + stretch delivered in 1.5d |
+
+#### Issues
+
+| Issue | Title | Type | Est Pts | Status |
+|-------|-------|------|---------|--------|
+| #378 | Fix migration_consolidation_test Scenario 3 | Test fix | 1 | ✅ Done |
+| #379 | Fix database_backup_service_test setUp | Test fix | 2 | ✅ Done |
+| #375 | Remove 'Variedade de Receitas' orphaned header | Bug | 1 | ✅ Done |
+| #364 | Parser confidence threshold | Bug | 3 | ✅ Done |
+| #366 | Fix 'Voltar' navigation in Opções de Refeição | Bug | 3 | ✅ Done |
+| #377 | Drop recipes.category column from DB schema | DB chore | 2 | ✅ Done |
+| #367 | Show app version in Settings screen | Enhancement | 1 | ✅ Done |
+| #355 | DI for IngredientsScreen | Refactor | 2 | ✅ Done |
+| #374 | Show side dish names in meal slot card | UX | 2 | 📋 Stretch — pulled in naturally |
+
+#### Working Pattern
+
+```
+May 6: ░░  Rest day
+May 7: ██░  Late session — P1 test fixes (#378, #379) + trivial bug (#375)
+May 8: ████  Full day — #364, #366, #377, #367, #355, and stretch #374
+```
+
+#### Variance Analysis
+
+**All planned issues completed + stretch:**
+- The sprint plan had exact file+line targets for every bug: #364 at `recipe_editor_screen.dart:415-416`, #366 at `recipe_selection_dialog.dart:468`. Both were 1-line condition fixes with regression tests — no investigation phase.
+- #378 and #379 were test debt generated by the 0.2.6 emergency commits. Their scope was already diagnosed: specific assertions and setUp calls to update. Cleared in the first half-session.
+- #375 was a trivial header removal — 6 lines.
+- #377 (schema migration) was the heaviest individual piece: confirmed zero remaining Dart refs, wrote the migration, verified data integrity. Still completed within the May 8 session.
+- #374 (stretch) pulled in naturally when the sprint finished ahead of schedule. No disruption to the planned work.
+
+**Velocity note:**
+The 11.3 pts/day figure (vs 6.5 cruising) reflects execution-mode conditions, not a velocity revision. Every issue had zero discovery overhead — exact file+line locations in the plan, known test scopes, established DI pattern for #355. Do not use this sprint to recalibrate cruising velocity.
+
+#### Lessons Learned
+
+1. **Sprint plan specification quality is the strongest velocity multiplier**
+   - Both 3-pt bugs (#364, #366) had file+line targets written into the sprint plan before the first commit. No debugging phase, no investigation, straight to the fix.
+   - Lesson: For well-understood bugs, writing the exact fix location into the sprint plan (not just the issue) eliminates the largest source of hidden time. Treat it as part of the planning investment.
+
+2. **Test debt generated atomically clears atomically**
+   - #378 and #379 were broken in the same 0.2.6 emergency session (two commits without test updates). They were resolved in the first half-session of 0.2.7 — less than half a day for 3 pts of debt.
+   - Lesson: When emergency commits skip test updates and the debt is well-scoped (specific assertions, specific setUp calls), plan for it to clear at ~0.1–0.2x. Don't over-buffer test debt from documented sources.
+
+3. **"Include a stretch goal when plan predicts done-by-noon Day 2" is a reliable pattern**
+   - The sprint plan explicitly named #374 as a stretch goal if capacity allowed. It did. The pull-in was smooth and unforced.
+   - Lesson: If sprint metrics project finishing ahead of schedule (adjusted estimate < available days), name the stretch goal in the plan rather than leaving it implicit. It avoids decision overhead mid-sprint.
+
+4. **Code Health sprints execute at execution-mode velocity**
+   - This sprint profile (P1 test fixes + well-specified bugs + mechanical refactor + small DB chore) reliably produces above-cruising velocity. No discovery, no iteration, no tooling friction.
+   - Lesson: When sizing a Code Health sprint, use execution-mode capacity (~36–40 pts/week) rather than cruising (30 pts/week), provided every issue has a confirmed fix location or established pattern.
+
+5. **Gate conditions met cleanly**
+   - The sprint plan stated: "0.2.8 can start only after #364 (confidence threshold) and #378/#379 (clean CI) land." All three were done Day 1 morning. 0.2.8's range-quantity parsing can extend `IngredientParserService` on a verified baseline.
+   - Lesson: Explicit gate conditions in the sprint plan are worth writing. They clarify why the sprint exists and make "done" unambiguous.
+
+#### Recommendations for 0.2.8
+
+| Finding | Adjustment |
+|---------|------------|
+| File+line targets in plan = zero debugging phase | For well-understood bugs, add exact location to sprint plan (not just issue body) |
+| Code Health sprint profile → execution-mode velocity | Size Code Health milestones at ~36–40 pts/week when all issues have confirmed fix scope |
+| Named stretch goals remove mid-sprint decisions | If plan predicts early finish, name the stretch goal explicitly at planning time |
+| Test debt from emergency commits clears fast when scoped | Budget ~0.1–0.2x for documented test debt; don't treat as exploratory work |
+
+#### Notes
+
+- May 6 was a rest day; the sprint effectively ran 1.5d (May 7 late + May 8 full).
+- #378, #379, and #375 done in a single late May 7 session; all remaining issues and stretch completed May 8.
+- No hidden overhead, no tooling friction, no unplanned work beyond #374 stretch.
+- Gate condition met: 0.2.8 starts on a clean confidence-threshold baseline and green CI.
+- Velocity of 11.3 pts/day is execution-mode, not a new cruising baseline. Cruising remains 30 pts/week (6.5 pts/day).
+
+---
+
 ## Cumulative Metrics
 
 ### Estimation Accuracy Trend
@@ -2619,12 +2716,14 @@ The entire 0.2.6 lifecycle — discovery, diagnosis, fix, test (Schema Inspector
 | 0.2.4 | 30 | ~4.0d | ~0.87x§ | 7.5 | Execution mode: dependency chains, holiday-interrupted week, stretch goal delivered; #354 only overrun (platform complexity) |
 | 0.2.5 | 34 | ~5.5d eff. | ~1.05x§ | 6.2 | Tagging system sprint; tag chain (#333→#334→#335) traded hours internally; silent migration failure (numbering collision) discovered post-release → 0.2.6 |
 | 0.2.6 | n/a‖ | ~1.5d | n/a | n/a | Emergency architectural fix: migration numbering collision; set-membership runner; Schema Inspector; test debt generated (#378, #379) |
+| 0.2.7 | 17¶ | ~1.5d | n/a† | 11.3 / 79 | Code Health sprint: P1 test fixes + well-specified bugs + DB chore + mechanical refactor; execution-mode velocity; stretch #374 absorbed; gate cleared for 0.2.8 |
 
 *\* 0.1.7a weighted-days methodology underrepresents actual effort due to shared day with 0.1.7b. Developer estimates ~0.5 days actual effort. Excluded from velocity calculations.*
 *† 0.1.14 ratio is a retroactive estimate; no commit-level weighted analysis available. Calculated as active days / expected days at cruising velocity.*
 *‡ 0.1.15 issues were not pre-estimated (P0 emergency patch); ratio not applicable.*
 *§ From 0.2.4 onward, ratio = actual days ÷ (estimated pts ÷ 6.5). Prior entries used 1pt = 1 day baseline — not directly comparable.*
 *‖ 0.2.6 was an emergency hotfix release; issues were not pre-estimated. Not counted in velocity calculations.*
+*¶ From 0.2.7 onward, ratio column is dropped. Velocity (pts/day and pts/week) is the primary metric. Pts = total delivered including stretch; ratio comparisons to prior entries are not meaningful.*
 
 **Critical Insights:**
 - **Cruising velocity: 30 points/week** — validated across 0.1.7b–0.2.4 (10 consecutive sprints at 26-48 pts/week); execution-mode sprints (pure bugs + well-specified features, no discovery) can spike above 40 pts/week
@@ -2647,6 +2746,9 @@ The entire 0.2.6 lifecycle — discovery, diagnosis, fix, test (Schema Inspector
 - **Migration bugs have two prices: symptom and root cause (0.2.5/0.2.6)** — the visible symptom can be fast to fix (0.06d); the architectural root cause can cost 25× more (1.5d). Migration bug fixes require a runner-level review: "Is the detection strategy sound for all possible DB states?" Skipping this review guarantees a follow-up emergency release
 - **Silent failures in migration architecture leave no trace (0.2.5)** — `MAX(version)` detection silently skipped 8 migrations across all existing devices; tags, recipe editing, meal_role: broken since 0.2.4 with no error, no crash, no log. The cost of an architectural assumption that goes untested is an unplanned emergency sprint
 - **Cruising velocity sustained through 0.2.5** — 0.2.5 delivered at ~1.05x (31 pts/week); velocity remains stable across 0.2.4–0.2.5 despite the hidden migration architecture risk
+- **Sprint plan specification quality is the primary velocity multiplier (0.2.7)** — writing the exact file+line fix location into the sprint plan (not just the issue body) eliminates the debugging phase entirely; both 3-pt bugs (#364, #366) were 1-line fixes because the plan answered "where" before the sprint started
+- **Code Health sprint profile reliably executes at execution-mode velocity (0.2.7)** — P1 test fixes + well-specified bugs + mechanical refactor + DB chore = no discovery overhead; size Code Health milestones at ~36–40 pts/week, not cruising (30 pts/week)
+- **Retrospective methodology change (0.2.7)** — per-issue weighted actual days and point-to-time ratios are no longer used; story points are relative units, not time; the only velocity metric is sprint-level pts ÷ actual days
 
 ### Type-Based Calibration Factors
 
@@ -2823,6 +2925,7 @@ Use historical velocity data to size future milestones and prevent overcommitmen
 | 0.2.2 | 24 | ~3.8 | ~6.3 | ~31.5 | Algorithm tuning + parser bug batch; #341 incomplete (validation debt) |
 | 0.2.3 | 33 | ~3.4 | ~9.7 | ~48.5 | Execution-mode sprint: bug batch + UX features + P1 feature; 3 working days |
 | 0.2.4 | 30 | ~4.0 | ~7.5 | ~37.5 | Dependency chains, holiday-interrupted week (4 days); stretch goal delivered |
+| 0.2.7 | 17 | ~1.5 | 11.3 | ~79 | Code Health: P1 test fixes + well-specified bugs + mechanical refactor; execution-mode; do not use for cruising velocity calibration |
 
 *\* 0.1.7a excluded from velocity calculations — shared day with 0.1.7b makes weighted-days unreliable.*
 *0.1.15 excluded from velocity calculations — emergency patch, not a regular sprint.*
@@ -2892,6 +2995,12 @@ Use historical velocity data to size future milestones and prevent overcommitmen
 
 ## Document History
 
+- **2026-05-08**: Added 0.2.7 retrospective (Code Health sprint)
+  - **Methodology change**: Dropped per-issue weighted actual days and point-to-time ratios. Story points are relative units, not time. Only sprint-level velocity (pts ÷ actual days) is tracked going forward.
+  - New sprint entry format: issue table with binary completion status only; Sprint Performance table with velocity vs expected days at cruising
+  - Updated sprint_review_template.md, SKILL.md Checkpoint 3, and diary "How to Run" section
+  - 0.2.7: 17 pts in ~1.5d (11.3 pts/day); all planned + stretch #374; Code Health execution-mode sprint
+  - Key lesson: file+line targets in sprint plan eliminate debugging phase; Code Health sprint profile sizes at ~36–40 pts/week
 - **2025-12-18**: Created with 0.1.2 retrospective analysis
 - **2025-12-18**: Added `scripts/analyze_sprint_commits.py` for automated commit analysis
 - **2025-12-18**: Corrected methodology to use weighted days (lines changed) for shared days
