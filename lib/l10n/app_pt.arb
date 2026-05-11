@@ -48,6 +48,8 @@
   "@difficulty": {
     "description": "Opção de ordenar por dificuldade"
   },
+  "sortNewestFirst": "Mais recentes primeiro",
+  "sortOldestFirst": "Mais antigas primeiro",
   "filterRecipes": "Filtrar Receitas",
   "@filterRecipes": {
     "description": "Título do diálogo de filtros de receitas"
