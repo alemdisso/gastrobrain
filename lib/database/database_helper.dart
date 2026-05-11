@@ -38,6 +38,7 @@ import '../core/migration/migrations/006_add_meal_role_food_type.dart';
 import '../core/migration/migrations/007_migrate_category_to_tags.dart';
 import '../core/migration/migrations/008_add_sauce_food_type.dart';
 import '../core/migration/migrations/009_drop_recipe_category.dart';
+import '../core/migration/migrations/010_add_quantity_max.dart';
 import '../core/repositories/base_repository.dart';
 
 class DatabaseHelper {
@@ -60,6 +61,7 @@ class DatabaseHelper {
     MigrateCategoryToTagsMigration(),
     AddSauceFoodTypeMigration(),
     DropRecipeCategoryMigration(),
+    AddQuantityMaxMigration(),
   ];
 
   /// Get the migration runner instance
@@ -1097,9 +1099,10 @@ class DatabaseHelper {
       String recipeId) async {
     final Database db = await database;
     return await db.rawQuery('''
-      SELECT 
+      SELECT
       ri.id as recipe_ingredient_id,
       ri.quantity,
+      ri.quantity_max,
       ri.notes as preparation_notes,
       ri.unit_override,
       ri.custom_name,

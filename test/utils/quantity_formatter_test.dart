@@ -240,5 +240,29 @@ void main() {
         expect(QuantityFormatter.format(1.5), equals('1½')); // 1.5 liters
       });
     });
+
+    group('formatRange', () {
+      test('formats integer range as "2–3"', () {
+        expect(QuantityFormatter.formatRange(2, 3), equals('2–3'));
+      });
+
+      test('formats fraction range as "½–1"', () {
+        expect(QuantityFormatter.formatRange(0.5, 1), equals('½–1'));
+      });
+
+      test('formats mixed-number range as "1½–2"', () {
+        expect(QuantityFormatter.formatRange(1.5, 2), equals('1½–2'));
+      });
+
+      test('formats fraction-to-fraction range as "¼–½"', () {
+        expect(QuantityFormatter.formatRange(0.25, 0.5), equals('¼–½'));
+      });
+
+      test('uses en-dash separator not hyphen', () {
+        final result = QuantityFormatter.formatRange(1, 2);
+        expect(result, contains('–'));
+        expect(result, isNot(contains('-')));
+      });
+    });
   });
 }

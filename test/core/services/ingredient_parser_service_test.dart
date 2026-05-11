@@ -1000,6 +1000,66 @@ void main() {
       });
     });
 
+    group('Range quantities', () {
+      test('parses "2-3 cloves garlic" → min 2, max 3, unit clove', () {
+        final result = parserService.parseIngredientLine('2-3 cloves garlic');
+        expect(result.quantity, equals(2.0));
+        expect(result.quantityMax, equals(3.0));
+        expect(result.unit, equals('clove'));
+        expect(result.isRange, isTrue);
+      });
+
+      test('parses "½-1 tsp salt" → min 0.5, max 1', () {
+        final result = parserService.parseIngredientLine('½-1 tsp salt');
+        expect(result.quantity, equals(0.5));
+        expect(result.quantityMax, equals(1.0));
+        expect(result.isRange, isTrue);
+      });
+
+      test('parses "1/2-1 cup flour" → min 0.5, max 1', () {
+        final result = parserService.parseIngredientLine('1/2-1 cup flour');
+        expect(result.quantity, equals(0.5));
+        expect(result.quantityMax, equals(1.0));
+        expect(result.isRange, isTrue);
+      });
+
+      test('parses "1½-2 kg beef" → min 1.5, max 2', () {
+        final result = parserService.parseIngredientLine('1½-2 kg beef');
+        expect(result.quantity, equals(1.5));
+        expect(result.quantityMax, equals(2.0));
+        expect(result.isRange, isTrue);
+      });
+
+      test('parses en-dash "2–3 cloves" → min 2, max 3', () {
+        final result = parserService.parseIngredientLine('2–3 cloves garlic');
+        expect(result.quantity, equals(2.0));
+        expect(result.quantityMax, equals(3.0));
+        expect(result.isRange, isTrue);
+      });
+
+      test('inverted range (min > max) falls back to single value', () {
+        final result = parserService.parseIngredientLine('3-2 cloves garlic');
+        expect(result.quantityMax, isNull);
+        expect(result.isRange, isFalse);
+        expect(result.quantity, equals(3.0));
+      });
+
+      test('single value has quantityMax = null', () {
+        final result = parserService.parseIngredientLine('2 cloves garlic');
+        expect(result.quantity, equals(2.0));
+        expect(result.quantityMax, isNull);
+        expect(result.isRange, isFalse);
+      });
+
+      test('range preserves unit and ingredient name', () {
+        final result = parserService.parseIngredientLine('2-3 kg beef');
+        expect(result.quantity, equals(2.0));
+        expect(result.quantityMax, equals(3.0));
+        expect(result.unit, equals('kg'));
+        expect(result.ingredientName, equals('beef'));
+      });
+    });
+
     group('Initialization', () {
       test('throws StateError if not initialized', () {
         final uninitializedService = IngredientParserService();

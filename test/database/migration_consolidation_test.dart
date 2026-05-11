@@ -11,6 +11,7 @@ import 'package:gastrobrain/core/migration/migrations/006_add_meal_role_food_typ
 import 'package:gastrobrain/core/migration/migrations/007_migrate_category_to_tags.dart';
 import 'package:gastrobrain/core/migration/migrations/008_add_sauce_food_type.dart';
 import 'package:gastrobrain/core/migration/migrations/009_drop_recipe_category.dart';
+import 'package:gastrobrain/core/migration/migrations/010_add_quantity_max.dart';
 
 void main() {
   setUpAll(() {
@@ -205,7 +206,7 @@ void main() {
           [v, DateTime.now().toIso8601String(), 'migration $v', 0],
         );
       }
-      for (int v = 101; v <= 109; v++) {
+      for (int v = 101; v <= 110; v++) {
         await db.rawInsert(
           'INSERT INTO schema_migrations (version, applied_at, description, duration_ms) '
           'VALUES (?, ?, ?, ?)',
@@ -220,8 +221,8 @@ void main() {
 
     tearDown(() async => db.close());
 
-    test('currentVersion is 109 (highest version in schema_migrations)', () async {
-      expect(await runner.getCurrentVersion(), equals(109));
+    test('currentVersion is 110 (highest version in schema_migrations)', () async {
+      expect(await runner.getCurrentVersion(), equals(110));
     });
 
     test('latestVersion is 101 (only migration in registry)', () {
@@ -928,6 +929,97 @@ void main() {
 
       final cols = await columnNames(db, 'recipes');
       expect(cols, contains('category'));
+    });
+  });
+
+  // ── Migration 010: AddQuantityMaxMigration ────────────────────────────────
+
+  group('Migration 010 — AddQuantityMaxMigration', () {
+    late Database db;
+    late AddQuantityMaxMigration migration;
+    late DatabaseWrapper wrapper;
+
+    setUp(() async {
+      db = await openEmpty();
+      migration = AddQuantityMaxMigration();
+      wrapper = DatabaseWrapper(db);
+      await InitialSchemaMigration().up(wrapper);
+      // FK enforcement is off by default in SQLite FFI; explicitly disable so
+      // migration data tests can insert without satisfying recipe/ingredient refs.
+      await db.execute('PRAGMA foreign_keys = OFF');
+    });
+
+    tearDown(() async => db.close());
+
+    test('validate() returns false before up()', () async {
+      expect(await migration.validate(wrapper), isFalse);
+    });
+
+    test('up() adds quantity_max column to recipe_ingredients', () async {
+      await migration.up(wrapper);
+
+      final cols = await columnNames(db, 'recipe_ingredients');
+      expect(cols, contains('quantity_max'));
+    });
+
+    test('validate() returns true after up()', () async {
+      await migration.up(wrapper);
+
+      expect(await migration.validate(wrapper), isTrue);
+    });
+
+    test('up() is a no-op when quantity_max already present', () async {
+      await migration.up(wrapper);
+      await expectLater(migration.up(wrapper), completes);
+
+      final cols = await columnNames(db, 'recipe_ingredients');
+      expect(cols, contains('quantity_max'));
+    });
+
+    test('existing rows have quantity_max = null after up()', () async {
+      await db.rawInsert(
+        'INSERT INTO recipe_ingredients '
+        '(id, recipe_id, ingredient_id, quantity) '
+        "VALUES ('ri-1', 'r-1', 'i-1', 2.0)",
+      );
+
+      await migration.up(wrapper);
+
+      final rows = await db.rawQuery(
+        "SELECT quantity_max FROM recipe_ingredients WHERE id = 'ri-1'",
+      );
+      expect(rows.first['quantity_max'], isNull);
+    });
+
+    test('down() removes quantity_max column', () async {
+      await migration.up(wrapper);
+      await migration.down(wrapper);
+
+      final cols = await columnNames(db, 'recipe_ingredients');
+      expect(cols, isNot(contains('quantity_max')));
+    });
+
+    test('down() is a no-op when quantity_max is already absent', () async {
+      await expectLater(migration.down(wrapper), completes);
+
+      final cols = await columnNames(db, 'recipe_ingredients');
+      expect(cols, isNot(contains('quantity_max')));
+    });
+
+    test('down() preserves existing ingredient data', () async {
+      await migration.up(wrapper);
+      await db.rawInsert(
+        'INSERT INTO recipe_ingredients '
+        '(id, recipe_id, ingredient_id, quantity, quantity_max) '
+        "VALUES ('ri-2', 'r-1', 'i-1', 2.0, 3.0)",
+      );
+
+      await migration.down(wrapper);
+
+      final rows = await db.rawQuery(
+        "SELECT quantity FROM recipe_ingredients WHERE id = 'ri-2'",
+      );
+      expect(rows.first['quantity'], equals(2.0));
     });
   });
 }

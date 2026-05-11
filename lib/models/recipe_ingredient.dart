@@ -1,11 +1,11 @@
 class RecipeIngredient {
   String id;
   String recipeId;
-  String?
-      ingredientId; // ID of the ingredient in the ingredients table or null for custom ingredients
-  double quantity; // Quantity of the ingredient, like 1.5 or 0.5
-  String? notes; // Optional preparation notes, like "diced" or "minced"
-  String? unitOverride; // Optional override for the ingredient's unit
+  String? ingredientId;
+  double quantity;
+  double? quantityMax;
+  String? notes;
+  String? unitOverride;
   String? customName;
   String? customCategory;
   String? customUnit;
@@ -15,6 +15,7 @@ class RecipeIngredient {
     required this.recipeId,
     required this.ingredientId,
     required this.quantity,
+    this.quantityMax,
     this.notes,
     this.unitOverride,
     this.customName,
@@ -22,8 +23,10 @@ class RecipeIngredient {
     this.customUnit,
   });
 
-  // Convenience getter to check if this is a custom ingredient
   bool get isCustom => ingredientId == null;
+
+  /// True when this ingredient has a range quantity (e.g. "2–3 cloves").
+  bool get isRange => quantityMax != null;
 
   Map<String, dynamic> toMap() {
     return {
@@ -31,6 +34,7 @@ class RecipeIngredient {
       'recipe_id': recipeId,
       'ingredient_id': ingredientId,
       'quantity': quantity,
+      'quantity_max': quantityMax,
       'notes': notes,
       'unit_override': unitOverride,
       'custom_name': customName,
@@ -39,13 +43,13 @@ class RecipeIngredient {
     };
   }
 
-  // Factory constructor for creating a custom ingredient
   factory RecipeIngredient.custom({
     required String id,
     required String recipeId,
     required String name,
     required String category,
     required double quantity,
+    double? quantityMax,
     String? unit,
     String? notes,
   }) {
@@ -54,6 +58,7 @@ class RecipeIngredient {
       recipeId: recipeId,
       ingredientId: null,
       quantity: quantity,
+      quantityMax: quantityMax,
       notes: notes,
       customName: name,
       customCategory: category,

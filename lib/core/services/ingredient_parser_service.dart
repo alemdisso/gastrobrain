@@ -485,21 +485,37 @@ class IngredientParserService {
     // Normalize multiple spaces to single space
     trimmedLine = trimmedLine.replaceAll(RegExp(r'\s+'), ' ');
 
-    // Step 1: Extract quantity from beginning
-    // Match: mixed number, slash fraction, unicode fraction, decimal, or integer
-    // Pattern explanation:
-    // - (\d+\s+)?(\d+/\d+|[unicode]) : optional whole number + space + fraction
-    // - |\d+[unicode] : integer immediately followed by unicode fraction (e.g. "1½")
-    // - |\d+(?:[.,]\d+)? : OR decimal/integer
-    final quantityPattern = RegExp(r'^((?:\d+\s+)?(?:\d+/\d+|[½⅓¼⅔¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])|\d+[½⅓¼⅔¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]|\d+(?:[.,]\d+)?)\s*');
+    // Step 1: Extract quantity (single value or range) from beginning.
+    //
+    // A quantity token is: mixed-number | no-space-mixed | decimal | integer.
+    // The range pattern checks for two such tokens separated by a hyphen or
+    // en-dash (e.g. "2-3", "½-1", "1/2-1", "1½-2", "2–3").
+    // The range check must run first so that "2-3" is not consumed as "2"
+    // with a remainder of "-3 cloves".
+
+    const _qToken =
+        r'(?:\d+\s+)?(?:\d+/\d+|[½⅓¼⅔¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])'  // mixed: "1 1/2", "1 ½"
+        r'|\d+[½⅓¼⅔¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]'                      // no-space: "1½"
+        r'|\d+(?:[.,]\d+)?';                              // decimal/integer
+
+    final rangePattern = RegExp('^($_qToken)[–-]($_qToken)\\s*');
+    final rangeMatch = rangePattern.firstMatch(trimmedLine);
+
+    final quantityPattern = RegExp('^($_qToken)\\s*');
     final quantityMatch = quantityPattern.firstMatch(trimmedLine);
-    
+
     double quantity = 1.0;
+    double? quantityMax;
     String remaining = trimmedLine;
-    
-    if (quantityMatch != null) {
-      final quantityStr = quantityMatch.group(1)!;
-      quantity = _parseQuantity(quantityStr);
+
+    if (rangeMatch != null) {
+      quantity = _parseQuantity(rangeMatch.group(1)!);
+      quantityMax = _parseQuantity(rangeMatch.group(2)!);
+      // Ignore inverted ranges (min > max) — treat as single value.
+      if (quantityMax <= quantity) quantityMax = null;
+      remaining = trimmedLine.substring(rangeMatch.end).trim();
+    } else if (quantityMatch != null) {
+      quantity = _parseQuantity(quantityMatch.group(1)!);
       remaining = trimmedLine.substring(quantityMatch.end).trim();
     }
     
@@ -577,7 +593,7 @@ class IngredientParserService {
     }
     
     // Handle "to taste" pattern (no quantity)
-    if (quantityMatch == null && unit == null) {
+    if (rangeMatch == null && quantityMatch == null && unit == null) {
       // Check if it's a "to taste" pattern
       if (trimmedLine.toLowerCase().contains('a gosto') ||
           trimmedLine.toLowerCase().contains('to taste')) {
@@ -619,6 +635,7 @@ class IngredientParserService {
 
     return ParsedIngredientResult(
       quantity: quantity,
+      quantityMax: quantityMax,
       unit: unit,
       ingredientName: ingredientName,
       notes: finalNotes,
@@ -643,13 +660,17 @@ class _UnitMatch {
 /// Result of parsing an ingredient line
 class ParsedIngredientResult {
   final double quantity;
+  final double? quantityMax;
   final String? unit;
   final String ingredientName;
   final String? notes;
   final List<IngredientMatch> matches;
-  
+
+  bool get isRange => quantityMax != null;
+
   ParsedIngredientResult({
     required this.quantity,
+    this.quantityMax,
     required this.unit,
     required this.ingredientName,
     required this.notes,
