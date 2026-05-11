@@ -14,6 +14,38 @@ import '../core/services/snackbar_service.dart';
 import '../l10n/app_localizations.dart';
 import '../core/di/service_provider.dart';
 
+/// Parses a quantity field value, returning (min, max) where max is null for single values.
+/// Accepts: `2`, `1.5`, `2-3`, `1.5–2` (hyphen or en-dash).
+(double, double?) _parseQuantityText(String text) {
+  final trimmed = text.trim();
+  final rangeMatch =
+      RegExp(r'^(\d+(?:[.,]\d+)?)\s*[–-]\s*(\d+(?:[.,]\d+)?)$')
+          .firstMatch(trimmed);
+  if (rangeMatch != null) {
+    final min =
+        double.tryParse(rangeMatch.group(1)!.replaceAll(',', '.')) ?? 0.0;
+    final max =
+        double.tryParse(rangeMatch.group(2)!.replaceAll(',', '.')) ?? 0.0;
+    if (max > min) return (min, max);
+  }
+  return (double.tryParse(trimmed.replaceAll(',', '.')) ?? 0.0, null);
+}
+
+bool _isValidQuantityText(String text) {
+  final trimmed = text.trim();
+  final rangeMatch =
+      RegExp(r'^(\d+(?:[.,]\d+)?)\s*[–-]\s*(\d+(?:[.,]\d+)?)$')
+          .firstMatch(trimmed);
+  if (rangeMatch != null) {
+    final min =
+        double.tryParse(rangeMatch.group(1)!.replaceAll(',', '.'));
+    final max =
+        double.tryParse(rangeMatch.group(2)!.replaceAll(',', '.'));
+    return min != null && max != null && max > min;
+  }
+  return double.tryParse(trimmed.replaceAll(',', '.')) != null;
+}
+
 class AddIngredientDialog extends StatefulWidget {
   final Recipe recipe;
   final Function(RecipeIngredient)? onSave;
@@ -65,10 +97,17 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
       // Pre-fill the form with existing values
       final existingQuantity =
           (widget.existingIngredient!['quantity'] as num).toDouble();
+      final existingQuantityMax =
+          widget.existingIngredient!['quantity_max'] as double?;
       final isExistingToTaste = existingQuantity == 0;
       _isToTaste = isExistingToTaste;
       if (!isExistingToTaste) {
-        _quantityController.text = existingQuantity.toString();
+        if (existingQuantityMax != null) {
+          _quantityController.text =
+              '${_formatForInput(existingQuantity)}-${_formatForInput(existingQuantityMax)}';
+        } else {
+          _quantityController.text = existingQuantity.toString();
+        }
       }
       _notesController.text =
           widget.existingIngredient!['preparation_notes'] ?? '';
@@ -130,13 +169,18 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
     try {
       RecipeIngredient recipeIngredient;
 
+      final (parsedQty, parsedQtyMax) = _isToTaste
+          ? (0.0, null)
+          : _parseQuantityText(_quantityController.text);
+
       if (_isCustomIngredient) {
         // Create custom ingredient
         recipeIngredient = RecipeIngredient(
           id: widget.recipeIngredientId ?? IdGenerator.generateId(),
           recipeId: widget.recipe.id,
           ingredientId: null, // No reference to ingredients table
-          quantity: _isToTaste ? 0.0 : double.parse(_quantityController.text),
+          quantity: parsedQty,
+          quantityMax: parsedQtyMax,
           notes: _notesController.text.isEmpty ? null : _notesController.text,
           customName: _customNameController.text,
           customCategory: _selectedCategory.value,
@@ -148,8 +192,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
           throw ValidationException('Please select an ingredient');
         }
 
-        final quantity =
-            _isToTaste ? 0.0 : double.parse(_quantityController.text);
+        final quantity = parsedQty;
 
         EntityValidator.validateRecipeIngredient(
           ingredientId: _selectedIngredient!.id,
@@ -171,6 +214,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
           recipeId: widget.recipe.id,
           ingredientId: _selectedIngredient!.id,
           quantity: quantity,
+          quantityMax: parsedQtyMax,
           notes: _notesController.text.isEmpty ? null : _notesController.text,
           unitOverride: unitOverride,
         );
@@ -276,6 +320,11 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
         _selectedIngredient = newIngredient;
       });
     }
+  }
+
+  String _formatForInput(double v) {
+    if (v == v.toInt()) return v.toInt().toString();
+    return v.toString();
   }
 
   @override
@@ -516,6 +565,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                               decoration: InputDecoration(
                                 labelText:
                                     AppLocalizations.of(context)!.quantity,
+                                hintText: '2 or 1-3',
                               ),
                               keyboardType:
                                   const TextInputType.numberWithOptions(
@@ -526,7 +576,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                                   return AppLocalizations.of(context)!
                                       .pleaseEnterQuantity;
                                 }
-                                if (double.tryParse(value) == null) {
+                                if (!_isValidQuantityText(value)) {
                                   return AppLocalizations.of(context)!
                                       .pleaseEnterValidNumber;
                                 }

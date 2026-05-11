@@ -1259,6 +1259,178 @@ void main() {
       });
     });
 
+    group('Range Quantity Input', () {
+      testWidgets('accepts range notation and saves quantityMax',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        RecipeIngredient? savedIngredient;
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+            onSave: (ingredient) {
+              savedIngredient = ingredient;
+            },
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        final quantityField =
+            find.byKey(const Key('add_ingredient_quantity_field'));
+        await tester.enterText(quantityField, '2-3');
+        await tester.pumpAndSettle();
+
+        final searchField =
+            find.byKey(const Key('add_ingredient_search_field'));
+        await tester.enterText(searchField, 'Chicken Breast');
+        await tester.pumpAndSettle();
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.pump(const Duration(milliseconds: 100));
+
+        await tester.tap(find.text('Adicionar'));
+        await tester.pumpAndSettle();
+
+        expect(savedIngredient, isNotNull);
+        expect(savedIngredient!.quantity, equals(2.0));
+        expect(savedIngredient!.quantityMax, equals(3.0));
+      });
+
+      testWidgets('accepts decimal range and saves both values',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        RecipeIngredient? savedIngredient;
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+            onSave: (ingredient) {
+              savedIngredient = ingredient;
+            },
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        final quantityField =
+            find.byKey(const Key('add_ingredient_quantity_field'));
+        await tester.enterText(quantityField, '1.5-2.5');
+        await tester.pumpAndSettle();
+
+        final searchField =
+            find.byKey(const Key('add_ingredient_search_field'));
+        await tester.enterText(searchField, 'Chicken Breast');
+        await tester.pumpAndSettle();
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.pump(const Duration(milliseconds: 100));
+
+        await tester.tap(find.text('Adicionar'));
+        await tester.pumpAndSettle();
+
+        expect(savedIngredient, isNotNull);
+        expect(savedIngredient!.quantity, equals(1.5));
+        expect(savedIngredient!.quantityMax, equals(2.5));
+      });
+
+      testWidgets('single value has null quantityMax',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        RecipeIngredient? savedIngredient;
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+            onSave: (ingredient) {
+              savedIngredient = ingredient;
+            },
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        final quantityField =
+            find.byKey(const Key('add_ingredient_quantity_field'));
+        await tester.enterText(quantityField, '2');
+        await tester.pumpAndSettle();
+
+        final searchField =
+            find.byKey(const Key('add_ingredient_search_field'));
+        await tester.enterText(searchField, 'Chicken Breast');
+        await tester.pumpAndSettle();
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.pump(const Duration(milliseconds: 100));
+
+        await tester.tap(find.text('Adicionar'));
+        await tester.pumpAndSettle();
+
+        expect(savedIngredient, isNotNull);
+        expect(savedIngredient!.quantity, equals(2.0));
+        expect(savedIngredient!.quantityMax, isNull);
+      });
+
+      testWidgets('pre-fills min-max format when editing ingredient with range',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+        final existingWithRange = {
+          'ingredient_id': testIngredient.id,
+          'quantity': 2.0,
+          'quantity_max': 3.0,
+          'preparation_notes': '',
+        };
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+            existingIngredient: existingWithRange,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        final quantityField =
+            find.byKey(const Key('add_ingredient_quantity_field'));
+        final fieldText =
+            tester.widget<TextFormField>(quantityField).controller!.text;
+        expect(fieldText, equals('2-3'));
+      });
+
+      testWidgets('rejects inverted range where min >= max',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        final quantityField =
+            find.byKey(const Key('add_ingredient_quantity_field'));
+        await tester.enterText(quantityField, '3-1');
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Adicionar'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Por favor, informe um número válido'), findsOneWidget);
+      });
+    });
+
     group('Error Handling', () {
       testWidgets('handles database error when loading ingredients',
           (WidgetTester tester) async {

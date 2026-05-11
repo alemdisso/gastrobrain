@@ -78,9 +78,14 @@ class RecipeDetailsIngredientsTab extends StatelessWidget {
         ingredient['unit_override'] ?? ingredient['unit'] ?? '';
     final measurementUnit = MeasurementUnit.fromString(effectiveUnitString);
     final quantity = ingredient['quantity'] as double;
+    final quantityMax = ingredient['quantity_max'] as double?;
+    final pluralityQty = quantityMax ?? quantity;
     final localizedUnit =
-        measurementUnit?.getLocalizedQuantityName(context, quantity) ??
+        measurementUnit?.getLocalizedQuantityName(context, pluralityQty) ??
             effectiveUnitString;
+    final quantityDisplay = quantityMax != null
+        ? QuantityFormatter.formatRange(quantity, quantityMax)
+        : QuantityFormatter.format(quantity);
 
     return Card(
       elevation: 0,
@@ -110,7 +115,7 @@ class RecipeDetailsIngredientsTab extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          '${QuantityFormatter.format(quantity)} $localizedUnit',
+                          '$quantityDisplay $localizedUnit',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                         if (ingredient['unit_override'] != null)

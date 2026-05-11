@@ -13,6 +13,7 @@ import '../widgets/add_new_ingredient_dialog.dart';
 import '../widgets/servings_stepper.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/id_generator.dart';
+import '../utils/quantity_formatter.dart';
 import '../utils/sorting_utils.dart';
 
 /// Milestone target for enriched recipes (recipes with 3+ ingredients)
@@ -421,6 +422,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
 
     return _ParsedIngredient(
       quantity: result.quantity,
+      quantityMax: result.quantityMax,
       unit: result.unit,
       name: result.ingredientName,
       category: selectedMatch?.ingredient.category ?? IngredientCategory.other,
@@ -639,6 +641,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
             recipeId: _selectedRecipe!.id,
             ingredientId: ingredientId,
             quantity: parsed.quantity,
+            quantityMax: parsed.quantityMax,
             notes: parsed.notes,
             unitOverride: parsed.unit,
           );
@@ -652,6 +655,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
             recipeId: _selectedRecipe!.id,
             ingredientId: ingredientId,
             quantity: parsed.quantity,
+            quantityMax: parsed.quantityMax,
             notes: parsed.notes,
             unitOverride: parsed.unit,
           );
@@ -1551,12 +1555,17 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
                 children: _existingIngredients.map((ingredientMap) {
                   final name = ingredientMap['name'] as String? ?? 'Unknown';
                   final quantity = ingredientMap['quantity'] as double? ?? 0.0;
+                  final quantityMax = ingredientMap['quantity_max'] as double?;
                   final unit = ingredientMap['unit'] as String?;
                   final category =
                       ingredientMap['category'] as String? ?? 'other';
 
                   // Format quantity display
-                  final quantityStr = formatQuantity(quantity);
+                  final quantityStr = quantity == 0
+                      ? ''
+                      : quantityMax != null
+                          ? QuantityFormatter.formatRange(quantity, quantityMax)
+                          : QuantityFormatter.format(quantity);
                   final quantityDisplay = quantityStr.isNotEmpty
                       ? '$quantityStr${unit != null ? ' $unit' : ''}'
                       : 'to taste';
@@ -1963,9 +1972,9 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Quantity field
+                // Quantity field (shows "2" or "2-3" for ranges)
                 SizedBox(
-                  width: 40,
+                  width: 60,
                   child: TextFormField(
                     key: ValueKey('qty_${index}_$_parseGeneration'),
                     decoration: const InputDecoration(
@@ -1976,7 +1985,9 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
                     ),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
-                    initialValue: formatQuantity(ingredient.quantity),
+                    initialValue: ingredient.quantityMax != null
+                        ? '${formatQuantity(ingredient.quantity)}-${formatQuantity(ingredient.quantityMax!)}'
+                        : formatQuantity(ingredient.quantity),
                     onChanged: (value) {
                       final qty = double.tryParse(value) ?? 0.0;
                       _updateIngredient(index, quantity: qty);
@@ -2317,6 +2328,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
 /// Helper class to represent a parsed ingredient before saving to database
 class _ParsedIngredient {
   double quantity;
+  double? quantityMax;
   String? unit;
   String name;
   String
@@ -2334,6 +2346,7 @@ class _ParsedIngredient {
 
   _ParsedIngredient({
     required this.quantity,
+    this.quantityMax,
     this.unit,
     required this.name,
     String? originalName,
