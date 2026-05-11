@@ -2729,14 +2729,6 @@
   "@recipeStoryHint": {
     "description": "Hint text for the story input field"
   },
-  "addStory": "Add story",
-  "@addStory": {
-    "description": "Button label to add a story to a recipe"
-  },
-  "editStory": "Edit story",
-  "@editStory": {
-    "description": "Button tooltip for editing the recipe story"
-  },
   "storyUpdatedSuccessfully": "Story updated successfully",
   "@storyUpdatedSuccessfully": {
     "description": "Success message when story is saved"
