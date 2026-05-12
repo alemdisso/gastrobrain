@@ -1972,25 +1972,59 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Quantity field (shows "2" or "2-3" for ranges)
+                // Quantity field (accepts single value or range: "2" or "2-3")
                 SizedBox(
-                  width: 60,
+                  width: 72,
                   child: TextFormField(
                     key: ValueKey('qty_${index}_$_parseGeneration'),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Qty',
-                      border: OutlineInputBorder(),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      hintText: 'e.g. 2 or 2–3',
+                      border: const OutlineInputBorder(),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 8),
+                      errorText: ingredient.qtyError,
+                      errorStyle: const TextStyle(fontSize: 10),
                     ),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: TextInputType.text,
                     initialValue: ingredient.quantityMax != null
-                        ? '${formatQuantity(ingredient.quantity)}-${formatQuantity(ingredient.quantityMax!)}'
-                        : formatQuantity(ingredient.quantity),
+                        ? QuantityFormatter.formatRange(
+                            ingredient.quantity, ingredient.quantityMax!)
+                        : QuantityFormatter.format(ingredient.quantity),
                     onChanged: (value) {
-                      final qty = double.tryParse(value) ?? 0.0;
-                      _updateIngredient(index, quantity: qty);
+                      if (index < 0 || index >= _parsedIngredients.length) {
+                        return;
+                      }
+                      final trimmed = value.trim();
+                      final rangeMatch = RegExp(
+                        r'^(\d+(?:[.,]\d+)?)\s*[–-]\s*(\d+(?:[.,]\d+)?)$',
+                      ).firstMatch(trimmed);
+                      setState(() {
+                        if (rangeMatch != null) {
+                          final min = double.tryParse(
+                                  rangeMatch.group(1)!.replaceAll(',', '.')) ??
+                              0.0;
+                          final max = double.tryParse(
+                                  rangeMatch.group(2)!.replaceAll(',', '.')) ??
+                              0.0;
+                          if (max > min) {
+                            _parsedIngredients[index].quantity = min;
+                            _parsedIngredients[index].quantityMax = max;
+                            _parsedIngredients[index].qtyError = null;
+                          } else {
+                            _parsedIngredients[index].quantity = min;
+                            _parsedIngredients[index].quantityMax = null;
+                            _parsedIngredients[index].qtyError =
+                                'Min must be less than max';
+                          }
+                        } else {
+                          _parsedIngredients[index].quantity =
+                              double.tryParse(trimmed.replaceAll(',', '.')) ??
+                                  0.0;
+                          _parsedIngredients[index].quantityMax = null;
+                          _parsedIngredients[index].qtyError = null;
+                        }
+                      });
                     },
                   ),
                 ),
@@ -2335,6 +2369,7 @@ class _ParsedIngredient {
       originalName; // Original parsed name (preserved even when match is selected)
   IngredientCategory category;
   String? notes; // Descriptors like "pequena", "maduro", "picado"
+  String? qtyError; // Validation error for the quantity field
 
   // Matching information
   List<IngredientMatch> matches;
