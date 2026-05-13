@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +8,9 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../core/di/service_provider.dart';
 import '../core/providers/debug_settings_provider.dart';
+import '../core/services/ingredient_import_service.dart' show IngredientImportResult;
+import '../core/services/recipe_import_service.dart'
+    show DuplicateStrategy, RecipeImportResult;
 import '../core/services/snackbar_service.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 
@@ -22,6 +26,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
   bool _isBackingUp = false;
   bool _isRestoring = false;
   bool _isImportingRecipes = false;
+  bool _isImportingIngredients = false;
   bool _isExportingRecipes = false;
   bool _isExportingIngredients = false;
   bool _isInspectingSchema = false;
@@ -372,185 +377,271 @@ class _ToolsScreenState extends State<ToolsScreen> {
 
   Future<void> _importRecipes() async {
     if (_isImportingRecipes) return;
-
     final l10n = AppLocalizations.of(context)!;
 
-    // Get JSON file path from user
-    final filePathController = TextEditingController(
-        text:
-            'assets/recipe_export_1762460315862.json'); // Pre-fill with bundled asset
-    final jsonFilePath = await showDialog<String>(
+    final picked = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+    );
+    if (picked == null) return;
+    if (!mounted) return;
+
+    final pickedFile = picked.files.first;
+    final bytes = pickedFile.bytes ??
+        (pickedFile.path != null
+            ? await _readFileBytes(pickedFile.path!)
+            : null);
+    if (bytes == null) {
+      SnackbarService.showError(context, 'Could not read the selected file');
+      return;
+    }
+
+    setState(() => _isImportingRecipes = true);
+
+    try {
+      final service = ServiceProvider.export.recipeImport;
+      final preview = await service.previewImport(bytes);
+
+      if (!mounted) return;
+
+      if (preview.records.isEmpty) {
+        SnackbarService.showSuccess(context, l10n.importEmptyFile);
+        return;
+      }
+
+      DuplicateStrategy strategy = DuplicateStrategy.skip;
+      if (preview.hasDuplicates) {
+        final chosen = await _showDuplicateStrategyDialog(
+            l10n, preview.duplicateNames.length);
+        if (chosen == null || !mounted) return;
+        strategy = chosen;
+      }
+
+      final result = await service.executeImport(preview, strategy);
+
+      if (mounted) {
+        _showRecipeImportResultDialog(l10n, result);
+      }
+    } on GastrobrainException catch (e) {
+      if (mounted) SnackbarService.showError(context, e.message);
+    } catch (e) {
+      if (mounted) SnackbarService.showError(context, e.toString());
+    } finally {
+      if (mounted) setState(() => _isImportingRecipes = false);
+    }
+  }
+
+  Future<void> _importIngredients() async {
+    if (_isImportingIngredients) return;
+    final l10n = AppLocalizations.of(context)!;
+
+    final picked = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+    );
+    if (picked == null) return;
+    if (!mounted) return;
+
+    final pickedFile = picked.files.first;
+    final bytes = pickedFile.bytes ??
+        (pickedFile.path != null
+            ? await _readFileBytes(pickedFile.path!)
+            : null);
+    if (bytes == null) {
+      SnackbarService.showError(context, 'Could not read the selected file');
+      return;
+    }
+
+    setState(() => _isImportingIngredients = true);
+
+    try {
+      final service = ServiceProvider.export.ingredientImport;
+      final preview = await service.previewImport(bytes);
+
+      if (!mounted) return;
+
+      if (preview.records.isEmpty) {
+        SnackbarService.showSuccess(context, l10n.importEmptyFile);
+        return;
+      }
+
+      DuplicateStrategy strategy = DuplicateStrategy.skip;
+      if (preview.hasDuplicates) {
+        final chosen = await _showDuplicateStrategyDialog(
+            l10n, preview.duplicateNames.length);
+        if (chosen == null || !mounted) return;
+        strategy = chosen;
+      }
+
+      final result = await service.executeImport(preview, strategy);
+
+      if (mounted) {
+        _showIngredientImportResultDialog(l10n, result);
+      }
+    } on GastrobrainException catch (e) {
+      if (mounted) SnackbarService.showError(context, e.message);
+    } catch (e) {
+      if (mounted) SnackbarService.showError(context, e.toString());
+    } finally {
+      if (mounted) setState(() => _isImportingIngredients = false);
+    }
+  }
+
+  Future<Uint8List?> _readFileBytes(String path) async {
+    try {
+      return await File(path).readAsBytes();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<DuplicateStrategy?> _showDuplicateStrategyDialog(
+      AppLocalizations l10n, int count) {
+    return showDialog<DuplicateStrategy>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Select Recipe JSON File'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: filePathController,
-              decoration: const InputDecoration(
-                labelText: 'JSON File Path',
-                hintText: 'assets/recipe_export_1762460315862.json',
-                helperText: 'Asset path or file system path',
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.importDuplicatesTitle),
+        content: Text(l10n.importDuplicatesMessage(count)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(null),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () =>
+                Navigator.of(ctx).pop(DuplicateStrategy.skip),
+            child: Text(l10n.importStrategySkip),
+          ),
+          TextButton(
+            onPressed: () =>
+                Navigator.of(ctx).pop(DuplicateStrategy.addAsNew),
+            child: Text(l10n.importStrategyAddAsNew),
+          ),
+          ElevatedButton(
+            onPressed: () =>
+                Navigator.of(ctx).pop(DuplicateStrategy.replace),
+            child: Text(l10n.importStrategyReplace),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRecipeImportResultDialog(
+      AppLocalizations l10n, RecipeImportResult result) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(result.hasErrors
+            ? 'Import Completed with Errors'
+            : 'Import Successful'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _importSummaryRow(l10n.importResultAdded, result.recipesAdded),
+              _importSummaryRow(
+                  l10n.importResultUpdated, result.recipesUpdated),
+              _importSummaryRow(
+                  l10n.importResultSkipped, result.recipesSkipped),
+              if (result.hasWarnings) ...[
+                const SizedBox(height: 12),
+                Text(l10n.importResultWarnings,
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Text(result.warnings.join('\n'),
+                    style: const TextStyle(fontSize: 12)),
+              ],
+              if (result.hasErrors) ...[
+                const SizedBox(height: 12),
+                Text('Errors',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(ctx).colorScheme.error)),
+                const SizedBox(height: 4),
+                Text(result.errors.join('\n'),
+                    style: const TextStyle(fontSize: 12)),
+              ],
+              const SizedBox(height: 12),
+              const Divider(),
+              const SizedBox(height: 8),
+              Text(
+                l10n.importRecipesMealHistoryNotice,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                  color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                ),
               ),
-              autofocus: true,
-              maxLines: 2,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'You can use an asset path (e.g., assets/file.json) or a file system path (e.g., /sdcard/Download/file.json)',
-              style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(null),
-            child: Text(l10n.cancel),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(filePathController.text),
+            onPressed: () => Navigator.of(ctx).pop(),
             child: Text(l10n.ok),
           ),
         ],
       ),
     );
+  }
 
-    if (jsonFilePath == null || jsonFilePath.trim().isEmpty) {
-      return; // User cancelled or provided empty path
-    }
-
-    // Show warning dialog before proceeding
-    final confirmed = await showDialog<bool>(
+  void _showIngredientImportResultDialog(
+      AppLocalizations l10n, IngredientImportResult result) {
+    showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('⚠️ Warning: Data Replacement'),
-        content: const Text(
-          'This will REPLACE all existing recipes and ingredients with data from the JSON file.\n\n'
-          'Meal plans and cooking history will be preserved.\n\n'
-          'This operation cannot be undone. Continue?',
+      builder: (ctx) => AlertDialog(
+        title: Text(result.hasErrors
+            ? 'Import Completed with Errors'
+            : 'Import Successful'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _importSummaryRow(l10n.importResultAdded, result.added),
+              _importSummaryRow(l10n.importResultUpdated, result.updated),
+              _importSummaryRow(l10n.importResultSkipped, result.skipped),
+              if (result.hasWarnings) ...[
+                const SizedBox(height: 12),
+                Text(l10n.importResultWarnings,
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Text(result.warnings.join('\n'),
+                    style: const TextStyle(fontSize: 12)),
+              ],
+              if (result.hasErrors) ...[
+                const SizedBox(height: 12),
+                Text('Errors',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(ctx).colorScheme.error)),
+                const SizedBox(height: 4),
+                Text(result.errors.join('\n'),
+                    style: const TextStyle(fontSize: 12)),
+              ],
+            ],
+          ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.cancel),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-              foregroundColor: Theme.of(context).colorScheme.onError,
-            ),
-            child: Text(l10n.buttonContinue),
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l10n.ok),
           ),
         ],
       ),
     );
-
-    if (confirmed != true) return;
-
-    setState(() {
-      _isImportingRecipes = true;
-    });
-
-    try {
-      final importService = ServiceProvider.export.recipeImport;
-      final result = await importService.importRecipesFromJson(jsonFilePath);
-
-      if (mounted) {
-        if (result.hasErrors) {
-          // Show success with warnings
-          _showImportResultDialog(result, hasErrors: true);
-        } else {
-          // Show success
-          _showImportResultDialog(result);
-        }
-
-        SnackbarService.showSuccess(
-          context,
-          'Import complete! ${result.recipesImported} recipes, ${result.ingredientsImported} ingredients',
-        );
-      }
-    } on GastrobrainException catch (e) {
-      if (mounted) {
-        SnackbarService.showError(
-          context,
-          'Import failed: ${e.message}',
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        SnackbarService.showError(
-          context,
-          'Import failed: ${e.toString()}',
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isImportingRecipes = false;
-        });
-      }
-    }
   }
 
-  void _showImportResultDialog(dynamic result, {bool hasErrors = false}) {
-    final l10n = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-            hasErrors ? 'Import Completed with Errors' : 'Import Successful'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (!hasErrors)
-              const Text(
-                  'All recipes and ingredients have been imported successfully!'),
-            if (hasErrors)
-              const Text('Import completed but some errors occurred.'),
-            const SizedBox(height: 16),
-            const Text('📊 Summary:',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text('• Recipes imported: ${result.recipesImported}'),
-            Text('• Ingredients imported: ${result.ingredientsImported}'),
-            if (hasErrors) Text('• Errors: ${result.errors.length}'),
-            if (hasErrors && result.errors.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              const Text('❌ Errors:',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 200,
-                child: SingleChildScrollView(
-                  child: Text(
-                    result.errors.join('\n'),
-                    style:
-                        const TextStyle(fontSize: 12, fontFamily: 'monospace'),
-                  ),
-                ),
-              ),
-            ],
-            const SizedBox(height: 16),
-            const Divider(),
-            const SizedBox(height: 8),
-            Text(
-              l10n.importRecipesMealHistoryNotice,
-              style: TextStyle(
-                fontSize: 12,
-                fontStyle: FontStyle.italic,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
+  Widget _importSummaryRow(String label, int count) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label),
+          Text('$count', style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -824,6 +915,63 @@ class _ToolsScreenState extends State<ToolsScreen> {
                           label: Text(_isImportingRecipes
                               ? 'Importing...'
                               : l10n.importRecipes),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Ingredient Import
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.file_upload_outlined,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.importIngredientsTitle,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(l10n.importIngredientsDescription),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _isImportingIngredients
+                              ? null
+                              : _importIngredients,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context)
+                                .colorScheme
+                                .secondaryContainer,
+                            foregroundColor: Theme.of(context)
+                                .colorScheme
+                                .onSecondaryContainer,
+                          ),
+                          icon: _isImportingIngredients
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2),
+                                )
+                              : const Icon(Icons.file_upload),
+                          label: Text(_isImportingIngredients
+                              ? 'Importing...'
+                              : l10n.importIngredients),
                         ),
                       ),
                     ],

@@ -1,3 +1,4 @@
+import 'package:sqflite/sqflite.dart';
 import '../../database/database_helper.dart';
 import '../../models/tag.dart';
 import '../../models/tag_type.dart';
@@ -125,6 +126,54 @@ class TagRepository {
       }
     } catch (e) {
       throw GastrobrainException('Failed to set tags for recipe: $e');
+    }
+  }
+
+  /// Transaction-aware variant of [getOrCreateTag].
+  ///
+  /// Uses [txn] instead of opening its own connection — safe to call inside
+  /// a [db.transaction()] block.
+  Future<Tag> getOrCreateTagTxn(
+      String name, String typeId, Transaction txn) async {
+    try {
+      final existing = await txn.rawQuery(
+        'SELECT id, name, type_id FROM tags '
+        'WHERE type_id = ? AND LOWER(name) = LOWER(?)',
+        [typeId, name.trim()],
+      );
+      if (existing.isNotEmpty) return Tag.fromMap(existing.first);
+      final tag = Tag(
+        id: IdGenerator.generateId(),
+        name: name.trim(),
+        typeId: typeId,
+      );
+      await txn.insert('tags', tag.toMap());
+      return tag;
+    } catch (e) {
+      if (e is GastrobrainException) rethrow;
+      throw GastrobrainException('Failed to get or create tag in txn: $e');
+    }
+  }
+
+  /// Transaction-aware variant of [setTagsForRecipe].
+  ///
+  /// Clears existing tags for [recipeId] then inserts [tagIds], all within [txn].
+  Future<void> setTagsForRecipeTxn(
+      String recipeId, List<String> tagIds, Transaction txn) async {
+    try {
+      await txn.delete(
+        'recipe_tags',
+        where: 'recipe_id = ?',
+        whereArgs: [recipeId],
+      );
+      for (final tagId in tagIds) {
+        await txn.rawInsert(
+          'INSERT OR IGNORE INTO recipe_tags (recipe_id, tag_id) VALUES (?, ?)',
+          [recipeId, tagId],
+        );
+      }
+    } catch (e) {
+      throw GastrobrainException('Failed to set tags for recipe in txn: $e');
     }
   }
 }
