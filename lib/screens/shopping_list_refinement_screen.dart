@@ -417,6 +417,7 @@ class _ShoppingListRefinementScreenState
 
   String _formatQuantity(Map<String, dynamic> item, BuildContext context) {
     final quantity = item['quantity'] as double;
+    final quantityMax = item['quantity_max'] as double?;
 
     if (quantity == 0) {
       return AppLocalizations.of(context)!.toTaste;
@@ -424,10 +425,14 @@ class _ShoppingListRefinementScreenState
 
     final unitString = item['unit'] as String;
     final measurementUnit = MeasurementUnit.fromString(unitString);
+    final pluralityQty = quantityMax ?? quantity;
     final localizedUnit =
-        measurementUnit?.getLocalizedQuantityName(context, quantity) ?? unitString;
+        measurementUnit?.getLocalizedQuantityName(context, pluralityQty) ??
+            unitString;
 
-    final formattedQuantity = QuantityFormatter.format(quantity);
+    final formattedQuantity = quantityMax != null
+        ? QuantityFormatter.formatRange(quantity, quantityMax)
+        : QuantityFormatter.format(quantity);
 
     return '$formattedQuantity $localizedUnit';
   }

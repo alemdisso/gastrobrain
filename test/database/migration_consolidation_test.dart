@@ -12,6 +12,7 @@ import 'package:gastrobrain/core/migration/migrations/007_migrate_category_to_ta
 import 'package:gastrobrain/core/migration/migrations/008_add_sauce_food_type.dart';
 import 'package:gastrobrain/core/migration/migrations/009_drop_recipe_category.dart';
 import 'package:gastrobrain/core/migration/migrations/010_add_quantity_max.dart';
+import 'package:gastrobrain/core/migration/migrations/011_add_shopping_list_quantity_max.dart';
 
 void main() {
   setUpAll(() {
@@ -206,7 +207,7 @@ void main() {
           [v, DateTime.now().toIso8601String(), 'migration $v', 0],
         );
       }
-      for (int v = 101; v <= 110; v++) {
+      for (int v = 101; v <= 111; v++) {
         await db.rawInsert(
           'INSERT INTO schema_migrations (version, applied_at, description, duration_ms) '
           'VALUES (?, ?, ?, ?)',
@@ -221,8 +222,8 @@ void main() {
 
     tearDown(() async => db.close());
 
-    test('currentVersion is 110 (highest version in schema_migrations)', () async {
-      expect(await runner.getCurrentVersion(), equals(110));
+    test('currentVersion is 111 (highest version in schema_migrations)', () async {
+      expect(await runner.getCurrentVersion(), equals(111));
     });
 
     test('latestVersion is 101 (only migration in registry)', () {
@@ -1018,6 +1019,103 @@ void main() {
 
       final rows = await db.rawQuery(
         "SELECT quantity FROM recipe_ingredients WHERE id = 'ri-2'",
+      );
+      expect(rows.first['quantity'], equals(2.0));
+    });
+  });
+
+  // ── Migration 011: AddShoppingListQuantityMaxMigration ────────────────────
+
+  group('Migration 011 — AddShoppingListQuantityMaxMigration', () {
+    late Database db;
+    late AddShoppingListQuantityMaxMigration migration;
+    late DatabaseWrapper wrapper;
+
+    setUp(() async {
+      db = await openEmpty();
+      migration = AddShoppingListQuantityMaxMigration();
+      wrapper = DatabaseWrapper(db);
+      await InitialSchemaMigration().up(wrapper);
+      await db.execute('PRAGMA foreign_keys = OFF');
+    });
+
+    tearDown(() async => db.close());
+
+    test('validate() returns false before up()', () async {
+      expect(await migration.validate(wrapper), isFalse);
+    });
+
+    test('up() adds quantity_max column to shopping_list_items', () async {
+      await migration.up(wrapper);
+
+      final cols = await columnNames(db, 'shopping_list_items');
+      expect(cols, contains('quantity_max'));
+    });
+
+    test('validate() returns true after up()', () async {
+      await migration.up(wrapper);
+
+      expect(await migration.validate(wrapper), isTrue);
+    });
+
+    test('up() is a no-op when quantity_max already present', () async {
+      await migration.up(wrapper);
+      await expectLater(migration.up(wrapper), completes);
+
+      final cols = await columnNames(db, 'shopping_list_items');
+      expect(cols, contains('quantity_max'));
+    });
+
+    test('existing rows have quantity_max = null after up()', () async {
+      await db.rawInsert(
+        'INSERT INTO shopping_lists (name, date_created, start_date, end_date) '
+        "VALUES ('list-1', 0, 0, 0)",
+      );
+      await db.rawInsert(
+        'INSERT INTO shopping_list_items '
+        '(shopping_list_id, ingredient_name, quantity, unit, category) '
+        "VALUES (1, 'onion', 2.0, 'unit', 'vegetable')",
+      );
+
+      await migration.up(wrapper);
+
+      final rows = await db.rawQuery(
+        'SELECT quantity_max FROM shopping_list_items LIMIT 1',
+      );
+      expect(rows.first['quantity_max'], isNull);
+    });
+
+    test('down() removes quantity_max column', () async {
+      await migration.up(wrapper);
+      await migration.down(wrapper);
+
+      final cols = await columnNames(db, 'shopping_list_items');
+      expect(cols, isNot(contains('quantity_max')));
+    });
+
+    test('down() is a no-op when quantity_max is already absent', () async {
+      await expectLater(migration.down(wrapper), completes);
+
+      final cols = await columnNames(db, 'shopping_list_items');
+      expect(cols, isNot(contains('quantity_max')));
+    });
+
+    test('down() preserves existing shopping list item data', () async {
+      await migration.up(wrapper);
+      await db.rawInsert(
+        'INSERT INTO shopping_lists (name, date_created, start_date, end_date) '
+        "VALUES ('list-1', 0, 0, 0)",
+      );
+      await db.rawInsert(
+        'INSERT INTO shopping_list_items '
+        '(shopping_list_id, ingredient_name, quantity, quantity_max, unit, category) '
+        "VALUES (1, 'garlic', 2.0, 3.0, 'clove', 'vegetable')",
+      );
+
+      await migration.down(wrapper);
+
+      final rows = await db.rawQuery(
+        "SELECT quantity FROM shopping_list_items WHERE ingredient_name = 'garlic'",
       );
       expect(rows.first['quantity'], equals(2.0));
     });

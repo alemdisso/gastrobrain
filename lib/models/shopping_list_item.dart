@@ -5,15 +5,19 @@ class ShoppingListItem {
   final int shoppingListId;
   final String ingredientName;
   final double quantity;
+  final double? quantityMax;
   final String unit;
   final String category;
   final bool toBuy;
+
+  bool get isRange => quantityMax != null;
 
   ShoppingListItem({
     this.id,
     required this.shoppingListId,
     required this.ingredientName,
     required this.quantity,
+    this.quantityMax,
     required this.unit,
     required this.category,
     this.toBuy = true,
@@ -26,6 +30,7 @@ class ShoppingListItem {
       'shopping_list_id': shoppingListId,
       'ingredient_name': ingredientName,
       'quantity': quantity,
+      'quantity_max': quantityMax,
       'unit': unit,
       'category': category,
       'to_buy': toBuy ? 1 : 0,
@@ -39,6 +44,7 @@ class ShoppingListItem {
       shoppingListId: map['shopping_list_id'] as int,
       ingredientName: map['ingredient_name'] as String,
       quantity: map['quantity'] as double,
+      quantityMax: map['quantity_max'] as double?,
       unit: map['unit'] as String,
       category: map['category'] as String,
       toBuy: map['to_buy'] == 1,
@@ -51,6 +57,7 @@ class ShoppingListItem {
     int? shoppingListId,
     String? ingredientName,
     double? quantity,
+    double? quantityMax,
     String? unit,
     String? category,
     bool? toBuy,
@@ -60,6 +67,7 @@ class ShoppingListItem {
       shoppingListId: shoppingListId ?? this.shoppingListId,
       ingredientName: ingredientName ?? this.ingredientName,
       quantity: quantity ?? this.quantity,
+      quantityMax: quantityMax ?? this.quantityMax,
       unit: unit ?? this.unit,
       category: category ?? this.category,
       toBuy: toBuy ?? this.toBuy,
