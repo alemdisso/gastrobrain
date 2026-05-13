@@ -1,36 +1,47 @@
-import '../../services/recipe_export_service.dart';
+import '../../repositories/tag_repository.dart';
 import '../../services/ingredient_export_service.dart';
+import '../../services/ingredient_import_service.dart';
+import '../../services/recipe_export_service.dart';
 import '../../services/recipe_import_service.dart';
 import 'database_provider.dart';
 
-/// Provider for export-related services
+/// Provider for export/import services.
 class ExportProvider {
   static RecipeExportService? _recipeExportService;
   static IngredientExportService? _ingredientExportService;
   static RecipeImportService? _recipeImportService;
+  static IngredientImportService? _ingredientImportService;
 
-  /// Get the recipe export service instance
   RecipeExportService get recipeExport {
     _recipeExportService ??= RecipeExportService(DatabaseProvider().dbHelper);
     return _recipeExportService!;
   }
 
-  /// Get the ingredient export service instance
   IngredientExportService get ingredientExport {
-    _ingredientExportService ??= IngredientExportService(DatabaseProvider().dbHelper);
+    _ingredientExportService ??=
+        IngredientExportService(DatabaseProvider().dbHelper);
     return _ingredientExportService!;
   }
 
-  /// Get the recipe import service instance
   RecipeImportService get recipeImport {
-    _recipeImportService ??= RecipeImportService(DatabaseProvider().dbHelper);
+    _recipeImportService ??= RecipeImportService(
+      DatabaseProvider().dbHelper,
+      tagRepository: TagRepository(DatabaseProvider().dbHelper),
+    );
     return _recipeImportService!;
   }
 
-  /// Reset services (useful for testing)
+  IngredientImportService get ingredientImport {
+    _ingredientImportService ??=
+        IngredientImportService(DatabaseProvider().dbHelper);
+    return _ingredientImportService!;
+  }
+
+  /// Reset services (useful for testing).
   static void reset() {
     _recipeExportService = null;
     _ingredientExportService = null;
     _recipeImportService = null;
+    _ingredientImportService = null;
   }
 }
