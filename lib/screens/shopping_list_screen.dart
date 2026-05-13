@@ -49,6 +49,7 @@ class _DisplayItem {
   String get category => isManual ? manualItem!.category : dbItem!.category;
   bool get toBuy => dbItem?.toBuy ?? manualItem!.toBuy;
   double get quantity => dbItem?.quantity ?? manualItem!.quantity;
+  double? get quantityMax => dbItem?.quantityMax; // manual items don't support ranges
   String get unit => dbItem?.unit ?? manualItem!.unit ?? '';
 }
 
@@ -446,13 +447,16 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
 
   String _formatQuantity(ShoppingListItem item) {
     if (item.quantity == 0) {
-      final l10n = AppLocalizations.of(context)!;
-      return l10n.toTaste;
+      return AppLocalizations.of(context)!.toTaste;
     }
 
     final unit = MeasurementUnit.fromString(item.unit);
-    final localizedUnit = unit?.getLocalizedQuantityName(context, item.quantity) ?? item.unit;
-    final formattedQuantity = QuantityFormatter.format(item.quantity);
+    final pluralityQty = item.quantityMax ?? item.quantity;
+    final localizedUnit =
+        unit?.getLocalizedQuantityName(context, pluralityQty) ?? item.unit;
+    final formattedQuantity = item.quantityMax != null
+        ? QuantityFormatter.formatRange(item.quantity, item.quantityMax!)
+        : QuantityFormatter.format(item.quantity);
 
     return '$formattedQuantity $localizedUnit';
   }
