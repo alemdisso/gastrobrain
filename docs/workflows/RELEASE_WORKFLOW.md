@@ -333,6 +333,9 @@ git branch -d hotfix/0.1.3.1
 | 0.1.12 | 2026-03-01 | Servings & Quantity Tracking | release/0.1.12 | Recipe servings, planned servings, ServingsStepper, shopping list quantity scaling |
 | 0.1.13 | 2026-03-09 | Meal Planning & Shopping Enhancements | release/0.1.13 | Simple sides, manual shopping items, ServingsStepper in recipe forms, ShoppingListService refactor |
 | 0.2.4 | 2026-04-25 | Recipe Enhancement | release/0.2.4 | Ingredient aliases, duplicate prevention, markdown instructions, recipe story, marinating time, per-recipe notes, Android 10+ backup fix |
+| 0.2.5 | 2026-05-01 | Tags & Filtering | release/0.2.5 | Recipe tagging system, tag-based filtering, meal type recommendation profiles |
+| 0.2.7 | 2026-05-08 | Polish & Schema | release/0.2.7 | App version in Settings, side dish names in meal slots, category column drop, ingredient parser confidence |
+| 0.2.8 | 2026-05-14 | Range Quantities & Recipe Import | release/0.2.8 | Range quantities (data, editor, shopping list), recipe/ingredient import with merge, sort by creation date, markdown preview for story, FAB improvement |
 
 ---
 
