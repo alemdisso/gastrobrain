@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.9] - 2026-05-14
+
+### Fixed
+- Migrations 109, 110, and 111 silently skipped on existing devices upgrading from 0.2.7 — migration 109 table recreation now correctly disables foreign keys and guards against dirty state from a previous failed attempt (#381)
+- `RELEASE_WORKFLOW.md` hotfix section corrected: 4-segment version examples replaced with valid 3-segment next-PATCH versions; explicit note added that Flutter requires `MAJOR.MINOR.PATCH` format (#381)
+
+---
+
 ## [0.2.8] - 2026-05-14
 
 ### Added
