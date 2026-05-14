@@ -283,13 +283,18 @@ Post-release:
 
 For critical bugs in production:
 
-```bash
-# Create hotfix branch from main
-git checkout main
-git checkout -b hotfix/0.1.3.1
+> **⚠️ VERSIONING NOTE**: Flutter's `pubspec.yaml` requires 3-segment versions
+> (`MAJOR.MINOR.PATCH`). 4-segment versions like `0.1.3.1` are **not valid**.
+> Hotfixes always increment the PATCH segment: `0.1.3` → `0.1.4`, `0.2.8` → `0.2.9`.
 
-# Fix the bug, update version (patch increment)
-# Update CHANGELOG.md under [0.1.3.1] - YYYY-MM-DD
+```bash
+# Create hotfix branch from main (not develop)
+git checkout main
+git checkout -b hotfix/{issue-number}-{short-description}
+
+# Fix the bug
+# Update version in pubspec.yaml (increment PATCH: e.g. 0.2.8+24 → 0.2.9+25)
+# Update CHANGELOG.md under [0.2.9] - YYYY-MM-DD
 
 # Commit fix
 git add .
@@ -299,17 +304,19 @@ Brief explanation of the fix."
 
 # Merge to main
 git checkout main
-git merge --no-ff hotfix/0.1.3.1
-git tag -a v0.1.3.1 -m "Hotfix: critical bug fix"
-git push origin main --tags
+git merge --no-ff hotfix/{issue-number}-{short-description}
+git tag -a v0.2.9 -m "Hotfix v0.2.9: critical bug fix"
+git push origin main
+git push origin v0.2.9
 
 # Merge to develop
 git checkout develop
-git merge --no-ff hotfix/0.1.3.1
+git merge --no-ff hotfix/{issue-number}-{short-description}
 git push origin develop
 
 # Clean up
-git branch -d hotfix/0.1.3.1
+git branch -d hotfix/{issue-number}-{short-description}
+git push origin --delete hotfix/{issue-number}-{short-description}
 ```
 
 ---
