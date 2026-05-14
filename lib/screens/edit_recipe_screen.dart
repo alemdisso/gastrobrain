@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import '../models/recipe.dart';
 import '../models/frequency_type.dart';
 import '../models/tag.dart';
@@ -34,6 +35,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   late int _difficulty;
   late int _rating;
   bool _isSaving = false;
+  bool _isStoryPreviewMode = false;
 
   List<TagType> _tagTypes = [];
   Map<String, List<Tag>> _tagsByType = {};
@@ -285,14 +287,83 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         maxLines: 3,
       ),
       const SizedBox(height: 16),
-      TextFormField(
-        key: const Key('edit_recipe_story_field'),
-        controller: _storyController,
-        decoration: InputDecoration(
-          labelText: l10n.recipeStoryLabel,
-          hintText: l10n.recipeStoryHint,
-        ),
-        maxLines: 5,
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Text(
+                l10n.recipeStoryLabel,
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              const Spacer(),
+              SegmentedButton<bool>(
+                segments: const [
+                  ButtonSegment(
+                    value: false,
+                    icon: Icon(Icons.edit_outlined),
+                  ),
+                  ButtonSegment(
+                    value: true,
+                    icon: Icon(Icons.visibility_outlined),
+                  ),
+                ],
+                selected: {_isStoryPreviewMode},
+                onSelectionChanged: (v) =>
+                    setState(() => _isStoryPreviewMode = v.first),
+                style: const ButtonStyle(
+                  visualDensity: VisualDensity(
+                    horizontal: VisualDensity.minimumDensity,
+                    vertical: VisualDensity.minimumDensity,
+                  ),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (_isStoryPreviewMode)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: _storyController.text.isEmpty
+                  ? Text(
+                      l10n.enterStory,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant,
+                            fontStyle: FontStyle.italic,
+                          ),
+                    )
+                  : MarkdownBody(
+                      data: _storyController.text,
+                      shrinkWrap: true,
+                      styleSheet: MarkdownStyleSheet.fromTheme(
+                        Theme.of(context),
+                      ).copyWith(
+                        p: const TextStyle(fontSize: 16, height: 1.5),
+                      ),
+                    ),
+            )
+          else
+            TextFormField(
+              key: const Key('edit_recipe_story_field'),
+              controller: _storyController,
+              decoration: InputDecoration(
+                hintText: l10n.recipeStoryHint,
+                border: const OutlineInputBorder(),
+                contentPadding: const EdgeInsets.all(12),
+              ),
+              maxLines: 5,
+            ),
+        ],
       ),
       const SizedBox(height: 16),
       TagPickerWidget(

@@ -60,4 +60,10 @@ class QuantityFormatter {
         .replaceAll(RegExp(r'0+$'), '')
         .replaceAll(RegExp(r'\.$'), '');
   }
+
+  /// Formats a range quantity using an en-dash separator.
+  /// Example: formatRange(2, 3) → "2–3", formatRange(0.5, 1) → "½–1"
+  static String formatRange(double min, double max) {
+    return '${format(min)}–${format(max)}';
+  }
 }

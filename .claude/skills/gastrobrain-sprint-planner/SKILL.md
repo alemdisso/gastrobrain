@@ -1,7 +1,7 @@
 ---
 name: "Gastrobrain Sprint Planner"
 description: "Data-driven sprint planning and retrospective analysis for Gastrobrain using GitHub Project #3 issues, historical velocity patterns, and sprint estimation diary insights. Generates realistic sprint plans with capacity analysis, sequencing strategy, and risk assessment. Conducts structured sprint retrospectives with developer interviews, estimation accuracy analysis, and diary entry generation."
-version: "2.1.0"
+version: "2.2.0"
 author: "Gastrobrain Development Team"
 ---
 
@@ -227,25 +227,44 @@ gh api repos/{owner}/{repo}/milestones/{number}
 
 ---
 
-### Checkpoint 3: Estimation vs Actual Analysis (~5 min)
+### Checkpoint 3: Sprint Metrics (~5 min)
 
-**Goal:** Calculate accurate metrics comparing estimates to actuals.
+**Goal:** Calculate sprint-level velocity and compare to expected pace. Do NOT compute per-issue weighted days or point-to-time ratios — story points are relative units, not time units.
 
 **Tasks:**
-- [ ] Calculate weighted actual days per issue (using commit analysis + developer context)
-- [ ] Map original story point estimates from Project #3 `estimate` field (source of truth)
-- [ ] Calculate ratio per issue (weighted actual / estimated)
-- [ ] Classify each issue: ✅ On target (0.7-1.3x) / ⚡ Faster (<0.7x) / 🔴 Over (>1.3x) / 📋 Unplanned
-- [ ] Calculate accuracy by type (bug, feature, testing, architecture, UI, etc.)
-- [ ] Account for hidden overhead identified in developer interview
+- [ ] Confirm actual working days from developer interview + commit log
+- [ ] Sum estimated pts for all completed issues (source of truth: Project #3 `estimate` field; fall back to sprint plan)
+- [ ] Compute sprint-level metrics (see formula below)
+- [ ] Build issue table with binary completion status (no weighted days column)
+- [ ] Note any unplanned or deferred issues with context
 
-**Generate table:**
+**Sprint metrics formula:**
+```
+Actual days    = confirmed working days
+Pts delivered  = sum of est pts for completed issues (planned + stretch + unplanned)
+Velocity       = pts delivered ÷ actual days
+Expected days  = planned pts ÷ 6.5  (cruising velocity baseline)
+Sprint result  = Under / On target / Over  (compare actual vs expected days)
+```
 
-| Issue | Title | Type | Est Points | Weighted Actual | Lines | Ratio | Assessment |
-|-------|-------|------|------------|-----------------|-------|-------|------------|
-| #XXX | ... | ... | X | X.XX | XXXX | X.XXx | ⚡/✅/🔴/📋 |
+**Generate Sprint Performance table:**
 
-**Present to developer:** Estimation vs actual table and accuracy by type summary for validation.
+| Metric | Value |
+|--------|-------|
+| Planned pts | XX |
+| Delivered pts | XX |
+| Actual days | ~X.Xd |
+| Expected days at cruising | XX ÷ 6.5 = X.Xd |
+| Velocity | XX pts/day (XX pts/week) |
+| Sprint result | ⚡ Under / ✅ On target / 🔴 Over |
+
+**Generate Issue table:**
+
+| Issue | Title | Type | Est Pts | Status |
+|-------|-------|------|---------|--------|
+| #XXX | ... | ... | X | ✅ Done / 📋 Stretch / ⚠️ Deferred / 📋 Unplanned |
+
+**Present to developer:** Sprint performance table and issue list for validation.
 
 **Ready to proceed to Checkpoint 4? (y/n)**
 

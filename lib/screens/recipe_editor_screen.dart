@@ -13,6 +13,7 @@ import '../widgets/add_new_ingredient_dialog.dart';
 import '../widgets/servings_stepper.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/id_generator.dart';
+import '../utils/quantity_formatter.dart';
 import '../utils/sorting_utils.dart';
 
 /// Milestone target for enriched recipes (recipes with 3+ ingredients)
@@ -421,6 +422,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
 
     return _ParsedIngredient(
       quantity: result.quantity,
+      quantityMax: result.quantityMax,
       unit: result.unit,
       name: result.ingredientName,
       category: selectedMatch?.ingredient.category ?? IngredientCategory.other,
@@ -639,6 +641,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
             recipeId: _selectedRecipe!.id,
             ingredientId: ingredientId,
             quantity: parsed.quantity,
+            quantityMax: parsed.quantityMax,
             notes: parsed.notes,
             unitOverride: parsed.unit,
           );
@@ -652,6 +655,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
             recipeId: _selectedRecipe!.id,
             ingredientId: ingredientId,
             quantity: parsed.quantity,
+            quantityMax: parsed.quantityMax,
             notes: parsed.notes,
             unitOverride: parsed.unit,
           );
@@ -1551,12 +1555,17 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
                 children: _existingIngredients.map((ingredientMap) {
                   final name = ingredientMap['name'] as String? ?? 'Unknown';
                   final quantity = ingredientMap['quantity'] as double? ?? 0.0;
+                  final quantityMax = ingredientMap['quantity_max'] as double?;
                   final unit = ingredientMap['unit'] as String?;
                   final category =
                       ingredientMap['category'] as String? ?? 'other';
 
                   // Format quantity display
-                  final quantityStr = formatQuantity(quantity);
+                  final quantityStr = quantity == 0
+                      ? ''
+                      : quantityMax != null
+                          ? QuantityFormatter.formatRange(quantity, quantityMax)
+                          : QuantityFormatter.format(quantity);
                   final quantityDisplay = quantityStr.isNotEmpty
                       ? '$quantityStr${unit != null ? ' $unit' : ''}'
                       : 'to taste';
@@ -1963,23 +1972,59 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Quantity field
+                // Quantity field (accepts single value or range: "2" or "2-3")
                 SizedBox(
-                  width: 40,
+                  width: 72,
                   child: TextFormField(
                     key: ValueKey('qty_${index}_$_parseGeneration'),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Qty',
-                      border: OutlineInputBorder(),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      hintText: 'e.g. 2 or 2–3',
+                      border: const OutlineInputBorder(),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 8),
+                      errorText: ingredient.qtyError,
+                      errorStyle: const TextStyle(fontSize: 10),
                     ),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    initialValue: formatQuantity(ingredient.quantity),
+                    keyboardType: TextInputType.text,
+                    initialValue: ingredient.quantityMax != null
+                        ? QuantityFormatter.formatRange(
+                            ingredient.quantity, ingredient.quantityMax!)
+                        : QuantityFormatter.format(ingredient.quantity),
                     onChanged: (value) {
-                      final qty = double.tryParse(value) ?? 0.0;
-                      _updateIngredient(index, quantity: qty);
+                      if (index < 0 || index >= _parsedIngredients.length) {
+                        return;
+                      }
+                      final trimmed = value.trim();
+                      final rangeMatch = RegExp(
+                        r'^(\d+(?:[.,]\d+)?)\s*[–-]\s*(\d+(?:[.,]\d+)?)$',
+                      ).firstMatch(trimmed);
+                      setState(() {
+                        if (rangeMatch != null) {
+                          final min = double.tryParse(
+                                  rangeMatch.group(1)!.replaceAll(',', '.')) ??
+                              0.0;
+                          final max = double.tryParse(
+                                  rangeMatch.group(2)!.replaceAll(',', '.')) ??
+                              0.0;
+                          if (max > min) {
+                            _parsedIngredients[index].quantity = min;
+                            _parsedIngredients[index].quantityMax = max;
+                            _parsedIngredients[index].qtyError = null;
+                          } else {
+                            _parsedIngredients[index].quantity = min;
+                            _parsedIngredients[index].quantityMax = null;
+                            _parsedIngredients[index].qtyError =
+                                'Min must be less than max';
+                          }
+                        } else {
+                          _parsedIngredients[index].quantity =
+                              double.tryParse(trimmed.replaceAll(',', '.')) ??
+                                  0.0;
+                          _parsedIngredients[index].quantityMax = null;
+                          _parsedIngredients[index].qtyError = null;
+                        }
+                      });
                     },
                   ),
                 ),
@@ -2317,12 +2362,14 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
 /// Helper class to represent a parsed ingredient before saving to database
 class _ParsedIngredient {
   double quantity;
+  double? quantityMax;
   String? unit;
   String name;
   String
       originalName; // Original parsed name (preserved even when match is selected)
   IngredientCategory category;
   String? notes; // Descriptors like "pequena", "maduro", "picado"
+  String? qtyError; // Validation error for the quantity field
 
   // Matching information
   List<IngredientMatch> matches;
@@ -2334,6 +2381,7 @@ class _ParsedIngredient {
 
   _ParsedIngredient({
     required this.quantity,
+    this.quantityMax,
     this.unit,
     required this.name,
     String? originalName,

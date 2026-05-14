@@ -340,126 +340,6 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
     }
   }
 
-  Future<void> _editStory() async {
-    final TextEditingController controller =
-        TextEditingController(text: _currentRecipe.story);
-    bool isPreviewMode = false;
-
-    final result = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (dialogContext, setDialogState) {
-          final l10n = AppLocalizations.of(dialogContext)!;
-          return AlertDialog(
-            title: Text(l10n.recipeStory),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SegmentedButton<bool>(
-                      segments: [
-                        ButtonSegment(
-                          value: false,
-                          label: Text(l10n.instructionsEditLabel),
-                          icon: const Icon(Icons.edit_outlined),
-                        ),
-                        ButtonSegment(
-                          value: true,
-                          label: Text(l10n.instructionsPreviewLabel),
-                          icon: const Icon(Icons.visibility_outlined),
-                        ),
-                      ],
-                      selected: {isPreviewMode},
-                      onSelectionChanged: (v) =>
-                          setDialogState(() => isPreviewMode = v.first),
-                    ),
-                    const SizedBox(height: 12),
-                    if (isPreviewMode)
-                      MarkdownBody(
-                        data: controller.text.isEmpty
-                            ? '_${l10n.enterStory}_'
-                            : controller.text,
-                        shrinkWrap: true,
-                        styleSheet: MarkdownStyleSheet.fromTheme(
-                          Theme.of(dialogContext),
-                        ).copyWith(
-                          p: const TextStyle(fontSize: 16, height: 1.6),
-                        ),
-                      )
-                    else
-                      TextField(
-                        controller: controller,
-                        decoration: InputDecoration(
-                          hintText: l10n.enterStory,
-                        ),
-                        maxLines: null,
-                        minLines: 8,
-                        keyboardType: TextInputType.multiline,
-                        autofocus: true,
-                        onChanged: (_) => setDialogState(() {}),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: Text(l10n.buttonCancel),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext, controller.text),
-                child: Text(l10n.save),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-
-    if (mounted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        controller.dispose();
-      });
-    }
-
-    if (result != null) {
-      await _saveStory(result);
-    }
-  }
-
-  Future<void> _saveStory(String newStory) async {
-    try {
-      final updatedRecipe = _currentRecipe.copyWith(story: newStory);
-      await _dbHelper.updateRecipe(updatedRecipe);
-
-      if (mounted) {
-        setState(() {
-          _currentRecipe = updatedRecipe;
-          _hasChanges = true;
-        });
-        SnackbarService.showSuccess(
-          context,
-          AppLocalizations.of(context)!.storyUpdatedSuccessfully,
-        );
-      }
-    } on GastrobrainException catch (e) {
-      if (mounted) {
-        SnackbarService.showError(context, e.message);
-      }
-    } catch (e) {
-      if (mounted) {
-        SnackbarService.showError(
-          context,
-          AppLocalizations.of(context)!.unexpectedError,
-        );
-      }
-    }
-  }
-
   Future<void> _editRecipe() async {
     final result = await Navigator.push<bool>(
       context,
@@ -747,14 +627,11 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
               : AppLocalizations.of(context)!.addInstructions,
           child: Icon(hasInstructions ? Icons.edit : Icons.add),
         );
-      case 2: // Overview tab — edit story
-        final bool hasStory = _currentRecipe.story.isNotEmpty;
+      case 2: // Overview tab — open full recipe editor
         return FloatingActionButton(
-          onPressed: _editStory,
-          tooltip: hasStory
-              ? AppLocalizations.of(context)!.editStory
-              : AppLocalizations.of(context)!.addStory,
-          child: Icon(hasStory ? Icons.edit : Icons.add),
+          onPressed: _editRecipe,
+          tooltip: AppLocalizations.of(context)!.editRecipe,
+          child: const Icon(Icons.edit),
         );
       default:
         return null; // No FAB for History tab

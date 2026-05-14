@@ -48,6 +48,14 @@
   "@difficulty": {
     "description": "Sort by difficulty option"
   },
+  "sortNewestFirst": "Newest first",
+  "@sortNewestFirst": {
+    "description": "Sort by creation date, newest recipes first"
+  },
+  "sortOldestFirst": "Oldest first",
+  "@sortOldestFirst": {
+    "description": "Sort by creation date, oldest recipes first"
+  },
   "filterRecipes": "Filter Recipes",
   "@filterRecipes": {
     "description": "Title for recipe filter dialog"
@@ -2179,7 +2187,7 @@
   "@importRecipes": {
     "description": "Button text for importing recipes"
   },
-  "importRecipesDescription": "Import recipes and ingredients from JSON. Replaces all existing data.",
+  "importRecipesDescription": "Import recipes from a JSON file exported by Gastrobrain.",
   "@importRecipesDescription": {
     "description": "Description for recipe import tool"
   },
@@ -2194,6 +2202,64 @@
   "importRecipesMealHistoryNotice": "Note: meal history was not restored. If you need complete data recovery including meal history, use Full Backup & Restore.",
   "@importRecipesMealHistoryNotice": {
     "description": "Post-import notice reminding user that meal history was not restored"
+  },
+  "importIngredientsTitle": "Import Ingredients",
+  "@importIngredientsTitle": {
+    "description": "Title for ingredient import section"
+  },
+  "importIngredients": "Import Ingredients",
+  "@importIngredients": {
+    "description": "Button text for importing ingredients"
+  },
+  "importIngredientsDescription": "Import ingredients from a JSON file exported by Gastrobrain.",
+  "@importIngredientsDescription": {
+    "description": "Description for the ingredient import card"
+  },
+  "importDuplicatesTitle": "Duplicates Found",
+  "@importDuplicatesTitle": {
+    "description": "Title of the dialog shown when duplicates are detected during import"
+  },
+  "importDuplicatesMessage": "{count, plural, =1{{count} item already exists in your library.} other{{count} items already exist in your library.}}",
+  "@importDuplicatesMessage": {
+    "description": "Body of the duplicate-detection dialog",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "importStrategySkip": "Keep Existing",
+  "@importStrategySkip": {
+    "description": "Duplicate strategy: keep local record, skip imported"
+  },
+  "importStrategyReplace": "Use Imported",
+  "@importStrategyReplace": {
+    "description": "Duplicate strategy: overwrite local with imported"
+  },
+  "importStrategyAddAsNew": "Add as New",
+  "@importStrategyAddAsNew": {
+    "description": "Duplicate strategy: import as a separate copy"
+  },
+  "importEmptyFile": "No records found in this file.",
+  "@importEmptyFile": {
+    "description": "Message shown when the import file contains no records"
+  },
+  "importResultAdded": "Added",
+  "@importResultAdded": {
+    "description": "Label for the number of records added during import"
+  },
+  "importResultUpdated": "Updated",
+  "@importResultUpdated": {
+    "description": "Label for the number of records updated during import"
+  },
+  "importResultSkipped": "Skipped",
+  "@importResultSkipped": {
+    "description": "Label for the number of records skipped during import"
+  },
+  "importResultWarnings": "Warnings",
+  "@importResultWarnings": {
+    "description": "Label for the warnings section in import result dialog"
   },
   "planningTabLabel": "Planning",
   "@planningTabLabel": {
@@ -2728,14 +2794,6 @@
   "recipeStoryHint": "What's the story behind this recipe?",
   "@recipeStoryHint": {
     "description": "Hint text for the story input field"
-  },
-  "addStory": "Add story",
-  "@addStory": {
-    "description": "Button label to add a story to a recipe"
-  },
-  "editStory": "Edit story",
-  "@editStory": {
-    "description": "Button tooltip for editing the recipe story"
   },
   "storyUpdatedSuccessfully": "Story updated successfully",
   "@storyUpdatedSuccessfully": {

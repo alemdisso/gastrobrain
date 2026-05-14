@@ -81,11 +81,23 @@ class IngredientAggregator {
         if (compatibleKey != null) {
           final existing = unitGroups[compatibleKey]!;
           final existingQuantity = existing['quantity'] as double;
+          final existingQMax = existing['quantity_max'] as double?;
           final existingUnit = existing['unit'] as String;
           final itemQuantity = item['quantity'] as double;
+          final itemQMax = item['quantity_max'] as double?;
+
           final converted = _converter.convertToCommonUnit(
               itemQuantity, unit, existingUnit.toLowerCase());
+          // Treat null quantityMax as equal to quantity (single value).
+          final convertedMax = _converter.convertToCommonUnit(
+              itemQMax ?? itemQuantity, unit, existingUnit.toLowerCase());
+
           existing['quantity'] = existingQuantity + converted;
+          // Produce a range result only when at least one contributor is a range.
+          if (existingQMax != null || itemQMax != null) {
+            existing['quantity_max'] =
+                (existingQMax ?? existingQuantity) + convertedMax;
+          }
         } else {
           unitGroups[unit] = Map<String, dynamic>.from(item);
         }
@@ -95,20 +107,26 @@ class IngredientAggregator {
         final quantity = item['quantity'] as double;
         final unit = (item['unit'] as String).toLowerCase();
 
+        final qMax = item['quantity_max'] as double?;
         if (unit == 'g' && quantity >= 1000) {
           item['quantity'] = quantity / 1000;
+          if (qMax != null) item['quantity_max'] = qMax / 1000;
           item['unit'] = 'kg';
         } else if (unit == 'ml' && quantity >= 1000) {
           item['quantity'] = quantity / 1000;
+          if (qMax != null) item['quantity_max'] = qMax / 1000;
           item['unit'] = 'L';
         } else if (unit == 'tsp' && quantity >= 3) {
           item['quantity'] = quantity / 3;
+          if (qMax != null) item['quantity_max'] = qMax / 3;
           item['unit'] = 'tbsp';
         } else if (unit == 'tbsp' && quantity >= 16) {
           item['quantity'] = quantity / 16;
+          if (qMax != null) item['quantity_max'] = qMax / 16;
           item['unit'] = 'cup';
         } else if (unit == 'clove' && quantity >= 10) {
           item['quantity'] = quantity / 10;
+          if (qMax != null) item['quantity_max'] = qMax / 10;
           item['unit'] = 'head';
         }
 

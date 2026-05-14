@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.8] - 2026-05-14
+
+### Added
+- Range quantities: data foundation supporting min/max quantity ranges for recipe ingredients (#357)
+- Range quantities: recipe editor input and ingredient display for range values (#358)
+- Range quantities: shopping list aggregation and display for range quantities (#359)
+- Recipe and ingredient import with merge logic — import JSON exports and intelligently merge with existing data (#216)
+- Sort recipes by creation date in recipe list (#368)
+- Markdown preview in story edit field (#373)
+
+### Changed
+- FAB on recipe overview now opens the full recipe editor instead of a partial form (#380)
+
+### Fixed
+- None
+
+---
+
 ## [0.2.7] - 2026-05-08
 
 ### Added

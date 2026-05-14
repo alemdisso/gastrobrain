@@ -66,6 +66,7 @@ class ShoppingListService {
           shoppingListId: listId,
           ingredientName: ingredientData['name'] as String,
           quantity: ingredientData['quantity'] as double,
+          quantityMax: ingredientData['quantity_max'] as double?,
           unit: ingredientData['unit'] as String,
           category: category,
           toBuy: true,
@@ -110,6 +111,7 @@ class ShoppingListService {
           shoppingListId: listId,
           ingredientName: ingredientData['name'] as String,
           quantity: ingredientData['quantity'] as double,
+          quantityMax: ingredientData['quantity_max'] as double?,
           unit: ingredientData['unit'] as String,
           category: category,
           toBuy: true,
@@ -194,9 +196,11 @@ class ShoppingListService {
               : 1.0;
 
           final scaledIngredients = ingredients.map((ingredient) {
+            final qMax = ingredient['quantity_max'] as double?;
             return {
               ...ingredient,
               'quantity': (ingredient['quantity'] as double) * scalingFactor,
+              if (qMax != null) 'quantity_max': qMax * scalingFactor,
             };
           }).toList();
 

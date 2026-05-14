@@ -131,8 +131,17 @@ class _RecipesScreenState extends State<RecipesScreen> {
   }
 
   void _showSortingDialog() {
-    final currentSortBy = context.read<RecipeProvider>().currentSortBy;
-    String? tempSortBy = currentSortBy;
+    final provider = context.read<RecipeProvider>();
+    final currentSortBy = provider.currentSortBy;
+    final currentSortOrder = provider.currentSortOrder;
+
+    // Map provider state to a virtual dialog key that encodes field + direction
+    String? tempSortKey;
+    if (currentSortBy == 'created_at') {
+      tempSortKey = currentSortOrder == 'ASC' ? 'created_at_asc' : 'created_at_desc';
+    } else {
+      tempSortKey = currentSortBy;
+    }
 
     showDialog(
       context: context,
@@ -145,8 +154,8 @@ class _RecipesScreenState extends State<RecipesScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   RadioGroup<String>(
-                    groupValue: tempSortBy,
-                    onChanged: (value) => setState(() => tempSortBy = value),
+                    groupValue: tempSortKey,
+                    onChanged: (value) => setState(() => tempSortKey = value),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -162,6 +171,14 @@ class _RecipesScreenState extends State<RecipesScreen> {
                           title: Text(AppLocalizations.of(context)!.difficulty),
                           value: 'difficulty',
                         ),
+                        RadioListTile<String>(
+                          title: Text(AppLocalizations.of(context)!.sortNewestFirst),
+                          value: 'created_at_desc',
+                        ),
+                        RadioListTile<String>(
+                          title: Text(AppLocalizations.of(context)!.sortOldestFirst),
+                          value: 'created_at_asc',
+                        ),
                       ],
                     ),
                   ),
@@ -174,13 +191,21 @@ class _RecipesScreenState extends State<RecipesScreen> {
                 ),
                 TextButton(
                   onPressed: () {
-                    if (tempSortBy != null) {
-                      String sortOrder = 'ASC';
-                      if (tempSortBy == 'rating') {
-                        sortOrder = 'DESC'; // Higher ratings first
+                    if (tempSortKey != null) {
+                      final String sortBy;
+                      final String sortOrder;
+                      if (tempSortKey == 'created_at_desc') {
+                        sortBy = 'created_at';
+                        sortOrder = 'DESC';
+                      } else if (tempSortKey == 'created_at_asc') {
+                        sortBy = 'created_at';
+                        sortOrder = 'ASC';
+                      } else {
+                        sortBy = tempSortKey!;
+                        sortOrder = tempSortKey == 'rating' ? 'DESC' : 'ASC';
                       }
                       context.read<RecipeProvider>().setSorting(
-                            sortBy: tempSortBy!,
+                            sortBy: sortBy,
                             sortOrder: sortOrder,
                           );
                     }

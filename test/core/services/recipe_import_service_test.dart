@@ -1,27 +1,27 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:gastrobrain/core/services/recipe_import_service.dart';
 import 'package:gastrobrain/core/migration/migration.dart';
 import 'package:gastrobrain/core/migration/migrations/001_initial_schema.dart';
 import 'package:gastrobrain/core/migration/migrations/003_add_marinating_time.dart';
+import 'package:gastrobrain/core/migration/migrations/005_add_tags.dart';
+import 'package:gastrobrain/core/migration/migrations/010_add_quantity_max.dart';
 import '../../mocks/mock_database_helper.dart';
 
 Future<Database> _openInMemoryDb() async {
   final db = await databaseFactoryFfi.openDatabase(inMemoryDatabasePath);
-  await InitialSchemaMigration().up(DatabaseWrapper(db));
-  await AddMarinatingTimeMigration().up(DatabaseWrapper(db));
+  final wrapper = DatabaseWrapper(db);
+  await InitialSchemaMigration().up(wrapper);
+  await AddMarinatingTimeMigration().up(wrapper);
+  await AddTagsMigration().up(wrapper);
+  await AddQuantityMaxMigration().up(wrapper);
   return db;
 }
 
-Future<File> _writeTempJson(List<Map<String, dynamic>> data) async {
-  final file = File(
-    '${Directory.systemTemp.path}/import_test_${DateTime.now().microsecondsSinceEpoch}.json',
-  );
-  await file.writeAsString(jsonEncode(data));
-  return file;
-}
+Uint8List _toBytes(List<Map<String, dynamic>> data) =>
+    Uint8List.fromList(utf8.encode(jsonEncode(data)));
 
 Map<String, dynamic> _buildRecipeJson({
   String id = 'r1',
@@ -39,7 +39,6 @@ Map<String, dynamic> _buildRecipeJson({
       'prep_time_minutes': 10,
       'cook_time_minutes': 20,
       'rating': 4,
-      'category': 'main_course',
       'desired_frequency': 'weekly',
       'notes': '',
       'created_at': '2026-01-01T00:00:00.000Z',
@@ -75,59 +74,47 @@ void main() {
 
     test('restores instructions from top-level JSON key', () async {
       const expected = 'Step 1: Boil water. Step 2: Add pasta.';
-      final jsonData = [_buildRecipeJson(instructions: expected)];
-
-      final file = await _writeTempJson(jsonData);
-      await importService.importRecipesFromJson(file.path);
+      final bytes = _toBytes([_buildRecipeJson(instructions: expected)]);
+      final preview = await importService.previewImport(bytes);
+      await importService.executeImport(preview, DuplicateStrategy.skip);
 
       final rows =
           await db.query('recipes', where: 'id = ?', whereArgs: ['r1']);
       expect(rows, hasLength(1));
       expect(rows.first['instructions'], equals(expected));
-
-      await file.delete();
     });
 
     test('restores multiline instructions correctly', () async {
       const expected = 'Step 1: Prep.\nStep 2: Cook.\nStep 3: Serve.';
-      final jsonData = [_buildRecipeJson(instructions: expected)];
-
-      final file = await _writeTempJson(jsonData);
-      await importService.importRecipesFromJson(file.path);
+      final bytes = _toBytes([_buildRecipeJson(instructions: expected)]);
+      final preview = await importService.previewImport(bytes);
+      await importService.executeImport(preview, DuplicateStrategy.skip);
 
       final rows =
           await db.query('recipes', where: 'id = ?', whereArgs: ['r1']);
       expect(rows.first['instructions'], equals(expected));
-
-      await file.delete();
     });
 
     test('defaults to empty string when instructions key is absent', () async {
       final jsonMap = _buildRecipeJson();
       jsonMap.remove('instructions');
-      final jsonData = [jsonMap];
-
-      final file = await _writeTempJson(jsonData);
-      await importService.importRecipesFromJson(file.path);
+      final bytes = _toBytes([jsonMap]);
+      final preview = await importService.previewImport(bytes);
+      await importService.executeImport(preview, DuplicateStrategy.skip);
 
       final rows =
           await db.query('recipes', where: 'id = ?', whereArgs: ['r1']);
       expect(rows.first['instructions'], equals(''));
-
-      await file.delete();
     });
 
     test('defaults to empty string when instructions value is null', () async {
-      final jsonData = [_buildRecipeJson(instructions: null)];
-
-      final file = await _writeTempJson(jsonData);
-      await importService.importRecipesFromJson(file.path);
+      final bytes = _toBytes([_buildRecipeJson(instructions: null)]);
+      final preview = await importService.previewImport(bytes);
+      await importService.executeImport(preview, DuplicateStrategy.skip);
 
       final rows =
           await db.query('recipes', where: 'id = ?', whereArgs: ['r1']);
       expect(rows.first['instructions'], equals(''));
-
-      await file.delete();
     });
   });
 
@@ -147,7 +134,6 @@ void main() {
       await db.close();
     });
 
-    /// Seeds a minimal meal + meal_recipes row referencing [recipeId].
     Future<void> _seedMealRecipe(Database db, String recipeId) async {
       await db.insert('meals', {
         'id': 'meal-$recipeId',
@@ -168,7 +154,6 @@ void main() {
       });
     }
 
-    /// Seeds a minimal meal plan + item + meal_plan_item_recipes row.
     Future<void> _seedMealPlanItemRecipe(Database db, String recipeId) async {
       await db.insert('meal_plans', {
         'id': 'plan-$recipeId',
@@ -195,46 +180,46 @@ void main() {
       });
     }
 
-    test('meal_recipes rows survive recipe import', () async {
-      // Seed: recipe + meal history referencing it
+    test('meal_recipes rows survive replace strategy (same UUID)', () async {
       await db.insert('recipes', {
         'id': 'r1',
-        'name': 'Pasta',
+        'name': 'Test Recipe',
         'desired_frequency': 'weekly',
         'created_at': '2026-01-01T00:00:00.000Z',
       });
       await _seedMealRecipe(db, 'r1');
 
-      // Import same recipe (same UUID preserved)
-      final file = await _writeTempJson([_buildRecipeJson(id: 'r1')]);
-      await importService.importRecipesFromJson(file.path);
-      await file.delete();
+      // Import same recipe name with same UUID → replace
+      final bytes = _toBytes([_buildRecipeJson(id: 'r1', name: 'Test Recipe')]);
+      final preview = await importService.previewImport(bytes);
+      await importService.executeImport(preview, DuplicateStrategy.replace);
 
       final rows = await db.query('meal_recipes');
       expect(rows, hasLength(1));
       expect(rows.first['id'], equals('mr-r1'));
     });
 
-    test('meal_plan_item_recipes rows survive recipe import', () async {
+    test('meal_plan_item_recipes rows survive replace strategy', () async {
       await db.insert('recipes', {
         'id': 'r1',
-        'name': 'Pasta',
+        'name': 'Test Recipe',
         'desired_frequency': 'weekly',
         'created_at': '2026-01-01T00:00:00.000Z',
       });
       await _seedMealPlanItemRecipe(db, 'r1');
 
-      final file = await _writeTempJson([_buildRecipeJson(id: 'r1')]);
-      await importService.importRecipesFromJson(file.path);
-      await file.delete();
+      final bytes = _toBytes([_buildRecipeJson(id: 'r1', name: 'Test Recipe')]);
+      final preview = await importService.previewImport(bytes);
+      await importService.executeImport(preview, DuplicateStrategy.replace);
 
       final rows = await db.query('meal_plan_item_recipes');
       expect(rows, hasLength(1));
       expect(rows.first['id'], equals('mpir-r1'));
     });
 
-    test('junction rows for recipes not in import file are dropped', () async {
-      // Two recipes; only r1 will be in the import
+    test('junction rows for non-imported recipes are NOT dropped', () async {
+      // Two recipes; both seeded; only r1 will be in the import file.
+      // New merge behavior: r2 is untouched (stays in DB with its junction rows).
       for (final id in ['r1', 'r2']) {
         await db.insert('recipes', {
           'id': id,
@@ -245,25 +230,23 @@ void main() {
         await _seedMealRecipe(db, id);
       }
 
-      // Import only r1
-      final file = await _writeTempJson([_buildRecipeJson(id: 'r1')]);
-      await importService.importRecipesFromJson(file.path);
-      await file.delete();
+      // Import only r1 (name "Test Recipe" — no collision with existing names)
+      final bytes = _toBytes([_buildRecipeJson(id: 'r1', name: 'Test Recipe')]);
+      final preview = await importService.previewImport(bytes);
+      await importService.executeImport(preview, DuplicateStrategy.skip);
 
-      final rows = await db.query('meal_recipes');
-      expect(rows, hasLength(1));
-      expect(rows.first['recipe_id'], equals('r1'));
+      // r2 was NOT in the import file — it stays in the DB with its junction row
+      final rows = await db.query('meal_recipes', orderBy: 'id');
+      expect(rows, hasLength(2));
     });
 
     test('import succeeds with no prior junction data', () async {
-      // No meal history seeded — snapshot is empty, restore is a no-op
-      final file = await _writeTempJson([_buildRecipeJson(id: 'r1')]);
-      await expectLater(
-        importService.importRecipesFromJson(file.path),
-        completes,
-      );
-      await file.delete();
+      final bytes = _toBytes([_buildRecipeJson(id: 'r1')]);
+      final preview = await importService.previewImport(bytes);
+      final result =
+          await importService.executeImport(preview, DuplicateStrategy.skip);
 
+      expect(result.recipesAdded, equals(1));
       expect(await db.query('meal_recipes'), isEmpty);
       expect(await db.query('meal_plan_item_recipes'), isEmpty);
     });

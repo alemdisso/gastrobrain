@@ -2,114 +2,86 @@
 
 **Sprint Duration:** [Start Date] - [End Date], [Year]
 **Calendar Days:** [X]
-**Active Working Days:** [X] ([XX]% utilization)
-**Planned Issues:** [X] ([XX] points)
-**Completed Issues:** [X] ([X planned + X unplanned]; [any deferred/resolved notes])
+**Rest Days:** [X] (list if any)
+**Active Working Days:** [X effective days]
+**Planned Issues:** [X] ([XX] pts)
+**Completed Issues:** [X] ([X planned + X stretch + X unplanned])
+**Total Points Delivered:** [XX] pts
 
-#### Estimation vs Actual
+#### Sprint Performance
 
-| Issue | Title | Type | Est Points | Weighted Actual | Lines | Ratio | Assessment |
-|-------|-------|------|------------|-----------------|-------|-------|------------|
-| #XXX | [Issue title] | [Type] | X | X.XX* | XXXX | X.XXx | [⚡ Faster / ✅ On target / 🔴 Over / 📋 Unplanned] |
-| #XXX | [Issue title] | [Type] | X | X.XX* | XXXX | X.XXx | [Assessment] |
-| **TOTAL** | | | **XX** | **X.XX** | **XXXXX** | **X.XXx** | |
+| Metric | Value |
+|--------|-------|
+| Planned pts | XX |
+| Delivered pts | XX (incl. any stretch/unplanned) |
+| Actual days | ~X.Xd |
+| Expected days at cruising | XX ÷ 6.5 = X.Xd |
+| Velocity | XX ÷ X.X = X.X pts/day (XX pts/week) |
+| Sprint result | ⚡ Under / ✅ On target / 🔴 Over |
 
-*\* Weighted by lines changed when sharing day with other issues*
-<!-- Add additional footnotes as needed for hidden overhead, deferred issues, etc. -->
+#### Issues
 
-#### Accuracy by Type (Weighted)
+| Issue | Title | Type | Est Pts | Status |
+|-------|-------|------|---------|--------|
+| #XXX | [Issue title] | [Type] | X | ✅ Done |
+| #XXX | [Issue title] | [Type] | X | 📋 Stretch |
+| #XXX | [Issue title] | [Type] | X | ⚠️ Deferred |
+| #XXX | [Issue title] | [Type] | — | 📋 Unplanned |
 
-| Type | Issues | Est Total | Weighted Actual | Avg Ratio | Verdict |
-|------|--------|-----------|-----------------|-----------|---------|
-| [Type 1] | #XXX, #XXX | X | X.XX | X.XXx | [⚡/✅/🔴 + brief verdict] |
-| [Type 2] | #XXX | X | X.XX | X.XXx | [Verdict] |
+<!-- Status values:
+  ✅ Done     — planned and completed
+  📋 Stretch  — pulled in beyond original plan
+  ⚠️ Deferred — planned but not completed this sprint
+  📋 Unplanned — emerged during sprint (UX feedback, bug discovery, etc.)
+-->
 
-**Overall:** [1-2 sentence summary of estimation accuracy with ratio and context]
-<!-- REMINDER: Balance overestimation vs efficiency — fast execution can be both; acknowledge genuine skill gains -->
+#### Working Pattern
+
+```
+[Date]: ░░  Rest / planning (no commits)
+[Date]: ██  [Issues worked] — [brief session note]
+[Date]: ████  [Issues worked] — [brief session note]
+```
+
+<!-- Qualitative only — no line-weighted fractions. Describe the session flow, not time allocation per issue. -->
 
 #### Variance Analysis
 
-<!-- Group issues by outcome: Major Overruns, Major Underruns, On Target, Unplanned, Deferred -->
-<!-- For each notable issue, explain: -->
-<!--   1. What was estimated vs actual -->
-<!--   2. Root cause of the variance -->
-<!--   3. Lesson learned (actionable, not just "we were wrong") -->
+<!-- Group by outcome; focus on WHY, not just ratios -->
 
-**Major Overruns:**
+**Completed ahead of schedule:**
+- [What enabled fast execution — specification quality, pattern reuse, scope clarity]
 
-**#XXX ([Issue title])** - Estimated: X points -> Actual: X.XX days (X.XXx)
-- Root cause: [What caused the overrun]
-- [Additional context from developer interview]
-- Lesson: [Actionable takeaway for future estimation]
+**Stretch goals absorbed:**
+- [Context: why there was capacity, how the pull-in went]
 
-**Faster Than Expected:**
+**Unplanned work (if any):**
+- [Context: UX feedback? Bug discovery? Healthy or scope creep?]
 
-**#XXX ([Issue title])** - Estimated: X points -> Actual: X.XX days (X.XXx)
-- Root cause: [What enabled fast execution]
-<!-- REMINDER: Distinguish genuine efficiency (pattern reuse, skill gains, good preparation) from overestimation (new work type, no calibration data) -->
-- Lesson: [Actionable takeaway]
-
-**On Target:**
-
-**#XXX ([Issue title])** - Estimated: X points -> Actual: X.XX days (X.XXx)
-- [Why this was accurately estimated]
-- Lesson: [What made this estimate reliable]
-
-**Unplanned Work:**
-
-**#XXX ([Issue title])** - Unplanned -> Actual: X.XX days
-- [Context: UX feedback? Bug discovery? Scope evolution?]
-<!-- REMINDER: Frame emergent work contextually — UX feedback is a healthy product cycle, not just "unplanned work" -->
-- Lesson: [Actionable takeaway]
-
-#### Working Pattern Observations
-
-```
-[Date]:  [Activity bars] #XXX ([lines]), #XXX ([lines])
-[Date]:  [Activity bars] #XXX ([lines])
-[Date]:  - (no commits / rest day)
-...
-```
-
-**Patterns:**
-- [Pattern 1 observed in commit timeline]
-- [Pattern 2]
-- [Pattern 3]
-- [Pattern 4]
+**Deferred work (if any):**
+- [Why deferred; what's the plan for next sprint]
 
 #### Lessons Learned
 
-<!-- Typically 5-8 lessons. Each should have: -->
-<!--   - Bold header summarizing the lesson -->
-<!--   - Supporting data points -->
-<!--   - Actionable takeaway (not just observation) -->
-<!-- REMINDER: Balance fast execution framing — credit genuine efficiency, don't attribute all speed to "bad estimates" -->
+<!-- 3-6 lessons. Bold header + supporting evidence + actionable takeaway -->
+<!-- Balance genuine efficiency vs genuine overestimation in framing -->
 
-1. **[Lesson title with key metric]**
-   - [Supporting data or observation]
-   - [Additional context from developer interview if relevant]
+1. **[Lesson title]**
+   - [Supporting evidence from sprint]
    - Lesson: [Actionable recommendation]
 
 2. **[Lesson title]**
-   - [Supporting data]
+   - [Supporting evidence]
    - Lesson: [Actionable recommendation]
 
-3. **[Lesson title]**
-   - [Supporting data]
-   - Lesson: [Actionable recommendation]
-
-#### Recommendations for [Next Sprint Number]
+#### Recommendations for [Next Sprint]
 
 | Finding | Adjustment |
 |---------|------------|
-| [Key finding from this sprint] | [Specific adjustment for future planning] |
+| [Key finding] | [Specific adjustment] |
 | [Finding 2] | [Adjustment 2] |
-| [Finding 3] | [Adjustment 3] |
 
 #### Notes
 
-- [Additional context not covered above]
-- [Deferred work and rationale]
-- [Key achievements or infrastructure created]
-- [Relationship to adjacent milestones]
-- [Unplanned work summary with percentage]
+- [Additional context, deferred work, key achievements]
+- [Relationship to adjacent milestones / gate conditions met]
