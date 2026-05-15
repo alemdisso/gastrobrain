@@ -343,6 +343,8 @@ git push origin --delete hotfix/{issue-number}-{short-description}
 | 0.2.5 | 2026-05-01 | Tags & Filtering | release/0.2.5 | Recipe tagging system, tag-based filtering, meal type recommendation profiles |
 | 0.2.7 | 2026-05-08 | Polish & Schema | release/0.2.7 | App version in Settings, side dish names in meal slots, category column drop, ingredient parser confidence |
 | 0.2.8 | 2026-05-14 | Range Quantities & Recipe Import | release/0.2.8 | Range quantities (data, editor, shopping list), recipe/ingredient import with merge, sort by creation date, markdown preview for story, FAB improvement |
+| 0.2.9 | 2026-05-14 | Migration Hotfix | hotfix/381 | Harden migration 109 against dirty state and FK enforcement failures |
+| 0.2.10 | 2026-05-15 | Migration Hotfix (correct fix) | release/0.2.10 | Fix PRAGMA foreign_keys placement outside transaction in MigrationRunner (#381) |
 
 ---
 
