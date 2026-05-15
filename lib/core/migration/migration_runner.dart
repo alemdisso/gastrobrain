@@ -123,16 +123,29 @@ class MigrationRunner {
     final stopwatch = Stopwatch()..start();
 
     try {
-      // Run the migration and record it atomically. Validation is intentionally
-      // outside the transaction: ALTER TABLE schema changes are not visible to
-      // PRAGMA queries within the same sqflite transaction on some Android
-      // SQLite builds, causing false-negative validation and silent rollbacks
-      // that leave columns unadded (issue #372).
-      await _db.transaction((txn) async {
-        final executor = TransactionWrapper(txn);
-        await migration.up(executor);
-        await _recordMigration(txn, migration);
-      });
+      // Migrations that drop or rename referenced tables need FK enforcement
+      // disabled. PRAGMA foreign_keys is a no-op inside a transaction (SQLite
+      // spec), so it must be set on the raw Database connection before the
+      // transaction starts.
+      if (migration.requiresFkDisable) {
+        await _db.execute('PRAGMA foreign_keys = OFF');
+      }
+      try {
+        // Run the migration and record it atomically. Validation is
+        // intentionally outside the transaction: ALTER TABLE schema changes are
+        // not visible to PRAGMA queries within the same sqflite transaction on
+        // some Android SQLite builds, causing false-negative validation and
+        // silent rollbacks that leave columns unadded (issue #372).
+        await _db.transaction((txn) async {
+          final executor = TransactionWrapper(txn);
+          await migration.up(executor);
+          await _recordMigration(txn, migration);
+        });
+      } finally {
+        if (migration.requiresFkDisable) {
+          await _db.execute('PRAGMA foreign_keys = ON');
+        }
+      }
 
       // Validate after commit — schema changes are guaranteed visible here.
       final isValid = await migration.validate(DatabaseWrapper(_db));
@@ -215,21 +228,26 @@ class MigrationRunner {
   /// Rollback a specific migration
   Future<MigrationResult> _rollbackMigration(Migration migration) async {
     final stopwatch = Stopwatch()..start();
-    
+
     try {
-      await _db.transaction((txn) async {
-        final executor = TransactionWrapper(txn);
-        
-        // Execute the rollback
-        await migration.down(executor);
-        
-        // Remove the migration record
-        await _removeMigrationRecord(txn, migration);
-      });
-      
+      if (migration.requiresFkDisable) {
+        await _db.execute('PRAGMA foreign_keys = OFF');
+      }
+      try {
+        await _db.transaction((txn) async {
+          final executor = TransactionWrapper(txn);
+          await migration.down(executor);
+          await _removeMigrationRecord(txn, migration);
+        });
+      } finally {
+        if (migration.requiresFkDisable) {
+          await _db.execute('PRAGMA foreign_keys = ON');
+        }
+      }
+
       stopwatch.stop();
       return MigrationResult.success(migration.version, stopwatch.elapsed);
-      
+
     } catch (e) {
       stopwatch.stop();
       return MigrationResult.failure(

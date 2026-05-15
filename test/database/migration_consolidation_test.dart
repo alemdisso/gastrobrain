@@ -1120,4 +1120,127 @@ void main() {
       expect(rows.first['quantity'], equals(2.0));
     });
   });
+
+  // ── Runner-level regression: migration 109 with FK enforcement ON ─────────
+  //
+  // This group reproduces the exact production failure path: onConfigure
+  // enables FK before every database open, then _initializeMigrationSystem
+  // hands the database to MigrationRunner. Migration 109 must succeed even
+  // with FK ON and even though recipe_ingredients / meal_recipes / etc.
+  // carry FOREIGN KEY … REFERENCES recipes constraints.
+  //
+  // The previous hotfix (commit 56c73d4) placed PRAGMA foreign_keys = OFF
+  // inside migration.up(), which ran through TransactionWrapper and was
+  // therefore a no-op per SQLite spec. This regression suite would have
+  // caught that.
+
+  group('Runner-level regression — migration 109 with FK enabled', () {
+    late Database db;
+    late MigrationRunner runner;
+
+    setUp(() async {
+      db = await openEmpty();
+      final wrapper = DatabaseWrapper(db);
+
+      // 1. Apply the full baseline schema (creates all 13 tables with FK
+      //    constraints pointing at recipes).
+      await InitialSchemaMigration().up(wrapper);
+
+      // 2. Apply intermediate migrations to reach v108 state.
+      await AddMarinatingTimeMigration().up(wrapper);
+      await AddRecipeStoryMigration().up(wrapper);
+      await AddTagsMigration().up(wrapper);
+      await AddMealRoleFoodTypeMigration().up(wrapper);
+      await MigrateCategoryToTagsMigration().up(wrapper);
+      await AddSauceFoodTypeMigration().up(wrapper);
+
+      // 3. Add the category column to recipes that migration 109 must remove.
+      await db.execute(
+        "ALTER TABLE recipes ADD COLUMN category TEXT DEFAULT 'uncategorized'",
+      );
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_recipes_category ON recipes(category)',
+      );
+
+      // 4. Seed schema_migrations with v101–v108 (simulates a real v108 device).
+      await db.execute('''
+        CREATE TABLE schema_migrations (
+          version INTEGER PRIMARY KEY,
+          applied_at TEXT NOT NULL,
+          description TEXT NOT NULL,
+          duration_ms INTEGER NOT NULL
+        )
+      ''');
+      for (int v = 101; v <= 108; v++) {
+        await db.rawInsert(
+          'INSERT INTO schema_migrations (version, applied_at, description, duration_ms) '
+          'VALUES (?, ?, ?, ?)',
+          [v, DateTime.now().toIso8601String(), 'migration $v', 0],
+        );
+      }
+
+      // 5. Enable FK enforcement — this is what onConfigure does in production.
+      await db.execute('PRAGMA foreign_keys = ON');
+
+      runner = MigrationRunner(db, [
+        DropRecipeCategoryMigration(),
+        AddQuantityMaxMigration(),
+        AddShoppingListQuantityMaxMigration(),
+      ]);
+      await runner.initialize(); // no-op: schema_migrations already exists
+    });
+
+    tearDown(() async => db.close());
+
+    test('migration 109 succeeds through runner with FK enabled', () async {
+      final results = await runner.runPendingMigrations();
+
+      final m109 = results.firstWhere((r) => r.version == 109);
+      expect(m109.success, isTrue,
+          reason: 'migration 109 failed: ${m109.error}');
+    });
+
+    test('category column is absent after runner applies migration 109',
+        () async {
+      await runner.runPendingMigrations();
+
+      final cols = await columnNames(db, 'recipes');
+      expect(cols, isNot(contains('category')));
+    });
+
+    test('migrations 110 and 111 run after 109 succeeds', () async {
+      final results = await runner.runPendingMigrations();
+
+      final versions = results.map((r) => r.version).toSet();
+      expect(versions, containsAll([109, 110, 111]));
+      expect(results.where((r) => !r.success), isEmpty,
+          reason: 'failed migrations: ${results.where((r) => !r.success)}');
+    });
+
+    test('existing recipe data is preserved by migration 109', () async {
+      await db.rawInsert(
+        'INSERT INTO recipes (id, name, desired_frequency, created_at, '
+        'difficulty, prep_time_minutes, cook_time_minutes, rating, servings, '
+        'marinating_time_minutes, story, category) '
+        "VALUES ('r-1', 'frango assado', 'weekly', '2025-01-01T00:00:00', "
+        "2, 20, 60, 4, 4, 30, 'marinated overnight', 'main_dishes')",
+      );
+
+      await runner.runPendingMigrations();
+
+      final rows =
+          await db.rawQuery("SELECT * FROM recipes WHERE id = 'r-1'");
+      expect(rows.length, equals(1));
+      expect(rows.first['name'], equals('frango assado'));
+      expect(rows.first['marinating_time_minutes'], equals(30));
+      expect(rows.first['story'], equals('marinated overnight'));
+    });
+
+    test('FK enforcement is re-enabled after migration 109 runs', () async {
+      await runner.runPendingMigrations();
+
+      final result = await db.rawQuery('PRAGMA foreign_keys');
+      expect(result.first.values.first, equals(1));
+    });
+  });
 }

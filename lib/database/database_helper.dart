@@ -124,10 +124,13 @@ class DatabaseHelper {
         }
       }
       
-    } catch (e) {
-      print('Migration initialization failed: $e');
-      // Don't throw - let the app continue with current schema
-      // This ensures backward compatibility
+    } catch (e, stack) {
+      // Log the full error and stack so production failures are diagnosable.
+      // We intentionally do not rethrow: a migration failure must not prevent
+      // app launch. The schema inspector in developer tools shows the current
+      // state, and the next launch will retry pending migrations.
+      print('MIGRATION ERROR — app will continue with current schema: $e');
+      print('Stack trace:\n$stack');
     }
   }
 

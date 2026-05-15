@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.10] - 2026-05-15
+
+### Fixed
+- Migration 109 (`DropRecipeCategoryMigration`) still failing on existing devices after 0.2.9 hotfix — `PRAGMA foreign_keys = OFF` was placed inside `migration.up()` which runs through a `TransactionWrapper`, making it a no-op per SQLite spec; pragma now executes on the raw `Database` connection before the transaction starts in `MigrationRunner` (#381)
+- Devices upgrading from 0.2.7 will now correctly apply migrations 109, 110, and 111: `recipes.category` column removed, `recipe_ingredients.quantity_max` and `shopping_list_items.quantity_max` added, restoring all range-quantity features
+
+### Technical
+- Added `requiresFkDisable` flag to `Migration` abstract class; runner handles FK pragma at the correct scope for any future table-recreation migrations
+- Added 5 runner-level regression tests that reproduce the exact production failure path (FK enforcement ON, full migration sequence through `MigrationRunner`)
+
+---
+
 ## [0.2.9] - 2026-05-14
 
 ### Fixed
