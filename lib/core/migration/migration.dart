@@ -151,10 +151,18 @@ abstract class Migration {
   Duration get estimatedDuration => const Duration(seconds: 1);
 
   /// Whether this migration requires user data backup before running
-  /// 
+  ///
   /// Set to true for migrations that modify existing data or could
   /// potentially cause data loss if they fail.
   bool get requiresBackup => true;
+
+  /// Whether the migration runner must disable FK enforcement before running.
+  ///
+  /// When true, the runner executes `PRAGMA foreign_keys = OFF` on the raw
+  /// Database connection — outside any transaction — before calling up()/down(),
+  /// and restores it in a finally block. Override to true for any migration
+  /// that drops or renames a table referenced by foreign keys.
+  bool get requiresFkDisable => false;
 
   @override
   String toString() => 'Migration $version: $description';
