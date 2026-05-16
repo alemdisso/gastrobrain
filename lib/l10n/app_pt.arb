@@ -1865,6 +1865,10 @@
   "@errorMigrationFailed": {
     "description": "Título do erro quando migração falha"
   },
+  "migrationFailureWarning": "Uma atualização do banco de dados falhou. Algumas funcionalidades podem não funcionar corretamente.",
+  "@migrationFailureWarning": {
+    "description": "Aviso em SnackBar exibido ao iniciar o app quando uma migração anterior falhou"
+  },
   "buttonDismiss": "Dispensar",
   "@buttonDismiss": {
     "description": "Botão para dispensar um erro ou mensagem"
