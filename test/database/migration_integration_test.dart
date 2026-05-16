@@ -284,4 +284,138 @@ void main() {
       }
     });
   });
+
+  // ── Scenario 3: Migration error recording — schema and SQL invariants ─────
+  //
+  // Validates the exact table schema and SQL operations that underlie
+  // hasPendingMigrationFailure() and acknowledgeMigrationFailure() in
+  // DatabaseHelper. These tests lock in the invariants the production code
+  // depends on without going through the DatabaseHelper singleton.
+
+  group('Migration error recording — schema and SQL invariants', () {
+    late Database db;
+
+    // Mirrors _ensureMigrationErrorsTable in database_helper.dart.
+    Future<void> ensureErrorsTable(Database db) => db.execute('''
+      CREATE TABLE IF NOT EXISTS schema_migrations_errors (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        failed_version INTEGER,
+        error_message TEXT NOT NULL,
+        occurred_at TEXT NOT NULL,
+        acknowledged INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
+
+    // Mirrors _recordMigrationFailure in database_helper.dart.
+    Future<void> recordFailure(Database db, int? version, String message) =>
+        db.rawInsert(
+          'INSERT INTO schema_migrations_errors '
+          '(failed_version, error_message, occurred_at) VALUES (?, ?, ?)',
+          [version, message, DateTime.now().toIso8601String()],
+        );
+
+    // Mirrors the SELECT in hasPendingMigrationFailure.
+    Future<bool> hasPending(Database db) async {
+      final rows = await db.rawQuery(
+        'SELECT COUNT(*) as count FROM schema_migrations_errors WHERE acknowledged = 0',
+      );
+      return (rows.first['count'] as int) > 0;
+    }
+
+    // Mirrors acknowledgeMigrationFailure.
+    Future<void> acknowledge(Database db) => db.execute(
+          'UPDATE schema_migrations_errors SET acknowledged = 1 WHERE acknowledged = 0',
+        );
+
+    setUp(() async {
+      db = await openEmpty();
+      await ensureErrorsTable(db);
+    });
+
+    tearDown(() async => db.close());
+
+    test('table creation is idempotent — safe to call on every launch', () async {
+      await expectLater(ensureErrorsTable(db), completes);
+
+      final tables = await db.rawQuery(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='schema_migrations_errors'",
+      );
+      expect(tables.length, equals(1));
+    });
+
+    test('error row with known version stores failed_version correctly', () async {
+      await recordFailure(db, 109, 'Drop category migration failed');
+
+      final rows = await db.rawQuery('SELECT * FROM schema_migrations_errors');
+      expect(rows.length, equals(1));
+      expect(rows.first['failed_version'], equals(109));
+      expect(rows.first['error_message'], equals('Drop category migration failed'));
+    });
+
+    test('system-level error stores null failed_version', () async {
+      await recordFailure(db, null, 'DB initialisation error');
+
+      final rows = await db.rawQuery('SELECT * FROM schema_migrations_errors');
+      expect(rows.first['failed_version'], isNull);
+    });
+
+    test('new error rows default to acknowledged = 0', () async {
+      await recordFailure(db, 109, 'some error');
+
+      final rows = await db.rawQuery('SELECT acknowledged FROM schema_migrations_errors');
+      expect(rows.first['acknowledged'], equals(0));
+    });
+
+    test('hasPendingMigrationFailure returns false on clean database', () async {
+      expect(await hasPending(db), isFalse);
+    });
+
+    test('hasPendingMigrationFailure returns true after an error is recorded', () async {
+      await recordFailure(db, 109, 'migration failed');
+
+      expect(await hasPending(db), isTrue);
+    });
+
+    test('acknowledgeMigrationFailure marks all unacknowledged rows', () async {
+      await recordFailure(db, 109, 'first failure');
+      await recordFailure(db, null, 'second failure');
+
+      await acknowledge(db);
+
+      final unack = await db.rawQuery(
+        'SELECT COUNT(*) as count FROM schema_migrations_errors WHERE acknowledged = 0',
+      );
+      expect(unack.first['count'], equals(0));
+    });
+
+    test('hasPendingMigrationFailure returns false after acknowledgement', () async {
+      await recordFailure(db, 109, 'migration failed');
+      await acknowledge(db);
+
+      expect(await hasPending(db), isFalse);
+    });
+
+    test('acknowledgement is idempotent — safe to call twice', () async {
+      await recordFailure(db, 109, 'migration failed');
+      await acknowledge(db);
+      await expectLater(acknowledge(db), completes);
+
+      final rows = await db.rawQuery('SELECT acknowledged FROM schema_migrations_errors');
+      expect(rows.first['acknowledged'], equals(1));
+    });
+
+    test('only unacknowledged rows are updated by acknowledgement', () async {
+      await recordFailure(db, 108, 'old failure');
+      await acknowledge(db);
+      await recordFailure(db, 109, 'new failure');
+
+      expect(await hasPending(db), isTrue);
+
+      final rows = await db.rawQuery(
+        'SELECT failed_version, acknowledged FROM schema_migrations_errors ORDER BY id',
+      );
+      expect(rows[0]['acknowledged'], equals(1));
+      expect(rows[1]['acknowledged'], equals(0));
+    });
+  });
 }
