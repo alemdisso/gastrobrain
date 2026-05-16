@@ -1464,6 +1464,12 @@ class MockDatabaseHelper implements DatabaseHelper {
   Future<bool> needsMigration() async => false; // Mock: no migrations needed
 
   @override
+  Future<bool> hasPendingMigrationFailure() async => false;
+
+  @override
+  Future<void> acknowledgeMigrationFailure() async {}
+
+  @override
   Future<int> getCurrentVersion() async => 1; // Mock: current version
 
   @override

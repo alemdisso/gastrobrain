@@ -101,36 +101,93 @@ class DatabaseHelper {
   /// For existing databases, we'll transition them to use the migration system.
   Future<void> _initializeMigrationSystem(Database db) async {
     try {
+      await _ensureMigrationErrorsTable(db);
+
       // Create migration runner
       _migrationRunner = MigrationRunner(db, _migrations);
-      
+
       // Initialize migration system (creates schema_migrations table)
       await _migrationRunner!.initialize();
-      
+
       // Check if this is an existing database without migration tracking
       await _handleLegacyDatabase(db);
-      
+
       // Run any pending migrations
       if (await _migrationRunner!.needsMigration()) {
         print('Running pending migrations...');
         final results = await _migrationRunner!.runPendingMigrations();
-        
+
         for (final result in results) {
-          if (result.success) {
-            print('✓ ${result.toString()}');
-          } else {
-            print('✗ ${result.toString()}');
-          }
+          print('✓ ${result.toString()}');
         }
       }
-      
+
     } catch (e, stack) {
       // Log the full error and stack so production failures are diagnosable.
       // We intentionally do not rethrow: a migration failure must not prevent
       // app launch. The schema inspector in developer tools shows the current
       // state, and the next launch will retry pending migrations.
+      //
+      // runPendingMigrations() rethrows a MigrationException on failure, so the
+      // loop above is only reached when all migrations succeed. Record the
+      // failed migration version when available.
       print('MIGRATION ERROR — app will continue with current schema: $e');
       print('Stack trace:\n$stack');
+      final failedVersion = e is MigrationException ? e.version : null;
+      await _recordMigrationFailure(db, failedVersion, e.toString());
+    }
+  }
+
+  Future<void> _ensureMigrationErrorsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS schema_migrations_errors (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        failed_version INTEGER,
+        error_message TEXT NOT NULL,
+        occurred_at TEXT NOT NULL,
+        acknowledged INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
+  }
+
+  Future<void> _recordMigrationFailure(
+    Database db,
+    int? version,
+    String message,
+  ) async {
+    try {
+      await db.rawInsert(
+        'INSERT INTO schema_migrations_errors '
+        '(failed_version, error_message, occurred_at) VALUES (?, ?, ?)',
+        [version, message, DateTime.now().toIso8601String()],
+      );
+    } catch (_) {
+      // Recording failed — nothing further we can do at this point.
+    }
+  }
+
+  Future<bool> hasPendingMigrationFailure() async {
+    try {
+      final db = await database;
+      await _ensureMigrationErrorsTable(db);
+      final rows = await db.rawQuery(
+        'SELECT COUNT(*) as count FROM schema_migrations_errors WHERE acknowledged = 0',
+      );
+      final count = rows.first['count'] as int;
+      return count > 0;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> acknowledgeMigrationFailure() async {
+    try {
+      final db = await database;
+      await db.execute(
+        'UPDATE schema_migrations_errors SET acknowledged = 1 WHERE acknowledged = 0',
+      );
+    } catch (_) {
+      // Best-effort acknowledgement.
     }
   }
 
