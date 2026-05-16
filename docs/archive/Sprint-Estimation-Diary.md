@@ -2690,6 +2690,110 @@ The 11.3 pts/day figure (vs 6.5 cruising) reflects execution-mode conditions, no
 
 ---
 
+### 0.2.8 — Range Quantities + Import
+
+**Sprint Duration:** May 11–14, 2026
+**Calendar Days:** 4
+**Rest Days:** 0 (May 11 was Sunday; developer chose to start then)
+**Active Working Days:** 4.0d
+**Planned Issues:** 7 (25 pts)
+**Completed Issues:** 7
+**Total Points Delivered:** 25 pts
+
+#### Sprint Performance
+
+| Metric | Value |
+|--------|-------|
+| Planned pts | 25 |
+| Delivered pts | 25 |
+| Actual days | 4.0d |
+| Expected days at cruising | 25 ÷ 6.5 = 3.8d |
+| Velocity | 6.25 pts/day (44 pts/week) |
+| Sprint result | ✅ On target (+0.2d vs 3.8d expected) |
+
+#### Issues
+
+| Issue | Title | Type | Est Pts | Status |
+|-------|-------|------|---------|--------|
+| #380 | FAB on recipe overview opens full editor | UX fix | 2 | ✅ Done |
+| #373 | Markdown preview for story/history edit | Enhancement | 2 | ✅ Done |
+| #368 | Sort by creation date option | Enhancement | 2 | ✅ Done |
+| #357 | Range quantities data foundation | Feature / data | 5 | ✅ Done |
+| #358 | Range quantities recipe editor | Feature / UI | 3 | ✅ Done |
+| #359 | Range quantities shopping list | Feature / UI | 3 | ✅ Done |
+| #216 | Recipe and ingredient import | Feature / major | 8 | ✅ Done |
+
+*#357 and #380 estimates from sprint plan (not found on Project #3 board during retrospective; both match their size labels).*
+
+#### Working Pattern
+
+```
+May 11 (Sun) ██████  #380, #373, #368 — quick wins batch
+May 12 (Mon) ████    #357 range data foundation
+May 12–13    ████    #358 range recipe editor (spans overnight)
+May 13–14    ██████  #359 range shopping list + #216 import (interleaved)
+May 14 (Wed) █       version bump → release/0.2.8
+```
+
+#### Variance Analysis
+
+**All 7 planned issues completed; no stretch, no deferred, no unplanned.**
+
+The sprint plan mapped a clean data-first sequence for the range quantities trilogy. #357 landed on Day 1 (Monday), unblocking #358 and #359 simultaneously. Both UI issues executed in the following days without revisiting the data layer.
+
+The three quick wins (#380, #373, #368) batched on the opening day. Developer confirmed both batching efficiency and conservative estimates — each 2-pt issue represented approximately 1 pt of actual effort.
+
+#216 (import, 8 pts) was the most complex item. The plan budgeted a half-day investigation on Day 4 to review the backup/restore pattern before coding. Developer confirmed it was straightforward — no surprises on execution days. `file_picker` reuse from #223 absorbed the setup friction the plan had buffered for.
+
+#358's board estimate (3 pts) was below the sprint plan (5 pts). Developer confirmed the board estimate was conservative. The upfront design decision — single input field accepting "2-3" notation, not two separate fields, committed to before coding — absorbed the UI iteration risk before it materialized.
+
+**Post-release:** Schema migration silent failure (#382) discovered after 0.2.8 shipped. Pre-existing defect in error surfacing, not introduced in 0.2.8. Addressed in 0.2.9 (error recording) and 0.2.10 (PRAGMA fix).
+
+#### Lessons Learned
+
+1. **Pre-sprint investigation converts discovery risk to planned execution**
+   - #216 had a half-day investigation window on Day 4 before coding. Developer found no surprises; Days 5–6 executed as planned with no mid-implementation pivots.
+   - Lesson: For major features (≥8 pts) with identified discovery risk, budget an explicit investigation block in the sprint plan. The cost is predictable; the saving (avoided mid-sprint pivot) is not.
+
+2. **Upfront UI design decisions absorb their own multipliers**
+   - #358's 1.3x multiplier in the sprint plan assumed design iteration on the range input. Committing to the single-field approach in the plan eliminated the uncertainty before the sprint started.
+   - Lesson: When a UI multiplier is applied for design uncertainty, resolve the uncertainty in the plan. The decision is cheap in planning; expensive mid-implementation.
+
+3. **Data-first hard-sequencing prevents mid-sprint rework on feature trilogies**
+   - #357 completed on Day 1 before any UI work touched the range quantity model. #358 and #359 never revisited the data layer.
+   - Lesson: For feature trilogies (data → editor → consumer), hard-sequence in the plan and resist starting UI work until the data foundation is confirmed stable.
+
+4. **Quick wins batch on Day 1 produces momentum without sacrificing precision**
+   - #380, #373, and #368 (all 2 pts, similar type) completed in one day — confirmed as both batching efficiency and conservative estimates.
+   - Lesson: Group small, similar issues at sprint start. Estimate individually; schedule as a block. Zero context-switch cost; strong pace signal for the rest of the sprint.
+
+5. **Prior-feature pattern reuse is the most reliable risk mitigation for major features**
+   - #216 reused `file_picker` and transaction patterns from #223. No new package setup, no transaction pattern design — straight to domain logic.
+   - Lesson: For any new major feature, audit which prior-sprint patterns are directly reusable before estimating. Call out the reuse explicitly in the plan; the multiplier reduction is real.
+
+6. **Post-release defect discovery is separate from sprint velocity**
+   - #382 was discovered post-release. No friction occurred during the sprint. The sprint was clean from a delivery standpoint; #382 was a pre-existing gap in error surfacing.
+   - Lesson: A clean sprint can still produce post-release discoveries. Record them as follow-up issues, not sprint overruns.
+
+#### Recommendations for 0.2.9+
+
+| Finding | Adjustment |
+|---------|------------|
+| Pre-sprint investigation on major features eliminated mid-sprint pivots | Budget 0.5d investigation block for any ≥8 pt discovery-adjacent issue |
+| Upfront design decision absorbed the UI iteration multiplier | For UI features with a binary design choice, commit in the plan before coding starts |
+| Quick wins batch realistically ~1 pt each despite 2 pt estimates | Bundle 2-pt UX/enhancement issues as a block; estimate the block at 0.5× raw total |
+| Prior-feature reuse was the #216 risk hedge | When a major feature shares a subsystem with a prior sprint, call out exact pattern reuse in the plan |
+
+#### Notes
+
+- Sprint started Sunday May 11 (developer's choice; no rest day before starting).
+- All 7 issues completed in 4 days; no stretch, no deferred, no unplanned.
+- Velocity (6.25 pts/day) is essentially cruising (6.5 baseline), consistent with a well-prepared feature sprint.
+- Post-release: #382 (schema migration silent failure) → addressed in 0.2.9/0.2.10. Not counted in sprint metrics.
+- 0.2.9 and 0.2.10 were hotfixes; no retrospective entries.
+
+---
+
 ## Cumulative Metrics
 
 ### Estimation Accuracy Trend
@@ -2717,6 +2821,7 @@ The 11.3 pts/day figure (vs 6.5 cruising) reflects execution-mode conditions, no
 | 0.2.5 | 34 | ~5.5d eff. | ~1.05x§ | 6.2 | Tagging system sprint; tag chain (#333→#334→#335) traded hours internally; silent migration failure (numbering collision) discovered post-release → 0.2.6 |
 | 0.2.6 | n/a‖ | ~1.5d | n/a | n/a | Emergency architectural fix: migration numbering collision; set-membership runner; Schema Inspector; test debt generated (#378, #379) |
 | 0.2.7 | 17¶ | ~1.5d | n/a† | 11.3 / 79 | Code Health sprint: P1 test fixes + well-specified bugs + DB chore + mechanical refactor; execution-mode velocity; stretch #374 absorbed; gate cleared for 0.2.8 |
+| 0.2.8 | 25 | 4.0d | n/a¶ | 6.25 / 44 | Feature sprint: range quantities trilogy (data→editor→shopping) + import; Day 1 quick-win batch; on-target execution; #382 discovered post-release → 0.2.9/0.2.10 |
 
 *\* 0.1.7a weighted-days methodology underrepresents actual effort due to shared day with 0.1.7b. Developer estimates ~0.5 days actual effort. Excluded from velocity calculations.*
 *† 0.1.14 ratio is a retroactive estimate; no commit-level weighted analysis available. Calculated as active days / expected days at cruising velocity.*
@@ -2749,6 +2854,9 @@ The 11.3 pts/day figure (vs 6.5 cruising) reflects execution-mode conditions, no
 - **Sprint plan specification quality is the primary velocity multiplier (0.2.7)** — writing the exact file+line fix location into the sprint plan (not just the issue body) eliminates the debugging phase entirely; both 3-pt bugs (#364, #366) were 1-line fixes because the plan answered "where" before the sprint started
 - **Code Health sprint profile reliably executes at execution-mode velocity (0.2.7)** — P1 test fixes + well-specified bugs + mechanical refactor + DB chore = no discovery overhead; size Code Health milestones at ~36–40 pts/week, not cruising (30 pts/week)
 - **Retrospective methodology change (0.2.7)** — per-issue weighted actual days and point-to-time ratios are no longer used; story points are relative units, not time; the only velocity metric is sprint-level pts ÷ actual days
+- **Feature trilogy hard-sequencing (data→editor→consumer) prevents mid-sprint rework (0.2.8)** — completing the data foundation (#357) before any UI work meant the model never changed under #358/#359; no rework; resist parallel starts even when the foundation looks almost done
+- **Pre-sprint investigation converts discovery risk to planned execution (0.2.8)** — half-day investigation before #216 coding eliminated mid-implementation pivots; the investment is predictable, the saving is not; budget explicitly for any ≥8 pt discovery-adjacent feature
+- **Upfront UI design decisions absorb multipliers before they cost anything (0.2.8)** — committing to single-field range input in the plan removed the 1.3x UI iteration risk before #358 started; make binary design choices during planning, not during implementation
 
 ### Type-Based Calibration Factors
 
