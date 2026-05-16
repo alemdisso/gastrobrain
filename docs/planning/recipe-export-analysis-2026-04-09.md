@@ -1,3 +1,4 @@
+<!-- markdownlint-disable -->
 # Recipe Export Analysis — 2026-04-09
 
 Export file: `assets/recipe_export_1775743662475.json`
