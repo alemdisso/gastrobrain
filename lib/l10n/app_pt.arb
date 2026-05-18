@@ -2502,6 +2502,18 @@
   "@plannedMeals": {
     "description": "Header for the planned meals section in weekly summary"
   },
+  "mealSectionUpcoming": "Próximas",
+  "@mealSectionUpcoming": {
+    "description": "Section header for upcoming (today or future) meals in weekly summary"
+  },
+  "mealSectionCooked": "Cozinhadas",
+  "@mealSectionCooked": {
+    "description": "Section header for past meals that were marked as cooked in weekly summary"
+  },
+  "mealSectionUnconfirmed": "Não Confirmadas",
+  "@mealSectionUnconfirmed": {
+    "description": "Section header for past meals that were not marked as cooked in weekly summary"
+  },
   "shoppingListEditIngredients": "Editar Ingredientes",
   "@shoppingListEditIngredients": {
     "description": "Action to go back to ingredient preview and adjust the list"

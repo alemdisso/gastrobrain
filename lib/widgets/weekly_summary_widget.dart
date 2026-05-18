@@ -17,11 +17,15 @@ class WeeklySummaryWidget extends StatelessWidget {
   /// Optional scroll controller (used when embedded in bottom sheet)
   final ScrollController? scrollController;
 
+  /// Reference date for temporal grouping; defaults to today if null
+  final DateTime? referenceDate;
+
   const WeeklySummaryWidget({
     super.key,
     required this.summaryData,
     required this.onRetry,
     this.scrollController,
+    this.referenceDate,
   });
 
   @override
@@ -178,8 +182,12 @@ class WeeklySummaryWidget extends StatelessWidget {
     );
   }
 
-  /// Builds the planned meals section showing all scheduled meals
+  /// Builds the planned meals section with temporal grouping.
+  ///
+  /// Groups meals into Cooked (past + marked cooked), Unconfirmed (past + not
+  /// cooked), and Upcoming (today or future), each with a distinct visual header.
   Widget _buildPlannedMealsSection(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final plannedMeals = summaryData!.plannedMeals;
 
     if (plannedMeals.isEmpty) {
@@ -187,7 +195,7 @@ class WeeklySummaryWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            AppLocalizations.of(context)!.plannedMeals,
+            l10n.plannedMeals,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -196,7 +204,7 @@ class WeeklySummaryWidget extends StatelessWidget {
           ),
           const SizedBox(height: DesignTokens.spacingSm),
           Text(
-            AppLocalizations.of(context)!.noMealsPlannedYet,
+            l10n.noMealsPlannedYet,
             style: Theme.of(context)
                 .textTheme
                 .bodyMedium
@@ -206,57 +214,134 @@ class WeeklySummaryWidget extends StatelessWidget {
       );
     }
 
-    // Sort by date
-    final sortedMeals = List<PlannedMealInfo>.from(plannedMeals)
-      ..sort((a, b) => a.date.compareTo(b.date));
+    final now = referenceDate ?? DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    final cooked = <PlannedMealInfo>[];
+    final unconfirmed = <PlannedMealInfo>[];
+    final upcoming = <PlannedMealInfo>[];
+
+    for (final meal in plannedMeals) {
+      final mealDay =
+          DateTime(meal.date.year, meal.date.month, meal.date.day);
+      if (mealDay.isBefore(today)) {
+        if (meal.isCooked) {
+          cooked.add(meal);
+        } else {
+          unconfirmed.add(meal);
+        }
+      } else {
+        upcoming.add(meal);
+      }
+    }
+
+    cooked.sort((a, b) => a.date.compareTo(b.date));
+    unconfirmed.sort((a, b) => a.date.compareTo(b.date));
+    upcoming.sort((a, b) => a.date.compareTo(b.date));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          AppLocalizations.of(context)!.plannedMeals,
+          l10n.plannedMeals,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: DesignTokens.textPrimary,
               ),
         ),
         const SizedBox(height: DesignTokens.spacingSm),
-        ...sortedMeals.map((meal) {
-          final day = meal.day;
-          final mealType = meal.mealType;
-          final recipes = meal.recipes;
-
-          // Capitalize meal type
-          final formattedMealType =
-              mealType[0].toUpperCase() + mealType.substring(1);
-
-          return Padding(
-            padding: const EdgeInsets.only(bottom: DesignTokens.spacingSm),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: 90,
-                  child: Text(
-                    '${day.substring(0, 3)} $formattedMealType',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: DesignTokens.accent,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Text(
-                    recipes.join(', '),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }).toList(),
+        if (cooked.isNotEmpty) ...[
+          _buildStatusHeader(
+            context,
+            label: l10n.mealSectionCooked,
+            icon: Icons.check_circle,
+            color: DesignTokens.mealCookedIcon,
+          ),
+          ..._buildMealRows(context, cooked),
+        ],
+        if (unconfirmed.isNotEmpty) ...[
+          if (cooked.isNotEmpty)
+            const SizedBox(height: DesignTokens.spacingXs),
+          _buildStatusHeader(
+            context,
+            label: l10n.mealSectionUnconfirmed,
+            icon: Icons.help_outline,
+            color: DesignTokens.warning,
+          ),
+          ..._buildMealRows(context, unconfirmed),
+        ],
+        if (upcoming.isNotEmpty) ...[
+          if (cooked.isNotEmpty || unconfirmed.isNotEmpty)
+            const SizedBox(height: DesignTokens.spacingXs),
+          _buildStatusHeader(
+            context,
+            label: l10n.mealSectionUpcoming,
+            icon: Icons.calendar_today,
+            color: DesignTokens.accent,
+          ),
+          ..._buildMealRows(context, upcoming),
+        ],
       ],
     );
+  }
+
+  Widget _buildStatusHeader(
+    BuildContext context, {
+    required String label,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: DesignTokens.spacingXs),
+      child: Row(
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: DesignTokens.spacingXs),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: color,
+                  fontWeight: DesignTokens.weightSemibold,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildMealRows(
+      BuildContext context, List<PlannedMealInfo> meals) {
+    return meals.map((meal) {
+      final formattedMealType =
+          meal.mealType[0].toUpperCase() + meal.mealType.substring(1);
+      return Padding(
+        padding: const EdgeInsets.only(
+          bottom: DesignTokens.spacingSm,
+          left: DesignTokens.spacingMd,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 80,
+              child: Text(
+                '${meal.day.substring(0, 3)} $formattedMealType',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: DesignTokens.accent,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                meal.recipes.join(', '),
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+          ],
+        ),
+      );
+    }).toList();
   }
 
   /// Builds the variety section showing unique and repeated recipes

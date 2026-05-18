@@ -2548,6 +2548,18 @@
   "@plannedMeals": {
     "description": "Header for the planned meals section in weekly summary"
   },
+  "mealSectionUpcoming": "Upcoming",
+  "@mealSectionUpcoming": {
+    "description": "Section header for upcoming (today or future) meals in weekly summary"
+  },
+  "mealSectionCooked": "Cooked",
+  "@mealSectionCooked": {
+    "description": "Section header for past meals that were marked as cooked in weekly summary"
+  },
+  "mealSectionUnconfirmed": "Unconfirmed",
+  "@mealSectionUnconfirmed": {
+    "description": "Section header for past meals that were not marked as cooked in weekly summary"
+  },
   "shoppingListEditIngredients": "Edit Ingredients",
   "@shoppingListEditIngredients": {
     "description": "Action to go back to ingredient preview and adjust the list"
