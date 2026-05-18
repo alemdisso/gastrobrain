@@ -6,7 +6,6 @@ import 'package:gastrobrain/models/ingredient.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
 import 'package:gastrobrain/widgets/unified_add_side_dialog.dart';
 import 'package:gastrobrain/l10n/app_localizations.dart';
-import '../test_utils/dialog_fixtures.dart';
 
 // ── Test helpers ─────────────────────────────────────────────────────────────
 
