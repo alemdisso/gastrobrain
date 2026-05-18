@@ -845,6 +845,170 @@ void main() {
         expect(tester.widget<TextFormField>(notesField).controller!.text,
             equals('Grind fresh'));
       });
+
+      testWidgets('edit mode shows ingredient anchor and hides search field',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+        final existingIngredient = {
+          'ingredient_id': testIngredient.id,
+          'quantity': 350.0,
+          'preparation_notes': 'Diced finely',
+        };
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+            existingIngredient: existingIngredient,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Ingredient name anchor is visible
+        expect(find.byKey(const Key('edit_ingredient_anchor')), findsOneWidget);
+        expect(find.text('Chicken Breast'), findsOneWidget);
+
+        // Search field is NOT visible by default in edit mode
+        expect(find.byKey(const Key('add_ingredient_search_field')), findsNothing);
+        expect(find.byType(Autocomplete<Ingredient>), findsNothing);
+      });
+
+      testWidgets('edit mode shows swap button',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+        final existingIngredient = {
+          'ingredient_id': testIngredient.id,
+          'quantity': 200.0,
+        };
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+            existingIngredient: existingIngredient,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // "Trocar ingrediente" button is present
+        expect(find.byKey(const Key('swap_ingredient_button')), findsOneWidget);
+        expect(find.text('Trocar ingrediente'), findsOneWidget);
+      });
+
+      testWidgets('tapping swap button reveals search field',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+        final existingIngredient = {
+          'ingredient_id': testIngredient.id,
+          'quantity': 200.0,
+        };
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+            existingIngredient: existingIngredient,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Tap "Trocar ingrediente"
+        await tester.tap(find.byKey(const Key('swap_ingredient_button')));
+        await tester.pumpAndSettle();
+
+        // Anchor is gone, search field appears
+        expect(find.byKey(const Key('edit_ingredient_anchor')), findsNothing);
+        expect(find.byKey(const Key('add_ingredient_search_field')), findsOneWidget);
+      });
+
+      testWidgets('swap trigger preserves quantity and notes',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+        final existingIngredient = {
+          'ingredient_id': testIngredient.id,
+          'quantity': 350.0,
+          'preparation_notes': 'Diced finely',
+        };
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+            existingIngredient: existingIngredient,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Tap "Trocar ingrediente"
+        await tester.tap(find.byKey(const Key('swap_ingredient_button')));
+        await tester.pumpAndSettle();
+
+        // Quantity and notes retained
+        final quantityField =
+            find.byKey(const Key('add_ingredient_quantity_field'));
+        expect(tester.widget<TextFormField>(quantityField).controller!.text,
+            equals('350.0'));
+
+        final notesField = find.byKey(const Key('add_ingredient_notes_field'));
+        expect(tester.widget<TextFormField>(notesField).controller!.text,
+            equals('Diced finely'));
+      });
+
+      testWidgets('add mode shows search field immediately (regression)',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+
+        await DialogTestHelpers.openDialog(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // In add mode: search field shown, anchor absent
+        expect(find.byKey(const Key('add_ingredient_search_field')), findsOneWidget);
+        expect(find.byKey(const Key('edit_ingredient_anchor')), findsNothing);
+        expect(find.byKey(const Key('swap_ingredient_button')), findsNothing);
+      });
+
+      testWidgets('cancel in anchor mode returns null with no side effects',
+          (WidgetTester tester) async {
+        final testRecipe = DialogFixtures.createTestRecipe();
+        final existingIngredient = {
+          'ingredient_id': testIngredient.id,
+          'quantity': 200.0,
+        };
+
+        final result =
+            await DialogTestHelpers.openDialogAndCapture<RecipeIngredient>(
+          tester,
+          dialogBuilder: (context) => AddIngredientDialog(
+            recipe: testRecipe,
+            databaseHelper: mockDbHelper,
+            existingIngredient: existingIngredient,
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Cancel from anchor mode (no swap triggered)
+        await tester.tap(find.text('Cancelar'));
+        await tester.pumpAndSettle();
+
+        DialogTestHelpers.verifyDialogCancelled(result);
+        DialogTestHelpers.verifyDialogClosed<AddIngredientDialog>();
+      });
     });
 
     group('Validation Messages', () {

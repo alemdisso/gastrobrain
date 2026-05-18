@@ -74,6 +74,7 @@ class MealPlanSummaryService {
             date: date,
             mealType: item.mealType,
             recipes: mealRecipes,
+            isCooked: item.hasBeenCooked,
           ));
         }
       }

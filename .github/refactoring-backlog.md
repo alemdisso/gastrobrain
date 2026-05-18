@@ -5,6 +5,7 @@ Auto-flagged by the Code Quality Watchdog. Review during Sprint Planning as part
 ---
 
 - [ ] 🔴 `lib/widgets/add_ingredient_dialog.dart` — file length (677 lines, threshold 250) — flagged during: issue creation analysis — 2026-04-26
+- [ ] 🔴 `lib/screens/recipes_screen.dart` — file length (614 lines, threshold 400) — flagged during: #346 scroll affordance implementation — 2026-05-18
 
 - [ ] 🔴 `lib/core/services/shopping_list_service.dart` — file length 457 lines (threshold: 350) — flagged during: #306 servings scaling implementation — 2026-03-01
 - [ ] 🔴 `lib/screens/recipe_editor_screen.dart` — file length 2291 lines (threshold: 400) — flagged during: issue creation for servings stepper consistency — 2026-03-02 — **will be addressed in #283 (Extract IngredientParserService as reusable ingredient entry method); do not refactor in isolation**
@@ -24,3 +25,5 @@ Auto-flagged by the Code Quality Watchdog. Review during Sprint Planning as part
 - [ ] 🔴 `lib/widgets/add_new_ingredient_dialog.dart` — file length 383 lines (threshold: 250 for widgets) — flagged during: #320 duplicate detection implementation — 2026-04-22 — contains business logic (DB access, service calls) that should move to a screen-level controller
 - [ ] 🟡 `lib/widgets/tag_picker_widget.dart` — file length 155 lines (threshold: 150 for widgets) — flagged during: #324 tagging system implementation — 2026-04-27
 - [ ] 🔴 `lib/widgets/weekly_calendar_widget.dart` — file length 669 lines (threshold: 250 for widgets) — flagged during: issue creation analysis — 2026-05-06
+
+- [ ] 🔴 `lib/widgets/weekly_summary_widget.dart` — file length 399 lines (threshold: 250 for widgets) — flagged during: #376 temporal meal status implementation — 2026-05-18

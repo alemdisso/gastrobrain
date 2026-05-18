@@ -557,6 +557,10 @@
   "@removeFromPlan": {
     "description": "Button text to remove meal from plan"
   },
+  "removeCookedMealWarning": "This meal has been marked as cooked. Removing it from the plan will also delete the cooking record.",
+  "@removeCookedMealWarning": {
+    "description": "Warning shown when attempting to remove a meal that has already been cooked"
+  },
   "viewRecipeDetailsNotImplemented": "View recipe details (not implemented)",
   "@viewRecipeDetailsNotImplemented": {
     "description": "Snackbar message for not implemented view recipe details feature"
@@ -647,9 +651,17 @@
   "@addSideDishes": {
     "description": "Button text to add side dishes"
   },
-  "completeMealSection": "Complete your meal",
+  "completeMealSection": "Side dishes",
   "@completeMealSection": {
-    "description": "Section header in recipe selection menu for adding side dishes and simple sides"
+    "description": "Section header in recipe selection menu for adding side dishes"
+  },
+  "sideDishAddRecipeTab": "Recipe",
+  "@sideDishAddRecipeTab": {
+    "description": "Tab label for recipe side dish selection in unified add side dialog"
+  },
+  "sideDishAddIngredientTab": "Ingredient",
+  "@sideDishAddIngredientTab": {
+    "description": "Tab label for simple ingredient side in unified add side dialog"
   },
   "selectRecipe": "Select Recipe",
   "@selectRecipe": {
@@ -1417,6 +1429,10 @@
       }
     }
   },
+  "swapIngredient": "Swap ingredient",
+  "@swapIngredient": {
+    "description": "Button to reveal ingredient search field in edit mode"
+  },
   "useCustomIngredient": "Use custom ingredient",
   "@useCustomIngredient": {
     "description": "Link to switch to custom ingredient mode"
@@ -1870,6 +1886,10 @@
   "errorMigrationFailed": "Migration Failed",
   "@errorMigrationFailed": {
     "description": "Error title when migration fails"
+  },
+  "migrationFailureWarning": "A database update failed. Some features may not work correctly.",
+  "@migrationFailureWarning": {
+    "description": "SnackBar warning shown on app launch when a previous migration failed"
   },
   "buttonDismiss": "Dismiss",
   "@buttonDismiss": {
@@ -2539,6 +2559,18 @@
   "plannedMeals": "Planned Meals",
   "@plannedMeals": {
     "description": "Header for the planned meals section in weekly summary"
+  },
+  "mealSectionUpcoming": "Upcoming",
+  "@mealSectionUpcoming": {
+    "description": "Section header for upcoming (today or future) meals in weekly summary"
+  },
+  "mealSectionCooked": "Cooked",
+  "@mealSectionCooked": {
+    "description": "Section header for past meals that were marked as cooked in weekly summary"
+  },
+  "mealSectionUnconfirmed": "Unconfirmed",
+  "@mealSectionUnconfirmed": {
+    "description": "Section header for past meals that were not marked as cooked in weekly summary"
   },
   "shoppingListEditIngredients": "Edit Ingredients",
   "@shoppingListEditIngredients": {

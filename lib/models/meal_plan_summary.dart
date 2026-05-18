@@ -82,11 +82,15 @@ class PlannedMealInfo {
   /// Names of all recipes in this meal (primary + side dishes)
   final List<String> recipes;
 
+  /// Whether this meal has been marked as cooked
+  final bool isCooked;
+
   const PlannedMealInfo({
     required this.day,
     required this.date,
     required this.mealType,
     required this.recipes,
+    this.isCooked = false,
   });
 }
 

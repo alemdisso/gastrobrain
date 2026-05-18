@@ -551,6 +551,10 @@
   "@removeFromPlan": {
     "description": "Texto do botão para remover refeição do planejamento"
   },
+  "removeCookedMealWarning": "Esta refeição foi marcada como cozinhada. Removê-la do planejamento também excluirá o registro de preparo.",
+  "@removeCookedMealWarning": {
+    "description": "Aviso exibido ao tentar remover uma refeição que já foi cozinhada"
+  },
   "noRecipesAvailable": "Nenhuma receita disponível. Adicione algumas receitas primeiro.",
   "@noRecipesAvailable": {
     "description": "Mensagem quando nenhuma receita está disponível"
@@ -623,9 +627,17 @@
   "@addSideDishes": {
     "description": "Texto do botão para adicionar acompanhamentos"
   },
-  "completeMealSection": "Complete sua refeição",
+  "completeMealSection": "Acompanhamentos",
   "@completeMealSection": {
     "description": "Cabeçalho da seção de acompanhamentos no menu de seleção de receita"
+  },
+  "sideDishAddRecipeTab": "Receita",
+  "@sideDishAddRecipeTab": {
+    "description": "Rótulo da aba de receita no diálogo unificado de adicionar acompanhamento"
+  },
+  "sideDishAddIngredientTab": "Ingrediente",
+  "@sideDishAddIngredientTab": {
+    "description": "Rótulo da aba de ingrediente no diálogo unificado de adicionar acompanhamento"
   },
   "selectRecipe": "Selecionar Receita",
   "@selectRecipe": {
@@ -1393,6 +1405,10 @@
       }
     }
   },
+  "swapIngredient": "Trocar ingrediente",
+  "@swapIngredient": {
+    "description": "Botão para revelar campo de busca de ingrediente no modo de edição"
+  },
   "useCustomIngredient": "Usar ingrediente personalizado",
   "@useCustomIngredient": {
     "description": "Link para mudar para modo de ingrediente personalizado"
@@ -1864,6 +1880,10 @@
   "errorMigrationFailed": "Migração Falhou",
   "@errorMigrationFailed": {
     "description": "Título do erro quando migração falha"
+  },
+  "migrationFailureWarning": "Uma atualização do banco de dados falhou. Algumas funcionalidades podem não funcionar corretamente.",
+  "@migrationFailureWarning": {
+    "description": "Aviso em SnackBar exibido ao iniciar o app quando uma migração anterior falhou"
   },
   "buttonDismiss": "Dispensar",
   "@buttonDismiss": {
@@ -2493,6 +2513,18 @@
   "plannedMeals": "Refeições Planejadas",
   "@plannedMeals": {
     "description": "Header for the planned meals section in weekly summary"
+  },
+  "mealSectionUpcoming": "Próximas",
+  "@mealSectionUpcoming": {
+    "description": "Section header for upcoming (today or future) meals in weekly summary"
+  },
+  "mealSectionCooked": "Cozinhadas",
+  "@mealSectionCooked": {
+    "description": "Section header for past meals that were marked as cooked in weekly summary"
+  },
+  "mealSectionUnconfirmed": "Não Confirmadas",
+  "@mealSectionUnconfirmed": {
+    "description": "Section header for past meals that were not marked as cooked in weekly summary"
   },
   "shoppingListEditIngredients": "Editar Ingredientes",
   "@shoppingListEditIngredients": {

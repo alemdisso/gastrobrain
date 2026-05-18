@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../database/database_helper.dart';
 import '../l10n/app_localizations.dart';
 import 'dashboard_screen.dart';
 import 'weekly_plan_screen.dart';
@@ -20,6 +21,26 @@ class _HomePageState extends State<HomePage> {
 
   /// Key for the WeeklyPlanScreen to allow triggering scrollToToday from outside.
   final GlobalKey<WeeklyPlanScreenState> _weeklyPlanKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final dbHelper = DatabaseHelper();
+      if (await dbHelper.hasPendingMigrationFailure()) {
+        if (!mounted) return;
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(l10n.migrationFailureWarning),
+          action: SnackBarAction(
+            label: l10n.buttonDismiss,
+            onPressed: dbHelper.acknowledgeMigrationFailure,
+          ),
+          duration: const Duration(seconds: 10),
+        ));
+      }
+    });
+  }
 
   void _navigateToTab(int index) {
     setState(() {
