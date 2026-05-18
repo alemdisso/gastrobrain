@@ -2,8 +2,9 @@
 
 **Sprint Period**: After 0.2.10 lands — est. ~5 working days
 **Milestone**: 0.2.11 — DB Safety Foundation + UX Polish
-**Total Story Points**: 28 raw (31 adjusted)
+**Total Story Points**: 36 raw (39 adjusted) — original 28 raw + #384 added mid-sprint (8 pts)
 **Target Velocity**: 6.5 points/day (cruising, 30 pts/week)
+**Status**: Ahead of schedule — all 5 original issues shipped by Day 3 (2026-05-18)
 
 > **Prerequisite**: 0.2.10 must be merged and tagged before this sprint starts.
 > **Priority rule**: #382 is P1-High. It ships first, regardless of sprint order.
@@ -43,15 +44,17 @@ Key deliverables:
 | #346 Scroll affordance | 2 | 1.0x | Small UI addition, visual only | 2.0 |
 | #376 Week plan meal status | 5 | 1.1x | Grouping logic (data exists); new visual states + L10N | 5.5 |
 | #316 Meal Options redesign | 10 | 1.3x | New unified dialog; richest UI item in sprint; expect one iteration cycle | 13.0 |
+| #384 Unify side dish add flow *(added mid-sprint)* | 8 | 1.0x | Well-scoped follow-on to #316; built-in context from just shipping it | 8.0 |
 
-**Total adjusted**: 31.2 pts
-**Days at cruising**: 31.2 ÷ 6.5 = 4.8 days → plan for 5 days, #316 is the flex lever
+**Total adjusted**: 39.2 pts
+**Days at cruising**: 39.2 ÷ 6.5 = 6.0 days → #384 absorbed into sprint after original 5 issues shipped ahead of schedule
 
 ### Capacity Decision
-- **Target**: 28 raw / 31 adjusted
-- **Confidence**: Medium — #316 carries UI iteration risk; all other items are well-bounded
-- **Flex lever**: If #316 runs long, its polish phase absorbs into early days of 0.2.12.
-  The core dialog structure is the must-ship; visual refinement is deferrable.
+- **Target**: 36 raw / 39 adjusted
+- **Confidence**: High — original 28 pts shipped by Day 3; #384 is a natural continuation of #316 work
+- **Mid-sprint addition rationale**: All original issues shipped 2 days ahead of plan; #384 was
+  created from UX observations made immediately after shipping #316, making this the ideal
+  moment — context is fresh, surrounding code was just touched
 
 ---
 
@@ -126,7 +129,7 @@ Key deliverables:
   - [ ] Grouping uses current date, not hardcoded
   - [ ] Localized in EN and PT-BR
 
-#### #316 — Redesign Meal Options menu into a unified rich experience
+#### #316 — Redesign Meal Options menu into a unified rich experience ✅ shipped 2026-05-18
 - **Story Points**: 10 (13.0 adjusted)
 - **Type**: UX redesign
 - **Multiplier**: 1.3x — new dialog, replaces SimpleDialog; rich layout; one iteration cycle expected
@@ -135,13 +138,31 @@ Key deliverables:
 - **Flex rule**: Core dialog structure (recipe display, side dishes, servings, action buttons)
   is the must-ship. Visual polish and animation can be trimmed if Day 5 runs short.
 - **Acceptance Criteria**:
-  - [ ] Single dialog replaces both the bare SimpleDialog and RecipeSelectionDialog._buildMenu()
-  - [ ] Prominent recipe display (name, tags)
-  - [ ] Side dishes section (inline, not buried)
-  - [ ] Servings stepper
-  - [ ] Clear action buttons: Change Recipe, Mark as Cooked, Remove
-  - [ ] Localized in EN and PT-BR
-  - [ ] Widget tests cover main interactions and dismissal
+  - [x] Single dialog replaces both the bare SimpleDialog and RecipeSelectionDialog._buildMenu()
+  - [x] Prominent recipe display (name, tags)
+  - [x] Side dishes section (inline, not buried)
+  - [x] Servings stepper
+  - [x] Clear action buttons: Change Recipe, Mark as Cooked, Remove
+  - [x] Localized in EN and PT-BR
+  - [x] Widget tests cover main interactions and dismissal
+
+#### #384 — Unify side dish add flow *(added mid-sprint 2026-05-18)*
+- **Story Points**: 8 (8.0 adjusted)
+- **Type**: UX refinement
+- **Multiplier**: 1.0x — well-scoped; context fresh from #316; surrounding code just touched
+- **Dependencies**: #316 (shipped)
+- **Risk**: Low-Medium — dialog combination is the main design challenge; removal of old dialogs is straightforward
+- **Why added mid-sprint**: Shipped #316 and immediately identified that the "manage" wrapper
+  is now redundant — deletion is handled inline. Best time to fix is while the code is warm.
+- **Acceptance Criteria**:
+  - [ ] Section label renamed from "Complete sua refeição" → "Acompanhamentos" in both ARB files
+  - [ ] Meal Options dialog shows one "Adicionar Acompanhamento" button (replaces two)
+  - [ ] Unified add dialog: primary path = recipe search/select; secondary = simple ingredient side
+  - [ ] "Gerenciar Acompanhamentos" dialog removed
+  - [ ] "Adicionar Acompanhamento Simples" dialog removed or absorbed
+  - [ ] "Search side dishes..." and "Difficulty: X/5" strings localized in both ARB files
+  - [ ] All existing × deletion behaviour unchanged
+  - [ ] Widget tests cover both paths and cancellation
 
 ---
 
@@ -300,17 +321,18 @@ defer the side dish section to a follow-up issue rather than slipping the sprint
 ## Success Criteria
 
 ### Primary Goals (Must Complete)
-- [ ] #382 merged — migration failures recorded + Snackbar warning shown
-- [ ] #382 integration test green — v108 + realistic data → 109→111 passes
-- [ ] #365, #346 merged — ingredient dialog and scroll affordance fixed
-- [ ] #376 merged — week plan shows temporal meal status
-- [ ] #316 merged — unified Meal Options dialog live (core structure)
+- [x] #382 merged — migration failures recorded + Snackbar warning shown
+- [x] #382 integration test green — v108 + realistic data → 109→111 passes
+- [x] #365, #346 merged — ingredient dialog and scroll affordance fixed
+- [x] #376 merged — week plan shows temporal meal status
+- [x] #316 merged — unified Meal Options dialog live *(shipped 2026-05-18)*
+- [ ] #384 merged — side dish add flow unified, label renamed, L10N gaps closed
 - [ ] `flutter test && flutter analyze` pass
 - [ ] Both EN and PT-BR tested
 
 ### Secondary Goals
-- [ ] `severity` column present in `schema_migrations_errors` (enables #383)
-- [ ] #316 visual polish complete (not just structure)
+- [x] `severity` column present in `schema_migrations_errors` (enables #383)
+- [x] #316 visual polish complete (not just structure)
 
 ### Stretch Goals
 - [ ] Animation/transition on Meal Options dialog open
@@ -319,3 +341,4 @@ defer the side dish section to a follow-up issue rather than slipping the sprint
 
 **Plan Created**: 2026-05-16
 **Plan Author**: Claude Code
+**Last Updated**: 2026-05-18 — #384 added mid-sprint after shipping #316 two days ahead of schedule
