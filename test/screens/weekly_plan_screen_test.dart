@@ -3,7 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:provider/provider.dart';
 import 'package:gastrobrain/core/di/providers/database_provider.dart';
+import 'package:gastrobrain/core/providers/debug_settings_provider.dart';
 import 'package:gastrobrain/core/services/recommendation_service.dart';
 import 'package:gastrobrain/core/di/service_provider.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
@@ -26,18 +28,21 @@ void main() {
   late MockDatabaseHelper mockDbHelper;
 
   Widget createTestableWidget(Widget child) {
-    return MaterialApp(
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('en', ''),
-        Locale('pt', ''),
-      ],
-      home: child,
+    return ChangeNotifierProvider(
+      create: (_) => DebugSettingsProvider(),
+      child: MaterialApp(
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en', ''),
+          Locale('pt', ''),
+        ],
+        home: child,
+      ),
     );
   }
 
@@ -421,9 +426,9 @@ void main() {
       await tester.tap(mealSlot);
       await tester.pumpAndSettle();
 
-      // 3. Verify the Meal Options bottom sheet opened
-      expect(find.byType(BottomSheet), findsOneWidget,
-          reason: 'Meal Options bottom sheet should be open');
+      // 3. Verify the Meal Options dialog opened
+      expect(find.byType(Dialog), findsOneWidget,
+          reason: 'Meal Options dialog should be open');
 
       // 4. Tap "Edit Cooked Meal" option
       final editOption = find.text('Edit Cooked Meal');
@@ -1727,6 +1732,122 @@ void main() {
       // FAB must be visible again
       expect(find.byType(FloatingActionButton), findsOneWidget);
       expect(find.byIcon(Icons.shopping_cart_outlined), findsOneWidget);
+    });
+  });
+
+  group('_handleMealTap — Issue #316', () {
+    DateTime getCurrentWeekFriday() {
+      final now = DateTime.now();
+      final daysSinceFriday = (now.weekday + 2) % 7;
+      final weekStart = now.subtract(Duration(days: daysSinceFriday));
+      return DateTime(weekStart.year, weekStart.month, weekStart.day);
+    }
+
+    late Recipe testRecipe;
+    late MealPlanItem testItem;
+    late MealPlan testPlan;
+
+    setUp(() async {
+      final friday = getCurrentWeekFriday();
+
+      testRecipe = Recipe(
+        id: 'recipe-316',
+        name: 'Pasta Primavera',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+      );
+      await mockDbHelper.insertRecipe(testRecipe);
+
+      testItem = MealPlanItem(
+        id: 'item-316',
+        mealPlanId: 'plan-316',
+        plannedDate: MealPlanItem.formatPlannedDate(friday),
+        mealType: MealPlanItem.lunch,
+      );
+      testItem.mealPlanItemRecipes = [
+        MealPlanItemRecipe(
+          mealPlanItemId: testItem.id,
+          recipeId: testRecipe.id,
+          isPrimaryDish: true,
+        )
+      ];
+
+      testPlan = MealPlan(
+        id: 'plan-316',
+        weekStartDate: friday,
+        notes: '',
+        createdAt: DateTime.now(),
+        modifiedAt: DateTime.now(),
+        items: [testItem],
+      );
+      await mockDbHelper.insertMealPlan(testPlan);
+      await mockDbHelper.insertMealPlanItem(testItem);
+    });
+
+    testWidgets(
+        'opens RecipeSelectionDialog in edit mode (not bottom sheet)',
+        (tester) async {
+      await tester.pumpWidget(
+          createTestableWidget(WeeklyPlanScreen(databaseHelper: mockDbHelper)));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Pasta Primavera'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(Dialog), findsOneWidget);
+      expect(find.text('Save Changes'), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back), findsNothing);
+    });
+
+    testWidgets('save action shows success snackbar', (tester) async {
+      await tester.pumpWidget(
+          createTestableWidget(WeeklyPlanScreen(databaseHelper: mockDbHelper)));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Pasta Primavera'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Save Changes'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SnackBar), findsOneWidget);
+    });
+
+    testWidgets('remove action removes meal from plan', (tester) async {
+      await tester.pumpWidget(
+          createTestableWidget(WeeklyPlanScreen(databaseHelper: mockDbHelper)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Pasta Primavera'), findsOneWidget);
+
+      await tester.tap(find.text('Pasta Primavera'));
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.byIcon(Icons.delete_outline));
+      await tester.tap(find.byIcon(Icons.delete_outline));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Pasta Primavera'), findsNothing);
+    });
+
+    testWidgets('cancel returns without changes', (tester) async {
+      await tester.pumpWidget(
+          createTestableWidget(WeeklyPlanScreen(databaseHelper: mockDbHelper)));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Pasta Primavera'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(Dialog), findsOneWidget);
+
+      await tester.tap(
+          find.byKey(const Key('recipe_selection_cancel_button')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(Dialog), findsNothing);
+      expect(find.text('Pasta Primavera'), findsOneWidget);
     });
   });
 

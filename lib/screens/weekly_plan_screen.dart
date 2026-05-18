@@ -23,10 +23,8 @@ import '../core/providers/meal_provider.dart';
 import '../core/providers/meal_plan_provider.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../models/ingredient.dart';
-import '../models/measurement_unit.dart';
 import '../models/meal_plan_item_ingredient.dart';
 import '../widgets/weekly_calendar_widget.dart';
-import '../widgets/add_simple_side_dialog.dart';
 import '../widgets/meal_recording_dialog.dart';
 import '../widgets/edit_meal_recording_dialog.dart';
 import '../widgets/recipe_selection_dialog.dart';
@@ -347,9 +345,76 @@ class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     }
   }
 
+  Future<
+      ({
+        MealPlanItem item,
+        Recipe primary,
+        List<Recipe> additional,
+        List<Map<String, dynamic>> simpleSides
+      })?> _loadMealItemForEdit(DateTime date, String mealType) async {
+    final items =
+        _currentMealPlan?.getItemsForDateAndMealType(date, mealType) ?? [];
+    if (items.isEmpty) {
+      if (mounted) {
+        SnackbarService.showError(
+            context, AppLocalizations.of(context)!.plannedMealNotFound);
+      }
+      return null;
+    }
+
+    final existingItem = items[0];
+    Recipe? primaryRecipe;
+    final additionalRecipes = <Recipe>[];
+
+    try {
+      if (existingItem.mealPlanItemRecipes != null) {
+        for (final mealRecipe in existingItem.mealPlanItemRecipes!) {
+          final recipe = await _dbHelper.getRecipe(mealRecipe.recipeId);
+          if (recipe != null) {
+            if (mealRecipe.isPrimaryDish) {
+              primaryRecipe = recipe;
+            } else {
+              additionalRecipes.add(recipe);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackbarService.showError(
+            context, AppLocalizations.of(context)!.errorManagingRecipes(e.toString()));
+      }
+      return null;
+    }
+
+    if (primaryRecipe == null) {
+      if (mounted) {
+        SnackbarService.showError(
+            context, AppLocalizations.of(context)!.noPrimaryRecipeFound);
+      }
+      return null;
+    }
+
+    final simpleSides = (existingItem.mealPlanItemIngredients ?? [])
+        .map((s) => <String, dynamic>{
+              'ingredientId': s.ingredientId,
+              'customName': s.customName,
+              'quantity': s.quantity,
+              'unit': s.unit,
+              'notes': s.notes,
+            })
+        .toList();
+
+    return (
+      item: existingItem,
+      primary: primaryRecipe,
+      additional: additionalRecipes,
+      simpleSides: simpleSides,
+    );
+  }
+
   Future<void> _handleMealTap(
       DateTime date, String mealType, String recipeId) async {
-    // First check if the meal has been cooked
     bool mealCooked = false;
     if (_currentMealPlan != null) {
       final items =
@@ -357,116 +422,74 @@ class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       mealCooked = items.isNotEmpty && items[0].hasBeenCooked;
     }
 
-    // Show options for the existing meal
-    final action = await showModalBottomSheet<String>(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) {
-        final l10n = AppLocalizations.of(context)!;
-        return SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Handle bar
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.outlineVariant,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  // Section 1 — Side dishes
-                  Text(l10n.completeMealSection,
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color:
-                              Theme.of(context).colorScheme.onSurfaceVariant)),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      icon: const Icon(Icons.restaurant_menu, size: 18),
-                      label: Text(l10n.manageRecipes),
-                      onPressed: () =>
-                          Navigator.pop(context, 'manage_recipes'),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      icon: const Icon(Icons.add_shopping_cart, size: 18),
-                      label: Text(l10n.manageSimpleSides),
-                      onPressed: () =>
-                          Navigator.pop(context, 'manage_simple_sides'),
-                    ),
-                  ),
-                  const Divider(height: 24),
-                  // Section 2 — Actions
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.info_outline),
-                    title: Text(l10n.viewRecipeDetails),
-                    onTap: () => Navigator.pop(context, 'view'),
-                  ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.swap_horiz),
-                    title: Text(l10n.changeRecipe),
-                    onTap: () => Navigator.pop(context, 'change'),
-                  ),
-                  if (!mealCooked)
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.check_circle_outline),
-                      title: Text(l10n.markAsCooked),
-                      onTap: () => Navigator.pop(context, 'cooked'),
-                    ),
-                  if (mealCooked) ...[
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.edit_outlined),
-                      title: Text(l10n.editCookedMeal),
-                      onTap: () => Navigator.pop(context, 'edit_cooked'),
-                    ),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.restaurant),
-                      title: Text(l10n.manageSideDishes),
-                      onTap: () => Navigator.pop(context, 'add_side_dish'),
-                    ),
-                  ],
-                  const Divider(height: 24),
-                  // Section 3 — Destructive
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(Icons.delete_outline,
-                        color: Theme.of(context).colorScheme.error),
-                    title: Text(l10n.removeFromPlan,
-                        style: TextStyle(
-                            color: Theme.of(context).colorScheme.error)),
-                    onTap: () => Navigator.pop(context, 'remove'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-    if (action == null) return;
+    final mealItemData = await _loadMealItemForEdit(date, mealType);
+    if (mealItemData == null) return;
 
-    if (action == 'view') {
-      // Navigate to recipe details screen
+    final result = !mounted
+        ? null
+        : await showDialog<Map<String, dynamic>>(
+            context: context,
+            builder: (context) => RecipeSelectionDialog(
+              recipes: _availableRecipes,
+              detailedRecommendations: const [],
+              initialPrimaryRecipe: mealItemData.primary,
+              initialAdditionalRecipes: mealItemData.additional,
+              initialPlannedServings: mealItemData.item.plannedServings,
+              availableIngredients: _availableIngredients,
+              initialSimpleSides: mealItemData.simpleSides,
+              isEditMode: true,
+              initialMealCooked: mealCooked,
+            ),
+          );
+
+    if (result == null) return;
+
+    final action = result['action'] as String?;
+
+    if (action == 'save') {
+      try {
+        final existingItem = mealItemData.item;
+        final updatedServings = result['plannedServings'] as int?;
+        if (updatedServings != null &&
+            updatedServings != existingItem.plannedServings) {
+          existingItem.plannedServings = updatedServings;
+          await _dbHelper.updateMealPlanItem(existingItem);
+        }
+
+        await _updateMealPlanItemRecipes(existingItem, result);
+
+        final newSimpleSides =
+            result['simpleSides'] as List<Map<String, dynamic>>? ?? [];
+        await _dbHelper.deleteMealPlanItemIngredientsByItemId(existingItem.id);
+        for (final side in newSimpleSides) {
+          await _dbHelper.insertMealPlanItemIngredient(
+            MealPlanItemIngredient(
+              mealPlanItemId: existingItem.id,
+              ingredientId: side['ingredientId'] as String?,
+              customName: side['customName'] as String?,
+              quantity: (side['quantity'] as num?)?.toDouble() ?? 1.0,
+              unit: side['unit'] as String?,
+              notes: side['notes'] as String?,
+            ),
+          );
+        }
+
+        if (mounted) {
+          SnackbarService.showSuccess(context,
+              AppLocalizations.of(context)!.mealRecipesUpdatedSuccessfully);
+          _loadData();
+        }
+      } catch (e) {
+        if (mounted) {
+          SnackbarService.showError(context,
+              AppLocalizations.of(context)!.errorManagingRecipes(e.toString()));
+        }
+      }
+    } else if (action == 'cooked') {
+      await _handleMarkAsCooked(date, mealType, recipeId);
+    } else if (action == 'edit_cooked') {
+      await _handleEditCookedMeal(date, mealType, recipeId);
+    } else if (action == 'view') {
       try {
         final recipe = await _dbHelper.getRecipe(recipeId);
         if (recipe == null) {
@@ -476,7 +499,6 @@ class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
           }
           return;
         }
-
         if (mounted) {
           final hasChanges = await Navigator.push<bool>(
             context,
@@ -487,48 +509,27 @@ class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
               ),
             ),
           );
-
-          // If changes were made to the recipe, refresh the meal plan
           if (hasChanges == true && mounted) {
             _loadData();
           }
         }
       } catch (e) {
         if (mounted) {
-          SnackbarService.showError(
-              context, AppLocalizations.of(context)!.errorViewingRecipeDetails);
+          SnackbarService.showError(context,
+              AppLocalizations.of(context)!.errorViewingRecipeDetails);
         }
       }
     } else if (action == 'change') {
-      // Reuse the slot tap handler to change the recipe
       await _handleSlotTap(date, mealType);
-    } else if (action == 'manage_recipes') {
-      // Open multi-recipe management for existing meal
-      await _handleManageRecipes(date, mealType, recipeId);
-    } else if (action == 'cooked') {
-      // Mark the meal as cooked
-      await _handleMarkAsCooked(date, mealType, recipeId);
-    } else if (action == 'edit_cooked') {
-      // Edit the cooked meal
-      await _handleEditCookedMeal(date, mealType, recipeId);
-    } else if (action == 'add_side_dish') {
-      // Add side dish to existing cooked meal
-      await _handleAddSideDish(date, mealType, recipeId);
-    } else if (action == 'manage_simple_sides') {
-      // View, add, or remove simple sides on the planned meal
-      await _handleManageSimpleSides(date, mealType);
     } else if (action == 'remove') {
-      // Remove the meal from the plan
       if (_currentMealPlan != null) {
         final updatedPlan = await _mealPlanService.removeMealFromSlot(
           mealPlan: _currentMealPlan!,
           date: date,
           mealType: mealType,
         );
-
         setState(() {
           _currentMealPlan = updatedPlan;
-          // Force a reload to ensure the calendar widget refreshes
           _loadData();
         });
       }
@@ -660,157 +661,6 @@ class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     }
   }
 
-  Future<void> _handleAddSideDish(
-      DateTime date, String mealType, String recipeId) async {
-    try {
-      // Find the planned meal for this slot
-      final mealPlanItem = _mealActionService.findPlannedMealForSlot(
-        _currentMealPlan,
-        date,
-        mealType,
-      );
-      if (mealPlanItem == null || !mealPlanItem.hasBeenCooked) {
-        if (mounted) {
-          SnackbarService.showError(
-              context, AppLocalizations.of(context)!.mealNotFoundOrNotCooked);
-        }
-        return;
-      }
-
-      // Find the cooked meal record
-      final targetMeal = await _mealActionService.findCookedMealForSlot(
-        date,
-        recipeId,
-      );
-      if (targetMeal == null) {
-        if (mounted) {
-          SnackbarService.showError(
-              context, AppLocalizations.of(context)!.cookedMealRecordNotFound);
-        }
-        return;
-      }
-
-      // Get recipes from the cooked meal
-      final recipes = await _mealActionService.getRecipesFromCookedMeal(
-        targetMeal,
-        recipeId,
-      );
-      if (recipes == null) {
-        if (mounted) {
-          SnackbarService.showError(
-              context, AppLocalizations.of(context)!.recipeNotFound);
-        }
-        return;
-      }
-
-      // Show the meal recording dialog in "edit mode"
-      Map<String, dynamic>? result;
-      if (mounted) {
-        result = await showDialog<Map<String, dynamic>>(
-          context: context,
-          builder: (context) => MealRecordingDialog(
-            primaryRecipe: recipes.primary,
-            additionalRecipes: recipes.additional,
-            plannedDate: date,
-            notes: targetMeal.notes,
-          ),
-        );
-      }
-
-      if (result == null) return; // User cancelled
-
-      // Extract the updated data from the result
-      final DateTime cookedAt = result['cookedAt'];
-      final int servings = result['servings'];
-      final String notes = result['notes'];
-      final bool wasSuccessful = result['wasSuccessful'];
-      final double actualPrepTime = result['actualPrepTime'];
-      final double actualCookTime = result['actualCookTime'];
-      final List<Recipe> updatedAdditionalRecipes = result['additionalRecipes'];
-      final Map<String, String?>? recipeNotes =
-          result['recipeNotes'] as Map<String, String?>?;
-
-      // Update meal and recipe associations using service
-      // Use the screen's database helper instance to ensure test mocks work
-      final mealEditService = MealEditService(_dbHelper);
-      await mealEditService.updateMealWithRecipes(
-        mealId: targetMeal.id,
-        cookedAt: cookedAt,
-        servings: servings,
-        notes: notes,
-        wasSuccessful: wasSuccessful,
-        actualPrepTime: actualPrepTime,
-        actualCookTime: actualCookTime,
-        additionalRecipes: updatedAdditionalRecipes,
-        recipeNotes: recipeNotes,
-      );
-
-      if (mounted) {
-        SnackbarService.showSuccess(context,
-            AppLocalizations.of(context)!.sideDishesUpdatedSuccessfully);
-        // Refresh data to show updated meal history
-        _loadData();
-      }
-    } catch (e) {
-      if (mounted) {
-        SnackbarService.showError(context,
-            AppLocalizations.of(context)!.errorAddingSideDish(e.toString()));
-      }
-    }
-  }
-
-  // Resolves the display name for a simple side without throwing.
-  String _resolveSideName(MealPlanItemIngredient side) {
-    if (side.ingredientId != null) {
-      try {
-        return _availableIngredients
-            .firstWhere((i) => i.id == side.ingredientId)
-            .name;
-      } catch (_) {
-        return side.customName ?? side.ingredientId!;
-      }
-    }
-    return side.customName ?? '';
-  }
-
-  Future<void> _handleManageSimpleSides(
-      DateTime date, String mealType) async {
-    final mealPlanItem = _mealActionService.findPlannedMealForSlot(
-      _currentMealPlan,
-      date,
-      mealType,
-    );
-    if (mealPlanItem == null) {
-      if (mounted) {
-        SnackbarService.showError(
-            context, AppLocalizations.of(context)!.plannedMealNotFound);
-      }
-      return;
-    }
-
-    bool changed = false;
-
-    if (!mounted) return;
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) => _SimpleSidesManageDialog(
-        item: mealPlanItem,
-        availableIngredients: _availableIngredients,
-        resolveName: _resolveSideName,
-        onAdd: (side) async {
-          await _dbHelper.insertMealPlanItemIngredient(side);
-          changed = true;
-        },
-        onRemove: (side) async {
-          await _dbHelper.deleteMealPlanItemIngredient(side.id);
-          changed = true;
-        },
-      ),
-    );
-
-    if (changed) _loadData();
-  }
-
   Future<void> _handleEditCookedMeal(
       DateTime date, String mealType, String recipeId) async {
     try {
@@ -910,119 +760,6 @@ class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
       if (mounted) {
         SnackbarService.showError(
             context, AppLocalizations.of(context)!.errorEditingMeal);
-      }
-    }
-  }
-
-  Future<void> _handleManageRecipes(
-      DateTime date, String mealType, String recipeId) async {
-    try {
-      // Get the existing meal plan item
-      final items =
-          _currentMealPlan?.getItemsForDateAndMealType(date, mealType) ?? [];
-      if (items.isEmpty) {
-        if (mounted) {
-          SnackbarService.showError(
-              context, AppLocalizations.of(context)!.plannedMealNotFound);
-        }
-        return;
-      }
-
-      final existingItem = items[0];
-
-      // Get current recipes
-      final currentRecipes = <Recipe>[];
-      Recipe? primaryRecipe;
-      final additionalRecipes = <Recipe>[];
-
-      if (existingItem.mealPlanItemRecipes != null) {
-        for (final mealRecipe in existingItem.mealPlanItemRecipes!) {
-          final recipe = await _dbHelper.getRecipe(mealRecipe.recipeId);
-          if (recipe != null) {
-            currentRecipes.add(recipe);
-            if (mealRecipe.isPrimaryDish) {
-              primaryRecipe = recipe;
-            } else {
-              additionalRecipes.add(recipe);
-            }
-          }
-        }
-      }
-
-      if (primaryRecipe == null) {
-        if (mounted) {
-          SnackbarService.showError(
-              context, AppLocalizations.of(context)!.noPrimaryRecipeFound);
-        }
-        return;
-      }
-
-      // Build initialSimpleSides from the existing item's ingredients
-      final initialSimpleSides = (existingItem.mealPlanItemIngredients ?? [])
-          .map((s) => <String, dynamic>{
-                'ingredientId': s.ingredientId,
-                'customName': s.customName,
-                'quantity': s.quantity,
-                'unit': s.unit,
-                'notes': s.notes,
-              })
-          .toList();
-
-      // Show recipe management dialog
-      final mealData = !mounted
-          ? null
-          : await showDialog<Map<String, dynamic>>(
-              context: context,
-              builder: (context) => RecipeSelectionDialog(
-                recipes: _availableRecipes,
-                detailedRecommendations: const [], // No recommendations needed for editing
-                initialPrimaryRecipe: primaryRecipe,
-                initialAdditionalRecipes: additionalRecipes,
-                initialPlannedServings: existingItem.plannedServings,
-                availableIngredients: _availableIngredients,
-                initialSimpleSides: initialSimpleSides,
-              ),
-            );
-
-      if (mealData == null) return; // User cancelled
-
-      // Persist updated plannedServings if it changed
-      final updatedServings = mealData['plannedServings'] as int?;
-      if (updatedServings != null &&
-          updatedServings != existingItem.plannedServings) {
-        existingItem.plannedServings = updatedServings;
-        await _dbHelper.updateMealPlanItem(existingItem);
-      }
-
-      // Update the meal plan item with new recipes
-      await _updateMealPlanItemRecipes(existingItem, mealData);
-
-      // Replace simple sides
-      final newSimpleSides =
-          mealData['simpleSides'] as List<Map<String, dynamic>>? ?? [];
-      await _dbHelper.deleteMealPlanItemIngredientsByItemId(existingItem.id);
-      for (final side in newSimpleSides) {
-        await _dbHelper.insertMealPlanItemIngredient(
-          MealPlanItemIngredient(
-            mealPlanItemId: existingItem.id,
-            ingredientId: side['ingredientId'] as String?,
-            customName: side['customName'] as String?,
-            quantity: (side['quantity'] as num?)?.toDouble() ?? 1.0,
-            unit: side['unit'] as String?,
-            notes: side['notes'] as String?,
-          ),
-        );
-      }
-
-      if (mounted) {
-        SnackbarService.showSuccess(context,
-            AppLocalizations.of(context)!.mealRecipesUpdatedSuccessfully);
-        _loadData(); // Refresh the display
-      }
-    } catch (e) {
-      if (mounted) {
-        SnackbarService.showError(context,
-            AppLocalizations.of(context)!.errorManagingRecipes(e.toString()));
       }
     }
   }
@@ -1252,129 +989,5 @@ class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
     // Clear any resources used by the recommendation service if needed
     _recommendationCache.clearAllCache();
     super.dispose();
-  }
-}
-
-/// Private dialog for viewing, adding, and removing simple sides on a meal.
-class _SimpleSidesManageDialog extends StatefulWidget {
-  final MealPlanItem item;
-  final List<Ingredient> availableIngredients;
-  final String Function(MealPlanItemIngredient) resolveName;
-  final Future<void> Function(MealPlanItemIngredient) onAdd;
-  final Future<void> Function(MealPlanItemIngredient) onRemove;
-
-  const _SimpleSidesManageDialog({
-    required this.item,
-    required this.availableIngredients,
-    required this.resolveName,
-    required this.onAdd,
-    required this.onRemove,
-  });
-
-  @override
-  State<_SimpleSidesManageDialog> createState() =>
-      _SimpleSidesManageDialogState();
-}
-
-class _SimpleSidesManageDialogState extends State<_SimpleSidesManageDialog> {
-  late List<MealPlanItemIngredient> _sides;
-
-  @override
-  void initState() {
-    super.initState();
-    _sides = List.from(widget.item.mealPlanItemIngredients ?? []);
-  }
-
-  Future<void> _removeSide(MealPlanItemIngredient side) async {
-    await widget.onRemove(side);
-    setState(() => _sides.remove(side));
-  }
-
-  Future<void> _addSide() async {
-    if (!mounted) return;
-    final result = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (ctx) => AddSimpleSideDialog(
-        availableIngredients: widget.availableIngredients,
-      ),
-    );
-    if (result == null) return;
-
-    final newSide = MealPlanItemIngredient(
-      mealPlanItemId: widget.item.id,
-      ingredientId: result['ingredientId'] as String?,
-      customName: result['customName'] as String?,
-      quantity: result['quantity'] as double? ?? 1.0,
-      unit: result['unit'] as String?,
-      notes: result['notes'] as String?,
-    );
-    await widget.onAdd(newSide);
-    setState(() => _sides.add(newSide));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return AlertDialog(
-      title: Text(l10n.manageSimpleSidesTitle),
-      content: SizedBox(
-        width: double.maxFinite,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (_sides.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  l10n.noSimpleSidesYet,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              )
-            else
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 260),
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  itemCount: _sides.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1),
-                  itemBuilder: (_, index) {
-                    final side = _sides[index];
-                    final name = widget.resolveName(side);
-                    final qty = side.quantity == side.quantity.truncate()
-                        ? side.quantity.toInt().toString()
-                        : side.quantity.toString();
-                    final parsedUnit = MeasurementUnit.fromString(side.unit);
-                    final unit = parsedUnit?.getLocalizedQuantityName(context, side.quantity) ?? side.unit ?? '';
-                    return ListTile(
-                      dense: true,
-                      title: Text(name),
-                      subtitle: unit.isNotEmpty
-                          ? Text('$qty $unit')
-                          : Text(qty),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline, size: 20),
-                        tooltip: l10n.removeSimpleSide,
-                        onPressed: () => _removeSide(side),
-                      ),
-                    );
-                  },
-                ),
-              ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton.icon(
-          icon: const Icon(Icons.add, size: 18),
-          label: Text(l10n.addSimpleSide),
-          onPressed: _addSide,
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.done),
-        ),
-      ],
-    );
   }
 }

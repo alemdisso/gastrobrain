@@ -239,4 +239,326 @@ void main() {
       expect(find.text('No recommendations available'), findsOneWidget);
     });
   });
+
+  // Helper for capturing the Map return value from RecipeSelectionDialog.
+  Map<String, dynamic>? _capturedMap;
+
+  Widget _buildLauncherCapturing(Widget Function(BuildContext) dialogBuilder) {
+    _capturedMap = null;
+    return ChangeNotifierProvider(
+      create: (_) => DebugSettingsProvider(),
+      child: MaterialApp(
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale('en', '')],
+        home: Builder(
+          builder: (ctx) => Scaffold(
+            body: ElevatedButton(
+              onPressed: () async {
+                _capturedMap = await showDialog<Map<String, dynamic>>(
+                  context: ctx,
+                  builder: dialogBuilder,
+                );
+              },
+              child: const Text('Open'),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  group('Edit Mode — #316', () {
+    late Recipe primaryRecipe;
+
+    setUp(() {
+      primaryRecipe = Recipe(
+        id: 'edit-r1',
+        name: 'Pasta Bolognese',
+        desiredFrequency: FrequencyType.weekly,
+        createdAt: DateTime.now(),
+      );
+    });
+
+    testWidgets(
+        'dialog opens with isEditMode=true, shows recipe name and info icon',
+        (tester) async {
+      await tester.pumpWidget(_buildDialogLauncher(
+        (_) => RecipeSelectionDialog(
+          recipes: const [],
+          initialPrimaryRecipe: primaryRecipe,
+          isEditMode: true,
+        ),
+      ));
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Pasta Bolognese'), findsOneWidget);
+      expect(find.byIcon(Icons.info_outline), findsOneWidget);
+    });
+
+    testWidgets('Save Changes returns {action: save} with recipe data',
+        (tester) async {
+      await tester.pumpWidget(_buildLauncherCapturing(
+        (_) => RecipeSelectionDialog(
+          recipes: const [],
+          initialPrimaryRecipe: primaryRecipe,
+          isEditMode: true,
+        ),
+      ));
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('recipe_selection_save_button')));
+      await tester.pumpAndSettle();
+
+      expect(_capturedMap, isNotNull);
+      expect(_capturedMap!['action'], equals('save'));
+      expect(_capturedMap!['primaryRecipe'], equals(primaryRecipe));
+    });
+
+    testWidgets('Mark as Cooked returns {action: cooked}', (tester) async {
+      await tester.pumpWidget(_buildLauncherCapturing(
+        (_) => RecipeSelectionDialog(
+          recipes: const [],
+          initialPrimaryRecipe: primaryRecipe,
+          isEditMode: true,
+          initialMealCooked: false,
+        ),
+      ));
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.check_circle_outline));
+      await tester.pumpAndSettle();
+
+      expect(_capturedMap, isNotNull);
+      expect(_capturedMap!['action'], equals('cooked'));
+    });
+
+    testWidgets('Edit Cooked Meal button shown when initialMealCooked=true',
+        (tester) async {
+      await tester.pumpWidget(_buildDialogLauncher(
+        (_) => RecipeSelectionDialog(
+          recipes: const [],
+          initialPrimaryRecipe: primaryRecipe,
+          isEditMode: true,
+          initialMealCooked: true,
+        ),
+      ));
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.edit_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.check_circle_outline), findsNothing);
+    });
+
+    testWidgets('Change Recipe returns {action: change}', (tester) async {
+      await tester.pumpWidget(_buildLauncherCapturing(
+        (_) => RecipeSelectionDialog(
+          recipes: const [],
+          initialPrimaryRecipe: primaryRecipe,
+          isEditMode: true,
+        ),
+      ));
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.swap_horiz));
+      await tester.pumpAndSettle();
+
+      expect(_capturedMap, isNotNull);
+      expect(_capturedMap!['action'], equals('change'));
+    });
+
+    testWidgets('info icon tap returns {action: view}', (tester) async {
+      await tester.pumpWidget(_buildLauncherCapturing(
+        (_) => RecipeSelectionDialog(
+          recipes: const [],
+          initialPrimaryRecipe: primaryRecipe,
+          isEditMode: true,
+        ),
+      ));
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.info_outline));
+      await tester.pumpAndSettle();
+
+      expect(_capturedMap, isNotNull);
+      expect(_capturedMap!['action'], equals('view'));
+    });
+
+    testWidgets(
+        'Remove (uncooked) returns {action: remove} without confirm dialog',
+        (tester) async {
+      await tester.pumpWidget(_buildLauncherCapturing(
+        (_) => RecipeSelectionDialog(
+          recipes: const [],
+          initialPrimaryRecipe: primaryRecipe,
+          isEditMode: true,
+          initialMealCooked: false,
+        ),
+      ));
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.byIcon(Icons.delete_outline));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.delete_outline));
+      await tester.pumpAndSettle();
+
+      // No AlertDialog shown — remove pops immediately
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(_capturedMap, isNotNull);
+      expect(_capturedMap!['action'], equals('remove'));
+    });
+
+    testWidgets(
+        'Remove (cooked) shows confirmation dialog before returning {action: remove}',
+        (tester) async {
+      await tester.pumpWidget(_buildLauncherCapturing(
+        (_) => RecipeSelectionDialog(
+          recipes: const [],
+          initialPrimaryRecipe: primaryRecipe,
+          isEditMode: true,
+          initialMealCooked: true,
+        ),
+      ));
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.byIcon(Icons.delete_outline));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.delete_outline));
+      await tester.pumpAndSettle();
+
+      // Confirmation dialog should be open
+      expect(find.byType(AlertDialog), findsOneWidget);
+
+      // Confirm removal
+      await tester.tap(find.text('Remove'));
+      await tester.pumpAndSettle();
+
+      expect(_capturedMap, isNotNull);
+      expect(_capturedMap!['action'], equals('remove'));
+    });
+
+    testWidgets('Remove (cooked) cancel does not pop dialog', (tester) async {
+      await tester.pumpWidget(_buildLauncherCapturing(
+        (_) => RecipeSelectionDialog(
+          recipes: const [],
+          initialPrimaryRecipe: primaryRecipe,
+          isEditMode: true,
+          initialMealCooked: true,
+        ),
+      ));
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.byIcon(Icons.delete_outline));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.delete_outline));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AlertDialog), findsOneWidget);
+
+      await tester.tap(find.descendant(
+          of: find.byType(AlertDialog), matching: find.text('Cancel')));
+      await tester.pumpAndSettle();
+
+      // AlertDialog dismissed but RecipeSelectionDialog still open
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.byKey(const Key('recipe_selection_save_button')),
+          findsOneWidget);
+      expect(_capturedMap, isNull);
+    });
+
+    testWidgets('Back button is not visible', (tester) async {
+      await tester.pumpWidget(_buildDialogLauncher(
+        (_) => RecipeSelectionDialog(
+          recipes: const [],
+          initialPrimaryRecipe: primaryRecipe,
+          isEditMode: true,
+        ),
+      ));
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.arrow_back), findsNothing);
+    });
+
+    testWidgets('Cancel returns null', (tester) async {
+      await tester.pumpWidget(_buildLauncherCapturing(
+        (_) => RecipeSelectionDialog(
+          recipes: const [],
+          initialPrimaryRecipe: primaryRecipe,
+          isEditMode: true,
+        ),
+      ));
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('recipe_selection_cancel_button')));
+      await tester.pumpAndSettle();
+
+      expect(_capturedMap, isNull);
+      // Dialog dismissed
+      expect(find.byKey(const Key('recipe_selection_save_button')),
+          findsNothing);
+    });
+
+    testWidgets('new-meal mode (regression): Back button still visible',
+        (tester) async {
+      await tester.pumpWidget(_buildLauncherCapturing(
+        (_) => RecipeSelectionDialog(
+          recipes: const [],
+          initialPrimaryRecipe: primaryRecipe,
+          // isEditMode defaults to false
+        ),
+      ));
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
+      expect(find.byIcon(Icons.delete_outline), findsNothing);
+    });
+
+    testWidgets(
+        'new-meal mode (regression): Save Meal returns map without action key',
+        (tester) async {
+      await tester.pumpWidget(_buildLauncherCapturing(
+        (_) => RecipeSelectionDialog(
+          recipes: const [],
+          initialPrimaryRecipe: primaryRecipe,
+          // isEditMode defaults to false
+        ),
+      ));
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('recipe_selection_save_button')));
+      await tester.pumpAndSettle();
+
+      expect(_capturedMap, isNotNull);
+      expect(_capturedMap!.containsKey('action'), isFalse);
+    });
+  });
 }

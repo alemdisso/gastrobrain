@@ -551,6 +551,10 @@
   "@removeFromPlan": {
     "description": "Texto do botão para remover refeição do planejamento"
   },
+  "removeCookedMealWarning": "Esta refeição foi marcada como cozinhada. Removê-la do planejamento também excluirá o registro de preparo.",
+  "@removeCookedMealWarning": {
+    "description": "Aviso exibido ao tentar remover uma refeição que já foi cozinhada"
+  },
   "noRecipesAvailable": "Nenhuma receita disponível. Adicione algumas receitas primeiro.",
   "@noRecipesAvailable": {
     "description": "Mensagem quando nenhuma receita está disponível"
