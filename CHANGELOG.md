@@ -9,6 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.11] - 2026-05-18
+
+### Added
+- Migration error surfacing: failures are now recorded in `schema_migrations_errors` and shown as a Snackbar on the home screen — the app no longer fails silently after a bad migration (#382)
+- Integration test `migration_integration_test.dart`: seeds v108 realistic data, runs migrations 109→111, and validates the error-recording path via injected failure (#382)
+- Week plan summary now shows temporal meal status — Cooked (past confirmed), Unconfirmed (past unconfirmed), and Upcoming — with distinct visual treatment per group (#376)
+- Unified Meal Options dialog replaces the bare `SimpleDialog` with a rich card view: prominent recipe display, inline side dishes with × removal, servings stepper, and clear action buttons (Change Recipe, Mark as Cooked, Remove) (#316)
+- Unified side dish add dialog: single "Adicionar Acompanhamento" button opens a tabbed dialog with recipe search (primary) and ingredient form (secondary), replacing two separate management dialogs (#384)
+
+### Changed
+- Edit ingredient dialog now opens pre-populated with the current ingredient's values; search is gated behind explicit user intent rather than auto-triggered on open (#365)
+- Recipe list shows a scroll affordance (fade shadow) when content exists above the filter bar; affordance disappears when scrolled to top (#346)
+- "Complete sua refeição" section label renamed to "Acompanhamentos" in the Meal Options dialog (#384)
+
+### Fixed
+- "Search side dishes…" and "Difficulty: X/5" strings in the side dish picker were hardcoded English; both now use localized keys (#384)
+
+### Removed
+- `AddSideDishDialog` and `AddSimpleSideDialog` standalone dialogs removed; their functionality is absorbed into `UnifiedAddSideDialog` and inline deletion in the Meal Options dialog (#384)
+
+### Technical
+- `schema_migrations_errors` table added with `severity` column (warning/fatal) — foundation for #383 fatal-error classification in 0.2.12 (#382)
+- `MigrationProvider` exposes `hasMigrationWarning`; `HomeScreen` checks on init and shows a localized Snackbar (#382)
+- Net −985 lines across widget and test code from the side dish dialog consolidation (#384)
+
+---
+
 ## [0.2.10] - 2026-05-15
 
 ### Fixed
