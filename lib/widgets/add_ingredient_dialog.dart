@@ -87,6 +87,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
 
   bool _isCustomIngredient = false;
   bool _isToTaste = false;
+  bool _isSwappingIngredient = false;
   IngredientCategory _selectedCategory = IngredientCategory.vegetable;
 
   @override
@@ -279,12 +280,12 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
     try {
       final ingredients = await _dbHelper.getAllIngredients();
       if (mounted) {
-        // Sort ingredients alphabetically by name
-        ingredients.sort(
-            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+        // Sort ingredients alphabetically, normalizing accented characters
+        final sortedIngredients =
+            SortingUtils.sortByName(ingredients, (i) => i.name);
 
         setState(() {
-          _availableIngredients = ingredients;
+          _availableIngredients = sortedIngredients;
           _isLoading = false;
         });
       }
@@ -403,8 +404,44 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
                           }
                         },
                       ),
+                    ] else if (widget.existingIngredient != null &&
+                        !_isSwappingIngredient &&
+                        _selectedIngredient != null) ...[
+                      // Edit mode: show ingredient name as a read-only anchor
+                      InputDecorator(
+                        decoration: InputDecoration(
+                          labelText:
+                              AppLocalizations.of(context)!.ingredientLabel,
+                          enabled: false,
+                        ),
+                        child: Text(
+                          _selectedIngredient!.name,
+                          key: const Key('edit_ingredient_anchor'),
+                          style: Theme.of(context).textTheme.bodyLarge,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          key: const Key('swap_ingredient_button'),
+                          icon: const Icon(Icons.swap_horiz, size: 16),
+                          label: Text(
+                              AppLocalizations.of(context)!.swapIngredient),
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isSwappingIngredient = true;
+                            });
+                          },
+                        ),
+                      ),
                     ] else ...[
-                      // Unified ingredient search with autocomplete
+                      // Add mode or swap mode: show ingredient search
                       Autocomplete<Ingredient>(
                         displayStringForOption: (Ingredient ingredient) =>
                             ingredient.name,

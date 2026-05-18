@@ -1393,6 +1393,10 @@
       }
     }
   },
+  "swapIngredient": "Trocar ingrediente",
+  "@swapIngredient": {
+    "description": "Botão para revelar campo de busca de ingrediente no modo de edição"
+  },
   "useCustomIngredient": "Usar ingrediente personalizado",
   "@useCustomIngredient": {
     "description": "Link para mudar para modo de ingrediente personalizado"

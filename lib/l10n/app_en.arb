@@ -1417,6 +1417,10 @@
       }
     }
   },
+  "swapIngredient": "Swap ingredient",
+  "@swapIngredient": {
+    "description": "Button to reveal ingredient search field in edit mode"
+  },
   "useCustomIngredient": "Use custom ingredient",
   "@useCustomIngredient": {
     "description": "Link to switch to custom ingredient mode"
