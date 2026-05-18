@@ -557,6 +557,10 @@
   "@removeFromPlan": {
     "description": "Button text to remove meal from plan"
   },
+  "removeCookedMealWarning": "This meal has been marked as cooked. Removing it from the plan will also delete the cooking record.",
+  "@removeCookedMealWarning": {
+    "description": "Warning shown when attempting to remove a meal that has already been cooked"
+  },
   "viewRecipeDetailsNotImplemented": "View recipe details (not implemented)",
   "@viewRecipeDetailsNotImplemented": {
     "description": "Snackbar message for not implemented view recipe details feature"
