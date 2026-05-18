@@ -5,6 +5,7 @@ Auto-flagged by the Code Quality Watchdog. Review during Sprint Planning as part
 ---
 
 - [ ] 🔴 `lib/widgets/add_ingredient_dialog.dart` — file length (677 lines, threshold 250) — flagged during: issue creation analysis — 2026-04-26
+- [ ] 🔴 `lib/screens/recipes_screen.dart` — file length (614 lines, threshold 400) — flagged during: #346 scroll affordance implementation — 2026-05-18
 
 - [ ] 🔴 `lib/core/services/shopping_list_service.dart` — file length 457 lines (threshold: 350) — flagged during: #306 servings scaling implementation — 2026-03-01
 - [ ] 🔴 `lib/screens/recipe_editor_screen.dart` — file length 2291 lines (threshold: 400) — flagged during: issue creation for servings stepper consistency — 2026-03-02 — **will be addressed in #283 (Extract IngredientParserService as reusable ingredient entry method); do not refactor in isolation**

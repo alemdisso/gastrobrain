@@ -29,6 +29,9 @@ class _RecipesScreenState extends State<RecipesScreen> {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
 
+  bool _hasContentAbove = false;
+  bool _hasContentBelow = false;
+
   List<TagType> _tagTypes = [];
   Map<String, List<Tag>> _tagsByType = {};
   late final TagRepository _tagRepo;
@@ -415,7 +418,9 @@ class _RecipesScreenState extends State<RecipesScreen> {
             },
           ),
           Expanded(
-            child: Consumer<RecipeProvider>(
+            child: Stack(
+              children: [
+            Consumer<RecipeProvider>(
               builder: (context, recipeProvider, child) {
                 // Handle loading state
                 if (recipeProvider.isLoading) {
@@ -493,14 +498,33 @@ class _RecipesScreenState extends State<RecipesScreen> {
                 return RefreshIndicator(
                   onRefresh: () =>
                       recipeProvider.loadRecipes(forceRefresh: true),
-                  child: ListView.builder(
-                    padding: EdgeInsets.only(
-                      bottom:
-                          max(80.0, MediaQuery.of(context).size.height * 0.3),
-                    ),
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    itemCount: filteredRecipes.length,
-                    itemBuilder: (context, index) {
+                  child: NotificationListener<ScrollMetricsNotification>(
+                    onNotification: (notification) {
+                      final hasAbove =
+                          notification.metrics.extentBefore > 0;
+                      final hasBelow =
+                          notification.metrics.extentAfter > 0;
+                      if (hasAbove != _hasContentAbove ||
+                          hasBelow != _hasContentBelow) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted) {
+                            setState(() {
+                              _hasContentAbove = hasAbove;
+                              _hasContentBelow = hasBelow;
+                            });
+                          }
+                        });
+                      }
+                      return false;
+                    },
+                    child: ListView.builder(
+                      padding: EdgeInsets.only(
+                        bottom:
+                            max(80.0, MediaQuery.of(context).size.height * 0.3),
+                      ),
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: filteredRecipes.length,
+                      itemBuilder: (context, index) {
                       final recipe = filteredRecipes[index];
                       return RecipeCard(
                         recipe: recipe,
@@ -524,9 +548,58 @@ class _RecipesScreenState extends State<RecipesScreen> {
                       );
                     },
                   ),
+                  ),
                 );
               },
             ),
+            // Top affordance: fades in when content exists above the viewport
+            Positioned(
+              top: 0, left: 0, right: 0,
+              height: 32,
+              child: IgnorePointer(
+                child: AnimatedOpacity(
+                  opacity: _hasContentAbove ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 150),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Theme.of(context).colorScheme.surface,
+                          Theme.of(context).colorScheme.surface.withValues(alpha: 0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Bottom affordance: fades in when more content exists below the viewport
+            Positioned(
+              bottom: 0, left: 0, right: 0,
+              height: 80,
+              child: IgnorePointer(
+                child: AnimatedOpacity(
+                  opacity: _hasContentBelow ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 150),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [
+                          Theme.of(context).colorScheme.surface,
+                          Theme.of(context).colorScheme.surface.withValues(alpha: 0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
           ),
         ],
       ),
