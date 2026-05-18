@@ -627,9 +627,17 @@
   "@addSideDishes": {
     "description": "Texto do botão para adicionar acompanhamentos"
   },
-  "completeMealSection": "Complete sua refeição",
+  "completeMealSection": "Acompanhamentos",
   "@completeMealSection": {
     "description": "Cabeçalho da seção de acompanhamentos no menu de seleção de receita"
+  },
+  "sideDishAddRecipeTab": "Receita",
+  "@sideDishAddRecipeTab": {
+    "description": "Rótulo da aba de receita no diálogo unificado de adicionar acompanhamento"
+  },
+  "sideDishAddIngredientTab": "Ingrediente",
+  "@sideDishAddIngredientTab": {
+    "description": "Rótulo da aba de ingrediente no diálogo unificado de adicionar acompanhamento"
   },
   "selectRecipe": "Selecionar Receita",
   "@selectRecipe": {

@@ -7,8 +7,7 @@ import '../core/di/service_provider.dart';
 import '../core/providers/debug_settings_provider.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/recipe_selection_card.dart';
-import '../widgets/add_side_dish_dialog.dart';
-import '../widgets/add_simple_side_dialog.dart';
+import '../widgets/unified_add_side_dialog.dart';
 import '../utils/sorting_utils.dart';
 import 'servings_stepper.dart';
 
@@ -438,30 +437,14 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
 
                 const SizedBox(height: 8),
 
-                // Add recipe side — OutlinedButton, full-width, immediately visible
+                // Single button — opens unified add dialog for both recipe and ingredient sides
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     key: const Key('recipe_selection_add_side_dish_button'),
                     icon: const Icon(Icons.add, size: 18),
-                    label: Text(_additionalRecipes.isNotEmpty
-                        ? l10n.manageSideDishes
-                        : l10n.addSideDishes),
-                    onPressed: _showEnhancedSideDishDialog,
-                  ),
-                ),
-                const SizedBox(height: 6),
-
-                // Add simple ingredient side — secondary OutlinedButton
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    key: const Key('recipe_selection_add_simple_side_button'),
-                    icon: const Icon(Icons.add_shopping_cart, size: 18),
-                    label: Text(_simpleSides.isNotEmpty
-                        ? l10n.manageSimpleSides
-                        : l10n.addSimpleSide),
-                    onPressed: _showAddSimpleSideDialog,
+                    label: Text(l10n.addSideDish),
+                    onPressed: _showUnifiedAddSideDialog,
                   ),
                 ),
               ],
@@ -606,15 +589,24 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
     );
   }
 
-  Future<void> _showAddSimpleSideDialog() async {
+  Future<void> _showUnifiedAddSideDialog() async {
     if (!mounted) return;
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (context) => AddSimpleSideDialog(
+      builder: (context) => UnifiedAddSideDialog(
+        availableRecipes: widget.recipes,
+        excludeRecipes: [_selectedRecipe!],
         availableIngredients: widget.availableIngredients,
       ),
     );
-    if (result != null && mounted) {
+    if (result == null || !mounted) return;
+    final type = result['type'] as String?;
+    if (type == 'recipe') {
+      final recipe = result['recipe'] as Recipe;
+      if (!_additionalRecipes.any((r) => r.id == recipe.id)) {
+        setState(() => _additionalRecipes.add(recipe));
+      }
+    } else if (type == 'simple') {
       setState(() => _simpleSides.add(result));
     }
   }
@@ -628,28 +620,6 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
       return ingredient?.name ?? side['customName'] as String? ?? '?';
     }
     return side['customName'] as String? ?? '?';
-  }
-
-  Future<void> _showEnhancedSideDishDialog() async {
-    final result = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (context) => AddSideDishDialog(
-        availableRecipes: widget.recipes,
-        excludeRecipes: [_selectedRecipe!],
-        searchHint: 'Search side dishes...',
-        enableSearch: true,
-        primaryRecipe: _selectedRecipe,
-        currentSideDishes: _additionalRecipes,
-      ),
-    );
-
-    if (result == null || !mounted) return;
-
-    final action = result['action'] as String?;
-    if (action == 'confirm') {
-      final sides = result['additionalRecipes'] as List<Recipe>? ?? [];
-      setState(() => _additionalRecipes = sides);
-    }
   }
 
   void _handleRemoveTap() async {

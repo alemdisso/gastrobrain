@@ -651,9 +651,17 @@
   "@addSideDishes": {
     "description": "Button text to add side dishes"
   },
-  "completeMealSection": "Complete your meal",
+  "completeMealSection": "Side dishes",
   "@completeMealSection": {
-    "description": "Section header in recipe selection menu for adding side dishes and simple sides"
+    "description": "Section header in recipe selection menu for adding side dishes"
+  },
+  "sideDishAddRecipeTab": "Recipe",
+  "@sideDishAddRecipeTab": {
+    "description": "Tab label for recipe side dish selection in unified add side dialog"
+  },
+  "sideDishAddIngredientTab": "Ingredient",
+  "@sideDishAddIngredientTab": {
+    "description": "Tab label for simple ingredient side in unified add side dialog"
   },
   "selectRecipe": "Select Recipe",
   "@selectRecipe": {
