@@ -41,6 +41,8 @@ import '../core/migration/migrations/009_drop_recipe_category.dart';
 import '../core/migration/migrations/010_add_quantity_max.dart';
 import '../core/migration/migrations/011_add_shopping_list_quantity_max.dart';
 import '../core/repositories/base_repository.dart';
+import 'daos/ingredient_dao.dart';
+import 'daos/recipe_dao.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -50,6 +52,9 @@ class DatabaseHelper {
   factory DatabaseHelper() => _instance;
 
   DatabaseHelper._internal();
+
+  late final IngredientDao _ingredientDao = IngredientDao(() => database);
+  late final RecipeDao _recipeDao = RecipeDao(() => database);
 
   /// Get all available migrations in order
   static List<Migration> get _migrations => [
@@ -1162,185 +1167,26 @@ class DatabaseHelper {
     }
   }
 
-  // Ingredient operations
-  Future<String> insertIngredient(Ingredient ingredient) async {
-    final Database db = await database;
-    await db.insert('ingredients', ingredient.toMap());
-    return ingredient.id;
-  }
+  // Ingredient operations — delegated to IngredientDao
+  Future<String> insertIngredient(Ingredient ingredient) => _ingredientDao.insertIngredient(ingredient);
+  Future<List<Ingredient>> getAllIngredients() => _ingredientDao.getAllIngredients();
+  Future<Ingredient?> getIngredient(String id) => _ingredientDao.getIngredient(id);
+  Future<List<Ingredient>> getProteinIngredients({String? proteinType}) => _ingredientDao.getProteinIngredients(proteinType: proteinType);
+  Future<int> updateIngredient(Ingredient ingredient) => _ingredientDao.updateIngredient(ingredient);
+  Future<int> deleteIngredient(String id) => _ingredientDao.deleteIngredient(id);
+  Future<int> getIngredientsCount() => _ingredientDao.getIngredientsCount();
 
-  Future<List<Ingredient>> getAllIngredients() async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('ingredients');
-    return List.generate(maps.length, (i) => Ingredient.fromMap(maps[i]));
-  }
+  // Recipe ingredients — delegated to IngredientDao
+  Future<void> addIngredientToRecipe(RecipeIngredient recipeIngredient) => _ingredientDao.addIngredientToRecipe(recipeIngredient);
+  Future<List<Map<String, dynamic>>> getRecipeIngredients(String recipeId) => _ingredientDao.getRecipeIngredients(recipeId);
+  Future<List<Map<String, dynamic>>> getRecipesByIngredientId(String ingredientId) => _ingredientDao.getRecipesByIngredientId(ingredientId);
+  Future<List<Map<String, dynamic>>> getMealHistoryByIngredientId(String ingredientId, {String? sinceDate}) => _ingredientDao.getMealHistoryByIngredientId(ingredientId, sinceDate: sinceDate);
+  Future<int> updateRecipeIngredient(RecipeIngredient recipeIngredient) => _ingredientDao.updateRecipeIngredient(recipeIngredient);
 
-  Future<Ingredient?> getIngredient(String id) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'ingredients',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-    if (maps.isEmpty) return null;
-    return Ingredient.fromMap(maps.first);
-  }
-
-  Future<List<Ingredient>> getProteinIngredients({String? proteinType}) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'ingredients',
-      where:
-          proteinType != null ? 'protein_type = ?' : 'protein_type IS NOT NULL',
-      whereArgs: proteinType != null ? [proteinType] : null,
-    );
-    return List.generate(maps.length, (i) => Ingredient.fromMap(maps[i]));
-  }
-
-  Future<int> updateIngredient(Ingredient ingredient) async {
-    final Database db = await database;
-    return await db.update(
-      'ingredients',
-      ingredient.toMap(),
-      where: 'id = ?',
-      whereArgs: [ingredient.id],
-    );
-  }
-
-  Future<int> deleteIngredient(String id) async {
-    final Database db = await database;
-    return await db.delete(
-      'ingredients',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  // Recipe ingredients operations
-  Future<void> addIngredientToRecipe(RecipeIngredient recipeIngredient) async {
-    final Database db = await database;
-    await db.insert('recipe_ingredients', recipeIngredient.toMap());
-  }
-
-  Future<List<Map<String, dynamic>>> getRecipeIngredients(
-      String recipeId) async {
-    final Database db = await database;
-    return await db.rawQuery('''
-      SELECT
-      ri.id as recipe_ingredient_id,
-      ri.quantity,
-      ri.quantity_max,
-      ri.notes as preparation_notes,
-      ri.unit_override,
-      ri.custom_name,
-      ri.custom_category,
-      ri.custom_unit,
-      ri.ingredient_id,
-      COALESCE(ri.custom_name, i.name) as name,
-      COALESCE(ri.custom_category, i.category) as category,
-      COALESCE(ri.custom_unit, COALESCE(ri.unit_override, i.unit)) as unit,
-      i.protein_type,
-      i.notes as ingredient_notes
-    FROM recipe_ingredients ri
-    LEFT JOIN ingredients i ON ri.ingredient_id = i.id
-    WHERE ri.recipe_id = ?
-    ''', [recipeId]);
-  }
-
-  Future<List<Map<String, dynamic>>> getRecipesByIngredientId(
-      String ingredientId) async {
-    final Database db = await database;
-    return await db.rawQuery('''
-      SELECT r.*,
-        ri.quantity AS usage_quantity,
-        COALESCE(ri.custom_unit, COALESCE(ri.unit_override, i.unit)) AS usage_unit,
-        (SELECT COUNT(*) FROM recipe_ingredients WHERE recipe_id = r.id) AS ingredient_count
-      FROM recipes r
-      JOIN recipe_ingredients ri ON r.id = ri.recipe_id
-      LEFT JOIN ingredients i ON i.id = ri.ingredient_id
-      WHERE ri.ingredient_id = ?
-      ORDER BY r.name ASC
-    ''', [ingredientId]);
-  }
-
-  /// Returns meals where this ingredient appeared (via recipes or direct sides).
-  /// [sinceDate] optional ISO-8601 cutoff (inclusive). Returns rows with meal
-  /// cooked_at, recipe name (nullable), and ingredient source.
-  Future<List<Map<String, dynamic>>> getMealHistoryByIngredientId(
-    String ingredientId, {
-    String? sinceDate,
-  }) async {
-    final Database db = await database;
-    final args = <dynamic>[ingredientId];
-    final dateFilter = sinceDate != null ? 'AND m.cooked_at >= ?' : '';
-    if (sinceDate != null) args.add(sinceDate);
-
-    // Path 1: ingredient is in a recipe that was cooked as part of a meal
-    final viaRecipes = await db.rawQuery('''
-      SELECT m.id AS meal_id, m.cooked_at, m.meal_type,
-             r.name AS recipe_name, 'recipe' AS source
-      FROM meals m
-      JOIN meal_recipes mr ON mr.meal_id = m.id
-      JOIN recipe_ingredients ri ON ri.recipe_id = mr.recipe_id
-      JOIN recipes r ON r.id = mr.recipe_id
-      WHERE ri.ingredient_id = ?
-      $dateFilter
-    ''', args);
-
-    // Path 2: ingredient added directly as a simple side on a recorded meal
-    final directArgs = <dynamic>[ingredientId];
-    if (sinceDate != null) directArgs.add(sinceDate);
-    final viaDirectSides = await db.rawQuery('''
-      SELECT m.id AS meal_id, m.cooked_at, m.meal_type,
-             NULL AS recipe_name, 'side' AS source
-      FROM meals m
-      JOIN meal_ingredients mi ON mi.meal_id = m.id
-      WHERE mi.ingredient_id = ?
-      $dateFilter
-    ''', directArgs);
-
-    // Merge and deduplicate by meal_id (a meal shouldn't be counted twice
-    // if the same ingredient appears in multiple recipes within the meal).
-    final seen = <String>{};
-    final merged = <Map<String, dynamic>>[];
-    for (final row in [...viaRecipes, ...viaDirectSides]) {
-      final mealId = row['meal_id'] as String;
-      if (seen.add(mealId)) merged.add(row);
-    }
-    merged.sort((a, b) =>
-        (b['cooked_at'] as String).compareTo(a['cooked_at'] as String));
-    return merged;
-  }
-
-  Future<int> updateRecipeIngredient(RecipeIngredient recipeIngredient) async {
-    final Database db = await database;
-    return await db.update(
-      'recipe_ingredients',
-      recipeIngredient.toMap(),
-      where: 'id = ?',
-      whereArgs: [recipeIngredient.id],
-    );
-  }
-
-  // Add this to your DatabaseHelper class
-  Future<int> getIngredientsCount() async {
-    final Database db = await database;
-    final result =
-        await db.rawQuery('SELECT COUNT(*) as count FROM ingredients');
-    return Sqflite.firstIntValue(result) ?? 0;
-  }
-
-  // Fix your importIngredientsFromJson method:
   Future<void> importIngredientsFromJson(String assetPath) async {
     try {
-      // Load the file content from assets - this is the key part
       final String jsonString = await rootBundle.loadString(assetPath);
-
-      // Parse the JSON with error handling
-      final List<dynamic> ingredientsJson =
-          json.decode(jsonString) as List<dynamic>;
-
-      // Process each ingredient
+      final List<dynamic> ingredientsJson = json.decode(jsonString) as List<dynamic>;
       for (final ingredientJson in ingredientsJson) {
         try {
           final ingredient = Ingredient(
@@ -1355,17 +1201,10 @@ class DatabaseHelper {
                   )
                 : null,
           );
-
-          await insertIngredient(ingredient);
-        } catch (e) {
-          //print(
-          //    'Error creating ingredient: ${ingredientJson['name']}, Error: $e');
-        }
+          await _ingredientDao.insertIngredient(ingredient);
+        } catch (_) {}
       }
-
-      //print('Successfully imported ingredients');
     } catch (e) {
-      //print('Error importing ingredients: $e');
       rethrow;
     }
   }
@@ -1415,17 +1254,10 @@ class DatabaseHelper {
                 (ingJson['name'] as String? ?? '').toLowerCase();
             if (ingredientName.isEmpty) continue;
 
-            final db = await database;
-            final existingIngredient = await db.query(
-              'ingredients',
-              where: 'name = ?',
-              whereArgs: [ingredientName],
-              limit: 1,
-            );
-
+            final existing = await _ingredientDao.findIngredientByName(ingredientName);
             String ingredientId;
-            if (existingIngredient.isNotEmpty) {
-              ingredientId = existingIngredient.first['id'] as String;
+            if (existing != null) {
+              ingredientId = existing.id;
             } else {
               final ingredient = Ingredient(
                 id: IdGenerator.generateId(),
@@ -1434,19 +1266,17 @@ class DatabaseHelper {
                     ingJson['category'] as String? ?? 'other'),
                 proteinType: null,
               );
-              ingredientId = await insertIngredient(ingredient);
+              ingredientId = await _ingredientDao.insertIngredient(ingredient);
               ingredientCount++;
             }
 
-            final recipeIngredient = RecipeIngredient(
+            await _ingredientDao.addIngredientToRecipe(RecipeIngredient(
               id: IdGenerator.generateId(),
               recipeId: recipe.id,
               ingredientId: ingredientId,
               quantity: (ingJson['quantity'] as num?)?.toDouble() ?? 1.0,
               unitOverride: ingJson['unit_override'] as String?,
-            );
-
-            await addIngredientToRecipe(recipeIngredient);
+            ));
           }
 
           // Legacy: handle main_ingredient if present and no ingredients list
@@ -1457,17 +1287,10 @@ class DatabaseHelper {
             final ingredientName =
                 (recipeJson['main_ingredient'] as String).toLowerCase();
 
-            final db = await database;
-            final existingIngredient = await db.query(
-              'ingredients',
-              where: 'name = ?',
-              whereArgs: [ingredientName],
-              limit: 1,
-            );
-
+            final existing = await _ingredientDao.findIngredientByName(ingredientName);
             String ingredientId;
-            if (existingIngredient.isNotEmpty) {
-              ingredientId = existingIngredient.first['id'] as String;
+            if (existing != null) {
+              ingredientId = existing.id;
             } else {
               final ingredient = Ingredient(
                 id: IdGenerator.generateId(),
@@ -1475,18 +1298,16 @@ class DatabaseHelper {
                 category: IngredientCategory.other,
                 proteinType: null,
               );
-              ingredientId = await insertIngredient(ingredient);
+              ingredientId = await _ingredientDao.insertIngredient(ingredient);
               ingredientCount++;
             }
 
-            final recipeIngredient = RecipeIngredient(
+            await _ingredientDao.addIngredientToRecipe(RecipeIngredient(
               id: IdGenerator.generateId(),
               recipeId: recipe.id,
               ingredientId: ingredientId,
               quantity: 1.0,
-            );
-
-            await addIngredientToRecipe(recipeIngredient);
+            ));
           }
         } catch (e) {
           print('Error creating recipe: ${recipeJson['name']}, Error: $e');
@@ -1503,85 +1324,15 @@ class DatabaseHelper {
     }
   }
 
-  // Recipe CRUD operations
-  Future<int> insertRecipe(Recipe recipe) async {
-    final Database db = await database;
-    return await db.insert('recipes', recipe.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
-  }
-
-  Future<List<Recipe>> getAllRecipes() async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('recipes');
-    return List.generate(maps.length, (i) => Recipe.fromMap(maps[i]));
-  }
-
-  Future<Recipe?> getRecipe(String id) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'recipes',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-    if (maps.isNotEmpty) {
-      return Recipe.fromMap(maps.first);
-    }
-    return null;
-  }
-
-  Future<int> updateRecipe(Recipe recipe) async {
-    final Database db = await database;
-    return await db.update(
-      'recipes',
-      recipe.toMap(),
-      where: 'id = ?',
-      whereArgs: [recipe.id],
-    );
-  }
-
-  Future<int> deleteRecipe(String id) async {
-    final Database db = await database;
-    return await db.delete(
-      'recipes',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future<int> getRecipesCount() async {
-    final Database db = await database;
-    final result = await db.rawQuery('SELECT COUNT(*) as count FROM recipes');
-    return Sqflite.firstIntValue(result) ?? 0;
-  }
-
-  /// Get count of recipes with 3+ ingredients (enriched recipes)
-  Future<int> getEnrichedRecipeCount() async {
-    final Database db = await database;
-    final result = await db.rawQuery('''
-      SELECT COUNT(*) as count
-      FROM (
-        SELECT r.id
-        FROM recipes r
-        INNER JOIN recipe_ingredients ri ON r.id = ri.recipe_id
-        GROUP BY r.id
-        HAVING COUNT(ri.ingredient_id) >= 3
-      )
-    ''');
-    return Sqflite.firstIntValue(result) ?? 0;
-  }
-
-  /// Get recipe statistics for progress tracking
-  Future<Map<String, int>> getRecipeEnrichmentStats() async {
-    final totalRecipes = await getRecipesCount();
-    final enrichedRecipes = await getEnrichedRecipeCount();
-    final incompleteRecipes = totalRecipes - enrichedRecipes;
-    
-    return {
-      'total': totalRecipes,
-      'enriched': enrichedRecipes,
-      'incomplete': incompleteRecipes,
-    };
-  }
+  // Recipe CRUD operations — delegated to RecipeDao
+  Future<int> insertRecipe(Recipe recipe) => _recipeDao.insertRecipe(recipe);
+  Future<List<Recipe>> getAllRecipes() => _recipeDao.getAllRecipes();
+  Future<Recipe?> getRecipe(String id) => _recipeDao.getRecipe(id);
+  Future<int> updateRecipe(Recipe recipe) => _recipeDao.updateRecipe(recipe);
+  Future<int> deleteRecipe(String id) => _recipeDao.deleteRecipe(id);
+  Future<int> getRecipesCount() => _recipeDao.getRecipesCount();
+  Future<int> getEnrichedRecipeCount() => _recipeDao.getEnrichedRecipeCount();
+  Future<Map<String, int>> getRecipeEnrichmentStats() => _recipeDao.getRecipeEnrichmentStats();
 
   // Meal CRUD operations
   Future<int> insertMeal(Meal meal) async {
@@ -2018,115 +1769,14 @@ class DatabaseHelper {
     );
   }
 
-  // Frequency values ordered from most to least frequent — used for "at least X" filter logic.
-  static const _frequencyOrder = ['daily', 'weekly', 'biweekly', 'monthly', 'bimonthly', 'rarely'];
-
   Future<List<Recipe>> getRecipesWithSortAndFilter({
     String? sortBy,
     String? sortOrder,
     Map<String, dynamic>? filters,
-  }) async {
-    final Database db = await database;
+  }) => _recipeDao.getRecipesWithSortAndFilter(
+        sortBy: sortBy, sortOrder: sortOrder, filters: filters);
 
-    String query = 'SELECT * FROM recipes';
-    List<dynamic> arguments = [];
-
-    if (filters != null && filters.isNotEmpty) {
-      List<String> whereConditions = [];
-
-      if (filters.containsKey('difficulty')) {
-        whereConditions.add('difficulty <= ?');
-        arguments.add(filters['difficulty']);
-      }
-
-      if (filters.containsKey('rating')) {
-        whereConditions.add('rating >= ?');
-        arguments.add(filters['rating']);
-      }
-
-      if (filters.containsKey('desired_frequency')) {
-        final freq = filters['desired_frequency'] as String;
-        final idx = _frequencyOrder.indexOf(freq);
-        final validFreqs = idx == -1 ? [freq] : _frequencyOrder.sublist(0, idx + 1);
-        final placeholders = List.filled(validFreqs.length, '?').join(', ');
-        whereConditions.add('desired_frequency IN ($placeholders)');
-        arguments.addAll(validFreqs);
-      }
-
-      if (filters.containsKey('tag_filters')) {
-        final tagFilters = filters['tag_filters'] as List<Map<String, String>>;
-
-        // Group by type. Hard types (is_hard=true): AND within type — each tag gets its own EXISTS.
-        // Soft types (is_hard=false): OR within type — one EXISTS with IN clause.
-        final Map<String, List<String>> namesByType = {};
-        final Map<String, bool> isHardByType = {};
-        for (final tf in tagFilters) {
-          final typeId = tf['type_id']!;
-          namesByType.putIfAbsent(typeId, () => []).add(tf['name']!);
-          isHardByType[typeId] = tf['is_hard'] == 'true';
-        }
-
-        for (final entry in namesByType.entries) {
-          final typeId = entry.key;
-          final names = entry.value;
-          final isHard = isHardByType[typeId] ?? false;
-
-          if (isHard) {
-            for (final name in names) {
-              whereConditions.add(
-                'EXISTS (SELECT 1 FROM recipe_tags rt '
-                'JOIN tags t ON t.id = rt.tag_id '
-                'WHERE rt.recipe_id = recipes.id '
-                'AND t.type_id = ? AND t.name = ?)',
-              );
-              arguments.addAll([typeId, name]);
-            }
-          } else {
-            final placeholders = List.filled(names.length, '?').join(', ');
-            whereConditions.add(
-              'EXISTS (SELECT 1 FROM recipe_tags rt '
-              'JOIN tags t ON t.id = rt.tag_id '
-              'WHERE rt.recipe_id = recipes.id '
-              'AND t.type_id = ? AND t.name IN ($placeholders))',
-            );
-            arguments.add(typeId);
-            arguments.addAll(names);
-          }
-        }
-      }
-
-      if (whereConditions.isNotEmpty) {
-        query += ' WHERE ${whereConditions.join(' AND ')}';
-      }
-    }
-
-// Add sorting
-    if (sortBy != null) {
-      if (sortBy == 'name') {
-        // Use COLLATE NOCASE for case-insensitive sorting of names
-        query += ' ORDER BY name COLLATE NOCASE';
-      } else {
-        query += ' ORDER BY $sortBy';
-      }
-      if (sortOrder != null) {
-        query += ' $sortOrder';
-      }
-    } else {
-      query += ' ORDER BY created_at DESC'; // Default sorting
-    }
-
-    final List<Map<String, dynamic>> maps = await db.rawQuery(query, arguments);
-    return List.generate(maps.length, (i) => Recipe.fromMap(maps[i]));
-  }
-
-  Future<int> deleteRecipeIngredient(String id) async {
-    final Database db = await database;
-    return await db.delete(
-      'recipe_ingredients',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
+  Future<int> deleteRecipeIngredient(String id) => _ingredientDao.deleteRecipeIngredient(id);
 
   /// Save recommendation results to history
   Future<String> saveRecommendationHistory(
