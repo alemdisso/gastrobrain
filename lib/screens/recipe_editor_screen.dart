@@ -3,7 +3,6 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:uuid/uuid.dart';
 import '../core/di/service_provider.dart';
 import '../core/services/ingredient_matching_service.dart';
-import '../core/services/ingredient_parser_service.dart';
 import '../models/recipe.dart';
 import '../models/recipe_ingredient.dart';
 import '../models/ingredient.dart';
@@ -72,8 +71,6 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
       IngredientMatchingService();
   bool _isMatchingServiceReady = false;
 
-  // Ingredient parser service
-  final IngredientParserService _parserService = IngredientParserService();
   bool _isParserServiceReady = false;
 
   @override
@@ -92,7 +89,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
     if (!_isParserServiceReady && _isMatchingServiceReady && mounted) {
       final localizations = AppLocalizations.of(context);
       if (localizations != null) {
-        _parserService.initialize(
+        ServiceProvider.ingredientParser.initialize(
           localizations,
           matchingService: _matchingService,
         );
@@ -211,7 +208,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
       if (mounted) {
         final localizations = AppLocalizations.of(context);
         if (localizations != null && !_isParserServiceReady) {
-          _parserService.initialize(
+          ServiceProvider.ingredientParser.initialize(
             localizations,
             matchingService: _matchingService,
           );
@@ -410,7 +407,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
       );
     }
 
-    final result = _parserService.parseIngredientLine(line);
+    final result = ServiceProvider.ingredientParser.parseIngredientLine(line);
 
     // Convert parser result to _ParsedIngredient format
     // Only auto-select if confidence >= 0.80 (medium/high boundary from IngredientMatchingService)

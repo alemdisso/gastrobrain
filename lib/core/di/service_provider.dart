@@ -3,6 +3,7 @@ import 'package:gastrobrain/core/di/providers/database_provider.dart';
 import 'package:gastrobrain/core/di/providers/recommendation_provider.dart';
 import 'package:gastrobrain/core/di/providers/migration_provider.dart';
 import 'package:gastrobrain/core/di/providers/export_provider.dart';
+import 'package:gastrobrain/core/services/ingredient_parser_service.dart';
 import 'package:gastrobrain/core/services/meal_edit_service.dart';
 import 'package:gastrobrain/core/services/shopping_list_service.dart';
 
@@ -22,5 +23,9 @@ class ServiceProvider {
   static ShoppingListService get shoppingList =>
       ShoppingListService(database.helper);
 
-  // You can add more services here as needed
+  // Singleton — caller must call initialize(l10n, matchingService: ...) once
+  // before parsing. The double-init guard in IngredientParserService makes
+  // subsequent initialize() calls on the same instance safe no-ops.
+  static final IngredientParserService ingredientParser =
+      IngredientParserService();
 }
