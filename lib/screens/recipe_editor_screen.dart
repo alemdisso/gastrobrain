@@ -9,17 +9,14 @@ import '../models/ingredient.dart';
 import '../models/ingredient_category.dart';
 import '../models/ingredient_match.dart';
 import '../widgets/add_new_ingredient_dialog.dart';
-import '../widgets/servings_stepper.dart';
+import '../widgets/recipe_editor/existing_ingredients_display.dart';
+import '../widgets/recipe_editor/ingredient_row.dart';
+import '../widgets/recipe_editor/parsed_ingredient.dart';
+import '../widgets/recipe_editor/recipe_enrichment_progress_card.dart';
+import '../widgets/recipe_editor/recipe_metadata_display.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/id_generator.dart';
-import '../utils/quantity_formatter.dart';
 import '../utils/sorting_utils.dart';
-
-/// Milestone target for enriched recipes (recipes with 3+ ingredients)
-const int kEnrichedRecipesMilestoneTarget = 50;
-
-/// Warning threshold for enriched recipes (halfway to milestone)
-const int kEnrichedRecipesWarningThreshold = 25;
 
 /// Recipe editor screen for efficiently adding ingredients and instructions
 /// to existing recipes that have basic metadata but are missing detailed content.
@@ -46,7 +43,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
   // Ingredient parsing state
   final TextEditingController _rawIngredientsController =
       TextEditingController();
-  List<_ParsedIngredient> _parsedIngredients = [];
+  List<ParsedIngredient> _parsedIngredients = [];
   int _parseGeneration = 0; // Increments on re-parse to force field recreation
   bool _isSaving = false;
 
@@ -365,7 +362,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
     }
 
     final lines = rawText.split('\n');
-    final parsedList = <_ParsedIngredient>[];
+    final parsedList = <ParsedIngredient>[];
 
     for (final line in lines) {
       final trimmedLine = line.trim();
@@ -393,11 +390,11 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
   /// - "2 kg de mangas" → 2 kg mangas, notes: null
   /// - "2 colheres de sopa de pasta de tamarindo" → 2 tbsp pasta de tamarindo
   /// - "Sal a gosto" → 0 null sal, notes: a gosto
-  _ParsedIngredient? _parseIngredientLine(String line) {
+  ParsedIngredient? _parseIngredientLine(String line) {
     if (!_isParserServiceReady) {
       // Fallback: treat whole line as ingredient name
       final name = line.trim();
-      return _ParsedIngredient(
+      return ParsedIngredient(
         quantity: 1.0,
         unit: null,
         name: name,
@@ -409,7 +406,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
 
     final result = ServiceProvider.ingredientParser.parseIngredientLine(line);
 
-    // Convert parser result to _ParsedIngredient format
+    // Convert parser result to ParsedIngredient format
     // Only auto-select if confidence >= 0.80 (medium/high boundary from IngredientMatchingService)
     // Low-confidence matches stay unselected so "Create New Ingredient" button remains visible
     final selectedMatch =
@@ -417,7 +414,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
             ? result.matches.first
             : null;
 
-    return _ParsedIngredient(
+    return ParsedIngredient(
       quantity: result.quantity,
       quantityMax: result.quantityMax,
       unit: result.unit,
@@ -432,7 +429,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
   /// Add a new empty ingredient row
   void _addIngredientRow() {
     setState(() {
-      _parsedIngredients.add(_ParsedIngredient(
+      _parsedIngredients.add(ParsedIngredient(
         quantity: 1.0,
         unit: null,
         name: '',
@@ -493,7 +490,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
           newSelectedMatch?.ingredient.name ?? (name ?? ingredient.name);
       final finalOriginalName = name != null ? name : ingredient.originalName;
 
-      _parsedIngredients[index] = _ParsedIngredient(
+      _parsedIngredients[index] = ParsedIngredient(
         quantity: quantity ?? ingredient.quantity,
         unit: unit ?? ingredient.unit,
         name: finalName,
@@ -535,7 +532,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
     // If user saved the ingredient, store it for later creation
     if (result != null && mounted) {
       setState(() {
-        _parsedIngredients[index] = _ParsedIngredient(
+        _parsedIngredients[index] = ParsedIngredient(
           quantity: parsed.quantity,
           unit: parsed.unit,
           name: result.name, // Use the final name from dialog
@@ -967,7 +964,10 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
           // Recipe Enrichment Progress Card
-          _buildEnrichmentProgressCard(context, localizations),
+          RecipeEnrichmentProgressCard(
+            enrichmentStats: _enrichmentStats,
+            isLoading: _isLoadingStats,
+          ),
           const SizedBox(height: 16),
 
           // Recipe Selector Section
@@ -976,12 +976,22 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
 
           // Recipe Metadata Display (Read-only)
           if (_selectedRecipe != null)
-            _buildRecipeMetadataDisplay(context, localizations),
+            RecipeMetadataDisplay(
+              recipe: _selectedRecipe!,
+              isExpanded: _isMetadataExpanded,
+              servings: _servings,
+              onToggleExpanded: () =>
+                  setState(() => _isMetadataExpanded = !_isMetadataExpanded),
+              onServingsChanged: (v) => setState(() => _servings = v),
+            ),
           const SizedBox(height: 24),
 
           // Existing Ingredients Display (Read-only)
           if (_selectedRecipe != null)
-            _buildExistingIngredientsDisplay(context),
+            ExistingIngredientsDisplay(
+              existingIngredients: _existingIngredients,
+              isLoading: _isLoadingIngredients,
+            ),
           if (_selectedRecipe != null) const SizedBox(height: 24),
 
           // Placeholder for Ingredients (Issue #162)
@@ -996,242 +1006,6 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
     );
   }
 
-  /// Recipe enrichment progress card widget
-  Widget _buildEnrichmentProgressCard(
-      BuildContext context, AppLocalizations localizations) {
-    // Show loading state
-    if (_isLoadingStats || _enrichmentStats == null) {
-      return Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                localizations.recipeDatabaseStatus,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    final stats = _enrichmentStats!;
-    final enrichedCount = stats['enriched'] ?? 0;
-    final incompleteCount = stats['incomplete'] ?? 0;
-    final totalCount = stats['total'] ?? 0;
-    final milestoneTarget = kEnrichedRecipesMilestoneTarget;
-    final progressPercent =
-        totalCount > 0 ? ((enrichedCount / totalCount) * 100).round() : 0;
-    final isTargetReached = enrichedCount >= milestoneTarget;
-    final recipesNeeded = isTargetReached ? 0 : milestoneTarget - enrichedCount;
-
-    // Determine card color based on progress
-    Color? cardColor;
-    if (isTargetReached) {
-      cardColor = Colors.green.withValues(alpha: 0.1);
-    } else if (enrichedCount >= kEnrichedRecipesWarningThreshold) {
-      cardColor = Colors.orange.withValues(alpha: 0.1);
-    }
-
-    return Card(
-      color: cardColor,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Title
-            Row(
-              children: [
-                Icon(
-                  isTargetReached ? Icons.check_circle : Icons.bar_chart,
-                  color: isTargetReached
-                      ? Colors.green
-                      : Theme.of(context).colorScheme.primary,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    localizations.recipeDatabaseStatus,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Stats Row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Expanded(
-                  child: _buildStatColumn(
-                    context,
-                    localizations.enrichedRecipes,
-                    enrichedCount.toString(),
-                    Colors.green,
-                    Icons.check_circle_outline,
-                  ),
-                ),
-                Expanded(
-                  child: _buildStatColumn(
-                    context,
-                    localizations.needEnrichment,
-                    incompleteCount.toString(),
-                    Colors.orange,
-                    Icons.warning_amber_outlined,
-                  ),
-                ),
-                Expanded(
-                  child: _buildStatColumn(
-                    context,
-                    localizations.totalRecipes,
-                    totalCount.toString(),
-                    Theme.of(context).colorScheme.primary,
-                    Icons.restaurant_menu,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Progress Bar
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: LinearProgressIndicator(
-                value: totalCount > 0 ? enrichedCount / totalCount : 0,
-                minHeight: 8,
-                backgroundColor: Colors.grey.withValues(alpha: 0.2),
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  isTargetReached ? Colors.green : Colors.blue,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-
-            // Progress Text
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  localizations.progressPercent(progressPercent),
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                Text(
-                  '$enrichedCount / $totalCount',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // Milestone Info
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isTargetReached
-                    ? Colors.green.withValues(alpha: 0.1)
-                    : Colors.blue.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: isTargetReached
-                      ? Colors.green.withValues(alpha: 0.3)
-                      : Colors.blue.withValues(alpha: 0.2),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    isTargetReached ? Icons.emoji_events : Icons.flag,
-                    size: 20,
-                    color: isTargetReached ? Colors.green : Colors.blue,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          localizations.milestoneTarget,
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          localizations.enrichedRecipesTarget,
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    fontSize: 11,
-                                    color: Colors.grey[600],
-                                  ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          isTargetReached
-                              ? localizations.milestoneAchieved
-                              : localizations
-                                  .recipesNeededForMilestone(recipesNeeded),
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: isTargetReached
-                                        ? Colors.green
-                                        : Theme.of(context)
-                                            .textTheme
-                                            .bodySmall
-                                            ?.color,
-                                  ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Helper widget for stat columns in progress card
-  Widget _buildStatColumn(BuildContext context, String label, String value,
-      Color color, IconData icon) {
-    return Column(
-      children: [
-        Icon(icon, color: color, size: 24),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall,
-          textAlign: TextAlign.center,
-          overflow: TextOverflow.ellipsis,
-          maxLines: 2,
-        ),
-      ],
-    );
-  }
 
   /// Recipe selector dropdown widget
   Widget _buildRecipeSelector(
@@ -1302,337 +1076,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
     );
   }
 
-  /// Read-only recipe metadata display (collapsible)
-  Widget _buildRecipeMetadataDisplay(
-      BuildContext context, AppLocalizations localizations) {
-    if (_selectedRecipe == null) return const SizedBox.shrink();
 
-    final recipe = _selectedRecipe!;
-
-    return Card(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Compact header (always visible)
-          InkWell(
-            onTap: () {
-              setState(() {
-                _isMetadataExpanded = !_isMetadataExpanded;
-              });
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  // Recipe name
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          recipe.name,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleLarge
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Expand/collapse button
-                  IconButton(
-                    icon: Icon(
-                      _isMetadataExpanded
-                          ? Icons.expand_less
-                          : Icons.expand_more,
-                    ),
-                    tooltip:
-                        _isMetadataExpanded ? 'Hide details' : 'Show details',
-                    onPressed: () {
-                      setState(() {
-                        _isMetadataExpanded = !_isMetadataExpanded;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Expanded metadata (conditionally visible)
-          if (_isMetadataExpanded)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Divider(),
-                  const SizedBox(height: 12),
-
-                  // Metadata Chips
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      // Difficulty
-                      Chip(
-                        avatar: const Icon(Icons.signal_cellular_alt, size: 18),
-                        label: Text(
-                            '${localizations.difficulty}: ${recipe.difficulty}/5'),
-                        backgroundColor: Theme.of(context)
-                            .colorScheme
-                            .secondaryContainer
-                            .withValues(alpha: 0.5),
-                      ),
-
-                      // Rating
-                      if (recipe.rating > 0)
-                        Chip(
-                          avatar: const Icon(Icons.star, size: 18),
-                          label: Text(
-                              '${localizations.rating}: ${recipe.rating}/5'),
-                          backgroundColor: Colors.amber.withValues(alpha: 0.3),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Times (compact format)
-                  Row(
-                    children: [
-                      Icon(Icons.schedule,
-                          size: 18,
-                          color: Theme.of(context).colorScheme.primary),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Prep: ${recipe.prepTimeMinutes}m  •  Cook: ${recipe.cookTimeMinutes}m',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Servings stepper
-                  ServingsStepper(
-                    key: const Key('recipe_editor_servings_stepper'),
-                    value: _servings,
-                    onChanged: (v) => setState(() => _servings = v),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Current Status
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .errorContainer
-                          .withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .error
-                            .withValues(alpha: 0.3),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.warning_amber,
-                          color: Theme.of(context).colorScheme.error,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Status: Incomplete recipe',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  /// Display existing recipe ingredients (read-only)
-  Widget _buildExistingIngredientsDisplay(BuildContext context) {
-    if (_selectedRecipe == null) return const SizedBox.shrink();
-
-    // Show loading state
-    if (_isLoadingIngredients) {
-      return Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              const CircularProgressIndicator(),
-              const SizedBox(height: 12),
-              Text(
-                'Loading existing ingredients...',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    // If no existing ingredients, show a message
-    if (_existingIngredients.isEmpty) {
-      return Card(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              Icon(
-                Icons.info_outline,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'No ingredients yet. Add ingredients below to get started.',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    // Display existing ingredients
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              children: [
-                const Icon(
-                  Icons.check_circle,
-                  color: Colors.green,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Current Ingredients (${_existingIngredients.length}) - Already in Recipe',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Ingredient list
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.green.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: Colors.green.withValues(alpha: 0.3),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: _existingIngredients.map((ingredientMap) {
-                  final name = ingredientMap['name'] as String? ?? 'Unknown';
-                  final quantity = ingredientMap['quantity'] as double? ?? 0.0;
-                  final quantityMax = ingredientMap['quantity_max'] as double?;
-                  final unit = ingredientMap['unit'] as String?;
-                  final category =
-                      ingredientMap['category'] as String? ?? 'other';
-
-                  // Format quantity display
-                  final quantityStr = quantity == 0
-                      ? ''
-                      : quantityMax != null
-                          ? QuantityFormatter.formatRange(quantity, quantityMax)
-                          : QuantityFormatter.format(quantity);
-                  final quantityDisplay = quantityStr.isNotEmpty
-                      ? '$quantityStr${unit != null ? ' $unit' : ''}'
-                      : 'to taste';
-
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.circle, size: 8, color: Colors.green),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            '$name ($quantityDisplay)',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                        ),
-                        // Category badge
-                        Chip(
-                          label: Text(
-                            _getCategoryDisplayName(category),
-                            style: const TextStyle(fontSize: 11),
-                          ),
-                          visualDensity: VisualDensity.compact,
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          backgroundColor: Theme.of(context)
-                              .colorScheme
-                              .secondaryContainer
-                              .withValues(alpha: 0.5),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Helper to get category display name from string value
-  String _getCategoryDisplayName(String categoryValue) {
-    try {
-      final category = IngredientCategory.values.firstWhere(
-        (c) => c.value == categoryValue,
-        orElse: () => IngredientCategory.other,
-      );
-      return category.displayName;
-    } catch (e) {
-      return 'Other';
-    }
-  }
-
-  /// Format quantity for display
-  /// Whole numbers show without decimal (1 not 1.0)
-  /// Decimal numbers keep their decimals (1.5 stays 1.5)
-  String formatQuantity(double quantity) {
-    if (quantity == 0) {
-      return ''; // Empty for "to taste" ingredients
-    }
-
-    // Check if it's a whole number
-    if (quantity == quantity.toInt()) {
-      return quantity.toInt().toString(); // "1" not "1.0"
-    }
-
-    // Keep decimals for fractional quantities
-    return quantity.toString(); // "1.5" stays "1.5"
-  }
 
   /// Build summary text showing existing and new ingredient counts
   String _buildIngredientSummary() {
@@ -1742,7 +1186,27 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
               ..._parsedIngredients.asMap().entries.map((entry) {
                 final index = entry.key;
                 final ingredient = entry.value;
-                return _buildIngredientRow(context, index, ingredient);
+                return IngredientRow(
+                  index: index,
+                  ingredient: ingredient,
+                  parseGeneration: _parseGeneration,
+                  onQuantityChanged: (qty, qtyMax, error) {
+                    if (index < 0 || index >= _parsedIngredients.length) return;
+                    setState(() {
+                      _parsedIngredients[index].quantity = qty;
+                      _parsedIngredients[index].quantityMax = qtyMax;
+                      _parsedIngredients[index].qtyError = error;
+                    });
+                  },
+                  onUnitChanged: (unit) => _updateIngredient(index, unit: unit),
+                  onNameChanged: (name) => _updateIngredient(index, name: name),
+                  onNotesChanged: (notes) =>
+                      _updateIngredient(index, notes: notes),
+                  onMatchChanged: (match) =>
+                      _updateIngredient(index, selectedMatch: match),
+                  onRemove: () => _removeIngredientAt(index),
+                  onCreateNew: () => _showCreateIngredientDialog(index),
+                );
               }),
               const SizedBox(height: 16),
 
@@ -1913,383 +1377,6 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
     );
   }
 
-  /// Build a single ingredient row for editing
-  Widget _buildIngredientRow(
-      BuildContext context, int index, _ParsedIngredient ingredient) {
-    // Determine match status colors
-    Color matchColor = Colors.grey;
-    IconData matchIcon = Icons.help_outline;
-    String matchText = 'No match';
-
-    if (ingredient.isNewIngredient) {
-      // New ingredient ready to be created
-      matchColor = Colors.blue;
-      matchIcon = Icons.fiber_new;
-      matchText = 'New ingredient - will be created';
-    } else if (ingredient.selectedMatch != null) {
-      switch (ingredient.selectedMatch!.confidenceLevel) {
-        case MatchConfidence.high:
-          matchColor = Colors.green;
-          matchIcon = Icons.check_circle;
-          matchText = 'High confidence';
-          break;
-        case MatchConfidence.medium:
-          matchColor = Colors.orange;
-          matchIcon = Icons.warning_amber;
-          matchText = 'Medium confidence';
-          break;
-        case MatchConfidence.low:
-          matchColor = Colors.red;
-          matchIcon = Icons.error_outline;
-          matchText = 'Low confidence';
-          break;
-      }
-    } else if (ingredient.matches.isNotEmpty) {
-      // Has matches but none auto-selected - show based on best match
-      final bestMatch = ingredient.matches.first;
-      matchColor = _getMatchColor(bestMatch.confidenceLevel);
-      matchIcon = _getMatchIcon(bestMatch.confidenceLevel);
-      matchText =
-          '${ingredient.matches.length} match${ingredient.matches.length > 1 ? "es" : ""} found - select one';
-    } else {
-      // No matches and not resolved yet - needs action
-      matchColor = Colors.red;
-      matchIcon = Icons.error;
-      matchText = 'No match - create new ingredient';
-    }
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top row: Quantity, Unit, Name, Delete
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Quantity field (accepts single value or range: "2" or "2-3")
-                SizedBox(
-                  width: 72,
-                  child: TextFormField(
-                    key: ValueKey('qty_${index}_$_parseGeneration'),
-                    decoration: InputDecoration(
-                      labelText: 'Qty',
-                      hintText: 'e.g. 2 or 2–3',
-                      border: const OutlineInputBorder(),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 8),
-                      errorText: ingredient.qtyError,
-                      errorStyle: const TextStyle(fontSize: 10),
-                    ),
-                    keyboardType: TextInputType.text,
-                    initialValue: ingredient.quantityMax != null
-                        ? QuantityFormatter.formatRange(
-                            ingredient.quantity, ingredient.quantityMax!)
-                        : QuantityFormatter.format(ingredient.quantity),
-                    onChanged: (value) {
-                      if (index < 0 || index >= _parsedIngredients.length) {
-                        return;
-                      }
-                      final trimmed = value.trim();
-                      final rangeMatch = RegExp(
-                        r'^(\d+(?:[.,]\d+)?)\s*[–-]\s*(\d+(?:[.,]\d+)?)$',
-                      ).firstMatch(trimmed);
-                      setState(() {
-                        if (rangeMatch != null) {
-                          final min = double.tryParse(
-                                  rangeMatch.group(1)!.replaceAll(',', '.')) ??
-                              0.0;
-                          final max = double.tryParse(
-                                  rangeMatch.group(2)!.replaceAll(',', '.')) ??
-                              0.0;
-                          if (max > min) {
-                            _parsedIngredients[index].quantity = min;
-                            _parsedIngredients[index].quantityMax = max;
-                            _parsedIngredients[index].qtyError = null;
-                          } else {
-                            _parsedIngredients[index].quantity = min;
-                            _parsedIngredients[index].quantityMax = null;
-                            _parsedIngredients[index].qtyError =
-                                'Min must be less than max';
-                          }
-                        } else {
-                          _parsedIngredients[index].quantity =
-                              double.tryParse(trimmed.replaceAll(',', '.')) ??
-                                  0.0;
-                          _parsedIngredients[index].quantityMax = null;
-                          _parsedIngredients[index].qtyError = null;
-                        }
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(width: 4),
-
-                // Unit field
-                SizedBox(
-                  width: 60,
-                  child: TextFormField(
-                    key: ValueKey('unit_${index}_$_parseGeneration'),
-                    decoration: const InputDecoration(
-                      labelText: 'Unit',
-                      border: OutlineInputBorder(),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                    ),
-                    initialValue: ingredient.unit ?? '',
-                    onChanged: (value) {
-                      _updateIngredient(index,
-                          unit: value.isEmpty ? null : value);
-                    },
-                  ),
-                ),
-                const SizedBox(width: 4),
-
-                // Name field
-                Expanded(
-                  child: TextFormField(
-                    key: ValueKey('name_${index}_$_parseGeneration'),
-                    decoration: const InputDecoration(
-                      labelText: 'Ingredient Name',
-                      border: OutlineInputBorder(),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                    ),
-                    initialValue: ingredient.name,
-                    onChanged: (value) {
-                      _updateIngredient(index, name: value);
-                    },
-                  ),
-                ),
-                const SizedBox(width: 4),
-
-                // Remove button
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.grey, size: 20),
-                  padding: const EdgeInsets.all(8),
-                  constraints: const BoxConstraints(
-                    minWidth: 32,
-                    minHeight: 32,
-                  ),
-                  onPressed: () => _removeIngredientAt(index),
-                  tooltip: 'Remove',
-                ),
-              ],
-            ),
-
-            // Notes field (descriptors like "pequena", "maduro", etc.)
-            if (ingredient.notes != null ||
-                ingredient.selectedMatch != null) ...[
-              const SizedBox(height: 8),
-              TextFormField(
-                key: ValueKey('notes_${index}_$_parseGeneration'),
-                decoration: const InputDecoration(
-                  labelText: 'Notes (descriptors)',
-                  hintText: 'e.g., pequena, maduro, picado',
-                  border: OutlineInputBorder(),
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                  isDense: true,
-                ),
-                initialValue: ingredient.notes ?? '',
-                onChanged: (value) {
-                  _updateIngredient(index, notes: value.isEmpty ? null : value);
-                },
-              ),
-            ],
-
-            // Match indicator row
-            if (ingredient.name.trim().isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: matchColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: matchColor.withValues(alpha: 0.3)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Match status indicator
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(matchIcon, color: matchColor, size: 18),
-                            const SizedBox(width: 6),
-                            Expanded(
-                              child: Text(
-                                matchText,
-                                style: TextStyle(
-                                  color: matchColor,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (ingredient.selectedMatch != null) ...[
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  '→ ${ingredient.selectedMatch!.ingredient.name}',
-                                  style: const TextStyle(fontSize: 12),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Chip(
-                                label: Text(
-                                  ingredient.selectedMatch!.ingredient.category
-                                      .displayName,
-                                  style: const TextStyle(fontSize: 10),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                visualDensity: VisualDensity.compact,
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 4),
-                                backgroundColor: Theme.of(context)
-                                    .colorScheme
-                                    .secondaryContainer
-                                    .withValues(alpha: 0.5),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ],
-                    ),
-
-                    // Dropdown for match selection if multiple matches
-                    // (single matches are auto-selected and shown in the name field)
-                    if (ingredient.matches.length > 1) ...[
-                      const SizedBox(height: 8),
-                      DropdownButtonFormField<IngredientMatch>(
-                        initialValue: ingredient.selectedMatch,
-                        hint: Text(
-                          'Select one of ${ingredient.matches.length} matches',
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                        decoration: const InputDecoration(
-                          labelText: 'Select match',
-                          border: OutlineInputBorder(),
-                          contentPadding:
-                              EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          isDense: true,
-                        ),
-                        items: ingredient.matches.map((match) {
-                          return DropdownMenuItem<IngredientMatch>(
-                            value: match,
-                            child: Row(
-                              children: [
-                                Icon(
-                                  _getMatchIcon(match.confidenceLevel),
-                                  size: 16,
-                                  color: _getMatchColor(match.confidenceLevel),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '${match.ingredient.name} (${match.ingredient.category.displayName}) - ${(match.confidence * 100).toStringAsFixed(0)}%',
-                                  style: const TextStyle(fontSize: 12),
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (match) {
-                          _updateIngredient(index, selectedMatch: match);
-                        },
-                        isExpanded: true,
-                      ),
-                    ],
-
-                    // Create New Ingredient button
-                    // Shows when:
-                    // 1. No match selected, OR
-                    // 2. Single non-exact match (user might want to reject fuzzy/partial matches)
-                    // Exception: Don't show for exact/caseInsensitive matches (clearly correct)
-                    if (!ingredient.isNewIngredient &&
-                        (ingredient.selectedMatch == null ||
-                            (ingredient.matches.length == 1 &&
-                                ingredient.selectedMatch != null &&
-                                ingredient.selectedMatch!.matchType !=
-                                    MatchType.exact &&
-                                ingredient.selectedMatch!.matchType !=
-                                    MatchType.caseInsensitive))) ...[
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ingredient.matches.isEmpty
-                            ? ElevatedButton.icon(
-                                onPressed: () =>
-                                    _showCreateIngredientDialog(index),
-                                icon: const Icon(Icons.add, size: 18),
-                                label: Text(AppLocalizations.of(context)!
-                                    .createNewIngredient),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
-                                  foregroundColor: Colors.white,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8),
-                                ),
-                              )
-                            : OutlinedButton.icon(
-                                onPressed: () =>
-                                    _showCreateIngredientDialog(index),
-                                icon: const Icon(Icons.add, size: 18),
-                                label: Text(AppLocalizations.of(context)!
-                                    .noneOfTheseCreateNew),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.blue,
-                                  side: const BorderSide(color: Colors.blue),
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8),
-                                ),
-                              ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Helper to get match indicator color
-  Color _getMatchColor(MatchConfidence confidence) {
-    switch (confidence) {
-      case MatchConfidence.high:
-        return Colors.green;
-      case MatchConfidence.medium:
-        return Colors.orange;
-      case MatchConfidence.low:
-        return Colors.red;
-    }
-  }
-
-  /// Helper to get match indicator icon
-  IconData _getMatchIcon(MatchConfidence confidence) {
-    switch (confidence) {
-      case MatchConfidence.high:
-        return Icons.check_circle;
-      case MatchConfidence.medium:
-        return Icons.warning_amber;
-      case MatchConfidence.low:
-        return Icons.error_outline;
-    }
-  }
 
   /// Instructions section for entering cooking instructions
   /// Navigation controls (Previous/Next buttons and progress)
@@ -2356,36 +1443,3 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
   }
 }
 
-/// Helper class to represent a parsed ingredient before saving to database
-class _ParsedIngredient {
-  double quantity;
-  double? quantityMax;
-  String? unit;
-  String name;
-  String
-      originalName; // Original parsed name (preserved even when match is selected)
-  IngredientCategory category;
-  String? notes; // Descriptors like "pequena", "maduro", "picado"
-  String? qtyError; // Validation error for the quantity field
-
-  // Matching information
-  List<IngredientMatch> matches;
-  IngredientMatch? selectedMatch; // User-selected or auto-selected match
-
-  // New ingredient creation
-  Ingredient? newIngredientToCreate; // Ingredient to be created on save
-  bool get isNewIngredient => newIngredientToCreate != null;
-
-  _ParsedIngredient({
-    required this.quantity,
-    this.quantityMax,
-    this.unit,
-    required this.name,
-    String? originalName,
-    required this.category,
-    this.notes,
-    this.matches = const [],
-    this.selectedMatch,
-    this.newIngredientToCreate,
-  }) : originalName = originalName ?? name;
-}
