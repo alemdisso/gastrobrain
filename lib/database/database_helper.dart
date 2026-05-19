@@ -42,6 +42,7 @@ import '../core/migration/migrations/010_add_quantity_max.dart';
 import '../core/migration/migrations/011_add_shopping_list_quantity_max.dart';
 import '../core/repositories/base_repository.dart';
 import 'daos/ingredient_dao.dart';
+import 'daos/meal_dao.dart';
 import 'daos/recipe_dao.dart';
 
 class DatabaseHelper {
@@ -54,6 +55,7 @@ class DatabaseHelper {
   DatabaseHelper._internal();
 
   late final IngredientDao _ingredientDao = IngredientDao(() => database);
+  late final MealDao _mealDao = MealDao(() => database);
   late final RecipeDao _recipeDao = RecipeDao(() => database);
 
   /// Get all available migrations in order
@@ -1108,64 +1110,11 @@ class DatabaseHelper {
     }
   }
 
-  // MealIngredient (simple sides on recorded meals) operations
-
-  Future<String> insertMealIngredient(MealIngredient side) async {
-    final Database db = await database;
-    try {
-      await db.insert('meal_ingredients', side.toMap(),
-          conflictAlgorithm: ConflictAlgorithm.replace);
-      return side.id;
-    } catch (e) {
-      throw GastrobrainException(
-          'Failed to insert meal ingredient: ${e.toString()}');
-    }
-  }
-
-  Future<List<MealIngredient>> getMealIngredientsForMeal(
-      String mealId) async {
-    final Database db = await database;
-    try {
-      final List<Map<String, dynamic>> maps = await db.query(
-        'meal_ingredients',
-        where: 'meal_id = ?',
-        whereArgs: [mealId],
-      );
-      return List.generate(
-          maps.length, (i) => MealIngredient.fromMap(maps[i]));
-    } catch (e) {
-      throw GastrobrainException(
-          'Failed to get meal ingredients: ${e.toString()}');
-    }
-  }
-
-  Future<int> deleteMealIngredient(String id) async {
-    final Database db = await database;
-    try {
-      return await db.delete(
-        'meal_ingredients',
-        where: 'id = ?',
-        whereArgs: [id],
-      );
-    } catch (e) {
-      throw GastrobrainException(
-          'Failed to delete meal ingredient: ${e.toString()}');
-    }
-  }
-
-  Future<int> deleteMealIngredientsByMealId(String mealId) async {
-    final Database db = await database;
-    try {
-      return await db.delete(
-        'meal_ingredients',
-        where: 'meal_id = ?',
-        whereArgs: [mealId],
-      );
-    } catch (e) {
-      throw GastrobrainException(
-          'Failed to delete meal ingredients: ${e.toString()}');
-    }
-  }
+  // MealIngredient — delegated to MealDao
+  Future<String> insertMealIngredient(MealIngredient side) => _mealDao.insertMealIngredient(side);
+  Future<List<MealIngredient>> getMealIngredientsForMeal(String mealId) => _mealDao.getMealIngredientsForMeal(mealId);
+  Future<int> deleteMealIngredient(String id) => _mealDao.deleteMealIngredient(id);
+  Future<int> deleteMealIngredientsByMealId(String mealId) => _mealDao.deleteMealIngredientsByMealId(mealId);
 
   // Ingredient operations — delegated to IngredientDao
   Future<String> insertIngredient(Ingredient ingredient) => _ingredientDao.insertIngredient(ingredient);
@@ -1334,440 +1283,30 @@ class DatabaseHelper {
   Future<int> getEnrichedRecipeCount() => _recipeDao.getEnrichedRecipeCount();
   Future<Map<String, int>> getRecipeEnrichmentStats() => _recipeDao.getRecipeEnrichmentStats();
 
-  // Meal CRUD operations
-  Future<int> insertMeal(Meal meal) async {
-    final Database db = await database;
-    return await db.insert('meals', meal.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
-  }
+  // Meal CRUD — delegated to MealDao
+  Future<int> insertMeal(Meal meal) => _mealDao.insertMeal(meal);
+  Future<List<Meal>> getMealsForRecipe(String recipeId) => _mealDao.getMealsForRecipe(recipeId);
+  Future<Meal?> getMeal(String id) => _mealDao.getMeal(id);
+  Future<int> updateMeal(Meal meal) => _mealDao.updateMeal(meal);
+  Future<int> deleteMeal(String id) => _mealDao.deleteMeal(id);
+  Future<List<Meal>> getAllMeals() => _mealDao.getAllMeals();
+  Future<List<Meal>> getRecentMeals({int limit = 10}) => _mealDao.getRecentMeals(limit: limit);
 
-  Future<List<Meal>> getMealsForRecipe(String recipeId) async {
-    final Database db = await database;
+  // MealRecipe — delegated to MealDao
+  Future<String> insertMealRecipe(MealRecipe mealRecipe) => _mealDao.insertMealRecipe(mealRecipe);
+  Future<List<MealRecipe>> getMealRecipesForMeal(String mealId) => _mealDao.getMealRecipesForMeal(mealId);
+  Future<int> updateMealRecipe(MealRecipe mealRecipe) => _mealDao.updateMealRecipe(mealRecipe);
+  Future<int> deleteMealRecipe(String id) => _mealDao.deleteMealRecipe(id);
+  Future<int> deleteMealRecipesByMealId(String mealId, {bool excludePrimary = false}) => _mealDao.deleteMealRecipesByMealId(mealId, excludePrimary: excludePrimary);
+  Future<String> addRecipeToMeal(String mealId, String recipeId, {bool isPrimaryDish = false}) => _mealDao.addRecipeToMeal(mealId, recipeId, isPrimaryDish: isPrimaryDish);
+  Future<bool> removeRecipeFromMeal(String mealId, String recipeId) => _mealDao.removeRecipeFromMeal(mealId, recipeId);
+  Future<bool> setPrimaryRecipeForMeal(String mealId, String recipeId) => _mealDao.setPrimaryRecipeForMeal(mealId, recipeId);
 
-    // Use a join with the junction table to find all meals with this recipe
-    final List<Map<String, dynamic>> maps = await db.rawQuery('''
-      SELECT DISTINCT m.* 
-      FROM meals m
-      LEFT JOIN meal_recipes mr ON m.id = mr.meal_id
-      WHERE mr.recipe_id = ? OR m.recipe_id = ?
-      ORDER BY date(m.cooked_at) DESC,
-               CASE m.meal_type
-                 WHEN 'dinner' THEN 0
-                 WHEN 'lunch'  THEN 1
-                 ELSE               2
-               END ASC
-    ''', [recipeId, recipeId]);
-
-    final meals = List.generate(maps.length, (i) => Meal.fromMap(maps[i]));
-
-    // Load meal recipes and simple sides for each meal
-    for (final meal in meals) {
-      final recipes = await getMealRecipesForMeal(meal.id);
-      meal.mealRecipes = recipes;
-      final sides = await getMealIngredientsForMeal(meal.id);
-      if (sides.isNotEmpty) meal.mealIngredients = sides;
-    }
-
-    return meals;
-  }
-
-  Future<Meal?> getMeal(String id) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'meals',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-
-    if (maps.isEmpty) {
-      return null;
-    }
-
-    final meal = Meal.fromMap(maps.first);
-
-    // Load associated recipes and simple sides
-    final recipes = await getMealRecipesForMeal(id);
-    meal.mealRecipes = recipes;
-    final sides = await getMealIngredientsForMeal(id);
-    if (sides.isNotEmpty) meal.mealIngredients = sides;
-
-    return meal;
-  }
-
-  Future<int> updateMeal(Meal meal) async {
-    final Database db = await database;
-    return await db.update(
-      'meals',
-      meal.toMap(),
-      where: 'id = ?',
-      whereArgs: [meal.id],
-    );
-  }
-
-  Future<int> deleteMeal(String id) async {
-    final Database db = await database;
-    return await db.delete(
-      'meals',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  /// Get all meals with their recipes
-  Future<List<Meal>> getAllMeals() async {
-    final Database db = await database;
-
-    final List<Map<String, dynamic>> mealMaps = await db.query(
-      'meals',
-      orderBy:
-          "date(cooked_at) DESC, CASE meal_type WHEN 'dinner' THEN 0 WHEN 'lunch' THEN 1 ELSE 2 END ASC",
-    );
-
-    List<Meal> meals = [];
-
-    for (var mealMap in mealMaps) {
-      final String mealId = mealMap['id'];
-
-      // Get recipes for this meal
-      final List<Map<String, dynamic>> recipeMaps = await db.query(
-        'meal_recipes',
-        where: 'meal_id = ?',
-        whereArgs: [mealId],
-      );
-
-      final List<MealRecipe> mealRecipes = List.generate(
-          recipeMaps.length, (i) => MealRecipe.fromMap(recipeMaps[i]));
-
-      final meal = Meal.fromMap(mealMap);
-      meal.mealRecipes = mealRecipes;
-
-      // Load simple sides for this meal
-      final List<Map<String, dynamic>> sideMaps = await db.query(
-        'meal_ingredients',
-        where: 'meal_id = ?',
-        whereArgs: [mealId],
-      );
-      if (sideMaps.isNotEmpty) {
-        meal.mealIngredients = List.generate(
-            sideMaps.length, (i) => MealIngredient.fromMap(sideMaps[i]));
-      }
-
-      meals.add(meal);
-    }
-
-    return meals;
-  }
-
-  // MealRecipe operations
-  Future<String> insertMealRecipe(MealRecipe mealRecipe) async {
-    final Database db = await database;
-    try {
-      await db.insert('meal_recipes', mealRecipe.toMap(),
-          conflictAlgorithm: ConflictAlgorithm.replace);
-      return mealRecipe.id;
-    } catch (e) {
-      throw GastrobrainException(
-          'Failed to insert meal recipe: ${e.toString()}');
-    }
-  }
-
-  Future<List<MealRecipe>> getMealRecipesForMeal(String mealId) async {
-    final Database db = await database;
-    try {
-      final List<Map<String, dynamic>> maps = await db.query(
-        'meal_recipes',
-        where: 'meal_id = ?',
-        whereArgs: [mealId],
-      );
-
-      return List.generate(maps.length, (i) => MealRecipe.fromMap(maps[i]));
-    } catch (e) {
-      throw GastrobrainException('Failed to get meal recipes: ${e.toString()}');
-    }
-  }
-
-  Future<int> updateMealRecipe(MealRecipe mealRecipe) async {
-    final Database db = await database;
-    return await db.update(
-      'meal_recipes',
-      mealRecipe.toMap(),
-      where: 'id = ?',
-      whereArgs: [mealRecipe.id],
-    );
-  }
-
-  Future<int> deleteMealRecipe(String id) async {
-    final Database db = await database;
-    return await db.delete(
-      'meal_recipes',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  /// Delete all meal recipes for a given meal
-  ///
-  /// Optionally excludes the primary dish if [excludePrimary] is true.
-  /// This is useful when updating side dishes while keeping the main dish.
-  ///
-  /// Returns the number of records deleted.
-  Future<int> deleteMealRecipesByMealId(String mealId, {bool excludePrimary = false}) async {
-    final Database db = await database;
-    try {
-      if (excludePrimary) {
-        // Delete only non-primary dishes
-        return await db.delete(
-          'meal_recipes',
-          where: 'meal_id = ? AND is_primary_dish = 0',
-          whereArgs: [mealId],
-        );
-      } else {
-        // Delete all meal recipes for this meal
-        return await db.delete(
-          'meal_recipes',
-          where: 'meal_id = ?',
-          whereArgs: [mealId],
-        );
-      }
-    } catch (e) {
-      throw GastrobrainException(
-          'Failed to delete meal recipes: ${e.toString()}');
-    }
-  }
-
-  // Helper methods
-  Future<List<Meal>> getRecentMeals({int limit = 10}) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'meals',
-      orderBy:
-          "date(cooked_at) DESC, CASE meal_type WHEN 'dinner' THEN 0 WHEN 'lunch' THEN 1 ELSE 2 END ASC",
-      limit: limit,
-    );
-    return List.generate(maps.length, (i) => Meal.fromMap(maps[i]));
-  }
-
-  /// Add a recipe to an existing meal
-  Future<String> addRecipeToMeal(String mealId, String recipeId,
-      {bool isPrimaryDish = false}) async {
-    final Database db = await database;
-    try {
-      // Check if meal exists
-      final mealExists = await db.query(
-        'meals',
-        where: 'id = ?',
-        whereArgs: [mealId],
-        limit: 1,
-      );
-
-      if (mealExists.isEmpty) {
-        throw NotFoundException('Meal not found with id: $mealId');
-      }
-
-      // Check if recipe exists
-      final recipeExists = await db.query(
-        'recipes',
-        where: 'id = ?',
-        whereArgs: [recipeId],
-        limit: 1,
-      );
-
-      if (recipeExists.isEmpty) {
-        throw NotFoundException('Recipe not found with id: $recipeId');
-      }
-
-      // Check if the junction already exists
-      final existing = await db.query(
-        'meal_recipes',
-        where: 'meal_id = ? AND recipe_id = ?',
-        whereArgs: [mealId, recipeId],
-        limit: 1,
-      );
-
-      if (existing.isNotEmpty) {
-        // If it exists and we're trying to set it as primary, update it
-        if (isPrimaryDish) {
-          // First remove primary status from any other recipes
-          await db.update(
-            'meal_recipes',
-            {'is_primary_dish': 0},
-            where: 'meal_id = ?',
-            whereArgs: [mealId],
-          );
-
-          // Then set this one as primary
-          await db.update(
-            'meal_recipes',
-            {'is_primary_dish': 1},
-            where: 'meal_id = ? AND recipe_id = ?',
-            whereArgs: [mealId, recipeId],
-          );
-        }
-
-        return existing.first['id'] as String;
-      }
-
-      // If setting as primary, first remove primary status from others
-      if (isPrimaryDish) {
-        await db.update(
-          'meal_recipes',
-          {'is_primary_dish': 0},
-          where: 'meal_id = ?',
-          whereArgs: [mealId],
-        );
-      }
-
-      // Create new junction record
-      final mealRecipe = MealRecipe(
-        mealId: mealId,
-        recipeId: recipeId,
-        isPrimaryDish: isPrimaryDish,
-      );
-
-      await db.insert('meal_recipes', mealRecipe.toMap());
-      return mealRecipe.id;
-    } catch (e) {
-      if (e is NotFoundException) {
-        rethrow;
-      }
-      throw GastrobrainException(
-          'Failed to add recipe to meal: ${e.toString()}');
-    }
-  }
-
-  /// Remove a recipe from a meal
-  Future<bool> removeRecipeFromMeal(String mealId, String recipeId) async {
-    final Database db = await database;
-    try {
-      final deleted = await db.delete(
-        'meal_recipes',
-        where: 'meal_id = ? AND recipe_id = ?',
-        whereArgs: [mealId, recipeId],
-      );
-
-      return deleted > 0;
-    } catch (e) {
-      throw GastrobrainException(
-          'Failed to remove recipe from meal: ${e.toString()}');
-    }
-  }
-
-  /// Set a recipe as the primary dish for a meal
-  Future<bool> setPrimaryRecipeForMeal(String mealId, String recipeId) async {
-    final Database db = await database;
-    try {
-      await db.transaction((txn) async {
-        // First reset all recipes for this meal to non-primary
-        await txn.update(
-          'meal_recipes',
-          {'is_primary_dish': 0},
-          where: 'meal_id = ?',
-          whereArgs: [mealId],
-        );
-
-        // Then set the specified recipe as primary
-        final updated = await txn.update(
-          'meal_recipes',
-          {'is_primary_dish': 1},
-          where: 'meal_id = ? AND recipe_id = ?',
-          whereArgs: [mealId, recipeId],
-        );
-
-        if (updated == 0) {
-          // Recipe wasn't found in this meal
-          // Add it as the primary recipe
-          final mealRecipe = MealRecipe(
-            mealId: mealId,
-            recipeId: recipeId,
-            isPrimaryDish: true,
-          );
-
-          await txn.insert('meal_recipes', mealRecipe.toMap());
-        }
-      });
-
-      return true;
-    } catch (e) {
-      throw GastrobrainException(
-          'Failed to set primary recipe: ${e.toString()}');
-    }
-  }
-
-  Future<DateTime?> getLastCookedDate(String recipeId) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> result = await db.query(
-      'meals',
-      columns: ['cooked_at'],
-      where: 'recipe_id = ?',
-      whereArgs: [recipeId],
-      orderBy: 'cooked_at DESC',
-      limit: 1,
-    );
-
-    if (result.isNotEmpty) {
-      return DateTime.parse(result.first['cooked_at']);
-    }
-    return null;
-  }
-
-  Future<int> getTimesCookedCount(String recipeId) async {
-    final Database db = await database;
-    final result = await db.rawQuery(
-      'SELECT COUNT(*) as count FROM meals WHERE recipe_id = ?',
-      [recipeId],
-    );
-    return Sqflite.firstIntValue(result) ?? 0;
-  }
-
-  Future<Map<String, int>> getAllMealCounts() async {
-    final db = await database;
-    final List<Map<String, dynamic>> results = await db.rawQuery('''
-      SELECT recipe_id, COUNT(*) as count
-      FROM (
-        -- Get counts from direct recipe_id references (legacy approach)
-        SELECT recipe_id FROM meals WHERE recipe_id IS NOT NULL
-        UNION ALL
-        -- Get counts from junction table records
-        SELECT recipe_id FROM meal_recipes
-      )
-      GROUP BY recipe_id
-    ''');
-
-    return Map.fromEntries(
-      results.map((row) => MapEntry(
-            row['recipe_id'] as String,
-            row['count'] as int,
-          )),
-    );
-  }
-
-  Future<Map<String, DateTime>> getAllLastCooked() async {
-    final db = await database;
-    final List<Map<String, dynamic>> results = await db.rawQuery('''
-      SELECT recipe_id, MAX(cooked_at) as last_cooked
-      FROM (
-        -- Get last cooked dates from direct recipe_id references (legacy approach)
-        SELECT m.recipe_id, m.cooked_at 
-        FROM meals m 
-        WHERE m.recipe_id IS NOT NULL
-        
-        UNION ALL
-        
-        -- Get last cooked dates from junction table records
-        SELECT mr.recipe_id, m.cooked_at 
-        FROM meal_recipes mr
-        JOIN meals m ON mr.meal_id = m.id
-      )
-      GROUP BY recipe_id
-    ''');
-
-    return Map.fromEntries(
-      results.map((row) => MapEntry(
-            row['recipe_id'] as String,
-            DateTime.parse(row['last_cooked'] as String),
-          )),
-    );
-  }
+  // Meal statistics — delegated to MealDao
+  Future<DateTime?> getLastCookedDate(String recipeId) => _mealDao.getLastCookedDate(recipeId);
+  Future<int> getTimesCookedCount(String recipeId) => _mealDao.getTimesCookedCount(recipeId);
+  Future<Map<String, int>> getAllMealCounts() => _mealDao.getAllMealCounts();
+  Future<Map<String, DateTime>> getAllLastCooked() => _mealDao.getAllLastCooked();
 
   Future<List<Recipe>> getRecipesWithSortAndFilter({
     String? sortBy,
