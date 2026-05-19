@@ -1885,6 +1885,14 @@
   "@migrationFailureWarning": {
     "description": "Aviso em SnackBar exibido ao iniciar o app quando uma migração anterior falhou"
   },
+  "migrationFatalErrorTitle": "Erro Crítico no Banco de Dados",
+  "@migrationFatalErrorTitle": {
+    "description": "Título exibido na tela de erro bloqueante quando o rollback do banco de dados também falhou"
+  },
+  "migrationFatalErrorMessage": "O app encontrou um erro crítico no banco de dados e não conseguiu se recuperar automaticamente. Reinstale o app ou entre em contato com o suporte.",
+  "@migrationFatalErrorMessage": {
+    "description": "Mensagem na tela de erro fatal bloqueante — sem jargão técnico, sem rastreamentos de pilha"
+  },
   "buttonDismiss": "Dispensar",
   "@buttonDismiss": {
     "description": "Botão para dispensar um erro ou mensagem"

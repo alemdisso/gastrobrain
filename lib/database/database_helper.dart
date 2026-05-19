@@ -96,45 +96,48 @@ class DatabaseHelper {
   }
 
   /// Initialize the migration system
-  /// 
-  /// This sets up the migration runner and determines if we need to run migrations.
-  /// For existing databases, we'll transition them to use the migration system.
+  ///
+  /// Sets up the migration runner and runs pending migrations. On failure,
+  /// attempts to rollback to the last known good schema version:
+  ///   - Rollback succeeds → records 'warning'; app launches on previous schema.
+  ///   - Rollback fails    → records 'fatal'; MigrationErrorScreen shown on next launch.
   Future<void> _initializeMigrationSystem(Database db) async {
     try {
       await _ensureMigrationErrorsTable(db);
-
-      // Create migration runner
       _migrationRunner = MigrationRunner(db, _migrations);
-
-      // Initialize migration system (creates schema_migrations table)
       await _migrationRunner!.initialize();
-
-      // Check if this is an existing database without migration tracking
       await _handleLegacyDatabase(db);
-
-      // Run any pending migrations
-      if (await _migrationRunner!.needsMigration()) {
-        print('Running pending migrations...');
-        final results = await _migrationRunner!.runPendingMigrations();
-
-        for (final result in results) {
-          print('✓ ${result.toString()}');
-        }
-      }
-
     } catch (e, stack) {
-      // Log the full error and stack so production failures are diagnosable.
-      // We intentionally do not rethrow: a migration failure must not prevent
-      // app launch. The schema inspector in developer tools shows the current
-      // state, and the next launch will retry pending migrations.
-      //
-      // runPendingMigrations() rethrows a MigrationException on failure, so the
-      // loop above is only reached when all migrations succeed. Record the
-      // failed migration version when available.
-      print('MIGRATION ERROR — app will continue with current schema: $e');
+      print('MIGRATION SETUP ERROR: $e');
       print('Stack trace:\n$stack');
       final failedVersion = e is MigrationException ? e.version : null;
-      await _recordMigrationFailure(db, failedVersion, e.toString());
+      await _recordMigrationFailure(db, failedVersion, e.toString(), 'warning');
+      return;
+    }
+
+    if (!await _migrationRunner!.needsMigration()) {
+      // No pending migrations — clear any errors from previous launches.
+      await _acknowledgeAllMigrationErrors(db);
+      return;
+    }
+
+    final versionBeforeMigrations = await _migrationRunner!.getCurrentVersion();
+
+    try {
+      print('Running pending migrations...');
+      final results = await _migrationRunner!.runPendingMigrations();
+      for (final result in results) {
+        print('✓ ${result.toString()}');
+      }
+      // All migrations succeeded — clear errors from previous failed launches.
+      await _acknowledgeAllMigrationErrors(db);
+    } catch (e, stack) {
+      print('MIGRATION ERROR — attempting rollback: $e');
+      print('Stack trace:\n$stack');
+      final failedVersion = e is MigrationException ? e.version : null;
+      await _attemptRollbackAndRecord(
+        db, failedVersion, e.toString(), versionBeforeMigrations,
+      );
     }
   }
 
@@ -145,24 +148,71 @@ class DatabaseHelper {
         failed_version INTEGER,
         error_message TEXT NOT NULL,
         occurred_at TEXT NOT NULL,
-        acknowledged INTEGER NOT NULL DEFAULT 0
+        acknowledged INTEGER NOT NULL DEFAULT 0,
+        severity TEXT NOT NULL DEFAULT 'warning'
       )
     ''');
+    // For databases created before 0.2.12 (lacking the severity column), add it.
+    // ALTER TABLE fails if the column already exists, so guard with a PRAGMA check.
+    final cols = await db.rawQuery('PRAGMA table_info(schema_migrations_errors)');
+    if (!cols.any((r) => r['name'] == 'severity')) {
+      await db.execute(
+        "ALTER TABLE schema_migrations_errors ADD COLUMN severity TEXT NOT NULL DEFAULT 'warning'",
+      );
+    }
   }
 
   Future<void> _recordMigrationFailure(
     Database db,
     int? version,
     String message,
+    String severity,
   ) async {
     try {
       await db.rawInsert(
         'INSERT INTO schema_migrations_errors '
-        '(failed_version, error_message, occurred_at) VALUES (?, ?, ?)',
-        [version, message, DateTime.now().toIso8601String()],
+        '(failed_version, error_message, occurred_at, severity) VALUES (?, ?, ?, ?)',
+        [version, message, DateTime.now().toIso8601String(), severity],
       );
     } catch (_) {
       // Recording failed — nothing further we can do at this point.
+    }
+  }
+
+  Future<void> _acknowledgeAllMigrationErrors(Database db) async {
+    try {
+      await db.execute(
+        'UPDATE schema_migrations_errors SET acknowledged = 1 WHERE acknowledged = 0',
+      );
+    } catch (_) {
+      // Best-effort.
+    }
+  }
+
+  /// Attempts rollback to [versionBeforeMigrations]. Records 'warning' on rollback
+  /// success and 'fatal' when rollback itself fails (leaving schema undefined).
+  ///
+  /// No-op down() constraint: migrations such as #107 have an empty down() that
+  /// does not throw — rollback proceeds successfully even though their data-level
+  /// changes persist. This is by design; irreversible data migrations are safe to
+  /// keep. Only a throwing down() causes the rollback to be treated as failed.
+  Future<void> _attemptRollbackAndRecord(
+    Database db,
+    int? failedVersion,
+    String errorMessage,
+    int versionBeforeMigrations,
+  ) async {
+    try {
+      final currentVersion = await _migrationRunner!.getCurrentVersion();
+      if (currentVersion > versionBeforeMigrations) {
+        await _migrationRunner!.rollbackToVersion(versionBeforeMigrations);
+      }
+      // Rollback succeeded (or no partial state to rollback) — schema is consistent.
+      await _recordMigrationFailure(db, failedVersion, errorMessage, 'warning');
+    } catch (rollbackError, rollbackStack) {
+      print('ROLLBACK FAILED — schema is in undefined state: $rollbackError');
+      print('Stack trace:\n$rollbackStack');
+      await _recordMigrationFailure(db, failedVersion, errorMessage, 'fatal');
     }
   }
 
@@ -171,10 +221,24 @@ class DatabaseHelper {
       final db = await database;
       await _ensureMigrationErrorsTable(db);
       final rows = await db.rawQuery(
-        'SELECT COUNT(*) as count FROM schema_migrations_errors WHERE acknowledged = 0',
+        "SELECT COUNT(*) as count FROM schema_migrations_errors "
+        "WHERE severity = 'warning' AND acknowledged = 0",
       );
-      final count = rows.first['count'] as int;
-      return count > 0;
+      return (rows.first['count'] as int) > 0;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> hasFatalMigrationError() async {
+    try {
+      final db = await database;
+      await _ensureMigrationErrorsTable(db);
+      final rows = await db.rawQuery(
+        "SELECT COUNT(*) as count FROM schema_migrations_errors "
+        "WHERE severity = 'fatal' AND acknowledged = 0",
+      );
+      return (rows.first['count'] as int) > 0;
     } catch (_) {
       return false;
     }
@@ -184,7 +248,8 @@ class DatabaseHelper {
     try {
       final db = await database;
       await db.execute(
-        'UPDATE schema_migrations_errors SET acknowledged = 1 WHERE acknowledged = 0',
+        "UPDATE schema_migrations_errors SET acknowledged = 1 "
+        "WHERE severity = 'warning' AND acknowledged = 0",
       );
     } catch (_) {
       // Best-effort acknowledgement.
