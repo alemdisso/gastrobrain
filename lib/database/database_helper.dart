@@ -43,7 +43,9 @@ import '../core/repositories/base_repository.dart';
 import 'daos/ingredient_dao.dart';
 import 'daos/meal_dao.dart';
 import 'daos/meal_plan_dao.dart';
+import 'daos/recommendation_dao.dart';
 import 'daos/recipe_dao.dart';
+import 'daos/shopping_list_dao.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -57,7 +59,9 @@ class DatabaseHelper {
   late final IngredientDao _ingredientDao = IngredientDao(() => database);
   late final MealDao _mealDao = MealDao(() => database);
   late final MealPlanDao _mealPlanDao = MealPlanDao(() => database);
+  late final RecommendationDao _recommendationDao = RecommendationDao(() => database);
   late final RecipeDao _recipeDao = RecipeDao(() => database);
+  late final ShoppingListDao _shoppingListDao = ShoppingListDao(() => database);
 
   /// Get all available migrations in order
   static List<Migration> get _migrations => [
@@ -812,102 +816,45 @@ class DatabaseHelper {
 
   Future<int> deleteRecipeIngredient(String id) => _ingredientDao.deleteRecipeIngredient(id);
 
-  /// Save recommendation results to history
-  Future<String> saveRecommendationHistory(
-      RecommendationResults results, String contextType,
-      {DateTime? targetDate, String? mealType}) async {
-    final id = IdGenerator.generateId();
-    final now = DateTime.now();
+  // Recommendation history — simple ops delegated to RecommendationDao
+  Future<String> saveRecommendationHistory(RecommendationResults results, String contextType,
+          {DateTime? targetDate, String? mealType}) =>
+      _recommendationDao.saveRecommendationHistory(results, contextType,
+          targetDate: targetDate, mealType: mealType);
 
-    final db = await database;
-    await db.insert('recommendation_history', {
-      'id': id,
-      'result_data': jsonEncode(results.toJson()),
-      'created_at': now.toIso8601String(),
-      'context_type': contextType,
-      'target_date': targetDate?.toIso8601String(),
-      'meal_type': mealType,
-      'user_id': null, // For future multi-user support
-    });
-
-    return id;
-  }
-
-  /// Get recommendation history entries
   Future<List<Map<String, dynamic>>> getRecommendationHistory({
     int limit = 10,
     String? contextType,
     DateTime? startDate,
     DateTime? endDate,
-  }) async {
-    final db = await database;
+  }) =>
+      _recommendationDao.getRecommendationHistory(
+          limit: limit, contextType: contextType, startDate: startDate, endDate: endDate);
 
-    // Build query
-    String query = 'SELECT * FROM recommendation_history';
-    List<dynamic> args = [];
+  Future<int> cleanupRecommendationHistory({int daysToKeep = 14}) =>
+      _recommendationDao.cleanupRecommendationHistory(daysToKeep: daysToKeep);
 
-    List<String> conditions = [];
-    if (contextType != null) {
-      conditions.add('context_type = ?');
-      args.add(contextType);
-    }
-
-    if (startDate != null) {
-      conditions.add('created_at >= ?');
-      args.add(startDate.toIso8601String());
-    }
-
-    if (endDate != null) {
-      conditions.add('created_at <= ?');
-      args.add(endDate.toIso8601String());
-    }
-
-    if (conditions.isNotEmpty) {
-      query += ' WHERE ${conditions.join(' AND ')}';
-    }
-
-    query += ' ORDER BY created_at DESC LIMIT ?';
-    args.add(limit);
-
-    return await db.rawQuery(query, args);
-  }
-
-  /// Get a specific recommendation history entry
+  // getRecommendationById and updateRecommendationResponse stay here because
+  // RecommendationResults.fromJson requires the full DatabaseHelper for recipe lookups.
   Future<RecommendationResults?> getRecommendationById(String id) async {
-    final db = await database;
-    final maps = await db.query(
-      'recommendation_history',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-
-    if (maps.isEmpty) return null;
-
-    final resultData = maps.first['result_data'] as String;
-    final json = jsonDecode(resultData) as Map<String, dynamic>;
-
-    return await RecommendationResults.fromJson(json, this);
+    final rawData = await _recommendationDao.getRawRecommendationById(id);
+    if (rawData == null) return null;
+    final map = jsonDecode(rawData) as Map<String, dynamic>;
+    return await RecommendationResults.fromJson(map, this);
   }
 
-  /// Update user response for a recommendation
   Future<bool> updateRecommendationResponse(
     String historyId,
     String recipeId,
     UserResponse response,
   ) async {
-    final db = await database;
-
-    // Load the existing results
     final results = await getRecommendationById(historyId);
     if (results == null) return false;
 
-    // Create a new list of recommendations with the updated response
     final updatedRecommendations = <RecipeRecommendation>[];
     bool found = false;
-
     for (final rec in results.recommendations) {
       if (rec.recipe.id == recipeId) {
-        // Create a new recommendation with the updated response
         updatedRecommendations.add(RecipeRecommendation(
           recipe: rec.recipe,
           totalScore: rec.totalScore,
@@ -918,44 +865,20 @@ class DatabaseHelper {
         ));
         found = true;
       } else {
-        // Keep the original recommendation
         updatedRecommendations.add(rec);
       }
     }
-
     if (!found) return false;
 
-    // Create new results with the updated recommendations
     final updatedResults = RecommendationResults(
       recommendations: updatedRecommendations,
       totalEvaluated: results.totalEvaluated,
       queryParameters: results.queryParameters,
       generatedAt: results.generatedAt,
     );
-
-    // Save the updated results
-    await db.update(
-      'recommendation_history',
-      {
-        'result_data': jsonEncode(updatedResults.toJson()),
-      },
-      where: 'id = ?',
-      whereArgs: [historyId],
-    );
-
+    await _recommendationDao.updateRecommendationResultData(
+        historyId, jsonEncode(updatedResults.toJson()));
     return true;
-  }
-
-  /// Clear old recommendation history
-  Future<int> cleanupRecommendationHistory({int daysToKeep = 14}) async {
-    final db = await database;
-    final cutoffDate = DateTime.now().subtract(Duration(days: daysToKeep));
-
-    return await db.delete(
-      'recommendation_history',
-      where: 'created_at < ?',
-      whereArgs: [cutoffDate.toIso8601String()],
-    );
   }
 
   // === MIGRATION MANAGEMENT METHODS ===
@@ -1116,116 +1039,16 @@ class DatabaseHelper {
     await database; // This will trigger _initDatabase()
   }
 
-  // ============================================
-  // SHOPPING LIST OPERATIONS
-  // ============================================
-
-  /// Insert a new shopping list
-  Future<int> insertShoppingList(ShoppingList shoppingList) async {
-    final db = await database;
-    return await db.insert('shopping_lists', shoppingList.toMap());
-  }
-
-  /// Get a shopping list by ID
-  Future<ShoppingList?> getShoppingList(int id) async {
-    final db = await database;
-    final results = await db.query(
-      'shopping_lists',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-
-    if (results.isEmpty) return null;
-    return ShoppingList.fromMap(results.first);
-  }
-
-  /// Get a shopping list for a specific date range
-  Future<ShoppingList?> getShoppingListForDateRange(
-    DateTime startDate,
-    DateTime endDate,
-  ) async {
-    final db = await database;
-    final startMillis = startDate.millisecondsSinceEpoch;
-    final endMillis = endDate.millisecondsSinceEpoch;
-
-    final results = await db.query(
-      'shopping_lists',
-      where: 'start_date = ? AND end_date = ?',
-      whereArgs: [startMillis, endMillis],
-      orderBy: 'date_created DESC',
-      limit: 1,
-    );
-
-    if (results.isEmpty) return null;
-    return ShoppingList.fromMap(results.first);
-  }
-
-  /// Delete a shopping list
-  Future<void> deleteShoppingList(int id) async {
-    final db = await database;
-    await db.delete(
-      'shopping_lists',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-    // Note: shopping_list_items will be cascade deleted due to foreign key
-  }
-
-  // ============================================
-  // SHOPPING LIST ITEM OPERATIONS
-  // ============================================
-
-  /// Insert a new shopping list item
-  Future<int> insertShoppingListItem(ShoppingListItem item) async {
-    final db = await database;
-    return await db.insert('shopping_list_items', item.toMap());
-  }
-
-  /// Get a shopping list item by ID
-  Future<ShoppingListItem?> getShoppingListItem(int id) async {
-    final db = await database;
-    final results = await db.query(
-      'shopping_list_items',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-
-    if (results.isEmpty) return null;
-    return ShoppingListItem.fromMap(results.first);
-  }
-
-  /// Get all items for a shopping list
-  Future<List<ShoppingListItem>> getShoppingListItems(int shoppingListId) async {
-    final db = await database;
-    final results = await db.query(
-      'shopping_list_items',
-      where: 'shopping_list_id = ?',
-      whereArgs: [shoppingListId],
-    );
-
-    return results.map((map) => ShoppingListItem.fromMap(map)).toList();
-  }
-
-  /// Update a shopping list item
-  Future<void> updateShoppingListItem(ShoppingListItem item) async {
-    final db = await database;
-    await db.update(
-      'shopping_list_items',
-      item.toMap(),
-      where: 'id = ?',
-      whereArgs: [item.id],
-    );
-  }
-
-  /// Delete a shopping list item
-  Future<void> deleteShoppingListItem(int id) async {
-    final db = await database;
-    await db.delete(
-      'shopping_list_items',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
+  // Shopping list — delegated to ShoppingListDao
+  Future<int> insertShoppingList(ShoppingList shoppingList) => _shoppingListDao.insertShoppingList(shoppingList);
+  Future<ShoppingList?> getShoppingList(int id) => _shoppingListDao.getShoppingList(id);
+  Future<ShoppingList?> getShoppingListForDateRange(DateTime startDate, DateTime endDate) => _shoppingListDao.getShoppingListForDateRange(startDate, endDate);
+  Future<void> deleteShoppingList(int id) => _shoppingListDao.deleteShoppingList(id);
+  Future<int> insertShoppingListItem(ShoppingListItem item) => _shoppingListDao.insertShoppingListItem(item);
+  Future<ShoppingListItem?> getShoppingListItem(int id) => _shoppingListDao.getShoppingListItem(id);
+  Future<List<ShoppingListItem>> getShoppingListItems(int shoppingListId) => _shoppingListDao.getShoppingListItems(shoppingListId);
+  Future<void> updateShoppingListItem(ShoppingListItem item) => _shoppingListDao.updateShoppingListItem(item);
+  Future<void> deleteShoppingListItem(int id) => _shoppingListDao.deleteShoppingListItem(id);
 
   /// Get the database file path
   ///
