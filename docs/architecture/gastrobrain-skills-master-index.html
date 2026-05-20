@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gastrobrain — Skills Master Index</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --amber:         #d97706;
+      --amber-light:   #fef3c7;
+      --amber-mid:     #fde68a;
+      --green:         #065f46;
+      --green-light:   #d1fae5;
+      --blue:          #1e40af;
+      --blue-light:    #dbeafe;
+      --indigo:        #3730a3;
+      --indigo-light:  #e0e7ff;
+      --purple:        #5b21b6;
+      --purple-light:  #ede9fe;
+      --rose:          #9f1239;
+      --rose-light:    #ffe4e6;
+      --teal:          #0f766e;
+      --teal-light:    #ccfbf1;
+      --gray:          #6b7280;
+      --gray-light:    #f3f4f6;
+      --gray-border:   #e5e7eb;
+      --text:          #111827;
+      --text-muted:    #6b7280;
+      --radius:        8px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f9fafb;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .layout { display: flex; min-height: 100vh; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 230px;
+      flex-shrink: 0;
+      background: #1f2937;
+      color: #d1d5db;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 1.5rem 0;
+    }
+    .sidebar-logo {
+      padding: 0 1.25rem 1.25rem;
+      border-bottom: 1px solid #374151;
+      margin-bottom: 1rem;
+    }
+    .sidebar-logo span { font-weight: 800; font-size: 1rem; color: var(--amber); }
+    .sidebar-logo small { display: block; font-size: 0.7rem; color: #6b7280; margin-top: 0.1rem; }
+    .nav-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #4b5563;
+      font-weight: 700;
+      padding: 0.6rem 1.25rem 0.2rem;
+    }
+    .nav-link {
+      display: block;
+      padding: 0.32rem 1.25rem;
+      font-size: 0.78rem;
+      color: #9ca3af;
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .nav-link:hover { color: #f3f4f6; border-left-color: var(--amber); background: #111827; }
+    .nav-sub {
+      display: block;
+      padding: 0.22rem 1.25rem 0.22rem 2rem;
+      font-size: 0.73rem;
+      color: #6b7280;
+      text-decoration: none;
+    }
+    .nav-sub:hover { color: #9ca3af; }
+
+    /* ── Main ── */
+    .main { flex: 1; padding: 2rem 2.5rem; max-width: 880px; }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 2rem 2.5rem;
+      margin-bottom: 2rem;
+    }
+    .header h1 { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.5px; }
+    .header .subtitle { opacity: 0.8; margin-top: 0.25rem; font-size: 0.9rem; }
+    .header .chips { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem; }
+    .chip {
+      background: rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 0.2rem 0.7rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    /* ── Section title ── */
+    .section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 2.25rem 0 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      scroll-margin-top: 1rem;
+    }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--gray-border); }
+    .section-icon {
+      width: 1.6rem; height: 1.6rem;
+      border-radius: 6px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; flex-shrink: 0;
+    }
+
+    /* ── Tier label ── */
+    .tier-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      font-weight: 700;
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+      display: inline-block;
+      margin-bottom: 1rem;
+    }
+
+    /* ── Skill card ── */
+    .skill-card {
+      background: #fff;
+      border: 1px solid var(--gray-border);
+      border-radius: var(--radius);
+      margin-bottom: 0.85rem;
+      overflow: hidden;
+    }
+    .skill-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1.1rem;
+      border-bottom: 1px solid var(--gray-border);
+    }
+    .skill-name { font-weight: 700; font-size: 0.95rem; flex: 1; }
+    .skill-invoke {
+      font-family: monospace;
+      font-size: 0.75rem;
+      background: var(--gray-light);
+      border: 1px solid var(--gray-border);
+      border-radius: 4px;
+      padding: 0.15rem 0.5rem;
+      color: var(--purple);
+    }
+    .badge-impl { background: var(--green-light); color: var(--green); border-radius: 20px; padding: 0.15rem 0.55rem; font-size: 0.7rem; font-weight: 700; white-space: nowrap; }
+    .badge-planned { background: var(--gray-light); color: var(--gray); border-radius: 20px; padding: 0.15rem 0.55rem; font-size: 0.7rem; font-weight: 700; white-space: nowrap; }
+
+    .skill-body { padding: 0.6rem 1.1rem 0.85rem; display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .skill-triggers { flex: 1; min-width: 200px; }
+    .skill-triggers-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 700; margin-bottom: 0.35rem; }
+    .trigger-pill {
+      display: inline-block;
+      background: var(--amber-light);
+      color: #92400e;
+      border-radius: 20px;
+      padding: 0.12rem 0.55rem;
+      font-size: 0.72rem;
+      margin: 0.1rem 0.1rem 0.1rem 0;
+    }
+    .skill-purpose { flex: 2; min-width: 240px; }
+    .skill-purpose-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 700; margin-bottom: 0.35rem; }
+    .skill-purpose ul { list-style: none; padding: 0; }
+    .skill-purpose ul li { font-size: 0.8rem; color: var(--text-muted); padding: 0.18rem 0; display: flex; gap: 0.35rem; }
+    .skill-purpose ul li::before { content: "›"; color: var(--amber); font-weight: 700; flex-shrink: 0; }
+
+    .skill-location { font-size: 0.72rem; color: var(--text-muted); padding: 0.5rem 1.1rem; background: var(--gray-light); border-top: 1px solid var(--gray-border); font-family: monospace; }
+
+    /* ── Workflow diagram ── */
+    .workflow {
+      background: #fff;
+      border: 1px solid var(--gray-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    .workflow-step {
+      display: flex;
+      align-items: stretch;
+      border-bottom: 1px solid var(--gray-border);
+    }
+    .workflow-step:last-child { border-bottom: none; }
+    .workflow-step-icon {
+      width: 2.75rem;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+    .workflow-step-body { padding: 0.65rem 1rem; flex: 1; }
+    .workflow-step-title { font-weight: 700; font-size: 0.85rem; }
+    .workflow-step-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.1rem; }
+    .workflow-step-cmd { font-family: monospace; font-size: 0.78rem; color: var(--purple); font-weight: 600; }
+    .workflow-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gray);
+      font-size: 1rem;
+      padding: 0.2rem 0;
+      background: var(--gray-light);
+    }
+
+    /* ── Quick reference table ── */
+    .ref-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--gray-border); margin-bottom: 1rem; }
+    .ref-table th { background: var(--gray-light); text-align: left; padding: 0.55rem 1rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600; }
+    .ref-table td { padding: 0.5rem 1rem; border-top: 1px solid var(--gray-border); font-size: 0.8rem; vertical-align: top; }
+    .ref-table td:first-child { font-family: monospace; font-weight: 700; color: var(--purple); white-space: nowrap; }
+    .ref-table td:nth-child(2) { color: var(--text-muted); }
+    .ref-table td:nth-child(3) { color: var(--text); }
+    .ref-table tr:hover td { background: #fafafa; }
+
+    /* ── Metric cards ── */
+    .metric-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .metric-card {
+      background: #fff;
+      border: 1px solid var(--gray-border);
+      border-radius: var(--radius);
+      padding: 0.85rem 1.1rem;
+      flex: 1; min-width: 140px;
+    }
+    .metric-card .num { font-size: 1.5rem; font-weight: 800; color: var(--purple); line-height: 1.1; }
+    .metric-card .lbl { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem; }
+
+    /* ── Tips ── */
+    .tip-list { background: #fff; border: 1px solid var(--gray-border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1rem; }
+    .tip-item { display: flex; gap: 0.75rem; padding: 0.7rem 1.1rem; border-top: 1px solid var(--gray-border); font-size: 0.83rem; align-items: flex-start; }
+    .tip-item:first-child { border-top: none; }
+    .tip-dot { width: 1.4rem; height: 1.4rem; border-radius: 50%; background: var(--purple-light); color: var(--purple); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; margin-top: 0.1rem; }
+    .tip-item p { color: var(--text-muted); font-size: 0.8rem; margin-top: 0.1rem; }
+
+    /* ── Success metrics ── */
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+    .metric-box { background: #fff; border: 1px solid var(--gray-border); border-radius: var(--radius); padding: 0.75rem 1rem; }
+    .metric-box .skill-ref { font-family: monospace; font-size: 0.75rem; font-weight: 700; color: var(--purple); }
+    .metric-box .outcome { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+    /* ── IC ── */
+    .ic { font-family: monospace; background: var(--gray-light); border: 1px solid var(--gray-border); border-radius: 4px; padding: 0.05rem 0.35rem; font-size: 0.85em; }
+
+    /* ── Footer ── */
+    .footer { text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 3rem; padding: 1.5rem 0; border-top: 1px solid var(--gray-border); }
+
+    @media (max-width: 720px) {
+      .sidebar { display: none; }
+      .main { padding: 1rem; max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <span>Gastrobrain</span>
+      <small>Skills Master Index</small>
+    </div>
+
+    <div class="nav-label">Overview</div>
+    <a class="nav-link" href="#overview">Ecosystem &amp; Tiers</a>
+    <a class="nav-link" href="#metrics">At a Glance</a>
+
+    <div class="nav-label">Tier 1 — Planning</div>
+    <a class="nav-link" href="#issue-creator">Issue Creator</a>
+    <a class="nav-link" href="#sprint-planner">Sprint Planner</a>
+    <a class="nav-link" href="#issue-roadmap">Issue Roadmap</a>
+    <a class="nav-link" href="#issue-analysis">Issue Analysis</a>
+    <a class="nav-link" href="#product-strategy">Product Strategy</a>
+    <a class="nav-link" href="#ux-design">UX Design</a>
+
+    <div class="nav-label">Tier 2 — Implementation</div>
+    <a class="nav-link" href="#senior-dev">Senior Dev Implementation</a>
+    <a class="nav-link" href="#testing-impl">Testing Implementation</a>
+    <a class="nav-link" href="#db-migration">Database Migration</a>
+    <a class="nav-link" href="#ui-polish">UI Polish</a>
+    <a class="nav-link" href="#refactoring">Refactoring</a>
+
+    <div class="nav-label">Tier 3 — Quality</div>
+    <a class="nav-link" href="#code-review">Code Review</a>
+    <a class="nav-link" href="#qa-manager">QA Manager</a>
+    <a class="nav-link" href="#doc-master">Documentation Master</a>
+
+    <div class="nav-label">Reference</div>
+    <a class="nav-link" href="#workflow">Issue Workflow Map</a>
+    <a class="nav-link" href="#quick-ref">Quick Reference</a>
+    <a class="nav-link" href="#guidelines">Guidelines</a>
+  </nav>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Header -->
+    <div class="header">
+      <h1>Gastrobrain — Skills Master Index</h1>
+      <div class="subtitle">Agent Skills ecosystem for the complete development workflow</div>
+      <div class="chips">
+        <span class="chip">13 skills implemented</span>
+        <span class="chip">3 tiers</span>
+        <span class="chip">Checkpoint-driven</span>
+        <span class="chip">May 2026</span>
+      </div>
+    </div>
+
+    <!-- Overview -->
+    <div class="section-title" id="overview">
+      <span class="section-icon" style="background:var(--purple-light);color:var(--purple);">⬡</span>
+      Ecosystem Architecture
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:0.75rem; margin-bottom:1.5rem;">
+      <div style="background:#fff; border:1px solid var(--gray-border); border-radius:var(--radius); padding:1rem; border-top:3px solid var(--amber);">
+        <div style="font-weight:700; font-size:0.85rem; margin-bottom:0.4rem;">Tier 1 — Planning &amp; Strategy</div>
+        <div style="font-size:0.78rem; color:var(--text-muted);">High-level planning, issue preparation, and strategic alignment before writing any code.</div>
+        <div style="margin-top:0.6rem; font-size:0.72rem; color:var(--amber); font-weight:700;">6 skills</div>
+      </div>
+      <div style="background:#fff; border:1px solid var(--gray-border); border-radius:var(--radius); padding:1rem; border-top:3px solid var(--blue);">
+        <div style="font-weight:700; font-size:0.85rem; margin-bottom:0.4rem;">Tier 2 — Implementation</div>
+        <div style="font-size:0.78rem; color:var(--text-muted);">Phase-by-phase implementation with checkpoint verification at each step.</div>
+        <div style="margin-top:0.6rem; font-size:0.72rem; color:var(--blue); font-weight:700;">5 skills + 1 coverage gap</div>
+      </div>
+      <div style="background:#fff; border:1px solid var(--gray-border); border-radius:var(--radius); padding:1rem; border-top:3px solid var(--green);">
+        <div style="font-weight:700; font-size:0.85rem; margin-bottom:0.4rem;">Tier 3 — Quality &amp; Finalization</div>
+        <div style="font-size:0.78rem; color:var(--text-muted);">Review, test suite health, documentation, and merge verification.</div>
+        <div style="margin-top:0.6rem; font-size:0.72rem; color:var(--green); font-weight:700;">3 skills</div>
+      </div>
+    </div>
+
+    <!-- Metrics -->
+    <div class="section-title" id="metrics">
+      <span class="section-icon" style="background:var(--amber-light);color:var(--amber);">★</span>
+      At a Glance
+    </div>
+    <div class="metric-row">
+      <div class="metric-card"><div class="num">13</div><div class="lbl">Skills implemented</div></div>
+      <div class="metric-card"><div class="num">4–7</div><div class="lbl">Checkpoints per skill</div></div>
+      <div class="metric-card"><div class="num">30</div><div class="lbl">pts/week cruising velocity</div></div>
+      <div class="metric-card"><div class="num">~20</div><div class="lbl">pts/week discovery mode</div></div>
+      <div class="metric-card"><div class="num">~36</div><div class="lbl">pts/week execution mode</div></div>
+    </div>
+
+    <!-- ── TIER 1 ── -->
+    <div class="section-title" id="tier1">
+      <span class="section-icon" style="background:var(--amber-light);color:var(--amber);">1</span>
+      Tier 1 — Planning &amp; Strategy
+    </div>
+
+    <!-- Issue Creator -->
+    <div class="skill-card" id="issue-creator">
+      <div class="skill-header">
+        <div class="skill-name">Issue Creator ⭐</div>
+        <span class="skill-invoke">/gastrobrain-issue-creator</span>
+        <span class="badge-impl">✓ Implemented</span>
+      </div>
+      <div class="skill-body">
+        <div class="skill-triggers">
+          <div class="skill-triggers-label">Triggers</div>
+          <span class="trigger-pill">"Create an issue for…"</span>
+          <span class="trigger-pill">"I found a bug…"</span>
+          <span class="trigger-pill">"Feature request…"</span>
+          <span class="trigger-pill">User reports problem</span>
+        </div>
+        <div class="skill-purpose">
+          <div class="skill-purpose-label">Purpose</div>
+          <ul>
+            <li>Transform informal reports into structured GitHub issues</li>
+            <li>Interactive 6-checkpoint process for accuracy</li>
+            <li>Estimate story points with reasoning</li>
+            <li>Detect and reference related issues</li>
+            <li>Generate exact GitHub CLI commands</li>
+          </ul>
+        </div>
+      </div>
+      <div class="skill-location">.claude/skills/gastrobrain-issue-creator/</div>
+    </div>
+
+    <!-- Sprint Planner -->
+    <div class="skill-card" id="sprint-planner">
+      <div class="skill-header">
+        <div class="skill-name">Sprint Planner</div>
+        <span class="skill-invoke">/gastrobrain-sprint-planner</span>
+        <span class="badge-impl">✓ Implemented</span>
+      </div>
+      <div class="skill-body">
+        <div class="skill-triggers">
+          <div class="skill-triggers-label">Triggers</div>
+          <span class="trigger-pill">"Plan sprint 0.X.Y"</span>
+          <span class="trigger-pill">"Plan next sprint"</span>
+          <span class="trigger-pill">"Sprint retrospective"</span>
+        </div>
+        <div class="skill-purpose">
+          <div class="skill-purpose-label">Purpose</div>
+          <ul>
+            <li>Analyze GitHub issues from Project #3 (limit 500)</li>
+            <li>Apply Sprint Estimation Diary insights</li>
+            <li>Realistic capacity planning (~30 pts/week cruising)</li>
+            <li>Risk assessment and sequencing strategy</li>
+            <li>Structured retrospectives with developer interviews</li>
+            <li>Generate Sprint Estimation Diary entries</li>
+          </ul>
+        </div>
+      </div>
+      <div class="skill-location">.claude/skills/gastrobrain-sprint-planner/</div>
+    </div>
+
+    <!-- Issue Roadmap -->
+    <div class="skill-card" id="issue-roadmap">
+      <div class="skill-header">
+        <div class="skill-name">Issue Roadmap</div>
+        <span class="skill-invoke">/gastrobrain-issue-roadmap</span>
+        <span class="badge-impl">✓ Implemented</span>
+      </div>
+      <div class="skill-body">
+        <div class="skill-triggers">
+          <div class="skill-triggers-label">Triggers</div>
+          <span class="trigger-pill">"I want to deal with #XXX"</span>
+          <span class="trigger-pill">"Create roadmap for #XXX"</span>
+          <span class="trigger-pill">"Plan issue #XXX"</span>
+        </div>
+        <div class="skill-purpose">
+          <div class="skill-purpose-label">Purpose</div>
+          <ul>
+            <li>Fetch issue details from GitHub</li>
+            <li>Generate 4-phase roadmap (Analysis → Implementation → Testing → Documentation)</li>
+            <li>Identify files to modify</li>
+            <li>Localization and database change checklists</li>
+            <li>Testing requirements by issue type</li>
+          </ul>
+        </div>
+      </div>
+      <div class="skill-location">.claude/skills/gastrobrain-issue-roadmap/</div>
+    </div>
+
+    <!-- Issue Analysis -->
+    <div class="skill-card" id="issue-analysis">
+      <div class="skill-header">
+        <div class="skill-name">Issue Analysis</div>
+        <span class="skill-invoke">/gastrobrain-issue-analysis</span>
+        <span class="badge-impl">✓ Implemented</span>
+      </div>
+      <div class="skill-body">
+        <div class="skill-triggers">
+          <div class="skill-triggers-label">Triggers</div>
+          <span class="trigger-pill">"Analyze #XXX"</span>
+          <span class="trigger-pill">"Phase 1 for #XXX"</span>
+          <span class="trigger-pill">"Understand scope of #XXX"</span>
+        </div>
+        <div class="skill-purpose">
+          <div class="skill-purpose-label">Purpose</div>
+          <ul>
+            <li>Execute Phase 1 (Analysis &amp; Understanding) of issue roadmaps</li>
+            <li>5-checkpoint: understand scope → explore code → identify risks → design approach → analysis doc</li>
+            <li>Distinct from Issue Roadmap: roadmap plans the work; analysis understands the code</li>
+          </ul>
+        </div>
+      </div>
+      <div class="skill-location">.claude/skills/gastrobrain-issue-analysis/</div>
+    </div>
+
+    <!-- Product Strategy -->
+    <div class="skill-card" id="product-strategy">
+      <div class="skill-header">
+        <div class="skill-name">Product Strategy ⭐</div>
+        <span class="skill-invoke">/gastrobrain-product-strategy</span>
+        <span class="badge-impl">✓ Implemented</span>
+      </div>
+      <div class="skill-body">
+        <div class="skill-triggers">
+          <div class="skill-triggers-label">Triggers</div>
+          <span class="trigger-pill">"Review the roadmap"</span>
+          <span class="trigger-pill">"Help me prioritize"</span>
+          <span class="trigger-pill">"Is my milestone balanced?"</span>
+          <span class="trigger-pill">"Strategic review of 0.X.Y"</span>
+        </div>
+        <div class="skill-purpose">
+          <div class="skill-purpose-label">Purpose</div>
+          <ul>
+            <li>Strategic partner for roadmap planning, priority setting, and project health</li>
+            <li>'Wide picture' perspective: feature delivery vs. code quality vs. debt</li>
+            <li>Milestone health checks: too much/too little in scope?</li>
+            <li>Long-term sustainability assessment</li>
+          </ul>
+        </div>
+      </div>
+      <div class="skill-location">.claude/skills/gastrobrain-product-strategy/</div>
+    </div>
+
+    <!-- UX Design -->
+    <div class="skill-card" id="ux-design">
+      <div class="skill-header">
+        <div class="skill-name">UX Design ⭐</div>
+        <span class="skill-invoke">/gastrobrain-ux-design</span>
+        <span class="badge-impl">✓ Implemented</span>
+      </div>
+      <div class="skill-body">
+        <div class="skill-triggers">
+          <div class="skill-triggers-label">Triggers</div>
+          <span class="trigger-pill">"Design the UX for #XXX"</span>
+          <span class="trigger-pill">"Redesign [screen]"</span>
+          <span class="trigger-pill">"What should the user flow be?"</span>
+          <span class="trigger-pill">"I need wireframes"</span>
+        </div>
+        <div class="skill-purpose">
+          <div class="skill-purpose-label">Purpose</div>
+          <ul>
+            <li>User experience design specialist — analyzes goals, maps flows, designs IA</li>
+            <li>Creates wireframes and user journey maps</li>
+            <li>Ensures accessibility before implementation begins</li>
+            <li>Reinforces 'Cultured &amp; Flavorful' design identity</li>
+            <li>Mandatory before UX-heavy issues (e.g., 0.2.13 #370 and #371)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="skill-location">.claude/skills/gastrobrain-ux-design/</div>
+    </div>
+
+    <!-- ── TIER 2 ── -->
+    <div class="section-title" id="tier2">
+      <span class="section-icon" style="background:var(--blue-light);color:var(--blue);">2</span>
+      Tier 2 — Implementation
+    </div>
+    <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1rem;">Use <strong>Issue Analysis</strong> (Tier 1) for Phase 1 first, then these skills for Phase 2.</p>
+
+    <!-- Senior Dev -->
+    <div class="skill-card" id="senior-dev">
+      <div class="skill-header">
+        <div class="skill-name">Senior Developer Implementation ⭐</div>
+        <span class="skill-invoke">/gastrobrain-senior-dev-implementation</span>
+        <span class="badge-impl">✓ Implemented</span>
+      </div>
+      <div class="skill-body">
+        <div class="skill-triggers">
+          <div class="skill-triggers-label">Triggers</div>
+          <span class="trigger-pill">"Implement Phase 2 for #XXX"</span>
+          <span class="trigger-pill">"Phase 2 - UI"</span>
+          <span class="trigger-pill">"Phase 2 - service layer"</span>
+        </div>
+        <div class="skill-purpose">
+          <div class="skill-purpose-label">Purpose</div>
+          <ul>
+            <li>Checkpoint-driven Phase 2 implementation</li>
+            <li>Covers UI, service layer, and repository patterns</li>
+            <li>Applies Gastrobrain conventions: keys, localization, ServiceProvider, error handling</li>
+            <li>Patterns: model, service, provider, widget — in <span class="ic">patterns/</span></li>
+            <li>Replaces the former "UI Component" and "Service/Repository" planned skills</li>
+          </ul>
+        </div>
+      </div>
+      <div class="skill-location">.claude/skills/gastrobrain-senior-dev-implementation/</div>
+    </div>
+
+    <!-- Testing Impl -->
+    <div class="skill-card" id="testing-impl">
+      <div class="skill-header">
+        <div class="skill-name">Testing Implementation ⭐</div>
+        <span class="skill-invoke">/gastrobrain-testing-implementation</span>
+        <span class="badge-impl">✓ Implemented</span>
+      </div>
+      <div class="skill-body">
+        <div class="skill-triggers">
+          <div class="skill-triggers-label">Triggers</div>
+          <span class="trigger-pill">"Implement Phase 3 for #XXX"</span>
+          <span class="trigger-pill">"Add tests for #XXX"</span>
+          <span class="trigger-pill">"Implement testing"</span>
+        </div>
+        <div class="skill-purpose">
+          <div class="skill-purpose-label">Purpose</div>
+          <ul>
+            <li><strong>One test at a time</strong> — prevents pattern error propagation</li>
+            <li>Reads roadmap Phase 3; generates test plan with count</li>
+            <li>Creates tests iteratively with verification before proceeding</li>
+            <li>Progress tracking (TEST X/Y)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="skill-location">.claude/skills/gastrobrain-testing-implementation/</div>
+    </div>
+
+    <!-- DB Migration -->
+    <div class="skill-card" id="db-migration">
+      <div class="skill-header">
+        <div class="skill-name">Database Migration ⭐</div>
+        <span class="skill-invoke">/gastrobrain-database-migration</span>
+        <span class="badge-impl">✓ Implemented</span>
+      </div>
+      <div class="skill-body">
+        <div class="skill-triggers">
+          <div class="skill-triggers-label">Triggers</div>
+          <span class="trigger-pill">"Create migration for #XXX"</span>
+          <span class="trigger-pill">"Implement database changes"</span>
+          <span class="trigger-pill">"Phase 2 - database"</span>
+        </div>
+        <div class="skill-purpose">
+          <div class="skill-purpose-label">Purpose</div>
+          <ul>
+            <li>Checkpoint-based migration implementation</li>
+            <li>Determines migration version number</li>
+            <li>Schema changes with rollback verification before proceeding</li>
+            <li>Updates models and seed data; includes migration tests</li>
+          </ul>
+        </div>
+      </div>
+      <div class="skill-location">.claude/skills/gastrobrain-database-migration/</div>
+    </div>
+
+    <!-- UI Polish -->
+    <div class="skill-card" id="ui-polish">
+      <div class="skill-header">
+        <div class="skill-name">UI Styling &amp; Visual Polish ⭐</div>
+        <span class="skill-invoke">/gastrobrain-ui-polish</span>
+        <span class="badge-impl">✓ Implemented</span>
+      </div>
+      <div class="skill-body">
+        <div class="skill-triggers">
+          <div class="skill-triggers-label">Triggers</div>
+          <span class="trigger-pill">"Polish the UI for…"</span>
+          <span class="trigger-pill">"Help me style…"</span>
+          <span class="trigger-pill">"This feels unfinished visually"</span>
+        </div>
+        <div class="skill-purpose">
+          <div class="skill-purpose-label">Purpose</div>
+          <ul>
+            <li>Systematic visual refinement of Flutter UI</li>
+            <li>Creates and applies design tokens (color, typography, spacing)</li>
+            <li>Maintains visual consistency; considers bilingual support</li>
+            <li>Documents reusable visual patterns</li>
+          </ul>
+        </div>
+      </div>
+      <div class="skill-location">.claude/skills/gastrobrain-ui-polish/</div>
+    </div>
+
+    <!-- Refactoring -->
+    <div class="skill-card" id="refactoring">
+      <div class="skill-header">
+        <div class="skill-name">Refactoring ⭐</div>
+        <span class="skill-invoke">/gastrobrain-refactoring</span>
+        <span class="badge-impl">✓ Implemented</span>
+      </div>
+      <div class="skill-body">
+        <div class="skill-triggers">
+          <div class="skill-triggers-label">Triggers</div>
+          <span class="trigger-pill">"Refactor #XXX"</span>
+          <span class="trigger-pill">"Extract service"</span>
+          <span class="trigger-pill">"Consolidate code"</span>
+          <span class="trigger-pill">Item in refactoring-backlog.md</span>
+        </div>
+        <div class="skill-purpose">
+          <div class="skill-purpose-label">Purpose</div>
+          <ul>
+            <li>Systematic refactoring for readability, maintainability, SOLID principles</li>
+            <li>Checkpoint iterations: analysis → design → extract → verify</li>
+            <li>Maintains test coverage throughout; updates all call sites</li>
+            <li>Feeds from <span class="ic">.github/refactoring-backlog.md</span> (Code Quality Watchdog)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="skill-location">.claude/skills/gastrobrain-refactoring/</div>
+    </div>
+
+    <!-- Localization gap -->
+    <div class="skill-card" style="border-style:dashed; opacity:0.7;">
+      <div class="skill-header">
+        <div class="skill-name">Localization Update</div>
+        <span class="badge-planned">Coverage gap</span>
+      </div>
+      <div class="skill-body">
+        <div class="skill-purpose">
+          <div class="skill-purpose-label">Current coverage</div>
+          <ul>
+            <li>Handled within <strong>Senior Developer Implementation</strong> (localization checklist built in)</li>
+            <li>If creating standalone: scan for new UI strings → generate EN/PT-BR ARB entries → verify no hardcoded strings</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TIER 3 ── -->
+    <div class="section-title" id="tier3">
+      <span class="section-icon" style="background:var(--green-light);color:var(--green);">3</span>
+      Tier 3 — Quality &amp; Finalization
+    </div>
+
+    <!-- Code Review -->
+    <div class="skill-card" id="code-review">
+      <div class="skill-header">
+        <div class="skill-name">Code Review ⭐</div>
+        <span class="skill-invoke">/gastrobrain-code-review</span>
+        <span class="badge-impl">✓ Implemented</span>
+      </div>
+      <div class="skill-body">
+        <div class="skill-triggers">
+          <div class="skill-triggers-label">Triggers</div>
+          <span class="trigger-pill">"Review #XXX"</span>
+          <span class="trigger-pill">"Pre-merge check for #XXX"</span>
+          <span class="trigger-pill">"Ready to merge #XXX"</span>
+        </div>
+        <div class="skill-purpose">
+          <div class="skill-purpose-label">Purpose</div>
+          <ul>
+            <li>Systematic pre-merge quality verification (7 checkpoints)</li>
+            <li>Verifies roadmap completion and acceptance criteria</li>
+            <li>Runs <span class="ic">flutter analyze</span> and test suite</li>
+            <li>Localization verification</li>
+            <li>Generates merge instructions (solo workflow — no PRs, merge to develop)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="skill-location">.claude/skills/gastrobrain-code-review/</div>
+    </div>
+
+    <!-- QA Manager -->
+    <div class="skill-card" id="qa-manager">
+      <div class="skill-header">
+        <div class="skill-name">QA Manager ⭐</div>
+        <span class="skill-invoke">/gastrobrain-qa-manager</span>
+        <span class="badge-impl">✓ Implemented</span>
+      </div>
+      <div class="skill-body">
+        <div class="skill-triggers">
+          <div class="skill-triggers-label">Triggers</div>
+          <span class="trigger-pill">"Run the test suite"</span>
+          <span class="trigger-pill">"Investigate failing tests"</span>
+          <span class="trigger-pill">"Test health report"</span>
+          <span class="trigger-pill">"Fix test failures"</span>
+        </div>
+        <div class="skill-purpose">
+          <div class="skill-purpose-label">Purpose</div>
+          <ul>
+            <li>Systematize test execution and analyze failures</li>
+            <li>Structured debugging of test failures</li>
+            <li>Track failure patterns and regression prevention</li>
+            <li>Produces health reports and debugging reports</li>
+          </ul>
+        </div>
+      </div>
+      <div class="skill-location">.claude/skills/gastrobrain-qa-manager/</div>
+    </div>
+
+    <!-- Documentation Master -->
+    <div class="skill-card" id="doc-master">
+      <div class="skill-header">
+        <div class="skill-name">Documentation Master ⭐</div>
+        <span class="skill-invoke">/gastrobrain-documentation-master</span>
+        <span class="badge-impl">✓ Implemented</span>
+      </div>
+      <div class="skill-body">
+        <div class="skill-triggers">
+          <div class="skill-triggers-label">Triggers</div>
+          <span class="trigger-pill">"Update docs for #XXX"</span>
+          <span class="trigger-pill">"Audit project documentation"</span>
+          <span class="trigger-pill">"Document [component]"</span>
+        </div>
+        <div class="skill-purpose">
+          <div class="skill-purpose-label">Purpose</div>
+          <ul>
+            <li>Post-implementation documentation updates (4-checkpoint)</li>
+            <li>Full documentation audits (6-checkpoint)</li>
+            <li>Specific tasks — architecture docs, ADRs, feature guides (3-checkpoint)</li>
+            <li>Produces <strong>self-contained HTML</strong> for reference docs; Markdown for process docs</li>
+            <li>Maintains accuracy against actual codebase state</li>
+          </ul>
+        </div>
+      </div>
+      <div class="skill-location">.claude/skills/gastrobrain-documentation-master/</div>
+    </div>
+
+    <!-- Issue Closing note -->
+    <div style="background:#fff; border:1px solid var(--gray-border); border-radius:var(--radius); padding:0.75rem 1.1rem; margin-bottom:0.85rem; font-size:0.82rem; display:flex; gap:0.75rem; align-items:flex-start;">
+      <span style="font-size:1rem;">ℹ</span>
+      <div>
+        <strong>Issue Closing</strong> — no standalone skill. <span class="ic">Closes #XXX</span> in a commit message auto-closes the issue on push to main. Merge branch to develop, then delete the feature branch. See <span class="ic">docs/workflows/ISSUE_WORKFLOW.md</span>.
+      </div>
+    </div>
+
+    <!-- ── WORKFLOW MAP ── -->
+    <div class="section-title" id="workflow">
+      <span class="section-icon" style="background:var(--indigo-light);color:var(--indigo);">⇢</span>
+      Complete Issue Workflow
+    </div>
+
+    <div class="workflow">
+      <div class="workflow-step" style="background:var(--amber-light);">
+        <div class="workflow-step-icon" style="color:var(--amber);">○</div>
+        <div class="workflow-step-body">
+          <div class="workflow-step-title">Issue Creation <span style="font-weight:400;color:var(--text-muted);font-size:0.8rem;">(optional)</span></div>
+          <div class="workflow-step-meta"><span class="workflow-step-cmd">/gastrobrain-issue-creator</span> · Input: user report, bug, feature idea · Output: structured GitHub issue + CLI commands</div>
+        </div>
+      </div>
+      <div class="workflow-arrow">↓</div>
+      <div class="workflow-step">
+        <div class="workflow-step-icon" style="color:var(--amber);">1</div>
+        <div class="workflow-step-body">
+          <div class="workflow-step-title">Sprint Planning</div>
+          <div class="workflow-step-meta"><span class="workflow-step-cmd">/gastrobrain-sprint-planner</span> · Input: Project #3 issues · Output: sprint plan with ~30 pts, sequencing</div>
+        </div>
+      </div>
+      <div class="workflow-arrow">↓</div>
+      <div class="workflow-step">
+        <div class="workflow-step-icon" style="color:var(--amber);">2</div>
+        <div class="workflow-step-body">
+          <div class="workflow-step-title">Issue Roadmap</div>
+          <div class="workflow-step-meta"><span class="workflow-step-cmd">/gastrobrain-issue-roadmap</span> · Input: issue #XXX · Output: 4-phase roadmap with checklists</div>
+        </div>
+      </div>
+      <div class="workflow-arrow">↓</div>
+      <div class="workflow-step" style="background:var(--blue-light);">
+        <div class="workflow-step-icon" style="color:var(--blue);">P1</div>
+        <div class="workflow-step-body">
+          <div class="workflow-step-title">Phase 1 — Analysis</div>
+          <div class="workflow-step-meta"><span class="workflow-step-cmd">/gastrobrain-issue-analysis</span> · Understand scope → explore code → identify risks → design approach</div>
+        </div>
+      </div>
+      <div class="workflow-arrow">↓</div>
+      <div class="workflow-step" style="background:var(--blue-light);">
+        <div class="workflow-step-icon" style="color:var(--blue);">P2</div>
+        <div class="workflow-step-body">
+          <div class="workflow-step-title">Phase 2 — Implementation</div>
+          <div class="workflow-step-meta">
+            UX-heavy? → <span class="workflow-step-cmd">/gastrobrain-ux-design</span><br>
+            Database? → <span class="workflow-step-cmd">/gastrobrain-database-migration</span><br>
+            UI / service? → <span class="workflow-step-cmd">/gastrobrain-senior-dev-implementation</span><br>
+            Polish? → <span class="workflow-step-cmd">/gastrobrain-ui-polish</span> &nbsp;·&nbsp;
+            Refactor? → <span class="workflow-step-cmd">/gastrobrain-refactoring</span>
+          </div>
+        </div>
+      </div>
+      <div class="workflow-arrow">↓</div>
+      <div class="workflow-step" style="background:var(--blue-light);">
+        <div class="workflow-step-icon" style="color:var(--blue);">P3</div>
+        <div class="workflow-step-body">
+          <div class="workflow-step-title">Phase 3 — Testing</div>
+          <div class="workflow-step-meta"><span class="workflow-step-cmd">/gastrobrain-testing-implementation</span> · One test at a time with verification · Complete test suite</div>
+        </div>
+      </div>
+      <div class="workflow-arrow">↓</div>
+      <div class="workflow-step" style="background:var(--blue-light);">
+        <div class="workflow-step-icon" style="color:var(--blue);">P4</div>
+        <div class="workflow-step-body">
+          <div class="workflow-step-title">Phase 4 — Documentation</div>
+          <div class="workflow-step-meta"><span class="workflow-step-cmd">/gastrobrain-documentation-master</span> · Update HTML docs, add dartdoc, verify cross-references</div>
+        </div>
+      </div>
+      <div class="workflow-arrow">↓</div>
+      <div class="workflow-step" style="background:var(--green-light);">
+        <div class="workflow-step-icon" style="color:var(--green);">✓</div>
+        <div class="workflow-step-body">
+          <div class="workflow-step-title">Pre-Merge Review</div>
+          <div class="workflow-step-meta"><span class="workflow-step-cmd">/gastrobrain-code-review</span> · 7-checkpoint systematic review · Merge approval + instructions</div>
+        </div>
+      </div>
+      <div class="workflow-arrow">↓</div>
+      <div class="workflow-step" style="background:var(--green-light);">
+        <div class="workflow-step-icon" style="color:var(--green);">⊕</div>
+        <div class="workflow-step-body">
+          <div class="workflow-step-title">Issue Closing</div>
+          <div class="workflow-step-meta"><span class="ic">Closes #XXX</span> in commit message → auto-closes on push · Merge to develop · Delete feature branch</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── QUICK REF ── -->
+    <div class="section-title" id="quick-ref">
+      <span class="section-icon" style="background:var(--gray-light);color:var(--gray);">≡</span>
+      Quick Reference
+    </div>
+
+    <table class="ref-table">
+      <thead>
+        <tr><th>Invoke</th><th>Trigger</th><th>Key output</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>/gastrobrain-issue-creator</td><td>New bug / feature / debt</td><td>Structured GitHub issue + CLI commands</td></tr>
+        <tr><td>/gastrobrain-sprint-planner</td><td>Sprint start or retro</td><td>Sprint plan / retrospective + diary entry</td></tr>
+        <tr><td>/gastrobrain-product-strategy</td><td>"Review roadmap" / "prioritize"</td><td>Strategic assessment, health report</td></tr>
+        <tr><td>/gastrobrain-issue-roadmap</td><td>"I want to deal with #XXX"</td><td>4-phase roadmap with checklists</td></tr>
+        <tr><td>/gastrobrain-issue-analysis</td><td>Phase 1 of roadmap</td><td>Technical analysis, approach design</td></tr>
+        <tr><td>/gastrobrain-ux-design</td><td>UX-heavy issues</td><td>Wireframes, user flows, IA</td></tr>
+        <tr><td>/gastrobrain-database-migration</td><td>Schema changes</td><td>Safe migration with rollback</td></tr>
+        <tr><td>/gastrobrain-senior-dev-implementation</td><td>Phase 2 implementation</td><td>Code changes (UI, services, repos)</td></tr>
+        <tr><td>/gastrobrain-ui-polish</td><td>Visual refinement</td><td>Consistent styling, design token updates</td></tr>
+        <tr><td>/gastrobrain-refactoring</td><td>Code health / god classes</td><td>Focused, tested refactoring</td></tr>
+        <tr><td>/gastrobrain-testing-implementation</td><td>Phase 3 testing</td><td>Test suite — one test at a time</td></tr>
+        <tr><td>/gastrobrain-documentation-master</td><td>Post-implementation / audit</td><td>Updated HTML docs, code comments</td></tr>
+        <tr><td>/gastrobrain-code-review</td><td>Pre-merge</td><td>Merge approval + instructions</td></tr>
+        <tr><td>/gastrobrain-qa-manager</td><td>Test failures / suite health</td><td>Debug reports, health reports</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ── GUIDELINES ── -->
+    <div class="section-title" id="guidelines">
+      <span class="section-icon" style="background:var(--amber-light);color:var(--amber);">✦</span>
+      Guidelines &amp; Success Metrics
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1.25rem;">
+      <div>
+        <p style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); margin-bottom:0.5rem;">Creating a New Skill</p>
+        <div class="tip-list">
+          <div class="tip-item"><div class="tip-dot">1</div><div><strong>Use it manually first</strong> (3-5 times) — understand pain points before automating</div></div>
+          <div class="tip-item"><div class="tip-dot">2</div><div><strong>Document the workflow</strong> — step-by-step process and decision points</div></div>
+          <div class="tip-item"><div class="tip-dot">3</div><div><strong>Design checkpoints</strong> — 4-6 logical, verifiable steps with user confirmation</div></div>
+          <div class="tip-item"><div class="tip-dot">4</div><div><strong>Create the prompt</strong> using existing skills as templates</div></div>
+          <div class="tip-item"><div class="tip-dot">5</div><div><strong>Test with real issues</strong> and refine based on experience</div></div>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); margin-bottom:0.5rem;">Tips for Success</p>
+        <div class="tip-list">
+          <div class="tip-item"><div class="tip-dot">★</div><div>Roadmap → analysis before writing <em>any</em> code</div></div>
+          <div class="tip-item"><div class="tip-dot">★</div><div>UX-heavy issues: mandatory design day first — no code on day 1</div></div>
+          <div class="tip-item"><div class="tip-dot">★</div><div>One test at a time — write, run, verify, then proceed</div></div>
+          <div class="tip-item"><div class="tip-dot">★</div><div>Trust the checkpoints — they prevent rushing</div></div>
+          <div class="tip-item"><div class="tip-dot">★</div><div>30 pts/week cruising; ~20 pts/week on discovery sprints</div></div>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); margin-bottom:0.5rem;">Success Metrics</p>
+    <div class="metrics-grid">
+      <div class="metric-box"><div class="skill-ref">/gastrobrain-sprint-planner</div><div class="outcome">Sprints stay within capacity; estimates match history patterns</div></div>
+      <div class="metric-box"><div class="skill-ref">/gastrobrain-issue-roadmap</div><div class="outcome">No missed requirements; fewer "forgot to test X" moments</div></div>
+      <div class="metric-box"><div class="skill-ref">/gastrobrain-testing-implementation</div><div class="outcome">Tests pass first time more often; no "fix 8 tests with same error" scenarios</div></div>
+      <div class="metric-box"><div class="skill-ref">/gastrobrain-database-migration</div><div class="outcome">No data loss; rollback tested every time</div></div>
+      <div class="metric-box"><div class="skill-ref">/gastrobrain-code-review</div><div class="outcome">Fewer bugs found after merge; clear merge decisions</div></div>
+      <div class="metric-box"><div class="skill-ref">/gastrobrain-qa-manager</div><div class="outcome">Faster failure diagnosis; test suite stays green</div></div>
+      <div class="metric-box"><div class="skill-ref">/gastrobrain-refactoring</div><div class="outcome">Watchdog backlog items resolved systematically each sprint</div></div>
+    </div>
+
+    <div class="footer">
+      Gastrobrain Skills Master Index · v2.0 · May 2026 · 13 skills implemented ·
+      <a href="Gastrobrain-Codebase-Overview.html" style="color:var(--amber)">Codebase Overview</a> ·
+      <a href="../archive/Gastrobrain-Roadmap-Status.html" style="color:var(--amber)">Roadmap</a>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

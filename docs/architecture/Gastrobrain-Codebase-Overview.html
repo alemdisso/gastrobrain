@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gastrobrain — Codebase Overview</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --amber:        #d97706;
+      --amber-light:  #fef3c7;
+      --amber-mid:    #fde68a;
+      --green:        #065f46;
+      --green-light:  #d1fae5;
+      --blue:         #1e40af;
+      --blue-light:   #dbeafe;
+      --indigo:       #3730a3;
+      --indigo-light: #e0e7ff;
+      --rose:         #9f1239;
+      --rose-light:   #ffe4e6;
+      --purple:       #5b21b6;
+      --purple-light: #ede9fe;
+      --teal:         #0f766e;
+      --teal-light:   #ccfbf1;
+      --gray:         #6b7280;
+      --gray-light:   #f3f4f6;
+      --gray-border:  #e5e7eb;
+      --text:         #111827;
+      --text-muted:   #6b7280;
+      --radius:       8px;
+      --sidebar-w:    220px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f9fafb;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── Layout ── */
+    .layout { display: flex; min-height: 100vh; }
+
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      background: #1f2937;
+      color: #d1d5db;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 1.5rem 0;
+    }
+    .sidebar-logo {
+      padding: 0 1.25rem 1.25rem;
+      border-bottom: 1px solid #374151;
+      margin-bottom: 1rem;
+    }
+    .sidebar-logo span {
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--amber);
+      letter-spacing: -0.5px;
+    }
+    .sidebar-logo small {
+      display: block;
+      font-size: 0.7rem;
+      color: #6b7280;
+      margin-top: 0.1rem;
+    }
+    .nav-group { margin-bottom: 0.25rem; }
+    .nav-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #4b5563;
+      font-weight: 700;
+      padding: 0.6rem 1.25rem 0.2rem;
+    }
+    .nav-link {
+      display: block;
+      padding: 0.35rem 1.25rem;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .nav-link:hover { color: #f3f4f6; border-left-color: var(--amber); background: #111827; }
+
+    .main { flex: 1; padding: 2rem 2.5rem; max-width: 860px; }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #1e3a5f 0%, #1e40af 100%);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 2rem 2.5rem;
+      margin-bottom: 2rem;
+    }
+    .header h1 { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.5px; }
+    .header .subtitle { opacity: 0.8; margin-top: 0.25rem; font-size: 0.9rem; }
+    .header .chips { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem; }
+    .chip {
+      background: rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 0.2rem 0.7rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    /* ── Section headings ── */
+    .section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 2.25rem 0 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      scroll-margin-top: 1rem;
+    }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--gray-border); }
+    .section-icon {
+      width: 1.6rem; height: 1.6rem;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-border);
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 0.7rem 1.1rem;
+      font-weight: 700;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card-body { padding: 0.25rem 1.1rem 0.85rem; }
+
+    /* ── Model groups ── */
+    .model-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .model-card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-border);
+      overflow: hidden;
+    }
+    .model-card-header {
+      padding: 0.5rem 0.9rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .model-list { padding: 0; list-style: none; }
+    .model-list li {
+      padding: 0.35rem 0.9rem;
+      font-size: 0.8rem;
+      border-top: 1px solid var(--gray-border);
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+    }
+    .model-name { font-family: monospace; font-weight: 700; color: var(--blue); flex-shrink: 0; }
+    .model-desc { color: var(--text-muted); }
+
+    /* ── DAO table ── */
+    .dao-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+    }
+    .dao-card {
+      background: #fff;
+      border: 1px solid var(--gray-border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+    }
+    .dao-name { font-family: monospace; font-weight: 700; font-size: 0.85rem; color: var(--teal); }
+    .dao-desc { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+    /* ── Factor bar ── */
+    .factor-list { list-style: none; margin-bottom: 1rem; }
+    .factor-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.45rem 0;
+      border-top: 1px solid var(--gray-border);
+      font-size: 0.83rem;
+    }
+    .factor-item:first-child { border-top: none; }
+    .factor-name { min-width: 210px; font-family: monospace; font-weight: 600; color: var(--indigo); }
+    .factor-bar-wrap { flex: 1; background: var(--gray-light); border-radius: 20px; height: 7px; }
+    .factor-bar { height: 100%; border-radius: 20px; background: var(--amber); }
+    .factor-pct { font-size: 0.75rem; color: var(--text-muted); min-width: 2.5rem; text-align: right; }
+
+    /* ── Service list ── */
+    .service-group { margin-bottom: 1.25rem; }
+    .service-group-title {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+    .service-table { width: 100%; border-collapse: collapse; }
+    .service-table td {
+      padding: 0.4rem 0.75rem;
+      border-top: 1px solid var(--gray-border);
+      font-size: 0.8rem;
+      vertical-align: top;
+    }
+    .service-table td:first-child { font-family: monospace; font-weight: 700; color: var(--purple); white-space: nowrap; }
+    .service-table td:last-child { color: var(--text-muted); }
+
+    /* ── Screen list ── */
+    .screen-group { margin-bottom: 1.25rem; }
+    .screen-group h4 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      font-weight: 700;
+      padding-bottom: 0.3rem;
+      border-bottom: 1px solid var(--gray-border);
+      margin-bottom: 0.4rem;
+    }
+    .screen-item {
+      display: flex;
+      gap: 0.6rem;
+      padding: 0.3rem 0;
+      font-size: 0.8rem;
+      border-top: 1px dashed var(--gray-border);
+    }
+    .screen-item:first-of-type { border-top: none; }
+    .screen-name { font-family: monospace; font-weight: 700; color: var(--rose); min-width: 200px; flex-shrink: 0; }
+    .screen-desc { color: var(--text-muted); }
+
+    /* ── Feature feature-pills ── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .feature-card {
+      background: #fff;
+      border: 1px solid var(--gray-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .feature-card-header {
+      padding: 0.55rem 0.9rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .feature-card ul { list-style: none; padding: 0 0.9rem 0.75rem; }
+    .feature-card ul li {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      padding: 0.2rem 0;
+      border-top: 1px solid var(--gray-border);
+      display: flex;
+      gap: 0.35rem;
+    }
+    .feature-card ul li::before { content: "›"; color: var(--amber); font-weight: 700; flex-shrink: 0; }
+
+    /* ── Test stats ── */
+    .test-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .test-stat {
+      background: #fff;
+      border: 1px solid var(--gray-border);
+      border-radius: var(--radius);
+      padding: 0.9rem 1rem;
+      text-align: center;
+    }
+    .test-stat .num { font-size: 1.5rem; font-weight: 800; color: var(--green); line-height: 1.1; }
+    .test-stat .lbl { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+    /* ── Code block ── */
+    pre {
+      background: #1f2937;
+      color: #e5e7eb;
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      font-size: 0.78rem;
+      overflow-x: auto;
+      margin: 0.75rem 0;
+      line-height: 1.5;
+    }
+    code { font-family: "JetBrains Mono", "Fira Code", monospace; }
+
+    /* ── Watchdog table ── */
+    .watchdog-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--gray-border); }
+    .watchdog-table th { background: var(--gray-light); text-align: left; padding: 0.55rem 1rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+    .watchdog-table td { padding: 0.5rem 1rem; border-top: 1px solid var(--gray-border); font-size: 0.82rem; }
+    .sev-high { color: #92400e; font-weight: 600; }
+    .sev-critical { color: #9f1239; font-weight: 600; }
+
+    /* ── Inline code ── */
+    .ic {
+      font-family: monospace;
+      background: var(--gray-light);
+      border: 1px solid var(--gray-border);
+      border-radius: 4px;
+      padding: 0.05rem 0.35rem;
+      font-size: 0.85em;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 3rem;
+      padding: 1.5rem 0;
+      border-top: 1px solid var(--gray-border);
+    }
+
+    @media (max-width: 720px) {
+      .sidebar { display: none; }
+      .main { padding: 1rem; max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar nav -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <span>Gastrobrain</span>
+      <small>Codebase Overview</small>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Architecture</div>
+      <a class="nav-link" href="#models">Data Models</a>
+      <a class="nav-link" href="#database">Database &amp; DAOs</a>
+      <a class="nav-link" href="#recommendations">Recommendation Engine</a>
+      <a class="nav-link" href="#services">Services</a>
+      <a class="nav-link" href="#providers">Providers &amp; DI</a>
+      <a class="nav-link" href="#theme">Theme &amp; Design</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">UI</div>
+      <a class="nav-link" href="#navigation">Navigation</a>
+      <a class="nav-link" href="#screens">Screens</a>
+      <a class="nav-link" href="#dialogs">Dialogs &amp; Widgets</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Features</div>
+      <a class="nav-link" href="#features">Key Features</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Quality</div>
+      <a class="nav-link" href="#testing">Testing</a>
+      <a class="nav-link" href="#standards">Dev Standards</a>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="main">
+
+    <!-- Header -->
+    <div class="header">
+      <h1>Gastrobrain — Codebase Overview</h1>
+      <div class="subtitle">Flutter · SQLite · Provider · Material 3 · EN/PT-BR</div>
+      <div class="chips">
+        <span class="chip">Flutter</span>
+        <span class="chip">SQLite (sqflite)</span>
+        <span class="chip">Provider pattern</span>
+        <span class="chip">DAO architecture</span>
+        <span class="chip">Bilingual EN/PT-BR</span>
+        <span class="chip">2047+ unit tests</span>
+        <span class="chip">73+ E2E tests</span>
+      </div>
+    </div>
+
+    <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:1.5rem;">
+      Gastrobrain is a comprehensive meal planning and recipe management application.
+      It provides intelligent recipe recommendations, bilingual support, and sophisticated
+      meal planning with multi-recipe meal support. Local SQLite storage with a pluggable
+      recommendation engine and temporal intelligence.
+    </p>
+
+    <!-- ── DATA MODELS ── -->
+    <div class="section-title" id="models">
+      <span class="section-icon" style="background:var(--blue-light); color:var(--blue);">⬡</span>
+      Data Models
+    </div>
+
+    <div class="model-grid">
+
+      <div class="model-card">
+        <div class="model-card-header" style="background:var(--blue-light); color:var(--blue);">Recipe &amp; Ingredients</div>
+        <ul class="model-list">
+          <li><span class="model-name">Recipe</span><span class="model-desc">name, frequency, notes, difficulty (1-5), times, ratings</span></li>
+          <li><span class="model-name">Ingredient</span><span class="model-desc">category, optional unit, protein type</span></li>
+          <li><span class="model-name">RecipeIngredient</span><span class="model-desc">junction — quantity, notes, unit override</span></li>
+        </ul>
+      </div>
+
+      <div class="model-card">
+        <div class="model-card-header" style="background:var(--teal-light); color:var(--teal);">Meal Planning</div>
+        <ul class="model-list">
+          <li><span class="model-name">MealPlan</span><span class="model-desc">weekly plan starting Friday, notes, timestamps</span></li>
+          <li><span class="model-name">MealPlanItem</span><span class="model-desc">individual lunch/dinner slot</span></li>
+          <li><span class="model-name">MealPlanItemRecipe</span><span class="model-desc">junction — multiple recipes per slot</span></li>
+          <li><span class="model-name">MealPlanItemIngredient</span><span class="model-desc">ingredient overrides at plan level</span></li>
+        </ul>
+      </div>
+
+      <div class="model-card">
+        <div class="model-card-header" style="background:var(--green-light); color:var(--green);">Meal Tracking</div>
+        <ul class="model-list">
+          <li><span class="model-name">Meal</span><span class="model-desc">cooking instance — servings, actual time, rating</span></li>
+          <li><span class="model-name">MealRecipe</span><span class="model-desc">junction — main + side dishes with isPrimary flag</span></li>
+          <li><span class="model-name">MealIngredient</span><span class="model-desc">ingredient overrides at cooked meal level</span></li>
+        </ul>
+      </div>
+
+      <div class="model-card">
+        <div class="model-card-header" style="background:var(--amber-light); color:#92400e;">Shopping</div>
+        <ul class="model-list">
+          <li><span class="model-name">ShoppingList</span><span class="model-desc">persistent list linked to a meal plan</span></li>
+          <li><span class="model-name">ShoppingListItem</span><span class="model-desc">category, unit, quantity, checked state</span></li>
+        </ul>
+      </div>
+
+      <div class="model-card">
+        <div class="model-card-header" style="background:var(--purple-light); color:var(--purple);">Tagging</div>
+        <ul class="model-list">
+          <li><span class="model-name">TagType</span><span class="model-desc">taxonomy — cuisine, dietary restriction, occasion</span></li>
+          <li><span class="model-name">Tag</span><span class="model-desc">linked to TagType; applied to recipes</span></li>
+        </ul>
+      </div>
+
+      <div class="model-card">
+        <div class="model-card-header" style="background:var(--indigo-light); color:var(--indigo);">Supporting</div>
+        <ul class="model-list">
+          <li><span class="model-name">ProteinType</span><span class="model-desc">enum — beef, chicken, fish, etc.</span></li>
+          <li><span class="model-name">FrequencyType</span><span class="model-desc">enum — daily, weekly, monthly, etc.</span></li>
+          <li><span class="model-name">RecipeRecommendation</span><span class="model-desc">scoring result + user response</span></li>
+          <li><span class="model-name">IngredientMatch</span><span class="model-desc">matching pipeline result with confidence score</span></li>
+          <li><span class="model-name">MealPlanSummary</span><span class="model-desc">weekly analytics aggregate</span></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- ── DATABASE & DAOs ── -->
+    <div class="section-title" id="database">
+      <span class="section-icon" style="background:var(--teal-light); color:var(--teal);">◫</span>
+      Database &amp; DAOs
+    </div>
+
+    <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.75rem;">
+      Introduced in <strong>0.2.12</strong>: <span class="ic">DatabaseHelper</span> was refactored from a
+      ~2,255-line god class into a thin orchestration layer. Domain-specific data access now lives in
+      focused DAOs, each injected with a <span class="ic">Future&lt;Database&gt; Function()</span> factory.
+    </p>
+
+    <div class="dao-grid">
+      <div class="dao-card">
+        <div class="dao-name">IngredientDao</div>
+        <div class="dao-desc">Ingredient CRUD, alias management, recipe-ingredient relationships</div>
+      </div>
+      <div class="dao-card">
+        <div class="dao-name">MealDao</div>
+        <div class="dao-desc">Meal recording, meal-recipe associations, history queries</div>
+      </div>
+      <div class="dao-card">
+        <div class="dao-name">MealPlanDao</div>
+        <div class="dao-desc">Meal plan and item operations, weekly plan queries</div>
+      </div>
+      <div class="dao-card">
+        <div class="dao-name">RecipeDao</div>
+        <div class="dao-desc">Recipe CRUD, search, filtering, frequency-based ordering</div>
+      </div>
+      <div class="dao-card">
+        <div class="dao-name">RecommendationDao</div>
+        <div class="dao-desc">Scoring data queries, user feedback persistence</div>
+      </div>
+      <div class="dao-card">
+        <div class="dao-name">ShoppingListDao</div>
+        <div class="dao-desc">Shopping list persistence, item toggle tracking, category grouping</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header" style="background:var(--teal-light); color:var(--teal);">Core Infrastructure</div>
+      <div class="card-body">
+        <table class="service-table">
+          <tr><td>DatabaseHelper</td><td>Orchestrates DAOs; handles migrations, transactions, cross-domain operations</td></tr>
+          <tr><td>DatabaseProvider</td><td>Singleton pattern for database access throughout the app</td></tr>
+          <tr><td>MigrationRunner</td><td>Versioned schema migrations with <strong>auto-rollback on failure</strong> and persistent error recording. Fatal failures route to <span class="ic">MigrationErrorScreen</span></td></tr>
+          <tr><td>IdGenerator</td><td>UUID generation utility</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── RECOMMENDATION ENGINE ── -->
+    <div class="section-title" id="recommendations">
+      <span class="section-icon" style="background:var(--amber-light); color:var(--amber);">★</span>
+      Recommendation Engine
+    </div>
+
+    <div class="card" style="margin-bottom:0.75rem;">
+      <div class="card-header" style="background:var(--amber-light); color:#92400e;">Scoring Factors</div>
+      <div class="card-body" style="padding-top:0.5rem;">
+        <ul class="factor-list">
+          <li class="factor-item">
+            <span class="factor-name">FrequencyFactor</span>
+            <div class="factor-bar-wrap"><div class="factor-bar" style="width:35%"></div></div>
+            <span class="factor-pct">35%</span>
+            <span style="font-size:0.75rem;color:var(--text-muted);">Prioritizes recipes based on desired frequency</span>
+          </li>
+          <li class="factor-item">
+            <span class="factor-name">ProteinRotationFactor</span>
+            <div class="factor-bar-wrap"><div class="factor-bar" style="width:30%"></div></div>
+            <span class="factor-pct">30%</span>
+            <span style="font-size:0.75rem;color:var(--text-muted);">Encourages protein variety with graduated penalties</span>
+          </li>
+          <li class="factor-item">
+            <span class="factor-name">RatingFactor</span>
+            <div class="factor-bar-wrap"><div class="factor-bar" style="width:10%"></div></div>
+            <span class="factor-pct">10%</span>
+            <span style="font-size:0.75rem;color:var(--text-muted);">Considers user ratings</span>
+          </li>
+          <li class="factor-item">
+            <span class="factor-name">VarietyEncouragementFactor</span>
+            <div class="factor-bar-wrap"><div class="factor-bar" style="width:10%"></div></div>
+            <span class="factor-pct">10%</span>
+            <span style="font-size:0.75rem;color:var(--text-muted);">Promotes less-cooked recipes</span>
+          </li>
+          <li class="factor-item">
+            <span class="factor-name">DifficultyFactor</span>
+            <div class="factor-bar-wrap"><div class="factor-bar" style="width:10%"></div></div>
+            <span class="factor-pct">10%</span>
+            <span style="font-size:0.75rem;color:var(--text-muted);">Favors simpler recipes on weekdays</span>
+          </li>
+          <li class="factor-item">
+            <span class="factor-name">RandomizationFactor</span>
+            <div class="factor-bar-wrap"><div class="factor-bar" style="width:5%"></div></div>
+            <span class="factor-pct">5%</span>
+            <span style="font-size:0.75rem;color:var(--text-muted);">Adds variety to results</span>
+          </li>
+          <li class="factor-item">
+            <span class="factor-name">RecipeProximityFactor</span>
+            <div class="factor-bar-wrap"><div class="factor-bar" style="width:0%;background:var(--indigo)"></div></div>
+            <span class="factor-pct" style="color:var(--indigo);">ctx</span>
+            <span style="font-size:0.75rem;color:var(--text-muted);">Proximity-based avoidance for recently planned/cooked</span>
+          </li>
+          <li class="factor-item">
+            <span class="factor-name">MealRoleFactor</span>
+            <div class="factor-bar-wrap"><div class="factor-bar" style="width:0%;background:var(--indigo)"></div></div>
+            <span class="factor-pct" style="color:var(--indigo);">ctx</span>
+            <span style="font-size:0.75rem;color:var(--text-muted);">Main dish vs side dish suitability awareness</span>
+          </li>
+          <li class="factor-item">
+            <span class="factor-name">UserFeedbackFactor</span>
+            <div class="factor-bar-wrap"><div class="factor-bar" style="width:0%;background:var(--green)"></div></div>
+            <span class="factor-pct" style="color:var(--green);">dyn</span>
+            <span style="font-size:0.75rem;color:var(--text-muted);">Learns from user responses to suggestions</span>
+          </li>
+        </ul>
+        <p style="font-size:0.72rem;color:var(--text-muted);padding-top:0.5rem;border-top:1px solid var(--gray-border);">
+          <strong>ctx</strong> = contextual (no fixed weight) · <strong>dyn</strong> = dynamic (learned weight) ·
+          Temporal: weekday profile emphasises simplicity; weekend profile allows complexity
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header" style="background:var(--amber-light); color:#92400e;">Recommendation Services</div>
+      <div class="card-body">
+        <table class="service-table">
+          <tr><td>RecommendationService</td><td>Core service — orchestrates all scoring factors with temporal intelligence</td></tr>
+          <tr><td>MealPlanAnalysisService</td><td>Dual-context analysis: considers both planned and recently cooked meals</td></tr>
+          <tr><td>RecommendationCacheService</td><td>Context-aware cache with invalidation logic</td></tr>
+          <tr><td>ProteinPenaltyStrategy</td><td>Graduated protein rotation scoring</td></tr>
+          <tr><td>DatabaseQueries</td><td>Optimised queries for recommendation data fetching</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── SERVICES ── -->
+    <div class="section-title" id="services">
+      <span class="section-icon" style="background:var(--purple-light); color:var(--purple);">⚙</span>
+      Services
+    </div>
+
+    <div class="card">
+      <div class="card-body" style="padding-top:0.75rem;">
+
+        <div class="service-group">
+          <div class="service-group-title">Ingredient</div>
+          <table class="service-table">
+            <tr><td>IngredientMatchingService</td><td>6-stage pipeline (exact → case-insensitive → normalized → prefix → fuzzy → translation); 90%+ confidence on plurals; compound word support; 23+ irregular plurals (EN &amp; PT)</td></tr>
+            <tr><td>IngredientParserService</td><td>Parses raw strings → quantity + unit + name + notes. Context-aware for Portuguese. Uses <span class="ic">MeasurementUnit</span> model. Registered in <span class="ic">ServiceProvider</span></td></tr>
+            <tr><td>IngredientExportService</td><td>Exports ingredient data to JSON</td></tr>
+            <tr><td>IngredientImportService</td><td>Imports ingredients from JSON with deduplication</td></tr>
+            <tr><td>IngredientTranslationService</td><td>EN → PT-BR translation via reviewed CSV data</td></tr>
+            <tr><td>IngredientDuplicateChecker</td><td>Detects and flags duplicate ingredient entries</td></tr>
+            <tr><td>IngredientAggregatorService</td><td>Aggregates ingredients across recipes for shopping lists</td></tr>
+          </table>
+        </div>
+
+        <div class="service-group">
+          <div class="service-group-title">Meal &amp; Meal Plan</div>
+          <table class="service-table">
+            <tr><td>MealEditService</td><td><span class="ic">updateMealWithRecipes()</span> and <span class="ic">recordMealWithRecipes()</span> — atomic meal + recipe association operations</td></tr>
+            <tr><td>MealPlanService</td><td>Meal plan lifecycle — create, archive, query current plan</td></tr>
+            <tr><td>MealPlanSummaryService</td><td>Weekly analytics: protein distribution, cooking times, variety metrics</td></tr>
+            <tr><td>MealActionService</td><td>Meal interaction handlers for common operations</td></tr>
+          </table>
+        </div>
+
+        <div class="service-group">
+          <div class="service-group-title">Shopping</div>
+          <table class="service-table">
+            <tr><td>ShoppingListService</td><td>Generates shopping lists from meal plans with ingredient aggregation, category grouping, and toggle tracking</td></tr>
+          </table>
+        </div>
+
+        <div class="service-group">
+          <div class="service-group-title">Recipe</div>
+          <table class="service-table">
+            <tr><td>RecipeExportService</td><td>Exports recipes with full ingredient data to JSON</td></tr>
+            <tr><td>RecipeImportService</td><td>Imports recipes from JSON with ingredient matching and deduplication</td></tr>
+          </table>
+        </div>
+
+        <div class="service-group">
+          <div class="service-group-title">Data Safety</div>
+          <table class="service-table">
+            <tr><td>DatabaseBackupService</td><td>Full backup/restore to single JSON file (tags, recipes, ingredients, meal plans, meals). Atomic restore. Share via system share sheet</td></tr>
+          </table>
+        </div>
+
+        <div class="service-group">
+          <div class="service-group-title">Utilities</div>
+          <table class="service-table">
+            <tr><td>UnitConverter</td><td>Smart metric conversion with intelligent rounding</td></tr>
+            <tr><td>TagDuplicateChecker</td><td>Detects duplicate tags before insertion</td></tr>
+            <tr><td>ServiceProvider</td><td>Central DI hub — access all services from one place</td></tr>
+            <tr><td>SnackbarService</td><td>User notifications and feedback</td></tr>
+            <tr><td>EntityValidator</td><td>Validates data models and business rules</td></tr>
+            <tr><td>LocalizedErrorMessages</td><td>Internationalised error handling</td></tr>
+            <tr><td>GastrobrainException</td><td>Custom exception hierarchy (ValidationException, NotFoundException, …)</td></tr>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── PROVIDERS & DI ── -->
+    <div class="section-title" id="providers">
+      <span class="section-icon" style="background:var(--green-light); color:var(--green);">⇄</span>
+      Providers &amp; Dependency Injection
+    </div>
+
+    <div class="card">
+      <div class="card-body" style="padding-top:0.75rem;">
+        <table class="service-table">
+          <tr><td>RecipeProvider</td><td>State management for recipe operations</td></tr>
+          <tr><td>MealProvider</td><td>State management for meal tracking</td></tr>
+          <tr><td>MealPlanProvider</td><td>State management for meal planning</td></tr>
+        </table>
+        <p style="font-size:0.78rem; color:var(--text-muted); margin-top:0.6rem; padding-top:0.5rem; border-top:1px solid var(--gray-border);">
+          All services are accessed via <span class="ic">ServiceProvider</span> — the central DI hub.
+          Repository pattern used for consistent data access across the stack.
+        </p>
+      </div>
+    </div>
+
+    <!-- ── THEME ── -->
+    <div class="section-title" id="theme">
+      <span class="section-icon" style="background:var(--amber-light); color:var(--amber);">◑</span>
+      Theme &amp; Design System
+    </div>
+
+    <div class="card">
+      <div class="card-body" style="padding-top:0.75rem; display:flex; flex-wrap:wrap; gap:1rem;">
+        <div style="flex:1; min-width:200px;">
+          <p style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.4rem;">Identity</p>
+          <p style="font-size:0.82rem;">Warm · Confident · Cultured &amp; Flavorful · Clear · Rooted</p>
+          <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+            <div style="width:1.5rem;height:1.5rem;border-radius:4px;background:#d97706;" title="Amber/paprika primary"></div>
+            <div style="width:1.5rem;height:1.5rem;border-radius:4px;background:#065f46;" title="Emerald/herb green accent"></div>
+            <div style="width:1.5rem;height:1.5rem;border-radius:4px;background:#1f2937;" title="Dark surface"></div>
+          </div>
+        </div>
+        <div style="flex:1; min-width:200px;">
+          <p style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.4rem;">System</p>
+          <ul style="list-style:none; font-size:0.8rem; color:var(--text-muted);">
+            <li>Material 3 — light theme (dark foundation ready)</li>
+            <li>8px-based spacing system (XXS → XXL)</li>
+            <li>DesignTokens — centralized colors, type, spacing</li>
+            <li>ButtonStyles — primary, secondary, destructive</li>
+          </ul>
+        </div>
+        <div style="flex:1; min-width:200px;">
+          <p style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.4rem;">Documentation</p>
+          <p style="font-size:0.82rem; color:var(--text-muted);">Full design system in <span class="ic">docs/design/</span>: design-tokens, visual-identity, button-patterns, input-patterns, navigation-patterns, component-library, theme-usage.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── NAVIGATION / SCREENS ── -->
+    <div class="section-title" id="navigation">
+      <span class="section-icon" style="background:var(--rose-light); color:var(--rose);">▤</span>
+      Navigation
+    </div>
+
+    <div class="card">
+      <div class="card-body" style="padding-top:0.75rem;">
+        <table class="service-table">
+          <tr><td>HomeScreen</td><td>Bottom tab bar — Dashboard, Recipes, Meal Plan, Ingredients, Tools</td></tr>
+          <tr><td>DashboardScreen</td><td>Landing page with hero section, recent meal cards, quick action panel</td></tr>
+          <tr><td>ContentScreen</td><td>Shell that wraps tab content for consistent layout</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="section-title" id="screens">
+      <span class="section-icon" style="background:var(--rose-light); color:var(--rose);">⊞</span>
+      Screens
+    </div>
+
+    <div class="card">
+      <div class="card-body" style="padding-top:0.75rem;">
+
+        <div class="screen-group">
+          <h4>Recipe Management</h4>
+          <div class="screen-item"><span class="screen-name">RecipesScreen</span><span class="screen-desc">Recipe list with search, filter, tap to details</span></div>
+          <div class="screen-item"><span class="screen-name">RecipeDetailsScreen</span><span class="screen-desc">Tabbed view — overview, ingredients, instructions, meal history</span></div>
+          <div class="screen-item"><span class="screen-name">AddRecipeScreen</span><span class="screen-desc">Recipe creation with ingredient management and localization</span></div>
+          <div class="screen-item"><span class="screen-name">EditRecipeScreen</span><span class="screen-desc">Recipe modification with validation</span></div>
+          <div class="screen-item"><span class="screen-name">RecipeEditorScreen</span><span class="screen-desc">Rich ingredient editor — bulk update and enrichment flows; componentized in 0.2.12</span></div>
+          <div class="screen-item"><span class="screen-name">RecipeDetailsIngredientsTab</span><span class="screen-desc">Detailed ingredient view with edit (active; <span class="ic">RecipeIngredientsScreen</span> is dead code)</span></div>
+          <div class="screen-item"><span class="screen-name">RecipeInstructionsViewScreen</span><span class="screen-desc">Dedicated instructions view</span></div>
+          <div class="screen-item"><span class="screen-name">MealHistoryScreen</span><span class="screen-desc">Cooking history per recipe with edit capabilities</span></div>
+          <div class="screen-item"><span class="screen-name">IngredientsScreen</span><span class="screen-desc">Ingredient management — search, add, edit, delete</span></div>
+          <div class="screen-item"><span class="screen-name">IngredientDetailScreen</span><span class="screen-desc">Detailed ingredient view</span></div>
+        </div>
+
+        <div class="screen-group">
+          <h4>Meal Planning &amp; Shopping</h4>
+          <div class="screen-item"><span class="screen-name">WeeklyPlanScreen</span><span class="screen-desc">Week view Fri–Thu — meal slots, multi-recipe, recommendations, shopping list, summary</span></div>
+          <div class="screen-item"><span class="screen-name">CookMealScreen</span><span class="screen-desc">Cooking interface with meal type selection and completion tracking</span></div>
+          <div class="screen-item"><span class="screen-name">ShoppingListScreen</span><span class="screen-desc">Category-grouped list with checkbox tracking and filters</span></div>
+          <div class="screen-item"><span class="screen-name">ShoppingListPreviewScreen</span><span class="screen-desc">Preview ingredients before creating a shopping list</span></div>
+          <div class="screen-item"><span class="screen-name">ShoppingListRefinementScreen</span><span class="screen-desc">Curate ingredients (select/deselect) before finalizing</span></div>
+        </div>
+
+        <div class="screen-group">
+          <h4>System &amp; Utilities</h4>
+          <div class="screen-item"><span class="screen-name">ToolsScreen</span><span class="screen-desc">DB backup/restore, recipe import/export, ingredient export, migration UI</span></div>
+          <div class="screen-item"><span class="screen-name">MigrationScreen</span><span class="screen-desc">Database migration interface with version tracking</span></div>
+          <div class="screen-item"><span class="screen-name">MigrationErrorScreen</span><span class="screen-desc">Blocking error screen for fatal migration failures — app never launches with broken state</span></div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="section-title" id="dialogs">
+      <span class="section-icon" style="background:var(--indigo-light); color:var(--indigo);">⬚</span>
+      Dialogs &amp; Widgets
+    </div>
+
+    <div class="card">
+      <div class="card-body" style="padding-top:0.75rem;">
+
+        <div class="screen-group">
+          <h4>Dialogs</h4>
+          <div class="screen-item"><span class="screen-name">RecipeSelectionDialog</span><span class="screen-desc">Two tabs — "Try This" recommendations + "All Recipes" with search/filter</span></div>
+          <div class="screen-item"><span class="screen-name">MealTypeDialog</span><span class="screen-desc">Breakfast, brunch, lunch, dinner, snack</span></div>
+          <div class="screen-item"><span class="screen-name">MealRecordingDialog</span><span class="screen-desc">Full meal recording with multi-recipe support</span></div>
+          <div class="screen-item"><span class="screen-name">EditMealRecordingDialog</span><span class="screen-desc">Edit completed meal records</span></div>
+          <div class="screen-item"><span class="screen-name">UnifiedAddSideDialog</span><span class="screen-desc">Unified side dish add flow (replaces legacy AddSideDishDialog)</span></div>
+          <div class="screen-item"><span class="screen-name">AddIngredientDialog</span><span class="screen-desc">Ingredient addition — custom or from database</span></div>
+          <div class="screen-item"><span class="screen-name">AddNewIngredientDialog</span><span class="screen-desc">New ingredient creation with category selection</span></div>
+          <div class="screen-item"><span class="screen-name">RecipeFilterDialog</span><span class="screen-desc">Advanced filtering by tags, protein type, difficulty</span></div>
+          <div class="screen-item"><span class="screen-name">AddShoppingItemDialog</span><span class="screen-desc">Manual item addition to a shopping list</span></div>
+        </div>
+
+        <div class="screen-group">
+          <h4>Widgets</h4>
+          <div class="screen-item"><span class="screen-name">WeeklyCalendarWidget</span><span class="screen-desc">Responsive calendar — phone/tablet/landscape layouts</span></div>
+          <div class="screen-item"><span class="screen-name">WeeklySummaryWidget</span><span class="screen-desc">Inline weekly analytics (protein, times, variety)</span></div>
+          <div class="screen-item"><span class="screen-name">WeekNavigationWidget</span><span class="screen-desc">Navigation controls for moving between weeks</span></div>
+          <div class="screen-item"><span class="screen-name">RecipeCard</span><span class="screen-desc">List item — meal count, last cooked, rating, tap to details</span></div>
+          <div class="screen-item"><span class="screen-name">RecipeSelectionCard</span><span class="screen-desc">Card for recipe selection flows</span></div>
+          <div class="screen-item"><span class="screen-name">TagPickerWidget</span><span class="screen-desc">Tag selection and management UI</span></div>
+          <div class="screen-item"><span class="screen-name">ServingsStepper</span><span class="screen-desc">Stepper control for servings quantity input</span></div>
+        </div>
+
+        <div class="screen-group">
+          <h4>Recipe Editor Sub-Widgets <span style="font-family:monospace;font-size:0.75rem;color:var(--text-muted)">lib/widgets/recipe_editor/</span></h4>
+          <div class="screen-item"><span class="screen-name">ExistingIngredientsDisplay</span><span class="screen-desc">Current recipe ingredients with edit/delete</span></div>
+          <div class="screen-item"><span class="screen-name">IngredientRow</span><span class="screen-desc">Single parsed ingredient — quantity, unit, name, notes</span></div>
+          <div class="screen-item"><span class="screen-name">ParsedIngredient</span><span class="screen-desc">Ingredient in parsed/matched state with confidence indicator</span></div>
+          <div class="screen-item"><span class="screen-name">RecipeEnrichmentProgressCard</span><span class="screen-desc">Progress tracker for bulk enrichment sessions</span></div>
+          <div class="screen-item"><span class="screen-name">RecipeMetadataDisplay</span><span class="screen-desc">Collapsible recipe header with key metadata</span></div>
+        </div>
+
+        <div class="screen-group">
+          <h4>Dashboard Sub-Widgets <span style="font-family:monospace;font-size:0.75rem;color:var(--text-muted)">lib/widgets/dashboard/</span></h4>
+          <div class="screen-item"><span class="screen-name">HeroSection</span><span class="screen-desc">Top-of-dashboard greeting and current plan status</span></div>
+          <div class="screen-item"><span class="screen-name">SummaryCards</span><span class="screen-desc">Quick-glance metrics (meals this week, protein balance, etc.)</span></div>
+          <div class="screen-item"><span class="screen-name">QuickActionsPanel</span><span class="screen-desc">Common actions — add meal, view plan, generate shopping list</span></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── KEY FEATURES ── -->
+    <div class="section-title" id="features">
+      <span class="section-icon" style="background:var(--green-light); color:var(--green);">✦</span>
+      Key Features
+    </div>
+
+    <div class="feature-grid">
+
+      <div class="feature-card">
+        <div class="feature-card-header" style="background:var(--blue-light); color:var(--blue);">Recipe Management</div>
+        <ul>
+          <li>Create, edit, delete with full localization</li>
+          <li>Search &amp; filter by name, tags, protein, difficulty</li>
+          <li>Tag system — cuisine, dietary, occasions</li>
+          <li>Cooking history with actual vs expected times</li>
+          <li>Difficulty, times, personal ratings</li>
+        </ul>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-card-header" style="background:var(--teal-light); color:var(--teal);">Meal Planning</div>
+        <ul>
+          <li>Weekly view Fri–Thu, responsive layout</li>
+          <li>Lunch and dinner slots per day</li>
+          <li>Multiple recipes per meal (main + sides)</li>
+          <li>Temporal meal status (planned/cooked/overdue)</li>
+          <li>Weekly analytics — protein, times, variety</li>
+        </ul>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-card-header" style="background:var(--amber-light); color:#92400e;">Recommendations</div>
+        <ul>
+          <li>Dual-context: planned + recently cooked meals</li>
+          <li>9 pluggable scoring factors</li>
+          <li>Proximity-based avoidance of recent recipes</li>
+          <li>Meal role awareness (main vs side)</li>
+          <li>Weekday simplicity vs weekend complexity</li>
+          <li>User feedback learning</li>
+        </ul>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-card-header" style="background:var(--green-light); color:var(--green);">Shopping Lists</div>
+        <ul>
+          <li>Generated from weekly meal plan</li>
+          <li>Preview &amp; refine before creating</li>
+          <li>Category-based grouping</li>
+          <li>Checkbox tracking + "to buy" filter</li>
+          <li>Hide "to taste" ingredients option</li>
+          <li>Manual item addition</li>
+        </ul>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-card-header" style="background:var(--indigo-light); color:var(--indigo);">Internationalization</div>
+        <ul>
+          <li>Full bilingual EN/PT-BR</li>
+          <li>ARB-based localization system</li>
+          <li>Locale-aware date/time formatting</li>
+          <li>Ingredient translation (EN → PT-BR)</li>
+          <li>Localized error messages</li>
+        </ul>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-card-header" style="background:var(--rose-light); color:var(--rose);">Data Safety</div>
+        <ul>
+          <li>Auto-rollback on migration failure</li>
+          <li>Persistent failure recording</li>
+          <li>MigrationErrorScreen — never silent failures</li>
+          <li>Full JSON backup &amp; restore</li>
+          <li>Recipe &amp; ingredient import/export</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- ── TESTING ── -->
+    <div class="section-title" id="testing">
+      <span class="section-icon" style="background:var(--green-light); color:var(--green);">✓</span>
+      Testing Infrastructure
+    </div>
+
+    <div class="test-stats">
+      <div class="test-stat"><div class="num">2047+</div><div class="lbl">Unit &amp; widget tests</div></div>
+      <div class="test-stat"><div class="num">73+</div><div class="lbl">Integration / E2E tests</div></div>
+      <div class="test-stat"><div class="num">501+</div><div class="lbl">Edge case tests</div></div>
+      <div class="test-stat"><div class="num">229+</div><div class="lbl">Dialog / widget tests</div></div>
+      <div class="test-stat"><div class="num">1313+</div><div class="lbl">Core / service / model</div></div>
+      <div class="test-stat"><div class="num">135</div><div class="lbl">Test files (unit suite)</div></div>
+    </div>
+
+    <div class="card" style="margin-bottom:0.75rem;">
+      <div class="card-header" style="background:var(--green-light); color:var(--green);">Test Organisation</div>
+      <div class="card-body" style="padding-top:0.6rem;">
+        <table class="service-table">
+          <tr><td>test/screens/</td><td>Screen tests — weekly plan, cook meal, meal history, add recipe</td></tr>
+          <tr><td>test/widgets/</td><td>Dialog tests — 6 dialogs, 100+ tests, all dismissal paths covered</td></tr>
+          <tr><td>test/edge_cases/</td><td>empty_states · boundary_conditions · error_scenarios · interaction_patterns · data_integrity</td></tr>
+          <tr><td>test/regression/</td><td>Historical bug prevention (controller disposal, overflow issues)</td></tr>
+          <tr><td>test/helpers/</td><td>dialog_test_helpers · edge_case_test_helpers · error_injection_helpers</td></tr>
+          <tr><td>test/fixtures/</td><td>boundary_fixtures — empty, 1000-char, 10000-char, special chars, SQL injection</td></tr>
+          <tr><td>integration_test/</td><td>app_launch, tab_navigation, recipe creation/editing, meal recording/planning, recommendation integration</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header" style="background:var(--green-light); color:var(--green);">Key Testing Principles</div>
+      <div class="card-body" style="padding-top:0.6rem; display:flex; flex-wrap:wrap; gap:0.5rem;">
+        <span style="background:var(--green-light);color:var(--green);border-radius:20px;padding:0.2rem 0.65rem;font-size:0.78rem;font-weight:600;">Test isolation — no shared state</span>
+        <span style="background:var(--green-light);color:var(--green);border-radius:20px;padding:0.2rem 0.65rem;font-size:0.78rem;font-weight:600;">Mock-first for unit/widget</span>
+        <span style="background:var(--green-light);color:var(--green);border-radius:20px;padding:0.2rem 0.65rem;font-size:0.78rem;font-weight:600;">Real DB for integration</span>
+        <span style="background:var(--green-light);color:var(--green);border-radius:20px;padding:0.2rem 0.65rem;font-size:0.78rem;font-weight:600;">One test at a time</span>
+        <span style="background:var(--green-light);color:var(--green);border-radius:20px;padding:0.2rem 0.65rem;font-size:0.78rem;font-weight:600;">Always test cancellation paths</span>
+        <span style="background:var(--green-light);color:var(--green);border-radius:20px;padding:0.2rem 0.65rem;font-size:0.78rem;font-weight:600;">Localization in all UI tests</span>
+        <span style="background:var(--blue-light);color:var(--blue);border-radius:20px;padding:0.2rem 0.65rem;font-size:0.78rem;font-weight:600;">MockDatabaseHelper.failOnOperation()</span>
+        <span style="background:var(--blue-light);color:var(--blue);border-radius:20px;padding:0.2rem 0.65rem;font-size:0.78rem;font-weight:600;">22+ mocked DB methods</span>
+      </div>
+      <div style="padding:0.5rem 1.1rem 0.75rem; font-size:0.78rem; color:var(--text-muted);">
+        Run <span class="ic">bash scripts/count-tests.sh</span> for current counts.
+        See <span class="ic">docs/testing/</span> for guides: DIALOG_TESTING_GUIDE, EDGE_CASE_TESTING_GUIDE, MOCK_DATABASE_ERROR_SIMULATION, E2E_TESTING.
+      </div>
+    </div>
+
+    <!-- ── STANDARDS ── -->
+    <div class="section-title" id="standards">
+      <span class="section-icon" style="background:var(--indigo-light); color:var(--indigo);">◉</span>
+      Development Standards
+    </div>
+
+    <div class="card" style="margin-bottom:0.75rem;">
+      <div class="card-header" style="background:var(--indigo-light); color:var(--indigo);">Form Field Keys — Pattern: <code style="font-size:0.85em;">{screen}_{field}_field</code></div>
+      <div class="card-body">
+        <pre><code>TextFormField(
+  key: const Key('add_recipe_name_field'),
+  controller: _nameController,
+  // ...
+)</code></pre>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.5rem;">
+          Required on all form input fields (TextFormField, DropdownButtonFormField),
+          interactive buttons (save, cancel, add, remove), and dynamic form sections.
+          Enables reliable E2E test selectors and improves accessibility.
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header" style="background:var(--rose-light); color:var(--rose);">Code Quality Watchdog</div>
+      <div class="card-body" style="padding-top:0.75rem;">
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.75rem;">
+          Defined in <span class="ic">lib/CLAUDE.md</span> and subdirectory overrides. Flags violations to
+          <span class="ic">.github/refactoring-backlog.md</span>. Reviewed during Sprint Planning as part of the 20% quality allocation.
+        </p>
+        <table class="watchdog-table">
+          <thead><tr><th>Smell</th><th>Default Threshold</th><th>Services Threshold</th><th>Severity</th></tr></thead>
+          <tbody>
+            <tr><td>File length</td><td>&gt; 300 lines</td><td>&gt; 200 lines</td><td class="sev-high">🟡 High</td></tr>
+            <tr><td>File length</td><td>&gt; 500 lines</td><td>&gt; 350 lines</td><td class="sev-critical">🔴 Critical</td></tr>
+            <tr><td>Method length</td><td>&gt; 50 lines</td><td>&gt; 50 lines</td><td class="sev-high">🟡 High</td></tr>
+            <tr><td>Method length</td><td>&gt; 100 lines</td><td>&gt; 100 lines</td><td class="sev-critical">🔴 Critical</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="footer">
+      Gastrobrain Codebase Overview · Last updated May 2026 ·
+      <a href="../testing/DIALOG_TESTING_GUIDE.md" style="color:var(--amber)">Dialog Testing Guide</a> ·
+      <a href="../testing/EDGE_CASE_TESTING_GUIDE.md" style="color:var(--amber)">Edge Case Guide</a> ·
+      <a href="gastrobrain-skills-master-index.md" style="color:var(--amber)">Skills Index</a>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

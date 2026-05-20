@@ -1891,6 +1891,14 @@
   "@migrationFailureWarning": {
     "description": "SnackBar warning shown on app launch when a previous migration failed"
   },
+  "migrationFatalErrorTitle": "Critical Database Error",
+  "@migrationFatalErrorTitle": {
+    "description": "Title shown on blocking error screen when database rollback also failed"
+  },
+  "migrationFatalErrorMessage": "The app encountered a critical database error and could not recover automatically. Please reinstall the app or contact support.",
+  "@migrationFatalErrorMessage": {
+    "description": "Body message on blocking fatal error screen — no technical jargon, no raw stack traces"
+  },
   "buttonDismiss": "Dismiss",
   "@buttonDismiss": {
     "description": "Button to dismiss an error or message"

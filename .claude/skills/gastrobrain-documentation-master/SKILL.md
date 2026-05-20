@@ -61,20 +61,46 @@ A Technical Writer perspective that:
 - Align with testing documentation (testing guides)
 - Use Git Flow workflow conventions in examples
 
+## Documentation Format Standard
+
+**Reference documentation is written in self-contained HTML.** Workflow and process docs stay as Markdown.
+
+| Document Type | Format | Location |
+|---------------|--------|----------|
+| Architecture overviews | **HTML** | `docs/architecture/` |
+| Roadmaps & status | **HTML** | `docs/archive/` |
+| Feature guides | **HTML** | `docs/guides/` |
+| Design system docs | **HTML** | `docs/design/` |
+| Skills master index | **HTML** | `docs/architecture/` |
+| Workflow process docs | Markdown | `docs/workflows/` |
+| Testing guides | Markdown | `docs/testing/` |
+| Sprint planning (working) | Markdown | `docs/planning/sprints/` |
+| Skill prompts | Markdown | `.claude/skills/*/SKILL.md` |
+| CLAUDE.md / AI context | Markdown | repo root / `lib/` |
+| Code comments | Dartdoc | `lib/` source files |
+
+**HTML document rules:**
+- Self-contained — all CSS embedded in `<style>`, no external dependencies
+- Sidebar navigation for multi-section reference docs
+- Consistent amber (`#d97706`) / green (`#065f46`) palette matching the Gastrobrain design identity
+- When a `.md` file already exists, the `.html` companion lives alongside it and is the primary human-readable version
+- Style reference: `docs/archive/Gastrobrain-Roadmap-Status.html` and `docs/architecture/Gastrobrain-Codebase-Overview.html`
+
 ## Documentation Types
 
-| Type | Location | Purpose |
-|------|----------|---------|
-| Project Overview | `README.md` | First impression, quick start |
-| Architecture | `docs/architecture/` | System design, data models |
-| Workflow Guides | `docs/workflows/` | Development processes |
-| Testing Guides | `docs/testing/` | Test patterns and helpers |
-| Planning | `docs/planning/` | Milestones, roadmaps |
-| Feature Guides | `docs/guides/` | Individual feature docs |
-| Pattern Docs | `docs/patterns/` | Reusable design patterns |
-| Decision Records | `docs/decisions/` | ADRs for key decisions |
-| Code Comments | `lib/` | Dartdoc in source files |
-| Skill Docs | `.claude/skills/` | Agent skill documentation |
+| Type | Location | Format | Purpose |
+|------|----------|--------|---------|
+| Project Overview | `README.md` | Markdown | First impression, quick start |
+| Architecture | `docs/architecture/` | **HTML** | System design, data models |
+| Roadmap & Status | `docs/archive/` | **HTML** | Milestone tracking |
+| Workflow Guides | `docs/workflows/` | Markdown | Development processes |
+| Testing Guides | `docs/testing/` | Markdown | Test patterns and helpers |
+| Planning (working) | `docs/planning/sprints/` | Markdown | Sprint notes |
+| Feature Guides | `docs/guides/` | **HTML** | Individual feature docs |
+| Pattern Docs | `docs/patterns/` | **HTML** | Reusable design patterns |
+| Decision Records | `docs/decisions/` | **HTML** | ADRs for key decisions |
+| Code Comments | `lib/` | Dartdoc | Dartdoc in source files |
+| Skill Docs | `.claude/skills/` | Markdown | Agent skill documentation |
 
 ---
 
@@ -462,14 +488,15 @@ Documentation Impacts Identified:
 📄 README.md
    - [Update/Add]: [specific section and what to change]
 
-📄 docs/architecture/[file].md
+📄 docs/architecture/[file].html  ← update HTML (primary)
    - [Update/Add]: [specific section and what to change]
+   (also update the companion .md if it exists)
 
 📄 lib/[file].dart (code documentation)
    - [Add]: [dartdoc comments needed]
 
-📄 docs/guides/[new-file].md (if needed)
-   - [Create]: [new guide for this feature]
+📄 docs/guides/[new-file].html (if needed)
+   - [Create]: [new HTML guide for this feature]
 
 📄 CLAUDE.md
    - [Update]: [if patterns or conventions changed]
@@ -745,31 +772,45 @@ class MyClass {
 - Use `/// See also:` for cross-references
 - Use `/// Throws` to document exceptions
 
-### Architecture Documentation
+### Architecture Documentation (HTML)
 
-```markdown
-# Component Name
+New architecture docs are HTML files. Use `docs/architecture/Gastrobrain-Codebase-Overview.html` as the canonical style reference. Key patterns:
 
-## Purpose
-[Why this component exists]
-
-## Responsibilities
-[What this component does]
-
-## Dependencies
-[What it depends on]
-
-## Usage
-[How to use it with code examples]
-
-## Patterns
-[Design patterns used]
-
-## Testing
-[How to test this component]
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gastrobrain — [Doc Title]</title>
+  <style>
+    /* Self-contained CSS — amber #d97706 primary, green #065f46 accent */
+    /* Sidebar nav + main content layout */
+    /* Section cards with color-coded headers per domain */
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <nav class="sidebar"><!-- jump links --></nav>
+    <main class="main">
+      <!-- header block with chips -->
+      <!-- section-title anchors -->
+      <!-- domain cards / tables / stat blocks -->
+    </main>
+  </div>
+</body>
+</html>
 ```
 
-### Markdown Formatting Standards
+**HTML doc checklist:**
+- [ ] `<style>` is fully self-contained (no `<link>` to external CSS)
+- [ ] Sidebar with `<a href="#section-id">` jump links for multi-section docs
+- [ ] Header block with title, subtitle, and context chips
+- [ ] Color palette: amber `#d97706` primary, green `#065f46` accent, consistent with existing docs
+- [ ] `id=` anchors on every major section for sidebar links
+- [ ] `<pre><code>` blocks for code examples
+- [ ] Footer with last-updated date and cross-reference links
+
+### Markdown Formatting Standards (for Markdown docs)
 
 - Use ATX-style headers (`#`, `##`, `###`)
 - One blank line before and after headers
@@ -789,34 +830,43 @@ See `standards/markdown_standards.md` for complete conventions.
 
 ```
 gastrobrain/
-├── README.md                          (project overview)
-├── CLAUDE.md                          (AI assistant instructions)
+├── README.md                              (project overview — Markdown)
+├── CLAUDE.md                              (AI assistant instructions — Markdown)
 ├── docs/
 │   ├── architecture/
-│   │   ├── Gastrobrain-Codebase-Overview.md  (system architecture)
-│   │   └── [component-specific docs]
+│   │   ├── Gastrobrain-Codebase-Overview.html  ← HTML (primary, human-readable)
+│   │   ├── Gastrobrain-Codebase-Overview.md    ← Markdown (source / AI-readable)
+│   │   ├── gastrobrain-skills-master-index.md  ← Markdown (AI-readable)
+│   │   └── [new component docs → HTML]
+│   ├── archive/
+│   │   ├── Gastrobrain-Roadmap-Status.html     ← HTML (primary)
+│   │   ├── Gastrobrain-Roadmap-Status.md       ← Markdown (source)
+│   │   └── Sprint-Estimation-Diary.md          ← Markdown (working doc)
 │   ├── workflows/
-│   │   ├── ISSUE_WORKFLOW.md          (issue management)
-│   │   ├── L10N_PROTOCOL.md          (localization)
-│   │   └── [process-specific docs]
+│   │   ├── ISSUE_WORKFLOW.md          (Markdown — GitHub process doc)
+│   │   ├── L10N_PROTOCOL.md          (Markdown — GitHub process doc)
+│   │   └── [process-specific docs — Markdown]
 │   ├── testing/
-│   │   ├── DIALOG_TESTING_GUIDE.md   (dialog test patterns)
-│   │   ├── EDGE_CASE_TESTING_GUIDE.md (edge case patterns)
-│   │   ├── EDGE_CASE_CATALOG.md      (edge case reference)
-│   │   └── MOCK_DATABASE_ERROR_SIMULATION.md (mock patterns)
+│   │   ├── DIALOG_TESTING_GUIDE.md   (Markdown — referenced in code/GitHub)
+│   │   ├── EDGE_CASE_TESTING_GUIDE.md (Markdown)
+│   │   ├── EDGE_CASE_CATALOG.md      (Markdown)
+│   │   └── MOCK_DATABASE_ERROR_SIMULATION.md (Markdown)
+│   ├── design/
+│   │   └── [design system docs — HTML]
 │   ├── guides/
-│   │   └── [feature-specific guides]
+│   │   └── [feature-specific guides — HTML]
 │   ├── patterns/
-│   │   └── [reusable patterns]
+│   │   └── [reusable patterns — HTML]
 │   ├── decisions/
-│   │   └── ADR-NNN-[decision].md     (architecture decision records)
+│   │   └── [ADRs — HTML]
 │   └── planning/
-│       └── [milestone plans, sprint notes]
+│       └── sprints/
+│           └── [sprint plans — Markdown, working docs]
 ├── lib/
 │   └── [dartdoc comments in source]
 └── .claude/
     └── skills/
-        └── [skill documentation]
+        └── [skill prompts — Markdown]
 ```
 
 ### File Naming Conventions

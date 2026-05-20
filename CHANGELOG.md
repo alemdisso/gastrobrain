@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.12] - 2026-05-20
+
+### Added
+- Auto-rollback to last known good schema version on migration failure: if a migration fails, the runner now restores the database to the previous schema version and surfaces a fatal error via `schema_migrations_errors`, preventing the app from operating on a partially migrated schema (#383)
+
+### Changed
+- None
+
+### Fixed
+- None
+
+### Refactored
+- `DatabaseHelper` split into focused DAOs: `RecipeDao`, `IngredientDao`, `MealDao`, `MealPlanDao`, `RecommendationDao`, and `ShoppingListDao` — each DAO owns its domain queries, reducing `DatabaseHelper` from a single large class to a coordinator (#337)
+- `RecipeEditorScreen` decomposed into focused widget components, reducing file size and improving readability (#336)
+- `IngredientParserService` extracted from `DatabaseHelper` and registered in `ServiceProvider` for consistent dependency injection (#283)
+
+### Technical
+- `MigrationRunner` now tracks the last-known-good version before each migration and restores it on failure, recording a fatal-severity entry in `schema_migrations_errors` (#383)
+
+---
+
 ## [0.2.11] - 2026-05-18
 
 ### Added

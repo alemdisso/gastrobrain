@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 import '../l10n/app_localizations.dart';
 import 'dashboard_screen.dart';
+import 'migration_error_screen.dart';
 import 'weekly_plan_screen.dart';
 import 'content_screen.dart';
 import 'tools_screen.dart';
@@ -27,6 +28,15 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final dbHelper = DatabaseHelper();
+
+      if (await dbHelper.hasFatalMigrationError()) {
+        if (!mounted) return;
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const MigrationErrorScreen()),
+        );
+        return;
+      }
+
       if (await dbHelper.hasPendingMigrationFailure()) {
         if (!mounted) return;
         final l10n = AppLocalizations.of(context)!;

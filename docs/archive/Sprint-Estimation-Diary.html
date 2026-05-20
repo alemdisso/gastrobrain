@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprint Estimation Diary — Gastrobrain</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --amber:#d97706;--amber-light:#fef3c7;--amber-dark:#92400e;
+  --green:#065f46;--green-light:#d1fae5;
+  --red:#dc2626;--red-light:#fee2e2;
+  --purple:#7c3aed;--purple-light:#ede9fe;
+  --blue:#2563eb;--blue-light:#dbeafe;
+  --teal:#0891b2;--teal-light:#cffafe;
+  --sidebar-bg:#1e293b;--sidebar-text:#94a3b8;--sidebar-heading:#64748b;
+  --sidebar-hover:#334155;
+  --content-bg:#f8fafc;--card-bg:#ffffff;
+  --text-primary:#0f172a;--text-secondary:#475569;--text-muted:#94a3b8;
+  --border:#e2e8f0;--border-strong:#cbd5e1;
+  --sidebar-width:255px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px;line-height:1.6;color:var(--text-primary);background:var(--content-bg)}
+
+/* Layout */
+.layout{display:flex;min-height:100vh}
+.sidebar{width:var(--sidebar-width);background:var(--sidebar-bg);position:fixed;top:0;left:0;height:100vh;overflow-y:auto;z-index:100;scrollbar-width:thin;scrollbar-color:#334155 transparent}
+.main{margin-left:var(--sidebar-width);flex:1}
+
+/* Sidebar */
+.sidebar-logo{padding:18px 16px 12px;border-bottom:1px solid #2d3f55}
+.sidebar-logo .app{font-size:11px;font-weight:700;color:#f1f5f9;text-transform:uppercase;letter-spacing:.08em}
+.sidebar-logo .doc{font-size:12px;color:var(--sidebar-text);margin-top:2px}
+.sidebar-sec{padding:6px 0;border-bottom:1px solid #2d3f55}
+.sidebar-sec-title{padding:8px 16px 4px;font-size:10px;font-weight:600;color:var(--sidebar-heading);text-transform:uppercase;letter-spacing:.08em}
+.sidebar a{display:block;padding:4px 16px;font-size:12px;color:var(--sidebar-text);text-decoration:none;transition:all .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar a:hover{color:#f1f5f9;background:var(--sidebar-hover)}
+.sidebar a.sub{padding-left:28px;font-size:11px}
+.sidebar a.emergency{color:#f87171}
+.sidebar a.emergency:hover{color:#fca5a5}
+
+/* Page header */
+.page-hero{background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);color:white;padding:36px 40px 28px}
+.page-hero h1{font-size:26px;font-weight:800;margin-bottom:6px}
+.page-hero .subtitle{font-size:14px;color:#94a3b8;max-width:680px;line-height:1.5}
+.hero-stats{display:flex;gap:16px;margin-top:20px;flex-wrap:wrap}
+.hero-stat{background:rgba(255,255,255,.08);border-radius:8px;padding:10px 16px;text-align:center;min-width:100px}
+.hero-stat-val{font-size:22px;font-weight:800;color:var(--amber)}
+.hero-stat-lbl{font-size:11px;color:#94a3b8;margin-top:1px}
+
+/* Content wrapper */
+.content{padding:32px 40px;max-width:1100px}
+
+/* Sections */
+.section{margin-bottom:52px}
+.section-title{font-size:19px;font-weight:700;color:var(--text-primary);padding-bottom:10px;border-bottom:2px solid var(--amber);margin-bottom:20px}
+.section-title span{color:var(--amber)}
+.section-intro{font-size:13px;color:var(--text-secondary);margin-bottom:20px;line-height:1.7}
+
+/* Sprint card */
+.sprint{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;margin-bottom:24px;overflow:hidden}
+.sprint-hd{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.sprint-hd-left h3{font-size:15px;font-weight:700;color:var(--text-primary)}
+.sprint-hd-left .dates{font-size:12px;color:var(--text-muted);margin-top:2px}
+.sprint-hd-left .theme{font-size:12px;color:var(--text-secondary);margin-top:1px;font-style:italic}
+.sprint-badges{display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-execution{background:var(--purple);color:white}
+.badge-cruising{background:var(--green);color:white}
+.badge-discovery{background:var(--blue);color:white}
+.badge-conservative{background:#d1d5db;color:#374151}
+.badge-over{background:var(--red);color:white}
+.badge-emergency{background:#7f1d1d;color:#fca5a5}
+.badge-housekeeping{background:#0891b2;color:white}
+.badge-qa{background:#059669;color:white}
+
+/* Sprint perf grid */
+.perf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:0;border-bottom:1px solid var(--border)}
+.perf-cell{padding:12px 14px;text-align:center;border-right:1px solid var(--border)}
+.perf-cell:last-child{border-right:none}
+.perf-val{font-size:18px;font-weight:800;color:var(--amber-dark)}
+.perf-lbl{font-size:10px;color:var(--text-muted);margin-top:1px;text-transform:uppercase;letter-spacing:.04em}
+
+/* Sprint body */
+.sprint-body{padding:16px 20px}
+.sprint-body h4{font-size:13px;font-weight:700;color:var(--text-primary);margin:14px 0 8px}
+.sprint-body h4:first-child{margin-top:0}
+
+/* Tables */
+.tbl-wrap{overflow-x:auto;margin:8px 0}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#f1f5f9;color:var(--text-secondary);font-weight:600;padding:7px 10px;text-align:left;border:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}
+td{padding:7px 10px;border:1px solid var(--border);vertical-align:top}
+tr:hover td{background:#f8fafc}
+td.num{text-align:center;font-variant-numeric:tabular-nums}
+td.mono{font-family:'Courier New',monospace;font-size:11px}
+
+/* Ratio badges */
+.r-fast{color:var(--green);font-weight:700}
+.r-target{color:#0369a1;font-weight:600}
+.r-over{color:var(--red);font-weight:700}
+.r-na{color:var(--text-muted)}
+.r-unplanned{color:var(--purple);font-weight:600}
+.r-stretch{color:var(--teal);font-weight:600}
+.r-skip{color:var(--text-muted)}
+
+/* Lessons */
+.lessons{list-style:none;margin:4px 0}
+.lessons li{display:flex;gap:10px;margin-bottom:8px;font-size:13px;line-height:1.5}
+.lessons li::before{content:"▸";color:var(--amber);font-weight:bold;flex-shrink:0;margin-top:1px}
+.lessons li strong{font-weight:700}
+
+/* Notes box */
+.note{background:#f1f5f9;border-left:3px solid var(--border-strong);padding:10px 14px;border-radius:0 6px 6px 0;font-size:12px;color:var(--text-secondary);margin:10px 0}
+.note.amber{background:var(--amber-light);border-color:var(--amber);color:var(--amber-dark)}
+.note.red{background:var(--red-light);border-color:var(--red);color:#991b1b}
+.note.blue{background:var(--blue-light);border-color:var(--blue);color:#1e40af}
+.note.green{background:var(--green-light);border-color:var(--green);color:var(--green)}
+.note.purple{background:var(--purple-light);border-color:var(--purple);color:#5b21b6}
+
+/* Velocity chart */
+.vel-chart{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:24px}
+.vel-chart h3{font-size:14px;font-weight:700;margin-bottom:16px;color:var(--text-primary)}
+.chart-row{display:flex;align-items:center;gap:10px;margin-bottom:5px}
+.chart-lbl{width:52px;font-size:10px;font-weight:600;color:var(--text-secondary);text-align:right;flex-shrink:0}
+.chart-track{flex:1;background:#f1f5f9;border-radius:3px;height:18px;position:relative;overflow:visible}
+.chart-bar{height:100%;border-radius:3px;position:absolute;top:0;left:0}
+.chart-ref{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--amber);opacity:.7;z-index:2}
+.chart-val{font-size:10px;font-weight:700;color:var(--text-secondary);width:58px;flex-shrink:0}
+.chart-bar-exec{background:var(--purple)}
+.chart-bar-cruis{background:var(--green)}
+.chart-bar-cons{background:var(--amber)}
+.chart-bar-disc{background:var(--blue)}
+.chart-bar-over{background:var(--red)}
+.chart-bar-emerg{background:#9ca3af}
+
+/* Velocity modes */
+.vel-modes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+.vel-mode{border-radius:8px;padding:14px;text-align:center}
+.vel-mode.disc{background:var(--blue-light)}
+.vel-mode.cruis{background:var(--green-light)}
+.vel-mode.exec{background:var(--purple-light)}
+.vel-mode-val{font-size:24px;font-weight:800}
+.vel-mode.disc .vel-mode-val{color:var(--blue)}
+.vel-mode.cruis .vel-mode-val{color:var(--green)}
+.vel-mode.exec .vel-mode-val{color:var(--purple)}
+.vel-mode-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;opacity:.7;margin-top:2px}
+.vel-mode-desc{font-size:11px;color:var(--text-secondary);margin-top:4px}
+
+/* Metrics grid */
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:16px 0}
+.metric-card{background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center}
+.metric-val{font-size:26px;font-weight:800;color:var(--amber-dark)}
+.metric-lbl{font-size:11px;color:var(--text-secondary);margin-top:2px}
+
+/* Calibration table special */
+.cal-table td:first-child{font-weight:600;font-size:12px}
+.cal-table .new-tag{font-size:10px;background:var(--purple-light);color:var(--purple);padding:1px 5px;border-radius:3px;font-weight:600;margin-left:4px}
+
+/* Step guide */
+.steps{list-style:none;counter-reset:step}
+.steps li{counter-increment:step;display:flex;gap:14px;margin-bottom:18px}
+.step-num{background:var(--amber);color:white;font-weight:800;font-size:13px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-body h4{font-size:13px;font-weight:700;margin-bottom:4px}
+.step-body p,.step-body ul{font-size:13px;color:var(--text-secondary);line-height:1.6}
+.step-body ul{padding-left:16px;margin-top:4px}
+
+/* Sizing grid */
+.sizing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+.sizing-card{border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border)}
+.sizing-card.cons{background:#f1f5f9}
+.sizing-card.cruis{background:var(--green-light)}
+.sizing-card.exec{background:var(--purple-light)}
+.sizing-card-val{font-size:28px;font-weight:800}
+.sizing-card.cons .sizing-card-val{color:#374151}
+.sizing-card.cruis .sizing-card-val{color:var(--green)}
+.sizing-card.exec .sizing-card-val{color:var(--purple)}
+.sizing-card-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;opacity:.7}
+.sizing-card-desc{font-size:11px;color:var(--text-secondary);margin-top:6px;line-height:1.5}
+
+/* Insight groups */
+.insight-group{margin-bottom:20px}
+.insight-group h4{font-size:13px;font-weight:700;color:var(--amber-dark);margin-bottom:8px}
+.insight-group ul{list-style:none}
+.insight-group li{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;line-height:1.5}
+.insight-group li:last-child{border-bottom:none}
+.insight-group li::before{content:"→";color:var(--amber);font-weight:bold;flex-shrink:0;margin-top:1px}
+
+/* Code / pre */
+pre{background:#0f172a;color:#e2e8f0;font-family:'Courier New',monospace;font-size:11px;padding:12px 14px;border-radius:6px;overflow-x:auto;margin:8px 0;line-height:1.6}
+code{font-family:'Courier New',monospace;background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:11px}
+pre code{background:none;padding:0}
+
+/* History */
+.hist-entry{border-left:3px solid var(--border-strong);padding:10px 14px;margin-bottom:12px}
+.hist-entry .hist-date{font-size:12px;font-weight:700;color:var(--amber-dark);margin-bottom:4px}
+.hist-entry ul{list-style:disc;padding-left:16px;font-size:12px;color:var(--text-secondary)}
+.hist-entry li{margin-bottom:2px}
+
+/* Footer */
+footer{text-align:center;padding:28px 40px;color:var(--text-muted);font-size:12px;border-top:1px solid var(--border);margin-top:40px}
+footer a{color:var(--amber);text-decoration:none}
+
+/* Misc */
+strong{font-weight:700}
+.divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="app">Gastrobrain</div>
+    <div class="doc">Sprint Estimation Diary</div>
+  </div>
+
+  <div class="sidebar-sec">
+    <div class="sidebar-sec-title">Overview</div>
+    <a href="#overview">Velocity Overview</a>
+    <a href="#how-to-run">How to Run a Retro</a>
+  </div>
+
+  <div class="sidebar-sec">
+    <div class="sidebar-sec-title">0.1.x Sprints</div>
+    <a href="#s012" class="sub">0.1.2 — Polish &amp; Data Safety</a>
+    <a href="#s013" class="sub">0.1.3 — User Features</a>
+    <a href="#s014" class="sub">0.1.4 — Architecture</a>
+    <a href="#s015" class="sub">0.1.5 — Test Coverage</a>
+    <a href="#s016" class="sub">0.1.6 — Shopping List</a>
+    <a href="#s017a" class="sub">0.1.7a — Visual Foundation</a>
+    <a href="#s017b" class="sub">0.1.7b — Screen Polish</a>
+    <a href="#s018" class="sub">0.1.8 — UX Quick Fixes</a>
+    <a href="#s019" class="sub">0.1.9 — Meal Planning UX</a>
+    <a href="#s0110" class="sub">0.1.10 — Landing Page</a>
+    <a href="#s0111" class="sub">0.1.11 — Shopping Corrections</a>
+    <a href="#s0112" class="sub">0.1.12 — Servings</a>
+    <a href="#s0113" class="sub">0.1.13 — Planning Enhancements</a>
+    <a href="#s0114" class="sub">0.1.14 — Housekeeping</a>
+    <a href="#s0115" class="sub emergency">0.1.15 — Emergency Patch</a>
+  </div>
+
+  <div class="sidebar-sec">
+    <div class="sidebar-sec-title">0.2.x Sprints</div>
+    <a href="#s022" class="sub">0.2.2 — Algorithm &amp; Stability</a>
+    <a href="#s023" class="sub">0.2.3 — UX Polish</a>
+    <a href="#s024" class="sub">0.2.4 — Recipe Enhancement</a>
+    <a href="#s025" class="sub">0.2.5 — Tagging &amp; Filtering</a>
+    <a href="#s026" class="sub emergency">0.2.6 — Schema Fix (Emergency)</a>
+    <a href="#s027" class="sub">0.2.7 — Code Health</a>
+    <a href="#s028" class="sub">0.2.8 — Range Quantities</a>
+  </div>
+
+  <div class="sidebar-sec">
+    <div class="sidebar-sec-title">Reference</div>
+    <a href="#cumulative">Velocity Trend</a>
+    <a href="#calibration">Calibration Factors</a>
+    <a href="#insights">Key Insights</a>
+    <a href="#guidelines">Estimation Guidelines</a>
+    <a href="#sizing">Milestone Sizing</a>
+    <a href="#history">Document History</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+<div class="page-hero">
+  <h1>Sprint Estimation Diary</h1>
+  <p class="subtitle">Track estimation accuracy across sprints to improve planning and identify patterns. Each entry records performance, key lessons, and calibration updates.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="hero-stat-val">22</div><div class="hero-stat-lbl">Sprint Entries</div></div>
+    <div class="hero-stat"><div class="hero-stat-val">30</div><div class="hero-stat-lbl">Pts/Week Cruising</div></div>
+    <div class="hero-stat"><div class="hero-stat-val">6.5</div><div class="hero-stat-lbl">Pts/Day Baseline</div></div>
+    <div class="hero-stat"><div class="hero-stat-val">0.1.2</div><div class="hero-stat-lbl">First Entry</div></div>
+    <div class="hero-stat"><div class="hero-stat-val">0.2.8</div><div class="hero-stat-lbl">Latest Entry</div></div>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- VELOCITY OVERVIEW -->
+<div id="overview" class="section">
+  <div class="section-title">Velocity <span>Overview</span></div>
+  <div class="vel-modes">
+    <div class="vel-mode disc">
+      <div class="vel-mode-val">~20</div>
+      <div class="vel-mode-lbl">Discovery</div>
+      <div class="vel-mode-desc">New patterns, tooling friction, heavy research</div>
+    </div>
+    <div class="vel-mode cruis">
+      <div class="vel-mode-val">~30</div>
+      <div class="vel-mode-lbl">Cruising</div>
+      <div class="vel-mode-desc">Mixed work, established patterns, sustainable pace</div>
+    </div>
+    <div class="vel-mode exec">
+      <div class="vel-mode-val">~36+</div>
+      <div class="vel-mode-lbl">Execution</div>
+      <div class="vel-mode-desc">Pure bug fixes, pattern reuse, deep focus batching</div>
+    </div>
+  </div>
+
+  <div class="vel-chart">
+    <h3>Velocity per Sprint (pts/week) — reference line at 30 pts/wk</h3>
+    <!-- max = 80; ref at 30 = 37.5% -->
+    <div class="chart-row"><div class="chart-lbl">0.1.2</div><div class="chart-track"><div class="chart-bar chart-bar-disc" style="width:6.9%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">5.5 pts/wk</div></div>
+    <div class="chart-row"><div class="chart-lbl">0.1.3</div><div class="chart-track"><div class="chart-bar chart-bar-cons" style="width:16.3%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">13.0 pts/wk</div></div>
+    <div class="chart-row"><div class="chart-lbl">0.1.4</div><div class="chart-track"><div class="chart-bar chart-bar-cruis" style="width:37.5%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">30.0 pts/wk</div></div>
+    <div class="chart-row"><div class="chart-lbl">0.1.5 🔴</div><div class="chart-track"><div class="chart-bar chart-bar-over" style="width:12.8%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">10.2 pts/wk</div></div>
+    <div class="chart-row"><div class="chart-lbl">0.1.6</div><div class="chart-track"><div class="chart-bar chart-bar-cons" style="width:18.8%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">15.0 pts/wk</div></div>
+    <div class="chart-row"><div class="chart-lbl">0.1.7b</div><div class="chart-track"><div class="chart-bar chart-bar-cruis" style="width:40.1%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">32.1 pts/wk</div></div>
+    <div class="chart-row"><div class="chart-lbl">0.1.8</div><div class="chart-track"><div class="chart-bar chart-bar-exec" style="width:44.6%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">35.7 pts/wk</div></div>
+    <div class="chart-row"><div class="chart-lbl">0.1.9</div><div class="chart-track"><div class="chart-bar chart-bar-exec" style="width:45.0%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">36.0 pts/wk</div></div>
+    <div class="chart-row"><div class="chart-lbl">0.1.10</div><div class="chart-track"><div class="chart-bar chart-bar-cruis" style="width:40.6%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">32.5 pts/wk</div></div>
+    <div class="chart-row"><div class="chart-lbl">0.1.11</div><div class="chart-track"><div class="chart-bar chart-bar-cruis" style="width:35.0%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">28.0 pts/wk</div></div>
+    <div class="chart-row"><div class="chart-lbl">0.1.12</div><div class="chart-track"><div class="chart-bar chart-bar-cruis" style="width:35.4%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">28.3 pts/wk</div></div>
+    <div class="chart-row"><div class="chart-lbl">0.1.13</div><div class="chart-track"><div class="chart-bar chart-bar-cruis" style="width:37.5%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">~30.0 pts/wk</div></div>
+    <div class="chart-row"><div class="chart-lbl">0.1.14</div><div class="chart-track"><div class="chart-bar chart-bar-cruis" style="width:32.9%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">26.3 pts/wk</div></div>
+    <div class="chart-row"><div class="chart-lbl">0.2.2</div><div class="chart-track"><div class="chart-bar chart-bar-cruis" style="width:39.4%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">31.5 pts/wk</div></div>
+    <div class="chart-row"><div class="chart-lbl">0.2.3</div><div class="chart-track"><div class="chart-bar chart-bar-exec" style="width:60.6%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">48.5 pts/wk</div></div>
+    <div class="chart-row"><div class="chart-lbl">0.2.4</div><div class="chart-track"><div class="chart-bar chart-bar-exec" style="width:46.9%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">37.5 pts/wk</div></div>
+    <div class="chart-row"><div class="chart-lbl">0.2.5</div><div class="chart-track"><div class="chart-bar chart-bar-cruis" style="width:38.8%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">31.0 pts/wk</div></div>
+    <div class="chart-row"><div class="chart-lbl">0.2.7 ★</div><div class="chart-track"><div class="chart-bar chart-bar-exec" style="width:98.8%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">79.0 pts/wk</div></div>
+    <div class="chart-row"><div class="chart-lbl">0.2.8</div><div class="chart-track"><div class="chart-bar chart-bar-exec" style="width:55.0%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">44.0 pts/wk</div></div>
+    <p style="font-size:11px;color:var(--text-muted);margin-top:10px">★ 0.2.7 was an execution-mode Code Health sprint (P1 fixes + well-specified bugs) — do not use to recalibrate cruising velocity. Amber line = 30 pts/wk cruising baseline.</p>
+  </div>
+</div>
+
+<!-- HOW TO RUN -->
+<div id="how-to-run" class="section">
+  <div class="section-title">How to Run a <span>Retrospective</span></div>
+  <div class="note blue" style="margin-bottom:16px"><strong>Methodology note (from 0.2.7 onward):</strong> Per-issue weighted actual days and point-to-time ratios are no longer used. Story points are relative complexity units, not time units. The only velocity metric is sprint-level: <strong>pts delivered ÷ actual days</strong>. Per-issue tables record estimated pts and binary completion status only.</div>
+
+  <ol class="steps">
+    <li>
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h4>Establish Sprint Boundaries</h4>
+        <p>Use the commit log to identify the sprint date range: <code>git log --format="%h %ad %s" --date=short develop | head -30</code>. Confirm with the developer — commits are a proxy, not the truth.</p>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h4>Fetch Issue Data</h4>
+        <p>Collect estimated points from GitHub Project #3 (source of truth): <code>gh project item-list 3 --owner alemdisso --format json --limit 100</code>. For issues not in the project board, use the sprint planning doc estimate.</p>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h4>Interview the Developer (CRITICAL)</h4>
+        <p>Before interpreting data, ask about: sprint boundaries; rest vs no-commit work days; hidden work (device testing, design thinking, planning); unplanned work context; efficiency drivers; blockers or friction.</p>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h4>Calculate Sprint Metrics</h4>
+        <p>Actual days = confirmed working days &bull; Pts delivered = sum of est pts for all completed issues &bull; Velocity = pts ÷ actual days &bull; Expected days = planned pts ÷ 6.5 &bull; Sprint result = Under / On target / Over</p>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h4>Document in This File</h4>
+        <p>Add a new section with: issue table (Issue, Title, Type, Est Pts, Status) &bull; Sprint Performance table (planned, delivered, actual days, expected days, velocity, result) &bull; Working pattern (commit timeline) &bull; Lessons.</p>
+      </div>
+    </li>
+  </ol>
+</div>
+
+<!-- SPRINT REVIEWS 0.1.x -->
+<div class="section">
+  <div class="section-title">0.1.x <span>Sprint Reviews</span></div>
+  <!-- 0.1.2 -->
+  <div id="s012" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.1.2 — Polish &amp; Data Safety</h3>
+        <div class="dates">Dec 2–17, 2025 &bull; 15 calendar days</div>
+        <div class="theme">Mixed features, bugs, testing — first sprint entry, baseline calibration</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-conservative">Conservative</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">12.2</div><div class="perf-lbl">Pts Delivered</div></div>
+      <div class="perf-cell"><div class="perf-val">9</div><div class="perf-lbl">Active Days</div></div>
+      <div class="perf-cell"><div class="perf-val">1.1</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">5.5</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">0.90x</div><div class="perf-lbl">Ratio</div></div>
+    </div>
+    <div class="sprint-body">
+      <h4>Issues</h4>
+      <div class="tbl-wrap"><table>
+        <tr><th>#</th><th>Title</th><th>Type</th><th>Est Pts</th><th>Assessment</th></tr>
+        <tr><td>#225</td><td>Add 'maço' unit</td><td>Parser</td><td class="num">0.5</td><td class="r-fast">⚡ Faster</td></tr>
+        <tr><td>#226</td><td>Parenthetical to notes</td><td>Parser</td><td class="num">0.5–1</td><td class="r-fast">⚡ Faster</td></tr>
+        <tr><td>#227</td><td>Hyphenated sorting</td><td>Bug</td><td class="num">1</td><td class="r-fast">⚡ Faster</td></tr>
+        <tr><td>#223</td><td>Backup/Restore</td><td>Feature</td><td class="num">2–3</td><td class="r-target">✅ On target</td></tr>
+        <tr><td>#228</td><td>Filter indicator</td><td>Bug</td><td class="num">1</td><td class="r-fast">⚡ Faster</td></tr>
+        <tr><td>#148</td><td>Fraction display</td><td>UI</td><td class="num">1</td><td class="r-fast">⚡ Faster</td></tr>
+        <tr><td>#229</td><td>Recipe import</td><td>Feature</td><td class="num">—</td><td class="r-unplanned">📋 Unplanned</td></tr>
+        <tr><td>#76</td><td>DB meal tests</td><td>Testing</td><td class="num">1–2</td><td class="r-fast">⚡ Faster</td></tr>
+        <tr><td>#224</td><td>Tools tab reorganize</td><td>UI/UX</td><td class="num">1</td><td class="r-fast">⚡ Faster</td></tr>
+        <tr><td>#124</td><td>Feedback msg tests</td><td>Testing</td><td class="num">0.5–1</td><td class="r-over">🔴 4x Over — built test infrastructure</td></tr>
+        <tr><td>#126</td><td>E2E meal edit test</td><td>Testing</td><td class="num">1–2</td><td class="r-target">✅ On target</td></tr>
+      </table></div>
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>Test infrastructure is the main estimation risk.</strong> #124 was the only true overrun (4x) because it built shared utilities (MockDatabaseHelper, snackbar helpers). Future: add an explicit "infra" task when new test patterns are needed.</li>
+        <li><strong>Batching quick wins on the same day is highly efficient.</strong> Three 0.5–1 day issues completed in one session with minimal context switching.</li>
+        <li><strong>High commit count signals hidden complexity</strong> even when the estimate is met (#223: 15 commits despite accurate estimate).</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 0.1.3 -->
+  <div id="s013" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.1.3 — User Features &amp; Critical Foundation</h3>
+        <div class="dates">Dec 18–30, 2025 &bull; 12 calendar days</div>
+        <div class="theme">Architecture refactoring + testing infrastructure — very conservative estimates</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-conservative">Conservative</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">26</div><div class="perf-lbl">Pts Delivered</div></div>
+      <div class="perf-cell"><div class="perf-val">10</div><div class="perf-lbl">Active Days</div></div>
+      <div class="perf-cell"><div class="perf-val">2.6</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">13.0</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">0.38x</div><div class="perf-lbl">Ratio</div></div>
+    </div>
+    <div class="sprint-body">
+      <h4>Key Issues</h4>
+      <div class="tbl-wrap"><table>
+        <tr><th>#</th><th>Title</th><th>Type</th><th>Est Pts</th><th>Assessment</th></tr>
+        <tr><td>#38</td><td>Dialog testing infrastructure</td><td>Testing</td><td class="num">5</td><td class="r-fast">⚡ Faster (0.65x)</td></tr>
+        <tr><td>#39</td><td>Edge case test suite</td><td>Testing</td><td class="num">8</td><td class="r-fast">⚡ Very fast — reused #38 patterns (0.09x)</td></tr>
+        <tr><td>#234–236</td><td>Architecture refactorings (3 issues)</td><td>Architecture</td><td class="num">5</td><td class="r-fast">⚡ All done in 1 day — 0.40x</td></tr>
+        <tr><td>#172</td><td>Instructions viewing/editing</td><td>Feature</td><td class="num">3</td><td class="r-fast">⚡ Very fast (0.33x) — clear spec + patterns</td></tr>
+      </table></div>
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>Batching similar architecture tasks is extremely efficient.</strong> #234, #235, #236 all done in one day despite 5-point combined estimate — same pattern replicated quickly.</li>
+        <li><strong>Related testing tasks have high synergy.</strong> #38 established infrastructure; #39 built on it. Combined 13 pts → 4.0 actual days (0.31x).</li>
+        <li><strong>Well-specified features are fast.</strong> #172 done in 1 day vs 3-point estimate. Clear requirements + existing patterns = fast execution.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 0.1.4 -->
+  <div id="s014" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.1.4 — Architecture &amp; Critical Bug Fixes</h3>
+        <div class="dates">Jan 2–3, 2026 &bull; 2 calendar days</div>
+        <div class="theme">Well-prepared work — ultra-short sprint, 100% utilization</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-cruising">Cruising</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">12</div><div class="perf-lbl">Pts Delivered</div></div>
+      <div class="perf-cell"><div class="perf-val">2</div><div class="perf-lbl">Active Days</div></div>
+      <div class="perf-cell"><div class="perf-val">6.0</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">30.0</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">0.17x</div><div class="perf-lbl">Ratio</div></div>
+    </div>
+    <div class="sprint-body">
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>Related bug fixes have near-zero marginal cost.</strong> #252 (2 pts) was essentially free after #250 — same UI pattern, only 12 lines. Don't estimate similar fixes independently.</li>
+        <li><strong>Prerequisites eliminate discovery overhead.</strong> #237 had prerequisites (#234–236) completed in 0.1.3 + a detailed roadmap → 1.27 actual days for a 5-point estimate (0.25x).</li>
+        <li><strong>Pattern extension is very fast.</strong> #244 (MockDatabaseHelper error simulation) extended existing patterns → 0.56 days for 3 points (0.19x). Distinguish "extend pattern" from "create pattern" at estimation time.</li>
+      </ul>
+      <div class="note">Ultra-short sprints (2 days) are viable when scope is well-defined and solutions are known before starting.</div>
+    </div>
+  </div>
+
+  <!-- 0.1.5 -->
+  <div id="s015" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.1.5 — Test Coverage &amp; Polish</h3>
+        <div class="dates">Jan 5–9, 2026 &bull; 5 calendar days</div>
+        <div class="theme">First sprint to overrun — discovery + UI iteration + hidden tooling overhead (2 full days)</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-over">🔴 Overran (1.98x)</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">14</div><div class="perf-lbl">Pts Est.</div></div>
+      <div class="perf-cell"><div class="perf-val">5</div><div class="perf-lbl">Active Days</div></div>
+      <div class="perf-cell"><div class="perf-val">2.0</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">10.2</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">1.98x</div><div class="perf-lbl">Ratio (over)</div></div>
+    </div>
+    <div class="sprint-body">
+      <div class="note red"><strong>Critical:</strong> 2.0 full days lost to adb/Android Studio tooling issues (29% of actual time). These left zero trace in commit history but doubled the sprint ratio from a hypothetical 0.99x to 1.98x.</div>
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>Hidden tooling overhead can be sprint-wide and massive.</strong> #199 (feature): 70% of overhead from testing-phase tooling. #251 (UI): 30% from UI iteration tooling. Add 25–35% buffer for mobile/UI sprints with testing phases.</li>
+        <li><strong>Don't use outlier sprints for future estimates.</strong> 0.1.4 was exceptional (6.0 pts/day). Estimating 0.1.5 based on that was wrong. Use median/normal velocity, not best-case.</li>
+        <li><strong>UI polish requires massive iteration buffer (3–4x).</strong> #251 (AddSideDishDialog): 3 visible commits + 0.6 days of invisible tooling = 3.66x overrun. User feedback and discovered issues compound.</li>
+        <li><strong>Coverage improvement tasks are slower than pattern extension.</strong> Prior testing data (0.38x, 0.19x) was for extending patterns. Raw coverage improvement (understanding + new tests) runs at 1.64–1.86x.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 0.1.6 -->
+  <div id="s016" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.1.6 — Shopping List &amp; Polish</h3>
+        <div class="dates">Jan 22–28, 2026 &bull; 7 calendar days</div>
+        <div class="theme">Well-specified features — detailed spec for #5 delivered 8-point feature in 2 days</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-conservative">Conservative</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">18</div><div class="perf-lbl">Pts Delivered</div></div>
+      <div class="perf-cell"><div class="perf-val">6</div><div class="perf-lbl">Active Days</div></div>
+      <div class="perf-cell"><div class="perf-val">3.0</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">15.0</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">0.33x</div><div class="perf-lbl">Ratio</div></div>
+    </div>
+    <div class="sprint-body">
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>Detailed feature specifications are game-changers.</strong> #5 (Shopping List, 8 pts) had a comprehensive spec document → delivered in 2 days (0.25x). Invest time in specs — it pays 3–4x in execution.</li>
+        <li><strong>MVP scope clarity enables fast execution.</strong> #32, #33 both had explicit "keep simple" guidance → 0.19–0.20x ratios. No scope creep, no over-engineering.</li>
+        <li><strong>Unplanned work is consistent (~20–25%).</strong> #264 added 1.43 days (~24% of sprint). Budget for it — it's a feature of the workflow, not an exception.</li>
+        <li><strong>1 point is the minimum floor.</strong> Keep it — it represents task overhead (branch, commit, push). Scale up larger estimates instead of using decimal points.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 0.1.7a -->
+  <div id="s017a" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.1.7a — Visual Foundation</h3>
+        <div class="dates">Jan 30, 2026 &bull; 1 day (shared with 0.1.7b start)</div>
+        <div class="theme">Design tokens + ThemeData — massively overestimated, conceptually one commit</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-execution">Execution</span><span class="badge" style="background:#f3f4f6;color:#6b7280">⚠️ Outlier</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">21</div><div class="perf-lbl">Pts Est.</div></div>
+      <div class="perf-cell"><div class="perf-val">~0.5</div><div class="perf-lbl">Actual Days</div></div>
+      <div class="perf-cell"><div class="perf-val">~0.01x</div><div class="perf-lbl">Ratio</div></div>
+      <div class="perf-cell"><div class="perf-val">⚠️</div><div class="perf-lbl">Unreliable</div></div>
+    </div>
+    <div class="sprint-body">
+      <div class="note amber">0.1.7a data is unreliable — day was shared with 0.1.7b prep work. Excluded from velocity calculations.</div>
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>Linked design tasks should be estimated as a unit.</strong> #255 (visual identity) and #256 (design tokens) were literally one commit. Separate 5pt + 8pt estimates for a single deliverable is wrong.</li>
+        <li><strong>ThemeData is mechanical translation once tokens exist.</strong> #257 (8 pts) was direct mapping of tokens to ThemeData API — estimate at 1–2 pts when tokens are already defined.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 0.1.7b -->
+  <div id="s017b" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.1.7b — Screen &amp; Component Polish</h3>
+        <div class="dates">Jan 30 – Feb 6, 2026 &bull; 8 calendar days</div>
+        <div class="theme">Design system application — first-screen investment creates patterns; subsequent screens harvest them</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-cruising">Cruising</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">43</div><div class="perf-lbl">Pts Delivered</div></div>
+      <div class="perf-cell"><div class="perf-val">6.69</div><div class="perf-lbl">Active Days</div></div>
+      <div class="perf-cell"><div class="perf-val">6.4</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">32.1</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">0.16x</div><div class="perf-lbl">Ratio</div></div>
+    </div>
+    <div class="sprint-body">
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>First-screen polish creates patterns; subsequent screens harvest them (8x difference).</strong> #258 (weekly plan): 3.27 days, 17 commits, 6 extracted services. #259 (recipe list): 0.42 days, 1 commit — applied established patterns.</li>
+        <li><strong>Component standardization is mechanical once design tokens exist.</strong> #260, #261, #262 (18 pts estimated) → 1.60 actual days (0.09x). Estimate at 1–2 pts per component type when tokens exist.</li>
+        <li><strong>Refactoring during polish pays compound dividends.</strong> #258 extracted 6 services/widgets, simplifying the screen and making all subsequent work easier. Don't separate refactoring from polish as distinct tasks.</li>
+        <li><strong>Velocity step-change begins here.</strong> Combined 0.1.7a+0.1.7b: 64 pts in 7 active days (9.1 pts/day). First sprint in the new acceleration era.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 0.1.8 -->
+  <div id="s018" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.1.8 — UX Quick Fixes &amp; Bug Fixes</h3>
+        <div class="dates">Feb 9–12, 2026 &bull; 4 calendar days</div>
+        <div class="theme">Small UX fixes dominated — 6 issues in one focused session on Feb 10</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-execution">Execution</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">25</div><div class="perf-lbl">Pts Delivered</div></div>
+      <div class="perf-cell"><div class="perf-val">3.5</div><div class="perf-lbl">Active Days</div></div>
+      <div class="perf-cell"><div class="perf-val">7.1</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">35.7</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">0.13x</div><div class="perf-lbl">Ratio</div></div>
+    </div>
+    <div class="sprint-body">
+      <div class="note"><strong>Cruising velocity established at 20 pts/week</strong> based on 0.1.3–0.1.8 history. (Later revised upward to 30 pts/week after 0.1.9 confirmed the step-change.)</div>
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>Small UX fixes inflate story-point velocity.</strong> 6 UX issues (9 pts) in 0.65 days (0.07x). The 1-pt Fibonacci floor can't distinguish a 5-minute tweak from a 2-hour fix. Don't recalibrate cruising velocity from UX-fix-heavy sprints.</li>
+        <li><strong>Batching similar issues + deep focus = exceptional throughput.</strong> Feb 10: 6 issues closed in one uninterrupted session — all similar type, similar scope, same codebase area. Replicate by grouping and protecting focus time.</li>
+        <li><strong>Time-box diagnostic tooling.</strong> Flaky test investigation (#289, #290) consumed ~0.5 days without actionable insights. Set a 2-hour cap; if no signal, document the root cause hypothesis and move on.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 0.1.9 -->
+  <div id="s019" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.1.9 — Meal Planning UX Redesign</h3>
+        <div class="dates">Feb 14–15, 2026 &bull; 2 calendar days</div>
+        <div class="theme">UX simplification sprint — net −1,026 lines; confirms velocity step-change</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-execution">Execution</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">18</div><div class="perf-lbl">Pts Delivered</div></div>
+      <div class="perf-cell"><div class="perf-val">1.5</div><div class="perf-lbl">Active Days</div></div>
+      <div class="perf-cell"><div class="perf-val">9.0</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">36.0</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">0.34x</div><div class="perf-lbl">Ratio</div></div>
+    </div>
+    <div class="sprint-body">
+      <div class="note green"><strong>Cruising velocity revised to 30 pts/week.</strong> Three consecutive sprints (0.1.7b–0.1.9) at 32–36 pts/week confirmed as sustained acceleration, not outliers.</div>
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>UX simplification has its own velocity profile (0.3–0.5x).</strong> All 3 issues were redesigns that removed complexity. Deletion is faster than creation — you're removing decisions, not making new ones.</li>
+        <li><strong>Mono-theme sprints with natural sequencing are faster.</strong> All issues touched the meal planning area. Sequencing: color system → components → flow — each built on the previous with no context switching.</li>
+        <li><strong>Linked issues estimated separately overstate total work.</strong> #277 (5 pts) absorbed by #280 at near-zero marginal cost. #288 (3 pts) became irrelevant when the approach was redesigned away.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 0.1.10 -->
+  <div id="s0110" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.1.10 — Landing Page &amp; Polish</h3>
+        <div class="dates">Feb 16–18, 2026 &bull; 3 calendar days</div>
+        <div class="theme">Scope discipline — selected 13 of 32 available points for clean 2-day execution</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-cruising">Cruising</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">13</div><div class="perf-lbl">Pts Delivered</div></div>
+      <div class="perf-cell"><div class="perf-val">2</div><div class="perf-lbl">Active Days</div></div>
+      <div class="perf-cell"><div class="perf-val">6.5</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">32.5</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">0.15x</div><div class="perf-lbl">Ratio</div></div>
+    </div>
+    <div class="sprint-body">
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>Scope discipline is as powerful as execution skill.</strong> Selecting 13 of 32 available points enabled clean 2-day execution. Deferred 19 pts (#292, #263, #268, #285) were non-essential to the user-facing sprint goal.</li>
+        <li><strong>A planning day (no commits) pays for itself within the first hour of Day 1.</strong> Feb 16 produced no code but eliminated all scope questions for Feb 17–18. Pre-defined acceptance criteria = zero mid-sprint scope exploration.</li>
+        <li><strong>Anchor feature on its own uninterrupted day.</strong> #134 solo on Feb 17 completed design → implementation → test in a single flow session. Give the sprint's largest issue uncontested time.</li>
+        <li><strong>Same-domain batch day executes at 0.10–0.13x.</strong> Three issues sharing the shopping list/ingredient layer completed together — shared mental model, no context switching.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 0.1.11 -->
+  <div id="s0111" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.1.11 — Shopping List Corrections</h3>
+        <div class="dates">Feb 19–25, 2026 &bull; 7 calendar days</div>
+        <div class="theme">"Real-life QA sprint" — 2 days intensive app usage → issue discovery → batch fix</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-qa">Real-life QA</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">14</div><div class="perf-lbl">Pts Delivered</div></div>
+      <div class="perf-cell"><div class="perf-val">3</div><div class="perf-lbl">Active Days</div></div>
+      <div class="perf-cell"><div class="perf-val">5.6</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">28.0</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">0.18x</div><div class="perf-lbl">Ratio</div></div>
+    </div>
+    <div class="sprint-body">
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>"Real-life QA sprint" is a repeatable sprint type.</strong> Pattern: intensive personal app usage (2 days) → issue discovery → batch fix. The discovery phase looks like idle time but produces the clearest issue specifications possible.</li>
+        <li><strong>Post-usage bugs execute at 0.10x flat rate regardless of estimate.</strong> #298, #300, #301: root cause already known before opening the editor. No debugging phase = straight to fix.</li>
+        <li><strong>Budget app usage days as productive sprint investment.</strong> Feb 19–20 had zero commits but produced the clearest specs for Feb 21 and Feb 24 execution. Scheduled "use the app" sessions are a form of integration testing.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 0.1.12 -->
+  <div id="s0112" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.1.12 — Servings &amp; Quantity Tracking</h3>
+        <div class="dates">Feb 27 – Mar 1, 2026 &bull; 3 active days (+ Feb 26 planning)</div>
+        <div class="theme">Dependency chain with deferred validation debt — fast execution masked incomplete device testing</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-cruising">Cruising</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">17</div><div class="perf-lbl">Pts Delivered</div></div>
+      <div class="perf-cell"><div class="perf-val">3.3</div><div class="perf-lbl">Active Days</div></div>
+      <div class="perf-cell"><div class="perf-val">5.7</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">28.3</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">0.17x</div><div class="perf-lbl">Ratio</div></div>
+    </div>
+    <div class="sprint-body">
+      <div class="note amber"><strong>"100% completion" masked validation debt.</strong> All 17 pts closed, but 3 follow-up issues emerged (#313, #314, #315) from skipped device testing on the servings chain.</div>
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>"Committed ≠ validated."</strong> Fast execution through a dependency chain (#304→#305→#306) without device testing creates deferred work, not completed work. "✓ Tested on device" must be an explicit, non-optional AC item for any data-facing feature.</li>
+        <li><strong>Dependency chains have diminishing complexity.</strong> Anchor (#304, 0.22x) sets the pattern; follow-on issues (#305, #306) execute at ~0.16x by reusing it. Discount 2nd+ chain issues 30–50% at estimation time.</li>
+        <li><strong>UI micro-issues are uncalibrateable at the 1-pt floor.</strong> #309 (2 pts, 8 lines) and #310 (1 pt, 24 lines) both at 0.05x — Fibonacci scale is too coarse. Bundle one-liners as a "quick wins block" with a flat budget.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 0.1.13 -->
+  <div id="s0113" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.1.13 — Meal Planning &amp; Shopping Enhancements</h3>
+        <div class="dates">Mar 2–9, 2026 &bull; ~4 focused sessions</div>
+        <div class="theme">Within-sprint pattern compounding — 3-pt dialog done in 45 minutes using same-sprint template</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-cruising">Cruising</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">21</div><div class="perf-lbl">Pts Delivered</div></div>
+      <div class="perf-cell"><div class="perf-val">~2.7</div><div class="perf-lbl">Effective Days</div></div>
+      <div class="perf-cell"><div class="perf-val">~7.8</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">~30.0</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">0.11x</div><div class="perf-lbl">Ratio</div></div>
+    </div>
+    <div class="sprint-body">
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>Within-sprint pattern compounding collapses a 3-pt issue to 45 minutes.</strong> #312 (manual shopping) reused #311's dialog pattern built 3 days earlier in the same sprint. Pattern was fully loaded in working memory. Sequence related dialog features back-to-back deliberately.</li>
+        <li><strong>Display-only work vs form work needs separate calibration.</strong> #314 (display servings, 0.10x) was fast not from pattern reuse but from inherent simplicity: no input, no state machine, no validation. Estimating display-only at the same level as form work overestimates by 30–50%.</li>
+        <li><strong>L-size issues with a clear template don't need over-buffering.</strong> #311 (8 pts, 2 new DB tables, 2 models, CRUD, 2 screens, shopping list integration) → 1 day. Don't buffer L issues for "complexity" when the junction table/model pattern is already established.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 0.1.14 -->
+  <div id="s0114" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.1.14 — DB Housekeeping &amp; Documentation</h3>
+        <div class="dates">Mar 20–25, 2026 &bull; ~4 active days</div>
+        <div class="theme">Zero-features sprint — closed the 0.1.x series with clean internal state</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-housekeeping">Housekeeping</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">~21</div><div class="perf-lbl">Pts Est.</div></div>
+      <div class="perf-cell"><div class="perf-val">~4.0</div><div class="perf-lbl">Active Days</div></div>
+      <div class="perf-cell"><div class="perf-val">~5.25</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">~26.3</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">~0.19x†</div><div class="perf-lbl">Ratio (retro)</div></div>
+    </div>
+    <div class="sprint-body">
+      <div class="note">† Retroactive entry — no commit-level weighted analysis. All 5 issues were pre-validated when deferred from 0.1.10.</div>
+      <h4>Issues (Summary)</h4>
+      <div class="tbl-wrap"><table>
+        <tr><th>#</th><th>Title</th><th>Type</th><th>Est Pts</th><th>Sequence</th></tr>
+        <tr><td>#292</td><td>Consolidate DB migrations into baseline</td><td>Refactor</td><td class="num">8</td><td>First — anchor, heaviest</td></tr>
+        <tr><td>#268, #263</td><td>Skills docs + UI Component Library docs</td><td>Docs</td><td class="num">8</td><td>Batched on same day</td></tr>
+        <tr><td>#318</td><td>Fix e2e test helpers (scroll before tap)</td><td>Testing</td><td class="num">~2</td><td>Emergent from test runs</td></tr>
+        <tr><td>#285</td><td>Test suite governance + count updates</td><td>Docs</td><td class="num">3</td><td>Intentionally last</td></tr>
+      </table></div>
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>One focused housekeeping sprint outperforms spreading quality work across feature sprints.</strong> Batching docs, migrations, skills governance, and test counts into one sprint prevents them from bleeding into 0.2.x feature work.</li>
+        <li><strong>"Must be last" sequencing is correct for governance issues.</strong> #285 (test governance) captured counts from all other issues. Done earlier, the counts would have been stale immediately.</li>
+        <li><strong>Migration consolidation is high-leverage, permanent simplification.</strong> #292 eliminated 12+ fragmented migration files — every future migration and developer benefits from the clean baseline.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 0.1.15 -->
+  <div id="s0115" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.1.15 — Patch: Import Bug Fixes</h3>
+        <div class="dates">~Apr 2–5, 2026 &bull; ~1 fix day</div>
+        <div class="theme">Emergency P0 patch — 2 data-loss bugs discovered via 0.2.1 seed data</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-emergency">Emergency P0</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">2</div><div class="perf-lbl">Issues</div></div>
+      <div class="perf-cell"><div class="perf-val">~1.0</div><div class="perf-lbl">Fix Day</div></div>
+      <div class="perf-cell"><div class="perf-val">P0</div><div class="perf-lbl">Severity</div></div>
+      <div class="perf-cell"><div class="perf-val">—</div><div class="perf-lbl">Not Regular Sprint</div></div>
+    </div>
+    <div class="sprint-body">
+      <div class="note red"><strong>#332</strong> (recipe import cascades delete meal history and plan relationships) was a real data-loss bug for users who imported recipes while having existing meal data. <strong>#330</strong> (import doesn't restore instructions) was a silent field omission. Both fixed in a single session once root cause was identified.</div>
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>Real seed data is a distinct integration test category that synthetic fixtures miss.</strong> Both P0s existed through ~50 sprints undetected. 0.2.1's first real recipe dataset (full relational data) exposed them in one test run.</li>
+        <li><strong>Two P0s in the same subsystem signals structural coverage gaps, not bad luck.</strong> After fixing one, audit the entire subsystem for additional gaps before shipping. One fix does not close the risk.</li>
+        <li><strong>Import/export tests must include full relational data.</strong> Meals with history, plan relationships, instructions — any test using only single-entity data misses the failure modes that matter.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- SPRINT REVIEWS 0.2.x -->
+<div class="section">
+  <div class="section-title">0.2.x <span>Sprint Reviews</span></div>
+  <div class="note blue" style="margin-bottom:16px">From 0.2.4 onward, ratio = actual days ÷ (estimated pts ÷ 6.5). Prior sprints used 1 pt = 1 day as baseline — not directly comparable. From 0.2.7 onward, per-issue ratios are no longer computed; only sprint-level velocity is tracked.</div>
+
+  <!-- 0.2.2 -->
+  <div id="s022" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.2.2 — Algorithm &amp; Stability</h3>
+        <div class="dates">Apr 12–15, 2026 &bull; 4 calendar days</div>
+        <div class="theme">Algorithm tuning + parser bug cluster — #341 shipped without device validation (→ #351, #352)</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-cruising">Cruising</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">24</div><div class="perf-lbl">Pts Confirmed</div></div>
+      <div class="perf-cell"><div class="perf-val">~3.8</div><div class="perf-lbl">Effective Days</div></div>
+      <div class="perf-cell"><div class="perf-val">6.3</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">31.5</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">~0.11x</div><div class="perf-lbl">Ratio</div></div>
+    </div>
+    <div class="sprint-body">
+      <h4>Key Issues</h4>
+      <div class="tbl-wrap"><table>
+        <tr><th>#</th><th>Title</th><th>Type</th><th>Est Pts</th><th>Notes</th></tr>
+        <tr><td>#342–344</td><td>Parser bugs (confidence, accented, PT-BR)</td><td>Bug cluster</td><td class="num">11</td><td class="r-fast">⚡ 0.08x avg — same root cause, template set by first fix</td></tr>
+        <tr><td>#82</td><td>Ingredient frequency factor</td><td>Algorithm</td><td class="num">3</td><td class="r-target">✅ On target — heaviest algorithm item (0.20x)</td></tr>
+        <tr><td>#214</td><td>Algorithm weight tuning</td><td>Algorithm</td><td class="num">3</td><td class="r-fast">⚡ Faster (0.07x)</td></tr>
+        <tr><td>#213</td><td>Weekly variety constraint</td><td>Feature</td><td class="num">2</td><td class="r-fast">⚡ Faster (0.10x)</td></tr>
+        <tr><td>#341</td><td>Same-day meal ordering</td><td>Bug</td><td class="num">2</td><td class="r-over">⚠️ Committed but never device-validated → #351, #352</td></tr>
+      </table></div>
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>Parser/algorithm bug clusters execute at ~0.08x when batched (same root cause).</strong> First issue sets the template; subsequent are mechanical adaptations. Batch on the same day and discount 2nd+ issues 40–50% at estimation time.</li>
+        <li><strong>"Committed ≠ validated" confirmed again.</strong> #341 was logically sound but never rebuilt as an APK and tested on device. Two downstream issues (#351, #352) required a full sprint day in 0.2.3 to close.</li>
+        <li><strong>L10n-generated files inflate line counts in retrospective analysis.</strong> Exclude <code>app_localizations.dart</code> from line counts when computing proportional day attribution — it can make a simple 1-pt fix appear 3× slower.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 0.2.3 -->
+  <div id="s023" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.2.3 — UX Polish</h3>
+        <div class="dates">Apr 16–18, 2026 &bull; 3 calendar days</div>
+        <div class="theme">Execution-mode sprint — 12 pts in one bug-batch day; 0.2.2 validation debt repaid</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-execution">Execution</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">33</div><div class="perf-lbl">Pts Delivered</div></div>
+      <div class="perf-cell"><div class="perf-val">~3.4</div><div class="perf-lbl">Effective Days</div></div>
+      <div class="perf-cell"><div class="perf-val">9.7</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">48.5</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">~0.10x</div><div class="perf-lbl">Ratio</div></div>
+    </div>
+    <div class="sprint-body">
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>Prior-sprint validation debt repays at post-usage bug rate (0.08x).</strong> #351, #352 executed cleanly because root cause was fully diagnosed during 0.2.2 post-release investigation — no debugging phase needed.</li>
+        <li><strong>Dead code deletion beats patching when the code path is unreachable.</strong> #352 was planned as a one-line patch. Inspection found <code>MealCookedDialog</code> was never called — deletion was safer and needed no device validation. Always verify code path reachability before patching.</li>
+        <li><strong>"Previously failed + sound diagnosis" lowers risk, not raises it.</strong> #295 (Plan Today scroll) had a prior failed attempt. In practice it was the fastest feature in the sprint (0.08x) — the failure left a correct diagnosis that eliminated all alternatives.</li>
+        <li><strong>Budget ~0.20d hidden overhead for P1 UX features with device validation.</strong> #121 required one round of design iteration triggered by device testing. This is real creative work that leaves no commit trace — not an overrun, it's the spec phase for interaction details.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 0.2.4 -->
+  <div id="s024" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.2.4 — Recipe Enhancement</h3>
+        <div class="dates">Apr 20–25, 2026 &bull; 4 active days (2 public holidays)</div>
+        <div class="theme">Three dependency chains in one sprint — each enabled a "free ride" follow-on issue</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-execution">Execution</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">30</div><div class="perf-lbl">Pts Delivered</div></div>
+      <div class="perf-cell"><div class="perf-val">~4.0</div><div class="perf-lbl">Effective Days</div></div>
+      <div class="perf-cell"><div class="perf-val">7.5</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">37.5</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">~0.87x</div><div class="perf-lbl">Ratio (new method)</div></div>
+    </div>
+    <div class="sprint-body">
+      <div class="note green">First sprint using the new ratio formula: actual days ÷ (est pts ÷ 6.5). Ratio ~0.87x means slightly faster than cruising — essentially on target.</div>
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>Dependency chain compounding is a planning tool, not an accident.</strong> Three chains (#198→#320, #321→#326, multi-dish→#291) all deliberately sequenced. Schedule "free ride" issues immediately after their enablers — the compounding is reliable when enforced.</li>
+        <li><strong>Platform/permission bugs with new packages are underpriced at 2 pts.</strong> #354 (Android 10+ backup: SAF + new packages + virtual device testing) cost ~0.70d vs 0.31d implied by 2 pts at 6.5 pts/day. Estimate at 3–5 pts for any bug requiring new package setup or platform-specific permissions.</li>
+        <li><strong>In-context UX discovery is high-efficiency cleanup.</strong> #360–#363 (6 pts individually, ~0.22d actual) surfaced while already in the ingredient usage list code. Adjacent trivial wins have near-zero context-switching cost.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 0.2.5 -->
+  <div id="s025" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.2.5 — Tagging &amp; Filtering</h3>
+        <div class="dates">Apr 26 – May 1, 2026 &bull; 5 active days</div>
+        <div class="theme">Tagging system + category migration — silent migration numbering collision shipped post-release</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-cruising">Cruising</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">34</div><div class="perf-lbl">Pts Delivered</div></div>
+      <div class="perf-cell"><div class="perf-val">~5.5</div><div class="perf-lbl">Effective Days</div></div>
+      <div class="perf-cell"><div class="perf-val">6.2</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">31.0</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">~1.05x</div><div class="perf-lbl">Ratio (on target)</div></div>
+    </div>
+    <div class="sprint-body">
+      <div class="note red"><strong>Silent migration failure shipped.</strong> New migrations numbered 2–8. Existing users had <code>schema_migrations</code> rows v1–v11. Runner used <code>MAX(version)</code> → MAX(11) ≥ 8 → all new migrations silently skipped on every existing device. Tags, meal_role, food_type: broken since 0.2.4. No error, no crash, no log. Required emergency 0.2.6 hotfix.</div>
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>"Add tag type + vocabulary + UI wiring" is 3× more expensive than "add a tag type."</strong> #333 (3 pts) actually included 17 seed vocabulary items, two migrations, UI wiring, and l10n. Estimate "tag type + full vocabulary" at 5–8 pts; 2–3 pts is only for adding individual tags to an existing type.</li>
+        <li><strong>Enum removal blast radius requires an upfront grep audit.</strong> #335 ("remove category field", 2 pts) hit 21 files (443-line sweep). Run a grep before estimating — if >5 files, it's a refactor (3–5 pts), not a chore.</li>
+        <li><strong>Symptom-level bug fixes on migration issues deserve architectural review.</strong> #372's Apr 27 fix was correct for the visible symptom but never examined the runner's detection strategy. One question — "does this hold for the full range of DB states?" — would have surfaced the root cause.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 0.2.6 -->
+  <div id="s026" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.2.6 — Schema Migration Fix (Emergency Release)</h3>
+        <div class="dates">May 2, 2026 &bull; 1 fix day</div>
+        <div class="theme">Architectural root cause of 0.2.5 migration failure — renumbered to 101+ namespace, set-membership runner</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-emergency">Emergency Hotfix</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">~1.5d</div><div class="perf-lbl">Fix + Release</div></div>
+      <div class="perf-cell"><div class="perf-val">~3–4</div><div class="perf-lbl">Implicit Pts</div></div>
+      <div class="perf-cell"><div class="perf-val">~3.5x</div><div class="perf-lbl">Combined #372</div></div>
+      <div class="perf-cell"><div class="perf-val">—</div><div class="perf-lbl">Not Regular Sprint</div></div>
+    </div>
+    <div class="sprint-body">
+      <h4>What Was Fixed</h4>
+      <div class="tbl-wrap"><table>
+        <tr><th>Commit</th><th>Change</th><th>Lines</th></tr>
+        <tr><td><code>b1fd710</code></td><td>Renumber migrations 1–8 → 101–108; switch runner to set-membership detection (<code>_getAppliedVersions</code>); add Schema Inspector to developer tools</td><td class="num">215</td></tr>
+        <tr><td><code>73d1522</code></td><td>Expand backup service to cover tag tables</td><td class="num">88</td></tr>
+      </table></div>
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>The 101+ namespace convention permanently eliminates this failure class.</strong> New migrations can never collide with legacy v1–v11 state. Set-membership detection removes MAX-based blind spots. Both changes are now mandatory and documented in <code>DATABASE_MIGRATION_WORKFLOW.md</code>.</li>
+        <li><strong>When a bug class is "invisible at runtime," build observability into the fix itself.</strong> Schema Inspector was added as part of the fix — not deferred as a backlog item. It enabled immediate validation on the affected device.</li>
+        <li><strong>Emergency releases generate test debt when commits are not atomic.</strong> <code>73d1522</code> expanded backup service scope without updating test setUp. Generated 6 broken tests on develop — more costly than the 10 minutes it would have taken to update setUp atomically.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 0.2.7 -->
+  <div id="s027" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.2.7 — Code Health</h3>
+        <div class="dates">May 6–8, 2026 &bull; 1.5 active days (May 6 rest)</div>
+        <div class="theme">P1 test fixes + well-specified bugs — execution-mode velocity; gate cleared for 0.2.8</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-execution">Execution ★</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">17</div><div class="perf-lbl">Pts Delivered</div></div>
+      <div class="perf-cell"><div class="perf-val">~1.5</div><div class="perf-lbl">Active Days</div></div>
+      <div class="perf-cell"><div class="perf-val">11.3</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">~79</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">✅ + stretch</div><div class="perf-lbl">Result</div></div>
+    </div>
+    <div class="sprint-body">
+      <div class="note amber"><strong>★ Do not use 0.2.7 to recalibrate cruising velocity.</strong> 11.3 pts/day reflects execution-mode conditions: every issue had zero discovery overhead (exact file+line fix locations in the sprint plan). Cruising baseline remains 30 pts/week.</div>
+      <div class="note blue"><strong>Methodology change (0.2.7 onward):</strong> per-issue weighted actual days and point-to-time ratios are no longer computed. Only sprint-level velocity is tracked going forward.</div>
+      <h4>Issues</h4>
+      <div class="tbl-wrap"><table>
+        <tr><th>#</th><th>Title</th><th>Type</th><th>Est Pts</th><th>Status</th></tr>
+        <tr><td>#378</td><td>Fix migration_consolidation_test Scenario 3</td><td>Test fix</td><td class="num">1</td><td>✅ Done</td></tr>
+        <tr><td>#379</td><td>Fix database_backup_service_test setUp</td><td>Test fix</td><td class="num">2</td><td>✅ Done</td></tr>
+        <tr><td>#375</td><td>Remove orphaned header</td><td>Bug</td><td class="num">1</td><td>✅ Done</td></tr>
+        <tr><td>#364</td><td>Parser confidence threshold</td><td>Bug</td><td class="num">3</td><td>✅ Done — file+line in plan, 1-line fix</td></tr>
+        <tr><td>#366</td><td>Fix 'Voltar' navigation</td><td>Bug</td><td class="num">3</td><td>✅ Done — file+line in plan, 1-line fix</td></tr>
+        <tr><td>#377</td><td>Drop recipes.category column</td><td>DB chore</td><td class="num">2</td><td>✅ Done</td></tr>
+        <tr><td>#367</td><td>Show app version in Settings</td><td>Enhancement</td><td class="num">1</td><td>✅ Done</td></tr>
+        <tr><td>#355</td><td>DI for IngredientsScreen</td><td>Refactor</td><td class="num">2</td><td>✅ Done</td></tr>
+        <tr><td>#374</td><td>Show side dish names in meal slot</td><td>UX</td><td class="num">2</td><td>📋 Stretch — pulled in naturally</td></tr>
+      </table></div>
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>Sprint plan specification quality is the primary velocity multiplier.</strong> Both 3-pt bugs (#364, #366) had file+line fix locations written in the sprint plan. No debugging phase — straight to fix. Treat "where exactly is the fix?" as part of planning investment, not sprint execution.</li>
+        <li><strong>Code Health sprint profile reliably runs at execution-mode velocity.</strong> P1 test fixes + well-specified bugs + mechanical refactor + DB chore = zero discovery overhead. Size Code Health milestones at ~36–40 pts/week, not cruising (30 pts/week).</li>
+        <li><strong>Name the stretch goal explicitly when the plan predicts early finish.</strong> #374 was named as stretch in the plan. Pull-in was smooth and unforced — no mid-sprint decision overhead.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 0.2.8 -->
+  <div id="s028" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.2.8 — Range Quantities + Import</h3>
+        <div class="dates">May 11–14, 2026 &bull; 4 active days</div>
+        <div class="theme">Feature trilogy (data→editor→shopping) + major import feature — on target at cruising pace</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-cruising">Cruising</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">25</div><div class="perf-lbl">Pts Delivered</div></div>
+      <div class="perf-cell"><div class="perf-val">4.0</div><div class="perf-lbl">Active Days</div></div>
+      <div class="perf-cell"><div class="perf-val">6.25</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">44.0</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">✅ On target</div><div class="perf-lbl">Result</div></div>
+    </div>
+    <div class="sprint-body">
+      <h4>Issues</h4>
+      <div class="tbl-wrap"><table>
+        <tr><th>#</th><th>Title</th><th>Type</th><th>Est Pts</th><th>Status</th></tr>
+        <tr><td>#380, #373, #368</td><td>Quick wins batch (FAB fix, MD preview, sort by date)</td><td>UX/Enhancement</td><td class="num">2+2+2</td><td>✅ Done — Day 1 batch</td></tr>
+        <tr><td>#357</td><td>Range quantities data foundation</td><td>Feature/data</td><td class="num">5</td><td>✅ Done — Day 2, unblocked #358+#359</td></tr>
+        <tr><td>#358</td><td>Range quantities recipe editor</td><td>Feature/UI</td><td class="num">3</td><td>✅ Done</td></tr>
+        <tr><td>#359</td><td>Range quantities shopping list</td><td>Feature/UI</td><td class="num">3</td><td>✅ Done</td></tr>
+        <tr><td>#216</td><td>Recipe and ingredient import</td><td>Feature/major</td><td class="num">8</td><td>✅ Done — reused file_picker from #223</td></tr>
+      </table></div>
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>Data-first hard-sequencing prevents mid-sprint rework on feature trilogies.</strong> #357 completed before any UI work — #358 and #359 never revisited the data layer. Resist starting UI work until the data foundation is confirmed stable.</li>
+        <li><strong>Pre-sprint investigation converts discovery risk to planned execution.</strong> A half-day investigation window before #216 coding found no surprises — Days 5–6 executed as planned with no mid-implementation pivots. Budget explicitly for any ≥8 pt discovery-adjacent feature.</li>
+        <li><strong>Upfront UI design decisions absorb multipliers before they cost anything.</strong> Committing to single-field range input in the sprint plan eliminated the 1.3x UI iteration risk before #358 started. Make binary design choices during planning, not during implementation.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- CUMULATIVE METRICS -->
+<div id="cumulative" class="section">
+  <div class="section-title">Cumulative <span>Metrics</span></div>
+  <div class="tbl-wrap"><table>
+    <tr><th>Sprint</th><th>Theme</th><th>Pts</th><th>Days</th><th>Pts/Day</th><th>Pts/Week</th><th>Ratio</th><th>Notes</th></tr>
+    <tr><td>0.1.2</td><td>Polish &amp; Data Safety</td><td class="num">12.2</td><td class="num">9</td><td class="num">1.11</td><td class="num">5.5</td><td class="num r-na">0.90x</td><td>Baseline — mixed work</td></tr>
+    <tr><td>0.1.3</td><td>User Features</td><td class="num">26</td><td class="num">10</td><td class="num">2.60</td><td class="num">13.0</td><td class="num r-fast">0.38x</td><td>Very conservative — pattern reuse</td></tr>
+    <tr><td>0.1.4</td><td>Architecture &amp; Bugs</td><td class="num">12</td><td class="num">2</td><td class="num">6.00</td><td class="num">30.0</td><td class="num r-fast">0.17x</td><td>Well-prepared, ultra-short</td></tr>
+    <tr><td>0.1.5</td><td>Test Coverage &amp; Polish</td><td class="num">14</td><td class="num">5</td><td class="num">2.03</td><td class="num">10.2</td><td class="num r-over">1.98x 🔴</td><td>Overran — 2 days hidden tooling</td></tr>
+    <tr><td>0.1.6</td><td>Shopping List &amp; Polish</td><td class="num">18</td><td class="num">6</td><td class="num">3.00</td><td class="num">15.0</td><td class="num r-fast">0.33x</td><td>Well-specified features</td></tr>
+    <tr><td>0.1.7a</td><td>Visual Foundation</td><td class="num">21*</td><td class="num">~0.5*</td><td class="num">~42*</td><td class="num">—*</td><td class="num r-na">~0.01x*</td><td>⚠️ Unreliable — shared day</td></tr>
+    <tr><td>0.1.7b</td><td>Screen &amp; Component Polish</td><td class="num">43</td><td class="num">6.69</td><td class="num">6.43</td><td class="num">32.1</td><td class="num r-fast">0.16x</td><td>Design system — acceleration begins</td></tr>
+    <tr><td>0.1.8</td><td>UX Quick Fixes</td><td class="num">25</td><td class="num">3.5</td><td class="num">7.14</td><td class="num">35.7</td><td class="num r-fast">0.13x</td><td>Small UX fixes inflating velocity</td></tr>
+    <tr><td>0.1.9</td><td>Meal Planning UX Redesign</td><td class="num">18</td><td class="num">1.5</td><td class="num">9.00</td><td class="num">36.0</td><td class="num r-fast">0.34x</td><td>UX simplification, net −1026 lines</td></tr>
+    <tr><td>0.1.10</td><td>Landing Page &amp; Polish</td><td class="num">13</td><td class="num">2</td><td class="num">6.50</td><td class="num">32.5</td><td class="num r-fast">0.15x</td><td>Scope discipline + anchor day</td></tr>
+    <tr><td>0.1.11</td><td>Shopping Corrections</td><td class="num">14</td><td class="num">3</td><td class="num">5.60</td><td class="num">28.0</td><td class="num r-fast">0.18x</td><td>Real-life QA sprint</td></tr>
+    <tr><td>0.1.12</td><td>Servings &amp; Quantity</td><td class="num">17</td><td class="num">3.3</td><td class="num">5.15</td><td class="num">28.3</td><td class="num r-fast">0.17x</td><td>Validation debt deferred (#313–315)</td></tr>
+    <tr><td>0.1.13</td><td>Planning Enhancements</td><td class="num">21</td><td class="num">~2.7</td><td class="num">~7.8</td><td class="num">~30.0</td><td class="num r-fast">0.11x</td><td>Within-sprint pattern compounding</td></tr>
+    <tr><td>0.1.14</td><td>DB Housekeeping</td><td class="num">~21</td><td class="num">~4.0</td><td class="num">~5.25</td><td class="num">~26.3</td><td class="num r-na">~0.19x†</td><td>Zero-features housekeeping (retro)</td></tr>
+    <tr><td>0.1.15</td><td>Import Bug Patch</td><td class="num">—‡</td><td class="num">~1.0</td><td class="num">—</td><td class="num">—</td><td class="num r-na">—</td><td>Emergency P0 — excluded from velocity</td></tr>
+    <tr><td>0.2.2</td><td>Algorithm &amp; Stability</td><td class="num">24</td><td class="num">~3.8</td><td class="num">~6.3</td><td class="num">~31.5</td><td class="num r-fast">~0.11x</td><td>Parser bug cluster; #341 validation debt</td></tr>
+    <tr><td>0.2.3</td><td>UX Polish</td><td class="num">33</td><td class="num">~3.4</td><td class="num">~9.7</td><td class="num">~48.5</td><td class="num r-fast">~0.10x</td><td>Execution mode; validation debt repaid</td></tr>
+    <tr><td>0.2.4</td><td>Recipe Enhancement</td><td class="num">30</td><td class="num">~4.0</td><td class="num">~7.5</td><td class="num">~37.5</td><td class="num r-target">~0.87x§</td><td>Dependency chains; new ratio method</td></tr>
+    <tr><td>0.2.5</td><td>Tagging &amp; Filtering</td><td class="num">34</td><td class="num">~5.5</td><td class="num">~6.2</td><td class="num">~31.0</td><td class="num r-target">~1.05x§</td><td>Silent migration failure shipped</td></tr>
+    <tr><td>0.2.6</td><td>Schema Migration Fix</td><td class="num">—‖</td><td class="num">~1.5</td><td class="num">—</td><td class="num">—</td><td class="num r-na">—</td><td>Emergency architectural fix — excluded</td></tr>
+    <tr><td>0.2.7</td><td>Code Health</td><td class="num">17¶</td><td class="num">~1.5</td><td class="num">11.3</td><td class="num">~79</td><td class="num r-na">—¶</td><td>Execution mode ★ — do not recalibrate</td></tr>
+    <tr><td>0.2.8</td><td>Range Quantities + Import</td><td class="num">25</td><td class="num">4.0</td><td class="num">6.25</td><td class="num">44.0</td><td class="num r-na">—¶</td><td>On target; data-first trilogy</td></tr>
+  </table></div>
+  <p style="font-size:11px;color:var(--text-muted);margin-top:8px">* 0.1.7a: unreliable — shared day, excluded from velocity. † 0.1.14: retroactive estimate. ‡ 0.1.15: P0 emergency, not pre-estimated. § 0.2.4+: ratio = actual days ÷ (est pts ÷ 6.5); prior entries not comparable. ‖ 0.2.6: emergency hotfix, not regular sprint. ¶ 0.2.7+: ratio column dropped; sprint-level velocity only.</p>
+</div>
+
+<!-- CALIBRATION FACTORS -->
+<div id="calibration" class="section">
+  <div class="section-title">Type-Based <span>Calibration Factors</span></div>
+  <p class="section-intro">Use these multipliers when estimating future work. Entries marked with <span style="font-size:10px;background:var(--purple-light);color:var(--purple);padding:1px 5px;border-radius:3px;font-weight:600">NEW 0.2.4</span> use the new ratio formula (actual days ÷ est pts ÷ 6.5) and are not directly comparable to earlier entries.</p>
+  <div class="tbl-wrap"><table class="cal-table">
+    <tr><th>Work Type</th><th>Ratio / Multiplier</th><th>Sample</th><th>Notes</th></tr>
+    <tr><td>Bug fixes — known patterns, batched</td><td class="num r-fast">0.04–0.10x</td><td>0.1.4, 0.1.8</td><td>Trivial when pattern established; near-zero marginal cost for related fixes</td></tr>
+    <tr><td>Bug fixes — new patterns</td><td class="num r-target">0.5–1.0x</td><td>0.1.2</td><td>Conservative; may require pattern creation</td></tr>
+    <tr><td>Bug fixes — post-usage (root cause known)</td><td class="num r-fast">0.10x flat</td><td>0.1.11, 0.1.15</td><td>No debugging phase; root cause already understood; batch on one day</td></tr>
+    <tr><td>Parser/algorithm bugs — same root cause cluster</td><td class="num r-fast">0.08–0.10x</td><td>0.2.2</td><td>First fix sets template; 2nd+ are adaptations. Discount 40–50% for 2nd+ issues</td></tr>
+    <tr><td>Bug — platform/permission (new packages) <span class="new-tag">0.2.4</span></td><td class="num r-over">2.0–2.5x</td><td>0.2.4 #354</td><td>SAF + new packages + platform testing. Estimate at 3–5 pts at 6.5 pts/day velocity</td></tr>
+    <tr><td>UI/Features — well-specified</td><td class="num r-fast">0.6–0.7x</td><td>0.1.2, 0.1.3</td><td>Very conservative; well-defined MVP scope enables fast execution</td></tr>
+    <tr><td>Small UX fixes — batched</td><td class="num r-fast">0.05–0.10x</td><td>0.1.8</td><td>1-pt floor inflates; batch on focus days; don't recalibrate cruising velocity from UX-fix sprints</td></tr>
+    <tr><td>UX redesign — simplification (net code deletion)</td><td class="num r-fast">0.3–0.5x</td><td>0.1.9</td><td>Deletion is faster than creation; apply multiplier when sprint is expected to reduce line count</td></tr>
+    <tr><td>Architecture — well-prepared (prerequisites done)</td><td class="num r-fast">0.2–0.3x</td><td>0.1.4</td><td>Thorough planning + completed prerequisites eliminates discovery</td></tr>
+    <tr><td>Architecture / junction table (clear template)</td><td class="num r-fast">0.13x</td><td>0.1.13 #311</td><td>L-size issues with established DB pattern; don't over-buffer</td></tr>
+    <tr><td>Testing — extend existing patterns</td><td class="num r-fast">0.07–0.12x</td><td>0.1.4, 0.1.8</td><td>Copy-paste work; pattern reuse compounds over time</td></tr>
+    <tr><td>Testing — new algorithm behavior (no fixtures)</td><td class="num r-target">0.20–0.30x</td><td>0.2.2 #254</td><td>Distinct from pattern extension; requires analytical test design first</td></tr>
+    <tr><td>Testing — new infrastructure</td><td class="num r-target">1.0–1.5x</td><td>0.1.2, 0.1.3</td><td>Building shared utilities; investment pays forward but costs now</td></tr>
+    <tr><td>Design foundation — linked tasks</td><td class="num r-fast">0.1–0.2x</td><td>0.1.7a</td><td>Conceptually one deliverable; estimate as a unit, not separately</td></tr>
+    <tr><td>Screen polish — first screen</td><td class="num r-fast">0.4–0.5x</td><td>0.1.7b #258</td><td>Includes refactoring + pattern creation; budget 3–5 pts</td></tr>
+    <tr><td>Screen polish — subsequent screens</td><td class="num r-fast">0.08–0.15x</td><td>0.1.7b #259</td><td>Applying established patterns; 1–2 pts per screen</td></tr>
+    <tr><td>Component standardization (tokens exist)</td><td class="num r-fast">0.09–0.15x</td><td>0.1.7b #260–262</td><td>Mechanical once design tokens exist; 1–2 pts per component type</td></tr>
+    <tr><td>Dependency chain — anchor issue</td><td class="num r-fast">0.2–0.3x</td><td>0.1.12 #304</td><td>Sets the pattern; includes migration + cascade</td></tr>
+    <tr><td>Dependency chain — follow-on issues</td><td class="num r-fast">0.1–0.2x</td><td>0.1.12 #305–306</td><td>Reuse anchor pattern; discount 30–50% vs anchor at estimation</td></tr>
+    <tr><td>Within-sprint dialog reuse</td><td class="num r-fast">~0.03–0.05x</td><td>0.1.13 #312</td><td>Pattern fully loaded in working memory; estimate 2nd dialog at 0.5–1 pt</td></tr>
+    <tr><td>Display-only (read-only additions)</td><td class="num r-fast">0.10x</td><td>0.1.13 #314</td><td>No input, no state machine, no validation; separate calibration from form work</td></tr>
+    <tr><td>Cross-sprint pattern reuse (apply to N locations)</td><td class="num r-fast">0.14x</td><td>0.1.13 #313</td><td>"Apply existing widget to N≤5 locations" — reliable 0.14x regardless of N</td></tr>
+    <tr><td>UI micro-issues (&lt;30 lines)</td><td class="num r-fast">bundle</td><td>0.1.12 #309–310</td><td>Fibonacci too coarse; bundle as "quick wins block" with flat 0.5pt budget per set</td></tr>
+    <tr><td>Enum removal (codebase-wide sweep) <span class="new-tag">0.2.5</span></td><td class="num r-over">3–5 pts</td><td>0.2.5 #335</td><td>Grep call sites first; >5 files = refactor, not chore</td></tr>
+    <tr><td>Tag type + full vocabulary <span class="new-tag">0.2.5</span></td><td class="num r-over">5–8 pts</td><td>0.2.5 #333</td><td>"Add tag type + vocabulary + pickers + l10n" is 3× more expensive than "add tag type"</td></tr>
+    <tr><td>Migration bug — symptom vs root cause <span class="new-tag">0.2.5/0.2.6</span></td><td class="num r-over">~3.5x combined</td><td>0.2.5–0.2.6 #372</td><td>Symptom fix: 0.06d. Architectural root cause: 1.5d. Always review runner detection strategy</td></tr>
+    <tr><td>Zero-features housekeeping sprint</td><td class="num r-fast">0.15–0.25x</td><td>0.1.14</td><td>Deferred issues execute cleanly when scope pre-validated; docs fast, migration moderate</td></tr>
+    <tr><td>Emergency P0 patch (known root cause)</td><td class="num r-fast">0.10x</td><td>0.1.15, 0.2.6</td><td>Same 0.10x rate as post-usage bugs — root cause clear; no debugging phase</td></tr>
+    <tr><td>P1 Feature with device-test iteration <span class="new-tag">0.2.3</span></td><td class="num r-target">0.10–0.15x</td><td>0.2.3 #121</td><td>Budget ~0.20d hidden overhead beyond commits for UX design decisions triggered by device testing</td></tr>
+    <tr><td>Feature (medium-risk, prior failure + diagnosis) <span class="new-tag">0.2.3</span></td><td class="num r-fast">0.08–0.10x</td><td>0.2.3 #295</td><td>"Previously failed + sound diagnosis" lowers risk; treat like post-usage bug</td></tr>
+    <tr><td>Flaky test investigation</td><td class="num r-na">time-box</td><td>0.1.8</td><td>Set 2-hour cap; if no signal, document hypothesis and move on</td></tr>
+  </table></div>
+</div>
+
+<!-- KEY INSIGHTS -->
+<div id="insights" class="section">
+  <div class="section-title">Key <span>Insights</span></div>
+  <div class="insight-group">
+    <h4>Velocity &amp; Calibration</h4>
+    <ul>
+      <li>Cruising velocity is 30 pts/week — validated across 0.1.7b–0.2.4 (10+ consecutive sprints at 26–48 pts/week)</li>
+      <li>Velocity step-change is real — early sprints (0.1.2–0.1.6) averaged 1.1–3.0 pts/day; post-0.1.7b sustains 5.6–9.0 pts/day. Drivers: codebase maturity, Claude Code, accumulated infrastructure, developer proficiency</li>
+      <li>Sprint ratio depends heavily on work type — don't use one sprint's ratio to predict another sprint's performance</li>
+      <li>Small UX fix sprints inflate story-point velocity due to the 1-pt Fibonacci floor. Don't recalibrate cruising from UX-fix-heavy sprints</li>
+      <li>Code Health sprint profile reliably executes at execution-mode velocity (~36–40 pts/week) — size those milestones accordingly, not at cruising</li>
+    </ul>
+  </div>
+  <div class="insight-group">
+    <h4>Planning &amp; Scope</h4>
+    <ul>
+      <li>Sprint plan specification quality is the primary velocity multiplier — writing the exact file+line fix location eliminates the debugging phase entirely</li>
+      <li>Scope discipline is as powerful as execution skill — selecting 13 of 32 available points (0.1.10) enabled clean 2-day execution; the deferred 19 pts would have diluted focus without user-facing benefit</li>
+      <li>A planning day (no commits) pays for itself within the first hour of Day 1. Pre-defined acceptance criteria = zero mid-sprint scope exploration</li>
+      <li>Dependency chain compounding is a planning tool, not an accident — actively identify "free ride" issues and schedule them immediately after their enablers</li>
+      <li>Linked issues estimated separately overstate total work — when issues share the same deliverable or redesign away each other, estimate the umbrella issue only</li>
+    </ul>
+  </div>
+  <div class="insight-group">
+    <h4>Execution Patterns</h4>
+    <ul>
+      <li>First-screen polish creates patterns; subsequent screens harvest them — 8x difference between #258 (first screen) and #259 (second screen) in 0.1.7b</li>
+      <li>"Real-life QA sprint" is a repeatable sprint type — intensive app usage (2 days) → issue discovery → batch fix. App usage days are a specification phase, not idle time</li>
+      <li>Post-usage bugs execute at 0.10x flat rate regardless of point estimate — root cause is known before the editor opens; no debugging phase needed</li>
+      <li>Within-sprint pattern compounding is the fastest reuse mode — #312 (3 pts) completed in 45 minutes using #311's dialog pattern built 3 days earlier in the same sprint</li>
+      <li>Batching similar small issues on a focus day with deep, uninterrupted time is multiplicative — 6 UX issues in one session, no context switching</li>
+    </ul>
+  </div>
+  <div class="insight-group">
+    <h4>Validation &amp; Quality</h4>
+    <ul>
+      <li>"Committed ≠ validated" is a recurring failure mode (0.1.12, 0.2.2) — fast execution without device testing creates deferred work, not completed work. "✓ Tested on device" must be a non-optional AC item for data-facing or display-ordering fixes</li>
+      <li>"100% completion" can mask validation debt — all points closed but follow-up issues emerge from skipped device testing</li>
+      <li>Real seed data is a distinct integration test category — 0.2.1's first real recipe dataset exposed two P0 import bugs that existed undetected through 50+ sprints of synthetic-fixture testing</li>
+      <li>Migration bugs have two prices: symptom and root cause — always review the runner's detection strategy, not just the failing migration. "Does this fix hold for the full range of possible DB states?"</li>
+      <li>The 101+ migration namespace is now mandatory — prevents numbering collisions with legacy schema versions. Documented in DATABASE_MIGRATION_WORKFLOW.md</li>
+    </ul>
+  </div>
+  <div class="insight-group">
+    <h4>Tooling &amp; Environment</h4>
+    <ul>
+      <li>Hidden tooling overhead can be sprint-wide and massive (0.1.5: 2 full days = 29% of actual time, zero trace in commits). Add 25–35% buffer for mobile/UI sprints with testing phases</li>
+      <li>Windows Defender can block Dart/Flutter network access during release phases — add firewall exceptions to the new-machine checklist; check Defender first when Dart mysteriously stops working</li>
+      <li>adb/Android Studio friction is a recurring theme — accept VS Code as primary debug tool; don't invest more time in AS config</li>
+      <li>External design tool time (Recraft, Figma) leaves no commit trace — account for it explicitly in effective-day calculation during retrospective, same treatment as planning days</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ESTIMATION GUIDELINES -->
+<div id="guidelines" class="section">
+  <div class="section-title">Estimation <span>Guidelines</span></div>
+  <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;color:var(--text-primary)">Before Estimating</h3>
+  <ol class="steps">
+    <li>
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h4>Identify infrastructure work explicitly</h4>
+        <p>New test patterns needed? → Add a separate "infra" task. New utilities or helpers? → Don't hide in the feature estimate. This is the main source of estimation errors.</p>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h4>Audit blast radius before estimating removals</h4>
+        <p>Run a grep for the symbol being removed. If it appears in &gt;5 files, it's a refactor (3–5 pts), not a chore. If it's an enum used throughout the codebase, estimate accordingly.</p>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h4>Check commit history for similar past work</h4>
+        <p>High commit count in similar issues = add buffer. 10+ commits on a "1-day" estimate = the issue is likely underestimated.</p>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h4>Identify which calibration bucket applies</h4>
+        <p>Use the type-based calibration table above. Distinguishing "extend pattern" (0.07–0.12x) from "create pattern" (1.0–1.5x) is the highest-value estimation decision.</p>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h4>Consider batching small tasks</h4>
+        <p>Group related &lt;30-line one-liners as a flat "quick wins block." Estimate individually only when tasks require genuinely different mental contexts.</p>
+      </div>
+    </li>
+  </ol>
+
+  <h3 style="font-size:15px;font-weight:700;margin:20px 0 14px;color:var(--text-primary)">Estimate Sizes</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>Size</th><th>Est</th><th>Description</th><th>Examples</th></tr>
+    <tr><td><strong>Quick wins block</strong></td><td class="num">0.5 pts flat</td><td>Bundle of related &lt;30-line one-liners</td><td>Sort call, trim() calls, label fixes</td></tr>
+    <tr><td><strong>XS</strong></td><td class="num">1 pt</td><td>Minimum unit — focused, well-understood change</td><td>Small bug with known pattern, trivial UI tweak</td></tr>
+    <tr><td><strong>S</strong></td><td class="num">2–3 pts</td><td>Most bugs, small features, pattern extension</td><td>Known UI bug, single-screen enhancement</td></tr>
+    <tr><td><strong>M</strong></td><td class="num">5 pts</td><td>Standard features, complex bugs, first-time patterns</td><td>New screen, algorithm feature, coverage improvement</td></tr>
+    <tr><td><strong>L</strong></td><td class="num">8 pts</td><td>Features with multiple components; well-templated arch</td><td>Multi-model feature with DB + UI + tests</td></tr>
+    <tr><td><strong>XL</strong></td><td class="num">13+ pts</td><td>Consider breaking down — usually indicates discovery risk</td><td>Major feature with unknown architecture</td></tr>
+  </table></div>
+
+  <h3 style="font-size:15px;font-weight:700;margin:20px 0 14px;color:var(--text-primary)">Red Flags During Sprint</h3>
+  <ul class="lessons">
+    <li>Issue exceeds 10 commits → likely underestimated; stop and reassess scope</li>
+    <li>Multiple "fix:" commits on a "1-day" issue → unexpected complexity emerged; communicate and replan</li>
+    <li>Work spanning 3+ days on a "1-point" estimate → stop and split or escalate</li>
+    <li>Building new test utilities → flag as infrastructure work and estimate separately</li>
+    <li>Migration-related bug fix touching only validate() or up() → treat as provisional; review runner detection strategy</li>
+  </ul>
+</div>
+
+<!-- MILESTONE SIZING -->
+<div id="sizing" class="section">
+  <div class="section-title">Milestone <span>Sizing</span></div>
+  <div class="sizing-grid">
+    <div class="sizing-card cons">
+      <div class="sizing-card-val">20</div>
+      <div class="sizing-card-lbl">Conservative</div>
+      <div class="sizing-card-desc">pts / week when discovery, new patterns, tooling overhead, or UI iteration are expected</div>
+    </div>
+    <div class="sizing-card cruis">
+      <div class="sizing-card-val">30</div>
+      <div class="sizing-card-lbl">Cruising ✓ Default</div>
+      <div class="sizing-card-desc">pts / week for mixed work at sustainable pace — use as default for all milestone sizing</div>
+    </div>
+    <div class="sizing-card exec">
+      <div class="sizing-card-val">36+</div>
+      <div class="sizing-card-lbl">Execution</div>
+      <div class="sizing-card-desc">pts / week when all issues have confirmed fix scope, zero discovery, established patterns</div>
+    </div>
+  </div>
+
+  <h3 style="font-size:15px;font-weight:700;margin:20px 0 12px;color:var(--text-primary)">Velocity Reference Table</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>Sprint Length</th><th>Conservative (20 pts/wk)</th><th>Cruising (30 pts/wk)</th><th>Execution (36 pts/wk)</th></tr>
+    <tr><td>3 days</td><td class="num">12 pts</td><td class="num">18 pts</td><td class="num">22 pts</td></tr>
+    <tr><td>5 days (1 week)</td><td class="num">20 pts</td><td class="num">30 pts</td><td class="num">36 pts</td></tr>
+    <tr><td>10 days (2 weeks)</td><td class="num">40 pts</td><td class="num">60 pts</td><td class="num">72 pts</td></tr>
+  </table></div>
+
+  <h3 style="font-size:15px;font-weight:700;margin:20px 0 12px;color:var(--text-primary)">When to Apply Each Mode</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>Use Conservative (~20 pts/week) if…</th><th>Use Execution (~36 pts/week) if…</th></tr>
+    <tr>
+      <td><ul style="padding-left:16px;font-size:13px">
+        <li>Work involves discovery or research</li>
+        <li>New infrastructure or test patterns needed</li>
+        <li>UI polish requiring iteration and user feedback</li>
+        <li>External service integrations</li>
+        <li>Mobile/UI work with potential tooling issues</li>
+        <li>Migration work with unclear DB state implications</li>
+      </ul></td>
+      <td><ul style="padding-left:16px;font-size:13px">
+        <li>All issues have confirmed fix scope (file+line known)</li>
+        <li>Sprint is Code Health: test fixes + known bugs + chores</li>
+        <li>Work is exclusively pattern extension, not creation</li>
+        <li>Issues are pre-triaged and similarly typed for batching</li>
+        <li>No device testing or platform-specific validation required</li>
+      </ul></td>
+    </tr>
+  </table></div>
+
+  <h3 style="font-size:15px;font-weight:700;margin:20px 0 12px;color:var(--text-primary)">Critical Sizing Rules</h3>
+  <ul class="lessons">
+    <li><strong>30 pts/week is the default.</strong> Adjust by sprint profile — don't guess, use the mode selection criteria above.</li>
+    <li><strong>Add 25–35% overhead buffer</strong> for mobile/UI sprints with testing phases (confirmed by 0.1.5: 2 days hidden tooling = 29% of actual time).</li>
+    <li><strong>Budget 20–30% for emergent work</strong> — healthy UX feedback loops and in-context discovery are features of the workflow, not exceptions.</li>
+    <li><strong>Pre-sprint planning/testing day is standard overhead (+0.5d).</strong> Confirmed in 0.1.10 and 0.1.12 — budget it, don't treat it as lost time.</li>
+    <li><strong>0.1.5 is the only documented full overrun</strong> (1.98x) — discovery + hidden tooling overhead. Use it as the reference for sizing conservative buffers.</li>
+  </ul>
+</div>
+
+<!-- DOCUMENT HISTORY -->
+<div id="history" class="section">
+  <div class="section-title">Document <span>History</span></div>
+  <div class="hist-entry">
+    <div class="hist-date">2026-05-14 — 0.2.8 retrospective added</div>
+    <ul><li>Range quantities trilogy + import sprint; on target at cruising; #382 post-release → 0.2.9/0.2.10</li><li>New lessons: data-first hard-sequencing; pre-sprint investigation for ≥8pt features; upfront design decisions absorb multipliers</li></ul>
+  </div>
+  <div class="hist-entry">
+    <div class="hist-date">2026-05-08 — 0.2.7 retrospective added + methodology change</div>
+    <ul><li><strong>Methodology change:</strong> dropped per-issue weighted actual days and point-to-time ratios. Story points are relative units, not time. Only sprint-level velocity going forward.</li><li>Updated sprint_review_template.md, SKILL.md Checkpoint 3, and "How to Run" section</li><li>0.2.7: 17 pts in ~1.5d (11.3 pts/day); Code Health execution-mode; gate cleared for 0.2.8</li></ul>
+  </div>
+  <div class="hist-entry">
+    <div class="hist-date">2026-05-02 — 0.2.6 retrospective added (emergency release)</div>
+    <ul><li>Migration numbering collision root cause fixed; 101+ namespace mandatory; set-membership runner</li><li>New lesson: build observability into the fix itself (Schema Inspector added same day as fix)</li></ul>
+  </div>
+  <div class="hist-entry">
+    <div class="hist-date">2026-05-01 — 0.2.5 retrospective added</div>
+    <ul><li>Tagging system; silent migration failure shipped post-release → 0.2.6 emergency</li><li>New calibration: tag vocabulary (5–8 pts), enum removal blast radius, migration symptom vs root cause</li></ul>
+  </div>
+  <div class="hist-entry">
+    <div class="hist-date">2026-04-25 — 0.2.4 retrospective added + new ratio formula</div>
+    <ul><li><strong>New ratio formula:</strong> actual days ÷ (est pts ÷ 6.5). Prior entries used 1pt = 1 day — not directly comparable.</li><li>Three dependency chains; holiday-interrupted week; #354 platform bug only genuine overrun (2.27x)</li></ul>
+  </div>
+  <div class="hist-entry">
+    <div class="hist-date">2026-04-18 — 0.2.3 retrospective added</div>
+    <ul><li>Execution-mode sprint (48.5 pts/week); 0.2.2 validation debt repaid; dead code deletion pattern documented</li><li>New lesson: "previously failed + sound diagnosis" lowers risk; P1 UX features budget ~0.20d hidden overhead</li></ul>
+  </div>
+  <div class="hist-entry">
+    <div class="hist-date">2026-04-15 — 0.2.2 retrospective added</div>
+    <ul><li>Parser bug cluster (0.08x avg); #341 validation debt documented; l10n inflation distortion noted</li></ul>
+  </div>
+  <div class="hist-entry">
+    <div class="hist-date">2026-04-09 — 0.1.14 and 0.1.15 added (retroactive)</div>
+    <ul><li>Zero-features housekeeping sprint pattern documented; real seed data as distinct integration test category</li><li>Import integration tests must include full relational data — prerequisite for 0.2.8</li></ul>
+  </div>
+  <div class="hist-entry">
+    <div class="hist-date">2026-03-03 — 0.1.12 retrospective added</div>
+    <ul><li>Validation debt pattern named; device validation gate in AC; dependency chain diminishing complexity</li><li>Pre-sprint planning/testing day confirmed as standard 0.5d overhead</li></ul>
+  </div>
+  <div class="hist-entry">
+    <div class="hist-date">2026-02-25 — 0.1.10 and 0.1.11 retrospectives added</div>
+    <ul><li>Scope discipline pattern (0.1.10); "real-life QA sprint" type named (0.1.11); post-usage bug 0.10x rate documented</li></ul>
+  </div>
+  <div class="hist-entry">
+    <div class="hist-date">2026-02-16 — 0.1.9 retrospective added</div>
+    <ul><li><strong>Cruising velocity revised to 30 pts/week</strong> (from 20) — velocity step-change confirmed across 0.1.7b–0.1.9</li><li>UX simplification calibration factor added; net code deletion as fast-execution signal</li></ul>
+  </div>
+  <div class="hist-entry">
+    <div class="hist-date">2026-02-13 — 0.1.8 retrospective added</div>
+    <ul><li><strong>Cruising velocity established at 20 pts/week</strong> (later revised); bimodal velocity modes documented</li><li>Small UX fix inflation; batching + focus day pattern; TODO audit as planning input</li></ul>
+  </div>
+  <div class="hist-entry">
+    <div class="hist-date">2026-02-08 — 0.1.7a and 0.1.7b retrospectives added</div>
+    <ul><li>Design system velocity profile; first-screen vs follow-up 8x difference; component standardization with tokens</li><li>Velocity acceleration era begins with 0.1.7b</li></ul>
+  </div>
+  <div class="hist-entry">
+    <div class="hist-date">2026-01-29 — 0.1.6 retrospective added</div>
+    <ul><li>Detailed specs → fast execution (0.25x for 8-pt feature); MVP scope discipline; 1-pt minimum floor established</li></ul>
+  </div>
+  <div class="hist-entry">
+    <div class="hist-date">2026-01-10 — 0.1.5 retrospective added (revised with accurate overhead)</div>
+    <ul><li>First sprint to overrun (1.98x); sprint-wide hidden tooling overhead (2 days = 29%); don't use outlier sprints for estimates</li><li>Milestone Sizing Guidelines section added</li></ul>
+  </div>
+  <div class="hist-entry">
+    <div class="hist-date">2026-01-03 — 0.1.4 retrospective added</div>
+    <ul><li>Related bug fixes have near-zero marginal cost; prerequisites eliminate uncertainty; pattern extension very fast</li></ul>
+  </div>
+  <div class="hist-entry">
+    <div class="hist-date">2025-12-31 — 0.1.3 retrospective added</div>
+    <ul><li>Very conservative (0.38x); batching similar tasks extremely efficient; related testing tasks have synergy</li></ul>
+  </div>
+  <div class="hist-entry">
+    <div class="hist-date">2025-12-18 — Created with 0.1.2 retrospective</div>
+    <ul><li>Initial entry; weighted-days methodology established; test infrastructure identified as main risk</li><li>Added <code>scripts/analyze_sprint_commits.py</code> for automated commit analysis</li></ul>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<footer>
+  <p>Gastrobrain Sprint Estimation Diary &mdash; <a href="Gastrobrain-Codebase-Overview.html">Codebase Overview</a> &middot; <a href="Gastrobrain-Roadmap-Status.html">Roadmap</a></p>
+</footer>
+
+</div><!-- /main -->
+</div><!-- /layout -->
+</body>
+</html>

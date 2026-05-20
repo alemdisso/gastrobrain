@@ -25,9 +25,10 @@ class IngredientParserService {
   /// Reference to ingredient matching service for fuzzy matching
   IngredientMatchingService? _matchingService;
   
-  /// Whether the service has been initialized
   bool _isInitialized = false;
-  
+
+  bool get isInitialized => _isInitialized;
+
   /// Initialize the service with localized strings
   /// Must be called before using the service
   void initialize(AppLocalizations localizations, {IngredientMatchingService? matchingService}) {

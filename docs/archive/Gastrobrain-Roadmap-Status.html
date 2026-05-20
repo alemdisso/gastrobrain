@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gastrobrain — Development Roadmap</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --amber:      #d97706;
+      --amber-light:#fef3c7;
+      --amber-mid:  #fde68a;
+      --green:      #065f46;
+      --green-light:#d1fae5;
+      --green-mid:  #6ee7b7;
+      --blue:       #1e40af;
+      --blue-light: #dbeafe;
+      --purple:     #5b21b6;
+      --purple-light:#ede9fe;
+      --gray:       #6b7280;
+      --gray-light: #f3f4f6;
+      --gray-border:#e5e7eb;
+      --text:       #111827;
+      --text-muted: #6b7280;
+      --radius:     8px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f9fafb;
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #78350f 0%, #d97706 100%);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 2rem 2.5rem;
+      margin-bottom: 2rem;
+    }
+    .header h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.5px; }
+    .header .subtitle { opacity: 0.85; margin-top: 0.25rem; font-size: 0.95rem; }
+    .header .meta {
+      display: flex; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap;
+    }
+    .header .meta span {
+      background: rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 0.2rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    /* ── Section titles ── */
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 2rem 0 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--gray-border);
+    }
+
+    /* ── Milestone table ── */
+    .milestone-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      margin-bottom: 2rem;
+    }
+    .milestone-table th {
+      background: var(--gray-light);
+      text-align: left;
+      padding: 0.65rem 1rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .milestone-table td {
+      padding: 0.6rem 1rem;
+      border-top: 1px solid var(--gray-border);
+      font-size: 0.875rem;
+    }
+    .milestone-table tr:hover td { background: #fafafa; }
+
+    /* Status badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-done    { background: var(--green-light);  color: var(--green); }
+    .badge-current { background: var(--amber-light);  color: #92400e; }
+    .badge-next    { background: var(--blue-light);   color: var(--blue); }
+    .badge-vision  { background: var(--purple-light); color: var(--purple); }
+
+    .version { font-weight: 700; font-family: monospace; font-size: 0.875rem; }
+    .theme   { color: var(--text-muted); }
+    .issues  { color: var(--text-muted); font-size: 0.8rem; }
+
+    /* ── Phase cards ── */
+    .phase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .phase-card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-border);
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .phase-card-header {
+      padding: 0.85rem 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .phase-card-header h3 { font-size: 0.95rem; font-weight: 700; }
+    .phase-card-body { padding: 0 1.1rem 1rem; }
+    .phase-card-body ul {
+      list-style: none;
+      padding: 0;
+    }
+    .phase-card-body ul li {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      padding: 0.25rem 0;
+      border-top: 1px solid var(--gray-border);
+      display: flex;
+      align-items: flex-start;
+      gap: 0.4rem;
+    }
+    .phase-card-body ul li::before { content: "›"; color: var(--amber); font-weight: 700; flex-shrink: 0; }
+
+    .phase-done    .phase-card-header { background: var(--green-light); }
+    .phase-current .phase-card-header { background: var(--amber-light); }
+    .phase-next    .phase-card-header { background: var(--blue-light); }
+    .phase-vision  .phase-card-header { background: var(--purple-light); }
+
+    /* ── Highlight box (Current milestone) ── */
+    .highlight-box {
+      background: #fff;
+      border: 2px solid var(--amber);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .highlight-box h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #92400e;
+      margin-bottom: 0.75rem;
+    }
+    .highlight-box .meta-row {
+      display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.75rem;
+    }
+    .meta-pill {
+      background: var(--amber-light);
+      color: #92400e;
+      border-radius: 20px;
+      padding: 0.2rem 0.65rem;
+      font-size: 0.78rem;
+      font-weight: 500;
+    }
+    .issue-link {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0;
+      border-top: 1px solid var(--gray-border);
+      font-size: 0.875rem;
+    }
+    .issue-num {
+      font-family: monospace;
+      font-weight: 700;
+      color: var(--amber);
+      min-width: 3.5rem;
+    }
+
+    /* ── Velocity panel ── */
+    .velocity-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .velocity-card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-border);
+      padding: 1rem 1.2rem;
+      text-align: center;
+    }
+    .velocity-card .value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--amber);
+      line-height: 1.2;
+    }
+    .velocity-card .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    /* ── Strategy table ── */
+    .strategy-list {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-border);
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+    .strategy-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 0.85rem 1.2rem;
+      border-top: 1px solid var(--gray-border);
+    }
+    .strategy-item:first-child { border-top: none; }
+    .strategy-step {
+      min-width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      background: var(--amber);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .strategy-item strong { font-size: 0.9rem; }
+    .strategy-item p { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.1rem; }
+
+    /* ── Strength tags ── */
+    .strength-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+    .strength-tag {
+      background: #fff;
+      border: 1px solid var(--gray-border);
+      border-radius: var(--radius);
+      padding: 0.5rem 0.85rem;
+      font-size: 0.82rem;
+    }
+    .strength-tag strong { color: var(--green); }
+
+    /* ── Versioning legend ── */
+    .legend {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-border);
+      padding: 1rem 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .legend-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+      padding: 0.3rem 0;
+      font-size: 0.85rem;
+      border-top: 1px solid var(--gray-border);
+    }
+    .legend-row:first-child { border-top: none; }
+    .legend-version {
+      font-family: monospace;
+      font-weight: 700;
+      min-width: 4rem;
+      color: var(--amber);
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--gray-border);
+    }
+
+    /* ── Progress bar ── */
+    .progress-bar-wrap {
+      background: var(--gray-light);
+      border-radius: 20px;
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 20px;
+      background: linear-gradient(90deg, #059669 0%, #d97706 85%, #93c5fd 100%);
+    }
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+      margin-bottom: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>Gastrobrain — Development Roadmap</h1>
+    <div class="subtitle">From foundation to community platform</div>
+    <div class="meta">
+      <span>Last updated: May 2026</span>
+      <span>Version: 0.2.11 shipped · 0.2.12 in develop</span>
+      <span>Branch: develop</span>
+      <span>235+ issues resolved</span>
+    </div>
+  </div>
+
+  <!-- Overall progress -->
+  <div class="section-title">Overall Progress</div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" style="width: 62%"></div>
+  </div>
+  <div class="progress-labels">
+    <span>0.1.0 — Foundation</span>
+    <span>0.2.x — Beta (current)</span>
+    <span>0.3.0 — Multi-user</span>
+    <span>1.0.0 — Launch</span>
+  </div>
+
+  <!-- Full milestone table -->
+  <div class="section-title">All Milestones</div>
+  <table class="milestone-table">
+    <thead>
+      <tr>
+        <th>Version</th>
+        <th>Status</th>
+        <th>Issues</th>
+        <th>Theme</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="version">0.1.0</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">53 closed</td><td class="theme">Personal meal planning excellence</td></tr>
+      <tr><td class="version">0.1.1</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">9 closed</td><td class="theme">Stability &amp; polish</td></tr>
+      <tr><td class="version">0.1.2</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">12 closed</td><td class="theme">Polish &amp; data safety</td></tr>
+      <tr><td class="version">0.1.3</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">8 closed</td><td class="theme">User features &amp; critical foundation</td></tr>
+      <tr><td class="version">0.1.4</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">5 closed</td><td class="theme">Architecture &amp; critical bug fixes</td></tr>
+      <tr><td class="version">0.1.5</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">7 closed</td><td class="theme">Test coverage &amp; polish</td></tr>
+      <tr><td class="version">0.1.6</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">7 closed</td><td class="theme">Shopping list &amp; polish</td></tr>
+      <tr><td class="version">0.1.7a</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">3 closed</td><td class="theme">Visual foundation</td></tr>
+      <tr><td class="version">0.1.7b</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">8 closed</td><td class="theme">Screen &amp; component polish</td></tr>
+      <tr><td class="version">0.1.8</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">12 closed</td><td class="theme">UX quick fixes &amp; bug fixes</td></tr>
+      <tr><td class="version">0.1.9</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">5 closed</td><td class="theme">Meal planning UX redesign</td></tr>
+      <tr><td class="version">0.1.10</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">4 closed</td><td class="theme">Landing page &amp; polish</td></tr>
+      <tr><td class="version">0.1.11</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">6 closed</td><td class="theme">Shopping list corrections</td></tr>
+      <tr><td class="version">0.1.12</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">7 closed</td><td class="theme">Servings &amp; quantity tracking</td></tr>
+      <tr><td class="version">0.1.13</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">5 closed</td><td class="theme">Meal planning &amp; shopping enhancements</td></tr>
+      <tr><td class="version">0.1.14</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">5 closed</td><td class="theme">DB housekeeping &amp; documentation</td></tr>
+      <tr><td class="version">0.1.15</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">2 closed</td><td class="theme">Patch: import bug fixes</td></tr>
+      <tr><td class="version">0.2.0</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">11 closed</td><td class="theme">Beta-ready phase</td></tr>
+      <tr><td class="version">0.2.1</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">4 closed</td><td class="theme">Data seeding &amp; recipe content</td></tr>
+      <tr><td class="version">0.2.2</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">11 closed</td><td class="theme">Algorithm &amp; stability</td></tr>
+      <tr><td class="version">0.2.3</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">11 closed</td><td class="theme">UX polish</td></tr>
+      <tr><td class="version">0.2.4</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">12 closed</td><td class="theme">Recipe enhancement</td></tr>
+      <tr><td class="version">0.2.5</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">7 closed</td><td class="theme">Tagging &amp; filtering</td></tr>
+      <tr><td class="version">0.2.6</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">1 closed</td><td class="theme">Patch</td></tr>
+      <tr><td class="version">0.2.7</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">9 closed</td><td class="theme">Code health</td></tr>
+      <tr><td class="version">0.2.9</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">—</td><td class="theme">Migration hotfix</td></tr>
+      <tr><td class="version">0.2.10</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">1 closed</td><td class="theme">Patch</td></tr>
+      <tr><td class="version">0.2.11</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">6 closed</td><td class="theme">DB safety foundation + UX polish</td></tr>
+      <tr><td class="version">0.2.12</td><td><span class="badge badge-done">✓ Complete</span></td><td class="issues">4 closed</td><td class="theme">Architecture &amp; editor</td></tr>
+      <tr style="background: #fffbeb;"><td class="version">0.2.13</td><td><span class="badge badge-current">⟶ Current</span></td><td class="issues">2 open</td><td class="theme">Recipe redesign</td></tr>
+      <tr><td class="version">0.3.0</td><td><span class="badge badge-next">Next</span></td><td class="issues">25 open</td><td class="theme">Multi-user foundation</td></tr>
+      <tr><td class="version">1.0.0</td><td><span class="badge badge-vision">Vision</span></td><td class="issues">13 open</td><td class="theme">Community platform</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Current milestone highlight -->
+  <div class="section-title">Current Milestone</div>
+  <div class="highlight-box">
+    <h2>0.2.13 — Recipe Redesign</h2>
+    <div class="meta-row">
+      <span class="meta-pill">Discovery-heavy sprint</span>
+      <span class="meta-pill">~5 pts/day (discovery mode)</span>
+      <span class="meta-pill">Mandatory UX design phase first</span>
+    </div>
+    <div class="issue-link">
+      <span class="issue-num">#370</span>
+      <span>Redesign recipe creation as a phased, progressive disclosure flow</span>
+    </div>
+    <div class="issue-link">
+      <span class="issue-num">#371</span>
+      <span>Redesign ingredient parser UX/UI as a first-class entry method</span>
+    </div>
+    <div style="margin-top:0.75rem; font-size:0.8rem; color:var(--text-muted); border-top:1px solid var(--gray-border); padding-top:0.6rem;">
+      Builds on the clean architectural foundation from 0.2.12 — IngredientParserService standalone, RecipeEditorScreen componentized.
+    </div>
+  </div>
+
+  <!-- Phase summaries -->
+  <div class="section-title">Phase Summaries</div>
+  <div class="phase-grid">
+
+    <div class="phase-card phase-done">
+      <div class="phase-card-header">
+        <span class="badge badge-done">✓ Complete</span>
+        <h3>0.1.x — Foundation (16 milestones)</h3>
+      </div>
+      <div class="phase-card-body">
+        <ul>
+          <li>Recommendation engine with 9 scoring factors</li>
+          <li>Full bilingual support (EN/PT-BR)</li>
+          <li>Multi-recipe meal support (main + sides)</li>
+          <li>Shopping list generation</li>
+          <li>Visual identity &amp; design token system</li>
+          <li>Database backup/restore</li>
+          <li>2047+ unit tests, 73 E2E tests</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase-card phase-done">
+      <div class="phase-card-header">
+        <span class="badge badge-done">✓ Complete</span>
+        <h3>0.2.x — Beta Refinement (14 milestones)</h3>
+      </div>
+      <div class="phase-card-body">
+        <ul>
+          <li>Beta-ready app for trusted users</li>
+          <li>Tagging system &amp; advanced filtering</li>
+          <li>Recipe enhancement &amp; photo support</li>
+          <li>Algorithm improvements &amp; stability</li>
+          <li>DB safety: auto-rollback, error surfacing</li>
+          <li>DAO extraction — DatabaseHelper no longer a god class</li>
+          <li>IngredientParserService &amp; RecipeEditorScreen componentized</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase-card phase-current">
+      <div class="phase-card-header">
+        <span class="badge badge-current">⟶ Current</span>
+        <h3>0.2.13 — Recipe Redesign</h3>
+      </div>
+      <div class="phase-card-body">
+        <ul>
+          <li>Phased, progressive recipe creation flow</li>
+          <li>Ingredient parser as first-class UX entry method</li>
+          <li>UX design mandatory before implementation</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase-card phase-next">
+      <div class="phase-card-header">
+        <span class="badge badge-next">Next</span>
+        <h3>0.3.0 — Multi-User Foundation</h3>
+      </div>
+      <div class="phase-card-body">
+        <ul>
+          <li>Server-client architecture &amp; RESTful API</li>
+          <li>Authentication &amp; authorization</li>
+          <li>End-to-end encryption &amp; GDPR compliance</li>
+          <li>Cross-device synchronization</li>
+          <li>Performance optimizations &amp; profiling</li>
+          <li>Developer mode for recommendation debugging</li>
+          <li>25 open issues</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase-card phase-vision">
+      <div class="phase-card-header">
+        <span class="badge badge-vision">Vision</span>
+        <h3>1.0.0 — Community Platform</h3>
+      </div>
+      <div class="phase-card-body">
+        <ul>
+          <li>Public recipe sharing &amp; discovery</li>
+          <li>AI-enhanced recommendations</li>
+          <li>Mobile app store deployment (iOS/Android)</li>
+          <li>Developer ecosystem &amp; API</li>
+          <li>Track out-of-home meals</li>
+          <li>13 open issues</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Milestone strategy -->
+  <div class="section-title">Milestone Strategy</div>
+  <div class="strategy-list">
+    <div class="strategy-item">
+      <div class="strategy-step">1</div>
+      <div>
+        <strong>0.2.13 — Recipe Redesign (~1 week)</strong>
+        <p>Complete the recipe entry experience. Both issues require a UX design day before any code. Builds directly on the 0.2.12 architecture cleanup.</p>
+      </div>
+    </div>
+    <div class="strategy-item">
+      <div class="strategy-step">2</div>
+      <div>
+        <strong>0.3.0 — Multi-User Foundation (TBD)</strong>
+        <p>The major architectural leap: server-client, authentication, encryption, and cross-device sync. 25 open issues. The single biggest phase of the project.</p>
+      </div>
+    </div>
+    <div class="strategy-item">
+      <div class="strategy-step">3</div>
+      <div>
+        <strong>1.0.0 — Community Platform (TBD)</strong>
+        <p>App store deployment, public recipe sharing, AI-enhanced recommendations, and developer API. The complete realization of the Gastrobrain vision.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Velocity -->
+  <div class="section-title">Development Velocity</div>
+  <div class="velocity-grid">
+    <div class="velocity-card">
+      <div class="value">30</div>
+      <div class="label">pts / week<br>Cruising velocity</div>
+    </div>
+    <div class="velocity-card">
+      <div class="value">36</div>
+      <div class="label">pts / week<br>Execution mode</div>
+    </div>
+    <div class="velocity-card">
+      <div class="value">20</div>
+      <div class="label">pts / week<br>Discovery mode</div>
+    </div>
+    <div class="velocity-card">
+      <div class="value">29</div>
+      <div class="label">milestones<br>completed</div>
+    </div>
+    <div class="velocity-card">
+      <div class="value">235+</div>
+      <div class="label">issues<br>resolved</div>
+    </div>
+  </div>
+
+  <!-- Strengths -->
+  <div class="section-title">Strategic Strengths</div>
+  <div class="strength-grid">
+    <div class="strength-tag"><strong>Architecture</strong> DAO layer · no god class · standalone services</div>
+    <div class="strength-tag"><strong>DB Safety</strong> auto-rollback · error surfacing · never silent</div>
+    <div class="strength-tag"><strong>Tests</strong> 2047+ unit · 73 E2E · watchdog backlog</div>
+    <div class="strength-tag"><strong>Beta-driven</strong> real-world usage sets all priorities</div>
+    <div class="strength-tag"><strong>Velocity</strong> 30 pts/week documented across sprints</div>
+    <div class="strength-tag"><strong>i18n</strong> full EN/PT-BR bilingual</div>
+    <div class="strength-tag"><strong>Skills ecosystem</strong> 13 agent skills covering the full dev cycle</div>
+  </div>
+
+  <!-- Versioning legend -->
+  <div class="section-title">Versioning History</div>
+  <div class="legend">
+    <div class="legend-row"><span class="legend-version">0.0.x</span> Early prototypes — pre-public tracking</div>
+    <div class="legend-row"><span class="legend-version">0.1.x</span> Foundation phase — 16 milestones, systematic quality &amp; feature completion</div>
+    <div class="legend-row"><span class="legend-version">0.2.x</span> Beta phase — 14 milestones, iterative refinement driven by real usage</div>
+    <div class="legend-row"><span class="legend-version">0.3.x</span> Multi-user phase — architectural transformation (upcoming)</div>
+    <div class="legend-row"><span class="legend-version">1.0.0</span> Public launch (vision)</div>
+  </div>
+
+  <div class="footer">
+    Gastrobrain Development Roadmap · Last updated May 2026 ·
+    <a href="Sprint-Estimation-Diary.md" style="color:var(--amber)">Sprint Estimation Diary</a> ·
+    <a href="../planning/sprints/" style="color:var(--amber)">Sprint Plans</a>
+  </div>
+
+</div>
+</body>
+</html>
