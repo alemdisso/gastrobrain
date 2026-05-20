@@ -45,9 +45,29 @@ For detailed workflows on issue management, GitHub Projects integration, and Git
 
 **Local Development (Windows + VS Code)**: This project runs natively on Windows using VS Code with Claude Code. All Flutter commands work locally: `flutter analyze`, `flutter test`, `flutter build apk`, and `flutter run`. Builds and device testing can also be done via GitHub Actions CI/CD.
 
+## Documentation Format
+
+**Reference documentation is written in self-contained HTML.** This applies to architecture docs, roadmaps, overviews, feature guides, and design docs — anything meant to be browsed rather than edited.
+
+**Stay as Markdown:**
+- `CLAUDE.md` and any file read directly by Claude as AI context
+- Skill prompt files (`.claude/skills/*/SKILL.md`, `README.md`)
+- Sprint planning working docs (`docs/planning/sprints/`)
+- Workflow process docs used in GitHub (`docs/workflows/`, `docs/testing/`)
+
+**HTML document rules:**
+- Self-contained — all CSS embedded in `<style>`, no external dependencies
+- Sidebar navigation for multi-section docs
+- Consistent amber/green color palette (see existing HTML docs for reference)
+- Companion `.html` file lives alongside the `.md` if a `.md` already exists; the `.html` is the primary human-readable version
+
+**Existing HTML docs to use as style reference:**
+- `docs/archive/Gastrobrain-Roadmap-Status.html` — milestone/status format
+- `docs/architecture/Gastrobrain-Codebase-Overview.html` — technical reference with sidebar
+
 ## Architecture & Codebase
 
-For comprehensive architecture details, data models, and testing infrastructure, see **[docs/architecture/Gastrobrain-Codebase-Overview.md](docs/architecture/Gastrobrain-Codebase-Overview.md)**.
+For comprehensive architecture details, data models, and testing infrastructure, see **[docs/architecture/Gastrobrain-Codebase-Overview.html](docs/architecture/Gastrobrain-Codebase-Overview.html)** (or the `.md` source).
 
 **Key patterns to follow:**
 - **Dependency injection**: Access services via `ServiceProvider`
