@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gastrobrain/core/services/ingredient_matching_service.dart';
 import 'package:gastrobrain/models/ingredient.dart';
-import 'package:gastrobrain/models/ingredient_category.dart';
 import 'package:gastrobrain/widgets/ingredient_parser/ingredient_parser_section.dart';
 import 'package:gastrobrain/widgets/recipe_editor/parsed_ingredient.dart';
 import '../../test_utils/test_app_wrapper.dart';
@@ -21,8 +20,7 @@ Widget buildSection({
           child: IngredientParserSection(
             matchingService: matchingService ?? IngredientMatchingService(),
             isServicesReady: isServicesReady,
-            onIngredientsConfirmed:
-                onIngredientsConfirmed ?? (_) async => true,
+            onIngredientsConfirmed: onIngredientsConfirmed ?? (_) async => true,
             onCreateNew: onCreateNew ?? (_) async => null,
           ),
         ),
@@ -48,7 +46,8 @@ void main() {
         expect(parseButton.onPressed, isNull);
       });
 
-      testWidgets('parse button is enabled when services ready', (tester) async {
+      testWidgets('parse button is enabled when services ready',
+          (tester) async {
         await tester.pumpWidget(buildSection(isServicesReady: true));
         await tester.pumpAndSettle();
 
@@ -66,7 +65,8 @@ void main() {
         await tester.pumpAndSettle();
 
         // Confirm button not visible until there are rows
-        expect(find.byType(ElevatedButton), findsNWidgets(1)); // only Parse button
+        expect(
+            find.byType(ElevatedButton), findsNWidgets(1)); // only Parse button
       });
     });
 
@@ -110,7 +110,8 @@ void main() {
     });
 
     group('confirm button gate', () {
-      testWidgets('confirm button is disabled when row name is set with no match',
+      testWidgets(
+          'confirm button is disabled when row name is set with no match',
           (tester) async {
         await tester.pumpWidget(buildSection());
         await tester.pumpAndSettle();
@@ -120,12 +121,16 @@ void main() {
         await tester.pumpAndSettle();
 
         await tester.enterText(
-            find.byType(TextFormField).at(2), // name field (3rd field in expanded row)
+            find
+                .byType(TextFormField)
+                .at(2), // name field (3rd field in expanded row)
             'UnknownIngredient');
         await tester.pumpAndSettle();
 
         // Find the confirm/add-all button (wide ElevatedButton at bottom)
-        final buttons = tester.widgetList<ElevatedButton>(find.byType(ElevatedButton)).toList();
+        final buttons = tester
+            .widgetList<ElevatedButton>(find.byType(ElevatedButton))
+            .toList();
         // The confirm button is the last/widest one
         final confirmButton = buttons.last;
         expect(confirmButton.onPressed, isNull);
@@ -140,15 +145,17 @@ void main() {
         await tester.pumpAndSettle();
 
         // The new row has an empty name → not "needs attention" → confirm enabled
-        final buttons =
-            tester.widgetList<ElevatedButton>(find.byType(ElevatedButton)).toList();
+        final buttons = tester
+            .widgetList<ElevatedButton>(find.byType(ElevatedButton))
+            .toList();
         final confirmButton = buttons.last;
         expect(confirmButton.onPressed, isNotNull);
       });
     });
 
     group('confirm flow', () {
-      testWidgets('tapping confirm calls onIngredientsConfirmed', (tester) async {
+      testWidgets('tapping confirm calls onIngredientsConfirmed',
+          (tester) async {
         bool called = false;
 
         await tester.pumpWidget(buildSection(
@@ -162,8 +169,9 @@ void main() {
         await tester.tap(find.byIcon(Icons.add));
         await tester.pumpAndSettle();
 
-        final buttons =
-            tester.widgetList<ElevatedButton>(find.byType(ElevatedButton)).toList();
+        final buttons = tester
+            .widgetList<ElevatedButton>(find.byType(ElevatedButton))
+            .toList();
         await tester.tap(find.byWidget(buttons.last));
         await tester.pumpAndSettle();
 
@@ -180,8 +188,9 @@ void main() {
         await tester.tap(find.byIcon(Icons.add));
         await tester.pumpAndSettle();
 
-        final buttons =
-            tester.widgetList<ElevatedButton>(find.byType(ElevatedButton)).toList();
+        final buttons = tester
+            .widgetList<ElevatedButton>(find.byType(ElevatedButton))
+            .toList();
         await tester.tap(find.byWidget(buttons.last));
         await tester.pumpAndSettle();
 
@@ -189,7 +198,8 @@ void main() {
         expect(find.byType(ElevatedButton), findsNWidgets(1));
       });
 
-      testWidgets('section preserves rows when onIngredientsConfirmed returns false',
+      testWidgets(
+          'section preserves rows when onIngredientsConfirmed returns false',
           (tester) async {
         await tester.pumpWidget(buildSection(
           onIngredientsConfirmed: (_) async => false,
@@ -199,8 +209,9 @@ void main() {
         await tester.tap(find.byIcon(Icons.add));
         await tester.pumpAndSettle();
 
-        final buttons =
-            tester.widgetList<ElevatedButton>(find.byType(ElevatedButton)).toList();
+        final buttons = tester
+            .widgetList<ElevatedButton>(find.byType(ElevatedButton))
+            .toList();
         await tester.tap(find.byWidget(buttons.last));
         await tester.pumpAndSettle();
 
@@ -210,12 +221,14 @@ void main() {
     });
 
     group('parse with services not ready (fallback)', () {
-      testWidgets('parsing with services not ready is blocked by disabled button',
+      testWidgets(
+          'parsing with services not ready is blocked by disabled button',
           (tester) async {
         await tester.pumpWidget(buildSection(isServicesReady: false));
         await tester.pumpAndSettle();
 
-        await tester.enterText(find.byType(TextField), '2 tbsp azeite\n1 cup farinha');
+        await tester.enterText(
+            find.byType(TextField), '2 tbsp azeite\n1 cup farinha');
         await tester.pumpAndSettle();
 
         // Parse button is disabled — no rows produced
