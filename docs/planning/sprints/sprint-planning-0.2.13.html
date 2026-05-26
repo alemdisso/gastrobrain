@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sprint Plan 0.2.13 — Recipe Redesign</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --amber:       #d97706;
+      --amber-light: #fef3c7;
+      --amber-mid:   #fde68a;
+      --green:       #065f46;
+      --green-light: #d1fae5;
+      --green-mid:   #6ee7b7;
+      --blue:        #1e40af;
+      --blue-light:  #dbeafe;
+      --red:         #991b1b;
+      --red-light:   #fee2e2;
+      --yellow:      #92400e;
+      --yellow-light:#fffbeb;
+      --gray:        #6b7280;
+      --gray-light:  #f3f4f6;
+      --gray-border: #e5e7eb;
+      --text:        #111827;
+      --text-muted:  #6b7280;
+      --radius:      8px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f9fafb;
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    .container { max-width: 900px; margin: 0 auto; }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #78350f 0%, #d97706 100%);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 2rem 2.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .header h1 { font-size: 1.7rem; font-weight: 700; letter-spacing: -0.5px; }
+    .header .subtitle { opacity: 0.85; margin-top: 0.25rem; font-size: 0.95rem; }
+    .header .meta {
+      display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap;
+    }
+    .header .meta span {
+      background: rgba(255,255,255,0.18);
+      border-radius: 20px;
+      padding: 0.2rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    /* ── Section titles ── */
+    .section-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 2rem 0 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--gray-border);
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      margin-bottom: 1rem;
+    }
+    .card-header {
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--gray-border);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .card-header h3 { font-size: 0.95rem; font-weight: 700; flex: 1; }
+    .card-body { padding: 1rem 1.25rem; }
+
+    /* ── Goal box ── */
+    .goal-box {
+      background: var(--amber-light);
+      border: 1px solid var(--amber-mid);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .goal-box p { font-size: 0.9rem; line-height: 1.65; }
+    .goal-box ul { margin-top: 0.6rem; padding-left: 1.2rem; }
+    .goal-box ul li { font-size: 0.875rem; margin-bottom: 0.2rem; }
+
+    /* ── Warning box ── */
+    .warning-box {
+      background: var(--yellow-light);
+      border: 1px solid #fcd34d;
+      border-radius: var(--radius);
+      padding: 0.75rem 1.1rem;
+      font-size: 0.85rem;
+      color: var(--yellow);
+      margin-bottom: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+    }
+
+    /* ── Capacity grid ── */
+    .capacity-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 640px) { .capacity-grid { grid-template-columns: 1fr; } }
+
+    .capacity-cell {
+      background: var(--gray-light);
+      border-radius: var(--radius);
+      padding: 0.85rem 1rem;
+      text-align: center;
+    }
+    .capacity-cell .value { font-size: 1.4rem; font-weight: 700; color: var(--amber); }
+    .capacity-cell .label { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.1rem; text-transform: uppercase; letter-spacing: 0.04em; }
+
+    /* ── Issue cards ── */
+    .issue-card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    .issue-card-header {
+      padding: 0.8rem 1.2rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      border-bottom: 1px solid var(--gray-border);
+    }
+    .issue-num {
+      font-family: monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      background: var(--amber-light);
+      color: var(--amber);
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .issue-title { font-size: 0.9rem; font-weight: 700; flex: 1; }
+    .issue-card-body { padding: 0.9rem 1.2rem; }
+
+    .issue-meta {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.75rem;
+    }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.15rem 0.55rem;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-pts    { background: var(--amber-light); color: var(--yellow); }
+    .badge-risk-h { background: var(--red-light);   color: var(--red); }
+    .badge-risk-m { background: var(--yellow-light); color: var(--yellow); }
+    .badge-risk-l { background: var(--green-light);  color: var(--green); }
+    .badge-ux     { background: var(--blue-light);   color: var(--blue); }
+    .badge-done   { background: var(--green-light);  color: var(--green); }
+    .badge-pending { background: var(--gray-light);  color: var(--gray); }
+
+    /* ── Checklists ── */
+    .checklist { list-style: none; padding: 0; }
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      font-size: 0.845rem;
+      padding: 0.25rem 0;
+      border-top: 1px solid var(--gray-border);
+    }
+    .checklist li:first-child { border-top: none; }
+    .check-box {
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--gray-border);
+      border-radius: 3px;
+      flex-shrink: 0;
+      margin-top: 3px;
+    }
+
+    /* ── Day cards ── */
+    .day-card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 0.85rem;
+      overflow: hidden;
+    }
+    .day-header {
+      padding: 0.7rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border-bottom: 1px solid var(--gray-border);
+    }
+    .day-num {
+      background: var(--amber);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 0.15rem 0.55rem;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .day-title { font-size: 0.9rem; font-weight: 700; flex: 1; }
+    .day-date { font-size: 0.78rem; color: var(--text-muted); }
+    .day-body { padding: 0.9rem 1.2rem; }
+    .day-body p { font-size: 0.86rem; margin-bottom: 0.6rem; }
+    .day-body .label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-top: 0.6rem; margin-bottom: 0.2rem; }
+
+    /* ── Risk table ── */
+    .risk-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+      background: #fff;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      margin-bottom: 1rem;
+    }
+    .risk-table th {
+      background: var(--gray-light);
+      text-align: left;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .risk-table td {
+      padding: 0.6rem 0.9rem;
+      border-top: 1px solid var(--gray-border);
+      vertical-align: top;
+    }
+    .risk-table tr:hover td { background: #fafafa; }
+
+    /* ── Prereq table ── */
+    .prereq-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+      background: #fff;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      margin-bottom: 1rem;
+    }
+    .prereq-table th {
+      background: var(--gray-light);
+      text-align: left;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .prereq-table td {
+      padding: 0.6rem 0.9rem;
+      border-top: 1px solid var(--gray-border);
+      vertical-align: top;
+    }
+
+    /* ── Success criteria ── */
+    .success-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 600px) { .success-grid { grid-template-columns: 1fr; } }
+
+    .success-card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-border);
+      padding: 0.9rem 1.1rem;
+    }
+    .success-card h4 { font-size: 0.82rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+
+    /* ── Code block ── */
+    .code-block {
+      background: #1e293b;
+      color: #e2e8f0;
+      font-family: "Consolas", "Menlo", monospace;
+      font-size: 0.78rem;
+      border-radius: var(--radius);
+      padding: 0.9rem 1.1rem;
+      overflow-x: auto;
+      margin: 0.5rem 0;
+      line-height: 1.6;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 2.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--gray-border);
+    }
+
+    a { color: var(--amber); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    strong { font-weight: 700; }
+    code {
+      font-family: "Consolas", "Menlo", monospace;
+      font-size: 0.82em;
+      background: var(--gray-light);
+      padding: 0.1em 0.35em;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>Sprint Plan: 0.2.13 — Recipe Redesign</h1>
+    <div class="subtitle">Redesign the two core recipe entry surfaces as first-class, guided experiences</div>
+    <div class="meta">
+      <span>📅 2026-05-25 → 2026-06-02</span>
+      <span>⏱ 6 working days</span>
+      <span>📦 26 pts</span>
+      <span>🚀 Milestone #36</span>
+      <span>⚡ 6.5 pts/day cruising</span>
+    </div>
+  </div>
+
+  <!-- Sprint Goal -->
+  <div class="section-title">Sprint Goal</div>
+  <div class="goal-box">
+    <p>Redesign the two core recipe entry surfaces as first-class, guided experiences. The ingredient parser becomes a prominent, trustworthy input method with parse preview before commit and graceful fallback. Recipe creation becomes a phased, lower-cognitive-load flow: start with a minimal stub, enrich it with ingredients using the redesigned parser UI. Phases 2, 3, and 5 of recipe creation are deferred to follow-up issues.</p>
+    <ul>
+      <li><strong>#371</strong> — Ingredient parser UX: parse preview, graceful fallback, EN + PT-BR</li>
+      <li><strong>#370 MVP</strong> — Phased recipe creation: Phase 1 (Stub) + Phase 4 (Ingredients via #371 UX)</li>
+      <li>Day 1 UX design artifacts (wireframes / flow decisions) that unblock both issues</li>
+    </ul>
+  </div>
+
+  <!-- Capacity Analysis -->
+  <div class="section-title">Capacity Analysis</div>
+  <div class="capacity-grid">
+    <div class="capacity-cell">
+      <div class="value">6</div>
+      <div class="label">Working Days</div>
+    </div>
+    <div class="capacity-cell">
+      <div class="value">26</div>
+      <div class="label">Story Points</div>
+    </div>
+    <div class="capacity-cell">
+      <div class="value">4</div>
+      <div class="label">Coding Days Needed</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <p style="font-size:0.875rem;margin-bottom:0.75rem;">
+        <strong>Day 1</strong> is a mandatory UX design session — no code. <strong>5 effective coding days</strong> remain.
+        At cruising velocity (6.5 pts/day), 26 pts fit in ~4 coding days, leaving Day 6 as a buffer for polish and sprint close.
+      </p>
+      <div class="code-block">Story points : 26 (13 pts × 2 issues — estimates already reflect UX complexity)
+Coding days  : 26 / 6.5 = 4.0 days
+Total        : 1 design day + 4 coding days + 1 buffer/close day = 6 working days</div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-top:0.5rem;">
+        <strong>Confidence: Medium-High.</strong> 4 coding days for 26 pts is comfortable at cruising pace.
+        Day 6 exists for polish, edge case tests, and sprint close — not expected to be needed for core implementation.
+      </p>
+    </div>
+  </div>
+
+  <div class="warning-box">
+    ⚠️ <span><strong>Project #3 action required:</strong> Both #370 and #371 show <code>estimate: ?</code> in the project board. Update both to <strong>13 pts</strong> before sprint starts.</span>
+  </div>
+
+  <!-- Issues -->
+  <div class="section-title">Issues</div>
+
+  <!-- #371 -->
+  <div class="issue-card">
+    <div class="issue-card-header">
+      <span class="issue-num">#371</span>
+      <div class="issue-title">Redesign ingredient parser UX/UI as a first-class entry method</div>
+    </div>
+    <div class="issue-card-body">
+      <div class="issue-meta">
+        <span class="badge badge-pts">13 pts</span>
+        <span class="badge badge-ux">UX / Feature</span>
+        <span class="badge badge-risk-h">High Risk</span>
+      </div>
+      <p style="font-size:0.86rem;margin-bottom:0.75rem;">
+        Makes the ingredient parser a first-class, trustworthy entry method. Builds on <code>IngredientParserService</code> extracted in 0.2.12.
+        Feeds directly into #370 Phase 4 as the primary input method.
+      </p>
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.4rem;">Scope</div>
+      <ul style="font-size:0.84rem;padding-left:1.2rem;margin-bottom:0.75rem;">
+        <li>Natural language input with parse preview before commit</li>
+        <li>Graceful fallback to manual entry on parse failure — no silent failure</li>
+        <li>Partial parse: surface uncertain fields for user correction</li>
+        <li>Both EN and PT-BR localized (all parser UI labels and error states)</li>
+        <li>Integrates cleanly into #370 Phase 4</li>
+      </ul>
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.4rem;">Acceptance Criteria</div>
+      <ul class="checklist">
+        <li><span class="check-box"></span><span>Parser result shown as preview — user confirms or corrects before ingredient is added</span></li>
+        <li><span class="check-box"></span><span>Failed parse falls back to manual entry form — no silent failure</span></li>
+        <li><span class="check-box"></span><span>Partial parse surfaces which fields need correction</span></li>
+        <li><span class="check-box"></span><span>All UI strings localized (EN + PT-BR)</span></li>
+        <li><span class="check-box"></span><span>Widget tests: successful parse, failed parse, partial parse, manual fallback, cancel</span></li>
+        <li><span class="check-box"></span><span>Edge case tests: empty input, special characters, very long strings</span></li>
+        <li><span class="check-box"></span><span>No regression in existing ingredient entry</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- #370 -->
+  <div class="issue-card">
+    <div class="issue-card-header">
+      <span class="issue-num">#370</span>
+      <div class="issue-title">Redesign recipe creation as a phased, progressive disclosure flow</div>
+    </div>
+    <div class="issue-card-body">
+      <div class="issue-meta">
+        <span class="badge badge-pts">13 pts</span>
+        <span class="badge badge-ux">UX / Feature</span>
+        <span class="badge badge-risk-h">High Risk</span>
+      </div>
+      <p style="font-size:0.86rem;margin-bottom:0.75rem;">
+        Redesigns recipe creation as a lighter, guided experience. <strong>MVP scope: Phases 1 + 4 only.</strong>
+        Phases 2 (Timing), 3 (Tags), 5 (Notes) are deferred — follow-up issues must be created before sprint closes.
+        Depends on #371 being complete before Phase 4 implementation starts.
+      </p>
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.4rem;">MVP Scope</div>
+      <ul style="font-size:0.84rem;padding-left:1.2rem;margin-bottom:0.75rem;">
+        <li><strong>Phase 1 — Stub:</strong> Name + meal type only; recipe is saveable immediately</li>
+        <li><strong>Phase 4 — Ingredients:</strong> Uses redesigned parser UX from #371 as primary input</li>
+        <li>Phases 2, 3, 5 → follow-up issues created before sprint closes</li>
+      </ul>
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.4rem;">Acceptance Criteria</div>
+      <ul class="checklist">
+        <li><span class="check-box"></span><span>Phase 1 form: name + meal type; Save enabled as soon as name is non-empty</span></li>
+        <li><span class="check-box"></span><span>Recipe stub created from Phase 1 appears in recipe list as a valid, usable recipe</span></li>
+        <li><span class="check-box"></span><span>Phase 4 uses #371 ingredient parser UX as primary input method</span></li>
+        <li><span class="check-box"></span><span>Phase 1 data preserved when navigating to Phase 4</span></li>
+        <li><span class="check-box"></span><span>Both phases localized (EN + PT-BR)</span></li>
+        <li><span class="check-box"></span><span>Widget tests: Phase 1 save, incomplete Phase 1, Phase 4 add/remove ingredient</span></li>
+        <li><span class="check-box"></span><span>Edge case tests: save stub with no ingredients, back navigation</span></li>
+        <li><span class="check-box"></span><span>Existing recipe creation path does not regress</span></li>
+        <li><span class="check-box"></span><span>Follow-up issues for Phases 2, 3, 5 created in GitHub before sprint closes</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Day-by-Day -->
+  <div class="section-title">Day-by-Day Breakdown</div>
+
+  <div class="day-card">
+    <div class="day-header">
+      <span class="day-num">Day 1</span>
+      <div class="day-title">UX Design Session — No Code</div>
+      <div class="day-date">Mon 2026-05-25</div>
+    </div>
+    <div class="day-body">
+      <p>Mandatory design gate. Produce decisions clear enough to unblock implementation — do not start coding until this day is done. Time-box strictly to the day.</p>
+      <div class="label">Required Design Outputs</div>
+      <ul class="checklist">
+        <li><span class="check-box"></span><span>Parser UX flow: input → preview → confirm / correct / fallback (sketch or annotated wireframe)</span></li>
+        <li><span class="check-box"></span><span>Ambiguous parse handling: what the user sees when ingredient name is unknown vs quantity missing</span></li>
+        <li><span class="check-box"></span><span>Navigation model decided: separate screens, bottom-sheet sequence, or stepper?</span></li>
+        <li><span class="check-box"></span><span>Phase 1 form layout and entry point from stub → Phase 4</span></li>
+        <li><span class="check-box"></span><span>Rough string inventory for both issues (EN draft)</span></li>
+        <li><span class="check-box"></span><span>No open decisions that would block starting #371 on Day 2</span></li>
+      </ul>
+      <div class="label">Risk</div>
+      <p>Design session too open-ended → ship a working decision even if imperfect; document open questions as follow-ups.</p>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-header">
+      <span class="day-num">Day 2</span>
+      <div class="day-title">#371 — Parser UX Core (input + preview + confirm)</div>
+      <div class="day-date">Tue 2026-05-26</div>
+    </div>
+    <div class="day-body">
+      <p>Build the core parser interaction: input field → parse preview widget → confirm action. Integrate with <code>IngredientParserService</code>.</p>
+      <div class="label">Deliverable by EOD</div>
+      <p>User can type an ingredient string, see a parse preview, and confirm it to add the ingredient to the list.</p>
+      <div class="label">Testing</div>
+      <p>Unit tests for parser service integration; basic widget smoke test (renders without crash).</p>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-header">
+      <span class="day-num">Day 3</span>
+      <div class="day-title">#371 — Fallback + Partial Parse + L10n + Full Tests</div>
+      <div class="day-date">Wed 2026-05-27</div>
+    </div>
+    <div class="day-body">
+      <p>Complete #371. Graceful fallback, partial parse handling, localization, full test suite. <strong>#371 must be fully closed by EOD — hard gate before #370 Phase 4 can begin.</strong></p>
+      <div class="label">Deliverable by EOD</div>
+      <ul class="checklist">
+        <li><span class="check-box"></span><span>Failed parse → manual fallback form working</span></li>
+        <li><span class="check-box"></span><span>Partial parse → uncertain fields highlighted for correction</span></li>
+        <li><span class="check-box"></span><span>All strings in <code>app_en.arb</code> and <code>app_pt.arb</code>; <code>flutter gen-l10n</code> run</span></li>
+        <li><span class="check-box"></span><span>Full #371 widget test suite passing</span></li>
+        <li><span class="check-box"></span><span><code>flutter test</code> and <code>flutter analyze</code> clean</span></li>
+        <li><span class="check-box"></span><span>Branch pushed</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-header">
+      <span class="day-num">Day 4</span>
+      <div class="day-title">#370 Phase 1 — Stub Creation Flow</div>
+      <div class="day-date">Thu 2026-05-28</div>
+    </div>
+    <div class="day-body">
+      <p>Build Phase 1: name + meal type → saveable immediately. Replace or extend current recipe creation entry point.</p>
+      <div class="label">Deliverable by EOD</div>
+      <p>User can open the new creation flow, enter only a name, tap Save, and see the stub recipe in the recipe list.</p>
+      <div class="label">Testing</div>
+      <p>Phase 1 widget tests (save enabled/disabled); database integration test (stub insert + retrieval).</p>
+      <div class="label">Risk</div>
+      <p>Replacing vs extending current creation dialog — prefer extension to avoid regressions in the existing path.</p>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-header">
+      <span class="day-num">Day 5</span>
+      <div class="day-title">#370 Phase 4 — Ingredients via Parser UX</div>
+      <div class="day-date">Fri 2026-05-29</div>
+    </div>
+    <div class="day-body">
+      <p>Build Phase 4: ingredient entry using #371 parser UX, accessible from the stub. Phase 1 data must be preserved during navigation.</p>
+      <div class="label">Deliverable by EOD</div>
+      <p>User can create a stub (Phase 1) → navigate to ingredients phase → add ingredients via parser UX → return to recipe with ingredients saved.</p>
+      <div class="label">Testing</div>
+      <p>Phase 4 widget tests; full flow test (Phase 1 → save stub → Phase 4 → add ingredient).</p>
+      <div class="label">Risk</div>
+      <p>Navigation state management (Phase 1 → Phase 4 without data loss) — time-box to 1 hour if blocked; fall back to simplest viable model and document as follow-up.</p>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-header">
+      <span class="day-num">Day 6</span>
+      <div class="day-title">Polish · Edge Cases · Sprint Close</div>
+      <div class="day-date">Mon 2026-06-02</div>
+    </div>
+    <div class="day-body">
+      <p>Buffer day. If Days 2–5 ran on schedule, this is polish and sprint closure. If there was slip, this absorbs overflow.</p>
+      <div class="label">Tasks</div>
+      <ul class="checklist">
+        <li><span class="check-box"></span><span>Edge case tests for #370 (save stub with no ingredients, back navigation, screen rotation)</span></li>
+        <li><span class="check-box"></span><span>Regression verification — existing recipe creation path not broken</span></li>
+        <li><span class="check-box"></span><span>Create follow-up issues for Phases 2 (Timing), 3 (Tags), 5 (Notes) in GitHub</span></li>
+        <li><span class="check-box"></span><span>Full suite: <code>flutter test</code> · <code>flutter analyze</code> · <code>flutter build apk</code></span></li>
+        <li><span class="check-box"></span><span>Both EN and PT-BR verified visually in UI</span></li>
+        <li><span class="check-box"></span><span>Branches merged to develop · 0.2.13 milestone closed</span></li>
+      </ul>
+      <div class="label">Stretch (if ahead)</div>
+      <p>Device testing on physical Android; begin drafting Phase 2 follow-up issue body.</p>
+    </div>
+  </div>
+
+  <!-- Risk Assessment -->
+  <div class="section-title">Risk Assessment</div>
+
+  <table class="risk-table">
+    <thead>
+      <tr>
+        <th>Risk</th>
+        <th>Impact</th>
+        <th>Likelihood</th>
+        <th>Mitigation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Day 1 design leaves ambiguity that blocks implementation</td>
+        <td><span class="badge badge-risk-h">High</span></td>
+        <td><span class="badge badge-risk-m">Medium</span></td>
+        <td>Time-box to the day; ship imperfect-but-decided; document open questions as follow-ups</td>
+      </tr>
+      <tr>
+        <td>UX iteration on parser preview overruns Days 2–3</td>
+        <td><span class="badge badge-risk-h">High</span></td>
+        <td><span class="badge badge-risk-m">Medium</span></td>
+        <td>Day 6 is the buffer; edge case tests can be deferred; #371 EOD-Day-3 gate is non-negotiable</td>
+      </tr>
+      <tr>
+        <td>Phase 1→4 navigation state management more complex than expected</td>
+        <td><span class="badge badge-risk-h">High</span></td>
+        <td><span class="badge badge-risk-l">Low</span></td>
+        <td>Use simplest viable navigation model; document tech debt if workaround needed; time-box to 1h</td>
+      </tr>
+      <tr>
+        <td>#371 slips → #370 Phase 4 can't start on Day 4</td>
+        <td><span class="badge badge-risk-h">High</span></td>
+        <td><span class="badge badge-risk-l">Low</span></td>
+        <td>#371 must close EOD Day 3 — hard gate; Day 6 buffer absorbs 1-day slip if needed</td>
+      </tr>
+      <tr>
+        <td>Mobile tooling (adb, emulator) overhead on new UI patterns</td>
+        <td><span class="badge badge-risk-m">Medium</span></td>
+        <td><span class="badge badge-risk-m">Medium</span></td>
+        <td>25% tooling overhead already baked into UX multiplier; Day 6 is buffer</td>
+      </tr>
+      <tr>
+        <td>PT-BR translations slow down localization days</td>
+        <td><span class="badge badge-risk-m">Medium</span></td>
+        <td><span class="badge badge-risk-l">Low</span></td>
+        <td>Draft EN strings first; batch PT-BR on Day 3 and Day 5 separately</td>
+      </tr>
+      <tr>
+        <td>Existing recipe creation path regressions</td>
+        <td><span class="badge badge-risk-m">Medium</span></td>
+        <td><span class="badge badge-risk-l">Low</span></td>
+        <td>Prefer extending over replacing; explicit regression test on Day 6</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Prerequisites -->
+  <div class="section-title">Dependencies &amp; Prerequisites</div>
+
+  <table class="prereq-table">
+    <thead>
+      <tr>
+        <th>Issue</th>
+        <th>Prerequisite</th>
+        <th>Status</th>
+        <th>Blocker?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>#371</strong></td>
+        <td><code>IngredientParserService</code> (#283) extracted</td>
+        <td><span class="badge badge-done">✓ Complete</span> — <code>lib/core/services/ingredient_parser_service.dart</code></td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td><strong>#371</strong></td>
+        <td><code>recipe_editor_screen.dart</code> refactored (#336)</td>
+        <td><span class="badge badge-done">✓ Complete</span> — shipped in 0.2.12</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td><strong>#370 Phase 4</strong></td>
+        <td>#371 complete</td>
+        <td><span class="badge badge-pending">This sprint — EOD Day 3 gate</span></td>
+        <td><strong>Yes</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Success Criteria -->
+  <div class="section-title">Success Criteria</div>
+
+  <div class="success-grid">
+    <div class="success-card">
+      <h4>Primary Goals — Must Complete</h4>
+      <ul class="checklist">
+        <li><span class="check-box"></span><span>#371 complete: parser UX with preview, fallback, partial parse — EN + PT-BR</span></li>
+        <li><span class="check-box"></span><span>#370 Phase 1: stub creation (name + meal type) — saveable immediately</span></li>
+        <li><span class="check-box"></span><span>#370 Phase 4: ingredients via #371 parser UX — integrated end-to-end</span></li>
+        <li><span class="check-box"></span><span><code>flutter test</code> passes</span></li>
+        <li><span class="check-box"></span><span><code>flutter analyze</code> clean</span></li>
+        <li><span class="check-box"></span><span><code>flutter build apk</code> succeeds</span></li>
+        <li><span class="check-box"></span><span>Follow-up issues for Phases 2, 3, 5 created in GitHub</span></li>
+        <li><span class="check-box"></span><span>Project #3: <code>estimate</code> set to 13pts for both #370 and #371</span></li>
+      </ul>
+    </div>
+    <div class="success-card">
+      <h4>Secondary Goals — Should Complete</h4>
+      <ul class="checklist">
+        <li><span class="check-box"></span><span>Device testing on physical Android (happy path)</span></li>
+        <li><span class="check-box"></span><span>EN + PT-BR verified visually in UI</span></li>
+        <li><span class="check-box"></span><span>Edge case tests per Issue #39 standards</span></li>
+        <li><span class="check-box"></span><span>No regressions in existing recipe creation path</span></li>
+      </ul>
+      <h4 style="margin-top:0.9rem;">Stretch Goals — If Time Permits</h4>
+      <ul class="checklist">
+        <li><span class="check-box"></span><span>Full bodies drafted for Phase 2, 3, 5 follow-up issues</span></li>
+        <li><span class="check-box"></span><span>Phase 2 (Timing) implementation started</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Testing Strategy -->
+  <div class="section-title">Testing Strategy</div>
+
+  <div class="card">
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.5rem;">Widget Tests</div>
+          <ul style="font-size:0.84rem;padding-left:1.1rem;color:var(--text);">
+            <li><strong>#371:</strong> parse success, failure, partial, fallback, cancel, empty input</li>
+            <li><strong>#370:</strong> Phase 1 save enabled/disabled, Phase 4 add/remove, Phase 1→4 navigation</li>
+            <li>Overhead: ~50% of implementation time</li>
+          </ul>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.5rem;">Integration Tests</div>
+          <ul style="font-size:0.84rem;padding-left:1.1rem;color:var(--text);">
+            <li>Full flow: create stub → save → add ingredient via parser → verify in recipe list</li>
+            <li>Parser service: input string → service → preview widget → confirm → ingredient record</li>
+          </ul>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.5rem;">Edge Cases (Issue #39)</div>
+          <ul style="font-size:0.84rem;padding-left:1.1rem;color:var(--text);">
+            <li><strong>#371:</strong> empty input, special chars, very long strings</li>
+            <li><strong>#370:</strong> stub with no ingredients, back button mid-flow, navigation state</li>
+          </ul>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.5rem;">Regression</div>
+          <ul style="font-size:0.84rem;padding-left:1.1rem;color:var(--text);">
+            <li>Existing recipe creation path not broken after #370 introduction</li>
+            <li>Existing ingredient entry not broken after #371 introduction</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:1rem;padding-top:0.75rem;border-top:1px solid var(--gray-border);font-size:0.82rem;">
+        <strong>Schedule:</strong> Day 3 EOD — full #371 tests (hard gate) · Day 5 EOD — full #370 widget tests · Day 6 — edge cases, regression, full suite
+      </div>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="section-title">Notes &amp; Assumptions</div>
+  <div class="card">
+    <div class="card-body">
+      <ul style="font-size:0.86rem;padding-left:1.2rem;line-height:1.8;">
+        <li>Natural language ingredient input = single text field (not bulk multi-line paste) — to be confirmed Day 1</li>
+        <li>Phase 1 replaces or wraps the current recipe creation entry point — not a parallel path</li>
+        <li>Phase 4 is reachable from the phased creation flow; existing recipe details edit screen is unchanged</li>
+        <li>iOS testing not available (Windows dev machine)</li>
+        <li>Follow-up issues for Phases 2, 3, 5 are a <strong>required deliverable</strong> — not optional cleanup</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    Sprint Plan 0.2.13 · Created 2026-05-25 · Gastrobrain Sprint Planner ·
+    <a href="https://github.com/alemdisso/gastrobrain/milestone/36">Milestone #36</a> ·
+    <a href="https://github.com/users/alemdisso/projects/3">Project #3</a>
+  </div>
+
+</div>
+</body>
+</html>
