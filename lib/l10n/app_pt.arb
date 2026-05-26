@@ -2732,6 +2732,21 @@
   "storyUpdatedSuccessfully": "História atualizada com sucesso",
   "enterStory": "Escreve a história por trás desta receita...",
 
-  "appVersionLabel": "Versão"
+  "appVersionLabel": "Versão",
 
+  "ingredientParserInputLabel": "Ingredientes",
+  "ingredientParserHintText": "200g de farinha\n2 xícaras de leite\n3 ovos\nSal a gosto",
+  "ingredientParserHelperText": "Cole uma lista ou adicione um por vez. Suporta formatos PT-BR e EN.",
+  "ingredientParserParseButton": "Analisar",
+  "ingredientParserAddManuallyButton": "Adicionar manualmente",
+  "ingredientParserReviewTitle": "Analisados ({count})",
+  "ingredientParserAddAllButton": "Adicionar {count} ingrediente(s)",
+  "ingredientParserBlockedHint": "{count} precisam de atenção",
+  "ingredientParserMatchHigh": "Encontrado",
+  "ingredientParserMatchMedium": "Correspondência aproximada — verifique",
+  "ingredientParserMatchLow": "Baixa confiança — revise",
+  "ingredientParserMatchNew": "Será criado",
+  "ingredientParserMatchNone": "Sem correspondência — toque para revisar",
+  "ingredientParserNameLabel": "Ingrediente",
+  "ingredientParserSelectMatchHint": "Escolha entre as sugestões"
 }

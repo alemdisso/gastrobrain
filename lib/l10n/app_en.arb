@@ -2847,6 +2847,81 @@
   "appVersionLabel": "Version",
   "@appVersionLabel": {
     "description": "Label prefix for the app version displayed in the Tools screen footer"
-  }
+  },
 
+  "ingredientParserInputLabel": "Ingredients",
+  "@ingredientParserInputLabel": {
+    "description": "Label for the multiline ingredient input field in the parser"
+  },
+  "ingredientParserHintText": "200g flour\n2 cups milk\n3 eggs\nSalt to taste",
+  "@ingredientParserHintText": {
+    "description": "Hint text shown in the ingredient parser input field"
+  },
+  "ingredientParserHelperText": "Paste a list or type one at a time. Supports EN and PT-BR formats.",
+  "@ingredientParserHelperText": {
+    "description": "Helper text below the ingredient parser input field"
+  },
+  "ingredientParserParseButton": "Parse",
+  "@ingredientParserParseButton": {
+    "description": "Label for the button that triggers ingredient parsing"
+  },
+  "ingredientParserAddManuallyButton": "Add manually",
+  "@ingredientParserAddManuallyButton": {
+    "description": "Label for the button that adds a blank ingredient row for manual entry"
+  },
+  "ingredientParserReviewTitle": "Parsed ({count})",
+  "@ingredientParserReviewTitle": {
+    "description": "Header for the parsed ingredient review section",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ingredientParserAddAllButton": "Add {count} ingredient(s)",
+  "@ingredientParserAddAllButton": {
+    "description": "Button to confirm and add all parsed ingredients",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ingredientParserBlockedHint": "{count} needs attention",
+  "@ingredientParserBlockedHint": {
+    "description": "Warning shown on the add-all button when unresolved rows exist",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ingredientParserMatchHigh": "Matched",
+  "@ingredientParserMatchHigh": {
+    "description": "Status label for a high-confidence ingredient match"
+  },
+  "ingredientParserMatchMedium": "Close match — verify",
+  "@ingredientParserMatchMedium": {
+    "description": "Status label for a medium-confidence ingredient match"
+  },
+  "ingredientParserMatchLow": "Low confidence — review",
+  "@ingredientParserMatchLow": {
+    "description": "Status label for a low-confidence ingredient match"
+  },
+  "ingredientParserMatchNew": "Will be created",
+  "@ingredientParserMatchNew": {
+    "description": "Status label for an ingredient that will be created as new"
+  },
+  "ingredientParserMatchNone": "No match — tap to review",
+  "@ingredientParserMatchNone": {
+    "description": "Status label for a row with no ingredient match, prompting user action"
+  },
+  "ingredientParserNameLabel": "Ingredient",
+  "@ingredientParserNameLabel": {
+    "description": "Label for the ingredient name field in the expanded parser row"
+  },
+  "ingredientParserSelectMatchHint": "Choose from suggestions",
+  "@ingredientParserSelectMatchHint": {
+    "description": "Hint for the match dropdown in the expanded parser row"
+  }
 }
