@@ -383,6 +383,7 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
           children: [
             Flexible(
               child: ElevatedButton.icon(
+                key: const Key('ingredient_parser_parse_button'),
                 onPressed: widget.isServicesReady ? _parseIngredients : null,
                 icon: const Icon(Icons.auto_fix_high, size: 18),
                 label: Text(l10n.ingredientParserParseButton),
@@ -439,6 +440,7 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
+              key: const Key('ingredient_parser_confirm_button'),
               onPressed: (_canConfirm && !_isSaving) ? _handleConfirm : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: theme.colorScheme.primary,

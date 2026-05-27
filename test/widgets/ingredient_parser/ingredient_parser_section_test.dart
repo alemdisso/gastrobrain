@@ -38,10 +38,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final parseButton = tester.widget<ElevatedButton>(
-          find.ancestor(
-            of: find.byIcon(Icons.auto_fix_high),
-            matching: find.byType(ElevatedButton),
-          ),
+          find.byKey(const Key('ingredient_parser_parse_button')),
         );
         expect(parseButton.onPressed, isNull);
       });
@@ -52,10 +49,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final parseButton = tester.widget<ElevatedButton>(
-          find.ancestor(
-            of: find.byIcon(Icons.auto_fix_high),
-            matching: find.byType(ElevatedButton),
-          ),
+          find.byKey(const Key('ingredient_parser_parse_button')),
         );
         expect(parseButton.onPressed, isNotNull);
       });
@@ -64,9 +58,9 @@ void main() {
         await tester.pumpWidget(buildSection());
         await tester.pumpAndSettle();
 
-        // Confirm button not visible until there are rows
-        expect(
-            find.byType(ElevatedButton), findsNWidgets(1)); // only Parse button
+        // Confirm button only appears when there are rows
+        expect(find.byKey(const Key('ingredient_parser_confirm_button')), findsNothing);
+        expect(find.byKey(const Key('ingredient_parser_parse_button')), findsOneWidget);
       });
     });
 
@@ -104,8 +98,7 @@ void main() {
         await tester.tap(find.byIcon(Icons.close));
         await tester.pumpAndSettle();
 
-        // Back to only Parse button visible
-        expect(find.byType(ElevatedButton), findsNWidgets(1));
+        expect(find.byKey(const Key('ingredient_parser_confirm_button')), findsNothing);
       });
     });
 
@@ -127,12 +120,9 @@ void main() {
             'UnknownIngredient');
         await tester.pumpAndSettle();
 
-        // Find the confirm/add-all button (wide ElevatedButton at bottom)
-        final buttons = tester
-            .widgetList<ElevatedButton>(find.byType(ElevatedButton))
-            .toList();
-        // The confirm button is the last/widest one
-        final confirmButton = buttons.last;
+        final confirmButton = tester.widget<ElevatedButton>(
+          find.byKey(const Key('ingredient_parser_confirm_button')),
+        );
         expect(confirmButton.onPressed, isNull);
       });
 
@@ -145,10 +135,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // The new row has an empty name → not "needs attention" → confirm enabled
-        final buttons = tester
-            .widgetList<ElevatedButton>(find.byType(ElevatedButton))
-            .toList();
-        final confirmButton = buttons.last;
+        final confirmButton = tester.widget<ElevatedButton>(
+          find.byKey(const Key('ingredient_parser_confirm_button')),
+        );
         expect(confirmButton.onPressed, isNotNull);
       });
     });
@@ -169,10 +158,7 @@ void main() {
         await tester.tap(find.byIcon(Icons.add));
         await tester.pumpAndSettle();
 
-        final buttons = tester
-            .widgetList<ElevatedButton>(find.byType(ElevatedButton))
-            .toList();
-        await tester.tap(find.byWidget(buttons.last));
+        await tester.tap(find.byKey(const Key('ingredient_parser_confirm_button')));
         await tester.pumpAndSettle();
 
         expect(called, isTrue);
@@ -188,14 +174,12 @@ void main() {
         await tester.tap(find.byIcon(Icons.add));
         await tester.pumpAndSettle();
 
-        final buttons = tester
-            .widgetList<ElevatedButton>(find.byType(ElevatedButton))
-            .toList();
-        await tester.tap(find.byWidget(buttons.last));
+        await tester.tap(find.byKey(const Key('ingredient_parser_confirm_button')));
         await tester.pumpAndSettle();
 
-        // Rows cleared — back to only Parse button
-        expect(find.byType(ElevatedButton), findsNWidgets(1));
+        // Rows cleared — confirm button gone
+        expect(find.byKey(const Key('ingredient_parser_confirm_button')), findsNothing);
+        expect(find.byIcon(Icons.close), findsNothing);
       });
 
       testWidgets(
@@ -209,10 +193,7 @@ void main() {
         await tester.tap(find.byIcon(Icons.add));
         await tester.pumpAndSettle();
 
-        final buttons = tester
-            .widgetList<ElevatedButton>(find.byType(ElevatedButton))
-            .toList();
-        await tester.tap(find.byWidget(buttons.last));
+        await tester.tap(find.byKey(const Key('ingredient_parser_confirm_button')));
         await tester.pumpAndSettle();
 
         // Row still present
