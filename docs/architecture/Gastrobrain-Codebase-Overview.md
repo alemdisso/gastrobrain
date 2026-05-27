@@ -158,7 +158,6 @@ All DAOs receive a `Future<Database> Function()` factory via constructor injecti
 - **EditRecipeScreen**: Recipe modification with validation
 - **RecipeEditorScreen**: Rich ingredient editor screen — used for both bulk update and recipe enrichment flows; componentized in 0.2.12
 - **RecipeDetailsIngredientsTab**: Detailed ingredient view with editing capabilities (active; distinct from `RecipeIngredientsScreen` which is dead code)
-- **RecipeInstructionsViewScreen**: Dedicated instructions view
 - **MealHistoryScreen**: Tracks cooking history for each recipe with edit capabilities
 - **IngredientsScreen**: Comprehensive ingredient management with search, add, edit, delete
 - **IngredientDetailScreen**: Detailed ingredient view
