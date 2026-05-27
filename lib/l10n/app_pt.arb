@@ -32,6 +32,18 @@
   "@delete": {
     "description": "Texto do botão excluir"
   },
+  "discard": "Descartar",
+  "@discard": {
+    "description": "Texto do botão descartar"
+  },
+  "discardChanges": "Descartar alterações?",
+  "@discardChanges": {
+    "description": "Título do diálogo de descartar alterações não salvas"
+  },
+  "discardChangesBody": "Você tem alterações não salvas. Se voltar agora, elas serão perdidas.",
+  "@discardChangesBody": {
+    "description": "Texto do diálogo de descartar alterações não salvas"
+  },
   "sortOptions": "Opções de Ordenação",
   "@sortOptions": {
     "description": "Título do menu de opções de ordenação"
@@ -318,6 +330,26 @@
   "editRecipe": "Editar Receita",
   "@editRecipe": {
     "description": "Título da tela de editar receita"
+  },
+  "newRecipe": "Nova Receita",
+  "@newRecipe": {
+    "description": "Título da tela de criação de receita"
+  },
+  "basics": "Informações básicas",
+  "@basics": {
+    "description": "Cabeçalho da seção de informações básicas (nome, tipo de refeição, porções)"
+  },
+  "editBasics": "Editar informações básicas",
+  "@editBasics": {
+    "description": "Tooltip do ícone de edição no cartão de resumo da Fase 1"
+  },
+  "skipForNow": "Pular por agora",
+  "@skipForNow": {
+    "description": "Botão para pular a entrada de ingredientes e ir para os detalhes da receita"
+  },
+  "moreDetails": "Mais detalhes",
+  "@moreDetails": {
+    "description": "Cabeçalho da seção colapsável para tempo, dificuldade, avaliação, tags, notas"
   },
   "saveChanges": "Salvar Alterações",
   "@saveChanges": {

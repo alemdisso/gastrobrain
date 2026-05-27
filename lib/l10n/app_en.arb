@@ -32,6 +32,18 @@
   "@delete": {
     "description": "Delete button text"
   },
+  "discard": "Discard",
+  "@discard": {
+    "description": "Discard button text"
+  },
+  "discardChanges": "Discard changes?",
+  "@discardChanges": {
+    "description": "Title for discard unsaved changes dialog"
+  },
+  "discardChangesBody": "You have unsaved changes. If you go back now, they will be lost.",
+  "@discardChangesBody": {
+    "description": "Body text for discard unsaved changes dialog"
+  },
   "sortOptions": "Sort Options",
   "@sortOptions": {
     "description": "Title for sorting options menu"
@@ -324,6 +336,26 @@
   "editRecipe": "Edit Recipe",
   "@editRecipe": {
     "description": "Title for edit recipe screen"
+  },
+  "newRecipe": "New Recipe",
+  "@newRecipe": {
+    "description": "Title for new recipe creation screen"
+  },
+  "basics": "Basics",
+  "@basics": {
+    "description": "Section header for basic recipe info (name, meal type, servings)"
+  },
+  "editBasics": "Edit basics",
+  "@editBasics": {
+    "description": "Tooltip for the edit icon on the Phase 1 summary card"
+  },
+  "skipForNow": "Skip for now",
+  "@skipForNow": {
+    "description": "Button to skip ingredient entry and proceed to recipe details"
+  },
+  "moreDetails": "More details",
+  "@moreDetails": {
+    "description": "Collapsible section header for timing, difficulty, rating, tags, notes"
   },
   "saveChanges": "Save Changes",
   "@saveChanges": {

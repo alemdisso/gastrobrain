@@ -9,7 +9,7 @@ import '../core/repositories/tag_repository.dart';
 import '../core/services/snackbar_service.dart';
 import '../l10n/app_localizations.dart';
 import '../screens/meal_history_screen.dart';
-import '../screens/edit_recipe_screen.dart';
+import '../screens/recipe_form_screen.dart';
 import '../screens/recipe_details_overview_tab.dart';
 import '../screens/recipe_details_ingredients_tab.dart';
 
@@ -344,7 +344,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
     final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (context) => EditRecipeScreen(recipe: _currentRecipe),
+        builder: (context) => RecipeFormScreen(recipe: _currentRecipe),
       ),
     );
 
