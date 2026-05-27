@@ -86,7 +86,8 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
     _tagRepo = TagRepository(_dbHelper);
 
     final r = widget.recipe;
-    _nameController = TextEditingController(text: r?.name ?? '');
+    _nameController = TextEditingController(text: r?.name ?? '')
+      ..addListener(() => setState(() {}));
     _selectedFrequency = r?.desiredFrequency ?? FrequencyType.monthly;
     _servings = (r?.servings ?? 0) > 0 ? r!.servings : 4;
 
@@ -565,7 +566,7 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
           _buildSaveButton(
             label: _isCreateMode ? l10n.saveRecipe : l10n.saveChanges,
             isSaving: _isSavingPhase1,
-            onPressed: _savePhase1,
+            onPressed: _nameController.text.trim().isEmpty ? null : _savePhase1,
           ),
         ],
       ),
