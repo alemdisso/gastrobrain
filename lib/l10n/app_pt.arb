@@ -349,7 +349,11 @@
   },
   "moreDetails": "Mais detalhes",
   "@moreDetails": {
-    "description": "Cabeçalho da seção colapsável para tempo, dificuldade, avaliação, tags, notas"
+    "description": "Cabeçalho da seção colapsável para avaliação, tags, notas, história"
+  },
+  "timingAndDifficulty": "Tempo e Dificuldade",
+  "@timingAndDifficulty": {
+    "description": "Cabeçalho da Fase 2 — tempos e dificuldade"
   },
   "saveChanges": "Salvar Alterações",
   "@saveChanges": {

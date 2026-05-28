@@ -63,7 +63,12 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
   bool _isParserServiceReady = false;
   bool _isSavingIngredients = false;
 
-  // ── More details state (edit mode, phases 2+3+5) ─────────────────────────
+  // ── Phase 2 state (timing & difficulty) ──────────────────────────────────
+  final _phase2FormKey = GlobalKey<FormState>();
+  bool _isSavingPhase2 = false;
+  bool _phase2HasChanges = false;
+
+  // ── More details state (phases 3+5 — rating, tags, notes, story) ─────────
   final _moreDetailsFormKey = GlobalKey<FormState>();
   late TextEditingController _notesController;
   late TextEditingController _storyController;
@@ -261,6 +266,49 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
     }
   }
 
+  // ── Phase 2: timing & difficulty ─────────────────────────────────────────
+
+  Future<void> _savePhase2() async {
+    if (!_phase2FormKey.currentState!.validate()) return;
+    final recipe = _activeRecipe;
+    if (recipe == null) return;
+    setState(() => _isSavingPhase2 = true);
+
+    try {
+      final prepTime = int.tryParse(_prepTimeController.text);
+      final cookTime = int.tryParse(_cookTimeController.text);
+      final marinatingTime = int.tryParse(_marinatingTimeController.text);
+      EntityValidator.validateTime(prepTime?.toDouble(), 'Preparation');
+      EntityValidator.validateTime(cookTime?.toDouble(), 'Cooking');
+      EntityValidator.validateTime(marinatingTime?.toDouble(), 'Marinating');
+
+      final updated = recipe.copyWith(
+        difficulty: _difficulty,
+        prepTimeMinutes: prepTime ?? 0,
+        cookTimeMinutes: cookTime ?? 0,
+        marinatingTimeMinutes: marinatingTime ?? 0,
+      );
+      await _dbHelper.updateRecipe(updated);
+      if (mounted) {
+        setState(() => _phase2HasChanges = false);
+        SnackbarService.showSuccess(
+            context, AppLocalizations.of(context)!.saveChanges);
+        if (!_isCreateMode) Navigator.pop(context, true);
+      }
+    } on ValidationException catch (e) {
+      if (mounted) SnackbarService.showError(context, e.message);
+    } on GastrobrainException catch (e) {
+      if (mounted) SnackbarService.showError(context, e.message);
+    } catch (_) {
+      if (mounted) {
+        SnackbarService.showError(
+            context, AppLocalizations.of(context)!.unexpectedError);
+      }
+    } finally {
+      if (mounted) setState(() => _isSavingPhase2 = false);
+    }
+  }
+
   // ── Phase 4: ingredients ──────────────────────────────────────────────────
 
   Recipe? get _activeRecipe => _isCreateMode ? _savedRecipe : widget.recipe;
@@ -358,20 +406,9 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
     setState(() => _isSavingMoreDetails = true);
 
     try {
-      final prepTime = int.tryParse(_prepTimeController.text);
-      final cookTime = int.tryParse(_cookTimeController.text);
-      final marinatingTime = int.tryParse(_marinatingTimeController.text);
-      EntityValidator.validateTime(prepTime?.toDouble(), 'Preparation');
-      EntityValidator.validateTime(cookTime?.toDouble(), 'Cooking');
-      EntityValidator.validateTime(marinatingTime?.toDouble(), 'Marinating');
-
       final updated = recipe.copyWith(
         notes: _notesController.text,
         story: _storyController.text,
-        difficulty: _difficulty,
-        prepTimeMinutes: prepTime ?? 0,
-        cookTimeMinutes: cookTime ?? 0,
-        marinatingTimeMinutes: marinatingTime ?? 0,
         rating: _rating,
       );
       await _dbHelper.updateRecipe(updated);
@@ -421,6 +458,7 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
   // ── Build helpers ─────────────────────────────────────────────────────────
 
   Widget _buildSaveButton({
+    Key? key,
     required String label,
     required bool isSaving,
     required VoidCallback? onPressed,
@@ -428,6 +466,7 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
+        key: key,
         onPressed: isSaving ? null : onPressed,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -500,6 +539,42 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
         if (m == null || m < 0) return l10n.pleaseEnterValidTime;
         return null;
       },
+    );
+  }
+
+  // ── Phase 2 section ───────────────────────────────────────────────────────
+
+  Widget _buildPhase2Section() {
+    final l10n = AppLocalizations.of(context)!;
+    return Form(
+      key: _phase2FormKey,
+      onChanged: () => setState(() => _phase2HasChanges = true),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildDifficultyField(l10n.difficultyLevel, _difficulty,
+              (v) => setState(() {
+                    _difficulty = v;
+                    _phase2HasChanges = true;
+                  })),
+          const SizedBox(height: 16),
+          _buildTimeField(l10n.preparationTime, _prepTimeController,
+              key: const Key('recipe_form_prep_time_field')),
+          const SizedBox(height: 16),
+          _buildTimeField(l10n.cookingTime, _cookTimeController,
+              key: const Key('recipe_form_cook_time_field')),
+          const SizedBox(height: 16),
+          _buildTimeField(l10n.marinatingTime, _marinatingTimeController,
+              key: const Key('recipe_form_marinating_time_field')),
+          const SizedBox(height: 24),
+          _buildSaveButton(
+            key: const Key('recipe_form_phase2_save_button'),
+            label: l10n.saveChanges,
+            isSaving: _isSavingPhase2,
+            onPressed: _savePhase2,
+          ),
+        ],
+      ),
     );
   }
 
@@ -633,18 +708,6 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildDifficultyField(l10n.difficultyLevel, _difficulty,
-              (v) => setState(() => _difficulty = v)),
-          const SizedBox(height: 16),
-          _buildTimeField(l10n.preparationTime, _prepTimeController,
-              key: const Key('recipe_form_prep_time_field')),
-          const SizedBox(height: 16),
-          _buildTimeField(l10n.cookingTime, _cookTimeController,
-              key: const Key('recipe_form_cook_time_field')),
-          const SizedBox(height: 16),
-          _buildTimeField(l10n.marinatingTime, _marinatingTimeController,
-              key: const Key('recipe_form_marinating_time_field')),
-          const SizedBox(height: 16),
           _buildRatingField(
               l10n.rating, _rating, (v) => setState(() => _rating = v)),
           const SizedBox(height: 16),
@@ -761,6 +824,15 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
             _buildPhase1CreateSummary(),
             const SizedBox(height: 24),
             _buildPhase4Section(),
+            const SizedBox(height: 12),
+            _SectionExpansion(
+              title: l10n.timingAndDifficulty,
+              initiallyExpanded: false,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8, bottom: 4),
+                child: _buildPhase2Section(),
+              ),
+            ),
           ],
         ],
       ),
@@ -793,7 +865,17 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          // More details (phases 2+3+5 — temporary flat section)
+          // Phase 2 — timing & difficulty
+          _SectionExpansion(
+            title: l10n.timingAndDifficulty,
+            initiallyExpanded: false,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8, bottom: 4),
+              child: _buildPhase2Section(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // More details (phases 3+5 — rating, tags, notes, story)
           _SectionExpansion(
             title: l10n.moreDetails,
             initiallyExpanded: false,
@@ -815,9 +897,11 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
         : l10n.editRecipe;
 
     return PopScope(
-      canPop: !_moreDetailsHasChanges,
+      canPop: !(_moreDetailsHasChanges || _phase2HasChanges),
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && _moreDetailsHasChanges) _showDiscardDialog();
+        if (!didPop && (_moreDetailsHasChanges || _phase2HasChanges)) {
+          _showDiscardDialog();
+        }
       },
       child: Scaffold(
         appBar: AppBar(title: Text(appBarTitle)),

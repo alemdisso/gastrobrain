@@ -355,7 +355,11 @@
   },
   "moreDetails": "More details",
   "@moreDetails": {
-    "description": "Collapsible section header for timing, difficulty, rating, tags, notes"
+    "description": "Collapsible section header for rating, tags, notes, story"
+  },
+  "timingAndDifficulty": "Timing & Difficulty",
+  "@timingAndDifficulty": {
+    "description": "Section header for Phase 2 — prep/cook/marinating time and difficulty"
   },
   "saveChanges": "Save Changes",
   "@saveChanges": {

@@ -376,4 +376,85 @@ void main() {
       expect(mockDb.recipes, isEmpty);
     });
   });
+
+  // ─────────────────────── Phase 2 — Timing & Difficulty ─────────────────── //
+
+  group('Phase 2 — Timing & Difficulty', () {
+    late MockDatabaseHelper mockDb;
+
+    setUp(() {
+      mockDb = MockDatabaseHelper();
+    });
+
+    tearDown(() {
+      mockDb.resetAllData();
+    });
+
+    testWidgets('edit mode shows Timing & Difficulty section header', (tester) async {
+      final recipe = _makeRecipe();
+      await mockDb.insertRecipe(recipe);
+
+      await tester.pumpWidget(
+        _buildTestApp(RecipeFormScreen(recipe: recipe, databaseHelper: mockDb)),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Timing & Difficulty'), findsOneWidget,
+          reason: 'Phase 2 section header should be visible in edit mode');
+    });
+
+    testWidgets('saving Phase 2 persists difficulty and timing to DB', (tester) async {
+      final recipe = _makeRecipe(difficulty: 1, prepTimeMinutes: 0);
+      await mockDb.insertRecipe(recipe);
+
+      await tester.pumpWidget(
+        _buildTestApp(RecipeFormScreen(recipe: recipe, databaseHelper: mockDb)),
+      );
+      await tester.pumpAndSettle();
+
+      // Collapse Phase 1 and Phase 4 so Phase 2 is reachable.
+      // Use widgetWithText(InkWell, ...) to target only the section header InkWells.
+      await tester.tap(find.widgetWithText(InkWell, 'Basics').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(InkWell, 'Ingredients').first);
+      await tester.pumpAndSettle();
+
+      // Expand Phase 2
+      await tester.tap(find.text('Timing & Difficulty'));
+      await tester.pumpAndSettle();
+
+      // Enter prep time
+      await tester.enterText(
+          find.byKey(const Key('recipe_form_prep_time_field')), '20');
+      await tester.pump();
+
+      // Tap Phase 2 save button (now visible after section expanded)
+      final saveBtn = find.byKey(const Key('recipe_form_phase2_save_button'));
+      await tester.ensureVisible(saveBtn);
+      await tester.pumpAndSettle();
+      await tester.tap(saveBtn);
+      await tester.pumpAndSettle();
+
+      expect(mockDb.recipes['recipe-1']?.prepTimeMinutes, equals(20),
+          reason: 'Phase 2 save should persist prep time to DB');
+    });
+
+    testWidgets('More Details section no longer contains timing fields', (tester) async {
+      final recipe = _makeRecipe();
+      await mockDb.insertRecipe(recipe);
+
+      await tester.pumpWidget(
+        _buildTestApp(RecipeFormScreen(recipe: recipe, databaseHelper: mockDb)),
+      );
+      await tester.pumpAndSettle();
+
+      // Both Phase 2 AND More Details sections exist
+      expect(find.text('Timing & Difficulty'), findsOneWidget);
+      expect(find.text('More details'), findsOneWidget);
+
+      // Timing fields exist exactly once (inside Phase 2, not duplicated)
+      expect(find.byKey(const Key('recipe_form_prep_time_field')), findsOneWidget);
+      expect(find.byKey(const Key('recipe_form_cook_time_field')), findsOneWidget);
+    });
+  });
 }
