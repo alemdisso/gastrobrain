@@ -228,6 +228,7 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
         );
         await _dbHelper.insertRecipe(newRecipe);
         await _loadAllIngredients();
+        _loadTagData(newId);
         if (mounted) {
           setState(() {
             _savedRecipe = newRecipe;
@@ -741,7 +742,8 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
             final ok = await _saveIngredients(list);
             if (ok && mounted) {
               if (_isCreateMode) {
-                _navigateToRecipeDetails();
+                SnackbarService.showSuccess(
+                    context, AppLocalizations.of(context)!.saveChanges);
               } else {
                 Navigator.pop(context, true);
               }
