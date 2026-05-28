@@ -411,6 +411,10 @@
   "@addIngredient": {
     "description": "Add ingredient button text"
   },
+  "addIngredients": "Add Ingredients",
+  "@addIngredients": {
+    "description": "Title for bulk ingredient addition via parser (bottom sheet)"
+  },
   "searchIngredients": "Search ingredients...",
   "@searchIngredients": {
     "description": "Search field hint text for ingredients"

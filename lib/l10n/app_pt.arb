@@ -405,6 +405,10 @@
   "@addIngredient": {
     "description": "Texto do botão adicionar ingrediente"
   },
+  "addIngredients": "Adicionar Ingredientes",
+  "@addIngredients": {
+    "description": "Título para adição em lote de ingredientes via parser (bottom sheet)"
+  },
   "searchIngredients": "Buscar ingredientes...",
   "@searchIngredients": {
     "description": "Texto da dica do campo de busca de ingredientes"
