@@ -68,7 +68,11 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
   bool _isSavingPhase2 = false;
   bool _phase2HasChanges = false;
 
-  // ── More details state (phases 3+5 — rating, tags, notes, story) ─────────
+  // ── Phase 3 state (tags & rating) ────────────────────────────────────────
+  bool _isSavingPhase3 = false;
+  bool _phase3HasChanges = false;
+
+  // ── More details state (phase 5 — notes, story) ───────────────────────────
   final _moreDetailsFormKey = GlobalKey<FormState>();
   late TextEditingController _notesController;
   late TextEditingController _storyController;
@@ -309,6 +313,35 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
     }
   }
 
+  // ── Phase 3: tags & rating ───────────────────────────────────────────────
+
+  Future<void> _savePhase3() async {
+    final recipe = _activeRecipe;
+    if (recipe == null) return;
+    setState(() => _isSavingPhase3 = true);
+
+    try {
+      final updated = recipe.copyWith(rating: _rating);
+      await _dbHelper.updateRecipe(updated);
+      await _tagRepo.setTagsForRecipe(recipe.id, _selectedTagIds);
+      if (mounted) {
+        setState(() => _phase3HasChanges = false);
+        SnackbarService.showSuccess(
+            context, AppLocalizations.of(context)!.saveChanges);
+        if (!_isCreateMode) Navigator.pop(context, true);
+      }
+    } on GastrobrainException catch (e) {
+      if (mounted) SnackbarService.showError(context, e.message);
+    } catch (_) {
+      if (mounted) {
+        SnackbarService.showError(
+            context, AppLocalizations.of(context)!.unexpectedError);
+      }
+    } finally {
+      if (mounted) setState(() => _isSavingPhase3 = false);
+    }
+  }
+
   // ── Phase 4: ingredients ──────────────────────────────────────────────────
 
   Recipe? get _activeRecipe => _isCreateMode ? _savedRecipe : widget.recipe;
@@ -409,10 +442,8 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
       final updated = recipe.copyWith(
         notes: _notesController.text,
         story: _storyController.text,
-        rating: _rating,
       );
       await _dbHelper.updateRecipe(updated);
-      await _tagRepo.setTagsForRecipe(recipe.id, _selectedTagIds);
       if (mounted) {
         setState(() => _moreDetailsHasChanges = false);
         SnackbarService.showSuccess(
@@ -539,6 +570,40 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
         if (m == null || m < 0) return l10n.pleaseEnterValidTime;
         return null;
       },
+    );
+  }
+
+  // ── Phase 3 section ───────────────────────────────────────────────────────
+
+  Widget _buildPhase3Section() {
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildRatingField(l10n.rating, _rating, (v) => setState(() {
+              _rating = v;
+              _phase3HasChanges = true;
+            })),
+        const SizedBox(height: 16),
+        TagPickerWidget(
+          key: const Key('recipe_form_tag_picker'),
+          tagTypes: _tagTypes,
+          tagsByType: _tagsByType,
+          selectedTagIds: _selectedTagIds,
+          onChanged: (ids) => setState(() {
+            _selectedTagIds = ids;
+            _phase3HasChanges = true;
+          }),
+          onCreateTag: _onCreateTag,
+        ),
+        const SizedBox(height: 24),
+        _buildSaveButton(
+          key: const Key('recipe_form_phase3_save_button'),
+          label: l10n.saveChanges,
+          isSaving: _isSavingPhase3,
+          onPressed: _savePhase3,
+        ),
+      ],
     );
   }
 
@@ -708,9 +773,6 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildRatingField(
-              l10n.rating, _rating, (v) => setState(() => _rating = v)),
-          const SizedBox(height: 16),
           TextFormField(
             key: const Key('recipe_form_notes_field'),
             controller: _notesController,
@@ -719,16 +781,6 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
           ),
           const SizedBox(height: 16),
           _buildStoryField(l10n),
-          const SizedBox(height: 16),
-          TagPickerWidget(
-            key: const Key('recipe_form_tag_picker'),
-            tagTypes: _tagTypes,
-            tagsByType: _tagsByType,
-            selectedTagIds: _selectedTagIds,
-            onChanged: (ids) =>
-                setState(() => _selectedTagIds = ids),
-            onCreateTag: _onCreateTag,
-          ),
           const SizedBox(height: 24),
           _buildSaveButton(
             label: l10n.saveChanges,
@@ -833,6 +885,15 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
                 child: _buildPhase2Section(),
               ),
             ),
+            const SizedBox(height: 12),
+            _SectionExpansion(
+              title: l10n.tagsAndRating,
+              initiallyExpanded: false,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8, bottom: 4),
+                child: _buildPhase3Section(),
+              ),
+            ),
           ],
         ],
       ),
@@ -875,7 +936,17 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          // More details (phases 3+5 — rating, tags, notes, story)
+          // Phase 3 — tags & rating
+          _SectionExpansion(
+            title: l10n.tagsAndRating,
+            initiallyExpanded: false,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8, bottom: 4),
+              child: _buildPhase3Section(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // More details (phase 5 — notes, story)
           _SectionExpansion(
             title: l10n.moreDetails,
             initiallyExpanded: false,
@@ -897,9 +968,10 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
         : l10n.editRecipe;
 
     return PopScope(
-      canPop: !(_moreDetailsHasChanges || _phase2HasChanges),
+      canPop: !(_moreDetailsHasChanges || _phase2HasChanges || _phase3HasChanges),
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && (_moreDetailsHasChanges || _phase2HasChanges)) {
+        if (!didPop &&
+            (_moreDetailsHasChanges || _phase2HasChanges || _phase3HasChanges)) {
           _showDiscardDialog();
         }
       },

@@ -355,6 +355,10 @@
   "@timingAndDifficulty": {
     "description": "Cabeçalho da Fase 2 — tempos e dificuldade"
   },
+  "tagsAndRating": "Tags e Avaliação",
+  "@tagsAndRating": {
+    "description": "Cabeçalho da Fase 3 — tags e avaliação por estrelas"
+  },
   "saveChanges": "Salvar Alterações",
   "@saveChanges": {
     "description": "Texto do botão salvar alterações"

@@ -457,4 +457,78 @@ void main() {
       expect(find.byKey(const Key('recipe_form_cook_time_field')), findsOneWidget);
     });
   });
+
+  // ─────────────────────── Phase 3 — Tags & Rating ───────────────────────── //
+
+  group('Phase 3 — Tags & Rating', () {
+    late MockDatabaseHelper mockDb;
+
+    setUp(() {
+      mockDb = MockDatabaseHelper();
+    });
+
+    tearDown(() {
+      mockDb.resetAllData();
+    });
+
+    testWidgets('edit mode shows Tags & Rating section header', (tester) async {
+      final recipe = _makeRecipe();
+      await mockDb.insertRecipe(recipe);
+
+      await tester.pumpWidget(
+        _buildTestApp(RecipeFormScreen(recipe: recipe, databaseHelper: mockDb)),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tags & Rating'), findsOneWidget,
+          reason: 'Phase 3 section header should be visible in edit mode');
+    });
+
+    testWidgets('saving Phase 3 persists rating to DB', (tester) async {
+      final recipe = _makeRecipe(rating: 1);
+      await mockDb.insertRecipe(recipe);
+
+      await tester.pumpWidget(
+        _buildTestApp(RecipeFormScreen(recipe: recipe, databaseHelper: mockDb)),
+      );
+      await tester.pumpAndSettle();
+
+      // Collapse the two expanded sections so Phase 3 header fits in viewport
+      await tester.tap(find.widgetWithText(InkWell, 'Basics').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(InkWell, 'Ingredients').first);
+      await tester.pumpAndSettle();
+
+      // Expand Phase 3 (Phase 2 stays collapsed — don't touch it)
+      await tester.tap(find.widgetWithText(InkWell, 'Tags & Rating').first);
+      await tester.pumpAndSettle();
+
+      // Tap 5th star (rating = 5) — find unlit star_border icons, tap last
+      await tester.tap(find.byIcon(Icons.star_border).last);
+      await tester.pump();
+
+      // Tap Phase 3 save button
+      final saveBtn = find.byKey(const Key('recipe_form_phase3_save_button'));
+      await tester.ensureVisible(saveBtn);
+      await tester.pumpAndSettle();
+      await tester.tap(saveBtn);
+      await tester.pumpAndSettle();
+
+      expect(mockDb.recipes['recipe-1']?.rating, equals(5),
+          reason: 'Phase 3 save should persist rating to DB');
+    });
+
+    testWidgets('tag picker present in Phase 3 section', (tester) async {
+      final recipe = _makeRecipe();
+      await mockDb.insertRecipe(recipe);
+
+      await tester.pumpWidget(
+        _buildTestApp(RecipeFormScreen(recipe: recipe, databaseHelper: mockDb)),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('recipe_form_tag_picker')), findsOneWidget,
+          reason: 'TagPickerWidget should be in Phase 3, not More Details');
+    });
+  });
 }

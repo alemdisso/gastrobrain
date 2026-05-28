@@ -361,6 +361,10 @@
   "@timingAndDifficulty": {
     "description": "Section header for Phase 2 — prep/cook/marinating time and difficulty"
   },
+  "tagsAndRating": "Tags & Rating",
+  "@tagsAndRating": {
+    "description": "Section header for Phase 3 — tags and star rating"
+  },
   "saveChanges": "Save Changes",
   "@saveChanges": {
     "description": "Save changes button text"
