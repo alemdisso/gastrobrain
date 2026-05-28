@@ -346,6 +346,7 @@ git push origin --delete hotfix/{issue-number}-{short-description}
 | 0.2.9 | 2026-05-14 | Migration Hotfix | hotfix/381 | Harden migration 109 against dirty state and FK enforcement failures |
 | 0.2.10 | 2026-05-15 | Migration Hotfix (correct fix) | release/0.2.10 | Fix PRAGMA foreign_keys placement outside transaction in MigrationRunner (#381) |
 | 0.2.11 | 2026-05-18 | DB Safety Foundation + UX Polish | release/0.2.11 | Migration error surfacing (#382), Meal Options dialog redesign (#316), unified side dish flow (#384), week plan temporal status (#376), ingredient dialog fix (#365), scroll affordance (#346) |
+| 0.2.12 | 2026-05-20 | DB Safety Foundation + DAO Refactoring | release/0.2.12 | Auto-rollback on migration failure (#383), DatabaseHelper DAO split (#337), RecipeEditorScreen decomposition (#336), IngredientParserService extraction (#283) |
 
 ---
 

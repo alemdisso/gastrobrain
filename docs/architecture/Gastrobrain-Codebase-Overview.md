@@ -154,11 +154,9 @@ All DAOs receive a `Future<Database> Function()` factory via constructor injecti
 - **RecipesScreen**: Recipe list with search, filter, and tap navigation to details
 - **RecipeCard**: Recipe list items with stats (meal count, last cooked, rating) and tap navigation
 - **RecipeDetailsScreen**: Unified tabbed view (4 tabs: overview, ingredients, instructions, meal history) with delete functionality
-- **AddRecipeScreen**: Recipe creation with ingredient management and localization
-- **EditRecipeScreen**: Recipe modification with validation
+- **RecipeFormScreen**: Unified recipe creation and editing — create mode follows phased progressive-disclosure flow (Phase 1: basics stub → Phase 4: ingredients); edit mode shows three independent ExpansionTile sections (Basics, Ingredients, More details) each with per-section save (#370)
 - **RecipeEditorScreen**: Rich ingredient editor screen — used for both bulk update and recipe enrichment flows; componentized in 0.2.12
 - **RecipeDetailsIngredientsTab**: Detailed ingredient view with editing capabilities (active; distinct from `RecipeIngredientsScreen` which is dead code)
-- **RecipeInstructionsViewScreen**: Dedicated instructions view
 - **MealHistoryScreen**: Tracks cooking history for each recipe with edit capabilities
 - **IngredientsScreen**: Comprehensive ingredient management with search, add, edit, delete
 - **IngredientDetailScreen**: Detailed ingredient view
@@ -293,7 +291,7 @@ The application maintains comprehensive test coverage with **2047+ unit/widget t
 - **Service Layer Tests**: `meal_plan_analysis_service_test.dart`, `ingredient_export_service_test.dart`, `ingredient_matching_service_test.dart` (91 tests including 28 plural form tests)
 
 #### UI Component Testing
-- **Screen Tests** (`test/screens/`): `weekly_plan_screen_test.dart`, `cook_meal_screen_test.dart`, `meal_history_screen_test.dart`, `add_recipe_screen_test.dart`
+- **Screen Tests** (`test/screens/`): `weekly_plan_screen_test.dart`, `cook_meal_screen_test.dart`, `meal_history_screen_test.dart`, `recipe_form_screen_test.dart`
 - **Screen Edge Case Tests** (`test/edge_cases/screens/`): 21 meal history edge case tests, 9 weekly plan edge case tests
 - **Dialog Tests** (`test/widgets/`, 100+ tests across 6 dialogs): `meal_cooked_dialog_test.dart`, `add_ingredient_dialog_test.dart`, `meal_recording_dialog_test.dart`, `add_side_dish_dialog_test.dart`, `add_new_ingredient_dialog_test.dart`, `edit_meal_recording_dialog_test.dart`
 

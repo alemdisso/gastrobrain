@@ -16,7 +16,7 @@ import 'package:gastrobrain/l10n/app_localizations.dart';
 ///
 /// **Future Enhancement:**
 /// Consider adding optional DatabaseHelper parameter to IngredientsScreen
-/// constructor for better testability (similar to AddRecipeScreen pattern).
+/// constructor for better testability (similar to RecipeFormScreen pattern).
 ///
 /// Verifies that the application handles the empty state gracefully when:
 /// - No ingredients exist in the database
@@ -169,7 +169,7 @@ void main() {
       // late final DatabaseHelper _dbHelper =
       //     widget.databaseHelper ?? DatabaseHelper();
       //
-      // This pattern is already used successfully in AddRecipeScreen
+      // This pattern is already used successfully in RecipeFormScreen
       // and other screens.
 
       expect(true, isTrue, reason: 'Documentation test always passes');

@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sprint Plan 0.2.13 — Recipe Redesign</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --amber:       #d97706;
+      --amber-light: #fef3c7;
+      --amber-mid:   #fde68a;
+      --green:       #065f46;
+      --green-light: #d1fae5;
+      --green-mid:   #6ee7b7;
+      --blue:        #1e40af;
+      --blue-light:  #dbeafe;
+      --red:         #991b1b;
+      --red-light:   #fee2e2;
+      --yellow:      #92400e;
+      --yellow-light:#fffbeb;
+      --gray:        #6b7280;
+      --gray-light:  #f3f4f6;
+      --gray-border: #e5e7eb;
+      --text:        #111827;
+      --text-muted:  #6b7280;
+      --radius:      8px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f9fafb;
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    .container { max-width: 900px; margin: 0 auto; }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #78350f 0%, #d97706 100%);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 2rem 2.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .header h1 { font-size: 1.7rem; font-weight: 700; letter-spacing: -0.5px; }
+    .header .subtitle { opacity: 0.85; margin-top: 0.25rem; font-size: 0.95rem; }
+    .header .meta {
+      display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap;
+    }
+    .header .meta span {
+      background: rgba(255,255,255,0.18);
+      border-radius: 20px;
+      padding: 0.2rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    /* ── Section titles ── */
+    .section-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 2rem 0 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--gray-border);
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      margin-bottom: 1rem;
+    }
+    .card-header {
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--gray-border);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .card-header h3 { font-size: 0.95rem; font-weight: 700; flex: 1; }
+    .card-body { padding: 1rem 1.25rem; }
+
+    /* ── Goal box ── */
+    .goal-box {
+      background: var(--amber-light);
+      border: 1px solid var(--amber-mid);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .goal-box p { font-size: 0.9rem; line-height: 1.65; }
+    .goal-box ul { margin-top: 0.6rem; padding-left: 1.2rem; }
+    .goal-box ul li { font-size: 0.875rem; margin-bottom: 0.2rem; }
+
+    /* ── Info box ── */
+    .info-box {
+      background: var(--green-light);
+      border: 1px solid var(--green-mid);
+      border-radius: var(--radius);
+      padding: 0.75rem 1.1rem;
+      font-size: 0.85rem;
+      color: var(--green);
+      margin-bottom: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+    }
+
+    /* ── Capacity grid ── */
+    .capacity-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 640px) { .capacity-grid { grid-template-columns: 1fr 1fr; } }
+
+    .capacity-cell {
+      background: var(--gray-light);
+      border-radius: var(--radius);
+      padding: 0.85rem 1rem;
+      text-align: center;
+    }
+    .capacity-cell.done { background: var(--green-light); }
+    .capacity-cell .value { font-size: 1.4rem; font-weight: 700; color: var(--amber); }
+    .capacity-cell.done .value { color: var(--green); }
+    .capacity-cell .label { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.1rem; text-transform: uppercase; letter-spacing: 0.04em; }
+
+    /* ── Issue cards ── */
+    .issue-card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    .issue-card.done-card {
+      opacity: 0.75;
+      border-color: var(--green-mid);
+    }
+    .issue-card-header {
+      padding: 0.8rem 1.2rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      border-bottom: 1px solid var(--gray-border);
+    }
+    .done-card .issue-card-header { background: var(--green-light); }
+    .issue-num {
+      font-family: monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      background: var(--amber-light);
+      color: var(--amber);
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .issue-title { font-size: 0.9rem; font-weight: 700; flex: 1; }
+    .issue-card-body { padding: 0.9rem 1.2rem; }
+
+    .issue-meta {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.75rem;
+    }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.15rem 0.55rem;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-pts    { background: var(--amber-light); color: var(--yellow); }
+    .badge-risk-h { background: var(--red-light);   color: var(--red); }
+    .badge-risk-m { background: var(--yellow-light); color: var(--yellow); }
+    .badge-risk-l { background: var(--green-light);  color: var(--green); }
+    .badge-ux     { background: var(--blue-light);   color: var(--blue); }
+    .badge-done   { background: var(--green-light);  color: var(--green); }
+    .badge-pending { background: var(--gray-light);  color: var(--gray); }
+
+    /* ── Checklists ── */
+    .checklist { list-style: none; padding: 0; }
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      font-size: 0.845rem;
+      padding: 0.25rem 0;
+      border-top: 1px solid var(--gray-border);
+    }
+    .checklist li:first-child { border-top: none; }
+    .check-box {
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--gray-border);
+      border-radius: 3px;
+      flex-shrink: 0;
+      margin-top: 3px;
+    }
+    .check-done {
+      width: 14px;
+      height: 14px;
+      background: var(--green);
+      border-radius: 3px;
+      flex-shrink: 0;
+      margin-top: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 9px;
+    }
+
+    /* ── Day cards ── */
+    .day-card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 0.85rem;
+      overflow: hidden;
+    }
+    .day-card.day-done {
+      opacity: 0.72;
+      border-color: var(--green-mid);
+    }
+    .day-header {
+      padding: 0.7rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border-bottom: 1px solid var(--gray-border);
+    }
+    .day-done .day-header { background: var(--green-light); }
+    .day-num {
+      background: var(--amber);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 0.15rem 0.55rem;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .day-done .day-num { background: var(--green); }
+    .day-title { font-size: 0.9rem; font-weight: 700; flex: 1; }
+    .day-date { font-size: 0.78rem; color: var(--text-muted); }
+    .day-body { padding: 0.9rem 1.2rem; }
+    .day-body p { font-size: 0.86rem; margin-bottom: 0.6rem; }
+    .day-body .label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-top: 0.6rem; margin-bottom: 0.2rem; }
+
+    /* ── Risk table ── */
+    .risk-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+      background: #fff;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      margin-bottom: 1rem;
+    }
+    .risk-table th {
+      background: var(--gray-light);
+      text-align: left;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .risk-table td {
+      padding: 0.6rem 0.9rem;
+      border-top: 1px solid var(--gray-border);
+      vertical-align: top;
+    }
+    .risk-table tr:hover td { background: #fafafa; }
+
+    /* ── Prereq table ── */
+    .prereq-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+      background: #fff;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      margin-bottom: 1rem;
+    }
+    .prereq-table th {
+      background: var(--gray-light);
+      text-align: left;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .prereq-table td {
+      padding: 0.6rem 0.9rem;
+      border-top: 1px solid var(--gray-border);
+      vertical-align: top;
+    }
+
+    /* ── Success criteria ── */
+    .success-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 600px) { .success-grid { grid-template-columns: 1fr; } }
+
+    .success-card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-border);
+      padding: 0.9rem 1.1rem;
+    }
+    .success-card h4 { font-size: 0.82rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+
+    /* ── Code block ── */
+    .code-block {
+      background: #1e293b;
+      color: #e2e8f0;
+      font-family: "Consolas", "Menlo", monospace;
+      font-size: 0.78rem;
+      border-radius: var(--radius);
+      padding: 0.9rem 1.1rem;
+      overflow-x: auto;
+      margin: 0.5rem 0;
+      line-height: 1.6;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 2.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--gray-border);
+    }
+
+    a { color: var(--amber); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    strong { font-weight: 700; }
+    code {
+      font-family: "Consolas", "Menlo", monospace;
+      font-size: 0.82em;
+      background: var(--gray-light);
+      padding: 0.1em 0.35em;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>Sprint Plan: 0.2.13 — Recipe Redesign</h1>
+    <div class="subtitle">Redesign the two core recipe entry surfaces as first-class, guided experiences</div>
+    <div class="meta">
+      <span>📅 2026-05-25 → 2026-06-02</span>
+      <span>⏱ 6 working days</span>
+      <span>📦 41 pts (26 done + 15 remaining)</span>
+      <span>🚀 Milestone #36</span>
+      <span>⚡ 6.5 pts/day cruising</span>
+    </div>
+  </div>
+
+  <!-- Sprint Goal -->
+  <div class="section-title">Sprint Goal</div>
+  <div class="goal-box">
+    <p>Redesign the two core recipe entry surfaces as first-class, guided experiences. The ingredient parser becomes a prominent, trustworthy input method with parse preview before commit and graceful fallback. Recipe creation becomes a phased, lower-cognitive-load flow: start with a minimal stub, enrich it with ingredients using the redesigned parser UI. With the core phases shipped ahead of schedule, Days 4–6 complete the recipe form's progressive disclosure model (Phases 2, 3, 5) and bring the parser UX into RecipeDetailsScreen.</p>
+    <ul>
+      <li><strong>#371</strong> ✅ — Ingredient parser UX: parse preview, graceful fallback, EN + PT-BR</li>
+      <li><strong>#370</strong> ✅ — Phased recipe creation: Phase 1 (Stub) + Phase 4 (Ingredients via #371 UX)</li>
+      <li><strong>#388</strong> — Replace AddIngredientDialog with IngredientParserSection in RecipeDetailsScreen</li>
+      <li><strong>#385</strong> — Recipe form Phase 2: Timing &amp; difficulty</li>
+      <li><strong>#386</strong> — Recipe form Phase 3: Tags &amp; rating</li>
+      <li><strong>#387</strong> — Recipe form Phase 5: Notes &amp; story</li>
+    </ul>
+  </div>
+
+  <div class="info-box">
+    ✅ <span><strong>#371 and #370 completed on Day 3</strong> — 3 days ahead of original plan. 26 pts banked. Days 4–6 now dedicated to follow-up issues #385–#388 (15 pts).</span>
+  </div>
+
+  <!-- Capacity Analysis -->
+  <div class="section-title">Capacity Analysis</div>
+  <div class="capacity-grid">
+    <div class="capacity-cell done">
+      <div class="value">26</div>
+      <div class="label">Pts Completed</div>
+    </div>
+    <div class="capacity-cell">
+      <div class="value">15</div>
+      <div class="label">Pts Remaining</div>
+    </div>
+    <div class="capacity-cell">
+      <div class="value">3</div>
+      <div class="label">Days Remaining</div>
+    </div>
+    <div class="capacity-cell">
+      <div class="value">5.0</div>
+      <div class="label">Pts/Day Needed</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <p style="font-size:0.875rem;margin-bottom:0.75rem;">
+        <strong>#371 and #370 shipped by EOD Day 3</strong> — the full original 26-pt scope is banked. The four follow-up issues total 15 pts across 3 remaining days (5 pts/day), comfortably below cruising velocity.
+      </p>
+      <div class="code-block">Completed (Days 1–3) : 26 pts — #371 (13) + #370 (13)
+Remaining (Days 4–6) : 15 pts — #388 (5) + #385 (3) + #386 (5) + #387 (2)
+────────────────────────────────────────────
+Sprint total         : 41 pts across 6 days</div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-top:0.5rem;">
+        <strong>Confidence: High.</strong> 5 pts/day is well below the 6.5-pt cruising pace. Day 6 remains a close/polish buffer.
+      </p>
+    </div>
+  </div>
+
+  <!-- Issues -->
+  <div class="section-title">Issues — Completed</div>
+
+  <!-- #371 DONE -->
+  <div class="issue-card done-card">
+    <div class="issue-card-header">
+      <span class="issue-num">#371</span>
+      <div class="issue-title">Redesign ingredient parser UX/UI as a first-class entry method</div>
+      <span class="badge badge-done">✓ Done</span>
+    </div>
+    <div class="issue-card-body">
+      <div class="issue-meta">
+        <span class="badge badge-pts">13 pts · L</span>
+        <span class="badge badge-ux">UX / Feature</span>
+      </div>
+      <p style="font-size:0.86rem;">
+        Natural language bulk paste → parse preview → confirm/correct/fallback. <code>IngredientParserSection</code> widget shipped. EN + PT-BR localized. Full test suite passing. Merged to develop 2026-05-26.
+      </p>
+    </div>
+  </div>
+
+  <!-- #370 DONE -->
+  <div class="issue-card done-card">
+    <div class="issue-card-header">
+      <span class="issue-num">#370</span>
+      <div class="issue-title">Redesign recipe creation as a phased, progressive disclosure flow</div>
+      <span class="badge badge-done">✓ Done</span>
+    </div>
+    <div class="issue-card-body">
+      <div class="issue-meta">
+        <span class="badge badge-pts">13 pts · L</span>
+        <span class="badge badge-ux">UX / Feature</span>
+      </div>
+      <p style="font-size:0.86rem;">
+        Unified <code>RecipeFormScreen</code> (create + edit) with Phase 1 stub flow and Phase 4 ingredient entry via #371. <code>AddRecipeScreen</code> and <code>EditRecipeScreen</code> deleted. 20 widget tests. Merged to develop 2026-05-27. Follow-up issues #385–#388 created.
+      </p>
+    </div>
+  </div>
+
+  <div class="section-title">Issues — In Sprint</div>
+
+  <!-- #388 -->
+  <div class="issue-card">
+    <div class="issue-card-header">
+      <span class="issue-num">#388</span>
+      <div class="issue-title">Replace AddIngredientDialog in RecipeDetailsScreen with IngredientParserSection</div>
+    </div>
+    <div class="issue-card-body">
+      <div class="issue-meta">
+        <span class="badge badge-pts">5 pts · M</span>
+        <span class="badge badge-ux">UX / Feature</span>
+        <span class="badge badge-risk-m">Medium Risk</span>
+      </div>
+      <p style="font-size:0.86rem;margin-bottom:0.75rem;">
+        <code>RecipeDetailsScreen</code> still uses the old one-at-a-time <code>AddIngredientDialog</code>. Now that <code>IngredientParserSection</code> exists, the Ingredients tab should use it too — letting users paste a full ingredient list even after the recipe is created. This is the highest-value item: it completes the parser rollout across the app.
+      </p>
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.4rem;">Scope</div>
+      <ul style="font-size:0.84rem;padding-left:1.2rem;margin-bottom:0.75rem;">
+        <li>Replace or supplement <code>AddIngredientDialog</code> in the Ingredients tab with <code>IngredientParserSection</code></li>
+        <li>Save-to-existing-recipe path (not creation flow — different context)</li>
+        <li>Ingredients tab state updates after confirm</li>
+        <li>Widget tests updated; no regressions in existing Ingredients tab</li>
+      </ul>
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.4rem;">Acceptance Criteria</div>
+      <ul class="checklist">
+        <li><span class="check-box"></span><span>User can paste a bulk ingredient list from RecipeDetailsScreen Ingredients tab</span></li>
+        <li><span class="check-box"></span><span>Parsed ingredients saved to existing recipe (not a new one)</span></li>
+        <li><span class="check-box"></span><span>Ingredients tab refreshes after confirm</span></li>
+        <li><span class="check-box"></span><span>No regression in existing single-ingredient add flow</span></li>
+        <li><span class="check-box"></span><span>Widget tests updated</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- #385 -->
+  <div class="issue-card">
+    <div class="issue-card-header">
+      <span class="issue-num">#385</span>
+      <div class="issue-title">Redesign recipe form Phase 2 — Timing &amp; difficulty</div>
+    </div>
+    <div class="issue-card-body">
+      <div class="issue-meta">
+        <span class="badge badge-pts">3 pts · M</span>
+        <span class="badge badge-ux">UX / Feature</span>
+        <span class="badge badge-risk-l">Low Risk</span>
+      </div>
+      <p style="font-size:0.86rem;margin-bottom:0.75rem;">
+        Promote the timing &amp; difficulty fields from the flat "More details" panel into a proper Phase 2 section in the progressive disclosure flow. Fields exist; this is about UX redesign and intentional presentation within <code>RecipeFormScreen</code>.
+      </p>
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.4rem;">Fields</div>
+      <p style="font-size:0.84rem;margin-bottom:0.75rem;">Prep time · Cook time · Marinating time · Difficulty (1–5)</p>
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.4rem;">Acceptance Criteria</div>
+      <ul class="checklist">
+        <li><span class="check-box"></span><span>Phase 2 section visible in create mode (after Phase 1 save) and edit mode</span></li>
+        <li><span class="check-box"></span><span>All 4 fields present with correct input widgets</span></li>
+        <li><span class="check-box"></span><span>EN + PT-BR localization</span></li>
+        <li><span class="check-box"></span><span>Widget tests</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- #386 -->
+  <div class="issue-card">
+    <div class="issue-card-header">
+      <span class="issue-num">#386</span>
+      <div class="issue-title">Redesign recipe form Phase 3 — Tags &amp; rating</div>
+    </div>
+    <div class="issue-card-body">
+      <div class="issue-meta">
+        <span class="badge badge-pts">5 pts · M</span>
+        <span class="badge badge-ux">UX / Feature</span>
+        <span class="badge badge-risk-l">Low Risk</span>
+      </div>
+      <p style="font-size:0.86rem;margin-bottom:0.75rem;">
+        Promote tags and rating into a dedicated Phase 3 section. <code>TagPickerWidget</code> and the rating stepper both exist — this is about UX redesign and making categorisation feel purposeful. Tags has more complexity than Phase 2 (multi-select, empty state, tag creation edge cases).
+      </p>
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.4rem;">Acceptance Criteria</div>
+      <ul class="checklist">
+        <li><span class="check-box"></span><span>Phase 3 section visible in create and edit modes</span></li>
+        <li><span class="check-box"></span><span>Tags multi-select functional with empty state handled</span></li>
+        <li><span class="check-box"></span><span>Rating input present</span></li>
+        <li><span class="check-box"></span><span>EN + PT-BR localization</span></li>
+        <li><span class="check-box"></span><span>Widget tests</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- #387 -->
+  <div class="issue-card">
+    <div class="issue-card-header">
+      <span class="issue-num">#387</span>
+      <div class="issue-title">Redesign recipe form Phase 5 — Notes &amp; story</div>
+    </div>
+    <div class="issue-card-body">
+      <div class="issue-meta">
+        <span class="badge badge-pts">2 pts · S</span>
+        <span class="badge badge-ux">UX / Feature</span>
+        <span class="badge badge-risk-l">Low Risk</span>
+      </div>
+      <p style="font-size:0.86rem;margin-bottom:0.75rem;">
+        Promote notes and story into a dedicated Phase 5 section — the recipe's narrative layer. Story preview mode is already implemented in <code>RecipeFormScreen</code>; this is mostly UX intent, polish, and sectioning. Lightest issue of the four.
+      </p>
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.4rem;">Acceptance Criteria</div>
+      <ul class="checklist">
+        <li><span class="check-box"></span><span>Phase 5 section visible in create and edit modes</span></li>
+        <li><span class="check-box"></span><span>Notes scratchpad and story (with preview) present</span></li>
+        <li><span class="check-box"></span><span>EN + PT-BR localization</span></li>
+        <li><span class="check-box"></span><span>Widget tests</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Day-by-Day -->
+  <div class="section-title">Day-by-Day Breakdown</div>
+
+  <div class="day-card day-done">
+    <div class="day-header">
+      <span class="day-num">Day 1 ✓</span>
+      <div class="day-title">UX Design Session — No Code</div>
+      <div class="day-date">Mon 2026-05-25</div>
+    </div>
+    <div class="day-body">
+      <p>UX design artifacts produced for #371 and #370. Navigation model decided (single-screen progressive disclosure). Phase 1 form layout and Phase 4 ingredient entry flow finalized. Unblocked both issues for implementation.</p>
+    </div>
+  </div>
+
+  <div class="day-card day-done">
+    <div class="day-header">
+      <span class="day-num">Day 2 ✓</span>
+      <div class="day-title">#371 — Parser UX shipped</div>
+      <div class="day-date">Tue 2026-05-26</div>
+    </div>
+    <div class="day-body">
+      <p><code>IngredientParserSection</code> widget: bulk paste → parse preview → confirm/correct/fallback. EN + PT-BR. Full test suite. Merged to develop.</p>
+    </div>
+  </div>
+
+  <div class="day-card day-done">
+    <div class="day-header">
+      <span class="day-num">Day 3 ✓</span>
+      <div class="day-title">#370 — Phased recipe form shipped</div>
+      <div class="day-date">Wed 2026-05-27</div>
+    </div>
+    <div class="day-body">
+      <p>Unified <code>RecipeFormScreen</code>: Phase 1 stub + Phase 4 ingredients. Old screens deleted. 20 widget tests. Follow-up issues #385–#388 created, estimated, labelled, and added to Project #3. Merged to develop.</p>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-header">
+      <span class="day-num">Day 4</span>
+      <div class="day-title">#388 — IngredientParserSection in RecipeDetailsScreen</div>
+      <div class="day-date">Thu 2026-05-28</div>
+    </div>
+    <div class="day-body">
+      <p>Replace <code>AddIngredientDialog</code> with <code>IngredientParserSection</code> in the Ingredients tab. Highest-value item: completes the parser rollout across the whole app.</p>
+      <div class="label">Deliverable by EOD</div>
+      <p>User can open an existing recipe, go to the Ingredients tab, paste a bulk list, review the parse, and confirm — all ingredients saved to the existing recipe.</p>
+      <div class="label">Testing</div>
+      <p>Update Ingredients tab widget tests; verify no regression in existing single-add flow.</p>
+      <div class="label">Risk</div>
+      <p>Save-to-existing-recipe path differs from creation flow — watch for ID handling. Time-box integration to 1 hour if blocked.</p>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-header">
+      <span class="day-num">Day 5</span>
+      <div class="day-title">#385 + #386 — Phase 2 (Timing) + Phase 3 (Tags &amp; rating)</div>
+      <div class="day-date">Fri 2026-05-29</div>
+    </div>
+    <div class="day-body">
+      <p>Both are low-risk (widgets exist, fields exist) and total 8 pts — a comfortable single-day load at cruising pace.</p>
+      <div class="label">Deliverable by EOD</div>
+      <ul class="checklist">
+        <li><span class="check-box"></span><span>#385: Phase 2 section in <code>RecipeFormScreen</code> with timing + difficulty, l10n, tests</span></li>
+        <li><span class="check-box"></span><span>#386: Phase 3 section with tags + rating, l10n, tests</span></li>
+        <li><span class="check-box"></span><span><code>flutter test</code> and <code>flutter analyze</code> clean</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-header">
+      <span class="day-num">Day 6</span>
+      <div class="day-title">#387 + Polish · Sprint Close</div>
+      <div class="day-date">Mon 2026-06-02</div>
+    </div>
+    <div class="day-body">
+      <p>#387 is 2 pts (lightest issue). After that, sprint close activities with buffer for any Day 5 overflow.</p>
+      <div class="label">Tasks</div>
+      <ul class="checklist">
+        <li><span class="check-box"></span><span>#387: Phase 5 section (notes + story) in <code>RecipeFormScreen</code>, l10n, tests</span></li>
+        <li><span class="check-box"></span><span>Edge case coverage sweep across #385–#388</span></li>
+        <li><span class="check-box"></span><span>Full suite: <code>flutter test</code> · <code>flutter analyze</code> · <code>flutter build apk</code></span></li>
+        <li><span class="check-box"></span><span>Both EN and PT-BR verified visually in UI</span></li>
+        <li><span class="check-box"></span><span>All branches merged to develop · 0.2.13 milestone closed</span></li>
+      </ul>
+      <div class="label">Stretch (if ahead)</div>
+      <p>Device testing on physical Android across the full progressive disclosure flow.</p>
+    </div>
+  </div>
+
+  <!-- Risk Assessment -->
+  <div class="section-title">Risk Assessment</div>
+
+  <table class="risk-table">
+    <thead>
+      <tr>
+        <th>Risk</th>
+        <th>Impact</th>
+        <th>Likelihood</th>
+        <th>Mitigation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Save-to-existing-recipe in #388 has unexpected ID or state issues</td>
+        <td><span class="badge badge-risk-m">Medium</span></td>
+        <td><span class="badge badge-risk-m">Medium</span></td>
+        <td>Time-box integration work to 1h; <code>IngredientParserSection</code> is proven — only the save path is new context</td>
+      </tr>
+      <tr>
+        <td>Day 5 overruns with 8 pts (#385 + #386) due to UX iteration</td>
+        <td><span class="badge badge-risk-m">Medium</span></td>
+        <td><span class="badge badge-risk-l">Low</span></td>
+        <td>Day 6 absorbs overflow; #387 is 2 pts and can flex; both issues are low-risk (widgets exist)</td>
+      </tr>
+      <tr>
+        <td>PT-BR translation gaps surface late</td>
+        <td><span class="badge badge-risk-l">Low</span></td>
+        <td><span class="badge badge-risk-l">Low</span></td>
+        <td>Batch all new l10n strings per issue before closing; gen-l10n run in same session</td>
+      </tr>
+      <tr>
+        <td>RecipeFormScreen file length grows beyond threshold</td>
+        <td><span class="badge badge-risk-m">Medium</span></td>
+        <td><span class="badge badge-risk-h">High</span></td>
+        <td>Already flagged in refactoring-backlog.md (904 lines). Adding phases will push it further — consider extraction of section builders into separate files during Day 5–6</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Prerequisites -->
+  <div class="section-title">Dependencies &amp; Prerequisites</div>
+
+  <table class="prereq-table">
+    <thead>
+      <tr>
+        <th>Issue</th>
+        <th>Prerequisite</th>
+        <th>Status</th>
+        <th>Blocker?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>#388</strong></td>
+        <td><code>IngredientParserSection</code> (#371)</td>
+        <td><span class="badge badge-done">✓ Complete</span></td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td><strong>#385, #386, #387</strong></td>
+        <td><code>RecipeFormScreen</code> (#370)</td>
+        <td><span class="badge badge-done">✓ Complete</span></td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td><strong>#386</strong></td>
+        <td><code>TagPickerWidget</code> available</td>
+        <td><span class="badge badge-done">✓ Complete</span> — <code>lib/widgets/tag_picker_widget.dart</code></td>
+        <td>No</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Success Criteria -->
+  <div class="section-title">Success Criteria</div>
+
+  <div class="success-grid">
+    <div class="success-card">
+      <h4>Primary Goals — Must Complete</h4>
+      <ul class="checklist">
+        <li><span class="check-done">✓</span><span>#371 complete: parser UX with preview, fallback, partial parse — EN + PT-BR</span></li>
+        <li><span class="check-done">✓</span><span>#370 Phase 1 + Phase 4: unified RecipeFormScreen shipped</span></li>
+        <li><span class="check-box"></span><span>#388: IngredientParserSection replaces AddIngredientDialog in RecipeDetailsScreen</span></li>
+        <li><span class="check-box"></span><span>#385: Phase 2 (Timing &amp; difficulty) in RecipeFormScreen</span></li>
+        <li><span class="check-box"></span><span>#386: Phase 3 (Tags &amp; rating) in RecipeFormScreen</span></li>
+        <li><span class="check-box"></span><span>#387: Phase 5 (Notes &amp; story) in RecipeFormScreen</span></li>
+        <li><span class="check-box"></span><span><code>flutter test</code> passes · <code>flutter analyze</code> clean · <code>flutter build apk</code> succeeds</span></li>
+        <li><span class="check-box"></span><span>0.2.13 milestone closed</span></li>
+      </ul>
+    </div>
+    <div class="success-card">
+      <h4>Secondary Goals — Should Complete</h4>
+      <ul class="checklist">
+        <li><span class="check-box"></span><span>Device testing on physical Android (full progressive disclosure flow)</span></li>
+        <li><span class="check-box"></span><span>EN + PT-BR verified visually in UI</span></li>
+        <li><span class="check-box"></span><span>Edge case tests per Issue #39 standards for #385–#388</span></li>
+        <li><span class="check-box"></span><span>No regressions in existing recipe creation or ingredient entry paths</span></li>
+      </ul>
+      <h4 style="margin-top:0.9rem;">Stretch Goals — If Time Permits</h4>
+      <ul class="checklist">
+        <li><span class="check-box"></span><span>Extract section builders from <code>RecipeFormScreen</code> to address file length (refactoring-backlog.md)</span></li>
+        <li><span class="check-box"></span><span>Physical device smoke test of end-to-end creation flow</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Testing Strategy -->
+  <div class="section-title">Testing Strategy</div>
+
+  <div class="card">
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.5rem;">Widget Tests</div>
+          <ul style="font-size:0.84rem;padding-left:1.1rem;color:var(--text);">
+            <li><strong>#388:</strong> bulk parse → save to existing recipe, tab refresh, no regression</li>
+            <li><strong>#385:</strong> Phase 2 section renders, all 4 fields present, save updates correct fields</li>
+            <li><strong>#386:</strong> Phase 3 section renders, tag multi-select, rating, empty tag state</li>
+            <li><strong>#387:</strong> Phase 5 section renders, notes + story + preview mode</li>
+          </ul>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.5rem;">Edge Cases (Issue #39)</div>
+          <ul style="font-size:0.84rem;padding-left:1.1rem;color:var(--text);">
+            <li><strong>#388:</strong> parse + save with duplicate ingredient names</li>
+            <li><strong>#385:</strong> zero-minute times, max difficulty</li>
+            <li><strong>#386:</strong> no tags selected, all tags selected</li>
+            <li><strong>#387:</strong> very long notes/story, preview mode with empty story</li>
+          </ul>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.5rem;">Regression</div>
+          <ul style="font-size:0.84rem;padding-left:1.1rem;color:var(--text);">
+            <li>Existing Ingredients tab single-add flow (after #388)</li>
+            <li>More details section still accessible after phase sections added (#385–#387)</li>
+            <li>Full <code>flutter test</code> suite on Day 6 before close</li>
+          </ul>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.5rem;">Schedule</div>
+          <ul style="font-size:0.84rem;padding-left:1.1rem;color:var(--text);">
+            <li>Day 4 EOD — #388 widget tests passing</li>
+            <li>Day 5 EOD — #385 + #386 widget tests passing</li>
+            <li>Day 6 — #387 + edge cases + full suite</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="section-title">Notes &amp; Assumptions</div>
+  <div class="card">
+    <div class="card-body">
+      <ul style="font-size:0.86rem;padding-left:1.2rem;line-height:1.8;">
+        <li>#385, #386, #387 promote fields that <em>already exist</em> in <code>_buildMoreDetailsSection</code> — no new DB fields or model changes required</li>
+        <li>#388 reuses <code>IngredientParserSection</code> directly — the save path to an existing recipe is the only genuinely new integration work</li>
+        <li><code>RecipeFormScreen</code> is already 904 lines (flagged in refactoring-backlog.md); extracting section builders is a stretch goal for Day 6 if ahead</li>
+        <li>iOS testing not available (Windows dev machine)</li>
+        <li>All four issues share the same pattern: UX intent → implementation → l10n → tests</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    Sprint Plan 0.2.13 · Updated 2026-05-27 · Gastrobrain Sprint Planner ·
+    <a href="https://github.com/alemdisso/gastrobrain/milestone/36">Milestone #36</a> ·
+    <a href="https://github.com/users/alemdisso/projects/3">Project #3</a>
+  </div>
+
+</div>
+</body>
+</html>

@@ -6,11 +6,9 @@ import '../core/services/ingredient_matching_service.dart';
 import '../models/recipe.dart';
 import '../models/recipe_ingredient.dart';
 import '../models/ingredient.dart';
-import '../models/ingredient_category.dart';
-import '../models/ingredient_match.dart';
 import '../widgets/add_new_ingredient_dialog.dart';
+import '../widgets/ingredient_parser/ingredient_parser_section.dart';
 import '../widgets/recipe_editor/existing_ingredients_display.dart';
-import '../widgets/recipe_editor/ingredient_row.dart';
 import '../widgets/recipe_editor/parsed_ingredient.dart';
 import '../widgets/recipe_editor/recipe_enrichment_progress_card.dart';
 import '../widgets/recipe_editor/recipe_metadata_display.dart';
@@ -40,11 +38,9 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
   bool _isMetadataExpanded = false;
   int _servings = 4;
 
-  // Ingredient parsing state
-  final TextEditingController _rawIngredientsController =
-      TextEditingController();
+  // Ingredient parsing state — list is populated by IngredientParserSection
+  // via onIngredientsConfirmed before _saveIngredients is called.
   List<ParsedIngredient> _parsedIngredients = [];
-  int _parseGeneration = 0; // Increments on re-parse to force field recreation
   bool _isSaving = false;
 
   // Instructions state
@@ -99,7 +95,6 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
 
   @override
   void dispose() {
-    _rawIngredientsController.dispose();
     _instructionsController.dispose();
     super.dispose();
   }
@@ -350,206 +345,29 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
     }
   }
 
-  /// Parse raw ingredient text into structured ingredient list
-  void _parseIngredients() {
-    final rawText = _rawIngredientsController.text.trim();
-    if (rawText.isEmpty) {
-      setState(() {
-        _parsedIngredients = [];
-        _parseGeneration++; // Increment to force field recreation
-      });
-      return;
-    }
-
-    final lines = rawText.split('\n');
-    final parsedList = <ParsedIngredient>[];
-
-    for (final line in lines) {
-      final trimmedLine = line.trim();
-      if (trimmedLine.isEmpty) continue;
-
-      final parsed = _parseIngredientLine(trimmedLine);
-      if (parsed != null) {
-        parsedList.add(parsed);
-      }
-    }
-
-    setState(() {
-      _parsedIngredients = parsedList;
-      _parseGeneration++; // Increment to force field recreation
-    });
-  }
-
-  /// Parse a single ingredient line using the parser service
-  ///
-  /// Now delegates to IngredientParserService for context-aware parsing
-  /// that properly handles Portuguese "de" in multiple contexts.
-  ///
-  /// Examples:
-  /// - "3 ovos" → 3 piece ovos, notes: null
-  /// - "2 kg de mangas" → 2 kg mangas, notes: null
-  /// - "2 colheres de sopa de pasta de tamarindo" → 2 tbsp pasta de tamarindo
-  /// - "Sal a gosto" → 0 null sal, notes: a gosto
-  ParsedIngredient? _parseIngredientLine(String line) {
-    if (!_isParserServiceReady) {
-      // Fallback: treat whole line as ingredient name
-      final name = line.trim();
-      return ParsedIngredient(
-        quantity: 1.0,
-        unit: null,
-        name: name,
-        category: IngredientCategory.other,
-        matches: [],
-        selectedMatch: null,
-      );
-    }
-
-    final result = ServiceProvider.ingredientParser.parseIngredientLine(line);
-
-    // Convert parser result to ParsedIngredient format
-    // Only auto-select if confidence >= 0.80 (medium/high boundary from IngredientMatchingService)
-    // Low-confidence matches stay unselected so "Create New Ingredient" button remains visible
-    final selectedMatch =
-        result.matches.isNotEmpty && result.matches.first.confidence >= 0.80
-            ? result.matches.first
-            : null;
-
-    return ParsedIngredient(
-      quantity: result.quantity,
-      quantityMax: result.quantityMax,
-      unit: result.unit,
-      name: result.ingredientName,
-      category: selectedMatch?.ingredient.category ?? IngredientCategory.other,
-      matches: result.matches,
-      selectedMatch: selectedMatch,
-      notes: result.notes,
-    );
-  }
-
-  /// Add a new empty ingredient row
-  void _addIngredientRow() {
-    setState(() {
-      _parsedIngredients.add(ParsedIngredient(
-        quantity: 1.0,
-        unit: null,
-        name: '',
-        category: IngredientCategory.other,
-        matches: [],
-        selectedMatch: null,
-      ));
-    });
-  }
-
-  /// Remove ingredient at index
-  void _removeIngredientAt(int index) {
-    setState(() {
-      _parsedIngredients.removeAt(index);
-    });
-  }
-
-  /// Update ingredient at index
-  void _updateIngredient(
-    int index, {
-    double? quantity,
-    String? unit,
-    String? name,
-    String? notes,
-    IngredientCategory? category,
-    IngredientMatch? selectedMatch,
-  }) {
-    if (index < 0 || index >= _parsedIngredients.length) return;
-
-    setState(() {
-      final ingredient = _parsedIngredients[index];
-
-      // If name changed, re-run matching
-      List<IngredientMatch> matches = ingredient.matches;
-      IngredientMatch? newSelectedMatch =
-          selectedMatch ?? ingredient.selectedMatch;
-
-      if (name != null && name != ingredient.name) {
-        matches =
-            _isMatchingServiceReady ? _matchingService.findMatches(name) : [];
-        newSelectedMatch = _isMatchingServiceReady &&
-                matches.isNotEmpty &&
-                (_matchingService.shouldAutoSelect(matches) ||
-                    matches.length == 1)
-            ? matches.first
-            : null;
-      }
-
-      // If selectedMatch is explicitly provided (user picked from dropdown), use it
-      if (selectedMatch != null) {
-        newSelectedMatch = selectedMatch;
-      }
-
-      // If we have a selected match, use the matched ingredient's name for display
-      // This ensures the field shows "alho-poró" instead of "alho porro"
-      // But preserve the original parsed name for creating new ingredients
-      final finalName =
-          newSelectedMatch?.ingredient.name ?? (name ?? ingredient.name);
-      final finalOriginalName = name != null ? name : ingredient.originalName;
-
-      _parsedIngredients[index] = ParsedIngredient(
-        quantity: quantity ?? ingredient.quantity,
-        unit: unit ?? ingredient.unit,
-        name: finalName,
-        originalName: finalOriginalName,
-        notes: notes ?? ingredient.notes,
-        category: category ??
-            newSelectedMatch?.ingredient.category ??
-            ingredient.category,
-        matches: matches,
-        selectedMatch: newSelectedMatch,
-      );
-    });
-  }
-
-  /// Show dialog to create a new ingredient from parsed data
-  Future<void> _showCreateIngredientDialog(int index) async {
-    if (index < 0 || index >= _parsedIngredients.length) return;
-
-    final parsed = _parsedIngredients[index];
-
-    // Pre-fill ingredient data from parsed values
-    // Use originalName (not name) to preserve the user's input, not the matched ingredient's name
+  /// Show dialog to create a new ingredient from parsed data.
+  /// Returns the persisted [Ingredient] on confirm, or null on cancel.
+  Future<Ingredient?> _showCreateIngredientDialog(
+      ParsedIngredient parsed) async {
     final prefilledIngredient = Ingredient(
       id: IdGenerator.generateId(),
-      name: parsed.originalName,
+      name: parsed.originalName.isNotEmpty ? parsed.originalName : parsed.name,
       category: parsed.category,
-      unit: null, // User can set in dialog
+      unit: null,
       notes: parsed.notes,
     );
 
-    // Show dialog
-    final result = await showDialog<Ingredient>(
+    return showDialog<Ingredient>(
       context: context,
       builder: (context) => AddNewIngredientDialog(
         ingredient: prefilledIngredient,
       ),
     );
-
-    // If user saved the ingredient, store it for later creation
-    if (result != null && mounted) {
-      setState(() {
-        _parsedIngredients[index] = ParsedIngredient(
-          quantity: parsed.quantity,
-          unit: parsed.unit,
-          name: result.name, // Use the final name from dialog
-          originalName: parsed.originalName, // Preserve original parsed name
-          category: result.category,
-          notes: result.notes,
-          matches: parsed.matches,
-          selectedMatch: null, // Clear any previous match
-          newIngredientToCreate: result, // Store for creation on save
-        );
-      });
-    }
   }
 
-  /// Save ingredients and instructions to database
-  Future<void> _saveIngredients() async {
-    if (_selectedRecipe == null || _parsedIngredients.isEmpty) return;
+  /// Save ingredients and instructions to database. Returns true on success.
+  Future<bool> _saveIngredients() async {
+    if (_selectedRecipe == null || _parsedIngredients.isEmpty) return false;
 
     // Separate new and unresolved ingredients
     final newIngredients = _parsedIngredients
@@ -576,7 +394,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
           ),
         );
       }
-      return;
+      return false;
     }
 
     setState(() {
@@ -688,11 +506,9 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
           ),
         );
 
-        // Clear the form
         setState(() {
-          _rawIngredientsController.clear();
           _parsedIngredients = [];
-          _hasUnsavedChanges = false; // Reset unsaved changes flag
+          _hasUnsavedChanges = false;
         });
 
         // Reload existing ingredients to show updated state
@@ -713,6 +529,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
         setState(() {
           _recipesUpdatedInSession++;
         });
+        return true;
       }
     } catch (e) {
       if (mounted) {
@@ -730,6 +547,7 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
         });
       }
     }
+    return false;
   }
 
   /// Save current recipe (ingredients + instructions) and load next recipe
@@ -1078,42 +896,8 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
 
 
 
-  /// Build summary text showing existing and new ingredient counts
-  String _buildIngredientSummary() {
-    final existingCount = _existingIngredients.length;
-    final newCount = _parsedIngredients
-        .where((p) => p.selectedMatch != null || p.isNewIngredient)
-        .length;
-    final unmatchedCount = _parsedIngredients
-        .where((p) =>
-            p.name.trim().isNotEmpty &&
-            p.selectedMatch == null &&
-            !p.isNewIngredient)
-        .length;
 
-    final parts = <String>[];
-
-    if (existingCount > 0) {
-      parts.add(
-          '$existingCount existing ingredient${existingCount != 1 ? "s" : ""}');
-    }
-
-    if (newCount > 0) {
-      parts.add('adding $newCount new');
-    }
-
-    if (unmatchedCount > 0) {
-      parts.add('$unmatchedCount unmatched (need selection)');
-    }
-
-    if (parts.isEmpty) {
-      return 'No ingredients to save';
-    }
-
-    return parts.join(', ');
-  }
-
-  /// Ingredients section with parsing and editing (Issue #162)
+  /// Ingredients section with parsing and editing
   Widget _buildIngredientsPlaceholder(BuildContext context) {
     return Card(
       child: Padding(
@@ -1135,106 +919,18 @@ class _RecipeEditorScreenState extends State<RecipeEditorScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Raw ingredient input
-            TextField(
-              controller: _rawIngredientsController,
-              maxLines: 6,
-              decoration: const InputDecoration(
-                labelText: 'Paste ingredient list (one per line)',
-                hintText: '200g flour\n2 cups milk\n3 eggs\nSalt to taste',
-                border: OutlineInputBorder(),
-                helperText:
-                    'Click "Parse Ingredients" button when ready. Supports PT/EN formats.',
-                helperMaxLines: 2,
-              ),
+            // Redesigned ingredient parser (Issue #371)
+            IngredientParserSection(
+              matchingService: _matchingService,
+              isServicesReady: _isParserServiceReady,
+              onIngredientsConfirmed: (list) async {
+                setState(() => _parsedIngredients = list);
+                return _saveIngredients();
+              },
+              onCreateNew: (parsed) => _showCreateIngredientDialog(parsed),
             ),
-            const SizedBox(height: 16),
 
-            // Parse button
-            Row(
-              children: [
-                Flexible(
-                  child: ElevatedButton.icon(
-                    onPressed: _parseIngredients,
-                    icon: const Icon(Icons.auto_fix_high),
-                    label: const Text('Parse'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: TextButton.icon(
-                    onPressed: _addIngredientRow,
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add Row'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Parsed ingredients table
-            if (_parsedIngredients.isNotEmpty) ...[
-              const Divider(),
-              const SizedBox(height: 12),
-              Text(
-                'Parsed Ingredients (${_parsedIngredients.length})',
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-              const SizedBox(height: 12),
-
-              // Ingredient rows
-              ..._parsedIngredients.asMap().entries.map((entry) {
-                final index = entry.key;
-                final ingredient = entry.value;
-                return IngredientRow(
-                  index: index,
-                  ingredient: ingredient,
-                  parseGeneration: _parseGeneration,
-                  onQuantityChanged: (qty, qtyMax, error) {
-                    if (index < 0 || index >= _parsedIngredients.length) return;
-                    setState(() {
-                      _parsedIngredients[index].quantity = qty;
-                      _parsedIngredients[index].quantityMax = qtyMax;
-                      _parsedIngredients[index].qtyError = error;
-                    });
-                  },
-                  onUnitChanged: (unit) => _updateIngredient(index, unit: unit),
-                  onNameChanged: (name) => _updateIngredient(index, name: name),
-                  onNotesChanged: (notes) =>
-                      _updateIngredient(index, notes: notes),
-                  onMatchChanged: (match) =>
-                      _updateIngredient(index, selectedMatch: match),
-                  onRemove: () => _removeIngredientAt(index),
-                  onCreateNew: () => _showCreateIngredientDialog(index),
-                );
-              }),
-              const SizedBox(height: 16),
-
-              // Summary: existing and new ingredient counts
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue.shade200),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.info_outline,
-                        color: Colors.blue, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _buildIngredientSummary(),
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            if (_parsedIngredients.isNotEmpty || _existingIngredients.isNotEmpty) ...[
               const SizedBox(height: 24),
 
               // Instructions section

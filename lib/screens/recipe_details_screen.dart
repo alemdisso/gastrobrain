@@ -1,17 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import '../models/recipe.dart';
-import '../models/tag.dart';
-import '../database/database_helper.dart';
-import '../widgets/add_ingredient_dialog.dart';
+import 'package:uuid/uuid.dart';
+import '../core/di/service_provider.dart';
 import '../core/errors/gastrobrain_exceptions.dart';
 import '../core/repositories/tag_repository.dart';
+import '../core/services/ingredient_matching_service.dart';
 import '../core/services/snackbar_service.dart';
+import '../database/database_helper.dart';
 import '../l10n/app_localizations.dart';
+import '../models/ingredient.dart';
+import '../models/recipe.dart';
+import '../models/recipe_ingredient.dart';
+import '../models/tag.dart';
 import '../screens/meal_history_screen.dart';
-import '../screens/edit_recipe_screen.dart';
-import '../screens/recipe_details_overview_tab.dart';
 import '../screens/recipe_details_ingredients_tab.dart';
+import '../screens/recipe_details_overview_tab.dart';
+import '../screens/recipe_form_screen.dart';
+import '../utils/id_generator.dart';
+import '../widgets/add_ingredient_dialog.dart';
+import '../widgets/add_new_ingredient_dialog.dart';
+import '../widgets/ingredient_parser/ingredient_parser_section.dart';
+import '../widgets/recipe_editor/parsed_ingredient.dart';
 
 /// Unified screen for viewing complete recipe details including overview,
 /// ingredients, instructions, and meal history.
@@ -50,6 +59,11 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
   bool _isLoadingIngredients = true;
   String? _ingredientsError;
 
+  // Ingredient parser state
+  final IngredientMatchingService _matchingService = IngredientMatchingService();
+  bool _isMatchingServiceReady = false;
+  bool _isParserServiceReady = false;
+
   // Tags state
   List<Tag> _recipeTags = [];
   late TagRepository _tagRepo;
@@ -70,6 +84,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
     _currentRecipe = widget.recipe;
     _instructions = widget.recipe.instructions;
     _loadIngredients();
+    _loadAllIngredients();
     _loadTags();
 
     // Listen to tab changes to rebuild AppBar actions
@@ -81,9 +96,40 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isParserServiceReady && _isMatchingServiceReady && mounted) {
+      final l10n = AppLocalizations.of(context);
+      if (l10n != null) {
+        ServiceProvider.ingredientParser
+            .initialize(l10n, matchingService: _matchingService);
+        setState(() => _isParserServiceReady = true);
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadAllIngredients() async {
+    try {
+      final ingredients = await _dbHelper.getAllIngredients();
+      _matchingService.initialize(ingredients);
+      if (mounted) {
+        setState(() => _isMatchingServiceReady = true);
+        final l10n = AppLocalizations.of(context);
+        if (l10n != null && !_isParserServiceReady) {
+          ServiceProvider.ingredientParser
+              .initialize(l10n, matchingService: _matchingService);
+          setState(() => _isParserServiceReady = true);
+        }
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isMatchingServiceReady = false);
+    }
   }
 
   Future<void> _loadIngredients() async {
@@ -133,18 +179,132 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
     } catch (_) {}
   }
 
-  Future<void> _addIngredient() async {
-    final result = await showDialog<bool>(
+  void _addIngredients() {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet<void>(
       context: context,
-      builder: (context) => AddIngredientDialog(recipe: _currentRecipe),
+      isScrollControlled: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(sheetContext).colorScheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                l10n.addIngredients,
+                style: Theme.of(sheetContext).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 16),
+              IngredientParserSection(
+                matchingService: _matchingService,
+                isServicesReady: _isParserServiceReady,
+                onIngredientsConfirmed: (list) async {
+                  final ok = await _saveIngredientsFromParser(list);
+                  if (ok) {
+                    Navigator.pop(sheetContext);
+                    if (mounted) {
+                      _loadIngredients();
+                      setState(() => _hasChanges = true);
+                    }
+                  }
+                  return ok;
+                },
+                onCreateNew: _showCreateIngredientDialogForParser,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
+  }
 
-    if (result == true) {
-      _loadIngredients();
-      setState(() {
-        _hasChanges = true;
-      });
+  Future<bool> _saveIngredientsFromParser(
+      List<ParsedIngredient> confirmed) async {
+    try {
+      const uuid = Uuid();
+      final existing =
+          await _dbHelper.getRecipeIngredients(_currentRecipe.id);
+      final existingById = <String, Map<String, dynamic>>{
+        for (final e in existing)
+          if (e['ingredient_id'] != null) e['ingredient_id'] as String: e,
+      };
+
+      for (final parsed in confirmed) {
+        if (parsed.name.trim().isEmpty) continue;
+        if (parsed.isNewIngredient) {
+          await _dbHelper.insertIngredient(parsed.newIngredientToCreate!);
+        }
+        final ingredientId = parsed.selectedMatch?.ingredient.id ??
+            parsed.newIngredientToCreate?.id;
+        if (ingredientId == null) continue;
+
+        if (existingById.containsKey(ingredientId)) {
+          final ri = RecipeIngredient(
+            id: existingById[ingredientId]!['recipe_ingredient_id'] as String,
+            recipeId: _currentRecipe.id,
+            ingredientId: ingredientId,
+            quantity: parsed.quantity,
+            quantityMax: parsed.quantityMax,
+            notes: parsed.notes,
+            unitOverride: parsed.unit,
+          );
+          await _dbHelper.updateRecipeIngredient(ri);
+        } else {
+          await _dbHelper.addIngredientToRecipe(RecipeIngredient(
+            id: uuid.v4(),
+            recipeId: _currentRecipe.id,
+            ingredientId: ingredientId,
+            quantity: parsed.quantity,
+            quantityMax: parsed.quantityMax,
+            notes: parsed.notes,
+            unitOverride: parsed.unit,
+          ));
+        }
+      }
+      return true;
+    } catch (e) {
+      if (mounted) {
+        SnackbarService.showError(
+            context, AppLocalizations.of(context)!.unexpectedError);
+      }
+      return false;
     }
+  }
+
+  Future<Ingredient?> _showCreateIngredientDialogForParser(
+      ParsedIngredient parsed) async {
+    final prefilled = Ingredient(
+      id: IdGenerator.generateId(),
+      name: parsed.originalName.isNotEmpty ? parsed.originalName : parsed.name,
+      category: parsed.category,
+      unit: null,
+      notes: parsed.notes,
+    );
+    return showDialog<Ingredient>(
+      context: context,
+      builder: (_) => AddNewIngredientDialog(ingredient: prefilled),
+    );
   }
 
   Future<void> _deleteIngredient(Map<String, dynamic> ingredient) async {
@@ -344,7 +504,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
     final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (context) => EditRecipeScreen(recipe: _currentRecipe),
+        builder: (context) => RecipeFormScreen(recipe: _currentRecipe),
       ),
     );
 
@@ -534,7 +694,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
       onDeleteIngredient: _deleteIngredient,
       onEditIngredient: _editIngredient,
       onRetry: _loadIngredients,
-      onAdd: _addIngredient,
+      onAdd: _addIngredients,
     );
   }
 
@@ -614,8 +774,8 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
     switch (_tabController.index) {
       case 0: // Ingredients tab
         return FloatingActionButton(
-          onPressed: _addIngredient,
-          tooltip: AppLocalizations.of(context)!.addIngredient,
+          onPressed: _addIngredients,
+          tooltip: AppLocalizations.of(context)!.addIngredients,
           child: const Icon(Icons.add),
         );
       case 1: // Instructions tab

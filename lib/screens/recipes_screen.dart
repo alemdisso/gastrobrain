@@ -14,8 +14,7 @@ import '../core/providers/recipe_provider.dart';
 import '../core/repositories/tag_repository.dart';
 import '../core/theme/design_tokens.dart';
 import '../core/di/service_provider.dart';
-import 'add_recipe_screen.dart';
-import 'edit_recipe_screen.dart';
+import 'recipe_form_screen.dart';
 import 'cook_meal_screen.dart';
 
 class RecipesScreen extends StatefulWidget {
@@ -71,7 +70,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
   Future<void> _addRecipe() async {
     final result = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(builder: (context) => const AddRecipeScreen()),
+      MaterialPageRoute(builder: (context) => const RecipeFormScreen()),
     );
 
     if (result == true) {
@@ -85,7 +84,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
     final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (context) => EditRecipeScreen(recipe: recipe),
+        builder: (context) => RecipeFormScreen(recipe: recipe),
       ),
     );
 

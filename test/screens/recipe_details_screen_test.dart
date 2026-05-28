@@ -310,4 +310,115 @@ void main() {
           reason: '_saveInstructions dropped servings — data loss bug regressed');
     });
   });
+
+  // ─────────────────────── Ingredient parser (FAB) ──────────────────────── //
+
+  group('Ingredient parser bottom sheet', () {
+    late MockDatabaseHelper mockDb;
+
+    setUp(() {
+      mockDb = MockDatabaseHelper();
+    });
+
+    tearDown(() {
+      mockDb.resetAllData();
+    });
+
+    testWidgets('FAB on Ingredients tab opens parser bottom sheet', (tester) async {
+      final recipe = _makeRecipe();
+      await mockDb.insertRecipe(recipe);
+
+      await tester.pumpWidget(
+        _buildTestApp(
+          RecipeDetailsScreen(
+            recipe: recipe,
+            databaseHelper: mockDb,
+            initialTabIndex: 0,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('ingredient_parser_parse_button')), findsOneWidget,
+          reason: 'IngredientParserSection should be shown in bottom sheet');
+    });
+
+    testWidgets('empty-state Add Ingredient button also opens parser bottom sheet',
+        (tester) async {
+      final recipe = _makeRecipe();
+      await mockDb.insertRecipe(recipe);
+      // No ingredients added — tab will show empty state
+
+      await tester.pumpWidget(
+        _buildTestApp(
+          RecipeDetailsScreen(
+            recipe: recipe,
+            databaseHelper: mockDb,
+            initialTabIndex: 0,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Empty-state button label is "Add Ingredient"
+      await tester.tap(find.text('Add Ingredient'));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('ingredient_parser_parse_button')), findsOneWidget,
+          reason: 'Parser bottom sheet should open from empty-state button');
+    });
+
+    testWidgets('bottom sheet shows Add Ingredients title', (tester) async {
+      final recipe = _makeRecipe();
+      await mockDb.insertRecipe(recipe);
+
+      await tester.pumpWidget(
+        _buildTestApp(
+          RecipeDetailsScreen(
+            recipe: recipe,
+            databaseHelper: mockDb,
+            initialTabIndex: 0,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Add Ingredients'), findsOneWidget);
+    });
+
+    testWidgets('closing bottom sheet without confirming leaves ingredients unchanged',
+        (tester) async {
+      final recipe = _makeRecipe();
+      await mockDb.insertRecipe(recipe);
+
+      await tester.pumpWidget(
+        _buildTestApp(
+          RecipeDetailsScreen(
+            recipe: recipe,
+            databaseHelper: mockDb,
+            initialTabIndex: 0,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+
+      // Close bottom sheet by tapping the barrier
+      await tester.tapAt(const Offset(200, 100));
+      await tester.pumpAndSettle();
+
+      // No ingredients should be in the mock DB
+      final ingredients = await mockDb.getRecipeIngredients(recipe.id);
+      expect(ingredients, isEmpty,
+          reason: 'No ingredient should be saved when sheet dismissed without confirm');
+    });
+  });
 }

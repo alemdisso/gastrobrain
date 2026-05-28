@@ -250,6 +250,8 @@ strong{font-weight:700}
     <a href="#s026" class="sub emergency">0.2.6 — Schema Fix (Emergency)</a>
     <a href="#s027" class="sub">0.2.7 — Code Health</a>
     <a href="#s028" class="sub">0.2.8 — Range Quantities</a>
+    <a href="#s0211" class="sub">0.2.11 — DB Safety + UX Polish</a>
+    <a href="#s0212" class="sub">0.2.12 — Architecture &amp; Editor</a>
   </div>
 
   <div class="sidebar-sec">
@@ -274,7 +276,7 @@ strong{font-weight:700}
     <div class="hero-stat"><div class="hero-stat-val">30</div><div class="hero-stat-lbl">Pts/Week Cruising</div></div>
     <div class="hero-stat"><div class="hero-stat-val">6.5</div><div class="hero-stat-lbl">Pts/Day Baseline</div></div>
     <div class="hero-stat"><div class="hero-stat-val">0.1.2</div><div class="hero-stat-lbl">First Entry</div></div>
-    <div class="hero-stat"><div class="hero-stat-val">0.2.8</div><div class="hero-stat-lbl">Latest Entry</div></div>
+    <div class="hero-stat"><div class="hero-stat-val">0.2.12</div><div class="hero-stat-lbl">Latest Entry</div></div>
   </div>
 </div>
 
@@ -323,7 +325,9 @@ strong{font-weight:700}
     <div class="chart-row"><div class="chart-lbl">0.2.5</div><div class="chart-track"><div class="chart-bar chart-bar-cruis" style="width:38.8%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">31.0 pts/wk</div></div>
     <div class="chart-row"><div class="chart-lbl">0.2.7 ★</div><div class="chart-track"><div class="chart-bar chart-bar-exec" style="width:98.8%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">79.0 pts/wk</div></div>
     <div class="chart-row"><div class="chart-lbl">0.2.8</div><div class="chart-track"><div class="chart-bar chart-bar-exec" style="width:55.0%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">44.0 pts/wk</div></div>
-    <p style="font-size:11px;color:var(--text-muted);margin-top:10px">★ 0.2.7 was an execution-mode Code Health sprint (P1 fixes + well-specified bugs) — do not use to recalibrate cruising velocity. Amber line = 30 pts/wk cruising baseline.</p>
+    <div class="chart-row"><div class="chart-lbl">0.2.11 ★★</div><div class="chart-track"><div class="chart-bar chart-bar-exec" style="width:100%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">119 pts/wk ↗</div></div>
+    <div class="chart-row"><div class="chart-lbl">0.2.12 ★★</div><div class="chart-track"><div class="chart-bar chart-bar-exec" style="width:100%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">147 pts/wk ↗</div></div>
+    <p style="font-size:11px;color:var(--text-muted);margin-top:10px">★ 0.2.7 was an execution-mode Code Health sprint — do not use to recalibrate cruising velocity. ★★ 0.2.11 (119 pts/wk) and 0.2.12 (147 pts/wk) are off-scale — post-crisis context + pure architecture profile; bars capped at 100%; do not recalibrate. Amber line = 30 pts/wk cruising baseline.</p>
   </div>
 </div>
 
@@ -1054,6 +1058,84 @@ strong{font-weight:700}
       </ul>
     </div>
   </div>
+
+  <!-- 0.2.11 -->
+  <div id="s0211" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.2.11 — DB Safety Foundation + UX Polish</h3>
+        <div class="dates">May 16–18, 2026 &bull; 2.0 active days (May 17 rest)</div>
+        <div class="theme">Post-crisis execution: migration error surfacing + UX batch — all 5 original issues + #384 mid-sprint in 2 days</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-execution">Execution ★★</span><span class="badge" style="background:#0891b2;color:white">Post-crisis</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">34</div><div class="perf-lbl">Pts Delivered</div></div>
+      <div class="perf-cell"><div class="perf-val">2.0</div><div class="perf-lbl">Active Days</div></div>
+      <div class="perf-cell"><div class="perf-val">17.0</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">119</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">⚡ Well under</div><div class="perf-lbl">Result</div></div>
+    </div>
+    <div class="sprint-body">
+      <div class="note amber"><strong>★★ Do not use 0.2.11 to recalibrate cruising velocity.</strong> 17 pts/day reflects post-crisis context (0.2.9/0.2.10 investigation fully pre-loaded into #382) combined with a warm UX batch day where five issues shared the same code domain. Cruising baseline remains 30 pts/week.</div>
+      <h4>Issues</h4>
+      <div class="tbl-wrap"><table>
+        <tr><th>#</th><th>Title</th><th>Type</th><th>Est Pts</th><th>Status</th></tr>
+        <tr><td>#382</td><td>Migration error surfacing + integration test</td><td>Technical debt / Architecture</td><td class="num">8</td><td>✅ Done — Day 1; 0.2.9/0.2.10 investigation pre-loaded; full integration test (521 lines) same day</td></tr>
+        <tr><td>#365</td><td>Fix edit ingredient dialog</td><td>UX fix</td><td class="num">5</td><td>✅ Done</td></tr>
+        <tr><td>#346</td><td>Visual scroll affordance</td><td>UI enhancement</td><td class="num">3</td><td>✅ Done</td></tr>
+        <tr><td>#376</td><td>Week plan temporal meal status</td><td>Enhancement</td><td class="num">5</td><td>✅ Done</td></tr>
+        <tr><td>#316</td><td>Redesign Meal Options dialog</td><td>UX redesign</td><td class="num">5</td><td>✅ Done</td></tr>
+        <tr><td>#384</td><td>Unify side dish add flow</td><td>UX refinement</td><td class="num">8</td><td>📋 Unplanned (mid-sprint) — emerged after #316 shipped; warm context; absorbed same day</td></tr>
+      </table></div>
+      <div class="note blue"><strong>Board estimates used throughout.</strong> Sprint plan had #365 at 3 pts (board: 5), #346 at 2 pts (board: 3), #316 at 10 pts (board: 5). Solo estimation without Estimation Poker anchors conservative; board estimates for well-scoped UX items ran 1.5–2× above actual complexity for the larger divergences.</div>
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>Post-crisis investigation is the most powerful velocity multiplier.</strong> 0.2.9/0.2.10 forced deep investigation of the migration runner. When #382 started, root cause was already mapped — zero debugging phase. Label issues following emergency sprints as "post-crisis" and discount estimates 40–60%; the investigation is already done.</li>
+        <li><strong>In-context UX emergence is faster than planned UX.</strong> #384 was created and shipped same-day after #316 revealed the side dish gap — surrounding code at peak context, zero design overhead. When a shipped feature immediately reveals a natural follow-on in the same code path, pull it into the same sprint rather than scheduling it cold.</li>
+        <li><strong>Solo estimation without Estimation Poker anchors conservative.</strong> #316 estimated at 10 pts in the sprint plan; board shows 5 pts; actual delivery matched board. Without collaborative calibration, estimates default to worst-case. Periodically revisit board estimates with a quick sanity check before sprint start.</li>
+        <li><strong>Healthy unplanned work can exceed the 30% budget without penalty.</strong> #384 added 31% unplanned pts and was absorbed same-day. When emergence is in-context, well-scoped, and immediately actionable, the ratio ceiling is a planning guideline, not a hard cap.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 0.2.12 -->
+  <div id="s0212" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.2.12 — Architecture &amp; Editor</h3>
+        <div class="dates">May 19–20, 2026 &bull; 2.0 active days</div>
+        <div class="theme">Pure architecture sprint — DB rollback + DAO split + editor split; fastest sprint in diary at 147 pts/week</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-execution">Execution ★★</span><span class="badge" style="background:#7c3aed;color:white">Pure Architecture</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">42</div><div class="perf-lbl">Pts Delivered</div></div>
+      <div class="perf-cell"><div class="perf-val">2.0</div><div class="perf-lbl">Active Days</div></div>
+      <div class="perf-cell"><div class="perf-val">21.0</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">147</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">⚡ Well under</div><div class="perf-lbl">Result</div></div>
+    </div>
+    <div class="sprint-body">
+      <div class="note amber"><strong>★★ Do not use 0.2.12 to recalibrate cruising velocity.</strong> 21 pts/day is the fastest sprint in the diary. Three compounding factors: post-crisis context (#383 built directly on #382's schema), pure architecture profile (zero UI/L10N/mobile overhead), and DAO template-then-adapt pattern (first DAO sets the template; subsequent are mechanical). Cruising baseline remains 30 pts/week.</div>
+      <h4>Issues</h4>
+      <div class="tbl-wrap"><table>
+        <tr><th>#</th><th>Title</th><th>Type</th><th>Est Pts</th><th>Status</th></tr>
+        <tr><td>#383</td><td>Auto-rollback on migration failure</td><td>Safety / Architecture</td><td class="num">8</td><td>✅ Done — Day 1; severity column pre-added in #382; rollbackToVersion() already existed</td></tr>
+        <tr><td>#283</td><td>Extract IngredientParserService</td><td>Refactor</td><td class="num">8</td><td>✅ Done — Day 1; mechanical extraction into established ServiceProvider pattern</td></tr>
+        <tr><td>#337</td><td>Split DatabaseHelper into DAOs</td><td>Refactor / Architecture</td><td class="num">13</td><td>✅ Done — Day 1; 4 commits (one DAO at a time); MockDatabaseHelper cascade minimal</td></tr>
+        <tr><td>#336</td><td>Split RecipeEditorScreen into components</td><td>Refactor</td><td class="num">13</td><td>✅ Done — Day 2; followed DAO extraction template from #337</td></tr>
+      </table></div>
+      <div class="note blue"><strong>Board estimates used throughout.</strong> Sprint plan had #283 at 5 pts (board: 8) and #336 at 8 pts (board: 13) — board adds 8 pts vs sprint plan total. At sprint plan values (34 pts ÷ 2d), velocity would be 17 pts/day — still well above cruising. Reinforces conservative solo estimation pattern from 0.2.11.</div>
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>Pure architecture sprint is a distinct velocity profile — faster than execution mode.</strong> No UI, no L10N, no device testing. 0.2.12 ran at 147 pts/week vs 0.2.7 Code Health at 79 pts/week. Architecture refactoring with clear DAO/component boundaries is mechanically predictable in a way that test fixes and bug investigation are not. Size pure-architecture sprints at 60–80+ pts/week when templates exist.</li>
+        <li><strong>DAO extraction follows a template-then-adapt pattern.</strong> RecipeDao required boundary decisions; MealDao, MealPlanDao, RecommendationDao, ShoppingListDao were adaptations. The forecasted MockDatabaseHelper cascade risk did not materialize — mock update is minimal when the DAO shape is well-defined. Discount follow-on DAOs 40–50% vs the first at estimation time.</li>
+        <li><strong>Conservative board estimates without Estimation Poker inflate expected days for mechanical refactors.</strong> #336 at 13 pts implied 2.0d at cruising; actual was a half-day session. Without calibration, mechanical refactor tasks over-estimate by 1.5–2×. The asymmetry compounds when multiple such tasks are in one sprint.</li>
+        <li><strong>Architecture clearance before a major feature sprint is a multiplier reduction, not overhead.</strong> #283, #337, #336 eliminate ongoing architectural tax from every 0.2.13 feature that follows — no god class to work around, no parser embedded in screens, no 2,000-line editor to navigate. One focused architecture sprint removes friction that would otherwise compound across the next 3–5 sprints.</li>
+      </ul>
+    </div>
+  </div>
 </div>
 
 <!-- CUMULATIVE METRICS -->
@@ -1083,8 +1165,12 @@ strong{font-weight:700}
     <tr><td>0.2.6</td><td>Schema Migration Fix</td><td class="num">—‖</td><td class="num">~1.5</td><td class="num">—</td><td class="num">—</td><td class="num r-na">—</td><td>Emergency architectural fix — excluded</td></tr>
     <tr><td>0.2.7</td><td>Code Health</td><td class="num">17¶</td><td class="num">~1.5</td><td class="num">11.3</td><td class="num">~79</td><td class="num r-na">—¶</td><td>Execution mode ★ — do not recalibrate</td></tr>
     <tr><td>0.2.8</td><td>Range Quantities + Import</td><td class="num">25</td><td class="num">4.0</td><td class="num">6.25</td><td class="num">44.0</td><td class="num r-na">—¶</td><td>On target; data-first trilogy</td></tr>
+    <tr><td>0.2.9</td><td>Migration Hotfix</td><td class="num">—‡</td><td class="num">~0.5</td><td class="num">—</td><td class="num">—</td><td class="num r-na">—</td><td>Hotfix: PRAGMA fix (#381); not a regular sprint</td></tr>
+    <tr><td>0.2.10</td><td>Migration Hotfix Follow-on</td><td class="num">—‡</td><td class="num">~0.5</td><td class="num">—</td><td class="num">—</td><td class="num r-na">—</td><td>Hotfix: migration 109 hardening (#381); not a regular sprint</td></tr>
+    <tr><td>0.2.11</td><td>DB Safety + UX Polish</td><td class="num">34</td><td class="num">2.0</td><td class="num">17.0</td><td class="num">119</td><td class="num r-na">—¶</td><td>Post-crisis execution ★★; #384 mid-sprint (+8 unplanned); do not recalibrate cruising</td></tr>
+    <tr><td>0.2.12</td><td>Architecture &amp; Editor</td><td class="num">42</td><td class="num">2.0</td><td class="num">21.0</td><td class="num">147</td><td class="num r-na">—¶</td><td>Pure architecture ★★; fastest sprint in diary; do not recalibrate cruising</td></tr>
   </table></div>
-  <p style="font-size:11px;color:var(--text-muted);margin-top:8px">* 0.1.7a: unreliable — shared day, excluded from velocity. † 0.1.14: retroactive estimate. ‡ 0.1.15: P0 emergency, not pre-estimated. § 0.2.4+: ratio = actual days ÷ (est pts ÷ 6.5); prior entries not comparable. ‖ 0.2.6: emergency hotfix, not regular sprint. ¶ 0.2.7+: ratio column dropped; sprint-level velocity only.</p>
+  <p style="font-size:11px;color:var(--text-muted);margin-top:8px">* 0.1.7a: unreliable — shared day, excluded from velocity. † 0.1.14: retroactive estimate. ‡ 0.1.15, 0.2.9, 0.2.10: hotfixes/P0 emergencies, not pre-estimated. § 0.2.4+: ratio = actual days ÷ (est pts ÷ 6.5); prior entries not comparable. ‖ 0.2.6: emergency hotfix, not regular sprint. ¶ 0.2.7+: ratio column dropped; sprint-level velocity only. ★★ 0.2.11/0.2.12: post-crisis context + pure architecture; off-scale; do not use for cruising calibration.</p>
 </div>
 
 <!-- CALIBRATION FACTORS -->
@@ -1124,6 +1210,10 @@ strong{font-weight:700}
     <tr><td>P1 Feature with device-test iteration <span class="new-tag">0.2.3</span></td><td class="num r-target">0.10–0.15x</td><td>0.2.3 #121</td><td>Budget ~0.20d hidden overhead beyond commits for UX design decisions triggered by device testing</td></tr>
     <tr><td>Feature (medium-risk, prior failure + diagnosis) <span class="new-tag">0.2.3</span></td><td class="num r-fast">0.08–0.10x</td><td>0.2.3 #295</td><td>"Previously failed + sound diagnosis" lowers risk; treat like post-usage bug</td></tr>
     <tr><td>Flaky test investigation</td><td class="num r-na">time-box</td><td>0.1.8</td><td>Set 2-hour cap; if no signal, document hypothesis and move on</td></tr>
+    <tr><td>Post-crisis context (issues directly following emergency sprint) <span class="new-tag">0.2.11</span></td><td class="num r-fast">0.10x flat</td><td>0.2.11 #382, #383</td><td>Emergency sprint forces deep investigation; next sprint touching same subsystem has zero debugging phase. Discount related issues 40–60% vs standard estimate.</td></tr>
+    <tr><td>DAO extraction — first DAO (boundary decisions) <span class="new-tag">0.2.12</span></td><td class="num r-fast">~full est.</td><td>0.2.12 #337</td><td>First DAO requires DAO boundary design; estimate at full complexity. Sets the template for all follow-ons.</td></tr>
+    <tr><td>DAO extraction — follow-on DAOs (template adaptation) <span class="new-tag">0.2.12</span></td><td class="num r-fast">0.4–0.5x</td><td>0.2.12 #337</td><td>Mechanical adaptation of first DAO template. Discount 40–50% vs first DAO estimate. MockDatabaseHelper cascade risk is minimal when DAO shape is well-defined.</td></tr>
+    <tr><td>Pure architecture sprint (no UI/L10N/mobile) <span class="new-tag">0.2.12</span></td><td class="num r-fast">60–80+ pts/wk</td><td>0.2.12</td><td>Zero overhead categories; mechanically predictable. Distinct profile: faster than Code Health (79 pts/wk) and execution mode (36 pts/wk) when templates exist and boundaries are defined upfront. Do not size at cruising (30 pts/wk).</td></tr>
   </table></div>
 </div>
 
@@ -1138,6 +1228,9 @@ strong{font-weight:700}
       <li>Sprint ratio depends heavily on work type — don't use one sprint's ratio to predict another sprint's performance</li>
       <li>Small UX fix sprints inflate story-point velocity due to the 1-pt Fibonacci floor. Don't recalibrate cruising from UX-fix-heavy sprints</li>
       <li>Code Health sprint profile reliably executes at execution-mode velocity (~36–40 pts/week) — size those milestones accordingly, not at cruising</li>
+      <li><strong>Pure architecture sprint is the fastest velocity profile (0.2.12: 147 pts/week)</strong> — no UI/L10N/mobile overhead; mechanically predictable with defined DAO/component boundaries. Size pure-architecture sprints at 60–80+ pts/week, not at cruising or execution mode</li>
+      <li><strong>Post-crisis investigation transfers directly to planned sprint velocity (0.2.11)</strong> — emergency sprints that force deep subsystem investigation give the next planned sprint zero debugging phase on directly related issues. Same 0.10x execution profile as post-usage bugs</li>
+      <li><strong>Solo estimation without Estimation Poker anchors conservative (0.2.11/0.2.12)</strong> — board estimates diverged from sprint plan by 1–8 pts per sprint; mechanical refactor tasks over-estimated by 1.5–2× without collaborative calibration. Periodically revisit board estimates or run a pre-sprint sanity check</li>
     </ul>
   </div>
   <div class="insight-group">
@@ -1308,6 +1401,17 @@ strong{font-weight:700}
 <!-- DOCUMENT HISTORY -->
 <div id="history" class="section">
   <div class="section-title">Document <span>History</span></div>
+  <div class="hist-entry">
+    <div class="hist-date">2026-05-25 — 0.2.11 and 0.2.12 retrospectives added</div>
+    <ul>
+      <li>0.2.11: 34 pts in 2.0d (17 pts/day / 119 pts/week) — post-crisis execution + UX batch; #384 mid-sprint (+8 unplanned, 31%)</li>
+      <li>0.2.12: 42 pts in 2.0d (21 pts/day / 147 pts/week) — fastest sprint in diary; pure architecture profile</li>
+      <li><strong>New sprint profile: "Pure architecture"</strong> — no UI/L10N/mobile overhead; fastest velocity mode; size at 60–80+ pts/week</li>
+      <li><strong>New pattern: "Post-crisis context transfer"</strong> — emergency investigation (0.2.9/0.2.10) pre-loads the next planned sprint; same 0.10x profile as post-usage bugs</li>
+      <li><strong>New calibration: DAO extraction</strong> — first DAO full estimate; follow-ons at 40–50% discount; MockDatabaseHelper cascade risk minimal with well-defined DAO shape</li>
+      <li><strong>Solo estimation without Estimation Poker anchors conservative</strong> — board estimates ran 1.5–2× sprint plan for mechanical refactors; revisit estimates before sprint start</li>
+    </ul>
+  </div>
   <div class="hist-entry">
     <div class="hist-date">2026-05-14 — 0.2.8 retrospective added</div>
     <ul><li>Range quantities trilogy + import sprint; on target at cruising; #382 post-release → 0.2.9/0.2.10</li><li>New lessons: data-first hard-sequencing; pre-sprint investigation for ≥8pt features; upfront design decisions absorb multipliers</li></ul>
