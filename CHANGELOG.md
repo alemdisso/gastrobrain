@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.13] - 2026-05-28
+
+### Added
+- Ingredient parser as a first-class bulk entry method: redesigned UI with paste input, auto-parse, confidence-based matching, manual row editing, and "Create new ingredient" flow (#371)
+- Unified `RecipeFormScreen` replacing the separate Add/Edit screens: phased progressive disclosure flow (Phase 1 stub → Phase 4 ingredients in create mode; all phases accessible in edit mode) (#370)
+- `IngredientParserSection` in `RecipeDetailsScreen` ingredients tab: FAB and empty-state button now open a bottom sheet with the bulk parser instead of the one-at-a-time dialog (#388)
+- Phase 2 — Timing & Difficulty: dedicated collapsible section in `RecipeFormScreen` for prep/cook/marinating time and difficulty, available in both create and edit modes (#385)
+- Phase 3 — Tags & Rating: dedicated collapsible section for star rating and tags, available in both create and edit modes (#386)
+- Phase 5 — Notes & Story: dedicated collapsible section for cooking notes and personal story, available in both create and edit modes (#387)
+
+### Changed
+- Recipe form create flow: confirming ingredients now stays in the form (snackbar feedback) instead of navigating away — consistent with all other per-section saves
+- Tags are now loaded immediately after Phase 1 stub creation, making Tags & Rating usable during the create flow
+- `RecipeFormScreen` edit body now shows 5 named sections: Basics, Ingredients, Timing & Difficulty, Tags & Rating, Notes & Story
+
+### Fixed
+- None
+
+---
+
 ## [0.2.12] - 2026-05-20
 
 ### Added
