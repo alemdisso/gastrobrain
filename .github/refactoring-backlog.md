@@ -4,6 +4,7 @@ Auto-flagged by the Code Quality Watchdog. Review during Sprint Planning as part
 
 ---
 
+- [ ] 🔴 `lib/screens/recipe_form_screen.dart` — file length 904 lines (threshold: 400) — flagged during: #370 unified recipe form implementation — 2026-05-27 — **unified replacement for add_recipe_screen (453 ln) + edit_recipe_screen (417 ln); extraction candidates: _buildMoreDetailsSection, _buildPhase4Section**
 - [ ] 🔴 `lib/widgets/add_ingredient_dialog.dart` — file length (677 lines, threshold 250) — flagged during: issue creation analysis — 2026-04-26
 - [ ] 🔴 `lib/screens/recipes_screen.dart` — file length (614 lines, threshold 400) — flagged during: #346 scroll affordance implementation — 2026-05-18
 

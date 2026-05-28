@@ -7,7 +7,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:gastrobrain/database/database_helper.dart';
 import 'package:gastrobrain/models/recipe.dart';
 import 'package:gastrobrain/models/frequency_type.dart';
-import 'package:gastrobrain/screens/edit_recipe_screen.dart';
+import 'package:gastrobrain/screens/recipe_form_screen.dart';
 import 'package:gastrobrain/l10n/app_localizations.dart';
 import 'helpers/e2e_test_helpers.dart';
 
@@ -111,7 +111,7 @@ void main() {
 
         print('\n=== NAVIGATING TO EDIT RECIPE SCREEN ===');
 
-        // Navigate directly to EditRecipeScreen
+        // Navigate directly to RecipeFormScreen in edit mode
         // (bypassing menu interaction for this test)
         await tester.pumpWidget(
           MaterialApp(
@@ -125,7 +125,7 @@ void main() {
               Locale('en'), // English
               Locale('pt'), // Portuguese
             ],
-            home: EditRecipeScreen(recipe: createdRecipe),
+            home: RecipeFormScreen(recipe: createdRecipe),
           ),
         );
         await tester.pumpAndSettle();
@@ -137,7 +137,7 @@ void main() {
         // ==================================================================
 
         // Verify we're on the edit screen by checking for form fields
-        final nameField = find.byKey(const Key('edit_recipe_name_field'));
+        final nameField = find.byKey(const Key('recipe_form_name_field'));
         expect(nameField, findsOneWidget, reason: 'Name field should be visible');
         print('✓ On Edit Recipe form');
 
@@ -174,7 +174,7 @@ void main() {
 
         // Find and tap save button using helper
         await E2ETestHelpers.tapSaveButton(tester);
-        // Note: after a successful save the EditRecipeScreen is popped, so
+        // Note: after a successful save the RecipeFormScreen is popped, so
         // the ElevatedButton no longer exists — do NOT call getCenter here.
         print('✓ Save button tapped (screen navigated away = save fired)');
 

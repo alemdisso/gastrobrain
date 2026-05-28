@@ -11,7 +11,7 @@ import '../l10n/app_localizations.dart';
 import '../widgets/dashboard/hero_section.dart';
 import '../widgets/dashboard/quick_actions_panel.dart';
 import '../widgets/dashboard/summary_cards.dart';
-import 'add_recipe_screen.dart';
+import 'recipe_form_screen.dart';
 import 'recipe_details_screen.dart';
 import 'tools_screen.dart';
 
@@ -134,7 +134,7 @@ class DashboardScreenState extends State<DashboardScreen> {
   Future<void> _navigateToAddRecipe() async {
     final result = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(builder: (context) => const AddRecipeScreen()),
+      MaterialPageRoute(builder: (context) => const RecipeFormScreen()),
     );
     if (result == true) {
       refreshData();
