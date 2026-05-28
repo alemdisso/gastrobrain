@@ -359,6 +359,10 @@
   "@tagsAndRating": {
     "description": "Cabeçalho da Fase 3 — tags e avaliação por estrelas"
   },
+  "notesAndStory": "Notas e História",
+  "@notesAndStory": {
+    "description": "Cabeçalho da Fase 5 — notas de preparo e história pessoal"
+  },
   "saveChanges": "Salvar Alterações",
   "@saveChanges": {
     "description": "Texto do botão salvar alterações"

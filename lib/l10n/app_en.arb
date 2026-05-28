@@ -365,6 +365,10 @@
   "@tagsAndRating": {
     "description": "Section header for Phase 3 — tags and star rating"
   },
+  "notesAndStory": "Notes & Story",
+  "@notesAndStory": {
+    "description": "Section header for Phase 5 — cooking notes and personal story"
+  },
   "saveChanges": "Save Changes",
   "@saveChanges": {
     "description": "Save changes button text"

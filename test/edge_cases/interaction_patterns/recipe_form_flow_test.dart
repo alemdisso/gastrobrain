@@ -162,8 +162,12 @@ void main() {
       await tester.tap(find.byType(ElevatedButton));
       await tester.pumpAndSettle();
 
-      // Re-expand Phase 1 via edit icon
-      await tester.tap(find.byIcon(Icons.edit_outlined));
+      // Re-expand Phase 1 via edit icon (scoped to summary ListTile to avoid
+      // ambiguity with the story-field segmented button)
+      await tester.tap(find.descendant(
+        of: find.byType(ListTile),
+        matching: find.byIcon(Icons.edit_outlined),
+      ));
       await tester.pumpAndSettle();
 
       // Servings stepper should be visible again
