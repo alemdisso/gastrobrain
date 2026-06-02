@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sprint Plan 0.2.14 — Recipe Entry Refined</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --amber:       #d97706;
+      --amber-light: #fef3c7;
+      --amber-mid:   #fde68a;
+      --green:       #065f46;
+      --green-light: #d1fae5;
+      --green-mid:   #6ee7b7;
+      --blue:        #1e40af;
+      --blue-light:  #dbeafe;
+      --red:         #991b1b;
+      --red-light:   #fee2e2;
+      --yellow:      #92400e;
+      --yellow-light:#fffbeb;
+      --gray:        #6b7280;
+      --gray-light:  #f3f4f6;
+      --gray-border: #e5e7eb;
+      --text:        #111827;
+      --text-muted:  #6b7280;
+      --radius:      8px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f9fafb;
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    .container { max-width: 900px; margin: 0 auto; }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #78350f 0%, #d97706 100%);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 2rem 2.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .header h1 { font-size: 1.7rem; font-weight: 700; letter-spacing: -0.5px; }
+    .header .subtitle { opacity: 0.85; margin-top: 0.25rem; font-size: 0.95rem; }
+    .header .meta {
+      display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap;
+    }
+    .header .meta span {
+      background: rgba(255,255,255,0.18);
+      border-radius: 20px;
+      padding: 0.2rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    /* ── Section titles ── */
+    .section-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 2rem 0 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--gray-border);
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      margin-bottom: 1rem;
+    }
+    .card-header {
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--gray-border);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .card-header h3 { font-size: 0.95rem; font-weight: 700; flex: 1; }
+    .card-body { padding: 1rem 1.25rem; }
+
+    /* ── Goal box ── */
+    .goal-box {
+      background: var(--amber-light);
+      border: 1px solid var(--amber-mid);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .goal-box p { font-size: 0.9rem; line-height: 1.65; }
+    .goal-box ul { margin-top: 0.6rem; padding-left: 1.2rem; }
+    .goal-box ul li { font-size: 0.875rem; margin-bottom: 0.2rem; }
+
+    /* ── Info box ── */
+    .info-box {
+      background: var(--blue-light);
+      border: 1px solid #93c5fd;
+      border-radius: var(--radius);
+      padding: 0.75rem 1.1rem;
+      font-size: 0.85rem;
+      color: var(--blue);
+      margin-bottom: 1rem;
+    }
+    .info-box p { margin-bottom: 0.25rem; }
+    .info-box p:last-child { margin-bottom: 0; }
+
+    .warn-box {
+      background: var(--yellow-light);
+      border: 1px solid var(--amber-mid);
+      border-radius: var(--radius);
+      padding: 0.75rem 1.1rem;
+      font-size: 0.85rem;
+      color: var(--yellow);
+      margin-bottom: 1rem;
+    }
+
+    /* ── Capacity grid ── */
+    .capacity-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 640px) { .capacity-grid { grid-template-columns: 1fr 1fr; } }
+
+    .capacity-cell {
+      background: var(--gray-light);
+      border-radius: var(--radius);
+      padding: 0.85rem 1rem;
+      text-align: center;
+    }
+    .capacity-cell .value { font-size: 1.4rem; font-weight: 700; color: var(--amber); }
+    .capacity-cell .label { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.1rem; text-transform: uppercase; letter-spacing: 0.04em; }
+
+    /* ── Issue table ── */
+    .issue-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+      background: #fff;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      margin-bottom: 1rem;
+    }
+    .issue-table th {
+      background: var(--gray-light);
+      text-align: left;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .issue-table td {
+      padding: 0.6rem 0.9rem;
+      border-top: 1px solid var(--gray-border);
+      vertical-align: top;
+    }
+    .issue-table tr:hover td { background: #fafafa; }
+    .issue-table .track-a td { border-left: 3px solid var(--amber); }
+    .issue-table .track-b td { border-left: 3px solid var(--blue); }
+    .issue-table tfoot td {
+      font-weight: 700;
+      background: var(--gray-light);
+      border-top: 2px solid var(--gray-border);
+    }
+
+    /* ── Issue cards ── */
+    .issue-card {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    .issue-card.track-a-card { border-left: 4px solid var(--amber); }
+    .issue-card.track-b-card { border-left: 4px solid var(--blue); }
+    .issue-card-header {
+      padding: 0.8rem 1.2rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      border-bottom: 1px solid var(--gray-border);
+    }
+    .issue-num {
+      font-family: monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      background: var(--amber-light);
+      color: var(--amber);
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .issue-num:hover { background: var(--amber-mid); }
+    .issue-title { font-size: 0.9rem; font-weight: 700; flex: 1; }
+    .issue-card-body { padding: 0.9rem 1.2rem; font-size: 0.865rem; color: var(--text-muted); }
+    .issue-card-body p { margin-bottom: 0.5rem; }
+    .issue-card-body p:last-child { margin-bottom: 0; }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.15rem 0.55rem;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-pts    { background: var(--amber-light); color: var(--yellow); }
+    .badge-p1     { background: var(--red-light);   color: var(--red); }
+    .badge-p2     { background: var(--yellow-light); color: var(--yellow); }
+    .badge-a      { background: var(--amber-light);  color: var(--amber); }
+    .badge-b      { background: var(--blue-light);   color: var(--blue); }
+    .badge-dep    { background: var(--gray-light);   color: var(--gray); }
+
+    /* ── Sequencing ── */
+    .seq-track {
+      margin-bottom: 1.25rem;
+    }
+    .seq-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+    .seq-flow {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .seq-issue {
+      background: var(--amber-light);
+      color: var(--yellow);
+      border: 1px solid var(--amber-mid);
+      border-radius: var(--radius);
+      padding: 0.3rem 0.7rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    .seq-issue.b-issue {
+      background: var(--blue-light);
+      color: var(--blue);
+      border-color: #93c5fd;
+    }
+    .seq-arrow {
+      color: var(--gray);
+      font-size: 0.85rem;
+    }
+    .seq-note {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.35rem;
+    }
+
+    /* ── Risk table ── */
+    .risk-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+      background: #fff;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      margin-bottom: 1rem;
+    }
+    .risk-table th {
+      background: var(--gray-light);
+      text-align: left;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .risk-table td {
+      padding: 0.6rem 0.9rem;
+      border-top: 1px solid var(--gray-border);
+      vertical-align: top;
+    }
+    .risk-table tr:hover td { background: #fafafa; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ── HEADER ── -->
+  <div class="header">
+    <h1>Sprint Plan 0.2.14 — Recipe Entry Refined</h1>
+    <div class="subtitle">Follow-through on 0.2.13 — fixing real-world UX gaps and completing the recipe flow redesign</div>
+    <div class="meta">
+      <span>📅 Started: June 2026</span>
+      <span>🎯 9 issues</span>
+      <span>⚡ 34 points</span>
+      <span>🔵 Track A: 10 pts polish</span>
+      <span>🟠 Track B: 24 pts redesign</span>
+    </div>
+  </div>
+
+  <!-- ── CONTEXT ── -->
+  <div class="section-title">📋 Context &amp; Goal</div>
+
+  <div class="goal-box">
+    <p><strong>Milestone goal:</strong> Deliver what 0.2.13 promised but didn't fully achieve — recipe entry surfaces that are first-class, guided experiences that reduce cognitive load. Real-world testing revealed two categories of problems: UI/layout bugs across multiple dialogs, and a fundamental architectural flaw in the recipe form (too long, too many save buttons, no guided path).</p>
+    <ul>
+      <li>Track A fixes 5 independent layout/l10n bugs — can be done in any order</li>
+      <li>Track B delivers the hub-and-spoke recipe redesign — stub creation, per-section bottom sheets, tags editing finally working</li>
+      <li>Tags and recipe form redesign are the headline deliverables; polish issues round out the milestone</li>
+    </ul>
+  </div>
+
+  <div class="info-box">
+    <p><strong>What changed from 0.2.13:</strong> The multi-phase form added structure but kept everything in one scrollable surface. The fix is architectural: a minimal stub creation screen + the existing recipe detail screen as the editing hub, with each section opening a focused, keyboard-aware bottom sheet. No more multi-save-button scrollathon.</p>
+  </div>
+
+  <!-- ── CAPACITY ── -->
+  <div class="section-title">📊 Capacity</div>
+
+  <div class="capacity-grid">
+    <div class="capacity-cell">
+      <div class="value">34</div>
+      <div class="label">Total Points</div>
+    </div>
+    <div class="capacity-cell">
+      <div class="value">9</div>
+      <div class="label">Issues</div>
+    </div>
+    <div class="capacity-cell">
+      <div class="value">30</div>
+      <div class="label">Pts/week velocity</div>
+    </div>
+    <div class="capacity-cell">
+      <div class="value">~1.1w</div>
+      <div class="label">Estimated duration</div>
+    </div>
+  </div>
+
+  <div class="warn-box">
+    ⚠️ <strong>#396 (13 pts)</strong> is an epic-level issue with three implementation phases. If it runs long, Track A issues provide scope flexibility — they're independent and shippable at any point.
+  </div>
+
+  <!-- ── ISSUE SUMMARY TABLE ── -->
+  <div class="section-title">📋 Issue Summary</div>
+
+  <table class="issue-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Issue</th>
+        <th>Track</th>
+        <th>Pts</th>
+        <th>Priority</th>
+        <th>Scope</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="track-a">
+        <td><a href="https://github.com/alemdisso/gastrobrain/issues/389" class="issue-num">#389</a></td>
+        <td>Meal options dialog button wrapping</td>
+        <td><span class="badge badge-a">A</span></td>
+        <td>1</td>
+        <td><span class="badge badge-p2">P2</span></td>
+        <td>UI</td>
+      </tr>
+      <tr class="track-a">
+        <td><a href="https://github.com/alemdisso/gastrobrain/issues/390" class="issue-num">#390</a></td>
+        <td>Meal recording dialog label overflow</td>
+        <td><span class="badge badge-a">A</span></td>
+        <td>2</td>
+        <td><span class="badge badge-p2">P2</span></td>
+        <td>UI</td>
+      </tr>
+      <tr class="track-a">
+        <td><a href="https://github.com/alemdisso/gastrobrain/issues/391" class="issue-num">#391</a></td>
+        <td>Android nav bar insets + shared bottom sheet helper</td>
+        <td><span class="badge badge-a">A</span></td>
+        <td>3</td>
+        <td><span class="badge badge-p2">P2</span></td>
+        <td>UI</td>
+      </tr>
+      <tr class="track-a">
+        <td><a href="https://github.com/alemdisso/gastrobrain/issues/392" class="issue-num">#392</a></td>
+        <td>Shopping dialog keyboard overflow</td>
+        <td><span class="badge badge-a">A</span></td>
+        <td>2</td>
+        <td><span class="badge badge-p2">P2</span></td>
+        <td>UI</td>
+      </tr>
+      <tr class="track-a">
+        <td><a href="https://github.com/alemdisso/gastrobrain/issues/393" class="issue-num">#393</a></td>
+        <td>Unit names not localized in ingredient dialogs</td>
+        <td><span class="badge badge-a">A</span></td>
+        <td>2</td>
+        <td><span class="badge badge-p2">P2</span></td>
+        <td>i18n</td>
+      </tr>
+      <tr class="track-b">
+        <td><a href="https://github.com/alemdisso/gastrobrain/issues/394" class="issue-num">#394</a></td>
+        <td>RecipeSelectionCard whitespace &amp; detached button</td>
+        <td><span class="badge badge-b">B</span></td>
+        <td>3</td>
+        <td><span class="badge badge-p2">P2</span></td>
+        <td>UI/UX</td>
+      </tr>
+      <tr class="track-b">
+        <td><a href="https://github.com/alemdisso/gastrobrain/issues/395" class="issue-num">#395</a></td>
+        <td>Ingredient parser: no feedback, mixed entry types, hidden warning</td>
+        <td><span class="badge badge-b">B</span></td>
+        <td>5</td>
+        <td><span class="badge badge-p1">P1</span></td>
+        <td>UX</td>
+      </tr>
+      <tr class="track-b">
+        <td><a href="https://github.com/alemdisso/gastrobrain/issues/396" class="issue-num">#396</a></td>
+        <td>Recipe entry hub-and-spoke redesign</td>
+        <td><span class="badge badge-b">B</span></td>
+        <td>13</td>
+        <td><span class="badge badge-p1">P1</span></td>
+        <td>UX/Architecture</td>
+      </tr>
+      <tr class="track-b">
+        <td><a href="https://github.com/alemdisso/gastrobrain/issues/397" class="issue-num">#397</a></td>
+        <td>Tags editing bottom sheet for recipe hub</td>
+        <td><span class="badge badge-b">B</span></td>
+        <td>3</td>
+        <td><span class="badge badge-p1">P1</span></td>
+        <td>UX</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="3">Total</td>
+        <td>34</td>
+        <td colspan="2"></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- ── SEQUENCING ── -->
+  <div class="section-title">🔀 Recommended Sequencing</div>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="seq-track">
+        <div class="seq-label">Track A — Independent polish (any order)</div>
+        <div class="seq-flow">
+          <span class="seq-issue">#389</span>
+          <span class="seq-arrow">·</span>
+          <span class="seq-issue">#390</span>
+          <span class="seq-arrow">·</span>
+          <span class="seq-issue">#392</span>
+          <span class="seq-arrow">·</span>
+          <span class="seq-issue">#393</span>
+          <span class="seq-arrow">→</span>
+          <span class="seq-issue">#391</span>
+        </div>
+        <div class="seq-note">#391 (shared bottom sheet helper) should be done before Track B Phase 2 kicks off — other Track A issues are fully independent.</div>
+      </div>
+
+      <div class="seq-track">
+        <div class="seq-label">Track B — Recipe redesign (ordered)</div>
+        <div class="seq-flow">
+          <span class="seq-issue b-issue">#391</span>
+          <span class="seq-arrow">→</span>
+          <span class="seq-issue b-issue">#394</span>
+          <span class="seq-arrow">·</span>
+          <span class="seq-issue b-issue">#395</span>
+          <span class="seq-arrow">→</span>
+          <span class="seq-issue b-issue">#397</span>
+          <span class="seq-arrow">→</span>
+          <span class="seq-issue b-issue">#396</span>
+        </div>
+        <div class="seq-note">#394 and #395 can run in parallel. #397 (tags sheet) can be built independently but wired in during #396 Phase 2. #396 is the capstone — deprecates RecipeFormScreen and RecipeEditorScreen.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ISSUE DETAILS ── -->
+  <div class="section-title">🔵 Track A — Layout &amp; Polish</div>
+
+  <!-- #389 -->
+  <div class="issue-card track-a-card">
+    <div class="issue-card-header">
+      <a href="https://github.com/alemdisso/gastrobrain/issues/389" class="issue-num">#389</a>
+      <div class="issue-title">Meal options dialog secondary buttons wrap due to narrow side-by-side layout</div>
+      <span class="badge badge-pts">1 pt</span>
+      <span class="badge badge-p2">P2</span>
+    </div>
+    <div class="issue-card-body">
+      <p><strong>Problem:</strong> "Marcar como Cozinhada" and "Editar Refeição Cozinhada" wrap to 3 lines in a side-by-side <code>Row</code> — each button only gets half the dialog width.</p>
+      <p><strong>Fix:</strong> Replace the <code>Row</code> with a <code>Column</code> at <code>recipe_selection_dialog.dart:497</code>. Each button gets full width, 5-line change.</p>
+    </div>
+  </div>
+
+  <!-- #390 -->
+  <div class="issue-card track-a-card">
+    <div class="issue-card-header">
+      <a href="https://github.com/alemdisso/gastrobrain/issues/390" class="issue-num">#390</a>
+      <div class="issue-title">Meal recording dialogs: "Receitas" label wraps, time field labels truncated</div>
+      <span class="badge badge-pts">2 pts</span>
+      <span class="badge badge-p2">P2</span>
+    </div>
+    <div class="issue-card-body">
+      <p><strong>Problem:</strong> "Receitas" wraps to 3 lines in <code>EditMealRecordingDialog</code> (missing <code>Expanded</code>). "Tempo de Preparo/Cozimento (min)" truncates to "Temp..." in both dialogs.</p>
+      <p><strong>Fix:</strong> Wrap label in <code>Expanded</code> at <code>edit_meal_recording_dialog.dart:302</code>; shorten <code>prepTimeLabel</code>/<code>cookTimeLabel</code> l10n strings to "Preparo (min)" / "Cozimento (min)".</p>
+    </div>
+  </div>
+
+  <!-- #391 -->
+  <div class="issue-card track-a-card">
+    <div class="issue-card-header">
+      <a href="https://github.com/alemdisso/gastrobrain/issues/391" class="issue-num">#391</a>
+      <div class="issue-title">Android nav bar insets not respected — introduce shared bottom sheet helper</div>
+      <span class="badge badge-pts">3 pts</span>
+      <span class="badge badge-p2">P2</span>
+    </div>
+    <div class="issue-card-body">
+      <p><strong>Problem:</strong> Ingredient parser confirm button hidden behind Android nav bar in recipe form screens. <code>recipe_details_screen</code> bottom sheet only handles keyboard inset (<code>viewInsets.bottom</code>) not nav bar (<code>padding.bottom</code>).</p>
+      <p><strong>Fix:</strong> Create <code>showGastrobrainBottomSheet()</code> in <code>lib/core/utils/dialog_utils.dart</code> — bakes in <code>isScrollControlled: true</code>, <code>useSafeArea: true</code>, and combined inset padding. Migrate 2 existing call sites. Add rule to <code>lib/widgets/CLAUDE.md</code>.</p>
+      <p><strong>Note:</strong> This helper is required by #395, #396, and #397 — complete before Track B Phase 2.</p>
+    </div>
+  </div>
+
+  <!-- #392 -->
+  <div class="issue-card track-a-card">
+    <div class="issue-card-header">
+      <a href="https://github.com/alemdisso/gastrobrain/issues/392" class="issue-num">#392</a>
+      <div class="issue-title">Add shopping item dialog overflows horizontally and clips when keyboard open</div>
+      <span class="badge badge-pts">2 pts</span>
+      <span class="badge badge-p2">P2</span>
+    </div>
+    <div class="issue-card-body">
+      <p><strong>Problem:</strong> <code>SizedBox(width: double.maxFinite)</code> causes horizontal overflow on some devices. <code>Column(mainAxisSize: MainAxisSize.min)</code> without scroll causes buttons to escape dialog bounds when keyboard opens.</p>
+      <p><strong>Fix:</strong> Remove the <code>SizedBox</code> wrapper; wrap <code>Column</code> in <code>SingleChildScrollView</code>. One file, ~5 lines changed.</p>
+    </div>
+  </div>
+
+  <!-- #393 -->
+  <div class="issue-card track-a-card">
+    <div class="issue-card-header">
+      <a href="https://github.com/alemdisso/gastrobrain/issues/393" class="issue-num">#393</a>
+      <div class="issue-title">Unit names display as raw English strings in ingredient dialogs</div>
+      <span class="badge badge-pts">2 pts</span>
+      <span class="badge badge-p2">P2</span>
+    </div>
+    <div class="issue-card-body">
+      <p><strong>Problem:</strong> "piece" appears in Portuguese UI in <code>UnifiedAddSideDialog</code> (pre-fill uses <code>unit.value</code>) and <code>IngredientParserSection</code> (raw string from parser displayed directly). <code>getLocalizedQuantityName()</code> exists but isn't called consistently.</p>
+      <p><strong>Fix:</strong> <code>unified_add_side_dialog.dart:111</code> — use <code>getLocalizedQuantityName(context, 1.0)</code>. <code>parser_review_row.dart:89</code> — convert via <code>MeasurementUnit.fromString()</code> then localize. Audit other display sites.</p>
+    </div>
+  </div>
+
+  <!-- ── TRACK B ── -->
+  <div class="section-title">🟠 Track B — Recipe Redesign</div>
+
+  <!-- #394 -->
+  <div class="issue-card track-b-card">
+    <div class="issue-card-header">
+      <a href="https://github.com/alemdisso/gastrobrain/issues/394" class="issue-num">#394</a>
+      <div class="issue-title">RecipeSelectionCard: excessive whitespace and detached select button</div>
+      <span class="badge badge-pts">3 pts</span>
+      <span class="badge badge-p2">P2</span>
+    </div>
+    <div class="issue-card-body">
+      <p><strong>Problem:</strong> Collapsed card is too tall — chevron in a standalone <code>Row</code> adds ~24px; double <code>SizedBox(height:16)</code> creates 32px dead space between tab bar and list on Recommended tab; "SELECIONAR" button has no visual anchor to the card above it.</p>
+      <p><strong>Fix:</strong> Merge chevron into name row; make second spacer conditional on search field visibility; reduce padding from <code>all(16)</code> to <code>symmetric(h:12, v:10)</code>; add <code>Divider</code> above SELECIONAR. Two files, layout-only changes.</p>
+    </div>
+  </div>
+
+  <!-- #395 -->
+  <div class="issue-card track-b-card">
+    <div class="issue-card-header">
+      <a href="https://github.com/alemdisso/gastrobrain/issues/395" class="issue-num">#395</a>
+      <div class="issue-title">Ingredient parser: no feedback after Analisar/manual add, mixed entry types, hidden warning</div>
+      <span class="badge badge-pts">5 pts</span>
+      <span class="badge badge-p1">P1</span>
+    </div>
+    <div class="issue-card-body">
+      <p><strong>Problem (4 interconnected issues):</strong></p>
+      <p>1. "Analisar" shows no response — results appear silently below fold while keyboard is open.</p>
+      <p>2. "+ Adicionar manualmente" also silent — repeated taps create duplicate blank entries that can be accidentally saved.</p>
+      <p>3. Blank manual entries mix into "Analisados (N)" list with inflated count and meaningless "1 –" label.</p>
+      <p>4. Unresolved warning is the text of a grey disabled button at the bottom — invisible until the user scrolls.</p>
+      <p><strong>Fix:</strong> Add <code>isManual</code> flag to <code>ParsedIngredient</code>; auto-scroll via <code>Scrollable.ensureVisible()</code> after parse/add; disable manual-add when last row is blank; split list into analyzed/manual subsections; style confirm button amber when unresolved; add warning row above button.</p>
+    </div>
+  </div>
+
+  <!-- #396 -->
+  <div class="issue-card track-b-card">
+    <div class="issue-card-header">
+      <a href="https://github.com/alemdisso/gastrobrain/issues/396" class="issue-num">#396</a>
+      <div class="issue-title">Recipe entry hub-and-spoke redesign — replace long form with per-section bottom sheets</div>
+      <span class="badge badge-pts">13 pts</span>
+      <span class="badge badge-p1">P1</span>
+    </div>
+    <div class="issue-card-body">
+      <p><strong>The headline issue.</strong> <code>RecipeFormScreen</code> and <code>RecipeEditorScreen</code> are long scrollable forms with multiple "Salvar Alterações" buttons. The 0.2.13 phases added structure but didn't fix the fundamental problem.</p>
+      <p><strong>New model:</strong> Stub (name only) → recipe detail screen as hub → per-section bottom sheets. Detail screen keeps its 4 tabs; each tab gets an edit button; each section opens a focused, keyboard-aware bottom sheet with its own save.</p>
+      <p><strong>Three phases:</strong></p>
+      <p>Phase 1 — <code>RecipeStubCreateScreen</code> + edit buttons wired to existing screens as placeholders.</p>
+      <p>Phase 2 — <code>BasicInfoEditSheet</code>, <code>DifficultyTimeEditSheet</code>, <code>NotesEditSheet</code>, <code>InstructionsEditSheet</code>. All use <code>showGastrobrainBottomSheet()</code> from #391.</p>
+      <p>Phase 3 — Deprecate <code>RecipeFormScreen</code> and <code>RecipeEditorScreen</code>; clean up navigation.</p>
+      <p><strong>Dependency:</strong> #391 must be done before Phase 2. #397 wires in during Phase 2.</p>
+    </div>
+  </div>
+
+  <!-- #397 -->
+  <div class="issue-card track-b-card">
+    <div class="issue-card-header">
+      <a href="https://github.com/alemdisso/gastrobrain/issues/397" class="issue-num">#397</a>
+      <div class="issue-title">Tags editing bottom sheet for recipe hub</div>
+      <span class="badge badge-pts">3 pts</span>
+      <span class="badge badge-p1">P1</span>
+    </div>
+    <div class="issue-card-body">
+      <p><strong>Problem:</strong> Tags have been non-functional for at least one milestone. <code>TagPickerWidget</code> and <code>TagRepository</code> are fully implemented — the missing piece is a proper container with correct data loading.</p>
+      <p><strong>Fix:</strong> Create <code>lib/widgets/recipe_editor/tags_edit_sheet.dart</code> — stateful widget that loads tag types + recipe's existing tags on <code>initState()</code>, renders <code>TagPickerWidget</code>, and saves via <code>tagRepo.setTagsForRecipe()</code>. Wire to Visão Geral tab as part of #396 Phase 2.</p>
+      <p><strong>Note:</strong> Sheet can be built and tested independently; tab wiring is done in #396.</p>
+    </div>
+  </div>
+
+  <!-- ── RISKS ── -->
+  <div class="section-title">⚠️ Risks</div>
+
+  <table class="risk-table">
+    <thead>
+      <tr>
+        <th>Risk</th>
+        <th>Impact</th>
+        <th>Mitigation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>#396 scope creep</strong> — navigation cleanup touches many entry points</td>
+        <td>High</td>
+        <td>Strict phase gates — Phase 1 ships before Phase 2 starts. Track A issues provide cut scope if needed.</td>
+      </tr>
+      <tr>
+        <td><strong>#391 dependency</strong> — Track B Phase 2 blocked until helper exists</td>
+        <td>Medium</td>
+        <td>Prioritize #391 early. Track B Phase 1 and #394/#395/#397 don't need it.</td>
+      </tr>
+      <tr>
+        <td><strong>Windows Defender</strong> — can block Flutter network during build/release</td>
+        <td>Medium</td>
+        <td>Add firewall exceptions before release phase. See memory note from 0.1.13.</td>
+      </tr>
+      <tr>
+        <td><strong>#395 scroll behavior</strong> — <code>Scrollable.ensureVisible()</code> behavior differs between inline and bottom-sheet embeddings</td>
+        <td>Low</td>
+        <td>Test both <code>recipe_form_screen</code> and <code>recipe_details_screen</code> bottom sheet contexts manually.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── DEFINITION OF DONE ── -->
+  <div class="section-title">✅ Definition of Done</div>
+
+  <div class="card">
+    <div class="card-body">
+      <ul style="padding-left:1.2rem; font-size:0.875rem;">
+        <li style="margin-bottom:0.3rem;">All 9 issues closed on GitHub</li>
+        <li style="margin-bottom:0.3rem;"><code>RecipeFormScreen</code> and <code>RecipeEditorScreen</code> removed; no dangling routes</li>
+        <li style="margin-bottom:0.3rem;">Tags editable from recipe detail screen for the first time</li>
+        <li style="margin-bottom:0.3rem;">All dialog layout bugs fixed and verified on device</li>
+        <li style="margin-bottom:0.3rem;"><code>showGastrobrainBottomSheet()</code> helper in place; no raw <code>showModalBottomSheet</code> calls in <code>lib/</code></li>
+        <li style="margin-bottom:0.3rem;"><code>flutter analyze &amp;&amp; flutter test</code> clean</li>
+        <li>Released as 0.2.14 and tested on physical device</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
