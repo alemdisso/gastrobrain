@@ -59,7 +59,8 @@ class _AddShoppingItemDialogState extends State<AddShoppingItemDialog> {
       _selectedIngredient = ingredient;
       _searchController.text = ingredient.name;
       _searchQuery = '';
-      _unitController.text = ingredient.unit?.value ?? '';
+      _unitController.text =
+          ingredient.unit?.getLocalizedQuantityName(context, 1.0) ?? '';
     });
   }
 

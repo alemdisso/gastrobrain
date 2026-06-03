@@ -108,7 +108,8 @@ class _UnifiedAddSideDialogState extends State<UnifiedAddSideDialog>
       _selectedIngredient = ingredient;
       _ingredientSearchController.text = ingredient.name;
       _ingredientQuery = '';
-      _unitController.text = ingredient.unit?.value ?? '';
+      _unitController.text =
+          ingredient.unit?.getLocalizedQuantityName(context, 1.0) ?? '';
     });
   }
 
