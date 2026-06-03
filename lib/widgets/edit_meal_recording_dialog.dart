@@ -299,10 +299,12 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        AppLocalizations.of(context)!.recipesLabel,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16),
+                      Expanded(
+                        child: Text(
+                          AppLocalizations.of(context)!.recipesLabel,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
                       ),
                       TextButton.icon(
                         icon: const Icon(Icons.add),

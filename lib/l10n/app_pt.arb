@@ -1415,11 +1415,11 @@
   "@preparationNotesHint": {
     "description": "Texto de dica para observações de preparo"
   },
-  "actualPrepTimeMin": "Tempo Real de Preparo (min)",
+  "actualPrepTimeMin": "Preparo",
   "@actualPrepTimeMin": {
     "description": "Rótulo para tempo real de preparo"
   },
-  "actualCookTimeMin": "Tempo Real de Cozimento (min)",
+  "actualCookTimeMin": "Cozimento",
   "@actualCookTimeMin": {
     "description": "Rótulo para tempo real de cozimento"
   },
@@ -1555,11 +1555,11 @@
   "@removeTooltip": {
     "description": "Dica para botão remover"
   },
-  "prepTimeLabel": "Tempo de Preparo (min)",
+  "prepTimeLabel": "Preparo",
   "@prepTimeLabel": {
     "description": "Rótulo para campo de tempo de preparo"
   },
-  "cookTimeLabel": "Tempo de Cozimento (min)",
+  "cookTimeLabel": "Cozimento",
   "@cookTimeLabel": {
     "description": "Rótulo para campo de tempo de cozimento"
   },
