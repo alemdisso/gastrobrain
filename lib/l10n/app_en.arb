@@ -2926,6 +2926,24 @@
       }
     }
   },
+  "ingredientParserManualSectionTitle": "Manually added ({count})",
+  "@ingredientParserManualSectionTitle": {
+    "description": "Header for the manually added ingredient entries subsection",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ingredientParserUnresolvedWarning": "{count} item(s) need review",
+  "@ingredientParserUnresolvedWarning": {
+    "description": "Warning shown above the confirm button when unresolved rows exist",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "ingredientParserAddAllButton": "Add {count} ingredient(s)",
   "@ingredientParserAddAllButton": {
     "description": "Button to confirm and add all parsed ingredients",

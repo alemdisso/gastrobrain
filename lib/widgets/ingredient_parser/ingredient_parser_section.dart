@@ -64,10 +64,28 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
 
   bool _isSaving = false;
 
+  final _parsedSectionKey = GlobalKey();
+  final _manualSectionKey = GlobalKey();
+
   @override
   void dispose() {
     _inputController.dispose();
     super.dispose();
+  }
+
+  // ── Scroll helpers ────────────────────────────────────────────────────────
+
+  void _scrollToKey(GlobalKey key) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = key.currentContext;
+      if (ctx != null) {
+        Scrollable.ensureVisible(
+          ctx,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   // ── Parsing ──────────────────────────────────────────────────────────────
@@ -106,6 +124,7 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
       }
       _parseGeneration++;
     });
+    if (parsed.isNotEmpty) _scrollToKey(_parsedSectionKey);
   }
 
   ParsedIngredient? _parseLine(String line) {
@@ -149,10 +168,12 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
         name: '',
         category: IngredientCategory.other,
         matches: [],
+        isManual: true,
       ));
       _expandedState[index] = true; // manual rows start expanded
       _parseGeneration++;
     });
+    _scrollToKey(_manualSectionKey);
   }
 
   // ── Row mutations ─────────────────────────────────────────────────────────
@@ -188,6 +209,7 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
         matches: ing.matches,
         selectedMatch: ing.selectedMatch,
         newIngredientToCreate: ing.newIngredientToCreate,
+        isManual: ing.isManual,
       );
     });
   }
@@ -207,6 +229,7 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
         matches: ing.matches,
         selectedMatch: ing.selectedMatch,
         newIngredientToCreate: ing.newIngredientToCreate,
+        isManual: ing.isManual,
       );
     });
   }
@@ -235,6 +258,7 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
         notes: ing.notes,
         matches: matches,
         selectedMatch: selectedMatch,
+        isManual: ing.isManual,
       );
     });
   }
@@ -254,6 +278,7 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
         matches: ing.matches,
         selectedMatch: ing.selectedMatch,
         newIngredientToCreate: ing.newIngredientToCreate,
+        isManual: ing.isManual,
       );
     });
   }
@@ -272,6 +297,7 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
         notes: ing.notes,
         matches: ing.matches,
         selectedMatch: match,
+        isManual: ing.isManual,
       );
     });
   }
@@ -293,6 +319,7 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
           matches: ing.matches,
           selectedMatch: null,
           newIngredientToCreate: result,
+          isManual: ing.isManual,
         );
       });
     }
@@ -315,6 +342,7 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
           matches: ing.matches,
           selectedMatch: null,
           newIngredientToCreate: result,
+          isManual: ing.isManual,
         );
       });
     }
@@ -342,17 +370,24 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
-  bool _needsAttention(ParsedIngredient ing) =>
-      !ing.isNewIngredient &&
-      ing.selectedMatch == null &&
-      ing.matches.isEmpty &&
-      ing.name.trim().isNotEmpty;
+  bool _needsAttention(ParsedIngredient ing) {
+    if (ing.isManual && ing.name.trim().isEmpty) return true;
+    return !ing.isNewIngredient &&
+        ing.selectedMatch == null &&
+        ing.matches.isEmpty &&
+        ing.name.trim().isNotEmpty;
+  }
 
-  int get _unresolvedCount =>
-      _ingredients.where(_needsAttention).length;
+  int get _unresolvedCount => _ingredients.where(_needsAttention).length;
 
   bool get _canConfirm =>
       _ingredients.isNotEmpty && _unresolvedCount == 0;
+
+  bool get _lastManualRowIsBlank {
+    final manualItems = _ingredients.where((i) => i.isManual).toList();
+    if (manualItems.isEmpty) return false;
+    return manualItems.last.name.trim().isEmpty;
+  }
 
   // ── Build ─────────────────────────────────────────────────────────────────
 
@@ -392,7 +427,7 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
             const SizedBox(width: 8),
             Flexible(
               child: TextButton.icon(
-                onPressed: _addManualRow,
+                onPressed: _lastManualRowIsBlank ? null : _addManualRow,
                 icon: const Icon(Icons.add, size: 18),
                 label: Text(l10n.ingredientParserAddManuallyButton),
               ),
@@ -400,21 +435,23 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
           ],
         ),
 
-        // ── Review section ──────────────────────────────────────────────────
-        if (_ingredients.isNotEmpty) ...[
+        // ── Parsed subsection ───────────────────────────────────────────────
+        if (_ingredients.any((i) => !i.isManual)) ...[
           const SizedBox(height: 20),
           Row(
+            key: _parsedSectionKey,
             children: [
               Text(
-                l10n.ingredientParserReviewTitle(_ingredients.length),
+                l10n.ingredientParserReviewTitle(
+                    _ingredients.where((i) => !i.isManual).length),
                 style: theme.textTheme.titleSmall,
               ),
             ],
           ),
           const SizedBox(height: 10),
-
-          // Ingredient rows
-          ..._ingredients.asMap().entries.map((entry) {
+          ..._ingredients.asMap().entries
+              .where((e) => !e.value.isManual)
+              .map((entry) {
             final index = entry.key;
             final ing = entry.value;
             return ParserReviewRow(
@@ -434,8 +471,65 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
               onCreateNew: () => _handleCreateNew(index),
             );
           }),
+        ],
 
-          // ── Confirm bar ─────────────────────────────────────────────────
+        // ── Manual subsection ───────────────────────────────────────────────
+        if (_ingredients.any((i) => i.isManual)) ...[
+          const SizedBox(height: 20),
+          Row(
+            key: _manualSectionKey,
+            children: [
+              Text(
+                l10n.ingredientParserManualSectionTitle(
+                    _ingredients.where((i) => i.isManual).length),
+                style: theme.textTheme.titleSmall,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ..._ingredients.asMap().entries
+              .where((e) => e.value.isManual)
+              .map((entry) {
+            final index = entry.key;
+            final ing = entry.value;
+            return ParserReviewRow(
+              key: ValueKey('row_${index}_$_parseGeneration'),
+              index: index,
+              ingredient: ing,
+              parseGeneration: _parseGeneration,
+              initiallyExpanded: _expandedState[index] ?? false,
+              onQuantityChanged: (qty, qtyMax, err) =>
+                  _updateQuantity(index, qty, qtyMax, err),
+              onUnitChanged: (unit) => _updateUnit(index, unit),
+              onNameChanged: (name) => _updateName(index, name),
+              onNotesChanged: (notes) => _updateNotes(index, notes),
+              onMatchChanged: (match) => _updateMatch(index, match),
+              onMarkAsNew: () => _markAsNew(index),
+              onRemove: () => _removeAt(index),
+              onCreateNew: () => _handleCreateNew(index),
+            );
+          }),
+        ],
+
+        // ── Confirm bar ─────────────────────────────────────────────────────
+        if (_ingredients.isNotEmpty) ...[
+          if (_unresolvedCount > 0) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.warning_amber_rounded,
+                    size: 14, color: theme.colorScheme.error),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    l10n.ingredientParserUnresolvedWarning(_unresolvedCount),
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: theme.colorScheme.error),
+                  ),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
@@ -445,8 +539,11 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: theme.colorScheme.primary,
                 foregroundColor: theme.colorScheme.onPrimary,
-                disabledBackgroundColor:
-                    theme.colorScheme.onSurface.withValues(alpha: 0.12),
+                disabledBackgroundColor: _unresolvedCount > 0
+                    ? Colors.amber.shade700
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.12),
+                disabledForegroundColor:
+                    _unresolvedCount > 0 ? Colors.white : null,
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               child: _isSaving
@@ -459,9 +556,7 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
                       ),
                     )
                   : Text(
-                      _canConfirm
-                          ? l10n.ingredientParserAddAllButton(_ingredients.length)
-                          : l10n.ingredientParserBlockedHint(_unresolvedCount),
+                      l10n.ingredientParserAddAllButton(_ingredients.length),
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
             ),

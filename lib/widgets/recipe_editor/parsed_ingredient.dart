@@ -18,6 +18,8 @@ class ParsedIngredient {
   Ingredient? newIngredientToCreate;
   bool get isNewIngredient => newIngredientToCreate != null;
 
+  bool isManual;
+
   ParsedIngredient({
     required this.quantity,
     this.quantityMax,
@@ -30,5 +32,6 @@ class ParsedIngredient {
     this.selectedMatch,
     this.newIngredientToCreate,
     this.qtyError,
+    this.isManual = false,
   }) : originalName = originalName ?? name;
 }

@@ -2788,6 +2788,8 @@
   "ingredientParserParseButton": "Analisar",
   "ingredientParserAddManuallyButton": "Adicionar manualmente",
   "ingredientParserReviewTitle": "Analisados ({count})",
+  "ingredientParserManualSectionTitle": "Adicionados manualmente ({count})",
+  "ingredientParserUnresolvedWarning": "{count} item(s) precisam de revisão",
   "ingredientParserAddAllButton": "Adicionar {count} ingrediente(s)",
   "ingredientParserBlockedHint": "{count} precisam de atenção",
   "ingredientParserMatchHigh": "Encontrado",
