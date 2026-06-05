@@ -34,20 +34,24 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      elevation: 1,
+      elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.outlineVariant,
+          width: 0.5,
+        ),
       ),
       child: InkWell(
         onTap: widget.onTap,
         borderRadius: BorderRadius.circular(8),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-// Recipe name with context menu and toggle
+// Recipe name with chevron toggle and context menu
               Row(
                 children: [
                   Expanded(
@@ -58,8 +62,20 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _showFactorBadges = !_showFactorBadges;
+                      });
+                    },
+                    child: Icon(
+                      _showFactorBadges ? Icons.expand_less : Icons.expand_more,
+                      size: 16,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
                   if (widget.onFeedback != null) ...[
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 4),
                     PopupMenuButton<UserResponse>(
                       icon: Icon(
                         Icons.more_vert,
@@ -127,24 +143,6 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
                   ],
                 ],
               ),
-              const SizedBox(height: 2),
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _showFactorBadges = !_showFactorBadges;
-                      });
-                    },
-                    child: Icon(
-                      _showFactorBadges ? Icons.expand_less : Icons.expand_more,
-                      size: 16,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
 
               // Collapsible factor indicators
               AnimatedContainer(
@@ -163,7 +161,7 @@ class _RecipeSelectionCardState extends State<RecipeSelectionCard> {
               ),
 
               // Select button
-              const SizedBox(height: 8),
+              const Divider(height: 1, thickness: 0.5),
               _buildFeedbackButtons(context),
             ],
           ),

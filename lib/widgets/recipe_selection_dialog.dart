@@ -236,22 +236,26 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
         AnimatedBuilder(
           animation: _tabController,
           builder: (context, child) {
-            return _tabController.index == 1
-                ? TextField(
-                    decoration: InputDecoration(
-                      hintText: AppLocalizations.of(context)!.searchRecipesHint,
-                      prefixIcon: const Icon(Icons.search),
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value.trim();
-                      });
-                    },
-                  )
-                : const SizedBox.shrink();
+            if (_tabController.index != 1) return const SizedBox.shrink();
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  decoration: InputDecoration(
+                    hintText: AppLocalizations.of(context)!.searchRecipesHint,
+                    prefixIcon: const Icon(Icons.search),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value.trim();
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+              ],
+            );
           },
         ),
-        const SizedBox(height: 16),
 
         Expanded(
           child: TabBarView(
