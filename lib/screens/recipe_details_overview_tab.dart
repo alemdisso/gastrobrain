@@ -13,10 +13,12 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
     super.key,
     required this.recipe,
     this.tags = const [],
+    this.onEdit,
   });
 
   final Recipe recipe;
   final List<Tag> tags;
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -156,6 +158,19 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
               recipe.notes,
               style: const TextStyle(fontSize: 16, height: 1.5),
             ),
+          ],
+
+          // Inline edit button
+          if (onEdit != null) ...[
+            const SizedBox(height: 24),
+            Center(
+              child: OutlinedButton.icon(
+                onPressed: onEdit,
+                icon: const Icon(Icons.edit_outlined, size: 18),
+                label: Text(AppLocalizations.of(context)!.recipeInfoEditSheetTitle),
+              ),
+            ),
+            const SizedBox(height: 16),
           ],
         ],
       ),

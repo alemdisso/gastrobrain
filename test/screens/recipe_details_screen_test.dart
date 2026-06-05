@@ -249,7 +249,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(FloatingActionButton));
+      await tester.tap(find.byIcon(Icons.edit_outlined));
       await tester.pumpAndSettle();
 
       await tester.enterText(find.byType(TextField), 'Changed instructions');
@@ -291,8 +291,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Open edit instructions dialog via FAB.
-      await tester.tap(find.byType(FloatingActionButton));
+      // Open edit instructions sheet via empty-state Add Instructions button.
+      await tester.tap(find.text('Add Instructions'));
       await tester.pumpAndSettle();
 
       // Replace instructions text.
@@ -324,7 +324,7 @@ void main() {
       mockDb.resetAllData();
     });
 
-    testWidgets('FAB on Ingredients tab opens parser bottom sheet', (tester) async {
+    testWidgets('Add Ingredient button opens parser bottom sheet', (tester) async {
       final recipe = _makeRecipe();
       await mockDb.insertRecipe(recipe);
 
@@ -339,7 +339,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(FloatingActionButton));
+      await tester.tap(find.text('Add Ingredient'));
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('ingredient_parser_parse_button')), findsOneWidget,
@@ -386,7 +386,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(FloatingActionButton));
+      await tester.tap(find.text('Add Ingredient'));
       await tester.pumpAndSettle();
 
       expect(find.text('Add Ingredients'), findsOneWidget);
@@ -408,7 +408,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(FloatingActionButton));
+      await tester.tap(find.text('Add Ingredient'));
       await tester.pumpAndSettle();
 
       // Close bottom sheet by tapping the barrier

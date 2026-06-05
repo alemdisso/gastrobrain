@@ -58,9 +58,21 @@ class RecipeDetailsIngredientsTab extends StatelessWidget {
         ),
         Expanded(
           child: ListView.builder(
-            itemCount: ingredients.length,
-            itemBuilder: (context, index) =>
-                _buildIngredientTile(context, ingredients[index]),
+            itemCount: ingredients.length + 1,
+            itemBuilder: (context, index) {
+              if (index < ingredients.length) {
+                return _buildIngredientTile(context, ingredients[index]);
+              }
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: OutlinedButton.icon(
+                  onPressed: onAdd,
+                  icon: const Icon(Icons.add, size: 18),
+                  label:
+                      Text(AppLocalizations.of(context)!.addIngredients),
+                ),
+              );
+            },
           ),
         ),
       ],

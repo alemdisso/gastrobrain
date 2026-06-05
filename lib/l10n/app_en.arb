@@ -252,6 +252,10 @@
   "@recipeName": {
     "description": "Label for recipe name field"
   },
+  "recipeNameRequired": "Recipe name is required",
+  "@recipeNameRequired": {
+    "description": "Validation error when recipe name is empty"
+  },
   "desiredFrequency": "Desired Frequency",
   "@desiredFrequency": {
     "description": "Label for desired cooking frequency field"
@@ -336,6 +340,10 @@
   "editRecipe": "Edit Recipe",
   "@editRecipe": {
     "description": "Title for edit recipe screen"
+  },
+  "recipeInfoEditSheetTitle": "Edit Recipe Info",
+  "@recipeInfoEditSheetTitle": {
+    "description": "Title of the bottom sheet for editing recipe metadata"
   },
   "newRecipe": "New Recipe",
   "@newRecipe": {
@@ -1368,6 +1376,10 @@
   "cookTimeMin": "Cook Time (min)",
   "@cookTimeMin": {
     "description": "Label for cook time field"
+  },
+  "marinatingTimeMin": "Marinating Time (min)",
+  "@marinatingTimeMin": {
+    "description": "Label for marinating time field"
   },
   "enterValidTime": "Enter a valid time",
   "@enterValidTime": {

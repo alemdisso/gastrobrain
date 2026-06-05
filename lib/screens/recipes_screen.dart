@@ -14,8 +14,9 @@ import '../core/providers/recipe_provider.dart';
 import '../core/repositories/tag_repository.dart';
 import '../core/theme/design_tokens.dart';
 import '../core/di/service_provider.dart';
-import 'recipe_form_screen.dart';
 import 'cook_meal_screen.dart';
+import 'recipe_details_screen.dart';
+import 'recipe_stub_create_screen.dart';
 
 class RecipesScreen extends StatefulWidget {
   const RecipesScreen({super.key});
@@ -68,30 +69,24 @@ class _RecipesScreenState extends State<RecipesScreen> {
   }
 
   Future<void> _addRecipe() async {
-    final result = await Navigator.push<bool>(
+    await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const RecipeFormScreen()),
+      MaterialPageRoute(builder: (context) => const RecipeStubCreateScreen()),
     );
-
-    if (result == true) {
-      if (mounted) {
-        context.read<RecipeProvider>().loadRecipes(forceRefresh: true);
-      }
+    if (mounted) {
+      context.read<RecipeProvider>().loadRecipes(forceRefresh: true);
     }
   }
 
   Future<void> _editRecipe(Recipe recipe) async {
-    final result = await Navigator.push<bool>(
+    final changed = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (context) => RecipeFormScreen(recipe: recipe),
+        builder: (context) => RecipeDetailsScreen(recipe: recipe),
       ),
     );
-
-    if (result == true) {
-      if (mounted) {
-        context.read<RecipeProvider>().loadRecipes(forceRefresh: true);
-      }
+    if (changed == true && mounted) {
+      context.read<RecipeProvider>().loadRecipes(forceRefresh: true);
     }
   }
 

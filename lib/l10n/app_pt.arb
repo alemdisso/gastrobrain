@@ -246,6 +246,10 @@
   "@recipeName": {
     "description": "Rótulo do campo nome da receita"
   },
+  "recipeNameRequired": "Nome da receita é obrigatório",
+  "@recipeNameRequired": {
+    "description": "Erro de validação quando o nome da receita está vazio"
+  },
   "desiredFrequency": "Frequência Desejada",
   "@desiredFrequency": {
     "description": "Rótulo do campo frequência desejada de preparo"
@@ -330,6 +334,10 @@
   "editRecipe": "Editar Receita",
   "@editRecipe": {
     "description": "Título da tela de editar receita"
+  },
+  "recipeInfoEditSheetTitle": "Editar Informações",
+  "@recipeInfoEditSheetTitle": {
+    "description": "Título da planilha inferior para editar metadados da receita"
   },
   "newRecipe": "Nova Receita",
   "@newRecipe": {
@@ -1344,6 +1352,10 @@
   "cookTimeMin": "Tempo de Cozimento (min)",
   "@cookTimeMin": {
     "description": "Rótulo para campo de tempo de cozimento"
+  },
+  "marinatingTimeMin": "Tempo de Marinada (min)",
+  "@marinatingTimeMin": {
+    "description": "Rótulo para campo de tempo de marinada"
   },
   "enterValidTime": "Informe um tempo válido",
   "@enterValidTime": {

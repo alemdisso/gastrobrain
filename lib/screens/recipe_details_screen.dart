@@ -15,13 +15,14 @@ import '../models/tag.dart';
 import '../screens/meal_history_screen.dart';
 import '../screens/recipe_details_ingredients_tab.dart';
 import '../screens/recipe_details_overview_tab.dart';
-import '../screens/recipe_form_screen.dart';
 import '../utils/dialog_utils.dart';
 import '../utils/id_generator.dart';
 import '../widgets/add_ingredient_dialog.dart';
 import '../widgets/add_new_ingredient_dialog.dart';
 import '../widgets/ingredient_parser/ingredient_parser_section.dart';
+import '../widgets/recipe_editor/instructions_edit_sheet.dart';
 import '../widgets/recipe_editor/parsed_ingredient.dart';
+import '../widgets/recipe_editor/recipe_info_edit_sheet.dart';
 
 /// Unified screen for viewing complete recipe details including overview,
 /// ingredients, instructions, and meal history.
@@ -87,13 +88,6 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
     _loadIngredients();
     _loadAllIngredients();
     _loadTags();
-
-    // Listen to tab changes to rebuild AppBar actions
-    _tabController.addListener(() {
-      if (mounted) {
-        setState(() {});
-      }
-    });
   }
 
   @override
@@ -376,95 +370,16 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
   }
 
   Future<void> _editInstructions() async {
-    final TextEditingController controller =
-        TextEditingController(text: _instructions);
-    bool isPreviewMode = false;
-
-    final result = await showDialog<String>(
+    final result = await showGastrobrainBottomSheet<String>(
       context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (dialogContext, setDialogState) {
-          final l10n = AppLocalizations.of(dialogContext)!;
-          return AlertDialog(
-            title: Text(l10n.instructions),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SegmentedButton<bool>(
-                      segments: [
-                        ButtonSegment(
-                          value: false,
-                          label: Text(l10n.instructionsEditLabel),
-                          icon: const Icon(Icons.edit_outlined),
-                        ),
-                        ButtonSegment(
-                          value: true,
-                          label: Text(l10n.instructionsPreviewLabel),
-                          icon: const Icon(Icons.visibility_outlined),
-                        ),
-                      ],
-                      selected: {isPreviewMode},
-                      onSelectionChanged: (v) =>
-                          setDialogState(() => isPreviewMode = v.first),
-                    ),
-                    const SizedBox(height: 12),
-                    if (isPreviewMode)
-                      MarkdownBody(
-                        data: controller.text.isEmpty
-                            ? '_${l10n.enterInstructions}_'
-                            : controller.text,
-                        shrinkWrap: true,
-                        styleSheet: MarkdownStyleSheet.fromTheme(
-                          Theme.of(dialogContext),
-                        ).copyWith(
-                          p: const TextStyle(fontSize: 16, height: 1.5),
-                        ),
-                      )
-                    else
-                      TextField(
-                        controller: controller,
-                        decoration: InputDecoration(
-                          hintText: l10n.enterInstructions,
-                        ),
-                        maxLines: null,
-                        minLines: 8,
-                        keyboardType: TextInputType.multiline,
-                        autofocus: true,
-                        onChanged: (_) => setDialogState(() {}),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: Text(l10n.buttonCancel),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext, controller.text),
-                child: Text(l10n.save),
-              ),
-            ],
-          );
-        },
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => InstructionsEditSheet(
+        initialInstructions: _instructions,
       ),
     );
-
-    // Dispose the controller after the dialog animation completes
-    if (mounted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        controller.dispose();
-      });
-    }
-
-    if (result != null) {
-      await _saveInstructions(result);
-    }
+    if (result != null) await _saveInstructions(result);
   }
 
   Future<void> _saveInstructions(String newInstructions) async {
@@ -500,81 +415,46 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
     }
   }
 
-  Future<void> _editRecipe() async {
-    final result = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => RecipeFormScreen(recipe: _currentRecipe),
+  Future<void> _editRecipeInfo() async {
+    final updated = await showGastrobrainBottomSheet<Recipe>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
+      builder: (_) => RecipeInfoEditSheet(recipe: _currentRecipe),
     );
+    if (updated == null || !mounted) return;
 
-    if (result == true && mounted) {
-      // Recipe was edited, reload the recipe data
-      try {
-        final updatedRecipe = await _dbHelper.getRecipe(_currentRecipe.id);
-        if (updatedRecipe != null && mounted) {
-          setState(() {
-            _currentRecipe = updatedRecipe;
-            _instructions = updatedRecipe.instructions;
-            _hasChanges = true;
-          });
-          // Reload ingredients in case they changed
-          _loadIngredients();
-        }
-      } catch (e) {
-        if (mounted) {
-          SnackbarService.showError(
-            context,
-            AppLocalizations.of(context)!.errorLoadingData,
-          );
-        }
+    try {
+      await _dbHelper.updateRecipe(updated);
+      if (mounted) {
+        setState(() {
+          _currentRecipe = updated;
+          _hasChanges = true;
+        });
+        SnackbarService.showSuccess(
+          context,
+          AppLocalizations.of(context)!.recipeSavedSuccessfully,
+        );
+      }
+    } on GastrobrainException catch (e) {
+      if (mounted) SnackbarService.showError(context, e.message);
+    } catch (_) {
+      if (mounted) {
+        SnackbarService.showError(
+            context, AppLocalizations.of(context)!.unexpectedError);
       }
     }
   }
 
   List<Widget> _buildAppBarActions() {
-    final actions = <Widget>[];
-
-    // Edit and Delete actions available via popup menu on all tabs
-    actions.add(
-      PopupMenuButton<String>(
-        icon: const Icon(Icons.more_vert),
-        onSelected: (value) {
-          if (value == 'edit') {
-            _editRecipe();
-          } else if (value == 'delete') {
-            _deleteRecipe();
-          }
-        },
-        itemBuilder: (context) => [
-          PopupMenuItem(
-            value: 'edit',
-            child: Row(
-              children: [
-                const Icon(Icons.edit),
-                const SizedBox(width: 8),
-                Text(AppLocalizations.of(context)!.editRecipe),
-              ],
-            ),
-          ),
-          PopupMenuItem(
-            value: 'delete',
-            child: Row(
-              children: [
-                Icon(Icons.delete, color: Theme.of(context).colorScheme.error),
-                const SizedBox(width: 8),
-                Text(
-                  AppLocalizations.of(context)!.deleteRecipe,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-              ],
-            ),
-          ),
-        ],
+    return [
+      IconButton(
+        icon: const Icon(Icons.delete_outline),
+        tooltip: AppLocalizations.of(context)!.deleteRecipe,
+        onPressed: _deleteRecipe,
       ),
-    );
-
-    return actions;
+    ];
   }
 
   Future<void> _deleteRecipe() async {
@@ -676,13 +556,16 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
             _buildHistoryTab(),
           ],
         ),
-        floatingActionButton: _buildFloatingActionButton(),
       ),
     );
   }
 
   Widget _buildOverviewTab() {
-    return RecipeDetailsOverviewTab(recipe: _currentRecipe, tags: _recipeTags);
+    return RecipeDetailsOverviewTab(
+      recipe: _currentRecipe,
+      tags: _recipeTags,
+      onEdit: _editRecipeInfo,
+    );
   }
 
   Widget _buildIngredientsTab() {
@@ -705,18 +588,30 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
       return _buildEmptyInstructionsView();
     }
 
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            AppLocalizations.of(context)!.instructions,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.primary,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  l10n.instructions,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.edit_outlined),
+                tooltip: l10n.editInstructions,
+                onPressed: _editInstructions,
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           MarkdownBody(
@@ -769,32 +664,4 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
     );
   }
 
-  Widget? _buildFloatingActionButton() {
-    // Show appropriate FAB based on current tab
-    switch (_tabController.index) {
-      case 0: // Ingredients tab
-        return FloatingActionButton(
-          onPressed: _addIngredients,
-          tooltip: AppLocalizations.of(context)!.addIngredients,
-          child: const Icon(Icons.add),
-        );
-      case 1: // Instructions tab
-        final bool hasInstructions = _instructions.isNotEmpty;
-        return FloatingActionButton(
-          onPressed: _editInstructions,
-          tooltip: hasInstructions
-              ? AppLocalizations.of(context)!.editInstructions
-              : AppLocalizations.of(context)!.addInstructions,
-          child: Icon(hasInstructions ? Icons.edit : Icons.add),
-        );
-      case 2: // Overview tab — open full recipe editor
-        return FloatingActionButton(
-          onPressed: _editRecipe,
-          tooltip: AppLocalizations.of(context)!.editRecipe,
-          child: const Icon(Icons.edit),
-        );
-      default:
-        return null; // No FAB for History tab
-    }
-  }
 }
