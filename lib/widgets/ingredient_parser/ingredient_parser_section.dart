@@ -352,8 +352,11 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
     if (!_canConfirm || _isSaving) return;
     setState(() => _isSaving = true);
     try {
+      final toConfirm = _ingredients
+          .where((i) => !i.isManual || i.name.trim().isNotEmpty)
+          .toList();
       final success =
-          await widget.onIngredientsConfirmed(List.unmodifiable(_ingredients));
+          await widget.onIngredientsConfirmed(List.unmodifiable(toConfirm));
       if (success && mounted) {
         setState(() {
           _ingredients = [];
@@ -371,7 +374,6 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
   // ── Helpers ───────────────────────────────────────────────────────────────
 
   bool _needsAttention(ParsedIngredient ing) {
-    if (ing.isManual && ing.name.trim().isEmpty) return true;
     return !ing.isNewIngredient &&
         ing.selectedMatch == null &&
         ing.matches.isEmpty &&
@@ -382,12 +384,6 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
 
   bool get _canConfirm =>
       _ingredients.isNotEmpty && _unresolvedCount == 0;
-
-  bool get _lastManualRowIsBlank {
-    final manualItems = _ingredients.where((i) => i.isManual).toList();
-    if (manualItems.isEmpty) return false;
-    return manualItems.last.name.trim().isEmpty;
-  }
 
   // ── Build ─────────────────────────────────────────────────────────────────
 
@@ -427,7 +423,7 @@ class _IngredientParserSectionState extends State<IngredientParserSection> {
             const SizedBox(width: 8),
             Flexible(
               child: TextButton.icon(
-                onPressed: _lastManualRowIsBlank ? null : _addManualRow,
+                onPressed: _addManualRow,
                 icon: const Icon(Icons.add, size: 18),
                 label: Text(l10n.ingredientParserAddManuallyButton),
               ),
