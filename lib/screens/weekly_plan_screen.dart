@@ -31,6 +31,7 @@ import '../widgets/recipe_selection_dialog.dart';
 import '../widgets/week_navigation_widget.dart';
 import '../widgets/weekly_summary_widget.dart';
 import '../screens/shopping_list_preview_screen.dart';
+import '../utils/dialog_utils.dart';
 import '../utils/id_generator.dart';
 import '../l10n/app_localizations.dart';
 import '../screens/recipe_details_screen.dart';
@@ -802,9 +803,9 @@ class WeeklyPlanScreenState extends State<WeeklyPlanScreen> {
   void _openSummarySheet() {
     setState(() => _isSummarySheetOpen = true);
 
-    showModalBottomSheet(
+    showGastrobrainBottomSheet(
       context: context,
-      isScrollControlled: true,
+      useSafeArea: false,
       backgroundColor: Colors.transparent,
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.6,

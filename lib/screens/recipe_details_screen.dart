@@ -16,6 +16,7 @@ import '../screens/meal_history_screen.dart';
 import '../screens/recipe_details_ingredients_tab.dart';
 import '../screens/recipe_details_overview_tab.dart';
 import '../screens/recipe_form_screen.dart';
+import '../utils/dialog_utils.dart';
 import '../utils/id_generator.dart';
 import '../widgets/add_ingredient_dialog.dart';
 import '../widgets/add_new_ingredient_dialog.dart';
@@ -181,16 +182,15 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
 
   void _addIngredients() {
     final l10n = AppLocalizations.of(context)!;
-    showModalBottomSheet<void>(
+    showGastrobrainBottomSheet<void>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (sheetContext) => Padding(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom +
+              MediaQuery.of(sheetContext).padding.bottom,
         ),
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
