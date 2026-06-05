@@ -345,6 +345,14 @@
   "@recipeInfoEditSheetTitle": {
     "description": "Title of the bottom sheet for editing recipe metadata"
   },
+  "tagsEditSheetTitle": "Edit Tags",
+  "@tagsEditSheetTitle": {
+    "description": "Title of the bottom sheet for editing recipe tags"
+  },
+  "recipeInfoSection": "Details",
+  "@recipeInfoSection": {
+    "description": "Section header for recipe metadata (difficulty, servings, times, frequency)"
+  },
   "newRecipe": "New Recipe",
   "@newRecipe": {
     "description": "Title for new recipe creation screen"
@@ -2046,6 +2054,10 @@
   "instructionsUpdatedSuccessfully": "Instructions updated successfully",
   "@instructionsUpdatedSuccessfully": {
     "description": "Success message when instructions are saved"
+  },
+  "tagsUpdatedSuccessfully": "Tags updated successfully",
+  "@tagsUpdatedSuccessfully": {
+    "description": "Success message when recipe tags are saved"
   },
   "enterInstructions": "Enter cooking instructions...",
   "@enterInstructions": {

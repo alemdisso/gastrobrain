@@ -339,6 +339,14 @@
   "@recipeInfoEditSheetTitle": {
     "description": "Título da planilha inferior para editar metadados da receita"
   },
+  "tagsEditSheetTitle": "Editar Tags",
+  "@tagsEditSheetTitle": {
+    "description": "Título da planilha inferior para editar tags da receita"
+  },
+  "recipeInfoSection": "Detalhes",
+  "@recipeInfoSection": {
+    "description": "Cabeçalho da seção de metadados da receita (dificuldade, porções, tempos, frequência)"
+  },
   "newRecipe": "Nova Receita",
   "@newRecipe": {
     "description": "Título da tela de criação de receita"
@@ -2040,6 +2048,10 @@
   "instructionsUpdatedSuccessfully": "Instruções atualizadas com sucesso",
   "@instructionsUpdatedSuccessfully": {
     "description": "Mensagem de sucesso quando instruções são salvas"
+  },
+  "tagsUpdatedSuccessfully": "Tags atualizadas com sucesso",
+  "@tagsUpdatedSuccessfully": {
+    "description": "Mensagem de sucesso quando as tags da receita são salvas"
   },
   "enterInstructions": "Digite as instruções de preparo...",
   "@enterInstructions": {

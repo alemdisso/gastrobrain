@@ -23,6 +23,7 @@ import '../widgets/ingredient_parser/ingredient_parser_section.dart';
 import '../widgets/recipe_editor/instructions_edit_sheet.dart';
 import '../widgets/recipe_editor/parsed_ingredient.dart';
 import '../widgets/recipe_editor/recipe_info_edit_sheet.dart';
+import '../widgets/recipe_editor/tags_edit_sheet.dart';
 
 /// Unified screen for viewing complete recipe details including overview,
 /// ingredients, instructions, and meal history.
@@ -447,6 +448,39 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
     }
   }
 
+  Future<void> _editTags() async {
+    final selectedIds = await showGastrobrainBottomSheet<List<String>>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => TagsEditSheet(
+        recipeId: _currentRecipe.id,
+        tagRepository: _tagRepo,
+      ),
+    );
+    if (selectedIds == null || !mounted) return;
+
+    try {
+      await _tagRepo.setTagsForRecipe(_currentRecipe.id, selectedIds);
+      if (mounted) {
+        await _loadTags();
+        setState(() => _hasChanges = true);
+        SnackbarService.showSuccess(
+          context,
+          AppLocalizations.of(context)!.tagsUpdatedSuccessfully,
+        );
+      }
+    } on GastrobrainException catch (e) {
+      if (mounted) SnackbarService.showError(context, e.message);
+    } catch (_) {
+      if (mounted) {
+        SnackbarService.showError(
+            context, AppLocalizations.of(context)!.unexpectedError);
+      }
+    }
+  }
+
   List<Widget> _buildAppBarActions() {
     return [
       IconButton(
@@ -485,12 +519,11 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
       try {
         await _dbHelper.deleteRecipe(_currentRecipe.id);
         if (mounted) {
-          // Pop back with a special flag indicating deletion
-          Navigator.pop(context, true);
           SnackbarService.showSuccess(
             context,
             AppLocalizations.of(context)!.recipeDeletedSuccessfully,
           );
+          Navigator.pop(context, true);
         }
       } on GastrobrainException catch (e) {
         if (mounted) {
@@ -565,6 +598,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
       recipe: _currentRecipe,
       tags: _recipeTags,
       onEdit: _editRecipeInfo,
+      onEditTags: _editTags,
     );
   }
 
