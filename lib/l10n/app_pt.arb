@@ -1591,6 +1591,10 @@
   "@minuteAbbreviation": {
     "description": "Forma compacta de dizer minutos"
   },
+  "editTimesButton": "Editar tempos",
+  "@editTimesButton": {
+    "description": "Botão para expandir os campos de tempo recolhidos nos diálogos de registro de refeição"
+  },
       "showLess": "Mostrar Menos",
   "@showLess": {
     "description": "Mostrar menos"

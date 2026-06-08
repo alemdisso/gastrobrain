@@ -1615,6 +1615,10 @@
   "@minuteAbbreviation": {
     "description": "Compact way to express minutes"
   },
+  "editTimesButton": "Edit times",
+  "@editTimesButton": {
+    "description": "Button to expand the collapsible time fields in meal recording dialogs"
+  },
     "showLess": "Show Less",
   "@showLess": {
     "description": "Show less"

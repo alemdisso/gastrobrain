@@ -40,6 +40,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
   final _cookTimeController = TextEditingController();
   int _servings = 4;
   bool _wasSuccessful = true;
+  bool _timesExpanded = false;
   DateTime _cookedAt = DateTime.now();
 
   // For managing additional recipes
@@ -284,6 +285,77 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
     super.dispose();
   }
 
+  Widget _buildTimesSection(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    if (_timesExpanded) {
+      return Row(
+        children: [
+          Expanded(
+            child: TextFormField(
+              key: const Key('meal_recording_prep_time_field'),
+              controller: _prepTimeController,
+              decoration: InputDecoration(
+                labelText: l10n.actualPrepTimeMin,
+                prefixIcon: const Icon(Icons.timer),
+              ),
+              keyboardType: TextInputType.number,
+              validator: (value) {
+                if (value != null && value.isNotEmpty) {
+                  final time = double.tryParse(value);
+                  if (time == null || time < 0) return l10n.enterValidTime;
+                }
+                return null;
+              },
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextFormField(
+              key: const Key('meal_recording_cook_time_field'),
+              controller: _cookTimeController,
+              decoration: InputDecoration(
+                labelText: l10n.actualCookTimeMin,
+                prefixIcon: const Icon(Icons.timer),
+              ),
+              keyboardType: TextInputType.number,
+              validator: (value) {
+                if (value != null && value.isNotEmpty) {
+                  final time = double.tryParse(value);
+                  if (time == null || time < 0) return l10n.enterValidTime;
+                }
+                return null;
+              },
+            ),
+          ),
+        ],
+      );
+    }
+
+    String fmtTime(double v) =>
+        v == v.truncateToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
+
+    final prep = double.tryParse(_prepTimeController.text) ?? 0;
+    final cook = double.tryParse(_cookTimeController.text) ?? 0;
+    final marinating = widget.primaryRecipe.marinatingTimeMinutes.toDouble();
+    final min = l10n.minuteAbbreviation;
+
+    final parts = <String>[];
+    if (prep > 0) parts.add('${l10n.prepTimeLabel}: ${fmtTime(prep)} $min');
+    parts.add('${l10n.cookTimeLabel}: ${fmtTime(cook)} $min');
+    if (marinating > 0) parts.add('${l10n.marinatingTimeLabel}: ${fmtTime(marinating)} $min');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(parts.join(' · ')),
+        TextButton(
+          onPressed: () => setState(() => _timesExpanded = true),
+          child: Text(l10n.editTimesButton),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -417,54 +489,7 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
               ),
               const SizedBox(height: 12),
 
-              // Actual times
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      key: const Key('meal_recording_prep_time_field'),
-                      controller: _prepTimeController,
-                      decoration: InputDecoration(
-                        labelText:
-                            AppLocalizations.of(context)!.actualPrepTimeMin,
-                                    prefixIcon: const Icon(Icons.timer),
-                      ),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value != null && value.isNotEmpty) {
-                          final time = double.tryParse(value);
-                          if (time == null || time < 0) {
-                            return AppLocalizations.of(context)!.enterValidTime;
-                          }
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextFormField(
-                      key: const Key('meal_recording_cook_time_field'),
-                      controller: _cookTimeController,
-                      decoration: InputDecoration(
-                        labelText:
-                            AppLocalizations.of(context)!.actualCookTimeMin,
-                                    prefixIcon: const Icon(Icons.timer),
-                      ),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value != null && value.isNotEmpty) {
-                          final time = double.tryParse(value);
-                          if (time == null || time < 0) {
-                            return AppLocalizations.of(context)!.enterValidTime;
-                          }
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                ],
-              ),
+              _buildTimesSection(context),
               const SizedBox(height: 12),
 
               // Success rating
