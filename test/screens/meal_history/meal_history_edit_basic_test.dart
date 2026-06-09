@@ -465,6 +465,10 @@ void main() {
       await tester.tap(find.text('Edit'));
       await tester.pumpAndSettle();
 
+      // Expand time fields
+      await tester.tap(find.text('Edit times'));
+      await tester.pumpAndSettle();
+
       // Find prep time field and enter new value
       await tester.enterText(
         find.widgetWithText(TextFormField, '15.0'),
@@ -524,6 +528,10 @@ void main() {
 
       // Tap Edit
       await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
+
+      // Expand time fields
+      await tester.tap(find.text('Edit times'));
       await tester.pumpAndSettle();
 
       // Find cook time field and enter new value

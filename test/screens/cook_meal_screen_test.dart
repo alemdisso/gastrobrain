@@ -207,6 +207,10 @@ void main() {
       await tester.tap(find.text('Registrar Detalhes da Refeição'));
       await tester.pumpAndSettle();
 
+      // Expand time fields
+      await tester.tap(find.text('Editar tempos'));
+      await tester.pumpAndSettle();
+
       // Enter negative prep time
       final prepTimeField = find.byKey(const Key('meal_recording_prep_time_field'));
       await tester.enterText(prepTimeField, '-10');
@@ -229,6 +233,10 @@ void main() {
 
       // Open the dialog
       await tester.tap(find.text('Registrar Detalhes da Refeição'));
+      await tester.pumpAndSettle();
+
+      // Expand time fields
+      await tester.tap(find.text('Editar tempos'));
       await tester.pumpAndSettle();
 
       // Enter negative cook time
@@ -255,6 +263,10 @@ void main() {
       await tester.tap(find.text('Registrar Detalhes da Refeição'));
       await tester.pumpAndSettle();
 
+      // Expand time fields
+      await tester.tap(find.text('Editar tempos'));
+      await tester.pumpAndSettle();
+
       // Clear prep time field
       final prepTimeField = find.byKey(const Key('meal_recording_prep_time_field'));
       await tester.enterText(prepTimeField, '');
@@ -275,6 +287,10 @@ void main() {
 
       // Open the dialog
       await tester.tap(find.text('Registrar Detalhes da Refeição'));
+      await tester.pumpAndSettle();
+
+      // Expand time fields
+      await tester.tap(find.text('Editar tempos'));
       await tester.pumpAndSettle();
 
       // Clear cook time field
@@ -557,6 +573,10 @@ void main() {
 
       // Open the dialog
       await tester.tap(find.text('Registrar Detalhes da Refeição'));
+      await tester.pumpAndSettle();
+
+      // Expand time fields to verify pre-filled values
+      await tester.tap(find.text('Editar tempos'));
       await tester.pumpAndSettle();
 
       // Verify prep time is pre-filled with recipe's prep time

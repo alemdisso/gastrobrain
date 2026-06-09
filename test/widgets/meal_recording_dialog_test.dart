@@ -83,6 +83,10 @@ void main() {
       );
       expect(find.byKey(const Key('meal_recording_servings_field')), findsNothing);
 
+      // Expand time fields before checking
+      await tester.tap(find.text('Editar tempos'));
+      await tester.pumpAndSettle();
+
       // Verify prep time is pre-filled from recipe
       final prepTimeField =
           find.byKey(const Key('meal_recording_prep_time_field'));
@@ -538,6 +542,10 @@ void main() {
       await tester.tap(find.text('Show Dialog'));
       await tester.pumpAndSettle();
 
+      // Expand time fields
+      await tester.tap(find.text('Editar tempos'));
+      await tester.pumpAndSettle();
+
       // Enter invalid prep time
       await tester.enterText(
         find.byKey(const Key('meal_recording_prep_time_field')),
@@ -575,6 +583,10 @@ void main() {
 
       // Open dialog
       await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      // Expand time fields
+      await tester.tap(find.text('Editar tempos'));
       await tester.pumpAndSettle();
 
       // Enter invalid cook time
