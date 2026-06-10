@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/ingredient_match.dart';
+import '../../models/measurement_unit.dart';
 import '../../utils/quantity_formatter.dart';
 import '../recipe_editor/parsed_ingredient.dart';
 
@@ -86,7 +87,11 @@ class _ParserReviewRowState extends State<ParserReviewRow> {
     final qty = ing.quantityMax != null
         ? QuantityFormatter.formatRange(ing.quantity, ing.quantityMax!)
         : (ing.quantity == 0 ? '' : QuantityFormatter.format(ing.quantity));
-    final unit = (ing.unit != null && ing.unit!.isNotEmpty) ? ing.unit! : '';
+    final unit = (ing.unit != null && ing.unit!.isNotEmpty)
+        ? (MeasurementUnit.fromString(ing.unit)
+                ?.getLocalizedQuantityName(context, ing.quantity) ??
+            ing.unit!)
+        : '';
     final name = ing.name.isNotEmpty ? ing.name : '—';
 
     final parts = [

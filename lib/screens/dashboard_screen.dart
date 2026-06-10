@@ -11,8 +11,8 @@ import '../l10n/app_localizations.dart';
 import '../widgets/dashboard/hero_section.dart';
 import '../widgets/dashboard/quick_actions_panel.dart';
 import '../widgets/dashboard/summary_cards.dart';
-import 'recipe_form_screen.dart';
 import 'recipe_details_screen.dart';
+import 'recipe_stub_create_screen.dart';
 import 'tools_screen.dart';
 
 /// A recent meal entry enriched with recipe data for dashboard display.
@@ -132,13 +132,11 @@ class DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _navigateToAddRecipe() async {
-    final result = await Navigator.push<bool>(
+    await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const RecipeFormScreen()),
+      MaterialPageRoute(builder: (context) => const RecipeStubCreateScreen()),
     );
-    if (result == true) {
-      refreshData();
-    }
+    refreshData();
   }
 
   void _navigateToRecipe(Recipe recipe) {

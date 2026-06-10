@@ -91,6 +91,11 @@ void main() {
         equals('3'),
       );
       expect(find.text('Original test notes'), findsOneWidget); // Notes field
+
+      // Expand time fields to verify pre-populated values
+      await tester.tap(find.text('Editar tempos'));
+      await tester.pumpAndSettle();
+
       expect(find.text('20.0'), findsOneWidget); // Prep time
       expect(find.text('30.0'), findsOneWidget); // Cook time
 
@@ -256,6 +261,11 @@ void main() {
 
       // Check that fields are pre-filled with existing meal data
       expect(find.text('3'), findsOneWidget); // Servings field
+
+      // Expand time fields to verify pre-populated values
+      await tester.tap(find.text('Editar tempos'));
+      await tester.pumpAndSettle();
+
       expect(find.text('25.0'), findsOneWidget); // Prep time field
       expect(find.text('40.0'), findsOneWidget); // Cook time field
 
@@ -643,6 +653,10 @@ void main() {
       await tester.tap(find.text('Show Dialog'));
       await tester.pumpAndSettle();
 
+      // Expand time fields
+      await tester.tap(find.text('Editar tempos'));
+      await tester.pumpAndSettle();
+
       // Enter invalid prep time
       final prepTimeField = find.widgetWithText(TextFormField, '20.0');
       await tester.enterText(prepTimeField, '-10');
@@ -686,6 +700,10 @@ void main() {
 
       // Open dialog
       await tester.tap(find.text('Show Dialog'));
+      await tester.pumpAndSettle();
+
+      // Expand time fields
+      await tester.tap(find.text('Editar tempos'));
       await tester.pumpAndSettle();
 
       // Enter invalid cook time

@@ -589,6 +589,10 @@ void main() {
         find.byKey(const Key('edit_meal_recording_notes_field')),
         'Updated notes with changes',
       );
+      // Expand time fields
+      await tester.tap(find.text('Edit times'));
+      await tester.pumpAndSettle();
+
       await tester.enterText(
         find.byKey(const Key('edit_meal_recording_prep_time_field')),
         '20',

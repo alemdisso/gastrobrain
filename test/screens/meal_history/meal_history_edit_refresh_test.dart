@@ -231,6 +231,10 @@ void main() {
         'Updated notes with new information',
       );
 
+      // Expand time fields
+      await tester.tap(find.text('Edit times'));
+      await tester.pumpAndSettle();
+
       await tester.enterText(
         find.byKey(const Key('edit_meal_recording_prep_time_field')),
         '15',

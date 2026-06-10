@@ -59,7 +59,8 @@ class _AddShoppingItemDialogState extends State<AddShoppingItemDialog> {
       _selectedIngredient = ingredient;
       _searchController.text = ingredient.name;
       _searchQuery = '';
-      _unitController.text = ingredient.unit?.value ?? '';
+      _unitController.text =
+          ingredient.unit?.getLocalizedQuantityName(context, 1.0) ?? '';
     });
   }
 
@@ -109,8 +110,7 @@ class _AddShoppingItemDialogState extends State<AddShoppingItemDialog> {
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
       title: Text(l10n.addShoppingItemTitle),
-      content: SizedBox(
-        width: double.maxFinite,
+      content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -201,20 +201,21 @@ class _AddShoppingItemDialogState extends State<AddShoppingItemDialog> {
     }
     return ConstrainedBox(
       constraints: const BoxConstraints(maxHeight: 180),
-      child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: filtered.length,
-        itemBuilder: (_, index) {
-          final ingredient = filtered[index];
-          return ListTile(
-            dense: true,
-            title: Text(ingredient.name),
-            subtitle: ingredient.unit != null
-                ? Text(ingredient.unit!.getLocalizedQuantityName(context, 1.0))
-                : null,
-            onTap: () => _selectIngredient(ingredient),
-          );
-        },
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: filtered
+              .map((ingredient) => ListTile(
+                    dense: true,
+                    title: Text(ingredient.name),
+                    subtitle: ingredient.unit != null
+                        ? Text(ingredient.unit!
+                            .getLocalizedQuantityName(context, 1.0))
+                        : null,
+                    onTap: () => _selectIngredient(ingredient),
+                  ))
+              .toList(),
+        ),
       ),
     );
   }

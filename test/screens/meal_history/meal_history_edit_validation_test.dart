@@ -149,6 +149,10 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
+      // Expand time fields
+      await tester.tap(find.text('Edit times'));
+      await tester.pumpAndSettle();
+
       // 4. Enter negative prep time
       await tester.enterText(
         find.byKey(const Key('edit_meal_recording_prep_time_field')),
@@ -217,6 +221,10 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Edit'));
       await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
+
+      // Expand time fields
+      await tester.tap(find.text('Edit times'));
       await tester.pumpAndSettle();
 
       // 4. Enter non-numeric prep time
@@ -289,6 +297,10 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
+      // Expand time fields
+      await tester.tap(find.text('Edit times'));
+      await tester.pumpAndSettle();
+
       // 4. Enter negative cook time
       await tester.enterText(
         find.byKey(const Key('edit_meal_recording_cook_time_field')),
@@ -357,6 +369,10 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Edit'));
       await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
+
+      // Expand time fields
+      await tester.tap(find.text('Edit times'));
       await tester.pumpAndSettle();
 
       // 4. Enter non-numeric cook time

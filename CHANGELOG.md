@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.14] - 2026-06-09
+
+### Added
+- Hub-and-spoke recipe entry: new `RecipeStubCreateScreen` (name-only) creates a recipe immediately and opens `RecipeDetailsScreen` as the editing hub; per-section edit sheets — `InstructionsEditSheet`, `RecipeInfoEditSheet` (name, servings, difficulty, prep/cook/marinating times, frequency, notes, story), and `TagsEditSheet` — replace the monolithic recipe form (#396, #397)
+- Collapsible time fields in meal recording dialogs: actual prep/cook times now show as a compact summary by default, with an "Edit times" / "Editar tempos" button to expand inline fields (#398)
+- `showGastrobrainBottomSheet()` helper standardizes bottom sheet presentation (scroll-controlled, safe-area aware) across the app (#391)
+
+### Changed
+- `RecipeFormScreen` and `RecipeEditorScreen` removed; recipe editing is now per-section via inline edit buttons, with FABs removed from all recipe detail tabs (#396)
+- Ingredient parser review: auto-scroll to parsed/manual sections, duplicate-blank-row prevention, separate "Analisados" / "Adicionados manualmente" subsections, and a warning banner for unresolved ingredients (#395)
+- Unit names in ingredient dialogs (`UnifiedAddSideDialog`, `AddShoppingItemDialog`, `ParserReviewRow`) are now localized instead of showing raw unit strings (#393)
+- `RecipeSelectionCard` collapsed state is more compact: chevron merged into the name row, reduced padding, card border/elevation added, and the select button anchored with a divider (#394)
+
+### Fixed
+- Meal options dialog secondary buttons now stack vertically to prevent label wrapping in Portuguese (#389)
+- Label overflow in meal recording dialogs — shortened time field labels and wrapped the recipes label in `Expanded` (#390)
+- Bottom sheets and forms now respect the Android navigation bar inset, so confirm buttons are no longer hidden behind the nav bar (#391)
+- Overflow and keyboard clipping in `AddShoppingItemDialog` (#392)
+- Deleting a tagged recipe no longer fails with a foreign key constraint error — migration 112 recreates `recipe_tags` with `ON DELETE CASCADE` on `recipe_id` (#397)
+
+---
+
 ## [0.2.13] - 2026-05-28
 
 ### Added

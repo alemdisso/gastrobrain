@@ -74,7 +74,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.textContaining('2'), findsWidgets);
-        expect(find.textContaining('tbsp'), findsOneWidget);
+        expect(find.textContaining('Colheres de sopa'), findsOneWidget);
         expect(find.textContaining('Azeite'), findsWidgets);
       });
 

@@ -236,22 +236,26 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
         AnimatedBuilder(
           animation: _tabController,
           builder: (context, child) {
-            return _tabController.index == 1
-                ? TextField(
-                    decoration: InputDecoration(
-                      hintText: AppLocalizations.of(context)!.searchRecipesHint,
-                      prefixIcon: const Icon(Icons.search),
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value.trim();
-                      });
-                    },
-                  )
-                : const SizedBox.shrink();
+            if (_tabController.index != 1) return const SizedBox.shrink();
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  decoration: InputDecoration(
+                    hintText: AppLocalizations.of(context)!.searchRecipesHint,
+                    prefixIcon: const Icon(Icons.search),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value.trim();
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+              ],
+            );
           },
         ),
-        const SizedBox(height: 16),
 
         Expanded(
           child: TabBarView(
@@ -494,35 +498,32 @@ class RecipeSelectionDialogState extends State<RecipeSelectionDialog>
 
           if (widget.isEditMode) ...[
             const SizedBox(height: 8),
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    icon: Icon(
-                      widget.initialMealCooked
-                          ? Icons.edit_outlined
-                          : Icons.check_circle_outline,
-                    ),
-                    label: Text(
-                      widget.initialMealCooked
-                          ? l10n.editCookedMeal
-                          : l10n.markAsCooked,
-                    ),
-                    onPressed: () => Navigator.pop(context, {
-                      'action': widget.initialMealCooked
-                          ? 'edit_cooked'
-                          : 'cooked',
-                    }),
+                OutlinedButton.icon(
+                  icon: Icon(
+                    widget.initialMealCooked
+                        ? Icons.edit_outlined
+                        : Icons.check_circle_outline,
                   ),
+                  label: Text(
+                    widget.initialMealCooked
+                        ? l10n.editCookedMeal
+                        : l10n.markAsCooked,
+                  ),
+                  onPressed: () => Navigator.pop(context, {
+                    'action': widget.initialMealCooked
+                        ? 'edit_cooked'
+                        : 'cooked',
+                  }),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    icon: const Icon(Icons.swap_horiz),
-                    label: Text(l10n.changeRecipe),
-                    onPressed: () =>
-                        Navigator.pop(context, {'action': 'change'}),
-                  ),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.swap_horiz),
+                  label: Text(l10n.changeRecipe),
+                  onPressed: () =>
+                      Navigator.pop(context, {'action': 'change'}),
                 ),
               ],
             ),

@@ -13,13 +13,18 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
     super.key,
     required this.recipe,
     this.tags = const [],
+    this.onEdit,
+    this.onEditTags,
   });
 
   final Recipe recipe;
   final List<Tag> tags;
+  final VoidCallback? onEdit;
+  final VoidCallback? onEditTags;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -31,12 +36,17 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
             const SizedBox(height: 20),
           ],
 
+          // Details section header
+          _buildSectionHeader(context, l10n.recipeInfoSection, onEdit,
+              tooltip: l10n.recipeInfoEditSheetTitle),
+          const SizedBox(height: 8),
+
           // Rating
           if (recipe.rating > 0)
             _buildInfoRow(
               context,
               icon: Icons.star,
-              label: AppLocalizations.of(context)!.rating,
+              label: l10n.rating,
               valueWidget: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: List.generate(
@@ -55,7 +65,7 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
           _buildInfoRow(
             context,
             icon: Icons.signal_cellular_alt,
-            label: AppLocalizations.of(context)!.difficulty,
+            label: l10n.difficulty,
             valueWidget: Row(
               mainAxisSize: MainAxisSize.min,
               children: List.generate(
@@ -76,7 +86,7 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
           _buildInfoRow(
             context,
             icon: Icons.people,
-            label: AppLocalizations.of(context)!.servings,
+            label: l10n.servings,
             value: '${recipe.servings}',
           ),
           const SizedBox(height: 12),
@@ -86,9 +96,8 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
             _buildInfoRow(
               context,
               icon: Icons.kitchen,
-              label: AppLocalizations.of(context)!.prepTimeLabel,
-              value:
-                  '${recipe.prepTimeMinutes} ${AppLocalizations.of(context)!.minuteAbbreviation}',
+              label: l10n.prepTimeLabel,
+              value: '${recipe.prepTimeMinutes} ${l10n.minuteAbbreviation}',
             ),
           if (recipe.prepTimeMinutes > 0) const SizedBox(height: 12),
 
@@ -97,9 +106,8 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
             _buildInfoRow(
               context,
               icon: Icons.whatshot,
-              label: AppLocalizations.of(context)!.cookTimeLabel,
-              value:
-                  '${recipe.cookTimeMinutes} ${AppLocalizations.of(context)!.minuteAbbreviation}',
+              label: l10n.cookTimeLabel,
+              value: '${recipe.cookTimeMinutes} ${l10n.minuteAbbreviation}',
             ),
           if (recipe.cookTimeMinutes > 0) const SizedBox(height: 12),
 
@@ -108,9 +116,9 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
             _buildInfoRow(
               context,
               icon: Icons.schedule,
-              label: AppLocalizations.of(context)!.marinatingTimeLabel,
+              label: l10n.marinatingTimeLabel,
               value:
-                  '${recipe.marinatingTimeMinutes} ${AppLocalizations.of(context)!.minuteAbbreviation}',
+                  '${recipe.marinatingTimeMinutes} ${l10n.minuteAbbreviation}',
             ),
           if (recipe.marinatingTimeMinutes > 0) const SizedBox(height: 12),
 
@@ -118,33 +126,25 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
           _buildInfoRow(
             context,
             icon: Icons.calendar_today,
-            label: AppLocalizations.of(context)!.desiredFrequency,
+            label: l10n.desiredFrequency,
             value: recipe.desiredFrequency.getLocalizedDisplayName(context),
           ),
           const SizedBox(height: 20),
 
           // Tags — grouped by type, meal_role and food_type first
-          if (tags.isNotEmpty) ...[
-            const Divider(),
-            const SizedBox(height: 12),
-            Text(
-              AppLocalizations.of(context)!.tags,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            ..._buildGroupedTags(context),
-          ],
+          const Divider(),
+          const SizedBox(height: 12),
+          _buildSectionHeader(context, l10n.tags, onEditTags,
+              tooltip: l10n.tagsEditSheetTitle),
+          const SizedBox(height: 8),
+          if (tags.isNotEmpty) ..._buildGroupedTags(context),
 
           // Notes
           if (recipe.notes.isNotEmpty) ...[
             const Divider(),
             const SizedBox(height: 12),
             Text(
-              AppLocalizations.of(context)!.notes,
+              l10n.notes,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -157,8 +157,38 @@ class RecipeDetailsOverviewTab extends StatelessWidget {
               style: const TextStyle(fontSize: 16, height: 1.5),
             ),
           ],
+
+          const SizedBox(height: 16),
         ],
       ),
+    );
+  }
+
+  Widget _buildSectionHeader(
+    BuildContext context,
+    String title,
+    VoidCallback? onEdit, {
+    String? tooltip,
+  }) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+        ),
+        if (onEdit != null)
+          IconButton(
+            icon: const Icon(Icons.edit_outlined, size: 18),
+            tooltip: tooltip,
+            onPressed: onEdit,
+          ),
+      ],
     );
   }
 

@@ -39,6 +39,7 @@ import '../core/migration/migrations/008_add_sauce_food_type.dart';
 import '../core/migration/migrations/009_drop_recipe_category.dart';
 import '../core/migration/migrations/010_add_quantity_max.dart';
 import '../core/migration/migrations/011_add_shopping_list_quantity_max.dart';
+import '../core/migration/migrations/012_fix_recipe_tags_cascade.dart';
 import '../core/repositories/base_repository.dart';
 import 'daos/ingredient_dao.dart';
 import 'daos/meal_dao.dart';
@@ -76,6 +77,7 @@ class DatabaseHelper {
     DropRecipeCategoryMigration(),
     AddQuantityMaxMigration(),
     AddShoppingListQuantityMaxMigration(),
+    FixRecipeTagsCascadeMigration(),
   ];
 
   /// Get the migration runner instance

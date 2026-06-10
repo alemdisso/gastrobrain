@@ -34,3 +34,11 @@ Widget → pure UI + local display state only
        → emits events via callbacks (onTap, onChanged, etc.)
        → never owns business logic or data fetching
 ```
+
+---
+
+## Bottom Sheet Rule
+
+**Never call `showModalBottomSheet` directly.** Always use `showGastrobrainBottomSheet`
+from `lib/utils/dialog_utils.dart`. This helper enforces `isScrollControlled: true`
+and `useSafeArea: true` so nav-bar insets are consistently respected.
