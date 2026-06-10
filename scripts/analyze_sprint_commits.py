@@ -2,8 +2,10 @@
 """
 Sprint Commit Analyzer
 
-Analyzes git commits to measure actual effort per issue for sprint retrospectives.
-Uses weighted days based on lines of code changed when multiple issues share a day.
+Summarizes git commits per issue and active working days for sprint
+retrospectives. Story points come from GitHub Project #3, not from lines
+changed; sprint velocity is pts delivered / active days (active days are
+reported in the Working Days Summary below).
 
 Usage:
     python scripts/analyze_sprint_commits.py --since 2025-12-02 --branch develop
@@ -66,14 +68,14 @@ def get_commits_with_stats(since: str, until: str = None, branch: str = None) ->
     return [c for c in commits if c["date"] and c["msg"]]
 
 
-def extract_issues_weighted(commits: list[dict]) -> tuple[dict, list, dict]:
+def extract_issues(commits: list[dict]) -> tuple[dict, list, dict]:
     """
-    Group commits by issue number with weighted day calculation.
+    Group commits by issue number.
 
     Returns:
         - issue_data: dict with issue stats
         - untagged: list of untagged commits
-        - daily_breakdown: dict showing issues worked per day with weights
+        - daily_totals: dict showing issues worked per day with line counts
     """
     issue_data = defaultdict(lambda: {
         "dates": set(),
@@ -105,20 +107,6 @@ def extract_issues_weighted(commits: list[dict]) -> tuple[dict, list, dict]:
         else:
             untagged.append((date, msg, lines))
 
-    # Calculate weighted days for each issue
-    for issue, data in issue_data.items():
-        weighted_days = 0.0
-        for date in data["dates"]:
-            day_total = daily_totals[date]["total_lines"]
-            issue_lines = daily_totals[date]["issues"][issue]
-            if day_total > 0:
-                # Weight is proportion of lines changed that day
-                weight = issue_lines / day_total
-                weighted_days += weight
-            else:
-                weighted_days += 1.0  # Full day if no line data
-        data["weighted_days"] = round(weighted_days, 2)
-
     return dict(issue_data), untagged, dict(daily_totals)
 
 
@@ -126,17 +114,16 @@ def print_analysis(issue_data: dict, untagged: list, daily_totals: dict):
     """Print analysis in markdown-friendly format."""
 
     print("=" * 90)
-    print("SPRINT COMMIT ANALYSIS (Weighted by Lines Changed)")
+    print("SPRINT COMMIT ANALYSIS")
     print("=" * 90)
 
     # Summary table
     print("\n### Commits by Issue\n")
-    print("| Issue | First | Last | Active Days | Weighted Days | Lines | Commits |")
-    print("|-------|-------|------|-------------|---------------|-------|---------|")
+    print("| Issue | First | Last | Active Days | Lines | Commits |")
+    print("|-------|-------|------|-------------|-------|---------|")
 
     sorted_issues = sorted(issue_data.keys(), key=lambda x: min(issue_data[x]["dates"]))
 
-    total_weighted = 0
     total_lines = 0
     total_commits = 0
 
@@ -146,22 +133,18 @@ def print_analysis(issue_data: dict, untagged: list, daily_totals: dict):
         first = dates[0]
         last = dates[-1]
         active_days = len(dates)
-        weighted_days = data["weighted_days"]
         lines = data["lines"]
         commits = data["commits"]
 
-        total_weighted += weighted_days
         total_lines += lines
         total_commits += commits
 
-        shared_marker = "*" if weighted_days < active_days else ""
-        print(f"| #{issue} | {first} | {last} | {active_days} | {weighted_days}{shared_marker} | {lines} | {commits} |")
+        print(f"| #{issue} | {first} | {last} | {active_days} | {lines} | {commits} |")
 
-    print(f"| **TOTAL** | | | | **{total_weighted:.1f}** | **{total_lines}** | **{total_commits}** |")
-    print("\n*\\* Weighted < Active Days indicates day shared with other issues*")
+    print(f"| **TOTAL** | | | | **{total_lines}** | **{total_commits}** |")
 
-    # Daily breakdown
-    print("\n### Daily Breakdown (Shared Days)\n")
+    # Daily breakdown (days touching multiple issues)
+    print("\n### Daily Breakdown (Multiple Issues)\n")
     print("| Date | Issues | Lines Distribution |")
     print("|------|--------|-------------------|")
 
@@ -188,8 +171,8 @@ def print_analysis(issue_data: dict, untagged: list, daily_totals: dict):
 
     if all_dates:
         print("\n### Working Days Summary\n")
-        print(f"- **Total unique working days:** {len(all_dates)}")
-        print(f"- **Total weighted days:** {total_weighted:.1f}")
+        print(f"- **Active days:** {len(all_dates)}")
+        print(f"- **Total lines changed:** {total_lines}")
         print(f"- **Date range:** {min(all_dates)} to {max(all_dates)}")
 
         start = datetime.strptime(min(all_dates), '%Y-%m-%d')
@@ -213,14 +196,14 @@ def print_analysis(issue_data: dict, untagged: list, daily_totals: dict):
             day_issues.sort(key=lambda x: -x[1])  # Sort by lines desc
             issues_str = ", ".join([f"#{i}({l})" for i, l in day_issues])
             total_day_lines = sum(l for _, l in day_issues)
-            bar = "█" * min(total_day_lines // 100, 20)
+            bar = "#" * min(total_day_lines // 100, 20)
             print(f"{date}: {bar} {issues_str}")
         print("```")
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Analyze sprint commits for retrospective (weighted by lines changed)"
+        description="Analyze sprint commits for retrospective (per-issue activity + active days)"
     )
     parser.add_argument("--since", required=True, help="Start date (YYYY-MM-DD)")
     parser.add_argument("--until", help="End date (YYYY-MM-DD)")
@@ -239,8 +222,8 @@ def main():
     print(f"Found {len(commits)} commits from {args.since}" +
           (f" to {args.until}" if args.until else " to now"))
 
-    # Extract and analyze with weighting
-    issue_data, untagged, daily_totals = extract_issues_weighted(commits)
+    # Extract and analyze
+    issue_data, untagged, daily_totals = extract_issues(commits)
 
     # Filter to specific issues if requested
     if args.issues:
@@ -251,7 +234,7 @@ def main():
     print_analysis(issue_data, untagged, daily_totals)
 
     print("\n" + "=" * 90)
-    print("Copy the tables above into docs/Sprint-Estimation-Diary.md")
+    print("Copy the relevant figures into docs/archive/Sprint-Estimation-Diary.html")
     print("=" * 90)
 
 
