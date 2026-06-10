@@ -438,6 +438,17 @@ If adding NOT NULL column:
 - Must have DEFAULT value
 - Verify: sqlite3 db ".schema table" shows DEFAULT
 
+Consumer Audit (MANDATORY for every schema change):
+1. List every table this migration touches — including tables it creates
+2. Grep each table name (and affected column names) across lib/ and test/
+3. Audit the feature's table cluster, not just the altered table
+   (e.g. touching recipe_tags → also check tags, tag_types consumers)
+4. For each consumer found, state: unaffected / updated / follow-up issue
+5. Pay special attention to bulk-write paths that bypass migrations:
+   backup/restore (database_backup_service), import/export services
+   (sqflite is stringly-typed — drift compiles clean and passes analyze;
+   see #399/#400 where backup referenced columns that never shipped)
+
 Ready to proceed to Checkpoint 3/6? (y/n)
 ```
 
