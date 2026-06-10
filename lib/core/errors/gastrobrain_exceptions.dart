@@ -34,4 +34,13 @@ class NotFoundException extends GastrobrainException {
   String toString() => 'NotFoundException: $message';
 }
 
+/// Thrown when a backup file was created by a newer app version than the
+/// one attempting to restore it
+class BackupVersionException extends GastrobrainException {
+  const BackupVersionException(super.message);
+
+  @override
+  String toString() => 'BackupVersionException: $message';
+}
+
 // Rest of the file remains the same...

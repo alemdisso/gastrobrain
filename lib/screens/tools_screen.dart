@@ -293,6 +293,10 @@ class _ToolsScreenState extends State<ToolsScreen> {
         SnackbarService.showSuccess(context, l10n.restoreSuccess);
         _showRestoreSuccessDialog();
       }
+    } on BackupVersionException {
+      if (mounted) {
+        SnackbarService.showError(context, l10n.restoreBackupNewerVersion);
+      }
     } on GastrobrainException catch (e) {
       if (mounted) {
         SnackbarService.showError(

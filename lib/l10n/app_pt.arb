@@ -2184,6 +2184,10 @@
   "@restoreFailed": {
     "description": "Mensagem de erro quando a restauração falha"
   },
+  "restoreBackupNewerVersion": "Este backup foi criado por uma versão mais recente do aplicativo. Atualize o aplicativo antes de restaurar.",
+  "@restoreBackupNewerVersion": {
+    "description": "Mensagem de erro ao restaurar um backup criado por uma versão mais recente do aplicativo"
+  },
   "backupCancelled": "Backup cancelado",
   "@backupCancelled": {
     "description": "Mensagem quando o usuário cancela o backup"

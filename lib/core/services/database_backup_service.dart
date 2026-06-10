@@ -31,23 +31,46 @@ class DatabaseBackupService {
   /// Returns the path of the written file (app-private directory).
   Future<String> backupDatabase() async {
     try {
-      final backupData = <String, dynamic>{
-        'version': '1.0',
-        'backup_date': DateTime.now().toIso8601String(),
-      };
-
-      backupData['tag_types'] = await _exportTagTypes();
-      backupData['tags'] = await _exportTags();
-      backupData['recipes'] = await _exportRecipes();
-      backupData['ingredients'] = await _exportIngredients();
-      backupData['meal_plans'] = await _exportMealPlans();
-      backupData['meals'] = await _exportMeals();
-      backupData['recommendation_history'] = await _exportRecommendationHistory();
-
+      final backupData = await buildBackupData();
       final jsonString = const JsonEncoder.withIndent('  ').convert(backupData);
       return await _writeAndShareBackup(jsonString);
     } catch (e) {
       throw GastrobrainException('Failed to create backup: ${e.toString()}');
+    }
+  }
+
+  /// Assembles the complete backup data map (no file I/O or sharing).
+  ///
+  /// Exposed separately from [backupDatabase] so the export content can be
+  /// verified in tests without platform channels (path_provider, share_plus).
+  Future<Map<String, dynamic>> buildBackupData() async {
+    final backupData = <String, dynamic>{
+      'version': '1.0',
+      'schema_version': await _getCurrentSchemaVersion(),
+      'backup_date': DateTime.now().toIso8601String(),
+    };
+
+    backupData['tag_types'] = await _exportTagTypes();
+    backupData['tags'] = await _exportTags();
+    backupData['recipes'] = await _exportRecipes();
+    backupData['ingredients'] = await _exportIngredients();
+    backupData['meal_plans'] = await _exportMealPlans();
+    backupData['meals'] = await _exportMeals();
+    backupData['recommendation_history'] = await _exportRecommendationHistory();
+
+    return backupData;
+  }
+
+  /// Returns the max applied migration version, or 0 if it cannot be
+  /// determined (e.g. schema_migrations table absent in test databases).
+  Future<int> _getCurrentSchemaVersion() async {
+    try {
+      final db = await _databaseHelper.database;
+      final result =
+          await db.rawQuery('SELECT MAX(version) AS version FROM schema_migrations');
+      return (result.first['version'] as int?) ?? 0;
+    } catch (_) {
+      return 0;
     }
   }
 
@@ -199,8 +222,8 @@ class DatabaseBackupService {
         .map((r) => {
               'id': r['id'],
               'name': r['name'],
-              'color': r['color'],
-              'icon': r['icon'],
+              'is_hard': r['is_hard'],
+              'is_open': r['is_open'],
             })
         .toList();
   }
@@ -276,6 +299,8 @@ class DatabaseBackupService {
       final jsonString = await file.readAsString();
       final Map<String, dynamic> backupData = json.decode(jsonString);
       await _restoreFromJson(backupData);
+    } on GastrobrainException {
+      rethrow;
     } catch (e) {
       throw GastrobrainException('Failed to restore backup: ${e.toString()}');
     }
@@ -289,6 +314,8 @@ class DatabaseBackupService {
     try {
       final Map<String, dynamic> backupData = json.decode(jsonContent);
       await _restoreFromJson(backupData);
+    } on GastrobrainException {
+      rethrow;
     } catch (e) {
       throw GastrobrainException('Failed to restore backup: ${e.toString()}');
     }
@@ -298,6 +325,19 @@ class DatabaseBackupService {
   Future<void> _restoreFromJson(Map<String, dynamic> backupData) async {
     if (backupData['version'] == null) {
       throw const GastrobrainException('Invalid backup file: missing version');
+    }
+
+    // Refuse backups stamped by a newer app schema before touching any data.
+    // Backups without a stamp predate the stamp and go through the tolerant
+    // path; current version 0 means it cannot be determined (test databases).
+    final backupSchemaVersion = backupData['schema_version'];
+    if (backupSchemaVersion is int) {
+      final currentSchemaVersion = await _getCurrentSchemaVersion();
+      if (currentSchemaVersion > 0 &&
+          backupSchemaVersion > currentSchemaVersion) {
+        throw const BackupVersionException(
+            'Backup was created by a newer app version');
+      }
     }
 
     final db = await _databaseHelper.database;
@@ -320,11 +360,14 @@ class DatabaseBackupService {
       if (backupData['tag_types'] != null) {
         final tagTypes = backupData['tag_types'] as List;
         for (final tt in tagTypes) {
+          // Older backups carry legacy color/icon keys and no flags; those
+          // keys are ignored and the flags fall back to open-vocabulary
+          // defaults matching the seed migrations.
           await txn.insert('tag_types', {
             'id': tt['id'],
             'name': tt['name'],
-            'color': tt['color'],
-            'icon': tt['icon'],
+            'is_hard': tt['is_hard'] ?? 0,
+            'is_open': tt['is_open'] ?? 1,
           });
         }
       }

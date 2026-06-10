@@ -2190,6 +2190,10 @@
   "@restoreFailed": {
     "description": "Error message when restore fails"
   },
+  "restoreBackupNewerVersion": "This backup was created by a newer version of the app. Update the app before restoring.",
+  "@restoreBackupNewerVersion": {
+    "description": "Error message when restoring a backup created by a newer app version"
+  },
   "backupCancelled": "Backup cancelled",
   "@backupCancelled": {
     "description": "Message when user cancels backup"
