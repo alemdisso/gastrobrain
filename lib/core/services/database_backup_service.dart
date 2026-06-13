@@ -4,6 +4,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart' show SharePlus, ShareParams, XFile;
 import '../../database/database_helper.dart';
 import '../errors/gastrobrain_exceptions.dart';
+import '../migration/migration.dart';
+import '../migration/tag_vocabulary_seed.dart';
 
 /// Service for complete database backup and restore using JSON format
 ///
@@ -382,6 +384,11 @@ class DatabaseBackupService {
           });
         }
       }
+
+      // Fill any gaps in the built-in tag vocabulary. INSERT OR IGNORE means
+      // rows just restored from the backup win; this only seeds tag_types/
+      // tags missing from the backup — e.g. pre-tagging backups (#399).
+      await seedBuiltInTagVocabulary(TransactionWrapper(txn));
 
       if (backupData['ingredients'] != null) {
         final ingredients = backupData['ingredients'] as List;

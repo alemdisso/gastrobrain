@@ -129,31 +129,44 @@ void main() {
       expect(rows, isEmpty);
     });
 
+    test(
+        'restores built-in tag vocabulary when backup predates tag_types/tags keys',
+        () async {
+      // Pre-tagging backups have no 'tag_types'/'tags' keys at all (#399).
+      final json = _validBackupJson();
+
+      await backupService.restoreDatabaseFromString(json);
+
+      expect((await db.query('tag_types')).length, equals(5));
+      expect((await db.query('tags')).length, equals(22));
+    });
+
     test('restores tag types with is_hard/is_open flags', () async {
       final json = _validBackupJson(
         tagTypes: [
-          {'id': 'dietary', 'name': 'Dietary', 'is_hard': 1, 'is_open': 0},
-          {'id': 'cuisine', 'name': 'Cuisine', 'is_hard': 0, 'is_open': 1},
+          {'id': 'custom-type', 'name': 'Custom', 'is_hard': 1, 'is_open': 0},
         ],
         tags: [
-          {'id': 'dietary-vegan', 'name': 'vegan', 'type_id': 'dietary'},
+          {'id': 'custom-tag', 'name': 'custom', 'type_id': 'custom-type'},
         ],
       );
 
       await backupService.restoreDatabaseFromString(json);
 
       final typeRows = await db.query('tag_types', orderBy: 'id ASC');
-      expect(typeRows.length, equals(2));
-      expect(typeRows[0]['id'], equals('cuisine'));
-      expect(typeRows[0]['is_hard'], equals(0));
-      expect(typeRows[0]['is_open'], equals(1));
-      expect(typeRows[1]['id'], equals('dietary'));
-      expect(typeRows[1]['is_hard'], equals(1));
-      expect(typeRows[1]['is_open'], equals(0));
+      // 5 built-in tag_types (reseeded post-restore, #399) + 1 custom from backup
+      expect(typeRows.length, equals(6));
+      final customType =
+          typeRows.firstWhere((row) => row['id'] == 'custom-type');
+      expect(customType['is_hard'], equals(1));
+      expect(customType['is_open'], equals(0));
 
       final tagRows = await db.query('tags');
-      expect(tagRows.length, equals(1));
-      expect(tagRows.first['type_id'], equals('dietary'));
+      // 22 built-in tags (reseeded post-restore, #399) + 1 custom from backup
+      expect(tagRows.length, equals(23));
+      final customTag =
+          tagRows.firstWhere((row) => row['id'] == 'custom-tag');
+      expect(customTag['type_id'], equals('custom-type'));
     });
 
     test('restores legacy tag types (color/icon keys, no flags) with defaults',
@@ -161,17 +174,24 @@ void main() {
       // Backups written before the schema fix carry color/icon and no flags.
       final json = _validBackupJson(
         tagTypes: [
-          {'id': 'cuisine', 'name': 'Cuisine', 'color': null, 'icon': null},
+          {
+            'id': 'custom-legacy',
+            'name': 'Legacy',
+            'color': null,
+            'icon': null
+          },
         ],
       );
 
       await backupService.restoreDatabaseFromString(json);
 
-      final rows = await db.query('tag_types');
-      expect(rows.length, equals(1));
-      expect(rows.first['id'], equals('cuisine'));
-      expect(rows.first['is_hard'], equals(0));
-      expect(rows.first['is_open'], equals(1));
+      final rows = await db.query('tag_types', orderBy: 'id ASC');
+      // 5 built-in tag_types (reseeded post-restore, #399) + 1 legacy custom from backup
+      expect(rows.length, equals(6));
+      final legacyType =
+          rows.firstWhere((row) => row['id'] == 'custom-legacy');
+      expect(legacyType['is_hard'], equals(0));
+      expect(legacyType['is_open'], equals(1));
     });
 
     test('refuses backup stamped with newer schema version, data untouched',
