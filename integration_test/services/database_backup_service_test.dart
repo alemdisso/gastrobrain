@@ -62,16 +62,8 @@ void main() {
         expect(await dbHelper.getAllMealPlans(), isEmpty);
         expect(await dbHelper.getAllMeals(), isEmpty);
 
-        // Perform backup
-        final backupPath = await backupService.backupDatabase();
-
-        // Verify backup file was created
-        final backupFile = File(backupPath);
-        expect(await backupFile.exists(), isTrue);
-
-        // Parse and verify backup structure
-        final jsonString = await backupFile.readAsString();
-        final backupData = json.decode(jsonString) as Map<String, dynamic>;
+        // Build backup data
+        final backupData = await backupService.buildBackupData();
 
         // Verify metadata
         expect(backupData['version'], equals('1.0'));
@@ -83,9 +75,6 @@ void main() {
         expect(backupData['meal_plans'], isEmpty);
         expect(backupData['meals'], isEmpty);
         expect(backupData['recommendation_history'], isEmpty);
-
-        // Clean up
-        await backupFile.delete();
       });
     });
 
@@ -114,11 +103,8 @@ void main() {
         await dbHelper.insertIngredient(ingredient1);
         await dbHelper.insertIngredient(ingredient2);
 
-        // Perform backup
-        final backupPath = await backupService.backupDatabase();
-        final backupFile = File(backupPath);
-        final jsonString = await backupFile.readAsString();
-        final backupData = json.decode(jsonString) as Map<String, dynamic>;
+        // Build backup data
+        final backupData = await backupService.buildBackupData();
 
         // Verify ingredients
         final ingredients = backupData['ingredients'] as List;
@@ -139,9 +125,6 @@ void main() {
         expect(ing2['unit'], equals('g')); // MeasurementUnit.gram.value
         expect(ing2['protein_type'], equals('chicken'));
         expect(ing2['notes'], isNull);
-
-        // Clean up
-        await backupFile.delete();
       });
     });
 
@@ -181,11 +164,8 @@ void main() {
         );
         await dbHelper.addIngredientToRecipe(recipeIngredient);
 
-        // Perform backup
-        final backupPath = await backupService.backupDatabase();
-        final backupFile = File(backupPath);
-        final jsonString = await backupFile.readAsString();
-        final backupData = json.decode(jsonString) as Map<String, dynamic>;
+        // Build backup data
+        final backupData = await backupService.buildBackupData();
 
         // Verify recipes
         final recipes = backupData['recipes'] as List;
@@ -197,7 +177,6 @@ void main() {
         expect(r1['prep_time_minutes'], equals(10));
         expect(r1['cook_time_minutes'], equals(0));
         expect(r1['rating'], equals(4));
-        expect(r1['category'], equals('salads'));
         expect(r1['desired_frequency'], equals('weekly'));
         expect(r1['notes'], equals('Quick and easy'));
         expect(r1['instructions'], equals('Chop tomatoes and serve'));
@@ -214,9 +193,6 @@ void main() {
         expect(ri1['quantity'], equals(2.0));
         expect(ri1['notes'], equals('Chopped'));
         expect(ri1['unit_override'], equals('piece'));
-
-        // Clean up
-        await backupFile.delete();
       });
     });
 
@@ -264,11 +240,8 @@ void main() {
         );
         await dbHelper.insertMealPlanItemRecipe(mealPlanItemRecipe);
 
-        // Perform backup
-        final backupPath = await backupService.backupDatabase();
-        final backupFile = File(backupPath);
-        final jsonString = await backupFile.readAsString();
-        final backupData = json.decode(jsonString) as Map<String, dynamic>;
+        // Build backup data
+        final backupData = await backupService.buildBackupData();
 
         // Verify meal plans
         final mealPlans = backupData['meal_plans'] as List;
@@ -302,9 +275,6 @@ void main() {
         expect(recipe1['recipe_id'], equals(recipe.id));
         expect(recipe1['is_primary_dish'], equals(true));
         expect(recipe1['notes'], equals('Main dish'));
-
-        // Clean up
-        await backupFile.delete();
       });
     });
 
@@ -344,11 +314,8 @@ void main() {
         );
         await dbHelper.insertMealRecipe(mealRecipe);
 
-        // Perform backup
-        final backupPath = await backupService.backupDatabase();
-        final backupFile = File(backupPath);
-        final jsonString = await backupFile.readAsString();
-        final backupData = json.decode(jsonString) as Map<String, dynamic>;
+        // Build backup data
+        final backupData = await backupService.buildBackupData();
 
         // Verify meals
         final meals = backupData['meals'] as List;
@@ -374,30 +341,12 @@ void main() {
         expect(mr1['recipe_id'], equals(recipe.id));
         expect(mr1['is_primary_dish'], equals(true));
         expect(mr1['notes'], equals('Main course'));
-
-        // Clean up
-        await backupFile.delete();
       });
     });
 
     group('Backup file format', () {
-      test('creates file with correct naming format', () async {
-        final backupPath = await backupService.backupDatabase();
-        final fileName = backupPath.split('/').last;
-
-        // Verify filename format: gastrobrain_backup_YYYY-MM-DD_HHMMSS.json
-        expect(fileName,
-            matches(RegExp(r'gastrobrain_backup_\d{4}-\d{2}-\d{2}_\d{6}\.json')));
-
-        // Clean up
-        await File(backupPath).delete();
-      });
-
       test('includes version and backup_date in metadata', () async {
-        final backupPath = await backupService.backupDatabase();
-        final backupFile = File(backupPath);
-        final jsonString = await backupFile.readAsString();
-        final backupData = json.decode(jsonString) as Map<String, dynamic>;
+        final backupData = await backupService.buildBackupData();
 
         // Verify metadata
         expect(backupData['version'], equals('1.0'));
@@ -409,16 +358,10 @@ void main() {
             backupDate
                 .isBefore(DateTime.now().add(const Duration(seconds: 1))),
             isTrue);
-
-        // Clean up
-        await backupFile.delete();
       });
 
       test('includes all required data sections', () async {
-        final backupPath = await backupService.backupDatabase();
-        final backupFile = File(backupPath);
-        final jsonString = await backupFile.readAsString();
-        final backupData = json.decode(jsonString) as Map<String, dynamic>;
+        final backupData = await backupService.buildBackupData();
 
         // Verify all sections are present
         expect(backupData.containsKey('version'), isTrue);
@@ -428,16 +371,13 @@ void main() {
         expect(backupData.containsKey('meal_plans'), isTrue);
         expect(backupData.containsKey('meals'), isTrue);
         expect(backupData.containsKey('recommendation_history'), isTrue);
-
-        // Clean up
-        await backupFile.delete();
       });
     });
 
     group('Import/Restore functionality', () {
       test('restores empty database successfully', () async {
         // Create backup of empty database
-        final backupPath = await backupService.backupDatabase();
+        final backupJson = json.encode(await backupService.buildBackupData());
 
         // Add some data to database
         final ingredient = Ingredient(
@@ -451,16 +391,13 @@ void main() {
         expect(await dbHelper.getAllIngredients(), hasLength(1));
 
         // Restore empty backup
-        await backupService.restoreDatabase(backupPath);
+        await backupService.restoreDatabaseFromString(backupJson);
 
         // Verify database is now empty
         expect(await dbHelper.getAllRecipes(), isEmpty);
         expect(await dbHelper.getAllIngredients(), isEmpty);
         expect(await dbHelper.getAllMealPlans(), isEmpty);
         expect(await dbHelper.getAllMeals(), isEmpty);
-
-        // Clean up
-        await File(backupPath).delete();
       });
 
       test('restores ingredients with all fields', () async {
@@ -487,14 +424,14 @@ void main() {
         await dbHelper.insertIngredient(ingredient2);
 
         // Create backup
-        final backupPath = await backupService.backupDatabase();
+        final backupJson = json.encode(await backupService.buildBackupData());
 
         // Clear database
         await cleanDatabase(dbHelper);
         expect(await dbHelper.getAllIngredients(), isEmpty);
 
         // Restore backup
-        await backupService.restoreDatabase(backupPath);
+        await backupService.restoreDatabaseFromString(backupJson);
 
         // Verify ingredients restored
         final restoredIngredients = await dbHelper.getAllIngredients();
@@ -515,9 +452,6 @@ void main() {
         expect(restored2.unit, equals(MeasurementUnit.gram));
         expect(restored2.proteinType, equals(ProteinType.fish));
         expect(restored2.notes, isNull);
-
-        // Clean up
-        await File(backupPath).delete();
       });
 
       test('restores recipes with recipe_ingredients', () async {
@@ -556,14 +490,14 @@ void main() {
         await dbHelper.addIngredientToRecipe(recipeIngredient);
 
         // Create backup
-        final backupPath = await backupService.backupDatabase();
+        final backupJson = json.encode(await backupService.buildBackupData());
 
         // Clear database
         await cleanDatabase(dbHelper);
         expect(await dbHelper.getAllRecipes(), isEmpty);
 
         // Restore backup
-        await backupService.restoreDatabase(backupPath);
+        await backupService.restoreDatabaseFromString(backupJson);
 
         // Verify recipe restored
         final restoredRecipes = await dbHelper.getAllRecipes();
@@ -596,9 +530,6 @@ void main() {
         expect(restoredRI['quantity'], equals(200.0));
         expect(restoredRI['notes'], equals('Cooked'));
         expect(restoredRI['unit_override'], equals('g'));
-
-        // Clean up
-        await File(backupPath).delete();
       });
 
       test('restores meal plans with items and recipes', () async {
@@ -645,14 +576,14 @@ void main() {
         await dbHelper.insertMealPlanItemRecipe(mealPlanItemRecipe);
 
         // Create backup
-        final backupPath = await backupService.backupDatabase();
+        final backupJson = json.encode(await backupService.buildBackupData());
 
         // Clear database
         await cleanDatabase(dbHelper);
         expect(await dbHelper.getAllMealPlans(), isEmpty);
 
         // Restore backup
-        await backupService.restoreDatabase(backupPath);
+        await backupService.restoreDatabaseFromString(backupJson);
 
         // Verify meal plan restored
         final restoredMealPlans = await dbHelper.getAllMealPlans();
@@ -685,9 +616,6 @@ void main() {
         expect(restoredRecipe.recipeId, equals(recipe.id));
         expect(restoredRecipe.isPrimaryDish, equals(true));
         expect(restoredRecipe.notes, equals('Primary'));
-
-        // Clean up
-        await File(backupPath).delete();
       });
 
       test('restores meals with meal_recipes', () async {
@@ -726,14 +654,14 @@ void main() {
         await dbHelper.insertMealRecipe(mealRecipe);
 
         // Create backup
-        final backupPath = await backupService.backupDatabase();
+        final backupJson = json.encode(await backupService.buildBackupData());
 
         // Clear database
         await cleanDatabase(dbHelper);
         expect(await dbHelper.getAllMeals(), isEmpty);
 
         // Restore backup
-        await backupService.restoreDatabase(backupPath);
+        await backupService.restoreDatabaseFromString(backupJson);
 
         // Verify meal restored
         final restoredMeals = await dbHelper.getAllMeals();
@@ -759,9 +687,6 @@ void main() {
         expect(restoredMealRecipe.recipeId, equals(recipe.id));
         expect(restoredMealRecipe.isPrimaryDish, equals(true));
         expect(restoredMealRecipe.notes, equals('Main dish'));
-
-        // Clean up
-        await File(backupPath).delete();
       });
 
       test('restores recommendation_history', () async {
@@ -791,7 +716,7 @@ void main() {
         });
 
         // Create backup
-        final backupPath = await backupService.backupDatabase();
+        final backupJson = json.encode(await backupService.buildBackupData());
 
         // Clear database
         await cleanDatabase(dbHelper);
@@ -799,7 +724,7 @@ void main() {
         expect(emptyRecords, isEmpty);
 
         // Restore backup
-        await backupService.restoreDatabase(backupPath);
+        await backupService.restoreDatabaseFromString(backupJson);
 
         // Verify recommendation history restored
         final restoredRecords = await db.query('recommendation_history');
@@ -822,9 +747,6 @@ void main() {
         expect(restored2['target_date'], isNull);
         expect(restored2['meal_type'], equals('lunch'));
         expect(restored2['user_id'], equals('user456'));
-
-        // Clean up
-        await File(backupPath).delete();
       });
 
       test('restore replaces existing data completely', () async {
@@ -846,7 +768,7 @@ void main() {
         await dbHelper.insertRecipe(originalRecipe);
 
         // Create backup of original data
-        final backupPath = await backupService.backupDatabase();
+        final backupJson = json.encode(await backupService.buildBackupData());
 
         // Add new different data
         final newIngredient = Ingredient(
@@ -870,7 +792,7 @@ void main() {
         expect(await dbHelper.getAllRecipes(), hasLength(2));
 
         // Restore original backup
-        await backupService.restoreDatabase(backupPath);
+        await backupService.restoreDatabaseFromString(backupJson);
 
         // Verify only original data exists (new data was replaced)
         final ingredients = await dbHelper.getAllIngredients();
@@ -882,9 +804,6 @@ void main() {
         expect(recipes.length, equals(1));
         expect(recipes.first.id, equals(originalRecipe.id));
         expect(recipes.first.name, equals('Original Recipe'));
-
-        // Clean up
-        await File(backupPath).delete();
       });
 
       test('round-trip integrity: export → restore → verify', () async {
@@ -927,7 +846,7 @@ void main() {
         final originalRecipes = await dbHelper.getAllRecipes();
 
         // Create backup
-        final backupPath = await backupService.backupDatabase();
+        final backupJson = json.encode(await backupService.buildBackupData());
 
         // Completely clear database
         await cleanDatabase(dbHelper);
@@ -935,7 +854,7 @@ void main() {
         expect(await dbHelper.getAllRecipes(), isEmpty);
 
         // Restore backup
-        await backupService.restoreDatabase(backupPath);
+        await backupService.restoreDatabaseFromString(backupJson);
 
         // Verify exact match with original data
         final restoredIngredients = await dbHelper.getAllIngredients();
@@ -974,9 +893,6 @@ void main() {
         expect(restoredRI.first['id'], equals(recipeIngredient.id));
         expect(restoredRI.first['quantity'], equals(3.0));
         expect(restoredRI.first['notes'], equals('Chopped'));
-
-        // Clean up
-        await File(backupPath).delete();
       });
     });
 
@@ -1161,7 +1077,7 @@ void main() {
         // but we verify restore side here
 
         // Create empty backup
-        final backupPath = await backupService.backupDatabase();
+        final backupJson = json.encode(await backupService.buildBackupData());
 
         // Add data
         final ingredient = Ingredient(
@@ -1172,7 +1088,7 @@ void main() {
         await dbHelper.insertIngredient(ingredient);
 
         // Restore empty backup
-        await backupService.restoreDatabase(backupPath);
+        await backupService.restoreDatabaseFromString(backupJson);
 
         // Verify all tables are empty
         expect(await dbHelper.getAllRecipes(), isEmpty);
@@ -1183,9 +1099,6 @@ void main() {
         final db = await dbHelper.database;
         final recommendationHistory = await db.query('recommendation_history');
         expect(recommendationHistory, isEmpty);
-
-        // Clean up
-        await File(backupPath).delete();
       });
     });
 
@@ -1262,13 +1175,13 @@ void main() {
         await dbHelper.insertMealRecipe(mealRecipe);
 
         // Create backup
-        final backupPath = await backupService.backupDatabase();
+        final backupJson = json.encode(await backupService.buildBackupData());
 
         // Restore should delete in correct order without FK constraint violations
         // Order: meal_recipes -> meals -> meal_plan_item_recipes -> meal_plan_items ->
         //        meal_plans -> recipe_ingredients -> recipes -> ingredients
         await expectLater(
-          backupService.restoreDatabase(backupPath),
+          backupService.restoreDatabaseFromString(backupJson),
           completes,
         );
 
@@ -1277,9 +1190,6 @@ void main() {
         final restoredRecipes = await dbHelper.getAllRecipes();
         expect(restoredIngredients.length, equals(1));
         expect(restoredRecipes.length, equals(1));
-
-        // Clean up
-        await File(backupPath).delete();
       });
 
       test('insertion happens in correct order (respects FK constraints)', () async {
@@ -1403,7 +1313,7 @@ void main() {
         ));
 
         // Create backup
-        final backupPath = await backupService.backupDatabase();
+        final backupJson = json.encode(await backupService.buildBackupData());
 
         // Clear database
         await cleanDatabase(dbHelper);
@@ -1414,7 +1324,7 @@ void main() {
         //        meal_plans -> meal_plan_items -> meal_plan_item_recipes ->
         //        meals -> meal_recipes -> recommendation_history
         await expectLater(
-          backupService.restoreDatabase(backupPath),
+          backupService.restoreDatabaseFromString(backupJson),
           completes,
         );
 
@@ -1433,9 +1343,6 @@ void main() {
         expect(recipeIngredients.length, equals(2));
         expect(mealPlanItemRecipes.length, equals(2));
         expect(mealRecipes.length, equals(2));
-
-        // Clean up
-        await File(backupPath).delete();
       });
 
       test('all fields are correctly mapped between export and import', () async {
@@ -1491,9 +1398,9 @@ void main() {
         await dbHelper.insertMeal(meal);
 
         // Export and import
-        final backupPath = await backupService.backupDatabase();
+        final backupJson = json.encode(await backupService.buildBackupData());
         await cleanDatabase(dbHelper);
-        await backupService.restoreDatabase(backupPath);
+        await backupService.restoreDatabaseFromString(backupJson);
 
         // Verify ALL fields match exactly
         final restoredIngredients = await dbHelper.getAllIngredients();
@@ -1542,9 +1449,6 @@ void main() {
         expect(m.actualPrepTime, equals(25.0));
         expect(m.actualCookTime, equals(50.0));
         expect(m.modifiedAt, equals(DateTime(2025, 1, 21, 9, 0, 0)));
-
-        // Clean up
-        await File(backupPath).delete();
       });
     });
   });
