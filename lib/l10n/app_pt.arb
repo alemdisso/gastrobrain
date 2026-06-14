@@ -1969,6 +1969,14 @@
   "@buttonDismiss": {
     "description": "Botão para dispensar um erro ou mensagem"
   },
+  "tagVocabularyIncompleteWarning": "Algumas tags padrão estão faltando. Toque em Reparar para restaurá-las.",
+  "@tagVocabularyIncompleteWarning": {
+    "description": "Exibido ao iniciar quando o vocabulário padrão de tags (cozinha, ocasião, dieta, papel da refeição, tipo de alimento) está incompleto, oferecendo uma correção com um toque"
+  },
+  "buttonRepair": "Reparar",
+  "@buttonRepair": {
+    "description": "Rótulo do botão para restaurar o vocabulário padrão de tags ausente"
+  },
   "labelMigrationResults": "Resultados da Migração",
   "@labelMigrationResults": {
     "description": "Rótulo para seção de resultados da migração"

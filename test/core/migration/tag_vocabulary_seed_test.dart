@@ -34,15 +34,15 @@ void main() {
 
       await seedBuiltInTagVocabulary(wrapper);
 
-      expect((await db.query('tag_types')).length, equals(5));
-      expect((await db.query('tags')).length, equals(22));
+      expect((await db.query('tag_types')).length, equals(builtInTagTypes.length));
+      expect((await db.query('tags')).length, equals(builtInTags.length));
     });
 
     test('is a no-op on an already fully-seeded database', () async {
       final beforeTypes = await db.query('tag_types', orderBy: 'id');
       final beforeTags = await db.query('tags', orderBy: 'id');
-      expect(beforeTypes.length, equals(5));
-      expect(beforeTags.length, equals(22));
+      expect(beforeTypes.length, equals(builtInTagTypes.length));
+      expect(beforeTags.length, equals(builtInTags.length));
 
       await seedBuiltInTagVocabulary(wrapper);
 
@@ -61,8 +61,8 @@ void main() {
 
       await seedBuiltInTagVocabulary(wrapper);
 
-      expect((await db.query('tag_types')).length, equals(5));
-      expect((await db.query('tags')).length, equals(22));
+      expect((await db.query('tag_types')).length, equals(builtInTagTypes.length));
+      expect((await db.query('tags')).length, equals(builtInTags.length));
       expect(
         await db.query('tags', where: "type_id = 'dietary'", orderBy: 'id'),
         equals(dietaryBefore),
