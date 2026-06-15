@@ -254,8 +254,11 @@ class _MealRecordingDialogState extends State<MealRecordingDialog> {
         if (text.isNotEmpty) recipeNotes[entry.key] = text;
       }
 
-      // Return the meal data to the caller
-      Navigator.of(context).pop({
+      // Return the meal data to the caller. Explicitly typed as
+      // Map<String, dynamic> so CookMealScreen can later add a nullable
+      // 'mealType' entry (the inferred Map<String, Object> from this
+      // literal would otherwise reject a null value at runtime).
+      Navigator.of(context).pop(<String, dynamic>{
         'cookedAt': _cookedAt,
         'servings': _servings,
         'notes': _notesController.text,
