@@ -28,3 +28,5 @@ Auto-flagged by the Code Quality Watchdog. Review during Sprint Planning as part
 - [ ] 🔴 `lib/widgets/weekly_calendar_widget.dart` — file length 669 lines (threshold: 250 for widgets) — flagged during: issue creation analysis — 2026-05-06
 
 - [ ] 🔴 `lib/widgets/weekly_summary_widget.dart` — file length 399 lines (threshold: 250 for widgets) — flagged during: #376 temporal meal status implementation — 2026-05-18
+- [ ] 🔴 `lib/widgets/edit_meal_recording_dialog.dart` — file length 506 lines (threshold: 250 for widgets) — flagged during: #403 roadmap Phase 1 analysis — 2026-06-15
+- [ ] 🔴 `lib/widgets/meal_recording_dialog.dart` — file length 542 lines (threshold: 250 for widgets) — flagged during: #403 roadmap Phase 1 analysis — 2026-06-15
