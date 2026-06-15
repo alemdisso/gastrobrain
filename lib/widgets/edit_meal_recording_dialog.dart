@@ -325,6 +325,7 @@ class _EditMealRecordingDialogState extends State<EditMealRecordingDialog> {
       children: [
         Text(parts.join(' · ')),
         TextButton(
+          key: const Key('edit_meal_recording_expand_times_button'),
           onPressed: () => setState(() => _timesExpanded = true),
           child: Text(l10n.editTimesButton),
         ),

@@ -291,6 +291,10 @@ void main() {
         print('\n=== THIRD EDIT: Change prep time and servings ===');
         await E2ETestHelpers.openMealEditDialog(tester);
         await E2ETestHelpers.fillMealEditDialog(tester, servings: '5');
+        // Prep/cook time fields are hidden behind an expand toggle (#398)
+        await E2ETestHelpers.expandMealTimesSection(tester,
+            expandButtonKey:
+                const Key('edit_meal_recording_expand_times_button'));
         final prepTimeField =
             find.byKey(const Key('edit_meal_recording_prep_time_field'));
         await tester.enterText(prepTimeField, '25');

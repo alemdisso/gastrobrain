@@ -394,6 +394,29 @@ class E2ETestHelpers {
   // MEAL RECORDING HELPERS
   // ============================================================================
 
+  /// Expand the collapsible prep/cook time fields section in a meal
+  /// recording/edit dialog, if it's currently collapsed (#398).
+  ///
+  /// No-op if the section is already expanded (expand button not found).
+  ///
+  /// Usage:
+  /// ```dart
+  /// await E2ETestHelpers.expandMealTimesSection(
+  ///   tester,
+  ///   expandButtonKey: const Key('edit_meal_recording_expand_times_button'),
+  /// );
+  /// ```
+  static Future<void> expandMealTimesSection(
+    WidgetTester tester, {
+    required Key expandButtonKey,
+  }) async {
+    final expandButton = find.byKey(expandButtonKey);
+    if (expandButton.evaluate().isNotEmpty) {
+      await tester.tap(expandButton);
+      await tester.pumpAndSettle();
+    }
+  }
+
   /// Open the meal recording dialog from CookMealScreen
   ///
   /// Taps the "Registrar Detalhes da Refeição" button to open the dialog.
@@ -438,6 +461,11 @@ class E2ETestHelpers {
           find.byKey(const Key('meal_recording_servings_stepper'));
       expect(stepperFinder, findsOneWidget);
       await _adjustServingsViaStepper(tester, int.parse(servings));
+    }
+
+    if (prepTime != null || cookTime != null) {
+      await expandMealTimesSection(tester,
+          expandButtonKey: const Key('meal_recording_expand_times_button'));
     }
 
     if (prepTime != null) {
@@ -965,6 +993,12 @@ class E2ETestHelpers {
       expect(stepperFinder, findsOneWidget,
           reason: 'Servings stepper should exist in edit dialog');
       await _adjustServingsViaStepper(tester, int.parse(servings));
+    }
+
+    if (prepTime != null || cookTime != null) {
+      await expandMealTimesSection(tester,
+          expandButtonKey:
+              const Key('edit_meal_recording_expand_times_button'));
     }
 
     if (prepTime != null) {

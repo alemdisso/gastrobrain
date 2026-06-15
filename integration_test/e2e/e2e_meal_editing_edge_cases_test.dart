@@ -98,6 +98,10 @@ void main() {
 
         // Test Case 1: Enter invalid prep time (non-numeric)
         print('\n=== TEST CASE 1: Invalid prep time format ===');
+        // Prep/cook time fields are hidden behind an expand toggle (#398)
+        await E2ETestHelpers.expandMealTimesSection(tester,
+            expandButtonKey:
+                const Key('edit_meal_recording_expand_times_button'));
         final prepTimeField =
             find.byKey(const Key('edit_meal_recording_prep_time_field'));
         await tester.enterText(prepTimeField, 'abc');
@@ -245,6 +249,10 @@ void main() {
         // We test required-field-style validation via the prep time text field,
         // which rejects non-numeric input.
         print('\n=== ENTERING INVALID FIELD VALUE ===');
+        // Prep/cook time fields are hidden behind an expand toggle (#398)
+        await E2ETestHelpers.expandMealTimesSection(tester,
+            expandButtonKey:
+                const Key('edit_meal_recording_expand_times_button'));
         final prepTimeField =
             find.byKey(const Key('edit_meal_recording_prep_time_field'));
         await tester.enterText(prepTimeField, 'invalid');

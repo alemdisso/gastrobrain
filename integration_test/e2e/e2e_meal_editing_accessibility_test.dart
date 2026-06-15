@@ -135,6 +135,11 @@ void main() {
             reason: 'Servings field should have a visible label');
         print('✓ Servings field has accessible label');
 
+        // Prep/cook time fields are hidden behind an expand toggle (#398)
+        await E2ETestHelpers.expandMealTimesSection(tester,
+            expandButtonKey:
+                const Key('edit_meal_recording_expand_times_button'));
+
         // Check prep time field
         final prepTimeField =
             find.byKey(const Key('edit_meal_recording_prep_time_field'));
