@@ -229,14 +229,13 @@ void main() {
           print('✓ Verified in database');
           print('✓ Verified in meal history UI');
         } else {
-          print('⚠ Meal not found in database');
-          print('This might indicate:');
-          print('  1. Form validation failed');
-          print('  2. Save button was not clicked successfully');
-          print('  3. There was an error during save');
-
           final meals = await dbHelper.getMealsForRecipe(createdRecipeId);
-          print('Meals for recipe: ${meals.length}');
+          fail('Meal not found in database after save. '
+              'This might indicate: '
+              '1. Form validation failed, '
+              '2. Save button was not clicked successfully, '
+              '3. There was an error during save. '
+              'Meals for recipe: ${meals.length}');
         }
       } finally {
         // ======================================================================
@@ -368,8 +367,21 @@ void main() {
         // accessible and can be tapped. The actual date picking requires
         // finding and tapping specific date widgets in the calendar.
 
-        // Close the date picker by tapping outside or cancel
-        final cancelButton = find.text('CANCEL');
+        // Close the date picker via its Cancel button. The label is
+        // localized (e.g. "CANCELAR" in pt-BR), so look it up from
+        // MaterialLocalizations instead of hardcoding "CANCEL" (#406).
+        // Use a Scaffold's context (a descendant of MaterialApp's
+        // Localizations widget) rather than MaterialApp's own element.
+        final cancelLabel = MaterialLocalizations.of(
+                tester.element(find.byType(Scaffold).first))
+            .cancelButtonLabel;
+        // Scope to the DatePickerDialog itself: MealRecordingDialog has its
+        // own Cancel button with the same localized label ("Cancelar"),
+        // which would otherwise make this finder ambiguous.
+        final cancelButton = find.descendant(
+          of: find.byType(DatePickerDialog),
+          matching: find.text(cancelLabel),
+        );
         if (cancelButton.evaluate().isNotEmpty) {
           await tester.tap(cancelButton);
           await tester.pumpAndSettle();
@@ -430,6 +442,10 @@ void main() {
           print('✓ Cooked date: ${meal.cookedAt}');
 
           print('\n=== 🎉 PAST DATE TEST PASSED! 🎉 ===');
+        } else {
+          final meals = await dbHelper.getMealsForRecipe(createdRecipeId);
+          fail('Meal not found in database after save. '
+              'Meals for recipe: ${meals.length}');
         }
       } finally {
         // ======================================================================
