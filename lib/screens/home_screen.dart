@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/repositories/tag_repository.dart';
 import '../database/database_helper.dart';
 import '../l10n/app_localizations.dart';
 import 'dashboard_screen.dart';
@@ -8,7 +9,10 @@ import 'content_screen.dart';
 import 'tools_screen.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final DatabaseHelper? databaseHelper;
+  final TagRepository? tagRepository;
+
+  const HomePage({super.key, this.databaseHelper, this.tagRepository});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -26,9 +30,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    final dbHelper = widget.databaseHelper ?? DatabaseHelper();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final dbHelper = DatabaseHelper();
-
       if (await dbHelper.hasFatalMigrationError()) {
         if (!mounted) return;
         Navigator.of(context).pushReplacement(
@@ -45,6 +48,26 @@ class _HomePageState extends State<HomePage> {
           action: SnackBarAction(
             label: l10n.buttonDismiss,
             onPressed: dbHelper.acknowledgeMigrationFailure,
+          ),
+          duration: const Duration(seconds: 10),
+        ));
+      }
+
+      final tagRepository = widget.tagRepository ?? TagRepository(dbHelper);
+      if (await tagRepository.hasIncompleteBuiltInVocabulary()) {
+        if (!mounted) return;
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(l10n.tagVocabularyIncompleteWarning),
+          action: SnackBarAction(
+            label: l10n.buttonRepair,
+            onPressed: () async {
+              try {
+                await tagRepository.repairBuiltInVocabulary();
+              } catch (_) {
+                // Best-effort; user can retry by restarting the app.
+              }
+            },
           ),
           duration: const Duration(seconds: 10),
         ));

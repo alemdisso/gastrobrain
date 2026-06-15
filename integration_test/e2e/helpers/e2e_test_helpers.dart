@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:gastrobrain/main.dart';
 import 'package:gastrobrain/database/database_helper.dart';
 import 'package:gastrobrain/core/providers/recipe_provider.dart';
+import 'package:gastrobrain/l10n/app_localizations.dart';
 
 /// E2E Test Helper Methods
 ///
@@ -394,6 +395,29 @@ class E2ETestHelpers {
   // MEAL RECORDING HELPERS
   // ============================================================================
 
+  /// Expand the collapsible prep/cook time fields section in a meal
+  /// recording/edit dialog, if it's currently collapsed (#398).
+  ///
+  /// No-op if the section is already expanded (expand button not found).
+  ///
+  /// Usage:
+  /// ```dart
+  /// await E2ETestHelpers.expandMealTimesSection(
+  ///   tester,
+  ///   expandButtonKey: const Key('edit_meal_recording_expand_times_button'),
+  /// );
+  /// ```
+  static Future<void> expandMealTimesSection(
+    WidgetTester tester, {
+    required Key expandButtonKey,
+  }) async {
+    final expandButton = find.byKey(expandButtonKey);
+    if (expandButton.evaluate().isNotEmpty) {
+      await tester.tap(expandButton);
+      await tester.pumpAndSettle();
+    }
+  }
+
   /// Open the meal recording dialog from CookMealScreen
   ///
   /// Taps the "Registrar Detalhes da Refeição" button to open the dialog.
@@ -438,6 +462,11 @@ class E2ETestHelpers {
           find.byKey(const Key('meal_recording_servings_stepper'));
       expect(stepperFinder, findsOneWidget);
       await _adjustServingsViaStepper(tester, int.parse(servings));
+    }
+
+    if (prepTime != null || cookTime != null) {
+      await expandMealTimesSection(tester,
+          expandButtonKey: const Key('meal_recording_expand_times_button'));
     }
 
     if (prepTime != null) {
@@ -501,6 +530,38 @@ class E2ETestHelpers {
     // when modal overlays are present but the button is correctly found
     await tester.tap(saveButton, warnIfMissed: false);
     await tester.pumpAndSettle(standardSettleDuration);
+
+    // MealRecordingDialog's Save button only returns the meal data to
+    // CookMealScreen, which then shows a meal-type selection dialog before
+    // actually writing to the database (#407).
+    await dismissMealTypeDialogIfPresent(tester);
+  }
+
+  /// Dismiss the meal-type selection dialog if it is currently showing.
+  ///
+  /// After saving a meal recording dialog, CookMealScreen shows a follow-up
+  /// "Esta refeição foi para quando?" dialog (MealTypeDialog) before the
+  /// meal is actually persisted. Taps the localized "Skip" button so the
+  /// meal is recorded without selecting a meal type.
+  ///
+  /// No-op if the dialog isn't showing.
+  ///
+  /// Usage:
+  /// ```dart
+  /// await E2ETestHelpers.dismissMealTypeDialogIfPresent(tester);
+  /// ```
+  static Future<void> dismissMealTypeDialogIfPresent(
+      WidgetTester tester) async {
+    // Use a Scaffold's context (a descendant of MaterialApp's Localizations
+    // widget) rather than MaterialApp's own element, which sits above
+    // Localizations and can't resolve AppLocalizations.of().
+    final context = tester.element(find.byType(Scaffold).first);
+    final skipLabel = AppLocalizations.of(context)!.mealTypeSkip;
+    final skipButton = find.text(skipLabel);
+    if (skipButton.evaluate().isNotEmpty) {
+      await tester.tap(skipButton);
+      await tester.pumpAndSettle(standardSettleDuration);
+    }
   }
 
   /// Verify a meal exists in the database for a specific recipe
@@ -967,6 +1028,12 @@ class E2ETestHelpers {
       await _adjustServingsViaStepper(tester, int.parse(servings));
     }
 
+    if (prepTime != null || cookTime != null) {
+      await expandMealTimesSection(tester,
+          expandButtonKey:
+              const Key('edit_meal_recording_expand_times_button'));
+    }
+
     if (prepTime != null) {
       final prepTimeField =
           find.byKey(const Key('edit_meal_recording_prep_time_field'));
@@ -1162,7 +1229,17 @@ class E2ETestHelpers {
     WidgetTester tester,
     int index,
   ) async {
-    final deleteButtons = find.byIcon(Icons.delete_outline);
+    // Scope the search to the dialog itself. RecipeDetailsScreen's AppBar
+    // also has a "Delete Recipe" action using Icons.delete_outline, which
+    // sits behind the dialog's modal barrier and would otherwise be matched
+    // as index 0 (#405).
+    final dialog = find.byType(AlertDialog);
+    expect(dialog, findsOneWidget, reason: 'Edit meal dialog should be open');
+
+    final deleteButtons = find.descendant(
+      of: dialog,
+      matching: find.byIcon(Icons.delete_outline),
+    );
     expect(deleteButtons.evaluate().length, greaterThan(index),
         reason:
             'Should have at least ${index + 1} delete button(s) for side dishes');

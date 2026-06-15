@@ -107,6 +107,7 @@ coverage/
 *.lcov
 devtools_options.yaml
 .claude/settings.local.json
+.claude/scheduled_tasks.lock
 
 # Test logs from flaky test detection
 test_logs/

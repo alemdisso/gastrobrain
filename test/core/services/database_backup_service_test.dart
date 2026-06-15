@@ -16,10 +16,16 @@ import '../../mocks/mock_database_helper.dart';
 String _validBackupJson({
   List<Map<String, dynamic>> ingredients = const [],
   List<Map<String, dynamic>> recipes = const [],
+  List<Map<String, dynamic>>? tagTypes,
+  List<Map<String, dynamic>>? tags,
+  int? schemaVersion,
 }) {
   return jsonEncode({
     'version': '1.0',
+    if (schemaVersion != null) 'schema_version': schemaVersion,
     'backup_date': '2026-04-20T10:00:00.000Z',
+    if (tagTypes != null) 'tag_types': tagTypes,
+    if (tags != null) 'tags': tags,
     'ingredients': ingredients,
     'recipes': recipes,
     'meal_plans': [],
@@ -121,6 +127,165 @@ void main() {
 
       final rows = await db.query('ingredients');
       expect(rows, isEmpty);
+    });
+
+    test(
+        'restores built-in tag vocabulary when backup predates tag_types/tags keys',
+        () async {
+      // Pre-tagging backups have no 'tag_types'/'tags' keys at all (#399).
+      final json = _validBackupJson();
+
+      await backupService.restoreDatabaseFromString(json);
+
+      expect((await db.query('tag_types')).length, equals(5));
+      expect((await db.query('tags')).length, equals(22));
+    });
+
+    test('restores tag types with is_hard/is_open flags', () async {
+      final json = _validBackupJson(
+        tagTypes: [
+          {'id': 'custom-type', 'name': 'Custom', 'is_hard': 1, 'is_open': 0},
+        ],
+        tags: [
+          {'id': 'custom-tag', 'name': 'custom', 'type_id': 'custom-type'},
+        ],
+      );
+
+      await backupService.restoreDatabaseFromString(json);
+
+      final typeRows = await db.query('tag_types', orderBy: 'id ASC');
+      // 5 built-in tag_types (reseeded post-restore, #399) + 1 custom from backup
+      expect(typeRows.length, equals(6));
+      final customType =
+          typeRows.firstWhere((row) => row['id'] == 'custom-type');
+      expect(customType['is_hard'], equals(1));
+      expect(customType['is_open'], equals(0));
+
+      final tagRows = await db.query('tags');
+      // 22 built-in tags (reseeded post-restore, #399) + 1 custom from backup
+      expect(tagRows.length, equals(23));
+      final customTag =
+          tagRows.firstWhere((row) => row['id'] == 'custom-tag');
+      expect(customTag['type_id'], equals('custom-type'));
+    });
+
+    test('restores legacy tag types (color/icon keys, no flags) with defaults',
+        () async {
+      // Backups written before the schema fix carry color/icon and no flags.
+      final json = _validBackupJson(
+        tagTypes: [
+          {
+            'id': 'custom-legacy',
+            'name': 'Legacy',
+            'color': null,
+            'icon': null
+          },
+        ],
+      );
+
+      await backupService.restoreDatabaseFromString(json);
+
+      final rows = await db.query('tag_types', orderBy: 'id ASC');
+      // 5 built-in tag_types (reseeded post-restore, #399) + 1 legacy custom from backup
+      expect(rows.length, equals(6));
+      final legacyType =
+          rows.firstWhere((row) => row['id'] == 'custom-legacy');
+      expect(legacyType['is_hard'], equals(0));
+      expect(legacyType['is_open'], equals(1));
+    });
+
+    test('refuses backup stamped with newer schema version, data untouched',
+        () async {
+      await db.execute('''
+        CREATE TABLE schema_migrations (
+          version INTEGER PRIMARY KEY,
+          applied_at TEXT NOT NULL,
+          description TEXT NOT NULL,
+          duration_ms INTEGER NOT NULL
+        )
+      ''');
+      await db.insert('schema_migrations', {
+        'version': 112,
+        'applied_at': '2026-06-10T00:00:00.000Z',
+        'description': 'test',
+        'duration_ms': 0,
+      });
+      await db.insert('ingredients', {
+        'id': 'keep-me',
+        'name': 'Existing',
+        'category': 'other',
+      });
+
+      final json = _validBackupJson(schemaVersion: 113);
+
+      await expectLater(
+        () => backupService.restoreDatabaseFromString(json),
+        throwsA(isA<BackupVersionException>()),
+      );
+
+      final rows = await db.query('ingredients');
+      expect(rows.length, equals(1));
+      expect(rows.first['id'], equals('keep-me'));
+    });
+
+    test('accepts backup stamped with older schema version', () async {
+      await db.execute('''
+        CREATE TABLE schema_migrations (
+          version INTEGER PRIMARY KEY,
+          applied_at TEXT NOT NULL,
+          description TEXT NOT NULL,
+          duration_ms INTEGER NOT NULL
+        )
+      ''');
+      await db.insert('schema_migrations', {
+        'version': 112,
+        'applied_at': '2026-06-10T00:00:00.000Z',
+        'description': 'test',
+        'duration_ms': 0,
+      });
+
+      final json = _validBackupJson(
+        schemaVersion: 105,
+        ingredients: [
+          {
+            'id': 'ing-1',
+            'name': 'Tomato',
+            'category': 'vegetable',
+            'unit': null,
+            'protein_type': null,
+            'notes': null,
+          },
+        ],
+      );
+
+      await backupService.restoreDatabaseFromString(json);
+
+      final rows = await db.query('ingredients');
+      expect(rows.length, equals(1));
+    });
+
+    test('export emits is_hard/is_open and round-trips through restore',
+        () async {
+      // setUp seeded the full vocabulary via migrations 005/006/008.
+      final before = await db.query('tag_types', orderBy: 'id ASC');
+      expect(before, isNotEmpty);
+
+      final backupData = await backupService.buildBackupData();
+
+      final exportedTypes = backupData['tag_types'] as List;
+      expect(exportedTypes.length, equals(before.length));
+      for (final tt in exportedTypes) {
+        expect(tt.containsKey('is_hard'), isTrue);
+        expect(tt.containsKey('is_open'), isTrue);
+        expect(tt.containsKey('color'), isFalse);
+        expect(tt.containsKey('icon'), isFalse);
+      }
+      expect(backupData['schema_version'], isA<int>());
+
+      await backupService.restoreDatabaseFromString(jsonEncode(backupData));
+
+      final after = await db.query('tag_types', orderBy: 'id ASC');
+      expect(after, equals(before));
     });
 
     test('throws GastrobrainException on malformed JSON', () async {

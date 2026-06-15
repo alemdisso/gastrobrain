@@ -4,6 +4,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart' show SharePlus, ShareParams, XFile;
 import '../../database/database_helper.dart';
 import '../errors/gastrobrain_exceptions.dart';
+import '../migration/migration.dart';
+import '../migration/tag_vocabulary_seed.dart';
 
 /// Service for complete database backup and restore using JSON format
 ///
@@ -11,8 +13,8 @@ import '../errors/gastrobrain_exceptions.dart';
 /// - Tag Types and Tags (taxonomy)
 /// - Recipes (with ingredients, story, marinating time, servings, tags)
 /// - Ingredients (with aliases)
-/// - Meal Plans
-/// - Meals (cooked meal records)
+/// - Meal Plans (with simple-side ingredients per planned item)
+/// - Meals (cooked meal records, with simple-side ingredients)
 /// - Recommendation History (user preferences and interactions)
 ///
 /// This is a COMPLETE backup/restore (no merge logic).
@@ -31,23 +33,46 @@ class DatabaseBackupService {
   /// Returns the path of the written file (app-private directory).
   Future<String> backupDatabase() async {
     try {
-      final backupData = <String, dynamic>{
-        'version': '1.0',
-        'backup_date': DateTime.now().toIso8601String(),
-      };
-
-      backupData['tag_types'] = await _exportTagTypes();
-      backupData['tags'] = await _exportTags();
-      backupData['recipes'] = await _exportRecipes();
-      backupData['ingredients'] = await _exportIngredients();
-      backupData['meal_plans'] = await _exportMealPlans();
-      backupData['meals'] = await _exportMeals();
-      backupData['recommendation_history'] = await _exportRecommendationHistory();
-
+      final backupData = await buildBackupData();
       final jsonString = const JsonEncoder.withIndent('  ').convert(backupData);
       return await _writeAndShareBackup(jsonString);
     } catch (e) {
       throw GastrobrainException('Failed to create backup: ${e.toString()}');
+    }
+  }
+
+  /// Assembles the complete backup data map (no file I/O or sharing).
+  ///
+  /// Exposed separately from [backupDatabase] so the export content can be
+  /// verified in tests without platform channels (path_provider, share_plus).
+  Future<Map<String, dynamic>> buildBackupData() async {
+    final backupData = <String, dynamic>{
+      'version': '1.0',
+      'schema_version': await _getCurrentSchemaVersion(),
+      'backup_date': DateTime.now().toIso8601String(),
+    };
+
+    backupData['tag_types'] = await _exportTagTypes();
+    backupData['tags'] = await _exportTags();
+    backupData['recipes'] = await _exportRecipes();
+    backupData['ingredients'] = await _exportIngredients();
+    backupData['meal_plans'] = await _exportMealPlans();
+    backupData['meals'] = await _exportMeals();
+    backupData['recommendation_history'] = await _exportRecommendationHistory();
+
+    return backupData;
+  }
+
+  /// Returns the max applied migration version, or 0 if it cannot be
+  /// determined (e.g. schema_migrations table absent in test databases).
+  Future<int> _getCurrentSchemaVersion() async {
+    try {
+      final db = await _databaseHelper.database;
+      final result =
+          await db.rawQuery('SELECT MAX(version) AS version FROM schema_migrations');
+      return (result.first['version'] as int?) ?? 0;
+    } catch (_) {
+      return 0;
     }
   }
 
@@ -143,6 +168,7 @@ class DatabaseBackupService {
                   'meal_type': item.mealType,
                   'notes': item.notes,
                   'has_been_cooked': item.hasBeenCooked,
+                  'planned_servings': item.plannedServings,
                   'recipes': (item.mealPlanItemRecipes ?? [])
                       .map((recipe) => {
                             'id': recipe.id,
@@ -151,6 +177,9 @@ class DatabaseBackupService {
                             'is_primary_dish': recipe.isPrimaryDish,
                             'notes': recipe.notes,
                           })
+                      .toList(),
+                  'ingredients': (item.mealPlanItemIngredients ?? [])
+                      .map((ingredient) => ingredient.toMap())
                       .toList(),
                 })
             .toList(),
@@ -185,6 +214,9 @@ class DatabaseBackupService {
                   'notes': recipe.notes,
                 })
             .toList(),
+        'meal_ingredients': (meal.mealIngredients ?? [])
+            .map((ingredient) => ingredient.toMap())
+            .toList(),
       });
     }
 
@@ -199,8 +231,8 @@ class DatabaseBackupService {
         .map((r) => {
               'id': r['id'],
               'name': r['name'],
-              'color': r['color'],
-              'icon': r['icon'],
+              'is_hard': r['is_hard'],
+              'is_open': r['is_open'],
             })
         .toList();
   }
@@ -276,6 +308,8 @@ class DatabaseBackupService {
       final jsonString = await file.readAsString();
       final Map<String, dynamic> backupData = json.decode(jsonString);
       await _restoreFromJson(backupData);
+    } on GastrobrainException {
+      rethrow;
     } catch (e) {
       throw GastrobrainException('Failed to restore backup: ${e.toString()}');
     }
@@ -289,6 +323,8 @@ class DatabaseBackupService {
     try {
       final Map<String, dynamic> backupData = json.decode(jsonContent);
       await _restoreFromJson(backupData);
+    } on GastrobrainException {
+      rethrow;
     } catch (e) {
       throw GastrobrainException('Failed to restore backup: ${e.toString()}');
     }
@@ -300,13 +336,28 @@ class DatabaseBackupService {
       throw const GastrobrainException('Invalid backup file: missing version');
     }
 
+    // Refuse backups stamped by a newer app schema before touching any data.
+    // Backups without a stamp predate the stamp and go through the tolerant
+    // path; current version 0 means it cannot be determined (test databases).
+    final backupSchemaVersion = backupData['schema_version'];
+    if (backupSchemaVersion is int) {
+      final currentSchemaVersion = await _getCurrentSchemaVersion();
+      if (currentSchemaVersion > 0 &&
+          backupSchemaVersion > currentSchemaVersion) {
+        throw const BackupVersionException(
+            'Backup was created by a newer app version');
+      }
+    }
+
     final db = await _databaseHelper.database;
 
     await db.transaction((txn) async {
       // Delete all existing data (reverse dependency order)
       await txn.delete('meal_recipes');
+      await txn.delete('meal_ingredients');
       await txn.delete('meals');
       await txn.delete('meal_plan_item_recipes');
+      await txn.delete('meal_plan_item_ingredients');
       await txn.delete('meal_plan_items');
       await txn.delete('meal_plans');
       await txn.delete('recipe_ingredients');
@@ -320,11 +371,14 @@ class DatabaseBackupService {
       if (backupData['tag_types'] != null) {
         final tagTypes = backupData['tag_types'] as List;
         for (final tt in tagTypes) {
+          // Older backups carry legacy color/icon keys and no flags; those
+          // keys are ignored and the flags fall back to open-vocabulary
+          // defaults matching the seed migrations.
           await txn.insert('tag_types', {
             'id': tt['id'],
             'name': tt['name'],
-            'color': tt['color'],
-            'icon': tt['icon'],
+            'is_hard': tt['is_hard'] ?? 0,
+            'is_open': tt['is_open'] ?? 1,
           });
         }
       }
@@ -339,6 +393,11 @@ class DatabaseBackupService {
           });
         }
       }
+
+      // Fill any gaps in the built-in tag vocabulary. INSERT OR IGNORE means
+      // rows just restored from the backup win; this only seeds tag_types/
+      // tags missing from the backup — e.g. pre-tagging backups (#399).
+      await seedBuiltInTagVocabulary(TransactionWrapper(txn));
 
       if (backupData['ingredients'] != null) {
         final ingredients = backupData['ingredients'] as List;
@@ -427,6 +486,7 @@ class DatabaseBackupService {
                 'meal_type': item['meal_type'],
                 'notes': item['notes'] ?? '',
                 'has_been_cooked': item['has_been_cooked'] ? 1 : 0,
+                'planned_servings': item['planned_servings'] ?? 4,
               });
 
               if (item['recipes'] != null) {
@@ -438,6 +498,21 @@ class DatabaseBackupService {
                     'recipe_id': recipe['recipe_id'],
                     'is_primary_dish': recipe['is_primary_dish'] ? 1 : 0,
                     'notes': recipe['notes'],
+                  });
+                }
+              }
+
+              if (item['ingredients'] != null) {
+                final ingredients = item['ingredients'] as List;
+                for (final ingredient in ingredients) {
+                  await txn.insert('meal_plan_item_ingredients', {
+                    'id': ingredient['id'],
+                    'meal_plan_item_id': ingredient['meal_plan_item_id'],
+                    'ingredient_id': ingredient['ingredient_id'],
+                    'custom_name': ingredient['custom_name'],
+                    'notes': ingredient['notes'],
+                    'quantity': ingredient['quantity'] ?? 1.0,
+                    'unit': ingredient['unit'],
                   });
                 }
               }
@@ -470,6 +545,21 @@ class DatabaseBackupService {
                 'recipe_id': recipe['recipe_id'],
                 'is_primary_dish': recipe['is_primary_dish'] ? 1 : 0,
                 'notes': recipe['notes'],
+              });
+            }
+          }
+
+          if (meal['meal_ingredients'] != null) {
+            final mealIngredients = meal['meal_ingredients'] as List;
+            for (final ingredient in mealIngredients) {
+              await txn.insert('meal_ingredients', {
+                'id': ingredient['id'],
+                'meal_id': ingredient['meal_id'],
+                'ingredient_id': ingredient['ingredient_id'],
+                'custom_name': ingredient['custom_name'],
+                'notes': ingredient['notes'],
+                'quantity': ingredient['quantity'] ?? 1.0,
+                'unit': ingredient['unit'],
               });
             }
           }

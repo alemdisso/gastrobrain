@@ -4,6 +4,8 @@ import '../../models/tag.dart';
 import '../../models/tag_type.dart';
 import '../../utils/id_generator.dart';
 import '../errors/gastrobrain_exceptions.dart';
+import '../migration/migration.dart';
+import '../migration/tag_vocabulary_seed.dart';
 
 class TagRepository {
   final DatabaseHelper _dbHelper;
@@ -174,6 +176,43 @@ class TagRepository {
       }
     } catch (e) {
       throw GastrobrainException('Failed to set tags for recipe in txn: $e');
+    }
+  }
+
+  /// Returns true if any built-in tag_type or tag (#399 seed set) is
+  /// missing from the database — e.g. after a wipe like #399/#402.
+  Future<bool> hasIncompleteBuiltInVocabulary() async {
+    try {
+      final db = await _dbHelper.database;
+
+      final typeIds = builtInTagTypes.map((t) => t.$1).toList();
+      final typeRows = await db.query(
+        'tag_types',
+        where: 'id IN (${List.filled(typeIds.length, '?').join(',')})',
+        whereArgs: typeIds,
+      );
+      if (typeRows.length != typeIds.length) return true;
+
+      final tagIds = builtInTags.map((t) => t.$1).toList();
+      final tagRows = await db.query(
+        'tags',
+        where: 'id IN (${List.filled(tagIds.length, '?').join(',')})',
+        whereArgs: tagIds,
+      );
+      return tagRows.length != tagIds.length;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Re-seeds any missing built-in tag_types/tags. Idempotent — safe to
+  /// call even when the vocabulary is already complete.
+  Future<void> repairBuiltInVocabulary() async {
+    try {
+      final db = await _dbHelper.database;
+      await seedBuiltInTagVocabulary(DatabaseWrapper(db));
+    } catch (e) {
+      throw GastrobrainException('Failed to repair tag vocabulary: $e');
     }
   }
 }

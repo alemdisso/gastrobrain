@@ -1975,6 +1975,14 @@
   "@buttonDismiss": {
     "description": "Button to dismiss an error or message"
   },
+  "tagVocabularyIncompleteWarning": "Some built-in tags are missing. Tap Repair to restore them.",
+  "@tagVocabularyIncompleteWarning": {
+    "description": "Shown on startup when the built-in tag vocabulary (cuisine, occasion, dietary, meal role, food type) is incomplete, offering a one-tap fix"
+  },
+  "buttonRepair": "Repair",
+  "@buttonRepair": {
+    "description": "Button label to restore missing built-in tag vocabulary"
+  },
   "labelMigrationResults": "Migration Results",
   "@labelMigrationResults": {
     "description": "Label for migration results section"
@@ -2189,6 +2197,10 @@
   "restoreFailed": "Restore Failed",
   "@restoreFailed": {
     "description": "Error message when restore fails"
+  },
+  "restoreBackupNewerVersion": "This backup was created by a newer version of the app. Update the app before restoring.",
+  "@restoreBackupNewerVersion": {
+    "description": "Error message when restoring a backup created by a newer app version"
   },
   "backupCancelled": "Backup cancelled",
   "@backupCancelled": {

@@ -1969,6 +1969,14 @@
   "@buttonDismiss": {
     "description": "Botão para dispensar um erro ou mensagem"
   },
+  "tagVocabularyIncompleteWarning": "Algumas tags padrão estão faltando. Toque em Reparar para restaurá-las.",
+  "@tagVocabularyIncompleteWarning": {
+    "description": "Exibido ao iniciar quando o vocabulário padrão de tags (cozinha, ocasião, dieta, papel da refeição, tipo de alimento) está incompleto, oferecendo uma correção com um toque"
+  },
+  "buttonRepair": "Reparar",
+  "@buttonRepair": {
+    "description": "Rótulo do botão para restaurar o vocabulário padrão de tags ausente"
+  },
   "labelMigrationResults": "Resultados da Migração",
   "@labelMigrationResults": {
     "description": "Rótulo para seção de resultados da migração"
@@ -2183,6 +2191,10 @@
   "restoreFailed": "Falha na Restauração",
   "@restoreFailed": {
     "description": "Mensagem de erro quando a restauração falha"
+  },
+  "restoreBackupNewerVersion": "Este backup foi criado por uma versão mais recente do aplicativo. Atualize o aplicativo antes de restaurar.",
+  "@restoreBackupNewerVersion": {
+    "description": "Mensagem de erro ao restaurar um backup criado por uma versão mais recente do aplicativo"
   },
   "backupCancelled": "Backup cancelado",
   "@backupCancelled": {

@@ -1,0 +1,153 @@
+{
+  "version": "1.0",
+  "backup_date": "2026-01-15T10:00:00.000Z",
+  "recipes": [
+    {
+      "id": "recipe-legacy-1",
+      "name": "Spaghetti Bolognese",
+      "difficulty": 2,
+      "prep_time_minutes": 15,
+      "cook_time_minutes": 45,
+      "marinating_time_minutes": 0,
+      "rating": 4,
+      "desired_frequency": "weekly",
+      "notes": "Classic comfort food",
+      "story": "A recipe passed down from grandma.",
+      "instructions": "Cook pasta. Make sauce. Combine.",
+      "servings": 4,
+      "created_at": "2025-12-01T08:00:00.000Z",
+      "recipe_ingredients": [
+        {
+          "id": "ri-legacy-1",
+          "recipe_id": "recipe-legacy-1",
+          "ingredient_id": "ing-legacy-1",
+          "quantity": 500,
+          "notes": null,
+          "unit_override": null,
+          "custom_name": null,
+          "custom_category": null,
+          "custom_unit": null
+        },
+        {
+          "id": "ri-legacy-2",
+          "recipe_id": "recipe-legacy-1",
+          "ingredient_id": "ing-legacy-2",
+          "quantity": 1,
+          "notes": "or two cans",
+          "unit_override": "can",
+          "custom_name": null,
+          "custom_category": null,
+          "custom_unit": null
+        }
+      ]
+    },
+    {
+      "id": "recipe-legacy-2",
+      "name": "Garden Salad",
+      "difficulty": 1,
+      "prep_time_minutes": 10,
+      "cook_time_minutes": 0,
+      "marinating_time_minutes": 0,
+      "rating": 3,
+      "desired_frequency": "biweekly",
+      "notes": "",
+      "story": "",
+      "instructions": "Chop and toss.",
+      "servings": 2,
+      "created_at": "2025-12-02T08:00:00.000Z",
+      "recipe_ingredients": [
+        {
+          "id": "ri-legacy-3",
+          "recipe_id": "recipe-legacy-2",
+          "ingredient_id": "ing-legacy-1",
+          "quantity": 2,
+          "notes": null,
+          "unit_override": "piece",
+          "custom_name": null,
+          "custom_category": null,
+          "custom_unit": null
+        }
+      ]
+    }
+  ],
+  "ingredients": [
+    {
+      "id": "ing-legacy-1",
+      "name": "Tomato",
+      "category": "vegetable",
+      "unit": "piece",
+      "protein_type": null,
+      "notes": null,
+      "aliases": ["tomatoes"]
+    },
+    {
+      "id": "ing-legacy-2",
+      "name": "Crushed Tomatoes",
+      "category": "pantry",
+      "unit": "can",
+      "protein_type": null,
+      "notes": "canned"
+    }
+  ],
+  "meal_plans": [
+    {
+      "id": "plan-legacy-1",
+      "week_start_date": "2026-01-09T00:00:00.000Z",
+      "notes": "",
+      "created_at": "2026-01-09T08:00:00.000Z",
+      "modified_at": "2026-01-09T08:00:00.000Z",
+      "items": [
+        {
+          "id": "item-legacy-1",
+          "meal_plan_id": "plan-legacy-1",
+          "planned_date": "2026-01-10",
+          "meal_type": "dinner",
+          "notes": "",
+          "has_been_cooked": true,
+          "recipes": [
+            {
+              "id": "ipr-legacy-1",
+              "meal_plan_item_id": "item-legacy-1",
+              "recipe_id": "recipe-legacy-1",
+              "is_primary_dish": true,
+              "notes": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "meals": [
+    {
+      "id": "meal-legacy-1",
+      "recipe_id": "recipe-legacy-1",
+      "cooked_at": "2026-01-10T19:00:00.000Z",
+      "servings": 4,
+      "notes": "Family loved it",
+      "was_successful": true,
+      "actual_prep_time": 18,
+      "actual_cook_time": 42,
+      "modified_at": null,
+      "meal_recipes": [
+        {
+          "id": "mr-legacy-1",
+          "meal_id": "meal-legacy-1",
+          "recipe_id": "recipe-legacy-1",
+          "is_primary_dish": true,
+          "notes": null
+        }
+      ]
+    }
+  ],
+  "recommendation_history": [
+    {
+      "id": "rh-legacy-1",
+      "result_data": "{\"recipeIds\":[\"recipe-legacy-1\",\"recipe-legacy-2\"]}",
+      "created_at": "2026-01-08T08:00:00.000Z",
+      "context_type": "weekly_plan",
+      "target_date": "2026-01-09",
+      "meal_type": "dinner",
+      "user_id": null
+    }
+  ]
+}

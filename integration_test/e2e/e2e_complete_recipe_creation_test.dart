@@ -67,21 +67,14 @@ void main() {
         // Give time for database operation and navigation
         await E2ETestHelpers.waitForAsyncOperations();
 
-        // VERIFY: Back on main screen
+        // VERIFY: Landed on RecipeDetailsScreen for the new recipe (#396
+        // hub-and-spoke flow — save no longer returns to the main screen)
         print('\n=== VERIFYING NAVIGATION ===');
         E2ETestHelpers.printScreenState('After save');
 
-        try {
-          E2ETestHelpers.verifyOnMainScreen();
-          print('✓ Back on main screen - save appears successful');
-        } catch (e) {
-          print('⚠ Not on main screen - may still be on form (validation failed)');
-          E2ETestHelpers.verifyOnFormScreen();
-          print('Still on form - checking for validation errors...');
-
-          // Scroll to top to see errors
-          await E2ETestHelpers.scrollUp(tester);
-        }
+        expect(find.text(testRecipeName), findsWidgets,
+            reason: 'Should land on RecipeDetailsScreen for the new recipe');
+        print('✓ On Recipe Details screen for: $testRecipeName');
 
         // VERIFY: Check database
         print('\n=== CHECKING DATABASE ===');

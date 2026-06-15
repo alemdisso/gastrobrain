@@ -253,6 +253,7 @@ strong{font-weight:700}
     <a href="#s0211" class="sub">0.2.11 — DB Safety + UX Polish</a>
     <a href="#s0212" class="sub">0.2.12 — Architecture &amp; Editor</a>
     <a href="#s0213" class="sub">0.2.13 — Recipe Redesign</a>
+    <a href="#s0214" class="sub">0.2.14 — Recipe Entry Refined</a>
   </div>
 
   <div class="sidebar-sec">
@@ -273,11 +274,11 @@ strong{font-weight:700}
   <h1>Sprint Estimation Diary</h1>
   <p class="subtitle">Track estimation accuracy across sprints to improve planning and identify patterns. Each entry records performance, key lessons, and calibration updates.</p>
   <div class="hero-stats">
-    <div class="hero-stat"><div class="hero-stat-val">23</div><div class="hero-stat-lbl">Sprint Entries</div></div>
+    <div class="hero-stat"><div class="hero-stat-val">24</div><div class="hero-stat-lbl">Sprint Entries</div></div>
     <div class="hero-stat"><div class="hero-stat-val">30</div><div class="hero-stat-lbl">Pts/Week Cruising</div></div>
     <div class="hero-stat"><div class="hero-stat-val">6.5</div><div class="hero-stat-lbl">Pts/Day Baseline</div></div>
     <div class="hero-stat"><div class="hero-stat-val">0.1.2</div><div class="hero-stat-lbl">First Entry</div></div>
-    <div class="hero-stat"><div class="hero-stat-val">0.2.13</div><div class="hero-stat-lbl">Latest Entry</div></div>
+    <div class="hero-stat"><div class="hero-stat-val">0.2.14</div><div class="hero-stat-lbl">Latest Entry</div></div>
   </div>
 </div>
 
@@ -329,7 +330,8 @@ strong{font-weight:700}
     <div class="chart-row"><div class="chart-lbl">0.2.11 ★★</div><div class="chart-track"><div class="chart-bar chart-bar-exec" style="width:100%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">119 pts/wk ↗</div></div>
     <div class="chart-row"><div class="chart-lbl">0.2.12 ★★</div><div class="chart-track"><div class="chart-bar chart-bar-exec" style="width:100%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">147 pts/wk ↗</div></div>
     <div class="chart-row"><div class="chart-lbl">0.2.13 ★★★</div><div class="chart-track"><div class="chart-bar chart-bar-exec" style="width:100%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">96 pts/wk ↗</div></div>
-    <p style="font-size:11px;color:var(--text-muted);margin-top:10px">★ 0.2.7 was an execution-mode Code Health sprint — do not use to recalibrate cruising velocity. ★★ 0.2.11 (119 pts/wk) and 0.2.12 (147 pts/wk) are off-scale — post-crisis context + pure architecture profile; bars capped at 100%; do not recalibrate. ★★★ 0.2.13 (96 pts/wk) is off-scale — pattern escalator driven by within-sprint reuse (#371→#370→#385-387); three consecutive well-under sprints; bars capped at 100%; do not recalibrate. Amber line = 30 pts/wk cruising baseline.</p>
+    <div class="chart-row"><div class="chart-lbl">0.2.14 ★★★★</div><div class="chart-track"><div class="chart-bar chart-bar-exec" style="width:80.9%"></div><div class="chart-ref" style="left:37.5%"></div></div><div class="chart-val">64.8 pts/wk</div></div>
+    <p style="font-size:11px;color:var(--text-muted);margin-top:10px">★ 0.2.7 was an execution-mode Code Health sprint — do not use to recalibrate cruising velocity. ★★ 0.2.11 (119 pts/wk) and 0.2.12 (147 pts/wk) are off-scale — post-crisis context + pure architecture profile; bars capped at 100%; do not recalibrate. ★★★ 0.2.13 (96 pts/wk) is off-scale — pattern escalator driven by within-sprint reuse (#371→#370→#385-387); three consecutive well-under sprints; bars capped at 100%; do not recalibrate. ★★★★ 0.2.14 (64.8 pts/wk) is the 4th consecutive well-under sprint and the slowest of the streak (119→147→96→64.8) — a same-day pattern escalator (#391→#396→#397) plus cross-sprint reuse of 0.2.13's hub patterns; fits on-scale without capping. Do not recalibrate yet, but check 0.2.15 for convergence toward baseline. Amber line = 30 pts/wk cruising baseline.</p>
   </div>
 </div>
 
@@ -1189,6 +1191,61 @@ strong{font-weight:700}
   </div>
 </div>
 
+  <!-- 0.2.14 -->
+  <div id="s0214" class="sprint">
+    <div class="sprint-hd">
+      <div class="sprint-hd-left">
+        <h3>0.2.14 — Recipe Entry Refined</h3>
+        <div class="dates">June 3–9, 2026 &bull; 4.0 active days (06-04 + weekend off-project)</div>
+        <div class="theme">Same-day pattern escalator (#391→#396→#397) + cross-sprint reuse of 0.2.13 hub patterns; #398 unplanned dogfooding discovery; 37 pts in 4 days</div>
+      </div>
+      <div class="sprint-badges"><span class="badge badge-execution">Execution ★★★★</span><span class="badge" style="background:#d97706;color:white">Pattern Escalator</span></div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-cell"><div class="perf-val">37</div><div class="perf-lbl">Pts Delivered</div></div>
+      <div class="perf-cell"><div class="perf-val">4.0</div><div class="perf-lbl">Active Days</div></div>
+      <div class="perf-cell"><div class="perf-val">9.3</div><div class="perf-lbl">Pts/Day</div></div>
+      <div class="perf-cell"><div class="perf-val">64.8</div><div class="perf-lbl">Pts/Week</div></div>
+      <div class="perf-cell"><div class="perf-val">⚡ Well under</div><div class="perf-lbl">Result</div></div>
+    </div>
+    <div class="sprint-body">
+      <div class="note amber"><strong>★★★★ Do not use 0.2.14 to recalibrate cruising velocity — yet.</strong> 64.8 pts/wk is the 4th consecutive well-under sprint (0.2.11: 119, 0.2.12: 147, 0.2.13: 96, 0.2.14: 64.8) and the slowest of the four. The driver is a same-day pattern escalator: #391 (shared bottom sheet helper) shipped first on June 5, then #396 (13-pt hub-and-spoke recipe redesign, ~4,350 lines) consumed it directly, and #397 (tags edit sheet) consumed #396's hub structure — all three the same day. #396 itself was only possible because 0.2.13 had already established the RecipeDetailsScreen section structure and IngredientParserSection. Cruising baseline remains 30 pts/week, but the deceleration trend is worth tracking.</div>
+      <h4>Issues</h4>
+      <div class="tbl-wrap"><table>
+        <tr><th>#</th><th>Title</th><th>Type</th><th>Est Pts</th><th>Status</th></tr>
+        <tr><td>#389</td><td>Meal options dialog button stacking</td><td>UI</td><td class="num">1</td><td>✅ Done — Day 1 (06-03); stacked secondary buttons vertically to prevent label wrap</td></tr>
+        <tr><td>#390</td><td>Meal recording dialog label overflow</td><td>UI</td><td class="num">2</td><td>✅ Done — Day 1; fixed label overflow in recipes section and time fields</td></tr>
+        <tr><td>#392</td><td>Shopping dialog keyboard overflow</td><td>UI</td><td class="num">2</td><td>✅ Done — Day 1; fixed horizontal overflow + keyboard clipping in AddShoppingItemDialog</td></tr>
+        <tr><td>#393</td><td>Unlocalized unit names in ingredient dialogs</td><td>i18n</td><td class="num">2</td><td>✅ Done — Day 1 fix + Day 2 test cleanup; localized unit names in ingredient dialogs</td></tr>
+        <tr><td>#391</td><td>Android nav bar insets + shared bottom sheet helper</td><td>UI / Architecture</td><td class="num">3</td><td>✅ Done — Day 2 (06-05); introduced showGastrobrainBottomSheet() + dialog_utils.dart — anchor for #396 and #397</td></tr>
+        <tr><td>#394</td><td>RecipeSelectionCard whitespace &amp; detached button</td><td>UI / UX</td><td class="num">3</td><td>✅ Done — Day 2; compact collapsed state, anchored select button</td></tr>
+        <tr><td>#395</td><td>Ingredient parser feedback, duplicates &amp; warning</td><td>UX</td><td class="num">5</td><td>✅ Done — Day 2 fix + Day 2 test cleanup (5 tests); scroll, duplicate prevention, section warning</td></tr>
+        <tr><td>#396</td><td>Recipe entry hub-and-spoke redesign</td><td>UX / Architecture</td><td class="num">13</td><td>✅ Done — Day 2; stub create + per-section edit sheets (Instructions, RecipeInfo, Tags); ~4,350 lines; consumed #391's bottom sheet helper; device-tested, issues found and fixed same day</td></tr>
+        <tr><td>#397</td><td>Tags editing bottom sheet for recipe hub</td><td>UX</td><td class="num">3</td><td>✅ Done — Day 2; TagsEditSheet + recipe_tags ON DELETE CASCADE fix (migration 112); consumed #396's hub structure</td></tr>
+        <tr><td>#398</td><td>Collapsible time fields in meal recording dialogs</td><td>UX</td><td class="num">3</td><td>✅ Done — Day 3 (06-08) + Day 4 test fixes (06-09, 20 tests); unplanned — discovered via post-redesign dogfooding</td></tr>
+      </table></div>
+      <div class="note blue"><strong>#398 added mid-sprint (unplanned, +3 pts / 8.1% of delivered).</strong> Original plan was 34 pts across #389–397. After #390/#396/#397 shipped, real-world use of the redesigned dialogs surfaced the next gap — always-editable time fields felt cluttered next to the new collapsible/sectioned UI. Same model as 0.2.13's #385–388: post-release usage surfaces the next UX gap before the retrospective is even written.</div>
+      <h4>Working Pattern</h4>
+      <p style="font-size:12px;color:var(--text-secondary);line-height:1.8">
+        <strong>June 3 (Day 1):</strong> Track A batch — #389, #390, #392, #393 (7 pts, 4 issues, ~150 lines). Independent UI/l10n bug fixes, known patterns, batched in one session.<br>
+        <strong>June 4 + weekend (06-04, 06-06–07):</strong> Off-project / rest — not counted as active days.<br>
+        <strong>June 5 (Day 2):</strong> Marathon day — #391 (3 pts, shipped first), #394 (3 pts), #395 (5 pts), #396 (13 pts, ~4,350 lines, consumed #391's helper), #397 (3 pts, consumed #396's hub) + cleanup test fixes for #393/#395. 27 pts in one day.<br>
+        <strong>June 8 (Day 3):</strong> #398 (3 pts, unplanned) — collapsible time fields, discovered during post-redesign dogfooding.<br>
+        <strong>June 9 (Day 4):</strong> #398 test fixes (20 tests) + version bump + release to v0.2.14.
+      </p>
+      <h4>Key Lessons</h4>
+      <ul class="lessons">
+        <li><strong>Cross-sprint pattern reuse compounds.</strong> #396 (13 pts, hub-and-spoke recipe redesign) directly consumed three patterns established in 0.2.13 — RecipeDetailsScreen's section structure, the bottom-sheet-per-section template, and IngredientParserSection — plus the same-day #391 helper, and shipped in a single ~4,350-line day. The 0.2.13 investment paid forward into 0.2.14's headline deliverable.</li>
+        <li><strong>Same-day pattern escalators repeat.</strong> #391 (anchor, shared bottom sheet helper) → #396 (consumer, hub redesign) → #397 (follow-on, tags sheet reuse) all shipped June 5 — the second occurrence of the escalator shape after 0.2.13's #371→#370→#385-387. Sequence small infrastructure issues immediately before the features that depend on them, even within the same day.</li>
+        <li><strong>Device testing on #396 caught real issues, fixed same day.</strong> Confirms 0.2.13's "device testing non-negotiable for UX sprints" lesson is now standard practice — but also means the ~4,350-line figure already includes a fix-forward iteration, not just first-pass code.</li>
+        <li><strong>Real-world dogfooding generated #398 (3 pts, unplanned, 8.1% of delivered).</strong> Same "post-release discovery" pattern as 0.2.13's #385–388 chain — using the redesigned dialogs immediately surfaced the next UX gap. Budget ~5–10% headroom for redesign-adjacent discoveries in the sprint right after a major UI redesign.</li>
+        <li><strong>Velocity is decelerating across the well-under streak — possibly converging.</strong> 0.2.11 (119) → 0.2.12 (147) → 0.2.13 (96) → 0.2.14 (64.8 pts/wk). Still 2.2x the 30 pts/wk cruising baseline, and the lowest of the four. If 0.2.15 — assuming it's a mixed sprint without a major pattern-establishing anchor — also lands well above 30, revisit whether cruising velocity has shifted upward post-0.2.10 rather than treating each sprint as an isolated anomaly.</li>
+        <li><strong>Track A independent-fix batching remains reliable.</strong> #389/#390/#392/#393 (7 pts, 4 issues, ~150 lines) cleared in one day — consistent with the existing "bug fixes, known patterns, batched: 0.04–0.10x" calibration.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
 <!-- CUMULATIVE METRICS -->
 <div id="cumulative" class="section">
   <div class="section-title">Cumulative <span>Metrics</span></div>
@@ -1221,8 +1278,9 @@ strong{font-weight:700}
     <tr><td>0.2.11</td><td>DB Safety + UX Polish</td><td class="num">34</td><td class="num">2.0</td><td class="num">17.0</td><td class="num">119</td><td class="num r-na">—¶</td><td>Post-crisis execution ★★; #384 mid-sprint (+8 unplanned); do not recalibrate cruising</td></tr>
     <tr><td>0.2.12</td><td>Architecture &amp; Editor</td><td class="num">42</td><td class="num">2.0</td><td class="num">21.0</td><td class="num">147</td><td class="num r-na">—¶</td><td>Pure architecture ★★; fastest sprint in diary; do not recalibrate cruising</td></tr>
     <tr><td>0.2.13</td><td>Recipe Redesign</td><td class="num">41</td><td class="num">3.0</td><td class="num">13.7</td><td class="num">96</td><td class="num r-na">—¶</td><td>Pattern escalator ★★★; #370 anchor + #385-387 mechanical phases; design day skipped (UX debt); do not recalibrate cruising</td></tr>
+    <tr><td>0.2.14</td><td>Recipe Entry Refined</td><td class="num">37</td><td class="num">4.0</td><td class="num">9.3</td><td class="num">64.8</td><td class="num r-na">—¶</td><td>Pattern escalator ★★★★; same-day #391→#396→#397 chain reusing 0.2.13 hub patterns; #398 unplanned (+3, 8.1%); 4th consecutive well-under, slowest of streak; do not recalibrate cruising yet</td></tr>
   </table></div>
-  <p style="font-size:11px;color:var(--text-muted);margin-top:8px">* 0.1.7a: unreliable — shared day, excluded from velocity. † 0.1.14: retroactive estimate. ‡ 0.1.15, 0.2.9, 0.2.10: hotfixes/P0 emergencies, not pre-estimated. § 0.2.4+: ratio = actual days ÷ (est pts ÷ 6.5); prior entries not comparable. ‖ 0.2.6: emergency hotfix, not regular sprint. ¶ 0.2.7+: ratio column dropped; sprint-level velocity only. ★★ 0.2.11/0.2.12: post-crisis context + pure architecture; off-scale; do not use for cruising calibration. ★★★ 0.2.13: pattern escalator within-sprint reuse; off-scale; do not recalibrate.</p>
+  <p style="font-size:11px;color:var(--text-muted);margin-top:8px">* 0.1.7a: unreliable — shared day, excluded from velocity. † 0.1.14: retroactive estimate. ‡ 0.1.15, 0.2.9, 0.2.10: hotfixes/P0 emergencies, not pre-estimated. § 0.2.4+: ratio = actual days ÷ (est pts ÷ 6.5); prior entries not comparable. ‖ 0.2.6: emergency hotfix, not regular sprint. ¶ 0.2.7+: ratio column dropped; sprint-level velocity only. ★★ 0.2.11/0.2.12: post-crisis context + pure architecture; off-scale; do not use for cruising calibration. ★★★ 0.2.13: pattern escalator within-sprint reuse; off-scale; do not recalibrate. ★★★★ 0.2.14: pattern escalator continuation (same-day #391→#396→#397, cross-sprint reuse of 0.2.13 patterns); on-scale but still 2.2x cruising; 4th consecutive well-under sprint — watch 0.2.15 for convergence.</p>
 </div>
 
 <!-- CALIBRATION FACTORS -->
@@ -1268,6 +1326,8 @@ strong{font-weight:700}
     <tr><td>Pure architecture sprint (no UI/L10N/mobile) <span class="new-tag">0.2.12</span></td><td class="num r-fast">60–80+ pts/wk</td><td>0.2.12</td><td>Zero overhead categories; mechanically predictable. Distinct profile: faster than Code Health (79 pts/wk) and execution mode (36 pts/wk) when templates exist and boundaries are defined upfront. Do not size at cruising (30 pts/wk).</td></tr>
     <tr><td>Phased UX section — anchor phase (first _SectionExpansion) <span class="new-tag">0.2.13</span></td><td class="num r-fast">~full est.</td><td>0.2.13 #370</td><td>First phase establishes the _SectionExpansion + _savePhaseN() template. Estimate at full complexity. Sets the pattern for all follow-on phases in the same form.</td></tr>
     <tr><td>Phased UX section — follow-on phases (extract-and-repeat) <span class="new-tag">0.2.13</span></td><td class="num r-fast">0.08–0.12x</td><td>0.2.13 #385–387</td><td>Mechanical repetition of anchor template. #385 (3 pts), #386 (5 pts), #387 (2 pts) — all three together took ~4 hours. Estimate the group as a unit and apply 0.1x multiplier once the anchor phase exists. Do not estimate each phase independently.</td></tr>
+    <tr><td>Cross-sprint pattern reuse — major feature consumes prior sprint's templates <span class="new-tag">0.2.14</span></td><td class="num r-fast">~0.5x</td><td>0.2.14 #396</td><td>13-pt hub-and-spoke redesign delivered in ~1 day by directly reusing 0.2.13's RecipeDetailsScreen sections, bottom-sheet template, and IngredientParserSection — plus a same-day infrastructure helper (#391). Patterns from a prior sprint's anchor issue keep paying off two sprints later.</td></tr>
+    <tr><td>Post-redesign dogfooding discovery <span class="new-tag">0.2.14</span></td><td class="num r-fast">0.10x flat</td><td>0.2.14 #398</td><td>Same 0.10x rate as post-usage bugs — the UX gap is obvious immediately from using the just-shipped redesign. Budget ~5–10% of delivered points for this in the sprint immediately following a major UI redesign.</td></tr>
   </table></div>
 </div>
 
@@ -1285,6 +1345,7 @@ strong{font-weight:700}
       <li><strong>Pure architecture sprint is the fastest velocity profile (0.2.12: 147 pts/week)</strong> — no UI/L10N/mobile overhead; mechanically predictable with defined DAO/component boundaries. Size pure-architecture sprints at 60–80+ pts/week, not at cruising or execution mode</li>
       <li><strong>Post-crisis investigation transfers directly to planned sprint velocity (0.2.11)</strong> — emergency sprints that force deep subsystem investigation give the next planned sprint zero debugging phase on directly related issues. Same 0.10x execution profile as post-usage bugs</li>
       <li><strong>Solo estimation without Estimation Poker anchors conservative (0.2.11/0.2.12)</strong> — board estimates diverged from sprint plan by 1–8 pts per sprint; mechanical refactor tasks over-estimated by 1.5–2× without collaborative calibration. Periodically revisit board estimates or run a pre-sprint sanity check</li>
+      <li><strong>Four consecutive well-under sprints (0.2.11–0.2.14) may signal a new plateau, not just isolated accelerators.</strong> Velocity has decelerated each sprint (119 → 147 → 96 → 64.8 pts/week) but 0.2.14 is still 2.2x the 30 pts/wk cruising baseline. If 0.2.15 — a sprint without a major pattern-establishing anchor — also lands well above 30, reconsider whether cruising velocity has structurally shifted post-0.2.10 due to accumulated reusable infrastructure (IngredientParserSection, _SectionExpansion, showGastrobrainBottomSheet, hub-and-spoke screens)</li>
     </ul>
   </div>
   <div class="insight-group">
@@ -1306,6 +1367,7 @@ strong{font-weight:700}
       <li>Within-sprint pattern compounding is the fastest reuse mode — #312 (3 pts) completed in 45 minutes using #311's dialog pattern built 3 days earlier in the same sprint</li>
       <li>Batching similar small issues on a focus day with deep, uninterrupted time is multiplicative — 6 UX issues in one session, no context switching</li>
       <li><strong>The pattern escalator compounds across issue chains (0.2.13)</strong> — when one issue builds a widget, the next consumes it and establishes a higher-order template, and subsequent issues repeat mechanically, each link is faster than the prior. Estimate the anchor at full complexity; discount each follow-on 60–80% at planning time. The escalator only works when the anchor ships first.</li>
+      <li><strong>Pattern escalators repeat across sprints with different chains (0.2.14)</strong> — 0.2.13's chain was #371→#370→#385-387 (within one sprint); 0.2.14's chain was #391→#396→#397 (within one day, with #396 also reusing 0.2.13's RecipeDetailsScreen/IngredientParserSection patterns from two sprints back). Anchor-ships-first → consumer-reuses-immediately → follow-on-reuses-consumer is now a repeatable execution mode, not a one-off</li>
     </ul>
   </div>
   <div class="insight-group">
@@ -1316,6 +1378,7 @@ strong{font-weight:700}
       <li>Real seed data is a distinct integration test category — 0.2.1's first real recipe dataset exposed two P0 import bugs that existed undetected through 50+ sprints of synthetic-fixture testing</li>
       <li>Migration bugs have two prices: symptom and root cause — always review the runner's detection strategy, not just the failing migration. "Does this fix hold for the full range of possible DB states?"</li>
       <li>The 101+ migration namespace is now mandatory — prevents numbering collisions with legacy schema versions. Documented in DATABASE_MIGRATION_WORKFLOW.md</li>
+      <li><strong>"Device-tested, issues found and fixed" is now the expected outcome for UX sprints (0.2.14 #396)</strong> — 0.2.13 flagged device testing as non-negotiable after a post-merge bug slipped through 2,088 passing tests; 0.2.14's #396 (the largest single-day change in the diary at ~4,350 lines) was device-tested and fixed before the day ended. The AC item is working — but "lines changed" for such issues includes fix-forward iteration, not just first-pass code</li>
     </ul>
   </div>
   <div class="insight-group">
@@ -1456,6 +1519,17 @@ strong{font-weight:700}
 <!-- DOCUMENT HISTORY -->
 <div id="history" class="section">
   <div class="section-title">Document <span>History</span></div>
+  <div class="hist-entry">
+    <div class="hist-date">2026-06-09 — 0.2.14 retrospective added</div>
+    <ul>
+      <li>0.2.14: 37 pts in 4.0d (9.3 pts/day / 64.8 pts/week) — 4th consecutive well-under sprint, slowest of the streak (119/147/96/64.8)</li>
+      <li><strong>Cross-sprint pattern reuse</strong> — #396 (13-pt hub-and-spoke recipe redesign) consumed 0.2.13's RecipeDetailsScreen/IngredientParserSection patterns plus same-day #391 bottom sheet helper; ~4,350 lines in one day</li>
+      <li><strong>Same-day pattern escalator repeats</strong> — #391→#396→#397 chain (anchor → consumer → follow-on) all shipped June 5; second occurrence after 0.2.13's #371→#370→#385-387</li>
+      <li><strong>#398 unplanned mid-sprint (+3 pts, 8.1%)</strong> — discovered via post-redesign dogfooding, same pattern as 0.2.13's #385-388</li>
+      <li><strong>Device testing on #396 caught issues, fixed same day</strong> — confirms 0.2.13's "device testing non-negotiable" lesson is now standard practice</li>
+      <li>Updated <code>scripts/analyze_sprint_commits.py</code> — removed weighted-days calculation (dropped from methodology since 0.2.7) and fixed a Unicode crash in the daily activity chart</li>
+    </ul>
+  </div>
   <div class="hist-entry">
     <div class="hist-date">2026-05-28 — 0.2.13 retrospective added</div>
     <ul>

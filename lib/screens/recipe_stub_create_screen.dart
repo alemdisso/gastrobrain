@@ -94,6 +94,7 @@ class _RecipeStubCreateScreenState extends State<RecipeStubCreateScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               TextFormField(
+                key: const Key('add_recipe_name_field'),
                 controller: _nameController,
                 autofocus: true,
                 decoration: InputDecoration(
