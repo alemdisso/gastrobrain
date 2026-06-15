@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.15] - 2026-06-15
+
+### Added
+- Tag vocabulary health check: detects missing built-in tag types/tags on startup (e.g. recurrence of the #399 wipe) and shows a Repair banner that re-runs the idempotent seeder (#401)
+
+### Fixed
+- Backup restore no longer permanently wipes the built-in tag vocabulary on backups taken before tagging existed; a shared `seedBuiltInTagVocabulary()` reseeder fills gaps, and migration 113 self-heals devices already affected (#399)
+- Backup export/restore now use the real `is_hard`/`is_open` tag type columns instead of the never-shipped `color`/`icon`, fixing "no such column" restore failures; backups are stamped with schema version and restore refuses newer-than-app backups (#400)
+- Recording a meal no longer crashes when "Skip" is tapped on the meal-type dialog after saving (#407)
+
+### Testing
+- Backup round-trip schema coverage test and restore fixtures added (#402)
+- E2E tests updated for stale widget keys after #370/#398 (#403)
+- Backup integration tests no longer hang 30s on the SharePlus share sheet (#404)
+- E2E meal recording/editing fixes: side-dish delete finder scoping, locale-aware date picker dismissal, hard pass/fail assertions (#405, #406, #407)
+
+---
+
 ## [0.2.14] - 2026-06-09
 
 ### Added
