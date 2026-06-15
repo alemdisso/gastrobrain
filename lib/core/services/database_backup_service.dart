@@ -13,8 +13,8 @@ import '../migration/tag_vocabulary_seed.dart';
 /// - Tag Types and Tags (taxonomy)
 /// - Recipes (with ingredients, story, marinating time, servings, tags)
 /// - Ingredients (with aliases)
-/// - Meal Plans
-/// - Meals (cooked meal records)
+/// - Meal Plans (with simple-side ingredients per planned item)
+/// - Meals (cooked meal records, with simple-side ingredients)
 /// - Recommendation History (user preferences and interactions)
 ///
 /// This is a COMPLETE backup/restore (no merge logic).
@@ -168,6 +168,7 @@ class DatabaseBackupService {
                   'meal_type': item.mealType,
                   'notes': item.notes,
                   'has_been_cooked': item.hasBeenCooked,
+                  'planned_servings': item.plannedServings,
                   'recipes': (item.mealPlanItemRecipes ?? [])
                       .map((recipe) => {
                             'id': recipe.id,
@@ -176,6 +177,9 @@ class DatabaseBackupService {
                             'is_primary_dish': recipe.isPrimaryDish,
                             'notes': recipe.notes,
                           })
+                      .toList(),
+                  'ingredients': (item.mealPlanItemIngredients ?? [])
+                      .map((ingredient) => ingredient.toMap())
                       .toList(),
                 })
             .toList(),
@@ -209,6 +213,9 @@ class DatabaseBackupService {
                   'is_primary_dish': recipe.isPrimaryDish,
                   'notes': recipe.notes,
                 })
+            .toList(),
+        'meal_ingredients': (meal.mealIngredients ?? [])
+            .map((ingredient) => ingredient.toMap())
             .toList(),
       });
     }
@@ -347,8 +354,10 @@ class DatabaseBackupService {
     await db.transaction((txn) async {
       // Delete all existing data (reverse dependency order)
       await txn.delete('meal_recipes');
+      await txn.delete('meal_ingredients');
       await txn.delete('meals');
       await txn.delete('meal_plan_item_recipes');
+      await txn.delete('meal_plan_item_ingredients');
       await txn.delete('meal_plan_items');
       await txn.delete('meal_plans');
       await txn.delete('recipe_ingredients');
@@ -477,6 +486,7 @@ class DatabaseBackupService {
                 'meal_type': item['meal_type'],
                 'notes': item['notes'] ?? '',
                 'has_been_cooked': item['has_been_cooked'] ? 1 : 0,
+                'planned_servings': item['planned_servings'] ?? 4,
               });
 
               if (item['recipes'] != null) {
@@ -488,6 +498,21 @@ class DatabaseBackupService {
                     'recipe_id': recipe['recipe_id'],
                     'is_primary_dish': recipe['is_primary_dish'] ? 1 : 0,
                     'notes': recipe['notes'],
+                  });
+                }
+              }
+
+              if (item['ingredients'] != null) {
+                final ingredients = item['ingredients'] as List;
+                for (final ingredient in ingredients) {
+                  await txn.insert('meal_plan_item_ingredients', {
+                    'id': ingredient['id'],
+                    'meal_plan_item_id': ingredient['meal_plan_item_id'],
+                    'ingredient_id': ingredient['ingredient_id'],
+                    'custom_name': ingredient['custom_name'],
+                    'notes': ingredient['notes'],
+                    'quantity': ingredient['quantity'] ?? 1.0,
+                    'unit': ingredient['unit'],
                   });
                 }
               }
@@ -520,6 +545,21 @@ class DatabaseBackupService {
                 'recipe_id': recipe['recipe_id'],
                 'is_primary_dish': recipe['is_primary_dish'] ? 1 : 0,
                 'notes': recipe['notes'],
+              });
+            }
+          }
+
+          if (meal['meal_ingredients'] != null) {
+            final mealIngredients = meal['meal_ingredients'] as List;
+            for (final ingredient in mealIngredients) {
+              await txn.insert('meal_ingredients', {
+                'id': ingredient['id'],
+                'meal_id': ingredient['meal_id'],
+                'ingredient_id': ingredient['ingredient_id'],
+                'custom_name': ingredient['custom_name'],
+                'notes': ingredient['notes'],
+                'quantity': ingredient['quantity'] ?? 1.0,
+                'unit': ingredient['unit'],
               });
             }
           }
