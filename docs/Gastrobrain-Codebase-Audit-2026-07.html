@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gastrobrain — Independent Codebase Audit (July 2026)</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --amber:        #d97706;
+      --amber-light:  #fef3c7;
+      --amber-mid:    #fde68a;
+      --green:        #065f46;
+      --green-light:  #d1fae5;
+      --blue:         #1e40af;
+      --blue-light:   #dbeafe;
+      --rose:         #9f1239;
+      --rose-light:   #ffe4e6;
+      --teal:         #0f766e;
+      --teal-light:   #ccfbf1;
+      --gray:         #6b7280;
+      --gray-light:   #f3f4f6;
+      --gray-border:  #e5e7eb;
+      --text:         #111827;
+      --text-muted:   #6b7280;
+      --radius:       8px;
+      --sidebar-w:    230px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f9fafb;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .layout { display: flex; min-height: 100vh; }
+
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      background: #1f2937;
+      color: #d1d5db;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 1.5rem 0;
+    }
+    .sidebar-logo { padding: 0 1.25rem 1.25rem; border-bottom: 1px solid #374151; margin-bottom: 1rem; }
+    .sidebar-logo span { font-weight: 800; font-size: 1rem; color: var(--amber); letter-spacing: -0.5px; }
+    .sidebar-logo small { display: block; font-size: 0.7rem; color: #6b7280; margin-top: 0.1rem; }
+    .nav-label {
+      font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em;
+      color: #4b5563; font-weight: 700; padding: 0.6rem 1.25rem 0.2rem;
+    }
+    .nav-link {
+      display: block; padding: 0.35rem 1.25rem; font-size: 0.8rem; color: #9ca3af;
+      text-decoration: none; border-left: 2px solid transparent; transition: all 0.15s;
+    }
+    .nav-link:hover { color: #f3f4f6; border-left-color: var(--amber); background: #111827; }
+
+    .main { flex: 1; padding: 2rem 2.5rem 4rem; max-width: 880px; }
+
+    .header {
+      background: linear-gradient(135deg, #78350f 0%, #b45309 100%);
+      color: #fff; border-radius: var(--radius); padding: 2rem 2.5rem; margin-bottom: 2rem;
+    }
+    .header h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; }
+    .header .subtitle { opacity: 0.85; margin-top: 0.35rem; font-size: 0.9rem; }
+    .header .chips { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem; }
+    .chip { background: rgba(255,255,255,0.18); border-radius: 20px; padding: 0.2rem 0.7rem; font-size: 0.75rem; font-weight: 500; }
+
+    .section-title {
+      font-size: 1.05rem; font-weight: 700; margin: 2.5rem 0 0.9rem;
+      padding-bottom: 0.4rem; border-bottom: 2px solid var(--amber-mid);
+    }
+    .section-title .num { color: var(--amber); margin-right: 0.4rem; }
+
+    p { margin-bottom: 0.85rem; font-size: 0.9rem; }
+    ul, ol { margin: 0 0 0.9rem 1.4rem; font-size: 0.9rem; }
+    li { margin-bottom: 0.35rem; }
+    code {
+      font-family: "Cascadia Code", Consolas, monospace; font-size: 0.82em;
+      background: var(--gray-light); border: 1px solid var(--gray-border);
+      border-radius: 4px; padding: 0.05rem 0.3rem;
+    }
+    strong { font-weight: 650; }
+
+    .verdict-box {
+      border: 2px solid var(--green); background: var(--green-light);
+      border-radius: var(--radius); padding: 1.2rem 1.5rem; margin: 1rem 0 1.5rem;
+    }
+    .verdict-box .verdict-label {
+      font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--green);
+    }
+    .verdict-box p { margin-bottom: 0.5rem; }
+    .verdict-box p:last-child { margin-bottom: 0; }
+
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin: 1rem 0 1.25rem; }
+    .stat {
+      background: #fff; border: 1px solid var(--gray-border); border-radius: var(--radius);
+      padding: 0.8rem 1rem; text-align: center;
+    }
+    .stat .value { font-size: 1.35rem; font-weight: 800; color: var(--amber); }
+    .stat .label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+
+    table {
+      width: 100%; border-collapse: collapse; margin: 0.75rem 0 1.25rem;
+      background: #fff; border: 1px solid var(--gray-border); border-radius: var(--radius);
+      font-size: 0.84rem; overflow: hidden;
+    }
+    th {
+      background: var(--gray-light); text-align: left; padding: 0.5rem 0.8rem;
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);
+      border-bottom: 1px solid var(--gray-border);
+    }
+    td { padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--gray-border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+
+    .table-wrap { overflow-x: auto; }
+
+    .badge { display: inline-block; border-radius: 12px; padding: 0.1rem 0.6rem; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+    .badge-green  { background: var(--green-light); color: var(--green); }
+    .badge-amber  { background: var(--amber-light); color: #92400e; }
+    .badge-rose   { background: var(--rose-light); color: var(--rose); }
+    .badge-blue   { background: var(--blue-light); color: var(--blue); }
+    .badge-teal   { background: var(--teal-light); color: var(--teal); }
+
+    .callout {
+      border-left: 4px solid var(--amber); background: var(--amber-light);
+      border-radius: 0 var(--radius) var(--radius) 0; padding: 0.8rem 1.1rem; margin: 1rem 0; font-size: 0.87rem;
+    }
+    .callout-risk { border-left-color: var(--rose); background: var(--rose-light); }
+    .callout-good { border-left-color: var(--green); background: var(--green-light); }
+
+    .footnote { font-size: 0.75rem; color: var(--text-muted); margin-top: 2.5rem; border-top: 1px solid var(--gray-border); padding-top: 0.75rem; }
+
+    @media (max-width: 800px) {
+      .layout { flex-direction: column; }
+      .sidebar { width: 100%; height: auto; position: static; }
+      .main { padding: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <span>Gastrobrain</span>
+      <small>Codebase Audit · July 2026</small>
+    </div>
+    <div class="nav-label">Report</div>
+    <a class="nav-link" href="#summary">1 · Executive Summary</a>
+    <a class="nav-link" href="#scope">2 · Scope &amp; Method</a>
+    <a class="nav-link" href="#profile">3 · Project Profile</a>
+    <a class="nav-link" href="#features">4 · Feature Inventory</a>
+    <a class="nav-link" href="#architecture">5 · Architecture</a>
+    <a class="nav-link" href="#quality">6 · Quality Engineering</a>
+    <a class="nav-link" href="#debt">7 · Technical Debt &amp; Risk</a>
+    <a class="nav-link" href="#process">8 · Process Maturity</a>
+    <a class="nav-link" href="#recommendations">9 · Recommendations</a>
+    <a class="nav-link" href="#verdict">10 · Verdict</a>
+  </nav>
+
+  <main class="main">
+
+    <div class="header">
+      <h1>Independent Codebase Audit</h1>
+      <div class="subtitle">Gastrobrain — Flutter meal-planning &amp; recipe management application</div>
+      <div class="chips">
+        <span class="chip">Version audited: 0.2.15+31</span>
+        <span class="chip">Branch: develop @ 011f411</span>
+        <span class="chip">Audit date: 2026-07-14</span>
+        <span class="chip">All findings verified by direct measurement</span>
+      </div>
+    </div>
+
+    <!-- ═══════════ 1 ═══════════ -->
+    <h2 class="section-title" id="summary"><span class="num">1</span>Executive Summary</h2>
+
+    <div class="verdict-box">
+      <div class="verdict-label">Overall Assessment</div>
+      <p><strong>The investment has yielded satisfactory results, with qualifications.</strong> Gastrobrain is a genuinely functional, feature-complete-for-purpose application with engineering discipline well above what is typical for a solo project of this size. The test suite (2,093 tests, all passing), zero static-analysis findings, a versioned migration framework, full bilingual localization, and a working CI pipeline are objective, verified facts — not aspirations.</p>
+      <p>The qualifications: UI-layer code carries a documented and growing oversized-file debt; the flagship recommendation engine has never been validated against real usage data (an open P1 issue since early in the project); the database layer is thinly covered by the automated suite; and the project depends entirely on one developer.</p>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat"><div class="value">2,093</div><div class="label">Tests · all passing</div></div>
+      <div class="stat"><div class="value">0</div><div class="label">Analyzer issues</div></div>
+      <div class="stat"><div class="value">58.7%</div><div class="label">Line coverage¹</div></div>
+      <div class="stat"><div class="value">38k</div><div class="label">Lines of app code</div></div>
+      <div class="stat"><div class="value">32</div><div class="label">Tagged releases</div></div>
+      <div class="stat"><div class="value">345 / 38</div><div class="label">Issues closed / open</div></div>
+    </div>
+    <p style="font-size:0.75rem;color:var(--text-muted);">¹ Excluding generated localization files. Measured 2026-07-14 via <code>flutter test --coverage</code>.</p>
+
+    <!-- ═══════════ 2 ═══════════ -->
+    <h2 class="section-title" id="scope"><span class="num">2</span>Scope &amp; Method</h2>
+    <p>This audit assesses the state of the codebase and delivered features as of commit <code>011f411</code> (develop, v0.2.15). Every quantitative claim below was measured directly during the audit: the full test suite and static analyzer were executed locally, coverage was collected and decomposed by architectural layer, localization files were diffed for key parity, and the issue tracker and git history were queried. Nothing is taken on faith from the project's own documentation.</p>
+    <p>Out of scope: runtime performance profiling on device, security penetration testing, and evaluation of the recommendation algorithm's output quality (which, as noted below, the project itself has not yet done either).</p>
+
+    <!-- ═══════════ 3 ═══════════ -->
+    <h2 class="section-title" id="profile"><span class="num">3</span>Project Profile</h2>
+    <div class="table-wrap">
+    <table>
+      <tr><th>Dimension</th><th>Measured value</th></tr>
+      <tr><td>Application code</td><td>164 Dart files, 38,043 lines under <code>lib/</code></td></tr>
+      <tr><td>Test code</td><td>153 files / 54,627 lines under <code>test/</code>, plus 22 files under <code>integration_test/</code> (15 device E2E suites, 5 service integration suites)</td></tr>
+      <tr><td>Test-to-code ratio</td><td><strong>1.44 : 1</strong> by line count — unusually high; test code exceeds application code</td></tr>
+      <tr><td>History</td><td>1,200 commits over 17 months (Feb 2025 – Jun 2026); 519 commits in 2026 H1 — pace is sustained, not front-loaded</td></tr>
+      <tr><td>Releases</td><td>32 annotated tags through v0.2.15, released via Git Flow (develop → release branch → main)</td></tr>
+      <tr><td>Platform</td><td>Flutter / SQLite (sqflite), local-first, no backend. Android is the exercised target; iOS/desktop scaffolds exist but are unvalidated.</td></tr>
+      <tr><td>Dependencies</td><td>14 runtime packages, all mainstream (provider, sqflite, intl, share_plus…). No exotic or abandoned dependencies. Ranges are deliberately loose for cross-platform CI; <code>pubspec.lock</code> provides reproducibility.</td></tr>
+      <tr><td>Last activity</td><td>Most recent commit 2026-06-15 (≈4 weeks before audit date)</td></tr>
+    </table>
+    </div>
+
+    <!-- ═══════════ 4 ═══════════ -->
+    <h2 class="section-title" id="features"><span class="num">4</span>Feature Inventory &amp; Completeness</h2>
+    <p>The delivered feature set was verified against the actual screen and service code, not the README. All of the following exist as working, tested code:</p>
+    <div class="table-wrap">
+    <table>
+      <tr><th>Domain</th><th>Delivered capability</th><th>Assessment</th></tr>
+      <tr>
+        <td><strong>Recipe management</strong></td>
+        <td>Full CRUD, tagging system with seeded vocabulary, difficulty/rating/frequency metadata, markdown instructions, recipe stories, search &amp; multi-facet filtering, component-based recipe editor, bulk enrichment tooling with ingredient parsing</td>
+        <td><span class="badge badge-green">Mature</span></td>
+      </tr>
+      <tr>
+        <td><strong>Recommendation engine</strong></td>
+        <td>Nine pluggable scoring factors (frequency, protein rotation, rating, variety, difficulty, meal role, proximity, user feedback, randomization) with weekday/weekend weight profiles and context-aware caching</td>
+        <td><span class="badge badge-amber">Built, unvalidated</span></td>
+      </tr>
+      <tr>
+        <td><strong>Meal planning</strong></td>
+        <td>Weekly calendar, multi-recipe meals (primary + side dishes via junction tables), meal types, plan-to-cooked lifecycle, weekly summary analytics, temporal meal status</td>
+        <td><span class="badge badge-green">Mature</span></td>
+      </tr>
+      <tr>
+        <td><strong>Meal history</strong></td>
+        <td>Cooking session recording (actual time, servings, notes), retroactive planning, editing with full E2E test coverage on device</td>
+        <td><span class="badge badge-green">Mature</span></td>
+      </tr>
+      <tr>
+        <td><strong>Ingredients &amp; shopping</strong></td>
+        <td>Categorized ingredient database with aliases and fuzzy duplicate detection, NL ingredient parser (EN/PT units incl. fractions), shopping list generation from plans with aggregation, refinement flow, quantity ranges, purchase tracking</td>
+        <td><span class="badge badge-green">Mature</span></td>
+      </tr>
+      <tr>
+        <td><strong>Data safety</strong></td>
+        <td>Full database backup/restore via native share sheet and SAF file picker; import/export for recipes and ingredients; 13 versioned schema migrations with a dedicated migration UI and error screen</td>
+        <td><span class="badge badge-teal">Strong for a local-first app</span></td>
+      </tr>
+      <tr>
+        <td><strong>Localization</strong></td>
+        <td>English and Portuguese: 659 keys per language, <strong>zero</strong> parity gaps (verified by ARB diff)</td>
+        <td><span class="badge badge-green">Complete</span></td>
+      </tr>
+    </table>
+    </div>
+    <div class="callout">
+      <strong>The one material feature-level finding:</strong> the recommendation engine — the product's stated differentiator — has substantial unit tests of its individual factors, but the project's own issue tracker concedes the gap: <em>#61 “Create Comprehensive Test Suite for Recommendation Engine”</em> and <em>#63 “Validate Recommendation Quality with Real Data”</em> are open P1 issues dating from early in the project. There is no evidence that the engine's output is actually good, only that its arithmetic is correct. For a personal-use app this is tolerable; for any wider distribution it would be the first thing to close.
+    </div>
+
+    <!-- ═══════════ 5 ═══════════ -->
+    <h2 class="section-title" id="architecture"><span class="num">5</span>Architecture Assessment</h2>
+    <p>The codebase shows deliberate layering that has clearly been maintained rather than merely declared:</p>
+    <ul>
+      <li><strong>Dependency injection</strong> via a central <code>ServiceProvider</code> with per-domain providers (<code>core/di/providers/</code>). Widgets and services take injected database helpers, which is what makes the mock-based test suite possible.</li>
+      <li><strong>Data access</strong> is mid-refactor in a healthy direction: <code>DatabaseHelper</code> has been reduced from a documented 2,242 lines to 990, with six extracted DAOs (recipe, meal, meal plan, ingredient, shopping list, recommendation). The debt backlog entry still lists the old figure — the backlog is slightly stale, in the project's favor.</li>
+      <li><strong>Schema evolution</strong> uses a proper versioned migration framework (13 numbered migrations, an archive folder, a migration runner with dedicated UI and error screens). This is well beyond the ad-hoc <code>onUpgrade</code> blocks typical of Flutter/sqflite apps, and it exists because the project learned from a real data-loss incident (the tag-wipe event addressed in milestone 0.2.15) — the response was guardrails, not denial.</li>
+      <li><strong>Domain modeling</strong> is explicit: 24 model classes, junction tables for multi-recipe meals in both planning (<code>MealPlanItemRecipe</code>) and cooking (<code>MealRecipe</code>) phases, a custom exception hierarchy used consistently.</li>
+      <li><strong>The recommendation engine</strong> is genuinely pluggable — nine factor classes behind a common interface with weighted profiles — not an if/else pile. Adding or re-weighting a factor is a contained change.</li>
+    </ul>
+    <p><strong>Where the architecture is weakest:</strong> the UI layer. Several screens and dialogs mix presentation, state, and business logic (e.g. <code>add_new_ingredient_dialog.dart</code> performs direct DB access, per the project's own backlog note), and file sizes in this layer routinely exceed the project's self-imposed thresholds — see Section 7. One dialog (<code>MealRecordingDialog</code>) still lacks DI support (issue #237), which limits how it can be tested.</p>
+
+    <!-- ═══════════ 6 ═══════════ -->
+    <h2 class="section-title" id="quality"><span class="num">6</span>Quality Engineering</h2>
+    <p><strong>Verified during this audit:</strong> <code>flutter analyze</code> reports zero issues across the codebase; <code>flutter test</code> passes all 2,093 tests in ~2½ minutes. Only 5 TODO/FIXME markers exist in <code>lib/</code>, nearly all in localization files. The suite is organized by intent — dedicated directories for regression tests, edge cases (empty states, boundary conditions, error scenarios, data integrity), and error-injection testing via a purpose-built <code>MockDatabaseHelper</code>.</p>
+    <p>Coverage, decomposed by layer, tells a more nuanced story than the headline number:</p>
+    <div class="table-wrap">
+    <table>
+      <tr><th>Layer</th><th>Lines</th><th>Coverage</th><th>Reading</th></tr>
+      <tr><td>Core services (incl. recommendation engine)</td><td>2,366</td><td><span class="badge badge-green">75.6%</span></td><td>Business logic is well protected</td></tr>
+      <tr><td>Widgets</td><td>3,716</td><td><span class="badge badge-green">72.9%</span></td><td>Dialog-heavy testing effort has paid off</td></tr>
+      <tr><td>Models</td><td>804</td><td><span class="badge badge-green">72.5%</span></td><td>Adequate</td></tr>
+      <tr><td>Screens</td><td>3,414</td><td><span class="badge badge-amber">48.4%</span></td><td>The largest, most complex files are the least tested</td></tr>
+      <tr><td>Core (DI, providers, migrations, theme)</td><td>1,573</td><td><span class="badge badge-amber">37.5%</span></td><td>Migration runner logic partially exercised elsewhere</td></tr>
+      <tr><td>Database layer</td><td>909</td><td><span class="badge badge-rose">18.6%</span></td><td>Two DAOs (recommendation, shopping list) at 0% in the unit suite</td></tr>
+    </table>
+    </div>
+    <div class="callout-risk callout">
+      <strong>Finding:</strong> the layer that persists user data is the least covered by the automated suite. This is partially mitigated — device-run integration tests exercise the real database and are excluded from these coverage numbers by tooling, and issue #92 (junction table API tests, P1) shows the gap is known — but "known and open since early in the project" is not the same as "managed." The combination of low DB-layer coverage with a history that already includes one data-loss incident makes this the audit's top technical priority.
+    </div>
+    <p><strong>CI/CD:</strong> a real pipeline runs on every push and PR to main/develop — analyze, full test suite with coverage upload to Codecov, and a debug APK build. Release builds are handled by a separate workflow. A flaky-test detection workflow exists but is currently disabled. Commit hygiene is enforced by a check-commits workflow.</p>
+    <p><strong>E2E:</strong> 15 device E2E suites cover the core loops (recipe creation, meal planning, meal recording/editing, recipe selection, navigation) including accessibility and edge-case variants. Known device-level pitfalls (IME keyboard occlusion, multiline text entry) are documented rather than ignored.</p>
+
+    <!-- ═══════════ 7 ═══════════ -->
+    <h2 class="section-title" id="debt"><span class="num">7</span>Technical Debt &amp; Risk Register</h2>
+    <p>The project runs an automated "code quality watchdog" that flags files exceeding size thresholds into a standing backlog — a practice worth crediting: the debt below is <em>self-reported and dated</em>, not discovered by this audit. The audit re-measured every open entry; current state:</p>
+    <div class="table-wrap">
+    <table>
+      <tr><th>Item</th><th>Current size</th><th>Threshold</th><th>Status</th></tr>
+      <tr><td><code>screens/tools_screen.dart</code></td><td>1,069 ln</td><td>400</td><td><span class="badge badge-rose">Growing</span> (869 when flagged)</td></tr>
+      <tr><td><code>screens/weekly_plan_screen.dart</code></td><td>906 ln</td><td>400</td><td><span class="badge badge-amber">Open since Mar 2026</span></td></tr>
+      <tr><td><code>widgets/add_ingredient_dialog.dart</code></td><td>728 ln</td><td>250</td><td><span class="badge badge-rose">Growing</span> (677 when flagged)</td></tr>
+      <tr><td><code>widgets/weekly_calendar_widget.dart</code></td><td>612 ln</td><td>250</td><td><span class="badge badge-green">Shrinking</span> (was 669)</td></tr>
+      <tr><td><code>screens/recipes_screen.dart</code></td><td>574 ln</td><td>400</td><td><span class="badge badge-amber">Open</span></td></tr>
+      <tr><td>~14 further flagged files</td><td>300–560 ln</td><td>various</td><td><span class="badge badge-amber">Open</span></td></tr>
+      <tr><td><code>database_helper.dart</code> (was 2,242 ln)</td><td>990 ln</td><td>500</td><td><span class="badge badge-green">Actively paid down</span> — 6 DAOs extracted</td></tr>
+      <tr><td>Recipe editor monolith (was 2,291 ln)</td><td>removed</td><td>—</td><td><span class="badge badge-green">Resolved</span> — replaced by component widgets</td></tr>
+    </table>
+    </div>
+    <p>Pattern: <strong>debt is tracked honestly and the worst offenders do eventually get paid down</strong> (the two 2,200+ line monoliths are gone), but the backlog's steady state is ~20 open items and several are growing rather than shrinking. The 20% quality allocation per sprint is being outpaced by feature work in the UI layer.</p>
+    <p><strong>Non-code risks a stakeholder should weigh:</strong></p>
+    <ul>
+      <li><strong>Bus factor of one.</strong> All 1,200 commits are one developer. Documentation quality (see §8) partially mitigates onboarding risk, but continuity depends entirely on one person.</li>
+      <li><strong>No production observability.</strong> No crash reporting or analytics. Acceptable for a personal tool; a hard blocker for distribution.</li>
+      <li><strong>Single validated platform.</strong> Only Android is built and tested; iOS/desktop directories are scaffolds.</li>
+      <li><strong>Local-only data.</strong> Mitigated by the backup/restore feature, but there is no automatic backup — data safety depends on user discipline.</li>
+      <li><strong>Environment fragility.</strong> Windows Defender has previously blocked Flutter tooling during a release, costing untracked time; documented but not structurally fixed.</li>
+    </ul>
+
+    <!-- ═══════════ 8 ═══════════ -->
+    <h2 class="section-title" id="process"><span class="num">8</span>Process Maturity</h2>
+    <p>This is the project's most unusual strength. Solo projects typically have no process; this one runs:</p>
+    <ul>
+      <li><strong>Issue-driven development:</strong> 383 issues total (345 closed, 38 open — a 90% closure rate), labeled by priority and type, tracked on a GitHub Project board with estimates and milestones.</li>
+      <li><strong>Sprint cadence with measured velocity:</strong> planning documents, retrospectives, and an estimation diary distinguishing discovery (~20 pts/wk) from execution (~36 pts/wk) modes. Estimation methodology has been revised based on evidence at least twice.</li>
+      <li><strong>Git Flow with 32 clean releases</strong> and enforced commit conventions.</li>
+      <li><strong>Documentation:</strong> architecture overview, testing guides (dialog testing, edge cases, error simulation), localization protocol, and workflow docs — current and cross-referenced. The open-issue mix (24 enhancements vs. 7 tech-debt, only 4 P1) indicates a groomed backlog, not a graveyard.</li>
+    </ul>
+    <p>The candid caveat: process artifacts consume real effort, and at this scale some of it (sprint ceremony for a team of one) is arguably self-imposed overhead. The counter-evidence is the velocity data itself — throughput demonstrably increased across sprints, and incidents (tag wipe, estimation misses) produced durable process corrections. The overhead appears to be earning its keep.</p>
+
+    <!-- ═══════════ 9 ═══════════ -->
+    <h2 class="section-title" id="recommendations"><span class="num">9</span>Recommendations</h2>
+    <ol>
+      <li><strong>Close the database-layer test gap first</strong> (#92 and the two 0%-covered DAOs). This is the highest risk-to-effort ratio item in the codebase: the data layer guards irreplaceable user data and has already had one incident.</li>
+      <li><strong>Validate the recommendation engine against real usage</strong> (#63). Roughly a year of the developer's own meal history now exists in the database — the validation dataset the issue has been waiting for. Until then, the flagship feature's value is asserted, not demonstrated.</li>
+      <li><strong>Stop the bleeding in the UI layer:</strong> adopt a rule that any file already over threshold may not grow further without extraction (<code>tools_screen</code> and <code>add_ingredient_dialog</code> both grew after being flagged).</li>
+      <li><strong>Automate backups</strong> (scheduled export to a user-chosen location) to remove the last single-point data-loss scenario.</li>
+      <li><strong>Re-enable flaky-test detection</strong> — the workflow exists and is disabled; at 2,093 tests, flake management becomes economical.</li>
+      <li><strong>Decide the distribution question explicitly.</strong> Most remaining gaps (observability, iOS, recommendation validation) only matter if the app is ever meant for other users. A one-page decision would sharpen the next two quarters of prioritization either way.</li>
+    </ol>
+
+    <!-- ═══════════ 10 ═══════════ -->
+    <h2 class="section-title" id="verdict"><span class="num">10</span>Verdict</h2>
+    <div class="callout-good callout">
+      <p><strong>Has the investment yielded satisfactory results? Yes.</strong> Seventeen months of effort have produced a working, data-safe, bilingual application covering the full meal-planning loop, on a codebase that is verifiably healthy: every quality gate this audit could run — full test suite, static analysis, localization parity, migration integrity — passed without a single failure, on the first attempt, on a cold checkout. That almost never happens.</p>
+      <p>The honest qualifiers do not change the verdict: the UI layer needs structural attention before it erodes the maintainability the rest of the codebase has earned; the recommendation engine needs empirical validation before its value can be claimed rather than assumed; and the data layer deserves test coverage proportional to what it protects. All three are already acknowledged in the project's own tracker — the gap is prioritization, not awareness.</p>
+      <p><strong>Grade: B+.</strong> Architecture and process at A-level; held back by UI-layer debt and the unvalidated core algorithm. Condition for sustaining this trajectory: enforce the quality allocation against the specific items in §9 rather than general refactoring.</p>
+    </div>
+
+    <div class="footnote">
+      Prepared as an independent engineering audit, 2026-07-14, against develop @ <code>011f411</code> (v0.2.15+31). All metrics measured directly during the audit: <code>flutter analyze</code> (0 issues, 57.6s), <code>flutter test --coverage</code> (2,093/2,093 passing), lcov decomposition by layer, ARB key diff, git and GitHub tracker queries. Coverage figures exclude device-run integration tests, which Flutter tooling does not include in <code>coverage/lcov.info</code>.
+    </div>
+
+  </main>
+</div>
+</body>
+</html>
